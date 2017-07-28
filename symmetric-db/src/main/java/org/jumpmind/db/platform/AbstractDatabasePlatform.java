@@ -547,7 +547,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Map<String, String> getSqlScriptReplacementTokens() {
-        return null;
+        Map<String,String> replacementTokens = new HashMap<String,String>();
+        replacementTokens.put("\\$\\(schemaName\\)", "");
+        return replacementTokens;
     }
 
     public String scrubSql(String sql) {

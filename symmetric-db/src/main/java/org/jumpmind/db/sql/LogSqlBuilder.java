@@ -74,7 +74,7 @@ public class LogSqlBuilder {
             // Development support: Allow a logger like "org.jumpmind.db.sql.JdbcSqlTemplate=TRACE"
             if (loggerArg.isTraceEnabled()) {
                 logEntry.append("\r\n");
-                logEntry.append(AppUtils.formatStackTrace(Thread.currentThread().getStackTrace(), 8, true));
+              //  logEntry.append(AppUtils.formatStackTrace(Thread.currentThread().getStackTrace(), 8, true));
             }
             
             if (longRunning) {

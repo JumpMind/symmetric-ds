@@ -65,7 +65,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     protected Map<String, String> createSqlReplacementTokens() {
         Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
-                .getDatabaseInfo().getDelimiterToken());
+                .getDatabaseInfo().getDelimiterToken(), symmetricDialect.getPlatform());
         replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
         return replacementTokens;
     }    

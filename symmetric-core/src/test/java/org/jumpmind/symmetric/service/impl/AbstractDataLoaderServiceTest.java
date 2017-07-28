@@ -171,6 +171,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
         writer.writeRecord(new String[] { CsvConstants.COMMIT, nextBatchId });
         writer.close();
+        logger.error(out.toString());
         load(out);
 
         IncomingBatch batch = getIncomingBatchService().findIncomingBatch(batchId,
@@ -599,7 +600,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
 
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
-        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + TEST_TABLE + " where "
+        String tableName = formatTableName(TEST_TABLE, getPlatform());
+        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + tableName + " where "
                 + getWhere(TEST_KEYS);
         Map<String, Object> results = getSqlTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
         if (expectedValues != null) {

@@ -83,7 +83,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     protected void createDefaultChannels() {
-        Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
+         Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
         updatedDefaultChannels.put(Constants.CHANNEL_CONFIG, 
                 new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
@@ -287,7 +287,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
         channel.setLastUpdateTime(new Date());
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateChannelSql"),
                 new Object[] { channel.getProcessingOrder(), channel.getMaxBatchSize(),
                         channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),

@@ -35,6 +35,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
@@ -132,19 +133,26 @@ abstract public class AbstractService implements IService {
 
     protected Map<String, String> createSqlReplacementTokens() {
         Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
-                .getDatabaseInfo().getDelimiterToken());
+                .getDatabaseInfo().getDelimiterToken(), symmetricDialect.getPlatform());
         replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
         return replacementTokens;
     }
 
-    protected static Map<String, String> createSqlReplacementTokens(String tablePrefix,
-            String quotedIdentifier) {
+    public static Map<String, String> createSqlReplacementTokens(String tablePrefix,
+            String quotedIdentifier, IDatabasePlatform platform) {
         Map<String, String> map = new HashMap<String, String>();
         List<String> tables = TableConstants.getTablesWithoutPrefix();
-        for (String table : tables) {
-            map.put(table, String.format("%s%s%s", tablePrefix,
-                    StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
-        }        
+//        if(platform instanceof NuoDbDatabasePlatform){
+//            for(String table : tables){
+//               map.put(table, String.format("%s%s%s%s%s", platform.getDefaultSchema(), ".", tablePrefix,
+//                       StringUtils.isNotBlank(tablePrefix) ? "_": "", table));               
+//            }
+//        }else{
+            for (String table : tables) {
+                map.put(table, String.format("%s%s%s", tablePrefix,
+                        StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
+            } 
+//        }        
         return map;
     }
 

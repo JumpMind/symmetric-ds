@@ -208,7 +208,7 @@ public abstract class AbstractIntegrationTest {
         return DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
                 .getPlatform().getName());
     }
-
+    
     protected int getIncomingBatchCountForClient() {
         return getClient().getSqlTemplate().queryForInt("select count(*) from sym_incoming_batch");
     }

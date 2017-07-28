@@ -18,23 +18,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service.impl;
+package org.jumpmind.db.platform.nuodb;
 
-import java.util.Map;
+import javax.sql.DataSource;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.sql.SymmetricLobHandler;
 
-public class ContextServiceSqlMap extends AbstractSqlMap {
+public class NuoDbJdbcSqlTemplate extends JdbcSqlTemplate {
 
-    public ContextServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
-        super(platform, replacementTokens);
-
-        putSql("selectSql", "select context_value from $(schemaName)$(context) where name = ?");
-
-        putSql("updateSql", "update $(schemaName)$(context) set context_value = ?, last_update_time = current_timestamp where name = ?");
-        
-        putSql("insertSql", "insert into $(schemaName)$(context) (name, context_value, create_time) values (?, ?, current_timestamp)");
-        
-        putSql("deleteSql", "delete from $(schemaName)$(context) where name = ?");
+    public NuoDbJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
+        super(dataSource, settings, lobHandler, databaseInfo);
+        primaryKeyViolationCodes = new int[] {-27};
     }
+    
+    @Override
+    public String getSelectLastInsertIdSql(String sequenceName) {
+        return "select last_insert_id() from dual";
+    }
+
 }

@@ -30,21 +30,21 @@ public class ExtensionServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         putSql("selectEnabled", "select extension_id, extension_type, interface_name, node_group_id, enabled, extension_order, " +
-                "extension_text, create_time, last_update_by, last_update_time from $(extension) " +
+                "extension_text, create_time, last_update_by, last_update_time from $(schemaName)$(extension) " +
                 "where enabled = 1 and (node_group_id = ? or node_group_id='ALL') order by extension_order");
 
         putSql("selectAll", "select extension_id, extension_type, interface_name, node_group_id, enabled, extension_order, " +
-                "extension_text, create_time, last_update_by, last_update_time from $(extension)");
+                "extension_text, create_time, last_update_by, last_update_time from $(schemaName)$(extension)");
 
-        putSql("insertExtensionSql", "insert into $(extension) (extension_type, interface_name, node_group_id, enabled, " +
+        putSql("insertExtensionSql", "insert into $(schemaName)$(extension) (extension_type, interface_name, node_group_id, enabled, " +
                 "extension_order, extension_text, create_time, last_update_by, last_update_time, extension_id) " +
                 "values (?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
         
-        putSql("updateExtensionSql", "update $(extension) set extension_type = ?, interface_name = ?, " +
+        putSql("updateExtensionSql", "update $(schemaName)$(extension) set extension_type = ?, interface_name = ?, " +
                 "node_group_id = ?, enabled = ?, extension_order = ?, extension_text = ?, last_update_by = ?, " +
                 "last_update_time = current_timestamp where extension_id = ?");
         
-        putSql("deleteExtensionSql", "delete from $(extension) where extension_id = ?");
+        putSql("deleteExtensionSql", "delete from $(schemaName)$(extension) where extension_id = ?");
     }
 
 }

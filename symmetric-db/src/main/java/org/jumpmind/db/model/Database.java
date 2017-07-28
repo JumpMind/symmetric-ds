@@ -642,7 +642,7 @@ public class Database implements Serializable, Cloneable {
 
         result.append("Database [name=").append(name);
         result.append("; catalog=").append(catalog);
-        result.append("; schema=").append(catalog);
+        result.append("; schema=").append(schema);
         result.append("; tableCount=").append(getTableCount());
         result.append("]");
 

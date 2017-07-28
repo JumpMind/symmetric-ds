@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 
 import org.apache.log4j.Level;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -221,6 +222,13 @@ public abstract class AbstractServiceTest {
 
     protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text) {
         assertNumberOfLinesThatStartWith(expected, startsWith, text, false, false);
+    }
+    
+    public static String formatTableName(String tableName, IDatabasePlatform platform) {
+        if(platform instanceof NuoDbDatabasePlatform){
+            return String.format("%s%s%s", platform.getDefaultSchema(), ".", tableName);               
+        }
+        return tableName;        
     }
 
     protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text,

@@ -31,15 +31,15 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
         
         // @formatter:off
-        putSql("selectNodeIdsForExtractSql", "select node_id, queue from $(extract_request) where status=? group by node_id, queue");
+        putSql("selectNodeIdsForExtractSql", "select node_id, queue from $(schemaName)$(extract_request) where status=? group by node_id, queue");
         
-        putSql("selectExtractRequestForNodeSql", "select * from $(extract_request) where node_id=? and queue=? and status=? order by request_id");
+        putSql("selectExtractRequestForNodeSql", "select * from $(schemaName)$(extract_request) where node_id=? and queue=? and status=? order by request_id");
         
-        putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, last_update_time, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
+        putSql("insertExtractRequestSql", "insert into $(schemaName)$(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, last_update_time, create_time) values(?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
         
-        putSql("updateExtractRequestStatus", "update $(extract_request) set status=? where request_id=?");
+        putSql("updateExtractRequestStatus", "update $(schemaName)$(extract_request) set status=? where request_id=?");
         
-        putSql("resetExtractRequestStatus", "update $(extract_request) set status=? where start_batch_id <= ? and end_batch_id >= ? and node_id=?");
+        putSql("resetExtractRequestStatus", "update $(schemaName)$(extract_request) set status=? where start_batch_id <= ? and end_batch_id >= ? and node_id=?");
     }
 
 }

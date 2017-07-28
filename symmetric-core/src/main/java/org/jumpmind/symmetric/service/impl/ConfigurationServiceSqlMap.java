@@ -32,42 +32,42 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
 
         // @formatter:off
         
-        putSql("updateNodeChannelLastExtractTime", "update $(node_channel_ctl) set last_extract_time=? where channel_id=? and node_id=?");
+        putSql("updateNodeChannelLastExtractTime", "update $(schemaName)$(node_channel_ctl) set last_extract_time=? where channel_id=? and node_id=?");
 
         putSql("selectDataEventActionsByIdSql",
-                " select data_event_action from $(node_group_link) where         "
+                " select data_event_action from $(schemaName)$(node_group_link) where         "
               + "   source_node_group_id = ? and target_node_group_id = ?        ");
 
         putSql("groupsLinksSql", ""
                 + "select source_node_group_id, target_node_group_id, data_event_action, sync_config_enabled, is_reversible, last_update_time, last_update_by, create_time from   "
-                + "  $(node_group_link) order by source_node_group_id  ");
+                + "  $(schemaName)$(node_group_link) order by source_node_group_id  ");
 
         putSql("updateNodeGroupSql",
-                  " update $(node_group) set description=?, last_update_time=?, last_update_by=? where "
+                  " update $(schemaName)$(node_group) set description=?, last_update_time=?, last_update_by=? where "
                 + "  node_group_id=?                                                      ");
 
         putSql("insertNodeGroupSql",
-                  "insert into $(node_group)                                      "
+                  "insert into $(schemaName)$(node_group)                                      "
                 + "  (description, node_group_id, last_update_time, last_update_by, create_time) values(?,?,?,?,?)                     ");
 
         putSql("updateNodeGroupLinkSql", ""
-                + "update $(node_group_link) set data_event_action=?, sync_config_enabled=?, is_reversible=?, last_update_time=?, last_update_by=? where   "
+                + "update $(schemaName)$(node_group_link) set data_event_action=?, sync_config_enabled=?, is_reversible=?, last_update_time=?, last_update_by=? where   "
                 + "  source_node_group_id=? and target_node_group_id=?             ");
 
         putSql("insertNodeGroupLinkSql",
-                         "insert into $(node_group_link)                                              "
+                         "insert into $(schemaName)$(node_group_link)                                              "
                         + "  (data_event_action, source_node_group_id, target_node_group_id, sync_config_enabled, is_reversible, last_update_time, last_update_by, create_time) values(?,?,?,?,?,?,?,?)");
 
         putSql("selectNodeGroupsSql", ""
-                + "select node_group_id, description, last_update_time, last_update_by, create_time from $(node_group) order by node_group_id   ");
+                + "select node_group_id, description, last_update_time, last_update_by, create_time from $(schemaName)$(node_group) order by node_group_id   ");
 
         putSql("groupsLinksForSql",
                 "select source_node_group_id, target_node_group_id, data_event_action, sync_config_enabled, last_update_time, last_update_by, create_time from   "
-                        + "  $(node_group_link) where source_node_group_id = ?                   ");
+                        + "  $(schemaName)$(node_group_link) where source_node_group_id = ?                   ");
 
-        putSql("countGroupLinksForSql","select count(*) from $(node_group_link) where source_node_group_id = ? and target_node_group_id = ?");
+        putSql("countGroupLinksForSql","select count(*) from $(schemaName)$(node_group_link) where source_node_group_id = ? and target_node_group_id = ?");
         
-        putSql("isChannelInUseSql", "select count(*) from $(trigger) where channel_id = ?   ");
+        putSql("isChannelInUseSql", "select count(*) from $(schemaName)$(trigger) where channel_id = ?   ");
 
         putSql("selectChannelsSql",
           "select c.channel_id, c.processing_order, c.max_batch_size, c.enabled,                   " +
@@ -76,7 +76,7 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
           "  c.batch_algorithm, c.extract_period_millis, c.data_loader_type,                       " +
           "  c.last_update_time, c.last_update_by, c.create_time, c.reload_flag, c.file_sync_flag, " +
           "  c.queue, c.max_network_kbps, c.data_event_action " +
-          " from $(channel) c order by c.processing_order asc, c.channel_id                        ");
+          " from $(schemaName)$(channel) c order by c.processing_order asc, c.channel_id                        ");
 
         putSql("selectNodeChannelsSql",
           "select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,       "
@@ -85,17 +85,17 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
         + "  nc.last_extract_time, c.extract_period_millis, c.data_loader_type,                              " 
         + "    last_update_time, last_update_by, create_time, c.reload_flag, c.file_sync_flag, c.queue,      "
         + " c.max_network_kbps, c.data_event_action "
-        + "  from $(channel) c left outer join                                                               "
-        + "  $(node_channel_ctl) nc on c.channel_id = nc.channel_id and nc.node_id = ?                       "
+        + "  from $(schemaName)$(channel) c left outer join                                                               "
+        + "  $(schemaName)$(node_channel_ctl) nc on c.channel_id = nc.channel_id and nc.node_id = ?                       "
         + "  order by c.processing_order asc, c.channel_id                                                   ");
 
         putSql("selectNodeChannelControlLastExtractTimeSql", ""
          + "select channel_id, last_extract_time                 "
-         + "  from $(node_channel_ctl) where node_id = ?   "
+         + "  from $(schemaName)$(node_channel_ctl) where node_id = ?   "
          + "  order by channel_id                                ");
 
         putSql("insertChannelSql",
-           "insert into $(channel) (channel_id, processing_order, max_batch_size,                 "
+           "insert into $(schemaName)$(channel) (channel_id, processing_order, max_batch_size,                 "
          + "  max_batch_to_send, max_data_to_route, use_old_data_to_route, use_row_data_to_route, "
          + "  use_pk_data_to_route, contains_big_lob, enabled, batch_algorithm, description,      "
          + "  extract_period_millis, data_loader_type, last_update_time, last_update_by,          "
@@ -103,7 +103,7 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
          + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         putSql("updateChannelSql",
-           "update $(channel) set processing_order=?, max_batch_size=?,                                          "
+           "update $(schemaName)$(channel) set processing_order=?, max_batch_size=?,                                          "
          + "  max_batch_to_send=?, max_data_to_route=?, use_old_data_to_route=?, use_row_data_to_route=?,        "
          + "  use_pk_data_to_route=?, contains_big_lob=?, enabled=?, batch_algorithm=?, extract_period_millis=?, "
          + "  data_loader_type=?, last_update_time=?, last_update_by=?, reload_flag=?, file_sync_flag=?, queue=?, "
@@ -111,34 +111,34 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
          + " where channel_id=?                                                                                  ");
 
         putSql("deleteNodeGroupLinkSql",
-           "delete from $(node_group_link) where source_node_group_id=? and target_node_group_id=?   ");
+           "delete from $(schemaName)$(node_group_link) where source_node_group_id=? and target_node_group_id=?   ");
 
-        putSql("deleteAllNodeGroupLinksSql", "delete from $(node_group_link)");
+        putSql("deleteAllNodeGroupLinksSql", "delete from $(schemaName)$(node_group_link)");
 
-        putSql("deleteNodeGroupSql", "delete from $(node_group) where node_group_id=?   ");
+        putSql("deleteNodeGroupSql", "delete from $(schemaName)$(node_group) where node_group_id=?   ");
 
-        putSql("deleteChannelSql", "delete from $(channel) where channel_id=?   ");
+        putSql("deleteChannelSql", "delete from $(schemaName)$(channel) where channel_id=?   ");
 
-        putSql("deleteNodeChannelSql", "delete from $(node_channel_ctl) where channel_id=?   ");
+        putSql("deleteNodeChannelSql", "delete from $(schemaName)$(node_channel_ctl) where channel_id=?   ");
 
         putSql("selectNodeGroupChannelWindowSql",
                 "select node_group_id, channel_id, start_time, end_time, enabled                    "
-              + "  from $(node_group_channel_wnd) where node_group_id=? and channel_id=?   ");
+              + "  from $(schemaName)$(node_group_channel_wnd) where node_group_id=? and channel_id=?   ");
 
         putSql("insertNodeChannelControlSql", ""
-                + "insert into $(node_channel_ctl) (node_id, channel_id,                         "
+                + "insert into $(schemaName)$(node_channel_ctl) (node_id, channel_id,                         "
                 + "  suspend_enabled, ignore_enabled,last_extract_time) values (?, ?, ?, ?, ?)   ");
 
         putSql("updateNodeChannelControlSql",
-               "update $(node_channel_ctl) set                                                              "
+               "update $(schemaName)$(node_channel_ctl) set                                                              "
              + "  suspend_enabled=?, ignore_enabled=?, last_extract_time=? where node_id=? and channel_id=? ");
 
         putSql("getRegistrationRedirectSql",
-            "select registrant_external_id, registration_node_id from $(registration_redirect)");
+            "select registrant_external_id, registration_node_id from $(schemaName)$(registration_redirect)");
 
-        putSql("selectMaxChannelLastUpdateTime" ,"select max(last_update_time) from $(channel) where last_update_time is not null" );
-        putSql("selectMaxNodeGroupLastUpdateTime" ,"select max(last_update_time) from $(node_group) where last_update_time is not null" );
-        putSql("selectMaxNodeGroupLinkLastUpdateTime" ,"select max(last_update_time) from $(node_group_link) where last_update_time is not null" );
+        putSql("selectMaxChannelLastUpdateTime" ,"select max(last_update_time) from $(schemaName)$(channel) where last_update_time is not null" );
+        putSql("selectMaxNodeGroupLastUpdateTime" ,"select max(last_update_time) from $(schemaName)$(node_group) where last_update_time is not null" );
+        putSql("selectMaxNodeGroupLinkLastUpdateTime" ,"select max(last_update_time) from $(schemaName)$(node_group_link) where last_update_time is not null" );
 
     }
 
