@@ -142,17 +142,12 @@ abstract public class AbstractService implements IService {
             String quotedIdentifier, IDatabasePlatform platform) {
         Map<String, String> map = new HashMap<String, String>();
         List<String> tables = TableConstants.getTablesWithoutPrefix();
-//        if(platform instanceof NuoDbDatabasePlatform){
-//            for(String table : tables){
-//               map.put(table, String.format("%s%s%s%s%s", platform.getDefaultSchema(), ".", tablePrefix,
-//                       StringUtils.isNotBlank(tablePrefix) ? "_": "", table));               
-//            }
-//        }else{
+
             for (String table : tables) {
                 map.put(table, String.format("%s%s%s", tablePrefix,
                         StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
             } 
-//        }        
+      
         return map;
     }
 

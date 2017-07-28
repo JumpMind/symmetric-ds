@@ -30,34 +30,34 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
         
-        putSql("deleteSql", "delete from $(schemaName)$(node_communication)");
+        putSql("deleteSql", "delete from $(node_communication)");
         
-        putSql("clearLocksOnRestartSql", "update $(schemaName)$(node_communication) set lock_time=null where locking_server_id=? and lock_time is not null");
+        putSql("clearLocksOnRestartSql", "update $(node_communication) set lock_time=null where locking_server_id=? and lock_time is not null");
 
         putSql("selectNodeCommunicationSql",
-                "select * from $(schemaName)$(node_communication) where communication_type=? order by node_priority DESC,last_lock_time");
+                "select * from $(node_communication) where communication_type=? order by node_priority DESC,last_lock_time");
         putSql("selectNodeCommunicationPullSql",
-                "select * from $(schemaName)$(node_communication) where communication_type=? order by node_priority DESC,batch_to_send_count DESC,last_lock_time");
+                "select * from $(node_communication) where communication_type=? order by node_priority DESC,batch_to_send_count DESC,last_lock_time");
         
         putSql("selectNodeCommunicationByNodeAndChannelSql",
-                "select * from $(schemaName)$(node_communication) where node_id=? and queue=? and communication_type=?");
+                "select * from $(node_communication) where node_id=? and queue=? and communication_type=?");
 
-        putSql("insertNodeCommunicationSql", "insert into $(schemaName)$(node_communication) ("
+        putSql("insertNodeCommunicationSql", "insert into $(node_communication) ("
                 + "lock_time,locking_server_id,last_lock_millis,success_count,fail_count,"
                 + "total_success_count,total_fail_count,total_success_millis,total_fail_millis,last_lock_time,batch_to_send_count,node_priority,"
                 + "node_id,queue,communication_type) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateNodeCommunicationSql",
-                "update $(schemaName)$(node_communication) set lock_time=?,locking_server_id=?,last_lock_millis=?,"
+                "update $(node_communication) set lock_time=?,locking_server_id=?,last_lock_millis=?,"
                         + "success_count=?,fail_count=?,total_success_count=?,total_fail_count=?,"
                         + "total_success_millis=?,total_fail_millis=?, last_lock_time=?, batch_to_send_count=?, node_priority=? "
                         + "where node_id=? and queue=? and communication_type=?");
 
         putSql("deleteNodeCommunicationSql",
-                "delete from $(schemaName)$(node_communication) where node_id=? and queue=? and communication_type=?");
+                "delete from $(node_communication) where node_id=? and queue=? and communication_type=?");
 
         putSql("aquireLockSql",
-                "update $(schemaName)$(node_communication) set locking_server_id=?, lock_time=?, last_lock_time=? where "
+                "update $(node_communication) set locking_server_id=?, lock_time=?, last_lock_time=? where "
                         + "  node_id=? and queue=? and communication_type=? and "
                         + " (lock_time is null or lock_time < ?)   ");
 

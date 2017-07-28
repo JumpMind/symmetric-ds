@@ -30,19 +30,19 @@ public class JobManagerSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
 
         putSql("loadCustomJobs",
-                "select * from $(schemaName)$(job) order by job_type, job_name");
+                "select * from $(job) order by job_type, job_name");
         
-        putSql("insertJobSql", "insert into $(schemaName)$(job) (description, job_type, job_expression, "
+        putSql("insertJobSql", "insert into $(job) (description, job_type, job_expression, "
                 + "default_auto_start, default_schedule, node_group_id, "
                 + "create_by, create_time, last_update_by, last_update_time, job_name) " +
                 "values (?, ?, ?, ?, ?, ?, ?, current_timestamp, ?, current_timestamp, ?)");
         
-        putSql("updateJobSql", "update $(schemaName)$(job) set description = ?, job_type = ?, job_expression = ?, "
+        putSql("updateJobSql", "update $(job) set description = ?, job_type = ?, job_expression = ?, "
                 + "default_auto_start = ?, default_schedule = ?, node_group_id = ?, " 
                 + "create_by = ?, last_update_by = ?, last_update_time = current_timestamp "
                 + "where job_name = ?");
         
-        putSql("deleteJobSql", "delete from $(schemaName)$(job) where job_name = ? and job_type <> 'BUILT_IN'");        
+        putSql("deleteJobSql", "delete from $(job) where job_name = ? and job_type <> 'BUILT_IN'");        
     }
 
 }

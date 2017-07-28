@@ -43,11 +43,11 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  create_time, last_update_by, last_update_time,                     " +
 "  load_filter_order, fail_on_error                                   " +
 "  from                                                               " + 
-"  $(schemaName)$(load_filter) order by load_filter_order                          "); 
+"  $(load_filter) order by load_filter_order                          "); 
 
         putSql("updateLoadFilterSql" ,"" + 
 "update                       " + 
-"  $(schemaName)$(load_filter)             " + 
+"  $(load_filter)             " + 
 "  set                        " + 
 "  after_write_script=?,      " + 
 "  batch_commit_script=?,     " + 
@@ -72,7 +72,7 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  load_filter_id=?           " );
 
         putSql("insertLoadFilterSql" ,"" + 
-"insert into $(schemaName)$(load_filter) (" + 
+"insert into $(load_filter) (" + 
 "  after_write_script,      " + 
 "  batch_commit_script,     " + 
 "  batch_complete_script,   " + 
@@ -97,11 +97,11 @@ public class LoadFilterServiceSqlMap extends AbstractSqlMap {
 "  ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,current_timestamp,?)  " );
 
         putSql("deleteLoadFilterSql" ,"" + 
-"delete from $(schemaName)$(load_filter) where   " + 
+"delete from $(load_filter) where   " + 
 "  load_filter_id=? " );
 
         putSql("selectMaxLastUpdateTime" ,"" + 
-"select max(last_update_time) from $(schemaName)$(load_filter) where last_update_time is not null" );     
+"select max(last_update_time) from $(load_filter) where last_update_time is not null" );     
         
         // @formatter:on
 

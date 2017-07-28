@@ -31,98 +31,98 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         
         // @formatter:off
         
-        putSql("minDataGapStartId", "select min(start_id) from $(schemaName)$(data_gap)");
+        putSql("minDataGapStartId", "select min(start_id) from $(data_gap)");
         
-        putSql("deleteExtractRequestSql", "delete from $(schemaName)$(extract_request) where status=? and last_update_time < ? and "
-                + "0 = (select count(1) from $(schemaName)$(outgoing_batch) where status != 'OK' and batch_id between $(schemaName)$(extract_request).start_batch_id and $(schemaName)$(extract_request).end_batch_id)");
+        putSql("deleteExtractRequestSql", "delete from $(extract_request) where status=? and last_update_time < ? and "
+                + "0 = (select count(1) from $(outgoing_batch) where status != 'OK' and batch_id between $(extract_request).start_batch_id and $(extract_request).end_batch_id)");
         
-        putSql("deleteRegistrationRequestSql", "delete from $(schemaName)$(registration_request) where status in (?,?,?) and last_update_time < ?");
+        putSql("deleteRegistrationRequestSql", "delete from $(registration_request) where status in (?,?,?) and last_update_time < ?");
         
-        putSql("deleteMonitorEventSql", "delete from $(schemaName)$(monitor_event) where event_time < ?");
+        putSql("deleteMonitorEventSql", "delete from $(monitor_event) where event_time < ?");
 
         putSql("selectOutgoingBatchRangeSql" ,
-"select min(batch_id) as min_id, max(batch_id) as max_id from $(schemaName)$(outgoing_batch) where                         " + 
-"  create_time < ? and status = ? and batch_id < (select max(batch_id) from $(schemaName)$(outgoing_batch))                " );
+"select min(batch_id) as min_id, max(batch_id) as max_id from $(outgoing_batch) where                         " + 
+"  create_time < ? and status = ? and batch_id < (select max(batch_id) from $(outgoing_batch))                " );
 
         putSql("deleteOutgoingBatchSql" ,
-"delete from $(schemaName)$(outgoing_batch) where status = ? and batch_id between ?                " + 
-"  and ? and batch_id not in (select batch_id from $(schemaName)$(data_event) where batch_id between ?   " + 
+"delete from $(outgoing_batch) where status = ? and batch_id between ?                " + 
+"  and ? and batch_id not in (select batch_id from $(data_event) where batch_id between ?   " + 
 "  and ?)                                                                                   " );
 
         putSql("deleteDataEventSql" ,
-"delete from $(schemaName)$(data_event) where batch_id not in (select batch_id from               " + 
-"  $(schemaName)$(outgoing_batch) where batch_id between ? and ? and status != ?)                 " + 
+"delete from $(data_event) where batch_id not in (select batch_id from               " + 
+"  $(outgoing_batch) where batch_id between ? and ? and status != ?)                 " + 
 "  and batch_id between ? and ?                                                      " );
 
         putSql("selectDataRangeSql" ,
-"select min(data_id) as min_id, max(data_id) as max_id from $(schemaName)$(data) where data_id < (select max(data_id) from $(schemaName)$(data))   " );
+"select min(data_id) as min_id, max(data_id) as max_id from $(data) where data_id < (select max(data_id) from $(data))   " );
 
         putSql("updateStrandedBatches" ,
-"update $(schemaName)$(outgoing_batch) set status=? where node_id not                   " + 
-"  in (select node_id from $(schemaName)$(node) where sync_enabled=?) and status != ?   " );
+"update $(outgoing_batch) set status=? where node_id not                   " + 
+"  in (select node_id from $(node) where sync_enabled=?) and status != ?   " );
 
         putSql("deleteStrandedData" ,
-"delete from $(schemaName)$(data) where                                       " + 
+"delete from $(data) where                                       " + 
 "  data_id between ? and ? and                                   " + 
 "  data_id < ? and         " + 
 "  create_time < ? and                                           " + 
-"  data_id not in (select e.data_id from $(schemaName)$(data_event) e where   " + 
+"  data_id not in (select e.data_id from $(data_event) e where   " + 
 "  e.data_id between ? and ?)                                    " );
 
         putSql("deleteDataSql" ,
-"delete from $(schemaName)$(data) where                                       " + 
+"delete from $(data) where                                       " + 
 "  data_id between ? and ? and                                   " + 
 "  create_time < ? and                                           " + 
-"  data_id in (select e.data_id from $(schemaName)$(data_event) e where       " + 
+"  data_id in (select e.data_id from $(data_event) e where       " + 
 "  e.data_id between ? and ?)                                    " + 
 "  and                                                           " + 
 "  data_id not in                                                " + 
-"  (select e.data_id from $(schemaName)$(data_event) e where                  " + 
+"  (select e.data_id from $(data_event) e where                  " + 
 "  e.data_id between ? and ? and                                 " + 
 "  (e.data_id is null or                                         " + 
 "  e.batch_id in                                                 " + 
-"  (select batch_id from $(schemaName)$(outgoing_batch) where                 " + 
+"  (select batch_id from $(outgoing_batch) where                 " + 
 "  status != ?)))                                  " );
 
         putSql("selectIncomingBatchRangeSql" ,
-"select node_id, min(batch_id) as min_id, max(batch_id) as max_id from $(schemaName)$(incoming_batch) where   " + 
+"select node_id, min(batch_id) as min_id, max(batch_id) as max_id from $(incoming_batch) where   " + 
 "  create_time < ? and status = ? group by node_id                                               " );
 
         putSql("deleteIncomingBatchSql" ,
-"delete from $(schemaName)$(incoming_batch) where batch_id between ? and ? and node_id = ? and status = ?" );
+"delete from $(incoming_batch) where batch_id between ? and ? and node_id = ? and status = ?" );
         
-        putSql("deleteIncomingErrorsSql", "delete from $(schemaName)$(incoming_error) where batch_id not in (select batch_id from $(schemaName)$(incoming_batch))");
+        putSql("deleteIncomingErrorsSql", "delete from $(incoming_error) where batch_id not in (select batch_id from $(incoming_batch))");
 
         putSql("deleteFromDataGapsSql" ,
-"delete from $(schemaName)$(data_gap) where last_update_time < ? and status != ?" );
+"delete from $(data_gap) where last_update_time < ? and status != ?" );
 
         putSql("deleteIncomingBatchByNodeSql" ,
-"delete from $(schemaName)$(incoming_batch) where node_id = ?   " );
+"delete from $(incoming_batch) where node_id = ?   " );
         
-        putSql("purgeNodeHostChannelStatsSql", "delete from $(schemaName)$(node_host_channel_stats) where start_time < ?");
+        putSql("purgeNodeHostChannelStatsSql", "delete from $(node_host_channel_stats) where start_time < ?");
         
-        putSql("purgeNodeHostStatsSql", "delete from $(schemaName)$(node_host_stats) where start_time < ?");
+        putSql("purgeNodeHostStatsSql", "delete from $(node_host_stats) where start_time < ?");
                 
-        putSql("purgeNodeHostJobStatsSql", "delete from $(schemaName)$(node_host_job_stats) where start_time < ?");
+        putSql("purgeNodeHostJobStatsSql", "delete from $(node_host_job_stats) where start_time < ?");
         
-        putSql("selectIncomingErrorsBatchIdsSql", "select distinct e.batch_id as batch_id from $(schemaName)$(incoming_error) e LEFT OUTER JOIN $(schemaName)$(incoming_batch) i ON e.batch_id = i.batch_id where i.batch_id IS NULL");
+        putSql("selectIncomingErrorsBatchIdsSql", "select distinct e.batch_id as batch_id from $(incoming_error) e LEFT OUTER JOIN $(incoming_batch) i ON e.batch_id = i.batch_id where i.batch_id IS NULL");
         
-        putSql("deleteIncomingErrorsBatchIdsSql", "delete from $(schemaName)$(incoming_error) where batch_id IN (?)");
+        putSql("deleteIncomingErrorsBatchIdsSql", "delete from $(incoming_error) where batch_id IN (?)");
         
-        putSql("deleteOutgoingBatchByCreateTimeSql", "delete from $(schemaName)$(outgoing_batch) where create_time < ?");
-        putSql("deleteDataEventByCreateTimeSql", "delete from $(schemaName)$(data_event) where create_time < ?");
-        putSql("deleteDataByCreateTimeSql", "delete from $(schemaName)$(data) where create_time < ?");
-        putSql("deleteExtractRequestByCreateTimeSql", "delete from $(schemaName)$(extract_request) where create_time < ?");
+        putSql("deleteOutgoingBatchByCreateTimeSql", "delete from $(outgoing_batch) where create_time < ?");
+        putSql("deleteDataEventByCreateTimeSql", "delete from $(data_event) where create_time < ?");
+        putSql("deleteDataByCreateTimeSql", "delete from $(data) where create_time < ?");
+        putSql("deleteExtractRequestByCreateTimeSql", "delete from $(extract_request) where create_time < ?");
 
         putSql("selectStrandedDataEventRangeSql" ,
-"select min(data_id) as min_id, max(data_id) as max_id from $(schemaName)$(data_event) " +
-"where batch_id not in (select batch_id from $(schemaName)$(outgoing_batch))");
+"select min(data_id) as min_id, max(data_id) as max_id from $(data_event) " +
+"where batch_id not in (select batch_id from $(outgoing_batch))");
 
         putSql("deleteStrandedDataEvent",
-"delete from $(schemaName)$(data_event) " + 
+"delete from $(data_event) " + 
 "where data_id between ? and ? " +
 "and create_time < ? " +
-"and batch_id not in (select batch_id from $(schemaName)$(outgoing_batch))");
+"and batch_id not in (select batch_id from $(outgoing_batch))");
         
     }
 

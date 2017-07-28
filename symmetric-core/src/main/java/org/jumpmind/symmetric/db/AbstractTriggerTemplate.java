@@ -169,7 +169,7 @@ abstract public class AbstractTriggerTemplate {
             }            
             sql = FormatUtils.replace("columns", columnsText, sql);
         } else {            
-            sql = "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)";
+            sql = "select $(columns) from $(tableName) t where $(whereClause)";
             StringBuilder columnList = new StringBuilder();
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];

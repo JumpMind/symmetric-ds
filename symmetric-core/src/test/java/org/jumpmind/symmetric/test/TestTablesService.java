@@ -52,8 +52,8 @@ public class TestTablesService extends AbstractService {
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
-                    boolean updated = transaction.prepareAndExecute(platform.scrubSql(String.format(
-                            "insert into %s (test_id, test_blob) values(?, ?)", tableName)),
+                    boolean updated = transaction.prepareAndExecute(String.format(
+                            "insert into %s (test_id, test_blob) values(?, ?)", tableName),
                             new Object[] { id, lobValue.getBytes() }, new int[] { Types.INTEGER,
                                     Types.BLOB }) > 0;
                     transaction.commit();
@@ -76,8 +76,8 @@ public class TestTablesService extends AbstractService {
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
-                    boolean updated = transaction.prepareAndExecute(platform.scrubSql(
-                            String.format("update %s set test_blob=? where test_id=?", tableName)),
+                    boolean updated = transaction.prepareAndExecute(
+                            String.format("update %s set test_blob=? where test_id=?", tableName),
                             new Object[] { lobValue.getBytes(), id }, new int[] { Types.BLOB,
                                     Types.INTEGER }) > 0;
                     transaction.commit();
@@ -97,12 +97,12 @@ public class TestTablesService extends AbstractService {
 
     public void assertTestBlobIsInDatabase(int id, String tableName, String expected) {
         if (symmetricDialect.isBlobSyncSupported()) {
-            int rowCount = sqlTemplate.queryForInt(platform.scrubSql("select count(*) from "
-                    + tableName + " where test_id=?"), id);
+            int rowCount = sqlTemplate.queryForInt("select count(*) from "
+                    + tableName + " where test_id=?", id);
             Assert.assertEquals("The " + id + " row for table " + tableName + " did not exist", 1, rowCount);
             
-            Map<String, Object> values = sqlTemplate.queryForMap(platform.scrubSql("select test_blob from "
-                    + tableName + " where test_id=?"), id);            
+            Map<String, Object> values = sqlTemplate.queryForMap("select test_blob from "
+                    + tableName + " where test_id=?", id);            
             Assert.assertEquals(
                     "The blob column for test_use_stream_lob was not loaded into the client database",
                     expected, values != null && values.get("TEST_BLOB") != null ? new String(
@@ -155,7 +155,7 @@ public class TestTablesService extends AbstractService {
 
     public int updateCustomer(int id, String column, Object value, int type) {
         return sqlTemplate.update(
-                platform.scrubSql(String.format("update test_customer set %s=? where customer_id=?", column)),
+                String.format("update test_customer set %s=? where customer_id=?", column),
                 new Object[] { value, id }, new int[] { type, Types.NUMERIC });
     }
 

@@ -20,6 +20,12 @@
  */
 package org.jumpmind.db;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.InputStreamReader;
 import java.sql.Types;
 import java.util.List;
@@ -37,12 +43,8 @@ import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
-import org.jumpmind.db.platform.nuodb.NuoDbJdbcSqlTemplate;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
-
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -100,11 +102,7 @@ public class DatabasePlatformTest {
         ISqlTemplate template = platform.getSqlTemplate();
         String delimiter = platform.getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-        if(template instanceof NuoDbJdbcSqlTemplate){
-            assertEquals(1, template.update(String.format("insert into %s%s%s%s%s%s%s values(?,?)", delimiter, tableFromDatabase.getSchema(), delimiter,".", delimiter, tableFromDatabase.getName(), delimiter), 1, "test"));
-        }else{
-            assertEquals(1, template.update(String.format("insert into %s%s%s values(?,?)", delimiter, tableFromDatabase.getName(), delimiter), 1, "test"));
-        }
+        assertEquals(1, template.update(String.format("insert into %s%s%s values(?,?)", delimiter, tableFromDatabase.getName(), delimiter), 1, "test"));
         
         table.addColumn(new Column("ID2", true));
         table.getColumnWithName("ID2").setTypeCode(Types.VARCHAR);
@@ -122,11 +120,7 @@ public class DatabasePlatformTest {
         tableFromDatabase = platform.getTableFromCache(table.getName(), true);
         assertNotNull(tableFromDatabase);
         assertEquals(4, tableFromDatabase.getColumnCount());
-        if(template instanceof NuoDbJdbcSqlTemplate){
-            assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s%s%s%s%s", delimiter, tableFromDatabase.getSchema(), delimiter,".", delimiter, tableFromDatabase.getName(), delimiter)));
-        }else{
-            assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
-        }
+        assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
         // alter to remove two columns that will cause a table rebuild
         platform.alterTables(false, origTable);
@@ -134,11 +128,7 @@ public class DatabasePlatformTest {
         assertNotNull(tableFromDatabase);
         assertEquals(2, tableFromDatabase.getColumnCount());
         
-        if(template instanceof NuoDbJdbcSqlTemplate){
-            assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s%s%s%s%s", delimiter, tableFromDatabase.getSchema(), delimiter,".", delimiter, tableFromDatabase.getName(), delimiter)));
-        }else{
-            assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
-        }
+        assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
     }
     
@@ -248,13 +238,7 @@ public class DatabasePlatformTest {
             
             assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
             
-            String insertSql = "";
-            
-            if(platform.getSqlTemplate() instanceof NuoDbJdbcSqlTemplate){
-                insertSql = "insert into \"" + tableFromDatabase.getSchema() + "\".\"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
-            }else{
-                insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
-            } 
+            String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
             
             insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
 
