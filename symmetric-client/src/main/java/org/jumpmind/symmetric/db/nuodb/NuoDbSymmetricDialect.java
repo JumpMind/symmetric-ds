@@ -28,6 +28,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
@@ -46,8 +47,13 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public boolean supportsTransactionId() {
-        return false;
-    }        
+        return true;
+    }
+    
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
+            Trigger trigger) {
+        return "(select transid from system.connections where connid = getconnectionid())";
+    }
 
     @Override
     public void createRequiredDatabaseObjects() {
@@ -121,6 +127,16 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 //            return null;
 //        }
 //    }
+
+    @Override
+    public boolean isClobSyncSupported() {
+        return false;
+    }
+
+    @Override
+    public boolean isBlobSyncSupported() {
+        return false;
+    }
 
     @Override
     public BinaryEncoding getBinaryEncoding() {
