@@ -35,7 +35,7 @@ public class NuoDbTriggerTemplate extends AbstractTriggerTemplate {
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',cast($(tableAlias).\"$(columnName)\" as char),'\"') end \n" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',cast($(tableAlias).\"$(columnName)\" as char),'\"') end\n" ;
         clobColumnTemplate =    stringColumnTemplate;
-        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',$(tableAlias).\"$(columnName)\",'\"') end\n" ;
+        blobColumnTemplate = "''" ;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',$(tableAlias).\"$(columnName)\",'\"') end\n" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = "new" ;
