@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.db.nuodb;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -28,8 +29,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
-
-import com.nuodb.impl.util.StringUtils;
 
 public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
