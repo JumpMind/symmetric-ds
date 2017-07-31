@@ -185,7 +185,7 @@ public class NodeService extends AbstractService implements INodeService {
             String nodeGroupId, String externalId) {
         Node node = findNodeByExternalId(nodeGroupId, externalId);
         if (sqlTemplate.update(getSql("nodeChannelControlIgnoreSql"), new Object[] {
-                enabled ? 1 : 0, node.getNodeId(), channelId }) == 0) {
+                enabled ? 1 : 0, node.getNodeId(), channelId }) <= 0) {
             sqlTemplate.update(getSql("insertNodeChannelControlSql"),
                     new Object[] { node.getNodeId(), channelId, enabled ? 1 : 0, 0 });
         }
@@ -218,7 +218,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeHost.getLastRestartTime(), nodeHost.getNodeId(),
             nodeHost.getHostName() };
 
-    	if (sqlTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
+    	if (sqlTemplate.update(getSql("updateNodeHostSql"), params) <= 0) {
             sqlTemplate.update(getSql("insertNodeHostSql"), params);
         }
 

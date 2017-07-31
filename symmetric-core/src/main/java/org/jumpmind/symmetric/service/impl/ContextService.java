@@ -87,12 +87,12 @@ public class ContextService extends AbstractService implements IContextService {
     @Override
     public void save(ISqlTransaction transaction, String name, String value) {
         if (transaction != null) {            
-            if (update(transaction, name, value) == 0) {
+            if (update(transaction, name, value) <= 0) {
                 insert(transaction, name, value);
             }
         } else {
             int count = sqlTemplate.update(getSql("updateSql"), value, name);
-            if (count == 0) {
+            if (count <= 0) {
                 sqlTemplate.update(getSql("insertSql"), name, value);
             }            
         }
