@@ -239,9 +239,6 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
     	String tableName = (String) values.get("TABLENAME");
     	String fieldName = (String) values.get("FIELD");
-    	if (tableName.equalsIgnoreCase("sym_channel") && fieldName.equalsIgnoreCase("max_network_kbps")) {
-    		System.out.println("HI!" + values.get("FIELD"));
-    	}
     	
         Integer type = (Integer) values.get("DATA_TYPE");
         if (type != null && type.intValue() == Types.CLOB) {
