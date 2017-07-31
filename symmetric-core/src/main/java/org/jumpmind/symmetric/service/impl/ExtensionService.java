@@ -287,7 +287,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         Object[] args = { extension.getExtensionType(), extension.getInterfaceName(), extension.getNodeGroupId(),
                 extension.isEnabled() ? 1 : 0, extension.getExtensionOrder(), extension.getExtensionText(), extension.getLastUpdateBy(),
                 extension.getExtensionId() };
-        if (sqlTemplate.update(getSql("updateExtensionSql"), args) == 0) {
+        if (sqlTemplate.update(getSql("updateExtensionSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertExtensionSql"), args);
             if (extension.isEnabled()) {
                 registerExtension(extension);

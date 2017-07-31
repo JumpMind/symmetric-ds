@@ -41,7 +41,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  update_first, update_action, delete_action, column_policy,  " +
 "  last_update_time, last_update_by, create_time               " + 
 "  from                                                        " + 
-"  $(transform_table) order by transform_order                 " + 
+"  $(transform_table) order by transform_order    " + 
 "  asc                                                         " );
 
         putSql("selectTransformColumn" ,"" + 
@@ -51,7 +51,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  transform_type, transform_expression,           " + 
 "  transform_order,                                " +
 "  last_update_time, last_update_by, create_time   " + 
-"  from $(transform_column) order                  " + 
+"  from $(transform_column) order     " + 
 "  by transform_order                              " + 
 "  asc                                             " );
 
@@ -62,7 +62,7 @@ public class TransformServiceSqlMap extends AbstractSqlMap {
 "  transform_type, transform_expression,           " + 
 "  transform_order,                                " +
 "  last_update_time, last_update_by, create_time   " + 
-"  from $(transform_column)                        " + 
+"  from $(transform_column)           " + 
 "  where                                           " + 
 "  transform_id = ?                                " + 
 "  order by transform_order asc                    " );

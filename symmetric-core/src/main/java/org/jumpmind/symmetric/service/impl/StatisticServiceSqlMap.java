@@ -56,7 +56,7 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
 "  sum(data_bytes_sent) as data_bytes_sent, sum(data_sent_errors) as data_sent_errors,    " + 
 "  sum(data_loaded) as data_loaded, sum(data_bytes_loaded) as data_bytes_loaded,          " + 
 "  sum(data_loaded_errors) as data_loaded_errors                                          " + 
-"  from sym_node_host_channel_stats                                                       " +
+"  from $(node_host_channel_stats)                                                       " +
 "  where start_time >= ? and end_time <= ? and node_id=?                                  " +
 "  and channel_id not in ('heartbeat', 'config')                                          " +
 "  group by node_id, start_time, end_time                                                 " +
@@ -64,7 +64,7 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
         
         putSql("minNodeStatsTimeSql", "" + 
 "select min(start_time) " + 
-"  from sym_node_host_channel_stats                                                       " +
+"  from $(node_host_channel_stats)                                                       " +
 "  where node_id=?                                  " +
 "  and channel_id not in ('heartbeat', 'config')                                          ");
         

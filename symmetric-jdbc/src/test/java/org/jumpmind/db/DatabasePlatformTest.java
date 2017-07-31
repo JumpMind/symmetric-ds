@@ -20,6 +20,12 @@
  */
 package org.jumpmind.db;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.InputStreamReader;
 import java.sql.Types;
 import java.util.List;
@@ -39,9 +45,6 @@ import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
-
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -124,6 +127,7 @@ public class DatabasePlatformTest {
         tableFromDatabase = platform.getTableFromCache(origTable.getName(), true);
         assertNotNull(tableFromDatabase);
         assertEquals(2, tableFromDatabase.getColumnCount());
+        
         assertEquals(1, template.queryForLong(String.format("select count(*) from %s%s%s", delimiter, tableFromDatabase.getName(), delimiter)));
 
     }
@@ -216,7 +220,7 @@ public class DatabasePlatformTest {
                 && !platform.getName().equals(DatabaseNamesConstants.MSSQL2000)
                 && !platform.getName().equals(DatabaseNamesConstants.MSSQL2005)
                 && !platform.getName().equals(DatabaseNamesConstants.MSSQL2008)
-                && !platform.getName().equals(DatabaseNamesConstants.SQLANYWHERE);
+                && !platform.getName().equals(DatabaseNamesConstants.SQLANYWHERE); 
 
         if (upgradeSupported) {
             Table table = new Table("TEST_UPGRADE");
@@ -233,8 +237,9 @@ public class DatabasePlatformTest {
             assertNotNull(tableFromDatabase);
             
             assertTrue(tableFromDatabase.getColumnWithName("ID").isPrimaryKey());
-
+            
             String insertSql = "insert into \"TEST_UPGRADE\" (\"ID\",\"NOTES\") values(null,?)";
+            
             insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
 
             long id1 = platform.getSqlTemplate()

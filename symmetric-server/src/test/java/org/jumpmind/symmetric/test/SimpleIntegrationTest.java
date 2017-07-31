@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.nuodb.NuoDbSymmetricDialect;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
@@ -141,8 +142,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 120000)
     public void test03InitialLoad() {
         logTestRunning();
-        serverTestService.insertIntoTestUseStreamLob(100, "test_use_stream_lob", THIS_IS_A_TEST);
-        serverTestService.insertIntoTestUseStreamLob(100, "test_use_capture_lob", THIS_IS_A_TEST);
+        boolean sendingLob1 = serverTestService.insertIntoTestUseStreamLob(100, "test_use_stream_lob", THIS_IS_A_TEST);
+        boolean sendingLob2 = serverTestService.insertIntoTestUseStreamLob(100, "test_use_capture_lob", THIS_IS_A_TEST);
 
         Customer customer = new Customer(301, "Linus", true, "42 Blanket Street", "Santa Claus",
                 "IN", 90009, new Date(), new Date(), THIS_IS_A_TEST, BINARY_DATA);
@@ -199,18 +200,22 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 rootNodeService.findNodeSecurity(TestConstants.TEST_CLIENT_EXTERNAL_ID)
                         .isInitialLoadEnabled());
 
-        clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
-                THIS_IS_A_TEST);
+        if (sendingLob1) {
+	        clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
+	                THIS_IS_A_TEST);
+        }
         
-        clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
-                THIS_IS_A_TEST);
-        
+        if (sendingLob2) {
+	        clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
+	                THIS_IS_A_TEST);
+        }
     }
 
     @Test(timeout = 120000)
     public void test04LobSyncUsingStreaming() throws Exception {
         String text = "Another test.  Should not find this in text in sym_data, but it should be in the client database";
         if (serverTestService.insertIntoTestUseStreamLob(200, "test_use_stream_lob", text)) {
+            //IDatabasePlatform platform = getServer().getDatabasePlatform();
             String rowData = getServer()
                     .getSqlTemplate()
                     .queryForObject(
@@ -261,6 +266,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         Customer customer = new Customer(101, "Charlie Brown", true,
                 "300 Grub Street \\o", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
                 BIG_BINARY);
+        if (serverTestService.getSymmetricDialect() instanceof NuoDbSymmetricDialect) {
+        	customer.setAddress("300 Grub Street");
+        }
         serverTestService.insertCustomer(customer);
 
         clientPull();

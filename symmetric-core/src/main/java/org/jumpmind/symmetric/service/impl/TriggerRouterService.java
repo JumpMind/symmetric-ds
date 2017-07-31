@@ -1001,7 +1001,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             saveRouter(triggerRouter.getRouter());
         }
         triggerRouter.setLastUpdateTime(new Date());
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateTriggerRouterSql"),
                 new Object[] { triggerRouter.getInitialLoadOrder(),
                         triggerRouter.getInitialLoadSelect(),
@@ -1040,7 +1040,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public void saveRouter(Router router) {
         router.setLastUpdateTime(new Date());
         router.nullOutBlankFields();
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateRouterSql"),
                 new Object[] { router.getTargetCatalogName(), router.getTargetSchemaName(),
                         router.getTargetTableName(),
@@ -1093,7 +1093,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     public void saveTrigger(Trigger trigger) {
         trigger.setLastUpdateTime(new Date());
         trigger.nullOutBlankFields();
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateTriggerSql"),
                 new Object[] { trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), trigger.getChannelId(), trigger.getReloadChannelId(),
