@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnChange;
@@ -38,19 +37,15 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.platform.IDatabasePlatform;
 
 /*
  * The SQL Builder for MySQL.
  */
 public class NuoDbDdlBuilder extends AbstractDdlBuilder {
 
-    private IDatabasePlatform platform;
-    
-    public NuoDbDdlBuilder(IDatabasePlatform platform) {
+    public NuoDbDdlBuilder() {
       
         super(DatabaseNamesConstants.NUODB);
-        this.platform = platform;
         
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
         databaseInfo.setMaxIdentifierLength(128);
@@ -111,11 +106,11 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected String getFullyQualifiedTableNameShorten(Table table) {
         String result="";
-        if (StringUtils.isNotBlank(table.getSchema())) {
-            result+=getDelimitedIdentifier(table.getSchema()).concat(databaseInfo.getSchemaSeparator());
-        }else{
-            result+=getDelimitedIdentifier(platform.getDefaultSchema()).concat(databaseInfo.getSchemaSeparator());
-        }
+//        if (StringUtils.isNotBlank(table.getSchema())) {
+//            result+=getDelimitedIdentifier(table.getSchema()).concat(databaseInfo.getSchemaSeparator());
+//        }else{
+//            result+=getDelimitedIdentifier(platform.getDefaultSchema()).concat(databaseInfo.getSchemaSeparator());
+//        }
         result+=getDelimitedIdentifier(getTableName(table.getName()));
         return result;
     }
@@ -198,11 +193,11 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            if (StringUtils.isNotBlank(table.getSchema())) {
-                ddl.append(table.getSchema()).append(".");
-            }else{
-                ddl.append(platform.getDefaultSchema()).append("."); 
-            }
+//            if (StringUtils.isNotBlank(table.getSchema())) {
+//                ddl.append(table.getSchema()).append(".");
+//            }else{
+//                ddl.append(platform.getDefaultSchema()).append("."); 
+//            }
             printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);

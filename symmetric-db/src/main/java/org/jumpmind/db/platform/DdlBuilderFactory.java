@@ -99,7 +99,7 @@ final public class DdlBuilderFactory {
         } else if (DatabaseNamesConstants.VOLTDB.equalsIgnoreCase(databaseName)) {
             return new VoltDbDdlBuilder();
         } else if (DatabaseNamesConstants.NUODB.equalsIgnoreCase(databaseName)) {
-            return new NuoDbDdlBuilder(null);
+            return new NuoDbDdlBuilder();
         } else {
             return null;
         }

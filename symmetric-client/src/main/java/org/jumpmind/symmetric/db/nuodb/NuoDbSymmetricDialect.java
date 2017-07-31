@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.db.nuodb;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -83,8 +82,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName) {
-        schemaName = StringUtils.isBlank(schemaName) ? platform.getDefaultSchema() : schemaName;
-        final String sql = "drop trigger " + schemaName + "." + triggerName;
+        final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer); 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
@@ -109,24 +107,6 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     public void cleanDatabase() {
     }
-
-// TODO: Test to see if this works
-//    @Override
-//    protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
-//        if (catalog != null) {
-//            Connection c = ((JdbcSqlTransaction) transaction).getConnection();
-//            String previousCatalog;
-//            try {
-//                previousCatalog = c.getCatalog();
-//                c.setCatalog(catalog);
-//                return previousCatalog;
-//            } catch (SQLException e) {
-//                throw new SqlException(e);
-//            }
-//        } else {
-//            return null;
-//        }
-//    }
 
     @Override
     public boolean isClobSyncSupported() {

@@ -49,7 +49,7 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected NuoDbDdlBuilder createDdlBuilder() {
-        return new NuoDbDdlBuilder(this);
+        return new NuoDbDdlBuilder();
     }
 
     @Override
@@ -87,10 +87,11 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
 
-        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + defaultSchema + delimiter + "." + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
-                + " AFTER UPDATE FOR EACH ROW AS INSERT INTO " + delimiter + defaultSchema + delimiter + "." + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL); END_TRIGGER";
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR"+ delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + " AFTER UPDATE FOR EACH ROW AS INSERT INTO " +  delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL); END_TRIGGER";
 
-        String dropTriggerSql = "DROP TRIGGER IF EXISTS " + delimiter + defaultSchema + delimiter + ".TEST_TRIGGER";
+        String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
+
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
 
         try {
@@ -108,8 +109,8 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public PermissionResult getCreateSymRoutinePermission() {
-        String routineSql = "CREATE PROCEDURE " + defaultSchema + ".TEST_PROC() AS VAR myVar = 1; END_PROCEDURE";
-        String dropSql = "DROP PROCEDURE IF EXISTS " + defaultSchema + ".TEST_PROC";
+        String routineSql = "CREATE PROCEDURE TEST_PROC() AS VAR myVar = 1; END_PROCEDURE";
+        String dropSql = "DROP PROCEDURE IF EXISTS TEST_PROC";
 
         PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.FAIL);
 
@@ -127,7 +128,7 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     protected PermissionResult getDropSymTriggerPermission() {
-        String dropTriggerSql = "DROP TRIGGER IF EXISTS " + getDefaultSchema() + ".TEST_TRIGGER";
+        String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.FAIL);
 
         try {
