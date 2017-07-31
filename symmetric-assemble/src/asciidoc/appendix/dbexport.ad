@@ -1,0 +1,56 @@
+=== DBExport
+
+The DbExport utility has the ability to export the structure of data from database tables to file.
+
+ifdef::pro[]
+The DbExport wizard is available from the explore tab of the pro console.  
+The popup window asks for the catalog, schema, and specific table(s) to export to a file.
+
+image::appendix/dbexport/dbexport-database-export-tab.png[width=600]
+
+The next tab allows for specific choices for the format and content of the exported file.  
+
+image::appendix/dbexport/dbexport-format-screen.png[width=600]
+
+The format option allows for choices between *SQL*, *XML*, *CSV*, and *SYM_XML*.
+The Compatibility tab allows for a choice between any of the supported SQL dialects.
+The list of check boxes allows for more specific options for the content of the file including insert, drop or create scripts.  A where clause can also be added to make the SQL more specific.  
+
+The last option allows for the scripts to be exported as either a file or directly to the SQL editor within the pro console.
+
+endif::pro[]
+
+ifndef::pro[]
+
+The dbexport utility can be run directly from the command line.
+To run dbexport enter the command *dbexport [tablename...]* followed by any parameters from the command line in the bin directory of the Symmetric installation.  
+The *--help* parameter will display all the possible parameters for the export utility.
+They are as follows:
+
+- *--add-drop-table* : Add drop table commands to output.
+- *--catalog <arg>* : Look for tables in catalog
+- *--compatible <arg>* : Change export to be compatible with a given database: db2, derby, firebird, greenplum, h2, hsqldb, hsqldb2, informix, interbase, mssql, mysql,  oracle, postgres, sybase.
+- *--debug* : Print debug information in logging.
+- *--dir <arg>* : Indicate a directory to use for the export of files.  If the directory is specified, then a file per table will be written to the directory.
+- *-e, --engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.
+- *--format <arg>* : Output format: SQL, CSV, XML, or SYM_XML.
+- *-h, --help* : Print help with each option and description.  
+- *-i, --comments* : Write informational comments.
+- *--no-create-info* : Do not write statements to create tables.
+- *--no-data* : Do not write statements to insert into tables.
+- *--no-foreign-keys* : Do not write statements to create foreign keys.
+- *--no-indices* : Do not write statements to create indices.
+- *--no-log-console* : No output will be sent to the console.
+- *--no-log-file* : No output will be sent to the log file.
+- *--no-qualifiers* : Do not qualify table and columns names with quoted identifiers.
+- *-p, --properties <arg>* : The properties file with settings for the SymmetricDs engine.  If not provided, defaults are used, then overridden with symmetric.properties values in user.home directory.
+- *--schema <arg>* : Look for tables in schema.
+- *--sql <arg>* : Run custom SQL to select data.
+- *--use-jdbc-timestamp-format <arg>* : When true db export uses {ts 'yyyy-MM-dd h:mm:ss.SSS'} format for exported dates and times.  Defaults to true.
+- *--use-variable-dates* : Substitute dates as ${curdate+-millis}.
+- *-v, --verbose* : Use verbose format for console output.
+- *--where <arg>* : Specify the SQL for the "where" clause.
+
+The same file formats utilized by dbimport are used for dbexport as well.  Please see <<dbimport>> for format examples.
+
+endif::pro[]

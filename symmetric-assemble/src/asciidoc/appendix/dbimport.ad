@@ -1,0 +1,176 @@
+[id="dbimport",reftext="DbImport"]
+=== DBImport
+
+The DbImport utility has the ability to import the structure and data of a tables(s) from a file to database tables.
+
+ifdef::pro[]
+The DbImport wizard is available from the explore tab of the pro console.
+The popup window asks for the file format, catalog, schema, and tables to import to the database.
+It also asks for the number of rows to commit, as well as multiple more specific options for the import.
+
+image::appendix/dbimport/dbimport-tab.png[width=600]
+
+Input files can be in SQL, XML, CSV, or SYM_XML file formats.
+
+The following is an example of the *SQL* format used for DbImport.
+
+[source,sql]
+----
+CREATE TABLE ITEM(
+    ITEM_ID INTEGER NOT NULL,
+    NAME VARCHAR(100) NULL,
+    PRIMARY KEY (ITEM_ID)
+);
+insert into ITEM (ITEM_ID, NAME) values (1805,'lVlmyxlADKEMZFIfWiipfiBqoeMHsSjsbgsoqBuEAWKhmJfaNA');
+insert into ITEM (ITEM_ID, NAME) values (2649,'qjyWrDHXnsfdSDBqUzHMJPkRFQmwmWPWxBPPwaQmgpoQrqLcQC');
+insert into ITEM (ITEM_ID, NAME) values (3334,'sCTJrMPFLauMvNrmYVyuLwcrinAVDVNmuHLULCWGYYmHRSmbsc');
+insert into ITEM (ITEM_ID, NAME) values (3613,'xCNfevpgVBfegbrXHQOsChxCYPcwbjkpHXZpLFkLxMACaFWJnF');
+insert into ITEM (ITEM_ID, NAME) values (3622,'UPTWPHujLPjFvusxAqzKSZCSFXXyhqfkbmholwDvuNdhLfIBGY');
+----
+
+The following is an example of the *CSV* format used for DbImport.
+
+[source, csv]
+----
+"ITEM_ID","NAME"
+"12","zSYwAyLGsbvsLhYFLBqmeprkfISVTlRnfHwsHFZcmZUpKQMXkT"
+"174","WHQwyMhrWVZzmXyzzHiXRSyzfuOSImgqflupGrtLwmaGrOvFek"
+"213","UlGKwTSLeygaxzkdTQxnvrSQMulBKbljpAkSVmbQCUONULUAlF"
+"239","OOvqpLHIVcbOlJCXemNjCajcEJaBrPlneDkCZXqGYMXIuGRORq"
+"471","RFHEaWcFtPDOkqEtbomEomuEWDQoAuyvJVnjPEsPpaqLxEuWpj"
+----
+
+The following is an example of the *XML* format used for DbImport.
+
+[source,xml]
+----
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="dbimport">
+	<table name="ITEM">
+		<column name="ITEM_ID" primaryKey="true" required="true" type="INTEGER" size="10">
+			<platform-column name="h2" type="INTEGER" size="10"/>
+		</column>
+		<column name="NAME" type="VARCHAR" size="100">
+			<platform-column name="h2" type="VARCHAR" size="100"/>
+		</column>
+	</table>
+<table_data name="ITEM">
+	<row>
+		<field name="ITEM_ID">1805</field>
+		<field name="NAME">lVlmyxlADKEMZFIfWiipfiBqoeMHsSjsbgsoqBuEAWKhmJfaNA</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">2649</field>
+		<field name="NAME">qjyWrDHXnsfdSDBqUzHMJPkRFQmwmWPWxBPPwaQmgpoQrqLcQC</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">3334</field>
+		<field name="NAME">sCTJrMPFLauMvNrmYVyuLwcrinAVDVNmuHLULCWGYYmHRSmbsc</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">3613</field>
+		<field name="NAME">xCNfevpgVBfegbrXHQOsChxCYPcwbjkpHXZpLFkLxMACaFWJnF</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">3622</field>
+		<field name="NAME">UPTWPHujLPjFvusxAqzKSZCSFXXyhqfkbmholwDvuNdhLfIBGY</field>
+	</row>
+<table_data>
+----
+
+endif::pro[]
+
+ifndef::pro[]
+
+The DbImport utility can be run directly from the command line.
+To run DbImport enter the command *dbimport [filename...]* followed by any parameters from the command line in the bin directory of the Symmetric installation.  
+The *--help* parameter will display all the possible parameters for the import utility.
+They are as follows:
+
+- *--alter* : If the table already exists, attempt to alter it to match the import definition.  This only applies for --format=XML.
+- *--alter-case* : During the creation of tables alter the case to match the default case of the database.  This only applies for --format=XML.
+- *--catalog <arg>* : Look for tables in catalog.
+- *--commit <arg>* : The number of rows to import before committing data.  The default is 10000.
+- *--debug* : Print debug information in logging.
+- *--drop-if-exists* : If the table already exists, attempt to drop it before creating it.  This only applies for --format=XML.
+- *-e, --engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.
+- *--filter-classes <arg>* : A comma separated list of Java classes that implement org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter.  These filters will be applied to the import.
+- *--force* : Ignore ANY errors and attempt to continue on processing the import data.
+- *--format <arg>* : Input format: SQL, CSV, XML, or SYM_XML.
+- *-h, --help* : Print help with each option and description.
+- *--ignore* : Indicates that conflicts with existing rows should be ignored.
+- *--interval <arg>* : The number of milliseconds to wait between committing transaction.
+- *--no-log-console* : No output will be sent to the console.
+- *--no-log-file* : No output will be sent to the log file.
+- *-p, --properties <arg>* : The properties file with settings for the SymmetricDS engine.  If not provided. defaults are used, then overridden with first symmetric.properties in classpath, then overridden with symmetric.properties values in user.home directory.
+- *--replace* : Indicates that existing rows should be replaced.  They will be replaced by an update statement.  This only applies for --format=CSV, SYM_XML.
+- *--schema <arg>* : Look for tables in schema.
+- *--table <arg>* : Specify table to import.
+- *--use-variable-dates* : Allow date subscription using format ${curdate+-millis}.
+- *-v, --verbose* : Use verbose format for console output.
+
+The following is an example of the *SQL* format used for DbImport.
+
+[source,sql]
+----
+CREATE TABLE ITEM(
+    ITEM_ID INTEGER NOT NULL,
+    NAME VARCHAR(100) NULL,
+    PRIMARY KEY (ITEM_ID)
+);
+insert into ITEM (ITEM_ID, NAME) values (1805,'lVlmyxlADKEMZFIfWiipfiBqoeMHsSjsbgsoqBuEAWKhmJfaNA');
+insert into ITEM (ITEM_ID, NAME) values (2649,'qjyWrDHXnsfdSDBqUzHMJPkRFQmwmWPWxBPPwaQmgpoQrqLcQC');
+insert into ITEM (ITEM_ID, NAME) values (3334,'sCTJrMPFLauMvNrmYVyuLwcrinAVDVNmuHLULCWGYYmHRSmbsc');
+insert into ITEM (ITEM_ID, NAME) values (3613,'xCNfevpgVBfegbrXHQOsChxCYPcwbjkpHXZpLFkLxMACaFWJnF');
+insert into ITEM (ITEM_ID, NAME) values (3622,'UPTWPHujLPjFvusxAqzKSZCSFXXyhqfkbmholwDvuNdhLfIBGY');
+----
+
+The following is an example of the *CSV* format used for DbImport.
+
+[source, csv]
+----
+"ITEM_ID","NAME"
+"12","zSYwAyLGsbvsLhYFLBqmeprkfISVTlRnfHwsHFZcmZUpKQMXkT"
+"174","WHQwyMhrWVZzmXyzzHiXRSyzfuOSImgqflupGrtLwmaGrOvFek"
+"213","UlGKwTSLeygaxzkdTQxnvrSQMulBKbljpAkSVmbQCUONULUAlF"
+"239","OOvqpLHIVcbOlJCXemNjCajcEJaBrPlneDkCZXqGYMXIuGRORq"
+"471","RFHEaWcFtPDOkqEtbomEomuEWDQoAuyvJVnjPEsPpaqLxEuWpj"
+----
+
+The following is an example of the *XML* format used for DbImport.
+
+[source,xml]
+----
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="dbimport">
+	<table name="ITEM">
+		<column name="ITEM_ID" primaryKey="true" required="true" type="INTEGER" size="10">
+			<platform-column name="h2" type="INTEGER" size="10"/>
+		</column>
+		<column name="NAME" type="VARCHAR" size="100">
+			<platform-column name="h2" type="VARCHAR" size="100"/>
+		</column>
+	</table>
+<table_data name="ITEM">
+	<row>
+		<field name="ITEM_ID">1805</field>
+		<field name="NAME">lVlmyxlADKEMZFIfWiipfiBqoeMHsSjsbgsoqBuEAWKhmJfaNA</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">2649</field>
+		<field name="NAME">qjyWrDHXnsfdSDBqUzHMJPkRFQmwmWPWxBPPwaQmgpoQrqLcQC</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">3334</field>
+		<field name="NAME">sCTJrMPFLauMvNrmYVyuLwcrinAVDVNmuHLULCWGYYmHRSmbsc</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">3613</field>
+		<field name="NAME">xCNfevpgVBfegbrXHQOsChxCYPcwbjkpHXZpLFkLxMACaFWJnF</field>
+	</row>
+	<row>
+		<field name="ITEM_ID">3622</field>
+		<field name="NAME">UPTWPHujLPjFvusxAqzKSZCSFXXyhqfkbmholwDvuNdhLfIBGY</field>
+	</row>
+<table_data>
+----
+
+endif::pro[]

@@ -135,7 +135,7 @@ For major releases and clean upgrades, copy old settings into a new installation
 . Copy old files from "security" folder.  (These files contain keys for encryption.)
 . Restart SymmetricDS.
   
-=== Incremental Upgrade 
+=== Incremental Upgrade
 
 ifdef::pro[]
 The incremental upgrade method is for the open source version; SymmetricDS Pro users should use the <<Pro Upgrade>> method.
@@ -150,4 +150,11 @@ For patch and minor releases, copy and replace the library folders of the instal
 . Restart SymmetricDS.
 
 Most patch releases only change the JAR files named with "symmetric" in the "web/WEB-INF/lib" folder.
- 
+
+[appendix]
+== Utilities
+
+include::appendix/dbcompare.ad[]
+include::appendix/dbimport.ad[]
+include::appendix/dbexport.ad[]
+include::appendix/dbfill.ad[]

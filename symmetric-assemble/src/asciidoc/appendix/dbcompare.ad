@@ -1,0 +1,58 @@
+=== DBCompare
+
+The DbCompare utility provides the ability to compare two SQL-based data sources and output a report of the differences, and optionally generate SQL to bring the target into sync with the source.
+
+ifdef::pro[]
+The dbcompare wizard is accessible from the explore tab of the pro console.  
+The pop-up window asks for source and target engines for the comparison as well as the the tables to be compared.  
+
+image::appendix/dbcompare/dbcompare-tab.png[width=600]
+
+The next window allows specific tables to be selected for comparison.
+
+image::appendix/dbcompare/dbcompare-table-select.png[width=600]
+
+The results of the compare can be presented in four ways:
+
+. Show Report
+. Write Differences to SQL Editor
+. Write Differences to File
+. Apply Differences to Target Tables
+
+The *Show Report* option will open a new tab in the SQL editor showing the results of the compare.
+
+image::appendix/dbcompare/dbcomapre-results-table.png[]
+
+The *Write Differences to SQL Editor* option will write all the required SQL to get the tables in sync and copy it to the current instance of the SQL editor.
+
+image::appendix/dbcompare/dbcompare-write-sql.png[]
+
+The *Write Differences to File* option will write the required SQL to get the tables in sync to the file system.
+
+The *Write Differences to Target Tables* option will automatically execute the SQL necessary to bring the tables into sync.
+
+endif::pro[]
+
+ifndef::pro[]
+
+The dbcompare utility can be run directly from the command line.
+To run dbcompare enter the command *dbcompare [tablename...]* followed by any parameters from the command line in the bin directory of the Symmetric instance.  
+The *--help* parameter will display all the possible configurable parameters for the compare utility.
+They are as follows:
+
+- *--config <arg>* : A reference to a properties file path containing additional configuration for dbcompare.  This properties file supports table where clauses in the format [table].[source|target].whereclause.  A property called "where_clause" will specify a where clause used on all tables.  For example, with a table called item, use item.where_clause=field > now()-2.
+- *--exclude <arg>* : A comma-separated list of table names to exclude from comparison.
+- *-h, --help* : Print help with each option and description.
+- *--numeric-scale <arg>* : When comparing decimals, how many decimal places to consider while doing the comparison.  Remaining digits will be rounded.  Default value is 3.
+- *--output-sql <arg>* : An output file for SQL statements that if executed on the target, should bring it into sync with the source.
+- *-s, --source* : The source database engine properties file for comparison.
+- *-t, --target <arg>* : The target database engine properties file for comparison.
+- *--use-sym-config <arg>* : true|false.  If true, sym_trigger, sym_transform, etc. will be consulted to build up the data model to compare.  Default is true.
+
+An example DbCompare results table is shown below:
+
+image::appendix/dbcompare/dbcompare-results.png[width=1000]
+
+The results table gives info from the compare as table columns.  The data includes the number of rows *Matched*, *Different*, *Missing*, and *Extra* between the two source and target tables.
+
+endif::pro[]

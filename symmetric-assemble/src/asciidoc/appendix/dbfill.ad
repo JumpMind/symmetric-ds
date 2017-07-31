@@ -1,0 +1,52 @@
+=== DBFill
+
+The DbFill utility provides the ability to generate random data to populate any tables in Symmetric.
+
+ifdef::pro[]
+
+DBFill allows for any of a nodes tables to be filled with random tables.  The popup window is accessible from the explore tab of the pro console.
+
+image::appendix/dbfill/dbfill-tab.png[width=600]
+
+The window asks for the Catalog, Schema, and selection of tables to fill.
+
+image::appendix/dbfill/dbfill-settings.png[width=600]
+
+The next window allows for a count of rows as well as the interval between execution.  Insert, update, and, delete statements can also be specified along with options to ignore errors, and fill dependent tables.
+
+endif::pro[]
+
+ifndef::pro[]
+
+The DbFill utility can be run directly from the command line.
+To run dbfill enter the command *dbfill [tablename...]* followed by any parameters from the command line in the bin directory of the Symmetric installation.  
+The *--help* parameter will display all the possible parameters for the file utility.
+They are as follows:
+
+- *--cascade* : Include foreign key dependent tables not included in the table list.
+- *--catalog <arg>* : Look for tables in catalog.
+- *--commit <arg>* : number of rows to commit as transaction.
+- *--commit-delay <arg>* : The time to wait in milliseconds after changing data before committing.  The default is 0.
+- *--continue* : Ignore ANY errors and continue to modify the database.
+- *--count <arg>* : The number of rows to generate in each table.
+- *--debug* : Print debug information in logging.
+- *-e, engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.
+- *-h, --help* : Print help with each option and description.
+- *--ignore <arg>* : One or more prefixes to identify tables to ignore.  This argument only works when no table names are provided. (e.g., "sym_,sys_")
+- *--interval <arg>* : The time to wait in milliseconds between each transaction in the database.
+- *--no-log-console* : No output will be sent to the console.
+- *--no-log-file* : No output will be sent to the log file.
+- *-p, --properties <arg>* : The properties file with settings for the SymmetricDS engine.  If not provided. defaults are used, then overridden with first symmetric.properties in classpath, then overridden with symmetric.properties values in user.home directory.
+- *--prefixed <arg>* : Prefix of table names to include.
+- *--print* : Print out the SQL of the DbFill instead of filling the tables(s).
+- *--rand* : Randomize number of rows to generate and commit.
+- *--repeat <arg>* : Number of times to repeat the count of rows.
+- *--rollback <arg>* : Percent chance (0-100) to perform a rollback.
+- *--schema <arg>* : Look for tables in schema.
+- *--select* : Select foreign key dependent data to satisfy constrains.
+- *-v, --verbose* : Use verbose format for console output.
+- *--weights <arg>*  : By default, an insert is performed for each count ('1, 0, 0').  To randomly select between an insert, update or delete on each table, weight can be applied so inserts an occur more than deletes.  To make sure inserts happen twice as much as updates, and deletes are never performed use '2,1,0'.
+
+If the *print* parameter is given, by default, the insert statements for the fill will be sent to the command line.
+
+endif::pro[]
