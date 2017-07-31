@@ -215,7 +215,7 @@ public class JobManager extends AbstractService implements IJobManager {
                 job.getJobExpression(), job.isDefaultAutomaticStartup(), job.getDefaultSchedule(), 
                 job.getNodeGroupId(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
 
-        if (sqlTemplate.update(getSql("updateJobSql"), args) == 0) {
+        if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         } 
         init();

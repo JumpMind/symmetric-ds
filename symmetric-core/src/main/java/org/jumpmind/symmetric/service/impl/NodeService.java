@@ -198,7 +198,7 @@ public class NodeService extends AbstractService implements INodeService {
                 nodeHost.getSymmetricVersion(), nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
                 nodeHost.getNodeId(), nodeHost.getHostName() };
 
-        if (sqlTemplate.update(getSql("updateNodeHostSql"), params) == 0) {
+        if (sqlTemplate.update(getSql("updateNodeHostSql"), params) <= 0) {
             sqlTemplate.update(getSql("insertNodeHostSql"), params);
         }
 
