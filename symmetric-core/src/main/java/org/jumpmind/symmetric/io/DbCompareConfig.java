@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.io;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,13 +29,16 @@ import org.apache.commons.collections.map.CaseInsensitiveMap;
 public class DbCompareConfig {
     
     public final static String WHERE_CLAUSE = "where_clause";
+    public final static String EXCLUDED_COLUMN = "exclude_columns";
     
     private String sqlDiffFileName;
     private List<String> includedTableNames;
+    private List<String> targetTableNames;
     private List<String> excludedTableNames;
     private boolean useSymmetricConfig = true;
     private int numericScale = 3;
-    private Map<String, String> whereClauses = new HashMap<String, String>();
+    private Map<String, String> whereClauses = new LinkedHashMap<String, String>();
+    private Map<String, List<String>> tablesToExcludedColumns = new LinkedHashMap<String, List<String>>();
     
     public String getSourceWhereClause(String tableName) {
         return getWhereClause(tableName, "source");        
@@ -60,6 +63,24 @@ public class DbCompareConfig {
         }
         
         return "1=1";
+    }
+    
+    protected boolean shouldIncludeColumn(String tableName, String columnName) {
+        String tableNameLower = tableName.toLowerCase();
+        String columnNameLower = columnName.toLowerCase();
+        String[] keys = {
+                tableNameLower + "." + EXCLUDED_COLUMN,
+                EXCLUDED_COLUMN
+        };
+        
+        for (String key : keys) {
+            if (tablesToExcludedColumns.containsKey(key)) {
+                List<String> exludedColumnNames = tablesToExcludedColumns.get(key);
+                return !exludedColumnNames.contains(columnNameLower);
+            }            
+        }
+        
+        return true;
     }
     
     public String getSqlDiffFileName() {
@@ -98,5 +119,21 @@ public class DbCompareConfig {
     @SuppressWarnings("unchecked")
     public void setWhereClauses(Map<String, String> whereClauses) {
         this.whereClauses = new CaseInsensitiveMap(whereClauses);
+    }
+
+    public List<String> getTargetTableNames() {
+        return targetTableNames;
+    }
+
+    public void setTargetTableNames(List<String> targetTableNames) {
+        this.targetTableNames = targetTableNames;
+    }
+
+    public Map<String, List<String>> getTablesToExcludedColumns() {
+        return tablesToExcludedColumns;
+    }
+
+    public void setTablesToExcludedColumns(Map<String, List<String>> tablesToExcludedColumns) {
+        this.tablesToExcludedColumns = tablesToExcludedColumns;
     }
 }

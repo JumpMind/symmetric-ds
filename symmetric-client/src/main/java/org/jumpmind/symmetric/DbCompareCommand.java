@@ -22,9 +22,10 @@ package org.jumpmind.symmetric;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.ListIterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -39,6 +40,8 @@ import org.jumpmind.symmetric.io.DbCompareConfig;
 import org.jumpmind.symmetric.io.DbCompareReport;
 
 public class DbCompareCommand extends AbstractCommandLauncher {
+
+    private Properties configProperties;
 
     public DbCompareCommand() {
         super("dbcompare", "[tablename...]", "DbCompare.Option.");
@@ -94,8 +97,12 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_EXCLUDE)) {
             config.setExcludedTableNames(Arrays.asList(line.getOptionValue(OPTION_EXCLUDE).split(",")));
         }
+        if (line.hasOption(OPTION_TARGET_TABLES)) {
+            config.setTargetTableNames(Arrays.asList(line.getOptionValue(OPTION_TARGET_TABLES).split(",")));
+        }
 
         config.setWhereClauses(parseWhereClauses(line));
+        config.setTablesToExcludedColumns(parseExcludedColumns(line));
 
         if (!CollectionUtils.isEmpty(line.getArgList())) {
             config.setIncludedTableNames(Arrays.asList(line.getArgList().get(0).toString().split(",")));
@@ -132,12 +139,14 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_EXCLUDE = "exclude";
 
+    private static final String OPTION_TARGET_TABLES = "target-tables";
+
     private static final String OPTION_USE_SYM_CONFIG = "use-sym-config";
 
     private static final String OPTION_OUTPUT_SQL = "output-sql";
 
     private static final String OPTION_NUMERIC_SCALE = "numeric-scale";
-    
+
     private static final String OPTION_CONFIG_PROPERTIES = "config";
 
     @Override
@@ -153,6 +162,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         addOption(options, "s", OPTION_SOURCE, true);
         addOption(options, "t", OPTION_TARGET, true);
         addOption(options, null, OPTION_EXCLUDE, true);
+        addOption(options, null, OPTION_TARGET_TABLES, true);
         addOption(options, null, OPTION_USE_SYM_CONFIG, true);
         addOption(options, null, OPTION_OUTPUT_SQL, true);
         addOption(options, null, OPTION_NUMERIC_SCALE, true);
@@ -160,17 +170,9 @@ public class DbCompareCommand extends AbstractCommandLauncher {
     }
 
     protected Map<String, String> parseWhereClauses(CommandLine line) {
-        String configPropertiesFile = line.getOptionValue(OPTION_CONFIG_PROPERTIES);
+        Properties props = getConfigProperties(line);
         Map<String, String> whereClauses = new HashMap<String, String>();
-        if (!StringUtils.isEmpty(configPropertiesFile)) {
-            Properties props = new Properties();
-            try {
-                props.load(new FileInputStream(configPropertiesFile));
-            } catch (Exception ex) {
-                String qualifiedFileName = new File(configPropertiesFile).getAbsolutePath();
-                throw new SymmetricException("Could not load config properties file '" + configPropertiesFile + 
-                        "' at '" + qualifiedFileName + "' ", ex);
-            } 
+        if (props != null) {
             for (Object key : props.keySet()) {
                 String arg = key.toString();
                 if (arg.endsWith(DbCompareConfig.WHERE_CLAUSE)) {
@@ -178,8 +180,51 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                 }
             }
         }
-        
+
         return whereClauses;
+    }
+
+    protected Map<String, List<String>> parseExcludedColumns(CommandLine line) {
+        Properties props = getConfigProperties(line);
+        Map<String, List<String>> tablesToExcludedColumns = new HashMap<String, List<String>>();
+        if (props != null) {
+            for (Object key : props.keySet()) {
+                String arg = key.toString();
+                if (arg.endsWith(DbCompareConfig.EXCLUDED_COLUMN)) {
+                    List<String> excludedColumns =  tablesToExcludedColumns.get(key);
+                    if (excludedColumns == null) {
+                        excludedColumns = new ArrayList<String>();
+                        tablesToExcludedColumns.put(key.toString(), excludedColumns);
+                    }
+                    excludedColumns.addAll(Arrays.asList(props.getProperty(arg).split(",")));
+                }
+            }
+        }
+
+        return tablesToExcludedColumns;
+
+    }
+
+    protected Properties getConfigProperties(CommandLine line) {
+        if (configProperties != null) {
+            return configProperties;
+        } else {            
+            String configPropertiesFile = line.getOptionValue(OPTION_CONFIG_PROPERTIES);
+            if (!StringUtils.isEmpty(configPropertiesFile)) {
+                Properties props = new Properties();
+                try {
+                    props.load(new FileInputStream(configPropertiesFile));
+                    configProperties = props;
+                    return configProperties;
+                } catch (Exception ex) {
+                    String qualifiedFileName = new File(configPropertiesFile).getAbsolutePath();
+                    throw new SymmetricException("Could not load config properties file '" + configPropertiesFile + 
+                            "' at '" + qualifiedFileName + "' ", ex);
+                }    
+            }
+        }
+
+        return null;
     }
 
     static String stripLeadingHyphens(String str) {
