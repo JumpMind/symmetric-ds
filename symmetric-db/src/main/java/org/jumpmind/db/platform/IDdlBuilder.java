@@ -73,4 +73,5 @@ public interface IDdlBuilder {
     
     public String getColumnTypeDdl(Table table, Column column);
 
+    public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn);
 }
