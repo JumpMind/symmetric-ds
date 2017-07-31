@@ -179,7 +179,7 @@ subprojects { subproject ->
         animalSnifferVersion = '1.10'
         jnaVersion = '4.1.0'
         jettyVersion = '9.2.18.v20160721'
-        
+        nuodbVersion = '2.6.1'
         env = System.getenv()
     }
 
@@ -207,9 +207,11 @@ subprojects { subproject ->
             exclude group: 'junit'
         }
         provided ("net.sf.jt400:jt400:$jt400Version")
+        provided "com.nuodb.jdbc:nuodb-jdbc:$nuodbVersion"
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
         
+                
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"
         testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
