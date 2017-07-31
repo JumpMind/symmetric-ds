@@ -59,7 +59,7 @@ public class ParameterService extends AbstractParameterService implements IParam
         this.tablePrefix = tablePrefix;
         this.factory = factory;
         this.sql = new ParameterServiceSqlMap(platform, AbstractService.createSqlReplacementTokens(
-                tablePrefix, platform.getDatabaseInfo().getDelimiterToken()));
+                tablePrefix, platform.getDatabaseInfo().getDelimiterToken(),platform));
         this.sqlTemplate = platform.getSqlTemplate();
     }
 

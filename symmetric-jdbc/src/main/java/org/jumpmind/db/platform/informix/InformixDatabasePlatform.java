@@ -47,7 +47,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     public InformixDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
 
-        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
 

@@ -27,7 +27,7 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public class RemoveTableChange extends TableChangeImplBase
+public class RemoveTableChange extends TableChangeImplBase implements IModelChange
 {
     /**
      * Creates a new change object.

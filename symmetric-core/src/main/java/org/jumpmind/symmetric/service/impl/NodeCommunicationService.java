@@ -333,7 +333,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     protected void save(NodeCommunication nodeCommunication, boolean force) {
         if (clusterService.isClusteringEnabled() || force) {
-            if (0 == sqlTemplate.update(getSql("updateNodeCommunicationSql"),
+            if (0 >= sqlTemplate.update(getSql("updateNodeCommunicationSql"),
                     nodeCommunication.getLockTime(), nodeCommunication.getLockingServerId(),
                     nodeCommunication.getLastLockMillis(), nodeCommunication.getSuccessCount(),
                     nodeCommunication.getFailCount(), nodeCommunication.getTotalSuccessCount(),

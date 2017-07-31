@@ -45,7 +45,7 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
 
     public SqliteDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         sqlScriptReplacementTokens.put("current_timestamp",
                 "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
         sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}", "$1");

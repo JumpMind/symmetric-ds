@@ -56,7 +56,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public AseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
 
-        sqlScriptReplacementTokens = new HashMap<String, String>();
+        sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
         
         this.useMultiThreadSyncTriggers = false;

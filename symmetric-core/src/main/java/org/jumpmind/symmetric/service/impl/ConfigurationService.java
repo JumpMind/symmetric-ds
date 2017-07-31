@@ -83,7 +83,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     protected void createDefaultChannels() {
-        Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
+         Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
         updatedDefaultChannels.put(Constants.CHANNEL_CONFIG, 
                 new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
@@ -187,7 +187,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         if (sqlTemplate.update(getSql("updateNodeGroupLinkSql"), link.getDataEventAction().name(),
                 link.isSyncConfigEnabled() ? 1 : 0, link.isReversible() ? 1 : 0,
                         link.getLastUpdateTime(),
-                link.getLastUpdateBy(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) == 0) {
+                link.getLastUpdateBy(), link.getSourceNodeGroupId(), link.getTargetNodeGroupId()) <= 0) {
             link.setCreateTime(new Date());
             sqlTemplate.update(getSql("insertNodeGroupLinkSql"), link.getDataEventAction().name(),
                     link.getSourceNodeGroupId(), link.getTargetNodeGroupId(),
@@ -209,7 +209,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     public void saveNodeGroup(NodeGroup group) {
         group.setLastUpdateTime(new Date());
         if (sqlTemplate.update(getSql("updateNodeGroupSql"), group.getDescription(),
-                group.getLastUpdateTime(), group.getLastUpdateBy(), group.getNodeGroupId()) == 0) {
+                group.getLastUpdateTime(), group.getLastUpdateBy(), group.getNodeGroupId()) <= 0) {
             group.setCreateTime(new Date());
             sqlTemplate.update(getSql("insertNodeGroupSql"), group.getDescription(),
                     group.getNodeGroupId(), group.getLastUpdateTime(), group.getLastUpdateBy(),
@@ -287,7 +287,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
 
     public void saveChannel(Channel channel, boolean reloadChannels) {
         channel.setLastUpdateTime(new Date());
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateChannelSql"),
                 new Object[] { channel.getProcessingOrder(), channel.getMaxBatchSize(),
                         channel.getMaxBatchToSend(), channel.getMaxDataToRoute(),
@@ -330,7 +330,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
     }
 
     public void saveNodeChannelControl(NodeChannel nodeChannel, boolean reloadChannels) {
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateNodeChannelControlSql"),
                 new Object[] { nodeChannel.isSuspendEnabled() ? 1 : 0,
                         nodeChannel.isIgnoreEnabled() ? 1 : 0, nodeChannel.getLastExtractTime(),

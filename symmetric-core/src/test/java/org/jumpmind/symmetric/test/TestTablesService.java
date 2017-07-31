@@ -37,7 +37,7 @@ import org.junit.Ignore;
 
 @Ignore
 public class TestTablesService extends AbstractService {
-
+    
     public TestTablesService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         setSqlMap(new TestTablesServiceSqlMap(platform, createSqlReplacementTokens()));
@@ -45,6 +45,7 @@ public class TestTablesService extends AbstractService {
 
     // TODO support insert of blob test for postgres and informix
     public boolean insertIntoTestUseStreamLob(int id, String tableName, String lobValue) {
+        
         if (symmetricDialect.isBlobSyncSupported()) {
                 ISqlTransaction transaction = null;
                 try {

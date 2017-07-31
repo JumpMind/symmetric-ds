@@ -97,6 +97,8 @@ final public class DdlBuilderFactory {
             return new RedshiftDdlBuilder();
         } else if (DatabaseNamesConstants.VOLTDB.equalsIgnoreCase(databaseName)) {
             return new VoltDbDdlBuilder();
+        } else if (DatabaseNamesConstants.NUODB.equalsIgnoreCase(databaseName)) {
+            return new VoltDbDdlBuilder();
         } else {
             return null;
         }

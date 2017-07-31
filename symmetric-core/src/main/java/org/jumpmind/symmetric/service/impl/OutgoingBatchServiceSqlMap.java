@@ -116,13 +116,13 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) from $(outgoing_batch) where error_flag=1 and channel_id=?");
         
         putSql("countOutgoingBatchesByChannelSql", 
-                "select count(*) as batch_count, channel_id from sym_outgoing_batch where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT') group by channel_id order by batch_count desc, channel_id");
+                "select count(*) as batch_count, channel_id from $(outgoing_batch) where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT') group by channel_id order by batch_count desc, channel_id");
 
         putSql("countOutgoingRowsByTargetNodeSql", 
-                "select sum(data_row_count) as row_count from sym_outgoing_batch where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT')");
+                "select sum(data_row_count) as row_count from $(outgoing_batch) where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT')");
 
         putSql("countOutgoingBatchesByTargetNodeSql", 
-                "select count(*) as row_count from sym_outgoing_batch where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT')");
+                "select count(*) as row_count from $(outgoing_batch) where node_id = ? and channel_id <> 'heartbeat' and status in ('ER','RQ','NE','QY','RT')");
 
         putSql("countOutgoingBatchesErrorsSql",
                 "select count(*) from $(outgoing_batch) where error_flag=1");
@@ -196,17 +196,17 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("getLoadOverviewSql",
                 "select status, count(batch_id) as count "
-                + " from sym_outgoing_batch "
+                + " from $(outgoing_batch) "
                 + " where load_id = ?"
                 + " group by status");
         
         putSql("getLoadHistorySql",
                 "select r.load_id, max(trigger_id) as trigger_id, count(trigger_id) as table_count, max(target_node_id) as target_node_id, "
                 + "create_time, o.last_update_time, min_table, max_table "
-                + "from sym_table_reload_request r "
+                + "from $(table_reload_request) r "
                 + "join ( "
                 + "   select load_id, max(last_update_time) as last_update_time, min(summary) as min_table, max(summary) as max_table "
-                + "    from sym_outgoing_batch "
+                + "    from $(outgoing_batch) "
                 + "    group by load_id "
                 + ") o on o.load_id = r.load_id "
                 + "where source_node_id = ? "
