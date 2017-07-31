@@ -213,7 +213,7 @@ public class LoadFilterService extends AbstractService implements ILoadFilterSer
                 loadFilter.isFilterOnUpdate() ? 1 : 0, loadFilter.isFilterOnDelete() ? 1 : 0,
                 loadFilter.isFailOnError() ? 1 : 0, loadFilter.getLastUpdateBy(),
                 loadFilter.getLastUpdateTime(), loadFilter.getLoadFilterId() };
-        if (sqlTemplate.update(getSql("updateLoadFilterSql"), args) == 0) {
+        if (sqlTemplate.update(getSql("updateLoadFilterSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertLoadFilterSql"), args);
         }
         clearCache();

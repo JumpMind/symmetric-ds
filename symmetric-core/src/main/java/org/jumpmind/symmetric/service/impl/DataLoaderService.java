@@ -773,7 +773,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         setting.getLastUpdateBy(), setting.getConflictId() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER,
-                        Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 0) {
+                        Types.INTEGER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) <= 0) {
             sqlTemplate.update(
                     getSql("insertConflictSettingsSql"),
                     new Object[] { setting.getNodeGroupLink().getSourceNodeGroupId(),

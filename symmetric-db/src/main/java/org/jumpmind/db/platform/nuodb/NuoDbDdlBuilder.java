@@ -69,7 +69,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.CHAR, "CHAR");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR");
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT");
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "SMALLINT",Types.SMALLINT);
         databaseInfo.addNativeTypeMapping(Types.SMALLINT, "SMALLINT");
         databaseInfo.addNativeTypeMapping(Types.INTEGER, "INTEGER");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT");
@@ -106,15 +106,26 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected String getFullyQualifiedTableNameShorten(Table table) {
         String result="";
-//        if (StringUtils.isNotBlank(table.getSchema())) {
-//            result+=getDelimitedIdentifier(table.getSchema()).concat(databaseInfo.getSchemaSeparator());
-//        }else{
-//            result+=getDelimitedIdentifier(platform.getDefaultSchema()).concat(databaseInfo.getSchemaSeparator());
-//        }
         result+=getDelimitedIdentifier(getTableName(table.getName()));
         return result;
     }
-
+    
+    @Override
+    public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn){
+        if(sourceColumn.getMappedType().equals("DECIMAL") && targetColumn.getMappedType().equals("DECIMAL")){
+            int targetSize = targetColumn.getSizeAsInt();
+            int sourceSize = sourceColumn.getSizeAsInt();
+            if (targetSize > 8 && sourceSize == 8 && 
+                    targetColumn.getScale() == sourceColumn.getScale()) {
+                return true;
+            }else{
+                return false;
+            }     
+        }else{
+            return super.areColumnSizesTheSame(sourceColumn, targetColumn);
+        }
+    }
+    
     @Override
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {        
         ddl.append("DROP TABLE IF EXISTS ");
@@ -193,11 +204,6 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-//            if (StringUtils.isNotBlank(table.getSchema())) {
-//                ddl.append(table.getSchema()).append(".");
-//            }else{
-//                ddl.append(platform.getDefaultSchema()).append("."); 
-//            }
             printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);

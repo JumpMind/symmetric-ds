@@ -277,7 +277,7 @@ INodeCommunicationExecutor {
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
         fileTrigger.setLastUpdateTime(new Date());
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateFileTriggerSql"),
                 new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecurse() ? 1 : 0,
                         fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
@@ -319,7 +319,7 @@ INodeCommunicationExecutor {
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
         fileTriggerRouter.setLastUpdateTime(new Date());
-        if (0 == sqlTemplate.update(
+        if (0 >= sqlTemplate.update(
                 getSql("updateFileTriggerRouterSql"),
                 new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                         fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,

@@ -75,7 +75,7 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         values.put("TYPE_NAME", "TYPE_NAME");
         values.put("DATA_TYPE", "DATA_TYPE");
         values.put("NUM_PREC_RADIX", "NUM_PREC_RADIX");
-        values.put("DECIMAL_DIGITS", "DECIMAL_DIGITS");
+        values.put("DECIMAL_DIGITS", "SCALE");
         values.put("COLUMN_SIZE", "LENGTH");
         values.put("IS_NULLABLE", "IS_NULLABLE");
         values.put("IS_AUTOINCREMENT", "IS_AUTOINCREMENT");
@@ -244,10 +244,7 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
     	}
     	
         Integer type = (Integer) values.get("DATA_TYPE");
-        if (type != null && type.intValue() == Types.SMALLINT) {
-        	// XML booleanint becomes tinyint on Column but becomes smallint in database
-            return Types.TINYINT;
-        } else if (type != null && type.intValue() == Types.CLOB) {
+        if (type != null && type.intValue() == Types.CLOB) {
         	// XML longvarchar becoms longvarchar on Column but becomes clob in database
         	return Types.LONGVARCHAR;
         } else {
