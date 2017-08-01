@@ -153,6 +153,9 @@ public class SimpleStagingDataWriter {
                     String location = batch.getStagedLocation();
                     resource = stagingManager.find(category, location, batch.getBatchId());
                     if (resource == null || resource.getState() == State.CREATE) {
+                        if (resource != null) {
+                            resource.delete();
+                        }
                         resource = null;
                         writer = null;
                     }
@@ -214,7 +217,6 @@ public class SimpleStagingDataWriter {
 
         } catch (Exception ex) {
             if (resource != null) {
-                resource.close();
                 resource.delete();
             }
 
