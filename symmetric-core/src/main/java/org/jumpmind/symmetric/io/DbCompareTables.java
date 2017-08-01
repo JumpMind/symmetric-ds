@@ -28,6 +28,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
@@ -122,5 +123,21 @@ public class DbCompareTables {
 
     public void setTargetTable(Table targetTable) {
         this.targetTable = targetTable;
+    }
+
+    public void filterExcludedColumns(DbCompareConfig config) {
+        filterExcludedColumns(config, sourceTable);
+        filterExcludedColumns(config, targetTable);
+    }
+
+    private void filterExcludedColumns(DbCompareConfig config, Table table) {
+        for (Column column : table.getColumnsAsList()) {
+            if (! config.shouldIncludeColumn(table.getName(), column.getName())) {
+                if (table.getPrimaryKeyColumnsAsList().contains(column)) {
+                    throw new SymmetricException("Invalid config - cannot exclude a primary key column: " + column + " (Table " + table + ")");
+                }
+                table.removeColumn(column);
+            }
+        }
     }
 }

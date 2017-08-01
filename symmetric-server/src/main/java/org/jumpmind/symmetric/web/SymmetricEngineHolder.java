@@ -408,8 +408,14 @@ public class SymmetricEngineHolder {
                 try {
                     fileInputStream = new FileInputStream(file.getAbsolutePath());
                     properties.load(fileInputStream);                    
-                    String dbUrl = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL, "");                    
-                    checkDuplicate(dbUrl, BasicDataSourcePropertyConstants.DB_POOL_URL, dbToPropertyFiles, file);
+                    final String userUrl = String.format("%s@%s", 
+                            properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_USER, ""), 
+                            properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL, ""));                    
+                    final String KEY = String.format("%s@%s", 
+                            BasicDataSourcePropertyConstants.DB_POOL_USER, 
+                            BasicDataSourcePropertyConstants.DB_POOL_URL);
+                            
+                    checkDuplicate(userUrl, KEY, dbToPropertyFiles, file);
                 } catch (Exception ex) {
                     if (ex instanceof SymmetricException) {
                         log.error("**** FATAL **** error " + ex.toString()); // Jetty logs the stack at WARN level.

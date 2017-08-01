@@ -385,7 +385,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         currentModel = currentModel.copy();
         mergeOrRemovePlatformTypes(currentModel, desiredModel);
 
-        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, caseSensitive);
+        ModelComparator comparator = new ModelComparator(this, databaseInfo, caseSensitive);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {
             for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
@@ -396,7 +396,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     public boolean isAlterDatabase(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
-        ModelComparator comparator = new ModelComparator(databaseName, databaseInfo, caseSensitive);
+        ModelComparator comparator = new ModelComparator(this, databaseInfo, caseSensitive);
         List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
         if (alterDatabaseInterceptors != null) {
             for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
@@ -2102,60 +2102,33 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         ddl.append(" UNIQUE ");
     }
     
-    /**
-     * Compares the current column in the database with the desired one. Type,
-     * nullability, size, scale, default value, and precision radix are the
-     * attributes checked. Currently default values are compared, and null and
-     * empty string are considered equal.
-     *
-     * @param currentColumn
-     *            The current column as it is in the database
-     * @param desiredColumn
-     *            The desired column
-     * @return <code>true</code> if the column specifications differ
-     */
-    protected boolean columnsDiffer(Column currentColumn, Column desiredColumn) {
-        // The createColumn method leaves off the default clause if
-        // column.getDefaultValue()
-        // is null. mySQL interprets this as a default of "" or 0, and thus the
-        // columns
-        // are always different according to this method. alterDatabase will
-        // generate
-        // an alter statement for the column, but it will be the exact same
-        // definition
-        // as before. In order to avoid this situation I am ignoring the
-        // comparison
-        // if the desired default is null. In order to "un-default" a column
-        // you'll
-        // have to have a default="" or default="0" in the schema xml.
-        // If this is bad for other databases, it is recommended that the
-        // createColumn
-        // method use a "DEFAULT NULL" statement if that is what is needed.
-        // A good way to get this would be to require a defaultValue="<NULL>" in
-        // the
-        // schema xml if you really want null and not just unspecified.
+    public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn) {
+        boolean sizeMatters = databaseInfo.hasSize(targetColumn.getMappedTypeCode());
+        boolean scaleMatters = databaseInfo.hasPrecisionAndScale(targetColumn.getMappedTypeCode());
 
-        String desiredDefault = desiredColumn.getDefaultValue();
-        String currentDefault = currentColumn.getDefaultValue();
-        boolean defaultsEqual = (desiredDefault == null) || desiredDefault.equals(currentDefault);
-        boolean sizeMatters = databaseInfo.hasSize(currentColumn.getMappedTypeCode())
-                && (desiredColumn.getSize() != null);
-
-        // We're comparing the jdbc type that corresponds to the native type for
-        // the
-        // desired type, in order to avoid repeated altering of a perfectly
-        // valid column
-        if ((databaseInfo.getTargetJdbcType(desiredColumn.getMappedTypeCode()) != currentColumn
-                .getMappedTypeCode())
-                || (desiredColumn.isRequired() != currentColumn.isRequired())
-                || (sizeMatters && !StringUtils.equals(desiredColumn.getSize(),
-                        currentColumn.getSize())) || !defaultsEqual) {
-            return true;
-        } else {
+        String targetSize = targetColumn.getSize();
+        if (targetSize == null) {
+            Integer defaultSize = databaseInfo.getDefaultSize(databaseInfo
+                    .getTargetJdbcType(targetColumn.getMappedTypeCode()));
+            if (defaultSize != null) {
+                targetSize = defaultSize.toString();
+            } else {
+                targetSize = "0";
+            }
+        }
+        if (sizeMatters && !StringUtils.equals(sourceColumn.getSize(), targetSize)) {
+            return false;
+        } else if (scaleMatters && (!StringUtils.equals(sourceColumn.getSize(), targetSize) ||
+        // ojdbc6.jar returns -127 for the scale of NUMBER that was not given a
+        // size or precision
+                (!(sourceColumn.getScale() < 0 && targetColumn.getScale() == 0) && sourceColumn
+                        .getScale() != targetColumn.getScale()))) {
             return false;
         }
+        return true;
     }
-
+    
+    
     /**
      * Returns the name to be used for the given foreign key. If the foreign key
      * has no specified name, this method determines a unique name for it. The

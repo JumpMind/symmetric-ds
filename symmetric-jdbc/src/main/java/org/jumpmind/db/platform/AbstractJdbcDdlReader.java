@@ -168,11 +168,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected List<MetaDataColumnDescriptor> initColumnsForTable() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TABLE_TYPE", Types.VARCHAR, "UNKNOWN"));
+        result.add(new MetaDataColumnDescriptor(getName("TABLE_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("TABLE_TYPE"), Types.VARCHAR, "UNKNOWN"));
         result.add(new MetaDataColumnDescriptor(getResultSetCatalogName(), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getResultSetSchemaName(), Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("REMARKS", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("REMARKS"), Types.VARCHAR));
 
         return result;
     }
@@ -193,22 +193,22 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         // has problems otherwise (it seemingly requires a LONG column to be the
         // first to be read)
         // See also DDLUTILS-29
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEF", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("COLUMN_DEF"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("COLUMN_DEFAULT"), Types.VARCHAR));
 
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TYPE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("DATA_TYPE", Types.INTEGER, new Integer(
+        result.add(new MetaDataColumnDescriptor(getName("TABLE_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("COLUMN_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("TYPE_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("DATA_TYPE"), Types.INTEGER, new Integer(
                 java.sql.Types.OTHER)));
-        result.add(new MetaDataColumnDescriptor("NUM_PREC_RADIX", Types.INTEGER, new Integer(10)));
-        result.add(new MetaDataColumnDescriptor("DECIMAL_DIGITS", Types.INTEGER, new Integer(0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_SIZE", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("IS_NULLABLE", Types.VARCHAR, "YES"));
-        result.add(new MetaDataColumnDescriptor("IS_AUTOINCREMENT", Types.VARCHAR, "YES"));
-        result.add(new MetaDataColumnDescriptor("REMARKS", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("NUM_PREC_RADIX"), Types.INTEGER, new Integer(10)));
+        result.add(new MetaDataColumnDescriptor(getName("DECIMAL_DIGITS"), Types.INTEGER, new Integer(0)));
+        result.add(new MetaDataColumnDescriptor(getName("COLUMN_SIZE"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("IS_NULLABLE"), Types.VARCHAR, "YES"));
+        result.add(new MetaDataColumnDescriptor(getName("IS_AUTOINCREMENT"), Types.VARCHAR, "YES"));
+        result.add(new MetaDataColumnDescriptor(getName("REMARKS"), Types.VARCHAR));
 
         return result;
     }
@@ -224,13 +224,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected List<MetaDataColumnDescriptor> initColumnsForPK() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("COLUMN_NAME"), Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("TABLE_NAME"), Types.VARCHAR));
         // the name of the primary key is currently only interesting to the pk
         // index name resolution
-        result.add(new MetaDataColumnDescriptor("PK_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("PK_NAME"), Types.VARCHAR));
 
         return result;
     }
@@ -246,15 +246,15 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected List<MetaDataColumnDescriptor> initColumnsForFK() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("PKTABLE_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("PKTABLE_NAME"), Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("FKTABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("KEY_SEQ", Types.TINYINT, new Short((short) 0)));
-        result.add(new MetaDataColumnDescriptor("FK_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("FKTABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("PKCOLUMN_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("FKCOLUMN_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("FKTABLE_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("KEY_SEQ"), Types.TINYINT, new Short((short) 0)));
+        result.add(new MetaDataColumnDescriptor(getName("FK_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("FKTABLE_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("PKCOLUMN_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("FKCOLUMN_NAME"), Types.VARCHAR));
         return result;
     }
 
@@ -269,18 +269,23 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected List<MetaDataColumnDescriptor> initColumnsForIndex() {
         List<MetaDataColumnDescriptor> result = new ArrayList<MetaDataColumnDescriptor>();
 
-        result.add(new MetaDataColumnDescriptor("INDEX_NAME", Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("INDEX_NAME"), Types.VARCHAR));
         // we're also reading the table name so that a model reader impl can
         // filter manually
-        result.add(new MetaDataColumnDescriptor("TABLE_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("NON_UNIQUE", Types.BIT, Boolean.TRUE));
-        result.add(new MetaDataColumnDescriptor("ORDINAL_POSITION", Types.TINYINT, new Short(
+        result.add(new MetaDataColumnDescriptor(getName("TABLE_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("NON_UNIQUE"), Types.BIT, Boolean.TRUE));
+        result.add(new MetaDataColumnDescriptor(getName("ORDINAL_POSITION"), Types.TINYINT, new Short(
                 (short) 0)));
-        result.add(new MetaDataColumnDescriptor("COLUMN_NAME", Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor("TYPE", Types.TINYINT));
+        result.add(new MetaDataColumnDescriptor(getName("COLUMN_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("TYPE"), Types.TINYINT));
         return result;
     }
 
+    
+    protected String getName(String defaultName){
+        return defaultName;
+    }
+    
     /*
      * Returns the catalog(s) in the database to read per default.
      * 
@@ -570,6 +575,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                             Map<String, Object> values = readMetaData(tableData, initColumnsForTable());
                             return readTable(connection, metaData, values);
                         } else {
+                            log.debug("table {} not found", table);
                             return null;
                         }
                     } finally {
@@ -648,7 +654,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
-        String tableName = (String) values.get("TABLE_NAME");
+        String tableName = (String) values.get(getName("TABLE_NAME"));
         if (tableName == null) {
             tableName = (String) values.get("NAME");
         }
@@ -656,7 +662,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             Table table = null;
 
             if ((tableName != null) && (tableName.length() > 0)) {
-                String type = (String) values.get("TABLE_TYPE");
+                String type = (String) values.get(getName("TABLE_TYPE"));
                 String[] unsupportedTableTypes = getUnsupportedTableTypes();
                 for (String unsupportedTableType : unsupportedTableTypes) {
                     if (StringUtils.isNotBlank(type) && type.equals(unsupportedTableType)) {
@@ -668,13 +674,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 table.setName(tableName);
                 table.setType(type);
 
-                String catalog = (String) values.get(getResultSetCatalogName());
+                String catalog = (String) values.get(getName(getResultSetCatalogName()));
                 table.setCatalog(catalog);
 
-                String schema = (String) values.get(getResultSetSchemaName());
+                String schema = (String) values.get(getName(getResultSetSchemaName()));
                 table.setSchema(schema);
 
-                table.setDescription((String) values.get("REMARKS"));
+                table.setDescription((String) values.get(getName("REMARKS")));
 
                 table.addColumns(readColumns(metaData, tableName));
 
@@ -919,32 +925,32 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         PlatformColumn platformColumn = new PlatformColumn();
         platformColumn.setName(platform.getName());
         
-        column.setName((String) values.get("COLUMN_NAME"));
-        String defaultValue = (String) values.get("COLUMN_DEF");
+        column.setName((String) values.get(getName("COLUMN_NAME")));
+        String defaultValue = (String) values.get(getName("COLUMN_DEF"));
         if (defaultValue == null) {
-            defaultValue = (String) values.get("COLUMN_DEFAULT");
+            defaultValue = (String) values.get(getName("COLUMN_DEFAULT"));
         }
         if (defaultValue != null) {
             defaultValue = defaultValue.trim();
             column.setDefaultValue(defaultValue);
         }
 
-        String typeName = (String) values.get("TYPE_NAME");
+        String typeName = (String) values.get(getName("TYPE_NAME"));
         column.setJdbcTypeName(typeName);
 
         Integer mappedType = mapUnknownJdbcTypeForColumn(values);
         if (mappedType != null) {
             column.setMappedTypeCode(mappedType);
         } else {
-            column.setMappedTypeCode((Integer) values.get("DATA_TYPE"));
+            column.setMappedTypeCode((Integer) values.get(getName("DATA_TYPE")));
         }
 
-        column.setJdbcTypeCode((Integer) values.get("DATA_TYPE"));
+        column.setJdbcTypeCode((Integer) values.get(getName("DATA_TYPE")));
                
-        column.setPrecisionRadix(((Integer) values.get("NUM_PREC_RADIX")).intValue());
+        column.setPrecisionRadix(((Integer) values.get(getName("NUM_PREC_RADIX"))).intValue());
 
-        String columnSize = (String) values.get("COLUMN_SIZE");
-        int decimalDigits = ((Integer) values.get("DECIMAL_DIGITS")).intValue();
+        String columnSize = (String) values.get(getName("COLUMN_SIZE"));
+        int decimalDigits = ((Integer) values.get(getName("DECIMAL_DIGITS"))).intValue();
 
         try {
             platformColumn.setType(typeName);
@@ -969,8 +975,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             // a scale specification)
             column.setScale(decimalDigits);
         }
-        column.setRequired("NO".equalsIgnoreCase(((String) values.get("IS_NULLABLE")).trim()));
-        column.setDescription((String) values.get("REMARKS"));
+        column.setRequired("NO".equalsIgnoreCase(((String) values.get(getName("IS_NULLABLE"))).trim()));
+        column.setDescription((String) values.get(getName("REMARKS")));
 
         return column;
     }
@@ -1016,7 +1022,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
-        return (String) values.get("COLUMN_NAME");
+        return (String) values.get(getName("COLUMN_NAME"));
     }
 
     /*
@@ -1040,7 +1046,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
                 while (fkData.next()) {
                     Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
-                    String fkTableName = (String)values.get("FKTABLE_NAME");
+                    String fkTableName = (String)values.get(getName("FKTABLE_NAME"));
                     if (isBlank(fkTableName) || fkTableName.equalsIgnoreCase(tableName)) {
                         readForeignKey(metaData, values, fks);
                     }
@@ -1064,21 +1070,21 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected void readForeignKey(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
             Map<String, ForeignKey> knownFks) throws SQLException {
-        String fkName = (String) values.get("FK_NAME");
+        String fkName = (String) values.get(getName("FK_NAME"));
         ForeignKey fk = (ForeignKey) knownFks.get(fkName);
 
         if (fk == null) {
             fk = new ForeignKey(fkName);
-            fk.setForeignTableName((String) values.get("PKTABLE_NAME"));
+            fk.setForeignTableName((String) values.get(getName("PKTABLE_NAME")));
             knownFks.put(fkName, fk);
         }
 
         Reference ref = new Reference();
 
-        ref.setForeignColumnName((String) values.get("PKCOLUMN_NAME"));
-        ref.setLocalColumnName((String) values.get("FKCOLUMN_NAME"));
-        if (values.containsKey("KEY_SEQ")) {
-            ref.setSequenceValue(((Short) values.get("KEY_SEQ")).intValue());
+        ref.setForeignColumnName((String) values.get(getName("PKCOLUMN_NAME")));
+        ref.setLocalColumnName((String) values.get(getName("FKCOLUMN_NAME")));
+        if (values.containsKey(getName("KEY_SEQ"))) {
+            ref.setSequenceValue(((Short) values.get(getName("KEY_SEQ"))).intValue());
         }
         fk.addReference(ref);
     }
@@ -1125,20 +1131,20 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
             Map<String, IIndex> knownIndices) throws SQLException {
-        Short indexType = (Short) values.get("TYPE");
+        Short indexType = (Short) values.get(getName("TYPE"));
 
         // we're ignoring statistic indices
         if ((indexType != null) && (indexType.shortValue() == DatabaseMetaData.tableIndexStatistic)) {
             return;
         }
 
-        String indexName = (String) values.get("INDEX_NAME");
+        String indexName = (String) values.get(getName("INDEX_NAME"));
 
         if (indexName != null) {
             IIndex index = (IIndex) knownIndices.get(indexName);
 
             if (index == null) {
-                if (((Boolean) values.get("NON_UNIQUE")).booleanValue()) {
+                if (((Boolean) values.get(getName("NON_UNIQUE"))).booleanValue()) {
                     index = new NonUniqueIndex();
                 } else {
                     index = new UniqueIndex();
@@ -1150,13 +1156,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
             IndexColumn indexColumn = new IndexColumn();
 
-            String columnName = (String) values.get("COLUMN_NAME");
+            String columnName = (String) values.get(getName("COLUMN_NAME"));
             if (columnName.startsWith("\"") && columnName.endsWith("\"")) {
                 columnName = columnName.substring(1, columnName.length() - 1);
             }
             indexColumn.setName(columnName);
-            if (values.containsKey("ORDINAL_POSITION")) {
-                indexColumn.setOrdinalPosition(((Short) values.get("ORDINAL_POSITION")).intValue());
+            if (values.containsKey(getName("ORDINAL_POSITION"))) {
+                indexColumn.setOrdinalPosition(((Short) values.get(getName("ORDINAL_POSITION"))).intValue());
             }
             index.addColumn(indexColumn);
         }
@@ -1466,7 +1472,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 try {                    
                     rs = meta.getColumns(catalog, schema, tableName, null);
                     while (rs.next()) {
-                        String tableName = rs.getString("COLUMN_NAME");
+                        String tableName = rs.getString(getName("COLUMN_NAME"));
                         list.add(tableName);
                     }
                     return list;
