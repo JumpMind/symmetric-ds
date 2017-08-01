@@ -41,6 +41,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
 import org.jumpmind.symmetric.model.Trigger;
@@ -309,16 +310,24 @@ public class DbCompare {
             }
         }
 
-        return loadTables(tableNames);
+        return loadTables(tableNames, config.getTargetTableNames());
     }
 
-    protected List<DbCompareTables> loadTables(List<String> tableNames) {
+    protected List<DbCompareTables> loadTables(List<String> tableNames, List <String> targetTableNames) {
 
         List<DbCompareTables> compareTables = new ArrayList<DbCompareTables>(1);
 
         List<String> filteredTablesNames = filterTables(tableNames);
+        
+        if (!CollectionUtils.isEmpty(targetTableNames) && filteredTablesNames.size() != targetTableNames.size()) {
+            throw new SymmetricException("Table names must be the same length as the list of target "
+                    + "table names.  Check your arguments. table names = " 
+                    + filteredTablesNames + " target table names = " + targetTableNames); 
+        }
 
-        for (String tableName : filteredTablesNames) {
+        for (int i = 0; i < filteredTablesNames.size(); i++) {
+            
+            String tableName = filteredTablesNames.get(i);
             Table sourceTable = null;
             Map<String, String> tableNameParts = sourceEngine.getDatabasePlatform().parseQualifiedTableName(tableName);
             if (tableNameParts.size() == 1) {
@@ -329,19 +338,25 @@ public class DbCompare {
             }
 
             if (sourceTable == null) {
-                log.warn("No source table found for table name {}", tableName);
+                log.warn("No source table found for name {}", tableName);
                 continue;
             }
 
             DbCompareTables tables = new DbCompareTables(sourceTable, null);
 
-            Table targetTable = loadTargetTable(tables);
+            String targetTableName = null;
+            if (!CollectionUtils.isEmpty(targetTableNames)) {
+                targetTableName = targetTableNames.get(i);
+            }
+            
+            Table targetTable = loadTargetTable(tables, targetTableName);
             if (targetTable == null) {
-                log.warn("No target table found for table {}", tableName);
+                log.warn("No target table found for name {}", tableName);
                 continue;
             } 
 
             tables.applyColumnMappings();
+            tables.filterExcludedColumns(config);
 
             if (tables.getSourceTable().getPrimaryKeyColumnCount() == 0) {
                 log.warn("Source table {} doesn't have any primary key columns and will not be considered in the comparison.", sourceTable);
@@ -396,7 +411,7 @@ public class DbCompare {
         return true;
     }
 
-    protected Table loadTargetTable(DbCompareTables tables) {
+    protected Table loadTargetTable(DbCompareTables tables, String targetTableNameOverride) {
         Table targetTable = null;
         
         String catalog = targetEngine.getDatabasePlatform().getDefaultCatalog();
@@ -417,9 +432,20 @@ public class DbCompare {
                 schema = triggerRouter.getTargetSchema(schema);
             }
         } 
-
-        targetTable = targetEngine.getDatabasePlatform().
-                getTableFromCache(catalog, schema, tables.getSourceTable().getName(), true);
+        
+        if (StringUtils.isEmpty(targetTableNameOverride)) {            
+            targetTable = targetEngine.getDatabasePlatform().
+                    getTableFromCache(catalog, schema, tables.getSourceTable().getName(), true);
+        } else {
+            try {
+                targetTable = (Table) tables.getSourceTable().clone();
+            } catch (CloneNotSupportedException ex) {
+                throw new SymmetricException("Exception while cloning " +  tables.getSourceTable());
+            }
+            targetTable.setCatalog("");
+            targetTable.setSchema("");
+            targetTable.setName(targetTableNameOverride);
+        }
         tables.setTargetTable(targetTable);
 
         return targetTable;
@@ -476,7 +502,7 @@ public class DbCompare {
                     + "when not comparing using SymmetricDS config.");
         }
 
-        return loadTables(config.getIncludedTableNames());
+        return loadTables(config.getIncludedTableNames(), config.getTargetTableNames());
     }
 
     protected List<String> filterTables(List<String> tables) {        

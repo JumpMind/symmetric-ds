@@ -92,7 +92,7 @@ public class ContextService extends AbstractService implements IContextService {
             }
         } else {
             int count = sqlTemplate.update(getSql("updateSql"), value, name);
-            if (count == 0) {
+            if (count <= 0) {
                 sqlTemplate.update(getSql("insertSql"), name, value);
             }            
         }

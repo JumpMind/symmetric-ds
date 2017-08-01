@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.IDdlBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class ModelComparator {
     /** Whether comparison is case sensitive. */
     protected boolean caseSensitive;
     
-    protected String databaseName;
+    protected IDdlBuilder ddlBuilder;
 
     /**
      * Creates a new model comparator object.
@@ -61,8 +61,8 @@ public class ModelComparator {
      * @param caseSensitive
      *            Whether comparison is case sensitive
      */
-    public ModelComparator(String databaseName, DatabaseInfo platformInfo, boolean caseSensitive) {
-        this.databaseName = databaseName;
+    public ModelComparator(IDdlBuilder ddlBuilder, DatabaseInfo platformInfo, boolean caseSensitive) {
+        this.ddlBuilder = ddlBuilder;
         this.platformInfo = platformInfo;
         this.caseSensitive = caseSensitive;
     }
@@ -351,35 +351,19 @@ public class ModelComparator {
                     .getMappedTypeCode()));
         }
 
-        String targetSize = targetColumn.getSize();
-        if (targetSize == null) {
-            Integer defaultSize = platformInfo.getDefaultSize(platformInfo
-                    .getTargetJdbcType(targetColumn.getMappedTypeCode()));
-            if (defaultSize != null) {
-                targetSize = defaultSize.toString();
-            } else {
-                targetSize = "0";
-            }
-        }
-        if (sizeMatters && !StringUtils.equals(sourceColumn.getSize(), targetSize)) {
-            log.debug("The {} column on the {} table changed size from ({}) to ({})", new Object[] {
-                    sourceColumn.getName(), sourceTable.getName(), sourceColumn.getSizeAsInt(),
-                    targetColumn.getSizeAsInt() });
 
-            changes.add(new ColumnSizeChange(sourceTable, sourceColumn,
-                    targetColumn.getSizeAsInt(), targetColumn.getScale()));
-        } else if (scaleMatters && (!StringUtils.equals(sourceColumn.getSize(), targetSize) ||
-        // ojdbc6.jar returns -127 for the scale of NUMBER that was not given a
-        // size or precision
-                (!(sourceColumn.getScale() < 0 && targetColumn.getScale() == 0) && sourceColumn
-                        .getScale() != targetColumn.getScale()))) {
-            log.debug(
-                    "The {} column on the {} table changed scale from ({},{}) to ({},{})",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.getSizeAsInt(), sourceColumn.getScale(),
-                            targetColumn.getSizeAsInt(), targetColumn.getScale() });
-            changes.add(new ColumnSizeChange(sourceTable, sourceColumn,
-                    targetColumn.getSizeAsInt(), targetColumn.getScale()));
+        if (!ddlBuilder.areColumnSizesTheSame(sourceColumn, targetColumn)) {
+            if (sizeMatters) {
+                log.debug("The {} column on the {} table changed size from ({}) to ({})", new Object[] { sourceColumn.getName(),
+                        sourceTable.getName(), sourceColumn.getSizeAsInt(), targetColumn.getSizeAsInt() });
+
+                changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
+            } else if (scaleMatters) {
+                log.debug("The {} column on the {} table changed scale from ({},{}) to ({},{})",
+                        new Object[] { sourceColumn.getName(), sourceTable.getName(), sourceColumn.getSizeAsInt(), sourceColumn.getScale(),
+                                targetColumn.getSizeAsInt(), targetColumn.getScale() });
+                changes.add(new ColumnSizeChange(sourceTable, sourceColumn, targetColumn.getSizeAsInt(), targetColumn.getScale()));
+            }
         }
 
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
