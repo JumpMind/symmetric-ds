@@ -333,7 +333,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     @Override
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, List<String> loads) {
+            List<OutgoingBatch.Status> statuses, List<Long> loads) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("NODES", nodeIds);
         params.put("CHANNELS", channels);
@@ -346,7 +346,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
-            List<OutgoingBatch.Status> statuses, List<String> loads, long startAtBatchId, final int maxRowsToRetrieve,
+            List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, final int maxRowsToRetrieve,
             boolean ascending) {
 
         String where = buildBatchWhere(nodeIds, channels, statuses, loads);
