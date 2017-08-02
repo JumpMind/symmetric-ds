@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
@@ -32,7 +33,6 @@ import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
-import org.jumpmind.db.platform.tibero.TiberoDdlBuilder;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -141,24 +141,20 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.getMappedTypeCode() == Types.DECIMAL) {
-            // We're back-mapping the NUMBER columns returned by Tibero
-            // Note that the JDBC driver returns DECIMAL for these NUMBER
-            // columns
-            if (column.getScale() <= -127 || column.getScale() >= 127) {
-                if (column.getSizeAsInt() == 0) {
-                    /*
-                     * Latest Tibero jdbc drivers for 11g return (0,-127) for
-                     * types defined as integer resulting in bad mappings.
-                     * NUMBER without scale or precision looks the same as
-                     * INTEGER in the jdbc driver. We must check the Tibero
-                     * meta data to see if type is an INTEGER.
-                     */
-                    if (isColumnInteger((String)values.get("TABLE_NAME"),
-                            (String)values.get("COLUMN_NAME"))) {
-                        column.setMappedTypeCode(Types.BIGINT);
-                    }
-                } else if (column.getSizeAsInt() <= 63) {
+        if (column.getMappedTypeCode() == Types.NUMERIC) {
+            PlatformColumn platformColumn = column.getPlatformColumns().get(platform.getName());
+            if (platformColumn.getDecimalDigits() == 0 && column.getSizeAsInt() == 15) {
+                column.setSize("15");
+            }
+            if (column.getScale() == 0) {
+                
+                if (column.getSizeAsInt() == 3) {
+                    column.setMappedTypeCode(Types.TINYINT);
+                } else if (column.getSizeAsInt() <= 22) {
+                    column.setMappedTypeCode(Types.INTEGER);
+                } else if (column.getSizeAsInt() == 38) {
+                    column.setMappedTypeCode(Types.BIGINT);
+                }  else if (column.getSizeAsInt() <= 63) {
                     column.setMappedTypeCode(Types.REAL);
                 } else {
                     column.setMappedTypeCode(Types.DOUBLE);

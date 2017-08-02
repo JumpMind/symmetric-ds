@@ -3,7 +3,6 @@ package org.jumpmind.db.platform.tibero;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
@@ -13,9 +12,7 @@ public class TiberoLobHandler extends SymmetricLobHandler {
     DefaultLobHandler longHandler = new DefaultLobHandler();
 
     public TiberoLobHandler() {
-        super(new org.springframework.jdbc.support.lob.OracleLobHandler());
-        ((org.springframework.jdbc.support.lob.OracleLobHandler) lobHandler)
-                .setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
+        super();
     }
 
     @Override

@@ -1158,7 +1158,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
                         this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
                     } else if (se != null) {
-                        this.currentBatch.setSqlState(se.getSQLState());
+                        String sqlState = se.getSQLState();
+                        if (sqlState != null && sqlState.length() > 10) {
+                            sqlState = sqlState.replace("JDBC-", "");
+                            if (sqlState.length() > 10) {
+                                sqlState = sqlState.substring(0, 10);
+                            }
+                        }
+                        this.currentBatch.setSqlState(sqlState);
                         this.currentBatch.setSqlCode(se.getErrorCode());
                         this.currentBatch.setSqlMessage(se.getMessage());
                         if (sqlTemplate.isForeignKeyViolation(se)) {

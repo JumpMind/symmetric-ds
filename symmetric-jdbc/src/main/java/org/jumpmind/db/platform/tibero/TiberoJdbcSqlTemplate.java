@@ -15,7 +15,7 @@ public class TiberoJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);        
         primaryKeyViolationCodes = new int[] {1};
-        foreignKeyViolationCodes = new int[] {2291};
+        foreignKeyViolationCodes = new int[] {-10008};
     }
     
     @Override
