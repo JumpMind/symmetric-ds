@@ -1,0 +1,28 @@
+:toc: left
+:toclevels: 3
+:imagesdir: ../images
+:icons: font
+:source-highlighter: coderay
+:linkattrs:
+:relpathprefix: '../'
+:numbered:
+
+ifdef::pro[]
+= SymmetricDS Pro @appMajorVersion@ Operations Guide
+endif::pro[]
+
+ifndef::pro[]
+= SymmetricDS @appMajorVersion@ Operations Guide
+endif::pro[]
+
+
+
+Copyright (C) 2007-2017 JumpMind, Inc
+
+Version @appVersion@
+
+_Permission to use, copy, modify, and distribute this SymmetricDS Operations Guide 
+for any purpose and without fee is hereby granted in perpetuity, provided that 
+the above copyright notice and this paragraph appear in all copies._
+
+include::troubleshooting.ad[]
