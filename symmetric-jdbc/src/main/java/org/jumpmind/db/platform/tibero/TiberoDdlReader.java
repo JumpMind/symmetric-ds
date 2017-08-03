@@ -143,23 +143,27 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
         if (column.getMappedTypeCode() == Types.NUMERIC) {
             PlatformColumn platformColumn = column.getPlatformColumns().get(platform.getName());
-            if (platformColumn.getDecimalDigits() == 0 && column.getSizeAsInt() == 15) {
-                column.setSize("15");
-            }
+            //if (platformColumn.getDecimalDigits() == 0 && column.getSizeAsInt() == 15) {
+            //    column.setSize("15");
+            //}
             if (column.getScale() == 0) {
-                
                 if (column.getSizeAsInt() == 3) {
                     column.setMappedTypeCode(Types.TINYINT);
                 } else if (column.getSizeAsInt() <= 22) {
                     column.setMappedTypeCode(Types.INTEGER);
                 } else if (column.getSizeAsInt() == 38) {
                     column.setMappedTypeCode(Types.BIGINT);
-                }  else if (column.getSizeAsInt() <= 63) {
+                }
+            } 
+            /*
+            else {
+                if (column.getSizeAsInt() <= 63) {
                     column.setMappedTypeCode(Types.REAL);
                 } else {
                     column.setMappedTypeCode(Types.DOUBLE);
                 }
-            }
+            }*/
+                
         } else if (column.getMappedTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
             // FLOAT but with
