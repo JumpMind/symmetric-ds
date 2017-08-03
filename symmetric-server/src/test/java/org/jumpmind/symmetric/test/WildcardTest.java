@@ -67,7 +67,7 @@ public class WildcardTest extends AbstractTest {
         }
 
         loadConfigAtRegistrationServer();
-
+        
         assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from a"));
         assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from b"));
         assertEquals(0, clientServer.getSqlTemplate().queryForInt("select count(*) from c"));
@@ -80,7 +80,7 @@ public class WildcardTest extends AbstractTest {
         assertNotNull(clientNode);
 
         rootServer.getDataService().reloadNode(clientNode.getNodeId(), false, "unit test");
-
+       
         pull("client");
 
         // load succeeded

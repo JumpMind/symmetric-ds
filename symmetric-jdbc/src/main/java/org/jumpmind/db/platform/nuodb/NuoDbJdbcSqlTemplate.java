@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.nuodb;
 
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -38,6 +40,15 @@ public class NuoDbJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select last_insert_id() from dual";
+    }
+    
+    @Override
+    protected int verifyArgType(Object arg, int argType) {
+        if (argType == Types.BIT){
+            return Types.BOOLEAN;
+        } else {
+            return super.verifyArgType(arg, argType);
+        }
     }
 
 }

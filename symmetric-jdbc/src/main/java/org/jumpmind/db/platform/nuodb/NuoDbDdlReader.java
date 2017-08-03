@@ -244,7 +244,7 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         if (type != null && type.intValue() == Types.CLOB) {
         	// XML longvarchar becoms longvarchar on Column but becomes clob in database
         	return Types.LONGVARCHAR;
-        } else {
+        }else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }

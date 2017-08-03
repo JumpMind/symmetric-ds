@@ -31,7 +31,7 @@ public class NuoDbTriggerTemplate extends AbstractTriggerTemplate {
     public NuoDbTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "cast(case when $(tableAlias).`$(columnName)` is null then '' else concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"') end as char)\n" ;                               
+        stringColumnTemplate = "cast(case when $(tableAlias).`$(columnName)` is null then '' else concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\"'),'\"') end as char)\n" ;                               
         numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',cast($(tableAlias).\"$(columnName)\" as char),'\"') end \n" ;
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',cast($(tableAlias).\"$(columnName)\" as char),'\"') end\n" ;
         clobColumnTemplate =    stringColumnTemplate;

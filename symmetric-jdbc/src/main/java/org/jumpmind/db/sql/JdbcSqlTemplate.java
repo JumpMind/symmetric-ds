@@ -341,7 +341,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public int update(final String sql, final Object[] args, final int[] types) {
         return execute(new IConnectionCallback<Integer>() {
             public Integer execute(Connection con) throws SQLException {
-                if (args == null) {
+                 if (args == null) {
                     Statement stmt = null;
                     try {
                         stmt = con.createStatement();
