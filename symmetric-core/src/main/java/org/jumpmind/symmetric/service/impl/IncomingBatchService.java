@@ -133,7 +133,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     } 
 
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<String> loads, boolean ascending) {
+            List<IncomingBatch.Status> statuses, List<Long> loads, boolean ascending) {
 
         String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads);
 
@@ -149,7 +149,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<String> loads, Date startAtCreateTime,
+            List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime,
             final int maxRowsToRetrieve, boolean ascending) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("NODES", nodeIds);

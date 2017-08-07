@@ -107,7 +107,14 @@ abstract public class AbstractTransportManager {
                 }
 
                 if (batch.getStatus() == Status.ER) {
-                    append(builder, WebConstants.ACK_SQL_STATE + batchId, batch.getSqlState());
+                    String sqlState = batch.getSqlState();
+                    if (sqlState != null && sqlState.length() > 10) {
+                        sqlState = sqlState.replace("JDBC-", "");
+                        if (sqlState.length() > 10) {
+                            sqlState = sqlState.substring(0, 10);
+                        }
+                    }
+                    append(builder, WebConstants.ACK_SQL_STATE + batchId, sqlState);
                     append(builder, WebConstants.ACK_SQL_CODE + batchId, batch.getSqlCode());
                     append(builder, WebConstants.ACK_SQL_MESSAGE + batchId, batch.getSqlMessage());
                 }

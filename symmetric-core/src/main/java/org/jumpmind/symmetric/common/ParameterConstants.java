@@ -209,6 +209,10 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_TEMPLATE_NUMBER_SPEC = "oracle.template.precision";
     public final static String DBDIALECT_ORACLE_USE_HINTS = "oracle.use.hints";
 
+    public final static String DBDIALECT_TIBERO_USE_TRANSACTION_VIEW = "tibero.use.transaction.view";
+    public final static String DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC = "tibero.template.precision";
+    public final static String DBDIALECT_TIBERO_USE_HINTS = "tibero.use.hints";
+
     public final static String DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS = "oracle.transaction.view.clock.sync.threshold.ms";
 
     public final static String DATA_ID_INCREMENT_BY = "data.id.increment.by";

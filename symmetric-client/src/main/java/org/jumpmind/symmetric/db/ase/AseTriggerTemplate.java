@@ -170,15 +170,15 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "          $(end:containsBlobClobColumns)                                                                                                                                     \n" +
 "          open DeleteCursor                                                                                                                                                 \n" +
 "          open InsertCursor                                                                                                                                                 \n" +
-"          fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          \n" +
-"          fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                    \n" +
+"          fetch DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                          \n" +
+"          fetch InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                    \n" +
 "          while @@sqlstatus = 0 begin                                                                                                                                  \n" +
 "            if ($(dataHasChangedCondition)) begin                                                                                                                                \n" +
 "              insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "                values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())\n" +
 "            end                                                                                                                                                             \n" +
-"            fetch next from DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      \n" +
-"            fetch next from InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                              \n" +
+"            fetch DeleteCursor into @OldPk, @OldDataRow $(oldKeyVariables)                                                                                      \n" +
+"            fetch InsertCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                              \n" +
 "          end                                                                                                                                                             \n" +
 "          close DeleteCursor                                                                                                                                                \n" +
 "          close InsertCursor                                                                                                                                                \n" +

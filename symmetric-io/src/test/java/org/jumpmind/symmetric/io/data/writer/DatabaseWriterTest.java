@@ -42,6 +42,7 @@ import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
+import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -623,6 +624,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         
         if (values[5] != null
                 && (!(platform instanceof OracleDatabasePlatform
+                        || platform instanceof TiberoDatabasePlatform
                         || platform instanceof MsSql2000DatabasePlatform 
                         || platform instanceof MsSql2005DatabasePlatform 
                         || platform instanceof MsSql2008DatabasePlatform 
@@ -633,7 +635,8 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         if (values[10] != null) {
             values[10] = values[10].replace(',', '.');
         }
-        if (values[10] != null && !(platform instanceof OracleDatabasePlatform)) {
+        if (values[10] != null && !(platform instanceof OracleDatabasePlatform) 
+                && !(platform instanceof TiberoDatabasePlatform)) {
             int scale = 17;
             if (platform instanceof MySqlDatabasePlatform) {
                 scale = 16;
