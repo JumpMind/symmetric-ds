@@ -1,0 +1,15 @@
+
+=== NuoDB
+
+SymmetricDS supports NuoDB, but it does not currently sync BLOB data or prevent update loops (when loading data from a remote node,
+if a table is configured in sym_trigger with the sync_on_incoming flag enabled, then data is captured and will be synced back to the same node).
+ 
+Before running SymmetricDS, copy the NuoDB JDBC driver from {NuoDB HOME}/jar/nuodbjdbc.jar to the {SYM_HOME}/lib directory.
+In the engine properties file, set the following properties: 
+
+----
+db.driver=com.nuodb.jdbc.Driver
+db.url=jdbc:com.nuodb://localhost/database?schema=database
+db.user=
+db.password
+----
