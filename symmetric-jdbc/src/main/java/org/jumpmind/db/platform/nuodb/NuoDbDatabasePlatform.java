@@ -73,7 +73,7 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public String getDefaultSchema() {
         if(StringUtils.isBlank(defaultSchema)){
-            defaultSchema = getSqlTemplate().queryForObject("select database() from dual", String.class);
+            defaultSchema = getSqlTemplate().queryForObject("select upper(database()) from dual", String.class);
         }
         return defaultSchema;
     }

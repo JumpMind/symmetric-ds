@@ -411,7 +411,7 @@ INodeCommunicationExecutor {
 
     public void save(ISqlTransaction sqlTransaction, FileSnapshot snapshot) {
         snapshot.setLastUpdateTime(new Date());
-        if (0 == sqlTransaction.prepareAndExecute(
+        if (0 >= sqlTransaction.prepareAndExecute(
                 getSql("updateFileSnapshotSql"),
                 new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
                         snapshot.getFileSize(), snapshot.getFileModifiedTime(),
@@ -996,7 +996,7 @@ INodeCommunicationExecutor {
             long lastUpdateTime = file.lastModified();
             int updateCount = sqlTemplate.update(getSql("updateFileIncoming"), nodeId,
                     lastUpdateTime, eventType, dirName, fileName);
-            if (updateCount == 0) {
+            if (updateCount <= 0) {
                 sqlTemplate.update(getSql("insertFileIncoming"), nodeId, lastUpdateTime, eventType,
                         dirName, fileName);
             }
