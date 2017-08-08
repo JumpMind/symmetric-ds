@@ -566,14 +566,24 @@ public class NodeService extends AbstractService implements INodeService {
 
     public boolean updateNodeSecurity(ISqlTransaction transaction, NodeSecurity security) {
         security.setNodePassword(filterPasswordOnSaveIfNeeded(security.getNodePassword()));
-        boolean updated = transaction.prepareAndExecute(getSql("updateNodeSecuritySql"),
-                new Object[] { security.getNodePassword(), security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getCreatedAtNodeId(),
-                        security.isRevInitialLoadEnabled() ? 1 : 0, security.getRevInitialLoadTime(), security.getInitialLoadId(),
-                        security.getInitialLoadCreateBy(), security.getRevInitialLoadId(), security.getRevInitialLoadCreateBy(),
-                        security.getNodeId() },
-                new int[] { Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER,
-                        Types.TIMESTAMP, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.VARCHAR }) == 1;
+        int updateCount = transaction.prepareAndExecute(
+                getSql("updateNodeSecuritySql"),
+                new Object[] { security.getNodePassword(),
+                        security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
+                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
+                        security.getCreatedAtNodeId(),
+                        security.isRevInitialLoadEnabled() ? 1 : 0,
+                        security.getRevInitialLoadTime(),
+                        security.getInitialLoadId(),
+                        security.getInitialLoadCreateBy(),
+                        security.getRevInitialLoadId(),
+                        security.getRevInitialLoadCreateBy(),
+                        security.getNodeId() }, new int[] {
+                        Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
+                        Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
+                        Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
+                        Types.VARCHAR });
+        boolean updated = (updateCount == 1);
         flushNodeAuthorizedCache();
         return updated;
     }

@@ -51,5 +51,6 @@ final public class DatabaseNamesConstants {
     public final static String REDSHIFT = "redshift";
     public final static String VOLTDB = "voltdb";
     public final static String NUODB = "nuodb";
+    public final static String TIBERO = "tibero";
 
 }

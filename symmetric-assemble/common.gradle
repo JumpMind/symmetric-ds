@@ -196,7 +196,7 @@ subprojects { subproject ->
         jnaVersion = '4.1.0'
         jettyVersion = '9.2.18.v20160721'
         nuodbVersion = '2.6.1'
-
+        tiberoVersion = '6'
         env = System.getenv()
     }
 
@@ -225,6 +225,7 @@ subprojects { subproject ->
         }
         provided ("net.sf.jt400:jt400:$jt400Version")
         provided "com.nuodb.jdbc:nuodb-jdbc:$nuodbVersion"
+        provided "jdbc.tibero:tibero:$tiberoVersion"
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
         

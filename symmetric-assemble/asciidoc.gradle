@@ -91,6 +91,17 @@ task generateDocs(type: Copy) {
             'scmVersion' : scmVersion
         ])
     }
+        
+    into('html') {
+        from ("$buildDir/src/asciidoc/html5/operations") { include "operations.html" }
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+            'appVersion': version,
+            'appMajorVersion': version.substring(0, version.lastIndexOf(".")),
+            'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+            'scmVersion' : scmVersion
+        ])
+        
+    }
 
     into('pdf') {
         from ("$buildDir/src/asciidoc/pdf") { include "user-guide.pdf" }
@@ -98,6 +109,10 @@ task generateDocs(type: Copy) {
 
     into('pdf') {
         from ("$buildDir/src/asciidoc/pdf/tutorials") { include "tutorials.pdf" }
+    }
+
+    into('pdf') {
+        from ("$buildDir/src/asciidoc/pdf/operations") { include "operations.pdf" }
     }
     
     doFirst {
@@ -134,7 +149,8 @@ asciidoctor { (1)
         doctype: 'book',
         sourceDocumentNames: [
             symAssembleDir + 'user-guide.ad',
-            symAssembleDir + 'tutorials/tutorials.ad']
+            symAssembleDir + 'tutorials/tutorials.ad',
+            symAssembleDir + 'operations/operations.ad']
     ]    
     attributes = [
         'source-highlighter':'coderay',

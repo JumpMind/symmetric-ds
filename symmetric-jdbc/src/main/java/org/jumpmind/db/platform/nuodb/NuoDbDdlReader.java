@@ -116,6 +116,7 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
             determineAutoIncrementFromResultSetMetaData(connection, table,
                     table.getColumns());
         }
+        table.setCatalog(null);
         return table;
     }
 
@@ -237,14 +238,12 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
     
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
-    	String tableName = (String) values.get("TABLENAME");
-    	String fieldName = (String) values.get("FIELD");
     	
         Integer type = (Integer) values.get("DATA_TYPE");
         if (type != null && type.intValue() == Types.CLOB) {
         	// XML longvarchar becoms longvarchar on Column but becomes clob in database
         	return Types.LONGVARCHAR;
-        } else {
+        }else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }

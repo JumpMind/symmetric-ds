@@ -57,7 +57,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCommentPrefix("//");
         databaseInfo.setDelimiterToken("`");
 
-        databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN");
+        databaseInfo.addNativeTypeMapping(Types.BIT, "BOOLEAN", Types.BOOLEAN);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "BLOB");
         databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT");
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE");
@@ -73,7 +73,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.SMALLINT, "SMALLINT");
         databaseInfo.addNativeTypeMapping(Types.INTEGER, "INTEGER");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT");
-        databaseInfo.addNativeTypeMapping(Types.BOOLEAN, "BOOLEAN");
+        databaseInfo.addNativeTypeMapping(Types.BOOLEAN, "BOOLEAN",Types.BOOLEAN);
         databaseInfo.addNativeTypeMapping(Types.DECIMAL, "DECIMAL");
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE");
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME");
@@ -86,7 +86,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
 
         databaseInfo.setNonBlankCharColumnSpacePadded(false);
         databaseInfo.setBlankCharColumnSpacePadded(false);
-        databaseInfo.setCharColumnSpaceTrimmed(true);
+        databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
 
         databaseInfo.setSyntheticDefaultValueForRequiredReturned(false);

@@ -101,7 +101,7 @@ public class ParameterService extends AbstractParameterService implements IParam
         int count = sqlTemplate.update(sql.getSql("updateParameterSql"), new Object[] { paramValue, lastUpdateBy,
                 externalId, nodeGroupId, key });
 
-        if (count == 0) {
+        if (count <= 0) {
             sqlTemplate.update(sql.getSql("insertParameterSql"), new Object[] { externalId,
                     nodeGroupId, key, paramValue, lastUpdateBy });
         }

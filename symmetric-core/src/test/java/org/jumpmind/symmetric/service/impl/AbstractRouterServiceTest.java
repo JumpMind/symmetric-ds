@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.Constants;
@@ -66,7 +67,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         testLookupTableRouting();
         testColumnMatchTransactionalOnlyRoutingToNode1();
         testSubSelectNonTransactionalRoutingToNode1();
-        testSyncIncomingBatch();
+        IDatabasePlatform platform = getPlatform();
+        if(!(platform instanceof NuoDbDatabasePlatform)){
+            testSyncIncomingBatch();
+        }
         // testLargeNumberOfEventsToManyNodes();
         testBshTransactionalRoutingOnUpdate();
         testBshRoutingDeletesToNode3();

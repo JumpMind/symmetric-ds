@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
-import org.jumpmind.symmetric.model.AbstractBatch;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
@@ -127,8 +126,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return enabled;
     }
 
-    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels, List<AbstractBatch.Status> statuses,
-            List<String> loads, boolean ascending) {
+    public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, List<Long> loads, boolean ascending) {
 
         String whereClause = buildBatchWhere(nodeIds, channels, statuses, loads);
 
@@ -142,16 +141,17 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return sqlTemplate.query(sql, new DateMapper(), params);
     }
 
-    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels, List<AbstractBatch.Status> statuses,
-            List<String> loads, Date startAtCreateTime, final int maxRowsToRetrieve, boolean ascending) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("NODES", nodeIds);
-        params.put("CHANNELS", channels);
-        params.put("STATUSES", toStringList(statuses));
-        params.put("CREATE_TIME", startAtCreateTime);
-        params.put("LOADS", loads);
-
-        String where = buildBatchWhere(nodeIds, channels, statuses, loads);
+    public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
+            List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime,
+            final int maxRowsToRetrieve, boolean ascending) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("NODES", nodeIds);
+            params.put("CHANNELS", channels);
+            params.put("STATUSES", toStringList(statuses));
+            params.put("CREATE_TIME", startAtCreateTime);
+            params.put("LOADS", loads);
+            
+            String where = buildBatchWhere(nodeIds, channels, statuses, loads);
 
         String createTimeLimiter = "";
         if (startAtCreateTime != null) {

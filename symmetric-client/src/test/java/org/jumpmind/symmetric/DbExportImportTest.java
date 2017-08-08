@@ -515,7 +515,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertTrue(a.isFile());
         List<String> lines = FileUtils.readLines(a);
         Assert.assertEquals(9, lines.size());
-        Assert.assertEquals("\"id\",\"string_value\"", lines.get(5));
+        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
         Assert.assertEquals("\"1\",\"This is a test of a\"", lines.get(6));
         Assert.assertEquals("\"2\",\"This is a test of a\"", lines.get(7));
 
@@ -524,7 +524,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertTrue(b.isFile());
         lines = FileUtils.readLines(b);
         Assert.assertEquals(10, lines.size());
-        Assert.assertEquals("\"id\",\"string_value\"", lines.get(5));
+        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
         Assert.assertEquals("\"1\",\"This is a test of b\"", lines.get(6));
         Assert.assertEquals("\"2\",\"This is a test of b\"", lines.get(7));
         Assert.assertEquals("\"3\",\"This is line 3 of b\"", lines.get(8));
@@ -534,7 +534,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertTrue(c.isFile());
         lines = FileUtils.readLines(c);
         Assert.assertEquals(9, lines.size());
-        Assert.assertEquals("\"id\",\"string_value\"", lines.get(5));
+        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
         Assert.assertEquals("\"1\",\"This is a test of c\"", lines.get(6));
         Assert.assertEquals("\"2\",\"This is a test of c\"", lines.get(7));
 
@@ -580,5 +580,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         }
         return null;
     }
+    
+    
+
 
 }

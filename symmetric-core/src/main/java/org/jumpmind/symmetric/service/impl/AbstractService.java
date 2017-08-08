@@ -207,7 +207,7 @@ abstract public class AbstractService implements IService {
     }
     
     protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
-            List<?> statuses, List<String> loads) {
+            List<?> statuses, List<Long> loads) {
         boolean containsErrorStatus = statuses.contains(OutgoingBatch.Status.ER)
                 || statuses.contains(IncomingBatch.Status.ER);
         boolean containsIgnoreStatus = statuses.contains(OutgoingBatch.Status.IG)

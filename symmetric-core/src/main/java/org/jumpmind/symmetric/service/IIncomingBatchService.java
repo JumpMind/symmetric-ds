@@ -61,10 +61,10 @@ public interface IIncomingBatchService {
     public int deleteIncomingBatch(IncomingBatch batch);
     
     public List<Date> listIncomingBatchTimes(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<String> loads, boolean ascending);
+            List<IncomingBatch.Status> statuses, List<Long> loads, boolean ascending);
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
-            List<IncomingBatch.Status> statuses, List<String> loads, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
+            List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
 
     public void markIncomingBatchesOk(String nodeId);
     

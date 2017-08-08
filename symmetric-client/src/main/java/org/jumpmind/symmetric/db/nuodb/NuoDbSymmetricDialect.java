@@ -30,6 +30,8 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
+import com.nuodb.jdbc.DataSource;
+
 public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
     static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
@@ -94,7 +96,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-
+        String[] properties = DataSource.ALL_PROPERTIES;
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {

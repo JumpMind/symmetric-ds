@@ -131,7 +131,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
                 .format("insert into %s (varchar_value, longvarchar_value, timestamp_value, date_value, bit_value, bigint_value, decimal_value, id) values(?,?,?,?,?,?,?,?)",
                         TEST_TABLE);
 
-        if (0 == getSqlTemplate().update(
+        if (0 >= getSqlTemplate().update(
                 updateSql,
                 new Object[] { obj.getVarcharValue(), obj.getLongVarcharValue(),
                         obj.getTimestampValue(), obj.getDateValue(), obj.isBitValue(),
