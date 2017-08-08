@@ -60,6 +60,11 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
     public void testSyncStatistics() throws Exception {
         logTestRunning();
 
+        String channelId = "testchannel";
+
+        ISymmetricEngine client = getClient();
+        ISymmetricEngine server = getServer();
+
         Date date = DateUtils.parseDate("2007-01-03", new String[] { "yyyy-MM-dd" });
         Order order = new Order("101", 100, null, date);
         order.getOrderDetails().add(new OrderDetail("101", 1, "STK", "110000065", 3, new BigDecimal("3.33")));
@@ -68,8 +73,9 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
 
         clientTestService.insertOrder(order);
 
-        List<OutgoingBatch> outgoingBatches = getClient().getOutgoingBatchService().getOutgoingBatches(getServer().getNodeId(), false)
+        List<OutgoingBatch> outgoingBatches = client.getOutgoingBatchService().getOutgoingBatches(server.getNodeId(), channelId, true)
                 .getBatches();
+        System.out.println("Ougoing Batches Size = " + outgoingBatches.size());
 
         boolean pushedData = clientPush();
 
@@ -77,15 +83,25 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
 
         assertNotNull(serverTestService.getOrder(order.getOrderId()));
 
-        IIncomingBatchService serverIncomingBatchService = getServer().getIncomingBatchService();
+        IIncomingBatchService serverIncomingBatchService = server.getIncomingBatchService();
         for (OutgoingBatch outgoingBatch : outgoingBatches) {
-            IncomingBatch incomingBatch = serverIncomingBatchService.findIncomingBatch(outgoingBatch.getBatchId(), getClient().getNodeId());
-            assertStatisticsEqual(outgoingBatch, incomingBatch);
+            IncomingBatch incomingBatch = serverIncomingBatchService.findIncomingBatch(outgoingBatch.getBatchId(), client.getNodeId());
+            assertOutgoingStatisticsEqual(outgoingBatch, incomingBatch);
+        }
+
+        List<OutgoingBatch> ackedOutgoingBatches = getClient().getOutgoingBatchService()
+                .getOutgoingBatches(server.getNodeId(), channelId, true).getBatches();
+        System.out.println("Ougoing Batches Size = " + ackedOutgoingBatches.size());
+        
+        for (OutgoingBatch ackedOutgoingBatch : ackedOutgoingBatches) {
+            IncomingBatch incomingBatch = serverIncomingBatchService.findIncomingBatch(ackedOutgoingBatch.getBatchId(), client.getNodeId());
+            assertIncomingStatisticsEqual(ackedOutgoingBatch, incomingBatch);
         }
 
     }
-    
-    private void assertStatisticsEqual(OutgoingBatch outgoingBatch, IncomingBatch incomingBatch) {
+
+    private void assertOutgoingStatisticsEqual(OutgoingBatch outgoingBatch, IncomingBatch incomingBatch) {
+        System.out.println("Is Load Flag = " + outgoingBatch.isLoadFlag());
         assertEquals(outgoingBatch.isLoadFlag(), incomingBatch.isLoadFlag());
         assertEquals(outgoingBatch.getExtractCount(), incomingBatch.getExtractCount());
         assertEquals(outgoingBatch.getSentCount(), incomingBatch.getSentCount());
@@ -107,6 +123,19 @@ public class BatchStatisticsTest extends AbstractIntegrationTest {
         assertEquals(outgoingBatch.getExtractUpdateRowCount(), incomingBatch.getExtractUpdateRowCount());
         assertEquals(outgoingBatch.getExtractDeleteRowCount(), incomingBatch.getExtractDeleteRowCount());
         assertEquals(outgoingBatch.getFailedDataId(), incomingBatch.getFailedDataId());
+    }
+
+    private void assertIncomingStatisticsEqual(OutgoingBatch outgoingBatch, IncomingBatch incomingBatch) {
+        System.out.println("Load Row Count = " + outgoingBatch.getLoadRowCount());
+        assertEquals(outgoingBatch.getLoadRowCount(), incomingBatch.getLoadRowCount());
+        assertEquals(outgoingBatch.getLoadInsertRowCount(), incomingBatch.getLoadInsertRowCount());
+        assertEquals(outgoingBatch.getLoadUpdateRowCount(), incomingBatch.getLoadUpdateRowCount());
+        assertEquals(outgoingBatch.getLoadDeleteRowCount(), incomingBatch.getLoadDeleteRowCount());
+        assertEquals(outgoingBatch.getFallbackInsertCount(), incomingBatch.getFallbackInsertCount());
+        assertEquals(outgoingBatch.getFallbackUpdateCount(), incomingBatch.getFallbackUpdateCount());
+        assertEquals(outgoingBatch.getIgnoreRowCount(), incomingBatch.getIgnoreRowCount());
+        assertEquals(outgoingBatch.getMissingDeleteCount(), incomingBatch.getMissingDeleteCount());
+        assertEquals(outgoingBatch.getSkipCount(), incomingBatch.getSkipCount());
     }
 
 }
