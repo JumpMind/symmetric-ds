@@ -163,9 +163,6 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
             }else if (change instanceof AddColumnChange) {
                 processChange(currentModel,desiredModel, (AddColumnChange)change,ddl);
                 changeIt.remove();
-//            }else if (change instanceof ColumnDataTypeChange){
-//                processChange(currentModel,desiredModel, (ColumnDataTypeChange)change, ddl);
-//                changeIt.remove();
             }
             else if (change instanceof ColumnChange) {
                 /*
