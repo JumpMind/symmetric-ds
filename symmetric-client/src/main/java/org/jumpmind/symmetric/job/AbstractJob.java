@@ -37,8 +37,10 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedMetric;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 
 @ManagedResource(description = "The management interface for a job")
 abstract public class AbstractJob implements Runnable, IJob {
@@ -93,8 +95,9 @@ abstract public class AbstractJob implements Runnable, IJob {
             int timeBetweenRunsInMs = engine.getParameterService().getInt(
                     jobName + ".period.time.ms", -1);
             if (!StringUtils.isBlank(cronExpression)) {
-                log.info("Starting {} with cron expression: {}", jobName, cronExpression);
-                this.scheduledJob = taskScheduler.schedule(this, new CronTrigger(cronExpression));
+                CronTrigger cron = new CronTrigger(cronExpression);
+                log.info("Starting {} with cron expression: {}. Next scheduled time is: {}", jobName, cronExpression, cron.nextExecutionTime(new SimpleTriggerContext()));                
+                this.scheduledJob = taskScheduler.schedule(this, cron);
                 started = true;
             } else {
                 int startDelay = randomTimeSlot.getRandomValueSeededByExternalId();
