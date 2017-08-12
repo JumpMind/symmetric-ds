@@ -200,7 +200,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 
                 log.info("Push data sent to {}", remote);
                 
-                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
+                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService, dataExtractorService);
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
             }
             

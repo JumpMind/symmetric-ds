@@ -136,7 +136,7 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
             extractedBatches = dataExtractorService.extract(processInfo, remote, status.getChannelId(), transport);
             if (extractedBatches.size() > 0) {
                 log.info("Offline push data written for {} at {}", remote, transport.getOutgoingDir());
-                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService);
+                List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService, dataExtractorService);
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
             }
             
