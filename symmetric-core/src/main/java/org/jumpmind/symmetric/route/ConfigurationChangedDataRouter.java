@@ -462,7 +462,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
         } else if (tableMatches(dataMetaData, TableConstants.SYM_PARAMETER)) {
             if (dataMetaData.getData().getCsvData(CsvData.ROW_DATA) != null
-                    && dataMetaData.getData().getCsvData(CsvData.ROW_DATA).contains("file.sync.enable")) {
+                    && dataMetaData.getData().getCsvData(CsvData.ROW_DATA).contains(ParameterConstants.FILE_SYNC_ENABLE)) {
                 routingContext.put(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED, Boolean.TRUE);
             }
         }
