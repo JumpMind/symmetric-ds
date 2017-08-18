@@ -94,11 +94,11 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-
+        //NUODB does not currently support this
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        
+        //NUODB does not currently support this
     }
 
     public String getSyncTriggersExpression() {

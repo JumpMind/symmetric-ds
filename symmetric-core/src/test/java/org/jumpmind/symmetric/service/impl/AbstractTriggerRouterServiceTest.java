@@ -27,6 +27,8 @@ import java.util.List;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
@@ -273,29 +275,32 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
 
     @Test
     public void test10DisableTriggers() throws Exception {
-        ISymmetricDialect dbDialect = getDbDialect();
-        ISqlTemplate jdbcTemplate = getSqlTemplate();
-        ISqlTransaction transaction = jdbcTemplate.startSqlTransaction();
-        try {
-            dbDialect.disableSyncTriggers(transaction, null);
-            int count = insert(INSERT1_VALUES, transaction, dbDialect);
-            dbDialect.enableSyncTriggers(transaction);
-            transaction.commit();
-            assertTrue(count == 1);
-            String csvString = getNextDataRow();
-            // DB2 captures decimal differently
-            csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
-            // Informix captures decimal differently
-            csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
-            // ASA captures decimal differently
-            csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
-            
-            boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
-            assertTrue(match, "Received " + csvString + ", Expected the string to end with "
-                    + EXPECTED_INSERT2_CSV_ENDSWITH);
-        } finally {
-            transaction.close();
-        }
+        IDatabasePlatform platform = getPlatform();
+        if(!(platform instanceof NuoDbDatabasePlatform)){
+            ISymmetricDialect dbDialect = getDbDialect();
+            ISqlTemplate jdbcTemplate = getSqlTemplate();
+            ISqlTransaction transaction = jdbcTemplate.startSqlTransaction();
+            try {
+                dbDialect.disableSyncTriggers(transaction, null);
+                int count = insert(INSERT1_VALUES, transaction, dbDialect);
+                dbDialect.enableSyncTriggers(transaction);
+                transaction.commit();
+                assertTrue(count == 1);
+                String csvString = getNextDataRow();
+                // DB2 captures decimal differently
+                csvString = csvString.replaceFirst("\"00001\\.\"", "\"1\"");
+                // Informix captures decimal differently
+                csvString = csvString.replaceFirst("\"1.0000000000000000\"", "\"1\"");
+                // ASA captures decimal differently
+                csvString = csvString.replaceFirst("\"1.000000\"", "\"1\"");
+                
+                boolean match = csvString.endsWith(EXPECTED_INSERT2_CSV_ENDSWITH);
+                assertTrue(match, "Received " + csvString + ", Expected the string to end with "
+                        + EXPECTED_INSERT2_CSV_ENDSWITH);
+            } finally {
+                transaction.close();
+            }
+        }    
     }
 
     @Test
