@@ -195,7 +195,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
         }
         
-        Map<String, NodeCommunication> communicationRowsMap = new HashMap<>(communicationRows.size());
+        Map<String, NodeCommunication> communicationRowsMap = new HashMap<String, NodeCommunication>(communicationRows.size());
         for (NodeCommunication nodeCommunication : communicationRows) {
             communicationRowsMap.put(nodeCommunication.getIdentifier(), nodeCommunication);
         }
