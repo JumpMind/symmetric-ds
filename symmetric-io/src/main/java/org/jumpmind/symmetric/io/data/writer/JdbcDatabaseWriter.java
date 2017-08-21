@@ -38,9 +38,7 @@ public class JdbcDatabaseWriter extends DefaultDatabaseWriter {
         		this.targetTable = lookupTableAtTarget(this.sourceTable);
         }
         catch (Exception e) {
-        		if (this.sourceTable.getName().startsWith(tablePrefix)) {
-        			this.targetTable = this.sourceTable;
-        		}
+        		this.targetTable = this.sourceTable;
         }
         this.sourceTable.copyColumnTypesFrom(this.targetTable);
         if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
