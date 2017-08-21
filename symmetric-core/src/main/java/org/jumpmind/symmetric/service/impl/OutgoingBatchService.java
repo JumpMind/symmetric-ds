@@ -654,7 +654,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             summary.setCreateBy(rs.getString("last_update_by"));
             summary.setTableCount(rs.getInt("table_count"));
             String triggerId = rs.getString("trigger_id");
-            if (triggerId != null && triggerId.equals(ParameterConstants.ALL)) {
+            if (triggerId == null || triggerId.equals(ParameterConstants.ALL)) {
                 summary.setFullLoad(true);
             } else {
                 summary.setFullLoad(false);

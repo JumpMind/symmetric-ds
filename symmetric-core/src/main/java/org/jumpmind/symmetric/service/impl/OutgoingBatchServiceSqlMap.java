@@ -186,13 +186,11 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
       
         putSql("getLoadSummarySql",
                 "select " 
-                + "   target_node_id, load_id, count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
-                + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
-                //+ "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
-                + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
-                + "from $(table_reload_request) "
-                + "    where load_id = ? "
-                + "    group by load_id, target_node_id ");
+        		+ "cast(b.node_id as varchar) as target_node_id, b.load_id, count(*) as table_count, max(trigger_id) as trigger_id, max(create_table) as create_table, "
+                + "max(delete_first) as delete_first, max(processed) as processed, max(last_update_by) as last_update_by, max(b.last_update_time) "
+                + "from $(outgoing_batch) b join $(data_event) e on b.batch_id = e.batch_id join $(data) d on "
+                + "d.data_id = e.data_id left join $(table_reload_request) r on b.load_id = r.load_id where b.load_id = ? and d.event_type = 'R' "
+                + "group by b.load_id order by max(b.last_update_time) desc;");
         
         putSql("getLoadOverviewSql",
                 "select status, count(batch_id) as count "
