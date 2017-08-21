@@ -37,7 +37,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -47,6 +46,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -295,8 +295,8 @@ abstract public class AbstractService implements IService {
     }    
     
     
-    protected  List<BatchAck> readAcks(List<OutgoingBatch> batches, IOutgoingWithResponseTransport transport,
-            ITransportManager transportManager, IAcknowledgeService acknowledgeService)
+    protected List<BatchAck> readAcks(List<OutgoingBatch> batches, IOutgoingWithResponseTransport transport,
+            ITransportManager transportManager, IAcknowledgeService acknowledgeService, IDataExtractorService dataExtratorService)
             throws IOException {
 
         Set<Long> batchIds = new HashSet<Long>(batches.size());
@@ -321,11 +321,6 @@ abstract public class AbstractService implements IService {
             }
         } while (line != null);
 
-        if (StringUtils.isBlank(ackString)) {
-            throw new SymmetricException("Did not receive an acknowledgement for the batches sent.  "
-                    + "The 'ack string' was: '%s' and the 'extended ack string' was: '%s'", ackString, ackExtendedString);
-        }
-
         List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString,
                 ackExtendedString);
 
@@ -341,8 +336,20 @@ abstract public class AbstractService implements IService {
         }
 
         for (Long batchId : batchIds) {
-            if (batchId < batchIdInError) {
-                log.error("We expected but did not receive an ack for batch {}", batchId);
+            if (batchId < batchIdInError) {                
+                for (OutgoingBatch outgoingBatch : batches) {
+                    if (outgoingBatch.getBatchId() == batchId) {
+                        log.warn("We expected but did not receive an ack for batch {}.", outgoingBatch.getNodeBatchId());
+                        if (dataExtratorService != null) {
+                            if (!outgoingBatch.isLoadFlag()) {
+                                log.info("This could be because the batch is corrupt.  Removing the batch from staging");
+                                dataExtratorService.removeBatchFromStaging(outgoingBatch);
+                            } else {
+                                log.info("This could be because the batch is corrupt.  Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually");
+                            }
+                        }
+                    }
+                }
             }
         }
 

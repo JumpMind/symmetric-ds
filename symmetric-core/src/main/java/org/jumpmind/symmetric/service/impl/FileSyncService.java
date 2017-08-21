@@ -808,7 +808,7 @@ INodeCommunicationExecutor {
                     ((FileOutgoingTransport) transport).setProcessedBatches(batches);
                 }
                 List<BatchAck> batchAcks = readAcks(batches, transport,
-                        transportManager, engine.getAcknowledgeService());
+                        transportManager, engine.getAcknowledgeService(), null);
                 status.updateOutgoingStatus(batches, batchAcks);
             }
             if (!status.failed() && batches.size() > 0) {

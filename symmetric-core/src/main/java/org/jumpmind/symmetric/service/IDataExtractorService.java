@@ -67,5 +67,7 @@ public interface IDataExtractorService {
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
     
     public void resetExtractRequest(OutgoingBatch batch);
-
+    
+    public void removeBatchFromStaging(OutgoingBatch batch);
+    
 }

@@ -105,6 +105,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                     availableThreads--;
                                 }
                             }
+                            nodeCommunication.setBatchToSendCount(0);
                         }
                     }
             } else {

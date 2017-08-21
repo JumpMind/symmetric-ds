@@ -43,6 +43,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 
 @ManagedResource(description = "The management interface for a job")
 abstract public class AbstractJob implements Runnable, IJob {
@@ -107,8 +108,8 @@ abstract public class AbstractJob implements Runnable, IJob {
                 && !engine.getClusterService().isInfiniteLocked(getName())) {
             if (isCronSchedule()) {
                 String cronExpression = getSchedule();
-                log.info("Starting job '{}' with cron expression: '{}'", jobName, cronExpression);
                 cronTrigger = new CronTrigger(cronExpression);
+                log.info("Starting job '{}' with cron expression: '{}'", jobName, cronExpression, cronTrigger.nextExecutionTime(new SimpleTriggerContext()));
                 try {                    
                     this.scheduledJob = taskScheduler.schedule(this, cronTrigger);
                 } catch (Exception ex) {

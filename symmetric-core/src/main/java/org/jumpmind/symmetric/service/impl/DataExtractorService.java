@@ -2238,6 +2238,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
     }
+    
+    @Override
+    public void removeBatchFromStaging(OutgoingBatch batch) {
+        IStagedResource resource = getStagedResource(batch);
+        if (resource != null) {
+            resource.delete();
+        } else {
+            log.info("Could not remove batch {} from staging because it did not exist", batch.getNodeBatchId());
+        }
+    }
 
     class SelectFromTableEvent {
 

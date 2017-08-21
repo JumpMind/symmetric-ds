@@ -111,7 +111,9 @@ public class RemoteNodeStatus implements Serializable {
     }
 
     public void updateOutgoingStatus(List<OutgoingBatch> outgoingBatches, List<BatchAck> batches) {
+        int numberOfAcks = 0;
         if (batches != null) {
+            numberOfAcks = batches.size();
             for (BatchAck batch : batches) {
                 if (!batch.isOk()) {
                     status = Status.DATA_ERROR;
@@ -119,7 +121,9 @@ public class RemoteNodeStatus implements Serializable {
             }
         }
         
+        int numberOfBatches = 0;
         if (outgoingBatches != null) {
+            numberOfBatches = outgoingBatches.size();
             for (OutgoingBatch batch : outgoingBatches) {
                 batchesProcessed++;
                 if (batch.getIgnoreCount() == 0) {
@@ -134,6 +138,10 @@ public class RemoteNodeStatus implements Serializable {
                     status = Status.DATA_ERROR;
                 }
             }
+        }
+        
+        if (numberOfAcks != numberOfBatches) {
+            status = Status.DATA_ERROR;
         }
 
         if (status != Status.DATA_ERROR && dataProcessed > 0) {
