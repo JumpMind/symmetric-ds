@@ -61,7 +61,7 @@ public class JdbcDataLoaderFactory  extends DefaultDataLoaderFactory implements
 		DataSource dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
 		GenericJdbcPlatform platform = new GenericJdbcPlatform(dataSource, new SqlTemplateSettings());
 		platform.setName(parameterService.getString("jdbc.alias"));
-		platform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is("jdbc." + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS));
+		platform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is("jdbc." + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
 		
 		JdbcDatabaseWriter writer = new JdbcDatabaseWriter(platform);
 		writer.setTablePrefix(engine.getTablePrefix());
