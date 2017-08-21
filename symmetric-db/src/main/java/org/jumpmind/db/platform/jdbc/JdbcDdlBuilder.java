@@ -7,5 +7,4 @@ public class JdbcDdlBuilder extends AbstractDdlBuilder {
 	public JdbcDdlBuilder(String databaseName) {
 		super(databaseName);
 	}
-
 }

@@ -1806,7 +1806,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void writeColumnType(Table table, Column column, StringBuilder ddl) {
         ddl.append(getSqlType(column));
         writeColumnDefaultValueStmt(table, column, ddl);
-        if (column.isRequired()) {
+        if (column.isRequired() && databaseInfo.isNotNullColumnsSupported()) {
             ddl.append(" ");
             writeColumnNotNullableStmt(ddl);
         } else if (databaseInfo.isNullAsDefaultValueRequired()

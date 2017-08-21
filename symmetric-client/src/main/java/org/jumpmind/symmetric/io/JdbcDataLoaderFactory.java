@@ -12,6 +12,7 @@ import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -60,8 +61,11 @@ public class JdbcDataLoaderFactory  extends DefaultDataLoaderFactory implements
 		DataSource dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
 		GenericJdbcPlatform platform = new GenericJdbcPlatform(dataSource, new SqlTemplateSettings());
 		platform.setName(parameterService.getString("jdbc.alias"));
+		platform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is("jdbc." + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS));
 		
-		return new JdbcDatabaseWriter(platform);
+		JdbcDatabaseWriter writer = new JdbcDatabaseWriter(platform);
+		writer.setTablePrefix(engine.getTablePrefix());
+		return writer;
 	}
 	
 }

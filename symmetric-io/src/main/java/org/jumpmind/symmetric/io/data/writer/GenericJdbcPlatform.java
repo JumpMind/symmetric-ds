@@ -2,6 +2,8 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -47,9 +49,4 @@ public class GenericJdbcPlatform extends AbstractJdbcDatabasePlatform {
 		return new JdbcDdlReader(this);
 	}
 
-	@Override
-	public DatabaseInfo getDatabaseInfo() {
-		return new DatabaseInfo();
-	}
-	
 }
