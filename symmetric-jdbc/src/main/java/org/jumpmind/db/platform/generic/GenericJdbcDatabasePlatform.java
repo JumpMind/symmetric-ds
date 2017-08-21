@@ -11,14 +11,19 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
+	private String name;
+	
     public GenericJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
 
+    public void setName(String name) {
+		this.name = name; 
+	}
+	
     @Override
     public String getName() {
-        return DatabaseNamesConstants.GENERIC;
+        return this.name == null ? DatabaseNamesConstants.GENERIC : this.name;
     }
 
     @Override

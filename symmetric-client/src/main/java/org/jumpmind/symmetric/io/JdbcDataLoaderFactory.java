@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
@@ -17,7 +18,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
-import org.jumpmind.symmetric.io.data.writer.GenericJdbcPlatform;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.JdbcDatabaseWriter;
@@ -59,7 +59,7 @@ public class JdbcDataLoaderFactory  extends DefaultDataLoaderFactory implements
 		}
 		
 		DataSource dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
-		GenericJdbcPlatform platform = new GenericJdbcPlatform(dataSource, new SqlTemplateSettings());
+		GenericJdbcDatabasePlatform platform = new GenericJdbcDatabasePlatform(dataSource, new SqlTemplateSettings());
 		platform.setName(parameterService.getString("jdbc.alias"));
 		platform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is("jdbc." + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
 		
