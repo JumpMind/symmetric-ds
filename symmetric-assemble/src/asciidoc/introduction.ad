@@ -10,11 +10,11 @@ The software was designed to scale for a large number of nodes, work across low-
 === System Requirements
 
 SymmetricDS is written in Java and requires a Java Runtime Environment (JRE) Standard Edition (SE) or Java Development Kit (JDK)
-Standard Edition (SE) version 7.0 or above.
+Standard Edition (SE) version 8.0 or above.
 Most major operating systems and databases are supported.  See the list of supported databases in the <<databases-compatibility>> section.
 The minimum operating system requirements are:
 
-* Java SE Runtime Environment 7 or above
+* Java SE Runtime Environment 8 or above
 * Memory - 64 (MB) available
 * Disk - 256 (MB) available
 

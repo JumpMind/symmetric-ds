@@ -69,8 +69,8 @@ subprojects { subproject ->
     configurations.provided.transitive = true
     configurations.optional.transitive = false
 
-    sourceCompatibility=1.6
-    targetCompatibility=1.6
+    sourceCompatibility=1.8
+    targetCompatibility=1.8
     
     eclipse {   
         classpath {
@@ -79,8 +79,8 @@ subprojects { subproject ->
         }
         
         jdt {
-            sourceCompatibility = 1.7
-            targetCompatibility = 1.7
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
         }
         
         project.file.whenMerged { project ->
@@ -194,7 +194,7 @@ subprojects { subproject ->
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.1.0'
-        jettyVersion = '9.2.18.v20160721'
+        jettyVersion = '9.4.5.v20170502'
         nuodbVersion = '2.6.1'
         tiberoVersion = '6'
         env = System.getenv()

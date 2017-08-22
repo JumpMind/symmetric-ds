@@ -20,21 +20,9 @@
  */
 package org.jumpmind.symmetric;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Enumeration;
 
 import javax.management.Attribute;
 import javax.management.MBeanServer;
@@ -42,7 +30,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
@@ -52,6 +39,7 @@ import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -60,9 +48,6 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.session.AbstractSession;
-import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.server.session.HashedSession;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
@@ -277,9 +262,6 @@ public class SymmetricWebServer {
         
         webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", allowDirListing);
 
-        SessionManager sm = new SessionManager();
-        webapp.getSessionHandler().setSessionManager(sm);
-
         FilterHolder filterHolder = new FilterHolder(HttpMethodFilter.class);
         filterHolder.setInitParameter("server.allow.http.methods", allowedMethods);
         filterHolder.setInitParameter("server.disallow.http.methods", disallowedMethods);
@@ -393,7 +375,9 @@ public class SymmetricWebServer {
             sh.setAuthenticator(new BasicAuthenticator());
 
             HashLoginService loginService = new HashLoginService();
-            loginService.putUser(basicAuthUsername, new Password(basicAuthPassword), null);
+            UserStore userStore = new UserStore();
+            userStore.addUser(basicAuthUsername, new Password(basicAuthPassword), null);
+            loginService.setUserStore(userStore);
             sh.setLoginService(loginService);
 
             server.setHandler(sh);
@@ -628,134 +612,10 @@ public class SymmetricWebServer {
     public boolean isJmxEnabled() {
         return jmxEnabled;
     }
-
-    class SessionManager extends HashSessionManager {
-
-        public SessionManager() {
-            setMaxInactiveInterval(10 * 60);
-            setLazyLoad(true);
-            setDeleteUnrestorableSessions(true);
-            setSessionCookie(getSessionCookie() + (httpPort > 0 ? httpPort
-                    : httpsPort));
-        }
-
-        @Override
-        protected AbstractSession newSession(HttpServletRequest request) {
-            return new Session(this, request);
-        }
-
-        @Override
-        protected AbstractSession newSession(long created, long accessed, String clusterId) {
-            return new Session(this, created, accessed, clusterId);
-        }
-
-        @Override
-        protected synchronized HashedSession restoreSession(String idInCuster) {
-            if (isNotBlank(idInCuster)) {
-                return super.restoreSession(idInCuster);
-            } else {
-                return null;
-            }
-        }
-
-        public HashedSession restoreSession(InputStream is, HashedSession session) throws Exception {
-            DataInputStream di = new DataInputStream(is);
-
-            String clusterId = di.readUTF();
-            di.readUTF(); // nodeId
-
-            long created = di.readLong();
-            long accessed = di.readLong();
-            int requests = di.readInt();
-
-            if (session == null)
-                session = (HashedSession) newSession(created, accessed, clusterId);
-            session.setRequests(requests);
-
-            int size = di.readInt();
-
-            restoreSessionAttributes(di, size, session);
-
-            try {
-                int maxIdle = di.readInt();
-                session.setMaxInactiveInterval(maxIdle);
-            } catch (EOFException e) {
-                log.debug("No maxInactiveInterval persisted for session " + clusterId, e);
-            }
-
-            return session;
-        }
-
-        private void restoreSessionAttributes(InputStream is, int size, HashedSession session) throws Exception {
-            if (size > 0) {
-                ObjectInputStream ois = new ObjectInputStream(is);
-                for (int i = 0; i < size; i++) {
-                    String key = ois.readUTF();
-                    try {
-                        Object value = ois.readObject();
-                        session.setAttribute(key, value);
-                    } catch (Exception ex) {
-                        if (ex instanceof ClassCastException || ex instanceof ClassNotFoundException) {
-                            log.warn("Could not restore the '" + key
-                                    + "' session object.  Code has probably changed.  The error message was: " + ex.getMessage());
-                        } else {
-                            log.error("Could not restore the '" + key + "' session object.", ex);
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    class Session extends HashedSession {
-
-        protected Session(HashSessionManager hashSessionManager, HttpServletRequest request) {
-            super(hashSessionManager, request);
-        }
-
-        protected Session(HashSessionManager hashSessionManager, long created, long accessed, String clusterId) {
-            super(hashSessionManager, created, accessed, clusterId);
-        }
-
-        @Override
-        public synchronized void save(OutputStream os) throws IOException {
-            DataOutputStream out = new DataOutputStream(os);
-            out.writeUTF(getClusterId());
-            out.writeUTF(getNodeId());
-            out.writeLong(getCreationTime());
-            out.writeLong(getAccessed());
-            out.writeInt(getRequests());
-
-            Enumeration<String> e = getAttributeNames();
-            int count = 0;
-            while (e.hasMoreElements()) {
-                String key = e.nextElement();
-                Object obj = doGet(key);
-                if (obj instanceof Serializable) {
-                    count++;
-                }
-            }
-            out.writeInt(count);
-            ObjectOutputStream oos = new ObjectOutputStream(out);
-            e = getAttributeNames();
-            while (e.hasMoreElements()) {
-                String key = e.nextElement();
-                Object obj = doGet(key);
-                if (obj instanceof Serializable) {
-                    oos.writeUTF(key);
-                    oos.writeObject(obj);
-                }
-            }
-            oos.flush();
-            out.writeInt(getMaxInactiveInterval());
-        }
-
-    }
     
     protected Class<?> loadRemoteStatusEndpoint() {
         try {            
-            Class clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");
+            Class<?> clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");
             return clazz;
         } catch (Exception ex) {
             log.debug("Failed to load remote status endpoint.", ex);
