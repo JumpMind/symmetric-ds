@@ -181,12 +181,14 @@ public class Data extends CsvData implements Serializable {
     public String getPkDataFor(String columnName) {
         String[] pkData = toParsedPkData();
         String[] keyNames = triggerHistory.getParsedPkColumnNames();
-        for (int i = 0; i < keyNames.length; i++) {
-            if (columnName.equals(keyNames[i])) {
-                return pkData[i];
+        if (columnName != null && pkData != null) {
+            for (int i = 0; i < keyNames.length; i++) {
+                if (columnName.equals(keyNames[i])) {
+                    return pkData[i];
+                }
             }
         }
         return null;
-    }    
+    }
 
 }
