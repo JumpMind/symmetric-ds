@@ -273,6 +273,8 @@ public class DatabaseInfo {
      */
     private boolean requiredCharColumnEmptyStringSameAsNull;
     
+    private boolean notNullColumnsSupported = true;
+    
 	/**
      * Creates a new platform info object.
      */
@@ -1346,4 +1348,14 @@ public class DatabaseInfo {
     public String getSchemaSeparator() {
         return schemaSeparator;
     }
+
+	public boolean isNotNullColumnsSupported() {
+		return notNullColumnsSupported;
+	}
+
+	public void setNotNullColumnsSupported(boolean notNullColumnsSupported) {
+		this.notNullColumnsSupported = notNullColumnsSupported;
+	}
+    
+    
 }

@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -166,7 +167,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     public List<NodeCommunication> list(CommunicationType communicationType) {
         initialize();
+        long ts = System.currentTimeMillis();
         List<NodeCommunication> communicationRows = find(communicationType);
+        log.debug("Found {} node communication locks to push to in {}ms", communicationRows.size(), System.currentTimeMillis()-ts);
         List<Node> nodesToCommunicateWith = null;
         switch (communicationType) {
             case PULL:
@@ -175,7 +178,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
             case FILE_PUSH:
             case PUSH:
+                ts = System.currentTimeMillis();
                 nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPushTo());
+                log.debug("Found {} nodes to push to in {}ms", nodesToCommunicateWith.size(), System.currentTimeMillis()-ts);
                 break;
             case OFFLN_PUSH:
             case OFF_FSPUSH:
@@ -189,17 +194,16 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 nodesToCommunicateWith = new ArrayList<Node>(0);
                 break;
         }
-
+        
+        Map<String, NodeCommunication> communicationRowsMap = new HashMap<String, NodeCommunication>(communicationRows.size());
+        for (NodeCommunication nodeCommunication : communicationRows) {
+            communicationRowsMap.put(nodeCommunication.getIdentifier(), nodeCommunication);
+        }
+        
         List<NodeCommunication> nodesToCommunicateWithList = filterForChannelThreading(nodesToCommunicateWith);
-
+        Map<String, NodeCommunication> nodesToCommunicateWithListMap = new HashMap<String, NodeCommunication>(nodesToCommunicateWithList.size());
         for (NodeCommunication nodeToCommunicateWith : nodesToCommunicateWithList) {
-            NodeCommunication comm = null;
-            for (NodeCommunication nodeCommunication : communicationRows) {
-                if (nodeCommunication.getIdentifier().equals(nodeToCommunicateWith.getIdentifier())) {
-                    comm = nodeCommunication;
-                    break;
-                }
-            }
+            NodeCommunication comm = communicationRowsMap.get(nodeToCommunicateWith.getIdentifier());
 
             if (comm == null) {
                 comm = new NodeCommunication();
@@ -211,24 +215,34 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
 
             comm.setNode(nodeToCommunicateWith.getNode());
+            
+            nodesToCommunicateWithListMap.put(nodeToCommunicateWith.getNodeId(), nodeToCommunicateWith);
         }
-
+        
         Iterator<NodeCommunication> it = communicationRows.iterator();
         while (it.hasNext()) {
             NodeCommunication nodeCommunication = it.next();
 
-            Node node = null;
-            for (NodeCommunication nodeToCommunicateWith : nodesToCommunicateWithList) {
-                if (nodeCommunication.getNodeId().equals(nodeToCommunicateWith.getNodeId())) {
-                    node = nodeToCommunicateWith.getNode();
-                    break;
-                }
-            }
-
+            NodeCommunication nodeToCommunicateWith = nodesToCommunicateWithListMap.get(nodeCommunication.getNodeId()); 
+            Node node = nodeToCommunicateWith != null ? nodeToCommunicateWith.getNode() : null;
             if (node == null) {
                 delete(nodeCommunication);
                 it.remove();
             }
+        }
+        
+        if (communicationType == CommunicationType.PUSH && 
+                parameterService.getInt(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER) < communicationRows.size()) {
+            ts = System.currentTimeMillis();
+            List<String> nodeIds = getNodeIdsWithUnsentCount();
+            List<NodeCommunication> filteredNodes = new ArrayList<NodeCommunication>(nodeIds.size());
+            for (NodeCommunication nodeCommunication : communicationRows) {
+                if (nodeIds.contains(nodeCommunication.getNodeId())) {
+                    filteredNodes.add(nodeCommunication);
+                }
+            }
+            log.debug("Filtered down to {} nodes to push to in {}ms", filteredNodes.size(), System.currentTimeMillis()-ts);
+            communicationRows = filteredNodes;
         }
 
         if (communicationType == CommunicationType.PULL || communicationType == CommunicationType.FILE_PULL) {
@@ -237,14 +251,20 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
         return communicationRows;
     }
+    
+    protected List<String> getNodeIdsWithUnsentCount() {
+        return sqlTemplate.query(getSql("selectNodeIdsWithUnsentBatchsSql"),
+                new StringMapper());        
+    }
 
     protected List<NodeCommunication> filterForChannelThreading(List<Node> nodesToCommunicateWith) {
         List<NodeCommunication> nodeCommunications = new ArrayList<NodeCommunication>();
 
+        Collection<Channel> channels = configurationService.getChannels(false).values();
         for (Node node : nodesToCommunicateWith) {
             if (node.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
                 Set<String> channelThreads = new HashSet<String>();
-                for (Channel channel : configurationService.getChannels(false).values()) {
+                for (Channel channel : channels) {
                     if (!channelThreads.contains(channel.getQueue())) {
                         NodeCommunication nodeCommunication = new NodeCommunication();
                         nodeCommunication.setNodeId(node.getNodeId());
