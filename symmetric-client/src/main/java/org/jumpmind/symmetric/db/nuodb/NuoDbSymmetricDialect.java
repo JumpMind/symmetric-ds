@@ -142,8 +142,8 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', 'null') from dual");
-        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', 'null') from dual");
+        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', null) from dual");
+        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', null) from dual");
     }
 
     public String getSyncTriggersExpression() {
