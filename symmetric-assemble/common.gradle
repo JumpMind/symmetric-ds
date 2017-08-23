@@ -194,7 +194,7 @@ subprojects { subproject ->
         bouncyCastleVersion = '140'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.1.0'
-        jettyVersion = '9.4.5.v20170502'
+        jettyVersion = project.property('jetty.version')
         nuodbVersion = '2.6.1'
         tiberoVersion = '6'
         env = System.getenv()
