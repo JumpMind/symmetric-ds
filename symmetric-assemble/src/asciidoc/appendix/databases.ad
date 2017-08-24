@@ -399,6 +399,7 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |select current_schema()
 |===
 
+include::ignite.ad[]
 include::db2.ad[]
 include::derby.ad[]
 include::firebird.ad[]

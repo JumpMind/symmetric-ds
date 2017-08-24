@@ -39,7 +39,13 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
         try {
             c = ds.getConnection();
             DatabaseMetaData meta = c.getMetaData();
-            String quoteString = meta.getIdentifierQuoteString();
+            String quoteString = null;
+            try {
+            		meta.getIdentifierQuoteString();
+            } catch (Exception e) {
+            		// Do nothing just leave blank if meta data is not supported
+            }
+            
             if (isNotBlank(quoteString)) {
                 databaseInfo.setDelimiterToken(quoteString);
             } else {
@@ -79,6 +85,8 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
                     return true;
                 }
             }
+        } catch (Exception e) {
+        		// Do nothing if meta data not supported
         } finally {
             JdbcSqlTemplate.close(rs);
         }
