@@ -50,6 +50,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";
     public final static String PARAM_MAPPED_KEY_COLUMN = "LOOKUP_KEY_COLUMN";
     public final static String PARAM_EXTERNAL_ID_COLUMN = "EXTERNAL_ID_COLUMN";
+    public final static String PARAM_ALL_NODES_VALUE = "ALL_NODES_VALUE";
 
     final static String EXPRESSION_KEY = String.format("%s.Expression.",
             LookupTableDataRouter.class.getName());
@@ -83,7 +84,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             Set<String> externalIds = lookupTable.get(keyData);
             if (externalIds != null) {
                 for (Node node : nodes) {
-                    if (externalIds.contains(node.getExternalId())) {
+                    if (externalIds.contains(node.getExternalId()) || externalIds.contains(params.get(PARAM_ALL_NODES_VALUE))) {
                         nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
                     }
                 }
@@ -135,7 +136,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
                     }
                 }
                 if (!valid ||
-                    params.size() != 4 || 
+                    params.size() < 4 || params.size() > 5 || 
                     !params.containsKey(PARAM_TABLE) ||
                     !params.containsKey(PARAM_KEY_COLUMN) ||
                     !params.containsKey(PARAM_MAPPED_KEY_COLUMN) ||
