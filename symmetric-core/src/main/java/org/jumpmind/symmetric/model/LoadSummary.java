@@ -31,6 +31,15 @@ public class LoadSummary  implements Serializable {
     private String processStatus;
     private String processName;
     private int targetNodeCount;
+    private int ignoreCount;
+    
+    public int getIgnoreCount() {
+        return ignoreCount;
+    }
+    
+    public void setIgnoreCount(int ignoreCount) {
+        this.ignoreCount = ignoreCount;
+    }
     
     public boolean isActive() {
         return pendingBatchCount > 0;
