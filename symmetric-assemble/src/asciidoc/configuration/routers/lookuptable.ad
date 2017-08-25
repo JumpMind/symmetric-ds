@@ -16,6 +16,7 @@ LOOKUP_TABLE:: This is the name of the lookup table.
 KEY_COLUMN:: This is the name of the column on the table that is being routed. It will be used as a key into the lookup table.
 LOOKUP_KEY_COLUMN:: This is the name of the column that is the key on the lookup table.
 EXTERNAL_ID_COLUMN:: This is the name of the column that contains the external_id of the node to route to on the lookup table.
+ALL_NODES_VALUE:: This is an optional parameter that allows you to specify a value in the EXTERNAL_ID_COLUMN that means "send to all nodes".
 ====
 
 NOTE: The lookup table will be read into memory and cached for the duration of a routing pass for a single channel.
