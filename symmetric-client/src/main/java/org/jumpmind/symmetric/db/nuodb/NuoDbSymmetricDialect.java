@@ -34,8 +34,11 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
     
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from system.functions where functionname='$(functionName)' and schema in (select database() from system.dual)" ;
+    
+    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
+    static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "sync_node_disabled";
 
     public NuoDbSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -56,12 +59,49 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void createRequiredDatabaseObjects() {
-        
+        String function = "sym_get_session_variable";
+        if(!installed(SQL_FUNCTION_INSTALLED, function)){
+            String sql = "create function $(functionName)(akey string) returns string                                                        " + 
+                    " as                                                        " +
+                    " VAR l_out string = NULL;                                                        " + 
+                    " try                                                        " + 
+                    " l_out = (SELECT context_value from session_cache where name = akey);                                                        " + 
+                    " catch(error)                                                        " + 
+                    " create temp table if not exists session_cache (name string primary key, context_value string) on commit preserve rows;                                                        " + 
+                    " end_try;                                                        " + 
+                    " return l_out;                                                        " + 
+                    " END_FUNCTION;";
+            install(sql, function);
+        }
+        function = "sym_set_session_variable";
+        if(!installed(SQL_FUNCTION_INSTALLED, function)){
+            String sql = "create function $(functionName)(akey string, avalue string) returns string                                                        " + 
+                    " as                                                        " +
+                    " VAR l_new string = NULL;                                                        " + 
+                    " try                                                        " + 
+                    " INSERT INTO session_cache (name, context_value) values (akey, avalue) ON DUPLICATE KEY UPDATE context_value = avalue;                                                        " + 
+                    " catch(error)                                                        " + 
+                    " create temp table if not exists session_cache (name string primary key, context_value string) on commit preserve rows;                                                        " + 
+                    " INSERT INTO session_cache VALUES (akey, avalue);                                                        "+
+                    " l_new = error;                                                        "+
+                    " end_try;                                                        " + 
+                    " return l_new;                                                        " + 
+                    " END_FUNCTION;";
+            install(sql, function);
+        }
     }
     
     @Override
     public void dropRequiredDatabaseObjects() {
-      
+        String function = "sym_get_session_variable";
+        if (installed(SQL_FUNCTION_INSTALLED, function)) {
+            uninstall(SQL_DROP_FUNCTION, function);
+        }
+        
+        function = "sym_set_session_variable";
+        if (installed(SQL_FUNCTION_INSTALLED, function)){
+            uninstall(SQL_DROP_FUNCTION, function);
+        }
     }
 
     @Override
@@ -94,15 +134,20 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        //NUODB does not currently support this
+        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1') from dual");
+        if (nodeId != null) {
+            transaction
+                    .prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from dual");
+        }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        //NUODB does not currently support this
+        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', null) from dual");
+        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', null) from dual");
     }
 
     public String getSyncTriggersExpression() {
-        return "1=1";
+        return "sym_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
 
     public void cleanDatabase() {
