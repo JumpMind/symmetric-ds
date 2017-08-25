@@ -192,20 +192,20 @@ public class JobManager extends AbstractService implements IJobManager {
     
     protected List<IJob> sortJobs(List<IJob> jobs) {
         List<IJob> jobsSorted = new ArrayList<IJob>(jobs);
-        
-        Collections.sort(jobsSorted, new Comparator<IJob>() {
-            @Override
-            public int compare(IJob job1, IJob job2) {
-                Integer job1Started = job1.isStarted() ? 1 : 0;
-                Integer job2Started = job2.isStarted() ? 1 : 0;
-                if (job1Started == job2Started) {
-                    return -job1.getJobDefinition().getJobType().compareTo(job2.getJobDefinition().getJobType());
-                } else {                    
-                    return -job1Started.compareTo(job2Started);
+        if (jobs != null) {
+            Collections.sort(jobsSorted, new Comparator<IJob>() {
+                @Override
+                public int compare(IJob job1, IJob job2) {
+                    Integer job1Started = job1.isStarted() ? 1 : 0;
+                    Integer job2Started = job2.isStarted() ? 1 : 0;
+                    if (job1Started == job2Started) {
+                        return -job1.getJobDefinition().getJobType().compareTo(job2.getJobDefinition().getJobType());
+                    } else {
+                        return -job1Started.compareTo(job2Started);
+                    }
                 }
-            }
-        });
-        
+            });
+        }
         return jobsSorted;
     }
 
