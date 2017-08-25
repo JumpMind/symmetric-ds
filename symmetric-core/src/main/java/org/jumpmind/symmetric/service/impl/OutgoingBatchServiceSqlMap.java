@@ -190,7 +190,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + "max(delete_first) as delete_first, max(processed) as processed, max(last_update_by) as last_update_by, max(b.last_update_time) "
                 + "from $(outgoing_batch) b join $(data_event) e on b.batch_id = e.batch_id join $(data) d on "
                 + "d.data_id = e.data_id left join $(table_reload_request) r on b.load_id = r.load_id where b.load_id = ? and d.event_type = 'R' "
-                + "group by b.load_id order by max(b.last_update_time) desc;");
+                + "group by b.load_id order by max(b.last_update_time) desc");
         
         putSql("getLoadOverviewSql",
                 "select status, count(batch_id) as count "
