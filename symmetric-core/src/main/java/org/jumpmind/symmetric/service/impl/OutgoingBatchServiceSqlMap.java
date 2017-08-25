@@ -144,14 +144,14 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectOutgoingBatchSummaryByStatusAndChannelSql",
                 "select count(*) as batches, sum(s.data_row_count) as data, s.status, s.node_id, min(s.create_time) as oldest_batch_time, s.channel_id,      "
-                        + " max(s.last_update_time) as last_update_time, b.sql_message as sql_message, min(s.batch_id) as batch_id, "
+                        + " max(s.last_update_time) as last_update_time, min(s.batch_id) as batch_id, max(s.error_flag), "
                         + " sum(s.byte_count) as total_bytes, sum(s.router_millis + s.extract_millis + s.network_millis + s.filter_millis + s.load_millis) as total_millis, "
                         + " sum(s.router_millis) as total_router_millis, sum(s.extract_millis) as total_extract_millis, "
                         + " sum(s.network_millis) as total_network_millis, sum(s.filter_millis) as total_filter_millis, "
                         + " sum(s.load_millis) as total_load_millis "
-                        + "  from $(outgoing_batch) s join $(outgoing_batch) b on b.batch_id=s.batch_id and b.node_id=s.node_id join"
+                        + "  from $(outgoing_batch) s join"
                         + "  $(node) n on n.node_id=s.node_id and n.sync_enabled=1"
-                        + " where s.status in (:STATUS_LIST) group by s.status, s.node_id, s.channel_id, b.sql_message order by s.node_id, oldest_batch_time asc   ");
+                        + " where s.status in (:STATUS_LIST) group by s.status, s.node_id, s.channel_id order by s.node_id, oldest_batch_time asc   ");
 
         putSql("updateOutgoingBatchesStatusSql",
                 "update $(outgoing_batch) set status=? where status = ?   ");
