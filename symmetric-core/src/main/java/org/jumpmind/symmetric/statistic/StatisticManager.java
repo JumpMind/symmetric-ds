@@ -446,6 +446,9 @@ public class StatisticManager implements IStatisticManager {
         }
     }
 
+    protected void saveAdditionalStats(Date endTime, ChannelStats stats) {
+    }
+    
     public void flush() {
 
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
@@ -463,6 +466,7 @@ public class StatisticManager implements IStatisticManager {
                             }
                         }
                         stats.setEndTime(endTime);
+                        saveAdditionalStats(endTime, stats);
                         statisticService.save(stats);
                     }
                 }
