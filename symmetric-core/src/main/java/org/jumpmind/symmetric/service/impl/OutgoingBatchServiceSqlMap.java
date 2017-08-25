@@ -144,7 +144,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectOutgoingBatchSummaryByStatusAndChannelSql",
                 "select count(*) as batches, sum(s.data_row_count) as data, s.status, s.node_id, min(s.create_time) as oldest_batch_time, s.channel_id,      "
-                        + " max(s.last_update_time) as last_update_time, min(s.batch_id) as batch_id, max(s.error_flag), "
+                        + " max(s.last_update_time) as last_update_time, min(s.batch_id) as batch_id, max(s.error_flag) as error_flag, "
                         + " sum(s.byte_count) as total_bytes, sum(s.router_millis + s.extract_millis + s.network_millis + s.filter_millis + s.load_millis) as total_millis, "
                         + " sum(s.router_millis) as total_router_millis, sum(s.extract_millis) as total_extract_millis, "
                         + " sum(s.network_millis) as total_network_millis, sum(s.filter_millis) as total_filter_millis, "
@@ -186,7 +186,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
       
         putSql("getLoadSummarySql",
                 "select " 
-        		+ "cast(b.node_id as varchar) as target_node_id, b.load_id, count(*) as table_count, max(trigger_id) as trigger_id, max(create_table) as create_table, "
+        		+ "cast(b.node_id as varchar(50)) as target_node_id, b.load_id, count(*) as table_count, max(trigger_id) as trigger_id, max(create_table) as create_table, "
                 + "max(delete_first) as delete_first, max(processed) as processed, max(last_update_by) as last_update_by, max(b.last_update_time) "
                 + "from $(outgoing_batch) b join $(data_event) e on b.batch_id = e.batch_id join $(data) d on "
                 + "d.data_id = e.data_id left join $(table_reload_request) r on b.load_id = r.load_id where b.load_id = ? and d.event_type = 'R' "
