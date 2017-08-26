@@ -191,8 +191,9 @@ public class JobManager extends AbstractService implements IJobManager {
     }
     
     protected List<IJob> sortJobs(List<IJob> jobs) {
-        List<IJob> jobsSorted = new ArrayList<IJob>(jobs);
+        List<IJob> jobsSorted = new ArrayList<>();
         if (jobs != null) {
+            jobsSorted.addAll(jobs);
             Collections.sort(jobsSorted, new Comparator<IJob>() {
                 @Override
                 public int compare(IJob job1, IJob job2) {
