@@ -33,6 +33,8 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
     public Db2zOsTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        
         sqlTemplates.put("insertTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n" +
 "                                AFTER INSERT ON $(schemaName)$(tableName)                                                                                                                              \n" +
