@@ -46,7 +46,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
 
     final static Logger log = LoggerFactory.getLogger(LookupTableDataRouter.class);
 
-    public final static String PARAM_TABLE = "LOOKUP_TABLE";
+    public final static String PARAM_LOOKUP_TABLE = "LOOKUP_TABLE";
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";
     public final static String PARAM_MAPPED_KEY_COLUMN = "LOOKUP_KEY_COLUMN";
     public final static String PARAM_EXTERNAL_ID_COLUMN = "EXTERNAL_ID_COLUMN";
@@ -137,7 +137,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
                 }
                 if (!valid ||
                     params.size() < 4 || params.size() > 5 || 
-                    !params.containsKey(PARAM_TABLE) ||
+                    !params.containsKey(PARAM_LOOKUP_TABLE) ||
                     !params.containsKey(PARAM_KEY_COLUMN) ||
                     !params.containsKey(PARAM_MAPPED_KEY_COLUMN) ||
                     !params.containsKey(PARAM_EXTERNAL_ID_COLUMN)) {
@@ -155,7 +155,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
     @SuppressWarnings("unchecked")
     protected Map<String, Set<String>> getLookupTable(final Map<String, String> params, Router router,
             SimpleRouterContext routingContext) {
-        final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get(PARAM_TABLE);
+        final String CTX_CACHE_KEY = LOOKUP_TABLE_KEY + "." + params.get(PARAM_LOOKUP_TABLE);
         Map<String, Set<String>> lookupMap = (Map<String, Set<String>>) routingContext
                 .getContextCache().get(CTX_CACHE_KEY);
         if (lookupMap == null) {
@@ -163,7 +163,7 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             final Map<String, Set<String>> fillMap = new HashMap<String, Set<String>>();
             template.query(String.format("select %s, %s from %s",
                     params.get(PARAM_MAPPED_KEY_COLUMN), params.get(PARAM_EXTERNAL_ID_COLUMN),
-                    params.get(PARAM_TABLE)), new ISqlRowMapper<Object>() {
+                    params.get(PARAM_LOOKUP_TABLE)), new ISqlRowMapper<Object>() {
                 public Object mapRow(Row rs) {
                     String key = rs.getString(params.get(PARAM_MAPPED_KEY_COLUMN));
                     String value = rs.getString(params.get(PARAM_EXTERNAL_ID_COLUMN));
