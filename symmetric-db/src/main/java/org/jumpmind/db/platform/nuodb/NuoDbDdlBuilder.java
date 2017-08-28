@@ -224,7 +224,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         writeTableAlterStmt(table, ddl);
         ddl.append("DROP INDEX ");
         printIdentifier(getIndexName(index), ddl);
-        ddl.append("IF EXISTS ");
+        ddl.append(" IF EXISTS ");
         printEndOfStatement(ddl);
     }
 
