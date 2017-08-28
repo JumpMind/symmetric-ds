@@ -36,6 +36,9 @@ public class JdbcDatabaseWriter extends DefaultDatabaseWriter {
         this.sourceTable = table;
         try {
         		this.targetTable = lookupTableAtTarget(this.sourceTable);
+        		if (targetTable == null) {
+        			this.targetTable = sourceTable;
+        		}
         }
         catch (Exception e) {
         		this.targetTable = this.sourceTable;

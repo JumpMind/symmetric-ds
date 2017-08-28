@@ -414,10 +414,8 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         public IncomingBatchSummary mapRow(Row rs) {
             IncomingBatchSummary summary = super.mapRow(rs);
             summary.setChannel(rs.getString("channel_id"));
-            summary.setSqlMessage(rs.getString("sql_message"));
-            if (summary.getSqlMessage() != null) {
-                summary.setErrorBatchId(rs.getLong("batch_id"));
-            }
+            summary.setErrorFlag(rs.getBoolean("error_flag"));
+            summary.setMinBatchId(rs.getLong("batch_id"));
             return summary;
         }
     }

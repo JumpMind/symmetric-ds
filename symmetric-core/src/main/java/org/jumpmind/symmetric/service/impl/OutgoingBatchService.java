@@ -990,10 +990,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = super.mapRow(rs);
             summary.setChannel(rs.getString("channel_id"));
-            summary.setSqlMessage(rs.getString("sql_message"));
-            if (summary.getSqlMessage() != null) {
-                summary.setErrorBatchId(rs.getLong("batch_id"));
-            }
+            summary.setErrorFlag(rs.getBoolean("error_flag"));
+            summary.setMinBatchId(rs.getLong("batch_id"));
             return summary;
         }
     }

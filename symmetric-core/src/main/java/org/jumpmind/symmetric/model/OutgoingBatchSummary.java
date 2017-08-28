@@ -34,13 +34,29 @@ public class OutgoingBatchSummary implements Serializable {
     private int batchCount;
     private int dataCount;
     private OutgoingBatch.Status status;
+    private boolean errorFlag;
     private Date oldestBatchCreateTime;
     private Date lastBatchUpdateTime;
     private String channel;
-    private String sqlMessage;
-    private long errorBatchId;
     private long totalBytes;
     private long totalMillis;
+    private long minBatchId;
+    
+    public void setMinBatchId(long minBatchId) {
+        this.minBatchId = minBatchId;
+    }
+    
+    public long getMinBatchId() {
+        return minBatchId;
+    }
+    
+    public void setErrorFlag(boolean errorFlag) {
+        this.errorFlag = errorFlag;
+    }
+    
+    public boolean isErrorFlag() {
+        return errorFlag;
+    }
     
     public String getNodeId() {
         return nodeId;
@@ -96,22 +112,6 @@ public class OutgoingBatchSummary implements Serializable {
 
     public void setLastBatchUpdateTime(Date lastBatchUpdateTime) {
         this.lastBatchUpdateTime = lastBatchUpdateTime;
-    }
-
-    public String getSqlMessage() {
-        return sqlMessage;
-    }
-
-    public void setSqlMessage(String sqlMessage) {
-        this.sqlMessage = sqlMessage;
-    }
-
-    public long getErrorBatchId() {
-        return errorBatchId;
-    }
-
-    public void setErrorBatchId(long errorBatchId) {
-        this.errorBatchId = errorBatchId;
     }
 
     public long getTotalBytes() {

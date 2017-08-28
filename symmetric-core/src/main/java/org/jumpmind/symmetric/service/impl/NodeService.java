@@ -763,7 +763,8 @@ public class NodeService extends AbstractService implements INodeService {
         Node myNode = findIdentity();
         long restartDelayMinutes = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_RESTART_MINUTES);
 
-        if (myNode != null && System.currentTimeMillis() - engine.getLastRestartTime().getTime() > restartDelayMinutes * 60000) {
+        Date lastRestartTime = engine.getLastRestartTime() != null ? engine.getLastRestartTime() : new Date();
+        if (myNode != null && System.currentTimeMillis() - lastRestartTime.getTime() > restartDelayMinutes * 60000) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
 
             List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));

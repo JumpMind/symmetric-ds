@@ -37,8 +37,8 @@ public class IncomingBatchSummary implements Serializable {
     private Date oldestBatchCreateTime;
     private Date lastBatchUpdateTime;
     private String channel;
-    private String sqlMessage;
-    private long errorBatchId;
+    private long minBatchId;
+    private boolean errorFlag;
     
     public String getNodeId() {
         return nodeId;
@@ -96,20 +96,20 @@ public class IncomingBatchSummary implements Serializable {
         this.lastBatchUpdateTime = lastBatchUpdateTime;
     }
     
-    public String getSqlMessage() {
-        return sqlMessage;
+    public void setErrorFlag(boolean errorFlag) {
+        this.errorFlag = errorFlag;
+    }
+    
+    public boolean isErrorFlag() {
+        return errorFlag;
     }
 
-    public void setSqlMessage(String sqlMessage) {
-        this.sqlMessage = sqlMessage;
+    public long getMinBatchId() {
+        return minBatchId;
     }
 
-    public long getErrorBatchId() {
-        return errorBatchId;
-    }
-
-    public void setErrorBatchId(long errorBatchId) {
-        this.errorBatchId = errorBatchId;
+    public void setMinBatchId(long errorBatchId) {
+        this.minBatchId = errorBatchId;
     }
     
 }
