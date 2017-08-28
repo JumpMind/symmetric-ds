@@ -115,14 +115,11 @@ public class MetaDataColumnDescriptor {
         if (foundIdx > 0) {
             switch (_jdbcType) {
             case Types.BIT:
-            		String temp = resultSet.getString(foundIdx);
-                return temp != null ? Boolean.parseBoolean(temp) : Boolean.FALSE;
+                return new Boolean(resultSet.getBoolean(foundIdx));
             case Types.INTEGER:
-            		String tempInt = resultSet.getString(foundIdx);
-                return tempInt != null ? Integer.parseInt(tempInt) : new Integer(0);
+                return new Integer(resultSet.getInt(foundIdx));
             case Types.TINYINT:
-            		String tempTiny = resultSet.getString(foundIdx);
-                return tempTiny != null ? Short.parseShort(tempTiny) : new Short((short)0);
+                return new Short(resultSet.getShort(foundIdx));
             default:
                 return resultSet.getString(foundIdx);
             }
