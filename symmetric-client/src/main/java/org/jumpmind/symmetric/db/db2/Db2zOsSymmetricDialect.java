@@ -43,6 +43,10 @@ public class Db2zOsSymmetricDialect extends Db2SymmetricDialect implements ISymm
     }
     
     @Override
+    public void enableSyncTriggers(ISqlTransaction transaction) {
+    }
+    
+    @Override
     public String getSyncTriggersExpression() {
         return "1=1";
     }
