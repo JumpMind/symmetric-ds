@@ -328,6 +328,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
         this.statisticManager = new StatisticManager(parameterService, nodeService,
                 configurationService, statisticService, clusterService);
+        this.statisticManager = createStatisticManager();
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
                 statisticManager);
         this.purgeService = new PurgeService(parameterService, symmetricDialect, clusterService,
@@ -397,6 +398,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     abstract protected IStagingManager createStagingManager();
+
+    abstract protected IStatisticManager createStatisticManager();
 
     abstract protected ISymmetricDialect createSymmetricDialect();
 

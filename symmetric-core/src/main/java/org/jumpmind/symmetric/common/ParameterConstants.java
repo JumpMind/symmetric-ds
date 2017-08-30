@@ -393,6 +393,8 @@ final public class ParameterConstants {
     
     public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
     
+    public final static String STATISTIC_MANAGER_CLASS = "statistic.manager.class";
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
