@@ -66,7 +66,7 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     
     @Override
     public String getSourceNodeExpression() {
-    		return supportsGlobalVariables ? super.getSourceNodeExpression() : "";
+    		return supportsGlobalVariables ? super.getSourceNodeExpression() : "null";
     }
     
     @Override
