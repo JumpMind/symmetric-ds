@@ -35,5 +35,11 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
         }
         return defaultSchema;
     }
+    
+    @Override
+    public String getDefaultCatalog() {
+    		// This must return null for AS400, an empty string will return no match on readTable meta data.    	
+    		return null;
+    }
 
 }

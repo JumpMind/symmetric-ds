@@ -25,6 +25,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.lang.reflect.Field;
 import java.sql.Types;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -374,15 +375,15 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
 
-		String ddl = sqlTemplates.get(dml.name().toLowerCase() + "TriggerTemplate");
+		String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "TriggerTemplate");
 		if (trigger.isStreamRow()) {
-		    String reloadDdl = sqlTemplates.get(dml.name().toLowerCase() + "ReloadTriggerTemplate");
+		    String reloadDdl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "ReloadTriggerTemplate");
 		    if (reloadDdl != null && reloadDdl.length() > 0) {
 		        ddl = reloadDdl;
 		    }
 		}
     	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
-    		String temp = sqlTemplates.get(dml.name().toLowerCase() + "HandleKeyUpdates" + "TriggerTemplate");
+    		String temp = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "HandleKeyUpdates" + "TriggerTemplate");
     		if (StringUtils.trimToNull(temp)!=null) {
     			ddl=temp;
     		}
@@ -402,7 +403,7 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
 
-        String ddl = sqlTemplates.get(dml.name().toLowerCase() + "PostTriggerTemplate");
+        String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "PostTriggerTemplate");
         return replaceTemplateVariables(dml, trigger, history, channel, tablePrefix, originalTable, table,
                 defaultCatalog, defaultSchema, ddl);
     }

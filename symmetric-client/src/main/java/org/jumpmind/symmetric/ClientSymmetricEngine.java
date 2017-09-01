@@ -369,6 +369,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
         return new BatchStagingManager(this, directory);
     }
+    
 
     @Override
     protected IStatisticManager createStatisticManager() {

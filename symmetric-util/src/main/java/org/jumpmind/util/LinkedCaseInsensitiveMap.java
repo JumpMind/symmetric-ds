@@ -46,7 +46,6 @@ public class LinkedCaseInsensitiveMap<V> extends LinkedHashMap<String, V> {
 
 	private final Locale locale;
 
-
 	public LinkedCaseInsensitiveMap(Map<String, ? extends V> values) {
 	   this();
 	   putAll(values);
@@ -101,6 +100,9 @@ public class LinkedCaseInsensitiveMap<V> extends LinkedHashMap<String, V> {
 	@Override
 	public V put(String key, V value) {
 		this.caseInsensitiveKeys.put(convertKey(key), key);
+		if (FormatUtils.isInfamousTurkey()) {
+		    this.caseInsensitiveKeys.put(FormatUtils.stripTurkeyDottedI(convertKey(key)), key);    
+		}
 		return super.put(key, value);
 	}
 	

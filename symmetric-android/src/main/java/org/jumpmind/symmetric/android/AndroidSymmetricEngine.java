@@ -106,13 +106,13 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         log.info("Staging manager directory: " + directory);
         return new StagingManager(directory);
     }
-    
+
     @Override
     protected IStatisticManager createStatisticManager() {
         return new StatisticManager(parameterService, nodeService,
                 configurationService, statisticService, clusterService);
     }
-
+    
     @Override
     protected ISymmetricDialect createSymmetricDialect() {
         return new SqliteSymmetricDialect(parameterService, platform);
