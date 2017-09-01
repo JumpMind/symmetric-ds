@@ -1073,6 +1073,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                 targetResource.setState(State.DONE);
                                 isRetry = true;
+                                
+                                	statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataEventCount());
+                            		statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
                             } catch (Exception e) {   
                                 FileUtils.deleteQuietly(targetResource.getFile());
                                 throw new RuntimeException(e);

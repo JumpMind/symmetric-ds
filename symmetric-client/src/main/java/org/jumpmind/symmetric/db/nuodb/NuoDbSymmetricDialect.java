@@ -59,7 +59,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void createRequiredDatabaseObjects() {
-        String function = "sym_get_session_variable";
+        String function = this.parameterService.getTablePrefix() + "_get_session_variable";
         if(!installed(SQL_FUNCTION_INSTALLED, function)){
             String sql = "create function $(functionName)(akey string) returns string                                                        " + 
                     " as                                                        " +
@@ -73,7 +73,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
                     " END_FUNCTION;";
             install(sql, function);
         }
-        function = "sym_set_session_variable";
+        function = this.parameterService.getTablePrefix() + "_set_session_variable";
         if(!installed(SQL_FUNCTION_INSTALLED, function)){
             String sql = "create function $(functionName)(akey string, avalue string) returns string                                                        " + 
                     " as                                                        " +
@@ -93,12 +93,12 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     
     @Override
     public void dropRequiredDatabaseObjects() {
-        String function = "sym_get_session_variable";
+        String function = this.parameterService.getTablePrefix() + "_get_session_variable";
         if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);
         }
         
-        function = "sym_set_session_variable";
+        function = this.parameterService.getTablePrefix() + "_set_session_variable";
         if (installed(SQL_FUNCTION_INSTALLED, function)){
             uninstall(SQL_DROP_FUNCTION, function);
         }
@@ -134,20 +134,20 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1') from dual");
+        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1') from dual");
         if (nodeId != null) {
             transaction
-                    .prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from dual");
+                    .prepareAndExecute("select " + this.parameterService.getTablePrefix()+ "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from dual");
         }
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', 'null') from dual");
-        transaction.prepareAndExecute("select sym_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', 'null') from dual");
+        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', null) from dual");
+        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', null) from dual");
     }
 
     public String getSyncTriggersExpression() {
-        return "sym_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
+        return this.parameterService.getTablePrefix()+ "_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
 
     public void cleanDatabase() {
