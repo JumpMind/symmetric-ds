@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -57,6 +58,12 @@ public final class FormatUtils {
     public final static int MAX_CHARS_TO_LOG = 1000;
 
     private static Pattern pattern = Pattern.compile("\\$\\((.+?)\\)");
+    
+    private static boolean isInfamousTurkey = false;
+
+    static {
+        isInfamousTurkey = Locale.getDefault().getCountry().equalsIgnoreCase("tr");
+    }
 
     private FormatUtils() {
     }
@@ -311,6 +318,28 @@ public final class FormatUtils {
 
     public static String replaceCharsToShortenName(String name) {
         return name.replaceAll("[^a-zA-Z0-9_]|[a|e|i|o|u|A|E|I|O|U]", "");
+    }
+
+    public static String lower(String str) {
+        if (isInfamousTurkey) {
+            return str.toLowerCase(Locale.US);
+        }
+        return str.toLowerCase();
+    }
+
+    public static String upper(String str) {
+        if (isInfamousTurkey) {
+            return str.toUpperCase(Locale.US);
+        }
+        return str.toUpperCase();
+    }
+
+    public static boolean isInfamousTurkey() {
+        return isInfamousTurkey;
+    }
+
+    public static String stripTurkeyDottedI(String str) {
+        return str.replace("\u0130", "I").replace("\u0131", "i");
     }
 
 }
