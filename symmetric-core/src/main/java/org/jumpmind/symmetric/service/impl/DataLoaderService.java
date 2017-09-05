@@ -569,7 +569,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         outWriter.flush();
                     }
                 } else {
-                    executor.awaitTermination(12, TimeUnit.HOURS);           
+                    long hours = 1;
+                    while (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+                        log.info(String.format("Executor has been awaiting loader termination for %d hour(s).", hours));
+                        hours++;
+                    }            
                 }
                 
                 loadListener.isDone();
