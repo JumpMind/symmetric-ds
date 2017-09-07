@@ -261,6 +261,16 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
         return activeMonitorCache;
     }
+    
+    @Override
+    public List<Monitor> getActiveMonitorsUnresolvedForNode(String nodeGroupId, String externalId) {
+        long cacheTimeout = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_MONITOR_IN_MS);
+        if (activeMonitorCache == null || System.currentTimeMillis() - activeMonitorCacheTime > cacheTimeout) {
+            activeMonitorCache = sqlTemplate.query(getSql("selectMonitorWhereNotResolved"), new MonitorRowMapper(),
+                    nodeGroupId, externalId);
+        }
+        return activeMonitorCache;
+    }
 
     @Override
     public void deleteMonitor(String monitorId) {
@@ -357,7 +367,8 @@ public class MonitorService extends AbstractService implements IMonitorService {
         sqlTemplate.update(getSql("updateMonitorEventNotifiedSql"), event.getMonitorId(), event.getNodeId(), event.getEventTime());
     }
 
-    protected void updateMonitorEventAsResolved(MonitorEvent event) {
+    @Override
+    public void updateMonitorEventAsResolved(MonitorEvent event) {
         sqlTemplate.update(getSql("updateMonitorEventResolvedSql"), event.getLastUpdateTime(), event.getMonitorId(), 
                 event.getNodeId(), event.getEventTime());
     }

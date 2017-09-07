@@ -45,6 +45,8 @@ public interface IMonitorService {
     public void saveMonitorEvent(MonitorEvent notificationEvent);
 
     public void deleteMonitorEvent(MonitorEvent event);
+    
+    public void updateMonitorEventAsResolved(MonitorEvent event);
 
     public List<Notification> getNotifications();
     
@@ -57,5 +59,7 @@ public interface IMonitorService {
     public void flushMonitorCache();
     
     public void flushNotificationCache();
+
+	public List<Monitor> getActiveMonitorsUnresolvedForNode(String string, String string2);
     
 }

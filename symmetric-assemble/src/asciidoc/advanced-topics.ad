@@ -532,7 +532,8 @@ Both old and new file snapshot data are also available. The router can, for exam
 the node id to route to.
 
 Batches of file snapshot changes are stored on the filesync channel in <<OUTGOING_BATCH>>. The existing SymmetricDS pull and push jobs 
-ignore the filesync channel. Instead, they are processed by file-synchronization-specific push and pull jobs.
+ignore the filesync channel. Instead, they are processed by file-synchronization-specific push and pull jobs. These jobs, file sync tracker,
+file sync pull, and file sync push are turned off by default. They need to be started before any changes are processed. 
 
 When transferring data, the file sync push and pull jobs build a zip file dynamically based on the batched snapshot data. The zip 
 file contains a directory per batch. The directory name is the batch_id. A sync.bsh Bean Shell script is generated and placed in the 
