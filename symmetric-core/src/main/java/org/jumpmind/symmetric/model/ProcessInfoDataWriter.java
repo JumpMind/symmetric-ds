@@ -25,9 +25,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
-import org.jumpmind.util.Statistics;
 
 public class ProcessInfoDataWriter extends NestedDataWriter {
 
