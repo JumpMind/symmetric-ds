@@ -49,10 +49,6 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
             processInfo.setCurrentChannelId(batch.getChannelId());
             processInfo.incrementBatchCount();
             processInfo.setCurrentDataCount(0);
-            Statistics outgoingStats = this.context.getReader().getStatistics().get(batch.getBatchId());
-            if (outgoingStats != null) {
-                processInfo.setDataCount(outgoingStats.get(DataReaderStatistics.DATA_ROW_COUNT));
-            }
         }
         super.start(batch);
     }
