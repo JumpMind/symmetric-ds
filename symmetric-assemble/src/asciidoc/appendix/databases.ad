@@ -136,15 +136,6 @@ by database.
 |Y
 |Y
 |Y
-
-|NuoDB
-|2.6 and above
-|Y
-|Y
-|Y
-|N
-|N
-|Y
                     
 |Oracle
 |10g and above
@@ -217,7 +208,15 @@ by database.
 |Y
 |Y
 |Y
-                    
+   
+|Tibero
+|6 and above
+|Y
+|Y
+|Y
+|Y
+|Y
+|Y                    
 |====
 
 
@@ -321,13 +320,6 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |N
 |
 
-|NuoDB
-|
-|N
-|
-|Y
-|select database() from dual
-
 |Oracle
 | 
 |N
@@ -397,6 +389,15 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |
 |Y
 |select current_schema()
+
+
+|Tibero
+| 
+|N
+| 
+|Y
+|select sys_context('USERENV', 'CURRENT_SCHEMA') from dual
+
 |===
 
 include::ignite.ad[]
@@ -411,11 +412,12 @@ include::interbase.ad[]
 include::mariadb.ad[]
 include::mysql.ad[]
 include::mongodb.ad[]
-include::nuodb.ad[]
 include::oracle.ad[]
 include::postgresql.ad[]
 include::sybase-sqlanywhere.ad[]
 include::mssqlserver.ad[]
-include::sqlite.ad[]
+include::sqllite.ad[]
 include::sybase-ase.ad[]
 include::redshift.ad[]
+include::sqlite.ad[]
+include::tibero.ad[]
