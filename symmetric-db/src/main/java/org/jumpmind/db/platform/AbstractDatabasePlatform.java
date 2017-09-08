@@ -419,9 +419,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 objectValue = parseBigDecimal(value);
             } else if (type == Types.BOOLEAN) {
                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-            } else if (!(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
+            } else if (!(column.getJdbcTypeName() != null && FormatUtils.upper(column.getJdbcTypeName())
                     .contains(TypeMap.GEOMETRY))
-                    && !(column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase()
+                    && !(column.getJdbcTypeName() != null && FormatUtils.upper(column.getJdbcTypeName())
                             .contains(TypeMap.GEOGRAPHY))
                     && (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
                             || type == Types.VARBINARY ||
@@ -753,7 +753,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             boolean storesUpperCaseIdentifiers = isStoresUpperCaseIdentifiers();
             for (Table table : tables) {
                 String name = String.format("%s%s", prefix, table.getName());
-                table.setName(storesUpperCaseIdentifiers ? name.toUpperCase() : name.toLowerCase());
+                table.setName(storesUpperCaseIdentifiers ? FormatUtils.upper(name) : FormatUtils.lower(name));
                 prefixForeignKeys(table, prefix, storesUpperCaseIdentifiers);
                 prefixIndexes(table, prefix, storesUpperCaseIdentifiers);
                 prefixColumnNames(table, storesUpperCaseIdentifiers);
@@ -767,8 +767,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected void prefixColumnNames(Table table, boolean storesUpperCaseIdentifiers) {
         Column[] columns = table.getColumns();
         for (Column column : columns) {
-            column.setName(storesUpperCaseIdentifiers ? column.getName().toUpperCase() : column
-                    .getName().toLowerCase());
+            column.setName(storesUpperCaseIdentifiers ? FormatUtils.upper(column.getName()) : 
+                FormatUtils.lower(column.getName()));
         }
     }
 
@@ -777,22 +777,20 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         ForeignKey[] keys = table.getForeignKeys();
         for (ForeignKey key : keys) {
             String prefixedName = tablePrefix + key.getForeignTableName();
-            prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase() : prefixedName
-                    .toLowerCase();
+            prefixedName = storesUpperCaseIdentifiers ? FormatUtils.upper(prefixedName) : 
+                FormatUtils.lower(prefixedName);
             key.setForeignTableName(prefixedName);
 
             String keyName = tablePrefix + key.getName();
-            keyName = storesUpperCaseIdentifiers ? keyName.toUpperCase() : keyName.toLowerCase();
+            keyName = storesUpperCaseIdentifiers ? FormatUtils.upper(keyName) : FormatUtils.lower(keyName);
             key.setName(keyName);
 
             Reference[] refs = key.getReferences();
             for (Reference reference : refs) {
-                reference.setForeignColumnName(storesUpperCaseIdentifiers ? reference
-                        .getForeignColumnName().toUpperCase() : reference.getForeignColumnName()
-                        .toLowerCase());
-                reference.setLocalColumnName(storesUpperCaseIdentifiers ? reference
-                        .getLocalColumnName().toUpperCase() : reference.getLocalColumnName()
-                        .toLowerCase());
+                reference.setForeignColumnName(storesUpperCaseIdentifiers ? FormatUtils.upper(reference
+                        .getForeignColumnName()) : FormatUtils.lower(reference.getForeignColumnName()));
+                reference.setLocalColumnName(storesUpperCaseIdentifiers ? FormatUtils.upper(reference
+                        .getLocalColumnName()) : FormatUtils.lower(reference.getLocalColumnName()));
             }
         }
     }
@@ -803,8 +801,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (indexes != null) {
             for (IIndex index : indexes) {
                 String prefixedName = tablePrefix + index.getName();
-                prefixedName = storesUpperCaseIdentifiers ? prefixedName.toUpperCase()
-                        : prefixedName.toLowerCase();
+                prefixedName = storesUpperCaseIdentifiers ? FormatUtils.upper(prefixedName)
+                        : FormatUtils.lower(prefixedName);
                 index.setName(prefixedName);
             }
         }
@@ -830,7 +828,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (StringUtils.isNotBlank(value)) {
             boolean storesUpperCase = isStoresUpperCaseIdentifiers();
             if (!FormatUtils.isMixedCase(value)) {
-                value = storesUpperCase ? value.toUpperCase() : value.toLowerCase();
+                value = storesUpperCase ? FormatUtils.upper(value) : FormatUtils.lower(value);
             }
         }
         return value;
