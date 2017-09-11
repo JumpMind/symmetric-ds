@@ -160,14 +160,24 @@ INodeCommunicationExecutor {
     }
 
     protected void trackChanges(ProcessInfo processInfo, boolean useCrc) {
+    	long ctxTime = engine.getContextService().getLong(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME);
+        Date ctxDate = new Date(ctxTime);
+        if (ctxTime == 0) {
+            ctxDate = null;
+        }
+        Date currentDate = new Date();
+        
         List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
         for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
             if (fileTriggerRouter.isEnabled()) {
                 try {
+                	FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                	boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter), 
                             processInfo, useCrc, engine);
                     DirectorySnapshot dirSnapshot = tracker.trackChanges();
-                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot);
+                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot,ignoreFiles);
+                    engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
                 } catch (Exception ex) {
                     log.error("Failed to track changes for file trigger router: "
                             + fileTriggerRouter.getFileTrigger().getTriggerId()
@@ -185,20 +195,20 @@ INodeCommunicationExecutor {
         }
         Date currentDate = new Date();
 
-        boolean isLocked = engine.getClusterService().lock(ClusterConstants.FILE_SYNC_SCAN);
-        log.debug("File tracker range of " + ctxDate + " to " + currentDate + ", isLocked=" + isLocked);
         int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
 
         try {
             List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
-                if (fileTriggerRouter.isEnabled()) {        
+                if (fileTriggerRouter.isEnabled()) {
+                	FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                	boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
                     FileTriggerFileModifiedListener listener = new FileTriggerFileModifiedListener(fileTriggerRouter, ctxDate,
                             currentDate, processInfo, useCrc, new FileModifiedCallback(maxRowsBeforeCommit) {
                         public void commit(DirectorySnapshot dirSnapshot) {
-                            saveDirectorySnapshot(fileTriggerRouter, dirSnapshot);
+                            saveDirectorySnapshot(fileTriggerRouter, dirSnapshot, ignoreFiles);
                         }
 
                         public DirectorySnapshot getLastDirectorySnapshot(String relativeDir) {
@@ -210,13 +220,21 @@ INodeCommunicationExecutor {
                     engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
                 }
             }
-            engine.getClusterService().unlock(ClusterConstants.FILE_SYNC_SCAN);
         } catch (Exception ex) {
             log.error("Failed to track changes", ex);            
         }
     }
+    
+    protected boolean shouldIgnoreInitialFiles(FileTriggerRouter router, FileTrigger trigger, Date contextDate) {
+    	if (!router.isInitialLoadEnabled()) {
+    		if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
+        		return true;
+        	}
+    	}
+    	return false;
+    }
 
-    protected long saveDirectorySnapshot(FileTriggerRouter fileTriggerRouter, DirectorySnapshot dirSnapshot) {
+    protected long saveDirectorySnapshot(FileTriggerRouter fileTriggerRouter, DirectorySnapshot dirSnapshot, boolean shouldIgnore) {
         long totalBytes = 0;
         for (FileSnapshot fileSnapshot : dirSnapshot) {
             File file = fileTriggerRouter.getFileTrigger().createSourceFile(fileSnapshot);
@@ -235,7 +253,7 @@ INodeCommunicationExecutor {
             log.debug("Captured change " + fileSnapshot);
             totalBytes += fileSnapshot.getFileSize();
         }
-        save(dirSnapshot);
+        save(dirSnapshot,shouldIgnore);
         return totalBytes;
     }
 
@@ -383,11 +401,14 @@ INodeCommunicationExecutor {
                 .getRouterId(), relativeDir));
     }
 
-    public void save(List<FileSnapshot> changes) {
+    public void save(List<FileSnapshot> changes, boolean shouldIgnore) {
         if (changes != null) {
             ISqlTransaction sqlTransaction = null;
             try {
                 sqlTransaction = sqlTemplate.startSqlTransaction();
+                if (shouldIgnore) {
+                	engine.getSymmetricDialect().disableSyncTriggers(sqlTransaction, null);
+                }
                 for (FileSnapshot fileSnapshot : changes) {
                     save(sqlTransaction, fileSnapshot);
                 }
@@ -404,6 +425,9 @@ INodeCommunicationExecutor {
                 }
                 throw ex;
             } finally {
+            	if (shouldIgnore && sqlTransaction != null) {
+            		engine.getSymmetricDialect().enableSyncTriggers(sqlTransaction);
+            	}
                 close(sqlTransaction);
             }
         }
@@ -1182,4 +1206,9 @@ INodeCommunicationExecutor {
             return fileSnapshot;
         }
     }
+
+	@Override
+	public void save(List<FileSnapshot> changes) {
+		// TODO Auto-generated method stub
+	}
 }

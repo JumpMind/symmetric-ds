@@ -48,7 +48,6 @@ public class ClusterConstants {
     public static final String FILE_SYNC_PUSH = "File Sync Push";
     public static final String MONITOR = "Monitor";
     
-    public static final String FILE_SYNC_SCAN = "FILE_SYNC_SCAN";
     public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";    
 
     public static final String TYPE_CLUSTER = "CLUSTER";
