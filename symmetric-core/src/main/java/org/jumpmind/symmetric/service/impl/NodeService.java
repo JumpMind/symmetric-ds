@@ -355,9 +355,17 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findNodesToPull() {
         return findSourceNodesFor(NodeGroupLinkAction.W);
     }
+    
+    public List<Node> findNodesWhoPushToMe() {
+        return findSourceNodesFor(NodeGroupLinkAction.P);
+    }
 
     public List<Node> findNodesToPushTo() {
         return findTargetNodesFor(NodeGroupLinkAction.P);
+    }
+    
+    public List<Node> findNodeWhoPullFromMe() {
+        return findTargetNodesFor(NodeGroupLinkAction.W);
     }
 
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction) {

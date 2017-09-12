@@ -50,6 +50,16 @@ public class MockNodeService implements INodeService {
         return null;
     }
     
+    @Override
+    public List<Node> findNodesWhoPushToMe() {
+        return null;
+    }
+    
+    @Override
+    public List<Node> findNodeWhoPullFromMe() {
+        return null;
+    }
+    
     public Map<String, Node> findAllNodesAsMap() {
         List<Node> nodes = findAllNodes();
         Map<String, Node> nodeMap = new HashMap<String, Node>();

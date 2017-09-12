@@ -125,6 +125,10 @@ public interface INodeService {
     public List<Node> findNodesToPull();
 
     public List<Node> findNodesToPushTo();
+    
+    public List<Node> findNodesWhoPushToMe();
+    
+    public List<Node> findNodeWhoPullFromMe();
 
     public List<Node> findSourceNodesFor(NodeGroupLinkAction eventAction);
 
