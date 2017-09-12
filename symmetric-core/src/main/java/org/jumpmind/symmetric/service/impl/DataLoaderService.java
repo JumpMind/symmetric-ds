@@ -167,6 +167,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private Date lastUpdateTime;
     
+    private CustomizableThreadFactory threadFactory = new CustomizableThreadFactory("dataloader");
+    
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.incomingBatchService = engine.getIncomingBatchService();
@@ -548,7 +550,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.Status.TRANSFERRING);
-                ExecutorService executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataloader-%s-%s", sourceNode.getNodeGroupId(), sourceNode.getNodeId())));
+                //ExecutorService executor = Executors.newFixedThreadPool(1, new UniqueThreadFactory("dataloader"));
+                ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
                         sourceNode.getNodeId(), listener, executor);
                 new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
@@ -566,8 +569,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         outWriter.flush();
                     }
                 } else {
-                    executor.awaitTermination(12, TimeUnit.HOURS);
+                    long hours = 1;
+                    while (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+                        log.info(String.format("Executor has been awaiting loader termination for %d hour(s).", hours));
+                        hours++;
+                    }            
                 }
+                
                 loadListener.isDone();
             } else {
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,

@@ -1,0 +1,14 @@
+
+=== Tibero
+This section describes Tibero specific SymmetricDS details.
+
+==== Database Permissions
+The SymmetricDS database user generally needs privileges for connecting and creating tables (including indexes), triggers, sequences, 
+and procedures (including packages and functions). The following is an example of the needed grant statements:
+
+[source, SQL]
+GRANT CONNECT TO SYMMETRIC;
+GRANT RESOURCE TO SYMMETRIC;
+GRANT CREATE ANY TRIGGER TO SYMMETRIC;
+GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;
+
