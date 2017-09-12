@@ -43,6 +43,8 @@ public interface IRouterService extends IService {
  
     public long getUnroutedDataCount();
     
+    public int countNodesThatHaveReloadsQueuedUp();
+    
     public List<NodeSecurity> findNodesThatAreReadyForInitialLoad();
     
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,

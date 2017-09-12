@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
@@ -57,7 +58,6 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
@@ -91,6 +91,7 @@ import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
@@ -371,6 +372,24 @@ public class RouterService extends AbstractService implements IRouterService {
                     + "]");
         }
         return result;
+    }
+    
+    @Override
+    public int countNodesThatHaveReloadsQueuedUp() {
+        Set<String> nodeIds = new HashSet<>();
+        IDataService dataService = engine.getDataService();
+        INodeService nodeService = engine.getNodeService();
+        String me = nodeService.findIdentityNodeId();        
+        List<TableReloadRequest> toProcess = dataService.getTableReloadRequestToProcess(me);
+        for (TableReloadRequest tableReloadRequest : toProcess) {
+            nodeIds.add(tableReloadRequest.getTargetNodeId());
+        }
+        
+        List<NodeSecurity> nodes = findNodesThatAreReadyForInitialLoad();
+        for (NodeSecurity nodeSecurity : nodes) {
+            nodeIds.add(nodeSecurity.getNodeId());
+        }
+        return nodeIds.size();
     }
 
     public List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
