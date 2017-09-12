@@ -32,6 +32,8 @@ public class JdbcDataLoaderFactory  extends DefaultDataLoaderFactory implements
 
 	protected String typeName = "jdbc";
 
+	public final static String PROPERTY_PREFIX = "jdbc.";
+	
 	@Override
 	public void setSymmetricEngine(ISymmetricEngine engine) {
 		this.engine = engine;
@@ -55,14 +57,14 @@ public class JdbcDataLoaderFactory  extends DefaultDataLoaderFactory implements
 		
 		TypedProperties properties = new TypedProperties();
 		for (String prop : BasicDataSourcePropertyConstants.allProps ) {
-			properties.put(prop, parameterService.getString("jdbc." + prop));
+			properties.put(prop, parameterService.getString(PROPERTY_PREFIX + prop));
 		}
 		
 		DataSource dataSource = BasicDataSourceFactory.create(properties, SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties));
 		GenericJdbcDatabasePlatform platform = new GenericJdbcDatabasePlatform(dataSource, new SqlTemplateSettings());
 
-		platform.setName(parameterService.getString("jdbc.alias"));
-		platform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is("jdbc." + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
+		platform.setName(parameterService.getString(PROPERTY_PREFIX + "alias"));
+		platform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(PROPERTY_PREFIX + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
 		
 		JdbcDatabaseWriter writer = new JdbcDatabaseWriter(platform);
 		writer.setTablePrefix(engine.getTablePrefix());
