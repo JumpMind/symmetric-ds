@@ -170,7 +170,9 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void incrementCurrentDataCount() {
         this.currentDataCount++;
-        this.totalDataCount++;
+        if (totalDataCount < currentDataCount) {
+            totalDataCount = currentDataCount;
+        }
     }
 
     public void incrementBatchCount() {

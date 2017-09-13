@@ -526,7 +526,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo processInfo,
             final Node sourceNode, IIncomingTransport transport, OutputStream out) throws IOException {
-        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener();
+        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener(processInfo);
         final DataContext ctx = new DataContext();
         Throwable error = null;
         try {
@@ -1050,6 +1050,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         protected List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
 
         protected IncomingBatch currentBatch;
+        
+        protected ProcessInfo processInfo;
+        
+        public ManageIncomingBatchListener(ProcessInfo processInfo) {
+            this.processInfo = processInfo;
+        }
 
         public void beforeBatchEnd(DataContext context) {
             enableSyncTriggers(context);
@@ -1074,6 +1080,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 IncomingBatch incomingBatch = new IncomingBatch(batch);
                 this.batchesProcessed.add(incomingBatch);
+                
+                if (context.getStatistics() != null) {
+                    incomingBatch.mergeInjectedBatchStatistics(context.getStatistics());
+                    processInfo.setTotalDataCount(incomingBatch.getExtractRowCount());
+                }
+                
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                     this.currentBatch = incomingBatch;
                     context.put("currentBatch", this.currentBatch);
@@ -1101,10 +1113,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                     this.currentBatch.getByteCount());
             Status oldStatus = this.currentBatch.getStatus();
-
-            if (context.getStatistics() != null) {
-                currentBatch.mergeInjectedBatchStatistics(context.getStatistics());
-            }
             
             try {
                 this.currentBatch.setStatus(Status.OK);
