@@ -285,6 +285,8 @@ public class SymmetricWebServer {
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
         if (remoteStatusEndpoint != null) {            
             ServerContainer container = WebSocketServerContainerInitializer.configureContext(webapp);
+            container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
+            container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
             ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
             container.addEndpoint(websocketConfig);        
         }
