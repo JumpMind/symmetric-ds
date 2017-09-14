@@ -63,17 +63,35 @@ The "libraries" parameter may be used in some cases to resolve unqualified objec
 jdbc:as400://hostname/;libraries=myschema
 ----
 
-WARNING: The tables created by SymmetricDS must have journaling enabled. 
+WARNING: The tables created by SymmetricDS must have journaling enabled for commitment control.
 
 ==== Auto Journaling
 
-The SymmetricDS library will be auto journaled if it is created using the `CREATE SCHEMA` or `CREATE COLLECTION` SQL commands.
+The SymmetricDS library will be automatically journaled if it is created using the `CREATE SCHEMA` or `CREATE COLLECTION` SQL commands.
+
+Otherwise, journaling can be enabled for new tables automatically by creating a default journal named `QSQJRN` in the library.
+The following steps add automatic journaling to the "sym" library (change it to your library) using the OS/400 command line: 
+
+* Create the journal receiver object: 
+
+----
+CRTJRNRCV JRNRCV(sym/symjrnrcv)
+----
+
+* Create the journal object: 
+
+----
+CRTJRN JRN(sym/QSQJRN) JRNRCV(sym/symjrnrcv)
+----
+
 
 ==== Manual Journaling
 
+Using automatic journaling for the SymmetricDS library is the preferred method, but journaling can also
+be enabled for each table manually.
 After starting SymmetricDS for the first time, it will connect to the database and create the required tables.
 Then it will log an error message that journaling needs to be enabled for its tables.
-The following steps add journaling using the OS/400 command line, given a library name of "sym":
+The following steps add journaling to the "sym" library (change it to your library) using the OS/400 command line:
 
 * Create a journal receiver object:
 ----
@@ -90,8 +108,8 @@ CRTJRN JRN(sym/symjrn) JRNRCV(sym/symjrnrcv)
 STRJRNPF FILE(sym/SYM_C00001) JRN(sym/symjrn)
 ----
 
-This step needs to be repeated for each physical file create by SymmetricDS in the database.
-Or, the journaling can be added with a single command on an extended command line:
+This step needs to be repeated for each physical file (table) created by SymmetricDS.
+A single command can be run for all tables at once, like this:
 
 ----
 CALL QCMD

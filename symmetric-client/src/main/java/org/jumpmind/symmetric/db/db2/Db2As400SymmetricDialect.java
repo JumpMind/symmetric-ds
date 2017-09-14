@@ -61,7 +61,7 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
 
     @Override
     public String getSyncTriggersExpression() {
-    		return supportsGlobalVariables ? super.getSyncTriggersExpression() : "";
+    		return supportsGlobalVariables ? super.getSyncTriggersExpression() : "1=1";
     }
     
     @Override

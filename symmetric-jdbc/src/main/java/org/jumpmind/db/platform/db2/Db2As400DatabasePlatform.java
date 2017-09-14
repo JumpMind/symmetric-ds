@@ -3,6 +3,13 @@ package org.jumpmind.db.platform.db2;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
@@ -38,8 +45,41 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
     
     @Override
     public String getDefaultCatalog() {
-    		// This must return null for AS400, an empty string will return no match on readTable meta data.    	
-    		return null;
+        // This must return null for AS400, an empty string will return no match on readTable meta data.
+        return null;
+    }
+
+    @Override
+    protected PermissionResult getCreateSymTablePermission(Database database) {
+        Table table = getPermissionTableDefinition();
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.FAIL);
+        getDropSymTablePermission();
+
+        try {
+            database.addTable(table);
+            createDatabase(database, false, false);
+
+            ISqlTransaction tran = null;
+            try {
+                tran = sqlTemplate.startSqlTransaction();
+                tran.prepareAndExecute("insert into " + table.getName() + " values (?, ?)", 1, 0);
+                result.setStatus(Status.PASS);
+            } catch (SqlException e) {
+                result.setException(e);
+                result.setSolution("Enable automatic journaling on library");
+            } finally {
+                if (tran != null) {
+                    tran.rollback();
+                    tran.close();
+                }
+            }
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE permission");
+        }
+
+        return result;
     }
 
 }

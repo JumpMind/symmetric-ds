@@ -38,6 +38,7 @@ set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Dsun.net.client.defaultReadTimeout=300000 ^
 -Dsun.net.client.defaultConnectTimeout=300000 ^
 -Djava.net.preferIPv4Stack=true ^
+-Dcom.ibm.as400.access.AS400.guiAvailable=false ^
 -XX:+HeapDumpOnOutOfMemoryError ^
 -XX:HeapDumpPath="%SYM_HOME%\tmp" 
 

@@ -28,6 +28,7 @@ import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -478,7 +479,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         } else {
             log.info("SymmetricDS is not configured to auto-create the database");
         }
-        configurationService.initDefaultChannels();
+        try {
+            configurationService.initDefaultChannels();
+        } catch (SqlException e) {
+            if (e.getCause() instanceof SQLException) {
+                SQLException se = (SQLException) e.getCause();
+                if (se.getErrorCode() == -7008 && se.getSQLState().equals("55019")) {
+                    log.error("Please enable journaling on SYM objects.  For instructions, see the appendix in the User Guide on DB2 for i.");
+                }
+            }
+            throw e;
+        }
         clusterService.init();
         sequenceService.init();
         autoConfigRegistrationServer();
