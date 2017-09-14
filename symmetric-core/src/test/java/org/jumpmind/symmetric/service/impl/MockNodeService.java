@@ -56,7 +56,7 @@ public class MockNodeService implements INodeService {
     }
     
     @Override
-    public List<Node> findNodeWhoPullFromMe() {
+    public List<Node> findNodesWhoPullFromMe() {
         return null;
     }
     
