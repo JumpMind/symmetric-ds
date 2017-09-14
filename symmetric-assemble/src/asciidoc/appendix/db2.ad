@@ -49,16 +49,76 @@ CREATE SYSTEM TEMPORARY TABLESPACE tmp_tbsp
 |===    
     
 === DB2 for IBM i
-The DB2 for IBM i dialect is for connecting to a database on IBM iSeries (AS/400) machines.  It was tested with the
-http://jt400.sourceforge.net/[jt400 JDBC driver].  The "libraries" property is used in the JDBC URL
-to set the default schema.
+The DB2 for IBM i dialect can connect to a database on IBM iSeries (AS/400) machines.  It was tested with the
+http://jt400.sourceforge.net/[jt400 JDBC driver], which is already included in the SymmetricDS download.
+Here is an example JDBC URL:
+
+----
+jdbc:as400://hostname/myschema
+----
+
+The "libraries" parameter may be used in some cases to resolve unqualified object names:
 
 ----
 jdbc:as400://hostname/;libraries=myschema
 ----
 
-WARNING: Note that if the library is not configured to auto journal resources, then all tables need to be journaled.  A library will be auto journaled 
-if it is created using the `CREATE SCHEMA` or `CREATE COLLECTION` SQL commands.
+WARNING: The tables created by SymmetricDS must have journaling enabled for commitment control.
+
+==== Auto Journaling
+
+The SymmetricDS library will be automatically journaled if it is created using the `CREATE SCHEMA` or `CREATE COLLECTION` SQL commands.
+
+Otherwise, journaling can be enabled for new tables automatically by creating a default journal named `QSQJRN` in the library.
+The following steps add automatic journaling to the "sym" library (change it to your library) using the OS/400 command line: 
+
+* Create the journal receiver object: 
+
+----
+CRTJRNRCV JRNRCV(sym/symjrnrcv)
+----
+
+* Create the journal object: 
+
+----
+CRTJRN JRN(sym/QSQJRN) JRNRCV(sym/symjrnrcv)
+----
+
+
+==== Manual Journaling
+
+Using automatic journaling for the SymmetricDS library is the preferred method, but journaling can also
+be enabled for each table manually.
+After starting SymmetricDS for the first time, it will connect to the database and create the required tables.
+Then it will log an error message that journaling needs to be enabled for its tables.
+The following steps add journaling to the "sym" library (change it to your library) using the OS/400 command line:
+
+* Create a journal receiver object:
+----
+CRTJRNRCV JRNRCV(sym/symjrnrcv)
+----
+
+* Create a journal object:
+----
+CRTJRN JRN(sym/symjrn) JRNRCV(sym/symjrnrcv) 
+----
+
+* Start journaling:
+----
+STRJRNPF FILE(sym/SYM_C00001) JRN(sym/symjrn)
+----
+
+This step needs to be repeated for each physical file (table) created by SymmetricDS.
+A single command can be run for all tables at once, like this:
+
+----
+CALL QCMD
+<hit F11 for more lines>
+
+STRJRNPF FILE(sym/SYM_C00001 sym/SYM_C00002 sym/SYM_C00003 sym/SYM_C00004 sym/SYM_C00005 sym/SYM_C00006 sym/SYM_D00001 sym/SYM_D00002 sym/SYM_DATA sym/SYM_E00001 sym/SYM_E00002 sym/SYM_F00001 sym/SYM_F00002 sym/SYM_F00003 sym/SYM_F00004 sym/SYM_G00001 sym/SYM_G00002 sym/SYM_I00005 sym/SYM_I00008 sym/SYM_L00001 sym/SYM_LOCK sym/SYM_M00001 sym/SYM_M00002 sym/SYM_N00001 sym/SYM_N00002 sym/SYM_N00003 sym/SYM_N00004 sym/SYM_N00005 sym/SYM_N00006 sym/SYM_N00007 sym/SYM_N00008 sym/SYM_N00009 sym/SYM_N00010 sym/SYM_N00011 sym/SYM_N00012 sym/SYM_NODE sym/SYM_O00001 sym/SYM_P00001 sym/SYM_R00001 sym/SYM_R00002 sym/SYM_ROUTER sym/SYM_S00001 sym/SYM_T00001 sym/SYM_T00002 sym/SYM_T00003 sym/SYM_T00004 sym/SYM_T00005 sym/SYM_T00006 sym/SYM_T00007) JRN(sym/symjrn)
+----
+
+
 
 .Supported Data Types
 |===
