@@ -54,7 +54,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                 .equals("net.sourceforge.jtds.jdbc.Driver")) {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("target/tmp");
+            stagingManager = new StagingManager("target/tmp",false);
         }
     }
 
