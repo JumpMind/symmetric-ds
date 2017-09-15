@@ -18,7 +18,7 @@ public class BatchStagingManager extends StagingManager {
     ISymmetricEngine engine;
 
     public BatchStagingManager(ISymmetricEngine engine, String directory) {
-        super(directory);
+        super(directory,engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED));
         this.engine = engine;
     }
     
