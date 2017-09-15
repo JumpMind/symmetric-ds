@@ -488,9 +488,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                             "The request to register was rejected by the server.  Either the server node is not started, the server is not configured properly or the registration url is incorrect");
                 }
             } catch (RegistrationNotOpenException e) {
-                log.warn("Unable to register with server because registration is not open.");
+                log.warn("Waiting for registration to be accepted by the server. Registration is not open.");
                 for (INodeRegistrationListener l : registrationListeners) {
-                    l.registrationFailed("Unable to register with server because registration is not open.");
+                    l.registrationFailed("Waiting for registration to be accepted by the server. Registration is not open.");
                 }
             } catch (ServiceUnavailableException e) {
                 log.warn("Unable to register with server because the service is not available.  It may be starting up.");
