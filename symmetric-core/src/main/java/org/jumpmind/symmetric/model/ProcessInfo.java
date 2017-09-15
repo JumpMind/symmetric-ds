@@ -36,15 +36,15 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private static final long serialVersionUID = 1L;
 
     public static enum ProcessStatus {
-        NEW("New"), QUERYING("Querying"), EXTRACTING("Extracting"), LOADING("Loading"), TRANSFERRING("Transferring"), 
-        ACKING("Acking"), PROCESSING("Processing"), OK("Ok"), ERROR("Error"), CREATING("Creating");
-        
+        NEW("New"), QUERYING("Querying"), EXTRACTING("Extracting"), LOADING("Loading"), TRANSFERRING("Transferring"), ACKING(
+                "Acking"), PROCESSING("Processing"), OK("Ok"), ERROR("Error"), CREATING("Creating");
+
         private String description;
 
         ProcessStatus(String description) {
             this.description = description;
         }
-        
+
         public ProcessStatus fromDesciption(String description) {
             for (ProcessStatus status : ProcessStatus.values()) {
                 if (status.description.equals(description)) {
@@ -57,7 +57,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         @Override
         public String toString() {
             return description;
-        }        
+        }
     };
 
     private ProcessInfoKey key;
@@ -65,7 +65,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private ProcessStatus status = ProcessStatus.NEW;
 
     private long currentDataCount;
-    
+
     private long dataCount = -1;
 
     private long batchCount;
@@ -73,17 +73,17 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private long currentBatchId;
 
     private long currentBatchCount;
-    
+
     private String currentChannelId;
 
     private boolean threadPerChannel;
-    
+
     private String currentTableName;
 
     private transient Thread thread;
-    
+
     private Date currentBatchStartTime;
-    
+
     private long currentLoadId;
 
     private Date startTime = new Date();
@@ -91,11 +91,11 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private Date lastStatusChangeTime = new Date();
 
     private Map<ProcessStatus, ProcessInfo> statusHistory;
-    
+
     private Map<ProcessStatus, Date> statusStartHistory;
-    
+
     private Date endTime;
-    
+
     private long totalDataCount = 0;
 
     public ProcessInfo() {
@@ -133,19 +133,19 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setStatus(ProcessStatus status) {
         if (statusHistory == null) {
-        	statusHistory = new HashMap<ProcessStatus, ProcessInfo>();
+            statusHistory = new HashMap<ProcessStatus, ProcessInfo>();
         }
         if (statusStartHistory == null) {
-        	statusStartHistory = new HashMap<ProcessStatus, Date>();
+            statusStartHistory = new HashMap<ProcessStatus, Date>();
         }
         if (!statusStartHistory.containsKey(this.status)) {
-        	statusStartHistory.put(this.status, this.startTime);
+            statusStartHistory.put(this.status, this.startTime);
         }
-    	statusHistory.put(this.status, this.copy());
+        statusHistory.put(this.status, this.copy());
         statusHistory.put(status, this);
-        
-    	this.status = status;
-        
+
+        this.status = status;
+
         this.lastStatusChangeTime = new Date();
         if (status == ProcessStatus.OK || status == ProcessStatus.ERROR) {
             this.endTime = new Date();
@@ -178,20 +178,20 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void incrementBatchCount() {
         this.batchCount++;
     }
-    
+
     public void incrementCurrentBatchCount() {
         this.currentBatchCount++;
     }
-    
+
     public long getCurrentBatchCount() {
-		return currentBatchCount;
-	}
+        return currentBatchCount;
+    }
 
-	public void setCurrentBatchCount(long currentBatchCount) {
-		this.currentBatchCount = currentBatchCount;
-	}
+    public void setCurrentBatchCount(long currentBatchCount) {
+        this.currentBatchCount = currentBatchCount;
+    }
 
-	public long getCurrentBatchId() {
+    public long getCurrentBatchId() {
         return currentBatchId;
     }
 
@@ -200,22 +200,22 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         this.currentBatchStartTime = new Date();
         this.currentDataCount = 0;
     }
-    
+
     public void setCurrentLoadId(long loadId) {
         this.currentLoadId = loadId;
     }
-    
+
     public long getCurrentLoadId() {
         return currentLoadId;
     }
 
     public String getCurrentChannelThread() {
-    	if (getKey().getChannelId() != null && getKey().getChannelId().length() > 0) {
-    		return getKey().getChannelId();
-    	}
+        if (getKey().getChannelId() != null && getKey().getChannelId().length() > 0) {
+            return getKey().getChannelId();
+        }
         return "";
     }
-    
+
     public String getCurrentChannelId() {
         return currentChannelId;
     }
@@ -255,88 +255,86 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public Date getLastStatusChangeTime() {
         return lastStatusChangeTime;
     }
-    
+
     public void setDataCount(long dataCount) {
         this.dataCount = dataCount;
     }
-    
+
     public long getDataCount() {
         return dataCount;
     }
-    
+
     public boolean isThreadPerChannel() {
-		return threadPerChannel;
-	}
+        return threadPerChannel;
+    }
 
-	public void setThreadPerChannel(boolean threadPerChannel) {
-		this.threadPerChannel = threadPerChannel;
-	}
+    public void setThreadPerChannel(boolean threadPerChannel) {
+        this.threadPerChannel = threadPerChannel;
+    }
 
-	public Date getCurrentBatchStartTime() {
+    public Date getCurrentBatchStartTime() {
         if (currentBatchStartTime == null) {
             return startTime;
         } else {
             return currentBatchStartTime;
         }
     }
-    
+
     public void setCurrentBatchStartTime(Date currentBatchStartTime) {
         this.currentBatchStartTime = currentBatchStartTime;
     }
 
     public Map<ProcessStatus, ProcessInfo> getStatusHistory() {
-    	return this.statusHistory;
+        return this.statusHistory;
     }
-    
-    
+
     public void setStatusHistory(Map<ProcessStatus, ProcessInfo> statusHistory) {
-		this.statusHistory = statusHistory;
-	}
-
-	public void setStatusStartHistory(Map<ProcessStatus, Date> statusStartHistory) {
-		this.statusStartHistory = statusStartHistory;
-	}
-
-	public Map<ProcessStatus, Date> getStatusStartHistory() {
-    	return this.statusStartHistory;
+        this.statusHistory = statusHistory;
     }
-    
+
+    public void setStatusStartHistory(Map<ProcessStatus, Date> statusStartHistory) {
+        this.statusStartHistory = statusStartHistory;
+    }
+
+    public Map<ProcessStatus, Date> getStatusStartHistory() {
+        return this.statusStartHistory;
+    }
+
     public ProcessInfo getStatusHistory(ProcessStatus status) {
-    	return this.statusHistory == null ? null : this.statusHistory.get(status);
+        return this.statusHistory == null ? null : this.statusHistory.get(status);
     }
-    
+
     public Date getStatusStartHistory(ProcessStatus status) {
-    	return this.statusStartHistory == null ? null : this.statusStartHistory.get(status);
+        return this.statusStartHistory == null ? null : this.statusStartHistory.get(status);
     }
-    
+
     @Override
     public String toString() {
-        return String.format("%s,status=%s,startTime=%s", key.toString(), status.toString(),
-                startTime.toString());
+        return String.format("%s,status=%s,startTime=%s", key.toString(), status.toString(), startTime.toString());
     }
-    
+
     public String showInError(String identityNodeId) {
         if (status == ProcessStatus.ERROR) {
-        switch (key.getProcessType()) {
-            case MANUAL_LOAD:
-                return null;
-            case PUSH_JOB:
-                return key.getTargetNodeId();
-            case PULL_JOB:
-                return key.getSourceNodeId();
-            case PUSH_HANDLER:
-                return key.getSourceNodeId();
-            case PULL_HANDLER:
-                return key.getTargetNodeId();
-            case ROUTER_JOB:
-                return key.getSourceNodeId();
-            case ROUTER_READER:
-                return key.getSourceNodeId();
-            case GAP_DETECT:
-                return key.getSourceNodeId();
-            default:
-                return null;
-        }
+            switch (key.getProcessType()) {
+                case MANUAL_LOAD:
+                    return null;
+                case PUSH_JOB:
+                    return key.getTargetNodeId();
+                case PULL_JOB:
+                    return key.getSourceNodeId();
+                case PUSH_HANDLER:
+                    return key.getSourceNodeId();
+                case PULL_HANDLER:
+                    return key.getTargetNodeId();
+                case ROUTER_JOB:
+                    return key.getSourceNodeId();
+                case ROUTER_READER:
+                    return key.getSourceNodeId();
+                case GAP_DETECT:
+                    return key.getSourceNodeId();
+                default:
+                    return null;
+            }
         } else {
             return null;
         }
@@ -354,7 +352,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         } else {
             return o.startTime.compareTo(startTime);
         }
-    }    
+    }
 
     public ThreadData getThreadData() {
         if (thread != null && thread.isAlive()) {
@@ -401,10 +399,10 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
             return threadName;
         }
     }
-    
+
     public ProcessInfo copy() {
         try {
-            return (ProcessInfo)this.clone();
+            return (ProcessInfo) this.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }

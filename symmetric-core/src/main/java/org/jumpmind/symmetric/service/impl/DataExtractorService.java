@@ -1721,19 +1721,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     close(transaction);
                 }
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
 
             } catch (CancellationException ex) {
                 log.info("Cancelled extract request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                         request.getEndBatchId() });
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             } catch (RuntimeException ex) {
                 log.warn(
                         "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
                         new Object[] { request.getRequestId(), request.getStartBatchId(),
                                 request.getEndBatchId() });
-                processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.ERROR);
+                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
                         request.getStartBatchId(), request.getEndBatchId()).getBatches();
                 for (OutgoingBatch outgoingBatch : checkBatches) {
