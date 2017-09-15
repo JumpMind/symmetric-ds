@@ -268,7 +268,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isCommonFlag() ? 1 : 0, outgoingBatch.getReloadRowCount(),
                 outgoingBatch.getOtherRowCount(), outgoingBatch.getDataUpdateRowCount(), outgoingBatch.getDataInsertRowCount(),
                 outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getCreateBy(),
-                outgoingBatch.getSummary());
+                outgoingBatch.getSummary(), outgoingBatch.getDataRowCount());
         outgoingBatch.setBatchId(batchId);
     }
 
