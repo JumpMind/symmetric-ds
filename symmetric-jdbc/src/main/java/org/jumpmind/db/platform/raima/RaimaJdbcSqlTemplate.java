@@ -20,8 +20,6 @@
  */
 package org.jumpmind.db.platform.raima;
 
-import java.sql.Types;
-
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -34,21 +32,7 @@ public class RaimaJdbcSqlTemplate extends JdbcSqlTemplate {
     public RaimaJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationCodes = new int[] {-27};
-    }
-    
-    @Override
-    public String getSelectLastInsertIdSql(String sequenceName) {
-        return "select last_insert_id() from dual";
-    }
-    
-    @Override
-    protected int verifyArgType(Object arg, int argType) {
-        if (argType == Types.BIT){
-            return Types.BOOLEAN;
-        } else {
-            return super.verifyArgType(arg, argType);
-        }
+        primaryKeyViolationSqlStates = new String[] { "40002" };
     }
 
 }

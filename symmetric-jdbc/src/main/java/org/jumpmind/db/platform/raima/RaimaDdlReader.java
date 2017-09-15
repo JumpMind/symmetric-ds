@@ -19,91 +19,21 @@
 package org.jumpmind.db.platform.raima;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.IIndex;
-import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ISqlRowMapper;
-import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.JdbcSqlTemplate;
-import org.jumpmind.db.sql.Row;
 
-/*
- * Reads a database model from a MySql database.
- */
 public class RaimaDdlReader extends AbstractJdbcDdlReader {
 
-    protected static Map<String,String> columnNames;
-    static {
-        columnNames = mapNames();
-    }
     public RaimaDdlReader(IDatabasePlatform platform){
         super(platform); 
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);        
-    }
-    
-    protected static Map<String,String> mapNames(){
-        Map<String,String> values = new HashMap<String,String>();
-        values.put("TABLE_NAME", "TABLENAME");
-        values.put("TABLE_TYPE", "TYPE");
-        values.put("TABLE_CAT", "TABLE_CAT");
-        values.put("TABLE_SCHEM", "SCHEMA");
-        values.put("REMARKS", "REMARKS");
-        
-        values.put("COLUMN_DEF", "COLUMN_DEF");
-        values.put("COLUMN_DEFAULT", "DEFAULTVALUE");
-        values.put("COLUMN_NAME", "FIELD");
-        values.put("TYPE_NAME", "TYPE_NAME");
-        values.put("DATA_TYPE", "DATA_TYPE");
-        values.put("NUM_PREC_RADIX", "NUM_PREC_RADIX");
-        values.put("DECIMAL_DIGITS", "SCALE");
-        values.put("COLUMN_SIZE", "LENGTH");
-        values.put("IS_NULLABLE", "IS_NULLABLE");
-        values.put("IS_AUTOINCREMENT", "IS_AUTOINCREMENT");
-        
-        values.put("PK_NAME", "PK_NAME");
-        
-        values.put("PKTABLE_NAME", "PKTABLE_NAME");
-        values.put("FKTABLE_NAME", "FKTABLE_NAME");
-        values.put("KEY_SEQ", "KEY_SEQ");
-        values.put("FK_NAME", "FOREIGNKEYNAME");
-        values.put("PKCOLUMN_NAME", "PKCOLUMN_NAME");
-        values.put("FKCOLUMN_NAME", "FKCOLUMN_NAME");
-        
-        values.put("INDEX_NAME", "INDEXNAME");
-        values.put("NON_UNIQUE", "NON_UNIQUE");
-        values.put("ORDINAL_POSITION", "POSITION");
-        values.put("TYPE", "INDEXTYPE");
-        return values;
-    }
-    
-    @Override
-    protected String getName(String defaultName){
-        return columnNames.get(defaultName);
-    }
-
-    @Override
-    protected String getResultSetSchemaName() {
-        return super.getResultSetSchemaName();
     }
     
     @Override
@@ -115,45 +45,37 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
         if (table != null) {
             determineAutoIncrementFromResultSetMetaData(connection, table,
                     table.getColumns());
+            table.setCatalog(null);
         }
-        table.setCatalog(null);
         return table;
     }
 
+    /*
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-
-        // make sure the defaultvalue is null when an empty is returned.
-        if ("".equals(column.getDefaultValue())) {
-            column.setDefaultValue(null);
-        }
-        
-        if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
-            ISqlTemplate template = platform.getSqlTemplate();
-            String unParsedEnums = template.queryForString("SELECT SUBSTRING(ENUMERATION, 2, LENGTH(ENUMERATION)-2) FROM SYSTEM.FIELDS"
-                    + " WHERE SCHEMA=? AND TABLENAME=? AND FIELD=?", metaData.getCatalog(), (String) values.get("TABLENAME"), column.getName());
-            if (unParsedEnums != null) {                
-                String[] parsedEnums = unParsedEnums.split("^");
-                column.setEnumValues(parsedEnums);
-            }
-        }
         return column;
     }
+    */
 
+    /*
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return ((table.getName()).toUpperCase() + "..PRIMARY_KEY").equals(index.getName());
     }
+    */
 
+    /*
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }
+    */
 
+    /*
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
@@ -197,7 +119,9 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
             }
             return fks.values();
     }
+    */
     
+    /*
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
         
@@ -238,14 +162,7 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
     
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
-        
-        Integer type = (Integer) values.get("DATA_TYPE");
-        if (type != null && type.intValue() == Types.CLOB) {
-                // XML longvarchar becoms longvarchar on Column but becomes clob in database
-                return Types.LONGVARCHAR;
-        }else {
-            return super.mapUnknownJdbcTypeForColumn(values);
-        }
+        return super.mapUnknownJdbcTypeForColumn(values);
     }
-
+    */
 }
