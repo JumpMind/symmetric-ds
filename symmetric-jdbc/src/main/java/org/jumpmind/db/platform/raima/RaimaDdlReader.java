@@ -20,6 +20,7 @@ package org.jumpmind.db.platform.raima;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Map;
 
 import org.jumpmind.db.model.Table;
@@ -159,10 +160,15 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
                 
         return triggers;
     }
+    */
     
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
-        return super.mapUnknownJdbcTypeForColumn(values);
+        Integer type = (Integer) values.get("DATA_TYPE");
+        if (type != null && type.intValue() == Types.ROWID) {
+            return Types.BIGINT;
+        } else {
+            return super.mapUnknownJdbcTypeForColumn(values);
+        }
     }
-    */
 }
