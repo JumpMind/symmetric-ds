@@ -181,7 +181,7 @@ public class StagingManager implements IStagingManager {
         IStagedResource resource = inUse.get(path);
         if (resource == null) {
             boolean foundResourcePath = resourcePaths.contains(path);
-            if (clusterEnabled) {
+            if (!foundResourcePath && clusterEnabled) {
                 refreshResourceList();
                 foundResourcePath = resourcePaths.contains(path);
             }        
