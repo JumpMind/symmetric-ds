@@ -19,7 +19,6 @@
 package org.jumpmind.db.platform.raima;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -64,16 +63,13 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     public String getDefaultSchema() {
-        if(StringUtils.isBlank(defaultSchema)){
-            defaultSchema = getSqlTemplate().queryForObject("select upper(database()) from dual", String.class);
-        }
-        return defaultSchema;
+        return null;
     }
 
     public String getDefaultCatalog() {
         return null;
     }
-    
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
@@ -87,10 +83,10 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
 
         try {
-            getSqlTemplate().update(dropTriggerSql);
-            getSqlTemplate().update(triggerSql);
+            //getSqlTemplate().update(dropTriggerSql);
+            //getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
-            getSqlTemplate().update(dropTriggerSql);
+            //getSqlTemplate().update(dropTriggerSql);
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
@@ -107,10 +103,10 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
         PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.FAIL);
 
         try {
-            getSqlTemplate().update(dropSql);
-            getSqlTemplate().update(routineSql);
+            //getSqlTemplate().update(dropSql);
+            //getSqlTemplate().update(routineSql);
             result.setStatus(Status.PASS);
-            getSqlTemplate().update(dropSql);
+            //getSqlTemplate().update(dropSql);
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant CREATE ROUTINE Privilege");
@@ -124,7 +120,7 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.FAIL);
 
         try {
-            getSqlTemplate().update(dropTriggerSql);
+            //getSqlTemplate().update(dropTriggerSql);
             result.setStatus(Status.PASS);
         } catch (SqlException e) {
             result.setException(e);
