@@ -45,7 +45,7 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                 .equals("com.mysql.jdbc.Driver")) {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("tmp");
+            stagingManager = new StagingManager("tmp",false);
         }
     }
 
