@@ -188,6 +188,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private INodeCommunicationService nodeCommunicationService;
 
     private IClusterService clusterService;
+    
+    private CustomizableThreadFactory threadPoolFactory;
 
     private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
 
@@ -506,7 +508,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (!parameterService.is(ParameterConstants.START_ROUTE_JOB) && parameterService.is(ParameterConstants.ROUTE_ON_EXTRACT)) {
             routerService.routeData(true);
         }
-
         
         OutgoingBatches batches = null;
         if (queue != null) {
@@ -586,7 +587,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
-                executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataextractor-%s-%s", targetNode.getNodeGroupId(), targetNode.getNodeId())));
+                if (this.threadPoolFactory == null) {
+                    this.threadPoolFactory = new CustomizableThreadFactory(String.format("%s-dataextractor", parameterService.getEngineName().toLowerCase()));
+                }
+                executor = Executors.newFixedThreadPool(1, this.threadPoolFactory);
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 processInfo.setBatchCount(activeBatches.size());
