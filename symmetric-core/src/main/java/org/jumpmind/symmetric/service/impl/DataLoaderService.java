@@ -558,9 +558,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (threadFactory == null) {
                     threadFactory = new CustomizableThreadFactory(parameterService.getEngineName().toLowerCase() + "-dataloader");
                 }
+                
                 ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
+                
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
                         sourceNode.getNodeId(), listener, executor);
+                
                 new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
                         memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
                 
@@ -957,12 +960,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         public void start(DataContext ctx, Batch batch) {
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
             processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
-            if (ctx != null && ctx.getStatistics() != null) {
-                processInfo.setDataCount(ctx.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
+            if (batch.getStatistics() != null) {
+                processInfo.setDataCount(batch.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
             }
         }
 
-        public void end(final DataContext ctx, final Batch batch, final IStagedResource resource) {
+        public void end(final DataContext ctx, final Batch batchInStaging, final IStagedResource resource) {
             final long networkMillis = System.currentTimeMillis() - batchStartsToArriveTimeInMs;
 
             Callable<IncomingBatch> loadBatchFromStage = new Callable<IncomingBatch>() {
@@ -972,7 +975,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         try {
                             processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                             
-                            ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batch.getTargetNodeId(), resource) {
+                            ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batchInStaging.getTargetNodeId(), resource) {
                                 @Override
                                 public Table nextTable() {
                                     Table table = super.nextTable();
@@ -980,7 +983,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                         listener.currentBatch.incrementTableCount(table.getNameLowerCase());
                                     }
                                     return table;
-                                }                                
+                                }        
+                                
+                                public Batch nextBatch() {
+                                    Batch nextBatch = super.nextBatch();
+                                    if (nextBatch != null) {
+                                        nextBatch.setStatistics(batchInStaging.getStatistics());
+                                    }
+                                    return nextBatch;
+                                }
                             };
                             DataProcessor processor = new DataProcessor(reader, null, listener, "data load from stage") {
                                 @Override
@@ -997,7 +1008,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             incomingBatch = listener.currentBatch; 
                             if (incomingBatch != null) {
                                 incomingBatch.setNetworkMillis(networkMillis);
-                                if (batch.isIgnored()) {
+                                if (batchInStaging.isIgnored()) {
                                     incomingBatch.incrementIgnoreCount();
                                 }
                             }
@@ -1008,8 +1019,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             }
                         }
                     } else if (resource == null || !resource.exists()) {
-                        log.info("The batch {} was missing in staging.  Setting status to resend.", batch.getNodeBatchId());
-                        incomingBatch = new IncomingBatch(batch);
+                        log.info("The batch {} was missing in staging.  Setting status to resend.", batchInStaging.getNodeBatchId());
+                        incomingBatch = new IncomingBatch(batchInStaging);
                         incomingBatch.setStatus(Status.RS);
                         incomingBatchService.updateIncomingBatch(incomingBatch);
                     }
@@ -1018,10 +1029,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             };
             
             if (resource == null) {
-                IncomingBatch incomingBatch = new IncomingBatch(batch);
+                IncomingBatch incomingBatch = new IncomingBatch(batchInStaging);
                 listener.getBatchesProcessed().add(incomingBatch);
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
-                    log.info("Unable to retry batch {} because it's not in staging.  Setting status to resend.", batch.getNodeBatchId());
+                    log.info("Unable to retry batch {} because it's not in staging.  Setting status to resend.", batchInStaging.getNodeBatchId());
                     incomingBatch.setStatus(Status.RS);
                     incomingBatchService.updateIncomingBatch(incomingBatch);
                 }
@@ -1084,8 +1095,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 IncomingBatch incomingBatch = new IncomingBatch(batch);
                 this.batchesProcessed.add(incomingBatch);
                 
-                if (context.getStatistics() != null) {
-                    incomingBatch.mergeInjectedBatchStatistics(context.getStatistics());
+                if (batch.getStatistics() != null) {
+                    incomingBatch.mergeInjectedBatchStatistics(batch.getStatistics());
                     processInfo.setTotalDataCount(incomingBatch.getExtractRowCount());
                 }
                 

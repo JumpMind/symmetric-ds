@@ -28,6 +28,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.util.Statistics;
 
 public class Batch {
     
@@ -51,6 +52,7 @@ public class Batch {
     protected boolean common = false;
     protected boolean complete = false;
     protected BatchType batchType;
+    protected Statistics statistics;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
         
@@ -199,6 +201,14 @@ public class Batch {
     
     public void setSourceNodeId(String sourceNodeId) {
         this.sourceNodeId = sourceNodeId;
+    }
+    
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
+    }
+    
+    public Statistics getStatistics() {
+        return statistics;
     }
 
     public String encodeBinary(String value) {

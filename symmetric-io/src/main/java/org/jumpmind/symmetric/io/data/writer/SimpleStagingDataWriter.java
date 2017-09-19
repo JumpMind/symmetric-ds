@@ -83,7 +83,7 @@ public class SimpleStagingDataWriter {
             long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
             String batchStatsColumnsLine = null;
             String batchStatsLine = null;
-            Statistics batchStats = new Statistics();
+            Statistics batchStats = null;
 
             while (reader.readRecord()) {
                 line = reader.getRawRecord();
@@ -146,7 +146,8 @@ public class SimpleStagingDataWriter {
                     }
                     batchTableLines.clear();
                     
-                    context.setStatistics(batchStats);
+                    batch.setStatistics(batchStats);
+                    batchStats = null;
                     if (listeners != null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.end(context, batch, resource);
@@ -181,6 +182,7 @@ public class SimpleStagingDataWriter {
                     batchStatsColumnsLine = line;
                 } else if (line.startsWith(CsvConstants.STATS)) {
                     batchStatsLine = line;
+                    batchStats = new Statistics();
                     putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
                 } else {
                     if (writer == null) {
