@@ -129,7 +129,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                         Node targetNode = nodeService.findNode(nodeId, true);
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
                         		map.getThreadChannel(), outgoingTransport);
-                        logDataReceivedFromPush(targetNode, batchList, processInfo, remoteHost);
+                        logDataReceivedFromPull(targetNode, batchList, processInfo, remoteHost);
                         
                         if (processInfo.getStatus() != ProcessStatus.ERROR) {
                             addPendingBatchCounts(targetNode.getNodeId(), res);
@@ -161,7 +161,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         }
     }
 
-    private void logDataReceivedFromPush(Node targetNode, List<OutgoingBatch> batchList, ProcessInfo processInfo, String remoteHost) {
+    private void logDataReceivedFromPull(Node targetNode, List<OutgoingBatch> batchList, ProcessInfo processInfo, String remoteHost) {
         int batchesCount = 0;
         int dataCount = 0;
         for (OutgoingBatch outgoingBatch : batchList) {

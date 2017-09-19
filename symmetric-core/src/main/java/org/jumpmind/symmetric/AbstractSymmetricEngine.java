@@ -380,14 +380,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {
-        	this.updateService = new UpdateService(this);
+            this.updateService = new UpdateService(this);
         } else {
-        	try {
-        		Constructor<?> cons = Class.forName(updateServiceClassName).getConstructor(ISymmetricEngine.class);
-        		this.updateService = (IUpdateService) cons.newInstance(this);
-        	} catch (Exception e) {
-        		throw new RuntimeException(e);
-        	}
+            try {
+                Constructor<?> cons = Class.forName(updateServiceClassName).getConstructor(ISymmetricEngine.class);
+                this.updateService = (IUpdateService) cons.newInstance(this);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         
         if (parameterService.isRegistrationServer()) {
