@@ -187,6 +187,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private IClusterService clusterService;
 
     private Map<String, Semaphore> locks = new HashMap<String, Semaphore>();
+    
+    private CustomizableThreadFactory threadPoolFactory;
 
     public DataExtractorService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -583,7 +585,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
-                executor = Executors.newFixedThreadPool(1, new CustomizableThreadFactory(String.format("dataextractor-%s-%s", targetNode.getNodeGroupId(), targetNode.getNodeId())));
+                if (this.threadPoolFactory == null) {
+                    this.threadPoolFactory = new CustomizableThreadFactory(String.format("%s-dataextractor", parameterService.getEngineName().toLowerCase()));
+                }
+                executor = Executors.newFixedThreadPool(1, threadPoolFactory);
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 processInfo.setBatchCount(activeBatches.size());
