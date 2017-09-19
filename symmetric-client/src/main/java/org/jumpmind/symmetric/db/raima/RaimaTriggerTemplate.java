@@ -24,118 +24,105 @@ import java.util.HashMap;
 
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
 
     public RaimaTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "cast(case when $(tableAlias).`$(columnName)` is null then '' else concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\"'),'\"') end as char)\n" ;                               
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',cast($(tableAlias).\"$(columnName)\" as char),'\"') end \n" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',cast($(tableAlias).\"$(columnName)\" as char),'\"') end\n" ;
-        clobColumnTemplate =    stringColumnTemplate;
+        stringColumnTemplate = "if($(tableAlias).$(columnName) is null, '', '\"' || replace(replace($(tableAlias).$(columnName), '\\\\','\\\\\\\\'), '\"','\\\"') || '\"')";
+        numberColumnTemplate = "if($(tableAlias).$(columnName) is null, '', convert($(tableAlias).$(columnName), char))";
+        datetimeColumnTemplate = "if($(tableAlias).$(columnName) is null, '', '\"' || convert($(tableAlias).$(columnName), char) || '\"')";
+        clobColumnTemplate = stringColumnTemplate;
         blobColumnTemplate = "''" ;
-        booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else concat('\"',$(tableAlias).\"$(columnName)\",'\"') end\n" ;
+        booleanColumnTemplate = "if($(tableAlias).$(columnName) is null, '', convert($(tableAlias).$(columnName), char))";
         triggerConcatCharacter = "||" ;
-        newTriggerValue = "new" ;
-        oldTriggerValue = "old" ;
+        newTriggerValue = "new_row" ;
+        oldTriggerValue = "old_row" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) for $(schemaName)$(tableName) after insert                                                                                                                           \n" +
-"                                for each row as                                                                                                                                                     \n" +
-"                                  $(custom_before_insert_text) \n" +
-"                                  if ($(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) )                                                                                                 \n" +
-"                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
-"                                    values(                                                                                                                                                            \n" +
-"                                      '$(targetTableName)',                                                                                                                                            \n" +
-"                                      'I',                                                                                                                                                             \n" +
-"                                      $(triggerHistoryId),                                                                                                                                             \n" +
-"                                      concat($(columns)                                                                                                                                                \n" +
-"                                       ),                                                                                                                                                              \n" +
-"                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session_variable('sync_node_disabled'),                                                                                                        \n" +
-"                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
-"                                    );                                                                                                                                                                 \n" +
-"                                  end_if;                                                                                                                                                              \n" +
-"                                  $(custom_on_insert_text)                                                                                                                                                \n" +
-"                                end_trigger                                                                                                                                                                    " );
+"create trigger $(triggerName) after insert on $(schemaName)$(tableName) \n" + 
+"referencing new row as new_row \n" +
+"for each row begin atomic \n" +
+"declare sync_triggers_disabled smallint; \n" +
+"declare sync_node_disabled varchar(50); \n" +
+"$(custom_before_insert_text) \n" +
+"if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then \n" +
+"   insert into $(defaultSchema)$(prefixName)_data \n" +
+"   (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"   values('$(targetTableName)', 'I', $(triggerHistoryId), \n" +
+"   $(columns), \n" +
+"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(externalSelect), \n" +
+"   current_timestamp); \n" +
+"end if; \n" +
+"$(custom_on_insert_text) \n" +
+"end");
 
         sqlTemplates.put("insertReloadTriggerTemplate" ,
-"create trigger $(triggerName) for $(schemaName)$(tableName) after insert                                                                                                                                \n" +
-"                                for each row as                                                                                                                                                     \n" +
-"                                  $(custom_before_insert_text) \n" +
-"                                  if( $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) )                                                                                                 \n" +
-"                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
-"                                    values(                                                                                                                                                            \n" +
-"                                      '$(targetTableName)',                                                                                                                                            \n" +
-"                                      'R',                                                                                                                                                             \n" +
-"                                      $(triggerHistoryId),                                                                                                                                             \n" +
-"                                      $(newKeys),                                                                                                                                             \n" +
-"                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session_variable('sync_node_disabled'),                                                                                                        \n" +
-"                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
-"                                    );                                                                                                                                                                 \n" +
-"                                  end_if;                                                                                                                                                              \n" +
-"                                  $(custom_on_insert_text)                                                                                                                                                \n" +
-"                                end_trigger                                                                                                                                                                    " );
+"create trigger $(triggerName) after insert on $(schemaName)$(tableName) \n" + 
+"referencing new row as new_row \n" +
+"for each row begin atomic \n" +
+"declare sync_triggers_disabled smallint; \n" +
+"declare sync_node_disabled varchar(50); \n" +
+"$(custom_before_insert_text) \n" +
+"if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then \n" +
+"   insert into $(defaultSchema)$(prefixName)_data \n" +
+"   (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"   values('$(targetTableName)', 'R', $(triggerHistoryId), \n" +
+"   $(newKeys), \n" +
+"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(externalSelect), \n" +
+"   current_timestamp); \n" +
+"end if; \n" +
+"$(custom_on_insert_text) \n" +
+"end");
 
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) for $(schemaName)$(tableName) after update                                                                                                                                \n" +
-"                                for each row as                                                                                                                                                     \n" +
-"                                  $(custom_before_update_text) \n" +
-"                                  if( $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) )                                                                                                 \n" +
-"                                   if( $(dataHasChangedCondition) )                                                                                                                                  \n" +
-"                                       insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
-"                                       values(                                                                                                                                                           \n" +
-"                                         '$(targetTableName)',                                                                                                                                           \n" +
-"                                         'U',                                                                                                                                                            \n" +
-"                                         $(triggerHistoryId),                                                                                                                                            \n" +
-"                                         concat($(oldKeys)                                                                                                                                               \n" +
-"                                          ),                                                                                                                                                             \n" +
-"                                         concat($(columns)),                                                                                                                                                   \n" +
-"                                         concat($(oldColumns)),                                                                                                                                                   \n" +
-"                                         $(channelExpression), $(txIdExpression), $(prefixName)_get_session_variable('sync_node_disabled'),                                                                                                       \n" +
-"                                         $(externalSelect),                                                                                                                                              \n" +
-"                                         CURRENT_TIMESTAMP                                                                                                                                               \n" +
-"                                       );                                                                                                                                                                \n" +
-"                                   end_if;                                                                                                                                                               \n" +
-"                                  end_if;                                                                                                                                                                \n" +
-"                                  $(custom_on_update_text)                                                                                                                                                  \n" +
-"                                end_trigger                                                                                                                                                                      " );
+"create trigger $(triggerName) after update on $(schemaName)$(tableName) \n" + 
+"referencing new row as new_row old_row as old \n" +
+"for each row begin atomic \n" +
+"declare sync_triggers_disabled smallint; \n" +
+"declare sync_node_disabled varchar(50); \n" +
+"$(custom_before_update_text) \n" +
+"if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then \n" +
+"   insert into $(defaultSchema)$(prefixName)_data \n" +
+"   (table_name, event_type, trigger_hist_id, pk_data, row_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"   values('$(targetTableName)', 'U', $(triggerHistoryId), \n" +
+"   $(oldKeys), \n" +
+"   $(columns), \n" +
+"   $(oldColumns), \n" +
+"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(externalSelect), \n" +
+"   current_timestamp); \n" +
+"end if; \n" +
+"$(custom_on_update_text) \n" +
+"end");
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) for $(schemaName)$(tableName) after delete                                                                                                                                \n" +
-"                                for each row as                                                                                                                                                     \n" +
-"                                  $(custom_before_delete_text) \n" +
-"                                  if( $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) )                                                                                                 \n" +
-"                                    insert into $(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
-"                                    values(                                                                                                                                                            \n" +
-"                                      '$(targetTableName)',                                                                                                                                            \n" +
-"                                      'D',                                                                                                                                                             \n" +
-"                                      $(triggerHistoryId),                                                                                                                                             \n" +
-"                                      concat($(oldKeys)                                                                                                                                                \n" +
-"                                       ),                                                                                                                                                              \n" +
-"                                       concat($(oldColumns)                                                                                                                                            \n" +
-"                                       ),                                                                                                                                                              \n" +
-"                                      $(channelExpression), $(txIdExpression), $(prefixName)_get_session_variable('sync_node_disabled'),                                                                                                        \n" +
-"                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      CURRENT_TIMESTAMP                                                                                                                                                \n" +
-"                                    );                                                                                                                                                                 \n" +
-"                                  end_if;                                                                                                                                                              \n" +
-"                                  $(custom_on_delete_text)                                                                                                                                                \n" +
-"                                end_trigger                                                                                                                                                                    " );
+"create trigger $(triggerName) after delete on $(schemaName)$(tableName) \n" + 
+"referencing old row as old_row " +
+"for each row begin atomic \n" +
+"declare sync_triggers_disabled smallint; \n" +
+"declare sync_node_disabled varchar(50); \n" +
+"$(custom_before_delete_text) \n" +
+"if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then \n" +
+"   insert into $(defaultSchema)$(prefixName)_data \n" +
+"   (table_name, event_type, trigger_hist_id, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"   values('$(targetTableName)', 'D', $(triggerHistoryId), \n" +
+"   $(oldKeys), \n" +
+"   $(oldColumns), \n" +
+"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(externalSelect), \n" +
+"   current_timestamp); \n" +
+"end if; \n" +
+"$(custom_on_delete_text) \n" +
+"end");
 
-        sqlTemplates.put("initialLoadSqlTemplate" ,
-"select concat($(columns)) from $(schemaName)$(tableName) as t where $(whereClause)                                                                                                                        " );
-    }
-    
-    @Override
-    protected String castDatetimeColumnToString(String columnName) {
-        return "cast(\n" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char) as \n" + columnName;
+        sqlTemplates.put("initialLoadSqlTemplate", "select $(columns) from $(schemaName)$(tableName) as t where $(whereClause) ");
     }
 
 }
