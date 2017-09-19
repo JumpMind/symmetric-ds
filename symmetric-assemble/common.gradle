@@ -121,6 +121,9 @@ subprojects { subproject ->
     
     test {
         ignoreFailures true
+        for (Object key: System.getProperties().keySet()) {
+            systemProperty key, System.getProperty(key);
+        }
         systemProperty "test.server", System.getProperty("test.server", "h2")
         systemProperty "test.client", System.getProperty("test.client", "h2")
         systemProperty "test.root", System.getProperty("test.root", "h2")
