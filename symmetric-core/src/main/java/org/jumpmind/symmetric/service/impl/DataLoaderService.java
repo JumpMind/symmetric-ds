@@ -168,7 +168,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     private Date lastUpdateTime;
     
-    private CustomizableThreadFactory threadFactory = new CustomizableThreadFactory("dataloader");
+    private CustomizableThreadFactory threadFactory;
     
     public DataLoaderService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -555,6 +555,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                 processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
+                if (threadFactory == null) {
+                    threadFactory = new CustomizableThreadFactory(parameterService.getEngineName().toLowerCase() + "-dataloader");
+                }
                 ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
                         sourceNode.getNodeId(), listener, executor);
