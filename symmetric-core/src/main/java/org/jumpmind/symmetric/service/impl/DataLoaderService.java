@@ -93,10 +93,10 @@ import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.DynamicDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.load.ILoadSyncLifecycleListener;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.LoadFilter;
 import org.jumpmind.symmetric.model.LoadFilter.LoadFilterType;
@@ -104,6 +104,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
@@ -554,11 +555,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
+                processInfo.setStatus(ProcessStatus.TRANSFERRING);
+                
                 if (threadFactory == null) {
                     threadFactory = new CustomizableThreadFactory(parameterService.getEngineName().toLowerCase() + "-dataloader");
                 }
-                
                 ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
                 
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,

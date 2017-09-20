@@ -587,10 +587,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                 Node sourceNode = nodeService.findIdentity();
                 final FutureExtractStatus status = new FutureExtractStatus();
+
                 if (this.threadPoolFactory == null) {
                     this.threadPoolFactory = new CustomizableThreadFactory(String.format("%s-dataextractor", parameterService.getEngineName().toLowerCase()));
                 }
                 executor = Executors.newFixedThreadPool(1, this.threadPoolFactory);
+
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
                 processInfo.setBatchCount(activeBatches.size());

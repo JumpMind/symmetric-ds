@@ -1,5 +1,7 @@
 package org.jumpmind.db.alter;
 
+import java.math.BigDecimal;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -368,11 +370,13 @@ public class ModelComparator {
 
         Object sourceDefaultValue = sourceColumn.getParsedDefaultValue();
         Object targetDefaultValue = targetColumn.getParsedDefaultValue();
+        boolean isBigDecimal = sourceDefaultValue instanceof BigDecimal && targetDefaultValue instanceof BigDecimal;
 
         if ((sourceDefaultValue == null && targetDefaultValue != null)
                 || (sourceDefaultValue != null && targetDefaultValue == null)
-                || (sourceDefaultValue != null && targetDefaultValue != null && !sourceDefaultValue
-                        .toString().equals(targetDefaultValue.toString()))) {
+                || (sourceDefaultValue != null && targetDefaultValue != null &&
+                ((isBigDecimal && ((BigDecimal) sourceDefaultValue).compareTo((BigDecimal) targetDefaultValue) != 0) ||
+                (!isBigDecimal && !sourceDefaultValue.toString().equals(targetDefaultValue.toString()))))) {
             log.debug(
                     "The {} column on the {} table changed default value from {} to {} ",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),

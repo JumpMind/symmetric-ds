@@ -72,7 +72,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
             String triggerName, String tableName) {
         /*
         final String sql = "drop trigger " + triggerName;
-        logSql(sql, sqlBuffer); 
+        logSql(sql, sqlBuffer);         
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
                 platform.getSqlTemplate().update(sql);
@@ -84,25 +84,19 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        /*
-        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1') from dual");
+        transaction.prepareAndExecute("declare sync_triggers_disabled smallint; set @sync_triggers_disabled = 1;");
         if (nodeId != null) {
-            transaction
-                    .prepareAndExecute("select " + this.parameterService.getTablePrefix()+ "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "','" + nodeId + "') from dual");
+            transaction.prepareAndExecute("declare sync_node_disabled varchar(50); set @sync_node_disabled = '" + nodeId + "';");
         }
-        */
     }
 
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        /*
-        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', null) from dual");
-        transaction.prepareAndExecute("select " + this.parameterService.getTablePrefix() + "_set_session_variable('" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', null) from dual");
-        */
+        transaction.prepareAndExecute("declare sync_triggers_disabled smallint; set @sync_triggers_disabled = null;");
+        transaction.prepareAndExecute("declare sync_node_disabled varchar(50); set @sync_node_disabled = null;");
     }
 
     public String getSyncTriggersExpression() {
-        //return this.parameterService.getTablePrefix()+ "_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
-        return "1=1";
+        return "@sync_triggers_disabled is null";
     }
 
     public void cleanDatabase() {
