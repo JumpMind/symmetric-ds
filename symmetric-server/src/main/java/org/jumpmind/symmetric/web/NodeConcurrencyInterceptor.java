@@ -63,7 +63,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String nodeId = getNodeId(req);
         String method = req.getMethod();
 
-        String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
+        String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
         
         if (method.equals(WebConstants.METHOD_HEAD) && 
                 ServletUtils.normalizeRequestUri(req).contains("push")) {
@@ -136,7 +136,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             ServletException {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
-        String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
+        String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
         concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
     }
 

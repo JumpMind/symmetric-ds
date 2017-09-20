@@ -201,7 +201,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
                 .getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.PUSH_JOB));
         Map<String, String> requestProperties = new HashMap<String, String>();
-        requestProperties.put(WebConstants.THREAD_CHANNEL, status.getChannelId());
+        requestProperties.put(WebConstants.CHANNEL_QUEUE, status.getChannelId());
         
         try {
             transport = transportManager.getPushTransport(remote, identity,

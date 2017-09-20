@@ -63,7 +63,7 @@ public class PushUriHandler extends AbstractUriHandler {
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = res.getOutputStream();
 
-        String threadChannel = req.getHeader(WebConstants.THREAD_CHANNEL);
+        String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
         
         push(nodeId, threadChannel, inputStream, outputStream);
 

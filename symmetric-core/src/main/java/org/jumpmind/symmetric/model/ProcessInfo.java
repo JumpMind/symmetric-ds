@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.util.AppUtils;
 
 public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
@@ -316,21 +315,18 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public String showInError(String identityNodeId) {
         if (status == ProcessStatus.ERROR) {
             switch (key.getProcessType()) {
-                case MANUAL_LOAD:
-                    return null;
-                case PUSH_JOB:
+                case PUSH_JOB_EXTRACT:
+                case PUSH_JOB_TRANSFER:
+                case PULL_HANDLER_EXTRACT:
+                case PULL_HANDLER_TRANSFER:                    
                     return key.getTargetNodeId();
-                case PULL_JOB:
-                    return key.getSourceNodeId();
-                case PUSH_HANDLER:
-                    return key.getSourceNodeId();
-                case PULL_HANDLER:
-                    return key.getTargetNodeId();
+                case PULL_JOB_LOAD:
+                case PULL_JOB_TRANSFER:
+                case PUSH_HANDLER_LOAD:
+                case PUSH_HANDLER_TRANSFER:
                 case ROUTER_JOB:
-                    return key.getSourceNodeId();
                 case ROUTER_READER:
-                    return key.getSourceNodeId();
-                case GAP_DETECT:
+                case GAP_DETECT:                    
                     return key.getSourceNodeId();
                 default:
                     return null;
@@ -340,6 +336,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         }
     }
 
+    @Override
     public int compareTo(ProcessInfo o) {
         if (status == ProcessStatus.ERROR && o.status != ProcessStatus.ERROR) {
             return -1;

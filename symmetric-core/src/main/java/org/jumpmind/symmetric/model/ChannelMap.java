@@ -38,7 +38,7 @@ public class ChannelMap {
 
     public static final String CHANNELS_IGNORE = "Ignored-Channels";
 
-    private String threadChannel;
+    private String channelQueue;
     
     private Map<String, Set<String>> map;
 
@@ -92,12 +92,12 @@ public class ChannelMap {
         return map.get(CHANNELS_IGNORE);
     }
 
-	public String getThreadChannel() {
-		return threadChannel;
+	public String getChannelQueue() {
+		return channelQueue;
 	}
 
-	public void setThreadChannel(String threadChannel) {
-		this.threadChannel = threadChannel;
+	public void setChannelQueue(String threadChannel) {
+		this.channelQueue = threadChannel;
 	}
 
     
