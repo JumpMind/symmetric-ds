@@ -68,10 +68,10 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
         return errorOccurred;
     }
 
-    public RemoteNodeStatus add(String nodeId, String channelId) {
+    public RemoteNodeStatus add(String nodeId, String queue) {
         RemoteNodeStatus status = null;
         if (nodeId != null) {
-            status = new RemoteNodeStatus(nodeId, channelId, channels);
+            status = new RemoteNodeStatus(nodeId, queue, channels);
             add(status);
         }
         return status;

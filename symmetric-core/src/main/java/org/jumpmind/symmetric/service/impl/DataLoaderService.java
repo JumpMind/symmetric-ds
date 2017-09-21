@@ -83,11 +83,11 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
-import org.jumpmind.symmetric.io.data.writer.SimpleStagingDataWriter;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.SimpleStagingDataWriter;
 import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.DynamicDatabaseWriterFilter;
@@ -107,7 +107,7 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import static org.jumpmind.symmetric.model.ProcessType.*;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
@@ -221,7 +221,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         String nodeId = nodeService.findIdentityNodeId();
         if (StringUtils.isNotBlank(nodeId)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeId,
-                    nodeId, ProcessInfoKey.ProcessType.MANUAL_LOAD));
+                    nodeId, MANUAL_LOAD));
             try {
                 InternalIncomingTransport transport = new InternalIncomingTransport(
                         new BufferedReader(new StringReader(batchData)));
@@ -245,9 +245,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * Connect to the remote node and pull data. The acknowledgment of
      * commit/error status is sent separately after the data is processed.
      */
-    public RemoteNodeStatus loadDataFromPull(Node remote, String channelId) throws IOException {
+    public RemoteNodeStatus loadDataFromPull(Node remote, String queue) throws IOException {
         RemoteNodeStatus status = new RemoteNodeStatus(remote != null ? remote.getNodeId() : null,
-        		channelId,
+                queue,
                 configurationService.getChannels(false));
         loadDataFromPull(remote, status);
         return status;
@@ -270,7 +270,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         suspendIgnoreChannels.getSuspendChannelsAsString());
                 requestProperties.put(WebConstants.IGNORED_CHANNELS,
                         suspendIgnoreChannels.getIgnoreChannelsAsString());
-                requestProperties.put(WebConstants.CHANNEL_QUEUE, status.getChannelId());
+                requestProperties.put(WebConstants.CHANNEL_QUEUE, status.getQueue());
                 transport = transportManager.getPullTransport(remote, local,
                         localSecurity.getNodePassword(), requestProperties,
                         parameterService.getRegistrationUrl());
@@ -289,12 +289,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 isRegisterTransport = true;
             }
 
-            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
-                    .getNodeId(), status.getChannelId(), local.getNodeId(), ProcessType.PULL_JOB));
+            ProcessInfo transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
+                    .getNodeId(), status.getQueue(), local.getNodeId(), PULL_JOB_TRANSFER));
             try {
-                List<IncomingBatch> list = loadDataFromTransport(processInfo, remote, transport, null);
+                List<IncomingBatch> list = loadDataFromTransport(transferInfo, remote, transport, null);
                 if (list.size() > 0) {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
+                    transferInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                     status.updateIncomingStatus(list);
                     local = nodeService.findIdentity();
                     if (local != null) {
@@ -317,18 +317,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
 
                 if (containsError(list)) {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                    transferInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 } else {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
+                    transferInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 }
                 
                 updateBatchToSendCount(remote, transport);
                 
             } catch (RuntimeException e) {
-                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                transferInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw e;
             } catch (IOException e) {
-                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                transferInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 throw e;
             }
 
@@ -387,27 +387,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * stream. This is used for a "push" request with a response of an
      * acknowledgment.
      */
-    public void loadDataFromPush(Node sourceNode, String channelId, InputStream in, OutputStream out)
+    public void loadDataFromPush(Node sourceNode, String queue, InputStream in, OutputStream out)
             throws IOException {
         Node local = nodeService.findIdentity();
         if (local != null) {
-            ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode
-                    .getNodeId(), channelId, local.getNodeId(), ProcessInfoKey.ProcessType.PUSH_HANDLER));
+            ProcessInfo transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode
+                    .getNodeId(), queue, local.getNodeId(), PUSH_HANDLER_TRANSFER));
             try {
-                List<IncomingBatch> batchList = loadDataFromTransport(processInfo, sourceNode,
+                List<IncomingBatch> batchList = loadDataFromTransport(transferInfo, sourceNode,
                         new InternalIncomingTransport(in), out);
-                logDataReceivedFromPush(sourceNode, batchList, processInfo);
+                logDataReceivedFromPush(sourceNode, batchList, transferInfo);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId());
-                processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
+                transferInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
-                        security != null ? security.getNodePassword() : null);
-                if (containsError(batchList)) {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
-                } else {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
-                }
+                        security != null ? security.getNodePassword() : null);                
+                transferInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             } catch (Exception e) {
-                processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                transferInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
                 } else if (e instanceof IOException) {
@@ -451,7 +447,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException {
         Node local = nodeService.findIdentity();
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
-                .getNodeId(), local.getNodeId(), ProcessType.OFFLINE_PULL));
+                .getNodeId(), local.getNodeId(), OFFLINE_PULL));
         List<IncomingBatch> list = null;
         try {
             list = loadDataFromTransport(processInfo, remote, transport, null);
@@ -488,7 +484,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     localSecurity.getNodePassword(), Version.version(), configVersion, remote.getSyncUrl());
 
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(remote
-                    .getNodeId(), Constants.CHANNEL_CONFIG, local.getNodeId(), ProcessType.PULL_CONFIG_JOB));
+                    .getNodeId(), Constants.CHANNEL_CONFIG, local.getNodeId(), PULL_CONFIG_JOB));
             try {
                 log.info("Requesting current configuration {symmetricVersion={}, configVersion={}}", 
                         Version.version(), local.getConfigVersion());
@@ -525,9 +521,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      * is used for a pull request that responds with data, and the
      * acknowledgment is sent later.
      */
-    protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo processInfo,
+    protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo transferInfo,
             final Node sourceNode, IIncomingTransport transport, OutputStream out) throws IOException {
-        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener(processInfo);
+        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener(transferInfo);
         final DataContext ctx = new DataContext();
         Throwable error = null;
         try {
@@ -555,17 +551,17 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
             String targetNodeId = nodeService.findIdentityNodeId();
             if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                processInfo.setStatus(ProcessStatus.TRANSFERRING);
+                transferInfo.setStatus(ProcessStatus.TRANSFERRING);
                 
                 if (threadFactory == null) {
                     threadFactory = new CustomizableThreadFactory(parameterService.getEngineName().toLowerCase() + "-dataloader");
                 }
                 ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
                 
-                LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
+                LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(transferInfo,
                         sourceNode.getNodeId(), listener, executor);
                 
-                new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
+                new SimpleStagingDataWriter(transferInfo, transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
                         memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
                 
                 /* Previously submitted tasks will still be executed */
@@ -589,11 +585,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 
                 loadListener.isDone();
             } else {
+                transferInfo.setStatus(ProcessStatus.OK);
+                ProcessInfo loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode.getNodeId()
+                        , transferInfo.getQueue(), nodeService.findIdentityNodeId(), PULL_JOB_LOAD));
                 DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
                         targetNodeId, transport.openReader()), null, listener, "data load") {
                     @Override
                     protected IDataWriter chooseDataWriter(Batch batch) {
-                        return buildDataWriter(processInfo, sourceNode.getNodeId(),
+                        return buildDataWriter(loadInfo, sourceNode.getNodeId(),
                                 batch.getChannelId(), batch.getBatchId(),
                                 ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
                     }
@@ -941,8 +940,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         private long batchStartsToArriveTimeInMs;
 
         private String sourceNodeId;
+        
+        private ProcessInfo transferInfo;
 
-        private ProcessInfo processInfo;
+        private ProcessInfo loadInfo;
         
         private ExecutorService executor;
         
@@ -950,20 +951,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         
         private boolean isError;
 
-        public LoadIntoDatabaseOnArrivalListener(ProcessInfo processInfo, String sourceNodeId,
+        public LoadIntoDatabaseOnArrivalListener(ProcessInfo transferInfo, String sourceNodeId,
                 ManageIncomingBatchListener listener, ExecutorService executor) {
             this.sourceNodeId = sourceNodeId;
             this.listener = listener;
-            this.processInfo = processInfo;
             this.executor = executor;
+            this.transferInfo = transferInfo;
         }
 
         public void start(DataContext ctx, Batch batch) {
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
-            processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
-            if (batch.getStatistics() != null) {
-                processInfo.setDataCount(batch.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
-            }
         }
 
         public void end(final DataContext ctx, final Batch batchInStaging, final IStagedResource resource) {
@@ -974,7 +971,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     IncomingBatch incomingBatch = null;
                     if (!isError && resource != null && resource.exists()) {
                         try {
-                            processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
+                            loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(transferInfo.getSourceNodeId(),
+                                    transferInfo.getQueue(), transferInfo.getTargetNodeId(), transferInfo.getProcessType() == PULL_JOB_TRANSFER ? PULL_JOB_LOAD : PUSH_HANDLER_LOAD));            
+                            if (batchInStaging.getStatistics() != null) {                
+                                loadInfo.setTotalDataCount(batchInStaging.getStatistics().get(DataReaderStatistics.DATA_ROW_COUNT));
+                            } 
+
+                            loadInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                             
                             ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batchInStaging.getTargetNodeId(), resource) {
                                 @Override
@@ -998,7 +1001,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
                                     boolean isRetry = ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry();
-                                    return buildDataWriter(processInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(), isRetry);
+                                    return buildDataWriter(loadInfo, sourceNodeId, batch.getChannelId(), batch.getBatchId(), isRetry);
                                 }
                             };
                             processor.process(ctx);

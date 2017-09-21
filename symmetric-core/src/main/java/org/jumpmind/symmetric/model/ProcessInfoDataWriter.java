@@ -26,6 +26,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 
 public class ProcessInfoDataWriter extends NestedDataWriter {
 
@@ -56,6 +57,12 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
             processInfo.setCurrentTableName(table.getFullyQualifiedTableName());
         }
         return super.start(table);
+    }
+    
+    @Override
+    public void end(Batch batch, boolean inError) {
+        processInfo.setStatus(!inError ? ProcessStatus.OK : ProcessStatus.ERROR);
+        super.end(batch, inError);
     }
 
     public void write(CsvData data) {

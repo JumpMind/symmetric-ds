@@ -32,7 +32,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class FileSyncPullUriHandler extends AbstractUriHandler {

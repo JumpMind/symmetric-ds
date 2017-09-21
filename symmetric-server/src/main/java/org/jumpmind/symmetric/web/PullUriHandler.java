@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -123,7 +123,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding, 
                             map);
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
-                            nodeService.findIdentityNodeId(), map.getChannelQueue(), nodeId, ProcessType.PULL_HANDLER));
+                            nodeService.findIdentityNodeId(), map.getChannelQueue(), nodeId, ProcessType.PULL_HANDLER_EXTRACT));
                     
                     try {
                         Node targetNode = nodeService.findNode(nodeId, true);

@@ -463,8 +463,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     l.registrationStarting();
                 }
                 log.info("This node is unregistered.  It will attempt to register using the registration.url");
-                String channelId = null;
-                registered = dataLoaderService.loadDataFromPull(null, channelId).getStatus() == Status.DATA_PROCESSED;
+                registered = dataLoaderService.loadDataFromPull(null, (String)null).getStatus() == Status.DATA_PROCESSED;
             } catch (ConnectException e) {
                 log.warn(
                         "The request to register failed because the client failed to connect to the server.  The connection error message was: {}",

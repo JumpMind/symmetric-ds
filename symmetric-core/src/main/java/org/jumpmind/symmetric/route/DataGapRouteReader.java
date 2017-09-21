@@ -48,7 +48,7 @@ import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;

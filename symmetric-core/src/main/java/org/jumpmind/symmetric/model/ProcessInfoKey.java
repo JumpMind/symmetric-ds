@@ -32,20 +32,20 @@ public class ProcessInfoKey implements Serializable {
 
     private ProcessType processType;
 
-    private String channelId;
+    private String queue;
 
     public ProcessInfoKey(String sourceNodeId, String targetNodeId, ProcessType processType) {
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.processType = processType;
-        this.channelId = null;
+        this.queue = null;
     }
 
-    public ProcessInfoKey(String sourceNodeId, String channelId, String targetNodeId, ProcessType processType) {
+    public ProcessInfoKey(String sourceNodeId, String queue, String targetNodeId, ProcessType processType) {
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.processType = processType;
-        this.channelId = channelId;
+        this.queue = queue;
     }
 
     public String getSourceNodeId() {
@@ -60,8 +60,8 @@ public class ProcessInfoKey implements Serializable {
         return processType;
     }
 
-    public String getChannelId() {
-        return channelId;
+    public String getQueue() {
+        return queue;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class ProcessInfoKey implements Serializable {
         result = prime * result + ((processType == null) ? 0 : processType.hashCode());
         result = prime * result + ((sourceNodeId == null) ? 0 : sourceNodeId.hashCode());
         result = prime * result + ((targetNodeId == null) ? 0 : targetNodeId.hashCode());
-        result = prime * result + ((channelId == null) ? 0 : channelId.hashCode());
+        result = prime * result + ((queue == null) ? 0 : queue.hashCode());
         return result;
     }
 
@@ -96,18 +96,18 @@ public class ProcessInfoKey implements Serializable {
                 return false;
         } else if (!targetNodeId.equals(other.targetNodeId))
             return false;
-        if (channelId == null) {
-            if (other.channelId != null)
+        if (queue == null) {
+            if (other.queue != null)
                 return false;
-        } else if (!channelId.equals(other.channelId))
+        } else if (!queue.equals(other.queue))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s,channelId=%s", processType.toString(), sourceNodeId,
-                targetNodeId, channelId);
+        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s,queue=%s", processType.toString(), sourceNodeId,
+                targetNodeId, queue);
     }
 
 }

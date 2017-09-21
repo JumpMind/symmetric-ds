@@ -31,7 +31,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -127,13 +127,13 @@ public class OfflinePushService extends AbstractService implements IOfflinePushS
         Node identity = nodeService.findIdentity();
         FileOutgoingTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
-                identity.getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.OFFLINE_PUSH));
+                identity.getNodeId(), status.getQueue(), remote.getNodeId(), ProcessType.OFFLINE_PUSH));
         
         List<OutgoingBatch> extractedBatches = null;
         try {
             transport = (FileOutgoingTransport) transportManager.getPushTransport(remote, identity, null, null);
 
-            extractedBatches = dataExtractorService.extract(processInfo, remote, status.getChannelId(), transport);
+            extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
             if (extractedBatches.size() > 0) {
                 log.info("Offline push data written for {} at {}", remote, transport.getOutgoingDir());
                 List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService, dataExtractorService);
