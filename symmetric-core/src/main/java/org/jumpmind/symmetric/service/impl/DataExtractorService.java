@@ -115,13 +115,13 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
-import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
@@ -494,12 +494,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return Collections.emptyList();
     }
 
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode,
+    public List<OutgoingBatch> extract(ProcessInfo extractInfo, Node targetNode,
             IOutgoingTransport transport) {
-        return extract(processInfo, targetNode, null, transport);
+        return extract(extractInfo, targetNode, null, transport);
     }
     
-    public List<OutgoingBatch> extract(ProcessInfo processInfo, Node targetNode, String queue, 
+    public List<OutgoingBatch> extract(ProcessInfo extractInfo, Node targetNode, String queue, 
             IOutgoingTransport transport) {
 
         /*
@@ -514,7 +514,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (queue != null) {
             NodeGroupLinkAction defaultAction = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
                     targetNode.getNodeGroupId(), false).getDataEventAction();
-            ProcessType processType = processInfo.getKey().getProcessType();
+            ProcessType processType = extractInfo.getKey().getProcessType();
             NodeGroupLinkAction action = null;
 
             if (processType.equals(ProcessType.PUSH_JOB_EXTRACT)) {
@@ -539,7 +539,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                         writer, targetNode.requires13Compatiblity());
 
-                return extract(processInfo, targetNode, activeBatches, dataWriter, writer, ExtractMode.FOR_SYM_CLIENT);
+                return extract(extractInfo, targetNode, activeBatches, dataWriter, writer, ExtractMode.FOR_SYM_CLIENT);
             }
 
         }
@@ -599,19 +599,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 extractInfo.setBatchCount(activeBatches.size());
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
-                    
-                    extractInfo.setCurrentLoadId(currentBatch.getLoadId());
-                    extractInfo.setDataCount(currentBatch.getDataRowCount());
-                    extractInfo.setCurrentBatchId(currentBatch.getBatchId());
-                    
+                                        
                     channelsProcessed.add(currentBatch.getChannelId());
                     
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
-                    extractInfo.setStatus(ProcessInfo.ProcessStatus.EXTRACTING);
                     final OutgoingBatch extractBatch = currentBatch;
                     Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
-                        public FutureOutgoingBatch call() throws Exception {
-                            return extractBatch(extractBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);
+                        public FutureOutgoingBatch call() throws Exception {                            
+                            return extractBatch(extractBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
                         }
                     };
                     
@@ -638,11 +633,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 ProcessInfo transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(),
                         extractInfo.getQueue(), targetNode.getNodeId(), extractInfo.getProcessType() == ProcessType.PUSH_JOB_EXTRACT ? ProcessType.PUSH_JOB_TRANSFER : ProcessType.PULL_HANDLER_TRANSFER));
-                transferInfo.setTotalDataCount(extractInfo.getTotalDataCount());
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
                 for (int i = 0; i < futures.size(); i++) {
                     Future<FutureOutgoingBatch> future = futures.get(i);
                     currentBatch = activeBatchIter.next();
+                    transferInfo.setTotalDataCount(currentBatch.getExtractRowCount());
                     if (i == futures.size() - 1) {
                         extractInfo.setStatus(ProcessStatus.OK);
                     }
@@ -763,8 +758,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    protected FutureOutgoingBatch extractBatch(OutgoingBatch extractBatch, FutureExtractStatus status, ProcessInfo processInfo,
+    protected FutureOutgoingBatch extractBatch(OutgoingBatch extractBatch, FutureExtractStatus status, ProcessInfo extractInfo,
             Node targetNode, IDataWriter dataWriter, ExtractMode mode, List<OutgoingBatch> activeBatches) throws Exception {
+        extractInfo.setCurrentLoadId(extractBatch.getLoadId());
+        extractInfo.setTotalDataCount(extractBatch.getDataRowCount());
         FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
         final long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
         final boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
@@ -796,7 +793,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     boolean isRetry = isRetry(extractBatch, targetNode);
                     outgoingBatch = new FutureOutgoingBatch(
-                            extractOutgoingBatch(processInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode),
+                            extractOutgoingBatch(extractInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode),
                             isRetry);
                     status.batchExtractCount++;
                     status.byteExtractCount += extractBatch.getByteCount();
@@ -867,7 +864,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return currentBatch;
     }
 
-    protected OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode,
+    protected OutgoingBatch extractOutgoingBatch(ProcessInfo extractInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch, boolean useStagingDataWriter, 
             boolean updateBatchStatistics, ExtractMode mode) {
         
@@ -875,7 +872,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             
             Node sourceNode = nodeService.findIdentity();
 
-            IDataWriter writer = wrapWithTransformWriter(sourceNode, targetNode, processInfo, dataWriter, useStagingDataWriter);
+            IDataWriter writer = wrapWithTransformWriter(sourceNode, targetNode, extractInfo, dataWriter, useStagingDataWriter);
 
             long ts = System.currentTimeMillis();
             long extractTimeInMs = 0l;
@@ -911,7 +908,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (updateBatchStatistics) {
                             changeBatchStatus(Status.QY, currentBatch, mode);
                         }
-                        currentBatch.resetStats();
+
                         DataContext ctx = new DataContext();
                         ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_ID, targetNode.getNodeId());
                         ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, targetNode.getExternalId());
@@ -922,7 +919,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
                         ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
 
-                        IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, processInfo);
+                        extractInfo.setTotalDataCount(currentBatch.getDataRowCount());
+                        currentBatch.resetStats();
+
+                        IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo);
                         new DataProcessor(dataReader, writer, "extract").process(ctx);
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
@@ -989,7 +989,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
         }
-        processInfo.incrementCurrentBatchCount();
         return currentBatch;
     }
 

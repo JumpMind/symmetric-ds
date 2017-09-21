@@ -25,8 +25,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jumpmind.util.AppUtils;
 
@@ -64,18 +62,16 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     private ProcessStatus status = ProcessStatus.NEW;
 
     private long currentDataCount;
+    
+    private long totalDataCount = 0;    
 
-    private long dataCount = -1;
-
-    private long batchCount;
+    private long batchCount;    
 
     private long currentBatchId;
 
     private long currentBatchCount;
 
     private String currentChannelId;
-
-    private boolean threadPerChannel;
 
     private String currentTableName;
 
@@ -89,13 +85,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     private Date lastStatusChangeTime = new Date();
 
-    private Map<ProcessStatus, ProcessInfo> statusHistory;
-
-    private Map<ProcessStatus, Date> statusStartHistory;
-
     private Date endTime;
-
-    private long totalDataCount = 0;
 
     public ProcessInfo() {
         this(new ProcessInfoKey("", "", null));
@@ -131,20 +121,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
 
     public void setStatus(ProcessStatus status) {
-        if (statusHistory == null) {
-            statusHistory = new HashMap<ProcessStatus, ProcessInfo>();
-        }
-        if (statusStartHistory == null) {
-            statusStartHistory = new HashMap<ProcessStatus, Date>();
-        }
-        if (!statusStartHistory.containsKey(this.status)) {
-            statusStartHistory.put(this.status, this.startTime);
-        }
-        statusHistory.put(this.status, this.copy());
-        statusHistory.put(status, this);
-
         this.status = status;
-
         this.lastStatusChangeTime = new Date();
         if (status == ProcessStatus.OK || status == ProcessStatus.ERROR) {
             this.endTime = new Date();
@@ -197,7 +174,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     public void setCurrentBatchId(long currentBatchId) {
         this.currentBatchId = currentBatchId;
         this.currentBatchStartTime = new Date();
-        this.currentDataCount = 0;
     }
 
     public void setCurrentLoadId(long loadId) {
@@ -256,22 +232,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
         return lastStatusChangeTime;
     }
 
-    public void setDataCount(long dataCount) {
-        this.dataCount = dataCount;
-    }
-
-    public long getDataCount() {
-        return dataCount;
-    }
-
-    public boolean isThreadPerChannel() {
-        return threadPerChannel;
-    }
-
-    public void setThreadPerChannel(boolean threadPerChannel) {
-        this.threadPerChannel = threadPerChannel;
-    }
-
     public Date getCurrentBatchStartTime() {
         if (currentBatchStartTime == null) {
             return startTime;
@@ -282,30 +242,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
 
     public void setCurrentBatchStartTime(Date currentBatchStartTime) {
         this.currentBatchStartTime = currentBatchStartTime;
-    }
-
-    public Map<ProcessStatus, ProcessInfo> getStatusHistory() {
-        return this.statusHistory;
-    }
-
-    public void setStatusHistory(Map<ProcessStatus, ProcessInfo> statusHistory) {
-        this.statusHistory = statusHistory;
-    }
-
-    public void setStatusStartHistory(Map<ProcessStatus, Date> statusStartHistory) {
-        this.statusStartHistory = statusStartHistory;
-    }
-
-    public Map<ProcessStatus, Date> getStatusStartHistory() {
-        return this.statusStartHistory;
-    }
-
-    public ProcessInfo getStatusHistory(ProcessStatus status) {
-        return this.statusHistory == null ? null : this.statusHistory.get(status);
-    }
-
-    public Date getStatusStartHistory(ProcessStatus status) {
-        return this.statusStartHistory == null ? null : this.statusStartHistory.get(status);
     }
 
     @Override

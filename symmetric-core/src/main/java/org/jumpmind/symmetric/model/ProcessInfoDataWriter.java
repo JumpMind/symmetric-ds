@@ -20,13 +20,19 @@
  */
 package org.jumpmind.symmetric.model;
 
+import static org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.ERROR;
+import static org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.EXTRACTING;
+import static org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.LOADING;
+import static org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK;
+import static org.jumpmind.symmetric.model.ProcessType.PULL_HANDLER_EXTRACT;
+import static org.jumpmind.symmetric.model.ProcessType.PUSH_JOB_EXTRACT;
+
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
-import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 
 public class ProcessInfoDataWriter extends NestedDataWriter {
 
@@ -44,6 +50,12 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
 
     public void start(Batch batch) {
         if (batch != null) {
+            ProcessType type = processInfo.getProcessType();
+            if (type == PULL_HANDLER_EXTRACT || type == PUSH_JOB_EXTRACT) {
+                processInfo.setStatus(EXTRACTING);
+            } else {
+                processInfo.setStatus(LOADING);
+            }
             processInfo.setCurrentBatchId(batch.getBatchId());
             processInfo.setCurrentChannelId(batch.getChannelId());
             processInfo.incrementBatchCount();
@@ -58,10 +70,10 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
         }
         return super.start(table);
     }
-    
+
     @Override
     public void end(Batch batch, boolean inError) {
-        processInfo.setStatus(!inError ? ProcessStatus.OK : ProcessStatus.ERROR);
+        processInfo.setStatus(!inError ? OK : ERROR);
         super.end(batch, inError);
     }
 
@@ -69,7 +81,7 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
         if (data != null) {
             processInfo.incrementCurrentDataCount();
         }
-        super.write(data);        
+        super.write(data);
     }
 
 }

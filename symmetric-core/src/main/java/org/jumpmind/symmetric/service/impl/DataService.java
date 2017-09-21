@@ -425,9 +425,7 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistories.addAll(engine.getTriggerRouterService()
                                         .getActiveTriggerHistories(new Trigger(reloadRequest.getTriggerId(), null)));
                             }
-                        }
-                       
-                        processInfo.setDataCount(triggerHistories.size());
+                        }                       
                         
                         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
                                 .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
@@ -453,8 +451,7 @@ public class DataService extends AbstractService implements IDataService {
                             }
                         } catch (Exception e) {
                         }
-                        
-                        processInfo.setDataCount(totalTableCount);
+                        processInfo.setTotalDataCount(totalTableCount);
                         
                         if (isFullLoad || (reloadRequests != null && reloadRequests.size() > 0)) {
                             insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,

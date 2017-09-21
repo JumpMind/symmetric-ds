@@ -97,13 +97,13 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         map.setChannelQueue(req.getHeader(WebConstants.CHANNEL_QUEUE));
         
         // pull out headers and pass to pull() method
-        pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
+        handlePull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
 
         log.debug("Done with Pull request from {}", nodeId);
 
     }
         
-    public void pull(String nodeId, String remoteHost, String remoteAddress,
+    protected void handlePull(String nodeId, String remoteHost, String remoteAddress,
             OutputStream outputStream,  String encoding, HttpServletResponse res, ChannelMap map) throws IOException {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
         long ts = System.currentTimeMillis();
