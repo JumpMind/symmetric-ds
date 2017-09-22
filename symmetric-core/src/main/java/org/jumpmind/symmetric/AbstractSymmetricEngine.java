@@ -150,6 +150,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     private boolean isInitialized = false;
     
+    private Throwable lastException = null;
+    
     protected String deploymentType;
 
     protected ITypedPropertiesFactory propertiesFactory;
@@ -685,6 +687,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 }
             } catch (Throwable ex) {                
                 log.error("An error occurred while starting SymmetricDS", ex);
+                lastException = ex;
                 /* Don't leave SymmetricDS in a half started state */
                 stop();
             } finally {
@@ -1130,6 +1133,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     public IGroupletService getGroupletService() {
         return groupletService;
+    }
+    
+    public String getLastException() {
+        return lastException.getMessage();
     }
     
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {

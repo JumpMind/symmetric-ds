@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
@@ -72,6 +74,8 @@ public class SymmetricEngineHolder {
 
     private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
 
+    private Map<String, List<String>> enginesFailed = new HashMap<String, List<String>>();
+    
     private boolean staticEnginesMode = false;
 
     private boolean multiServerMode = false;
@@ -139,6 +143,14 @@ public class SymmetricEngineHolder {
     public int getNumerOfEnginesStarting() {
         return enginesStarting.size();
     }
+    
+    public Map<String, List<String>> getFailedEngines() {
+        return enginesFailed;
+    }
+
+    public boolean areEnginesInError() {
+        return enginesFailed.size() > 0;
+    }
 
     public void setAutoStart(boolean autoStart) {
         this.autoStart = autoStart;
@@ -154,6 +166,7 @@ public class SymmetricEngineHolder {
             engines.get(engineName).destroy();
         }
         engines.clear();
+        enginesFailed.clear();
     }
 
     public void start() {
@@ -185,7 +198,7 @@ public class SymmetricEngineHolder {
                         }
                     }
                     
-                    validateEngineFiles(files);
+                    validateEngineFiles(files); 
 
                     if (files != null) {
                         for (int i = 0; i < files.length; i++) {
@@ -243,8 +256,16 @@ public class SymmetricEngineHolder {
 
     protected ISymmetricEngine create(String propertiesFile) {
         ServerSymmetricEngine engine = null;
+        File file = new File(propertiesFile);
+        String engineName = FilenameUtils.removeExtension(file.getName());
         try {
-            engine = new ServerSymmetricEngine(propertiesFile != null ? new File(propertiesFile)
+
+            Properties engineProperties = getEngineProperties(file);
+            TypedProperties properties = new TypedProperties(engineProperties);
+            engineName = getEngineName(properties);
+            validateRequiredProperties(properties);
+            
+            engine = new ServerSymmetricEngine(propertiesFile != null ? file
                     : null, springContext, this);
             engine.setDeploymentType(deploymentType);
             synchronized (this) {
@@ -254,14 +275,30 @@ public class SymmetricEngineHolder {
                     log.error(
                             "An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.",
                             engine.getEngineName());
+                    List<String> values = new ArrayList<String>();
+                    values.add(engine.getEngineName());
+                    values.add("An engine with the name of " + engine.getEngineName() + " was not started because an engine of the same name "
+                            + "has already been started. Please set the engine.name property in the properties file to a unique name.");
+                    enginesFailed.put(file.getName(), values);
                 }
 
             }
             return engine;
         } catch (Exception e) {
             log.error("", e);
+            List<String> values = new ArrayList<String>();
+            values.add((engine == null ? engineName : engine.getEngineName()));
+            values.add(e.getMessage());
+            enginesFailed.put(file.getName(), values);
             return null;
         }
+    }
+    
+    protected Properties getEngineProperties(File propertiesFile) throws Exception {
+        Properties properties = new Properties();
+        InputStream fileInputStream = new FileInputStream(propertiesFile.getAbsolutePath());
+        properties.load(fileInputStream);
+        return properties;
     }
 
     public ISymmetricEngine install(Properties passedInProperties) throws Exception {
@@ -524,10 +561,17 @@ public class SymmetricEngineHolder {
 
         @Override
         public void run() {
-            engine = create(propertiesFile);        	
+            engine = create(propertiesFile); 
             if (engine != null && autoStart &&
                     engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
-                engine.start();
+                boolean started = engine.start();
+                if (!started) {
+                    File file = new File(propertiesFile);
+                    List<String> values = new ArrayList<String>();
+                    values.add(engine.getEngineName());
+                    values.add(engine.getLastException());
+                    enginesFailed.put(file.getName(), values);
+                }
             }
             enginesStarting.remove(this);
         }

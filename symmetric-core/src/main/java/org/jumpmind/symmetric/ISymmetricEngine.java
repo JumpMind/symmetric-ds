@@ -322,5 +322,7 @@ public interface ISymmetricEngine {
     public List<File> listSnapshots();
     
     public String getNodeId();
+
+    public String getLastException();
     
 }
