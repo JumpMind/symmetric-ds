@@ -66,6 +66,12 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  fallback_insert_count=?, fallback_update_count=?, ignore_row_count=?, missing_delete_count=?, "
                         + "  skip_count=?, extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, extract_delete_row_count=? "
                         + "  where batch_id=? and node_id=?                    ");
+        
+        putSql("updateCommonBatchExtractStatsSql",
+                "update $(outgoing_batch) set byte_count=?, data_row_count=?,                                 "
+                + "  data_insert_row_count=?, data_update_row_count=?, data_delete_row_count=?, other_row_count=?,   "
+                + "  extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, extract_delete_row_count=? "
+                + "  where batch_id=? and node_id != ?                    ");        
 
         putSql("findOutgoingBatchSql", "where batch_id=? and node_id=?  ");
 

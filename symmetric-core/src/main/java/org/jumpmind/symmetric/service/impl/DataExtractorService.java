@@ -637,14 +637,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     Future<FutureOutgoingBatch> future = futures.get(i);
                     currentBatch = activeBatchIter.next();
                     transferInfo.setTotalDataCount(currentBatch.getExtractRowCount());
-                    if (i == futures.size() - 1) {
-                        extractInfo.setStatus(ProcessStatus.OK);
-                    }
                     boolean isProcessed = false;
                     while (!isProcessed) {
                         try {
                             FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
                             currentBatch = extractBatch.getOutgoingBatch();
+                            
+                            if (i == futures.size() - 1) {
+                                extractInfo.setStatus(ProcessStatus.OK);
+                            }
                             
                             if (extractBatch.isExtractSkipped) {
                                 break;
@@ -663,7 +664,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             if (currentBatch.getStatus() != Status.OK) {
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
-                                changeBatchStatus(Status.LD, currentBatch, mode);
+                                changeBatchStatus(Status.LD, currentBatch, mode);                                
                             }
                             
                             transferInfo.setCurrentTableName(currentBatch.getSummary());                            
@@ -937,6 +938,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
                             statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
                                     stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                            currentBatch.setByteCount(byteCount);
+                            
+                            if (currentBatch.isCommonFlag()) {
+                                outgoingBatchService.updateCommonBatchExtractStatistics(currentBatch);
+                            }
                         }
 
                     }

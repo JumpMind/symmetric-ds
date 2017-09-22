@@ -80,6 +80,8 @@ public interface IOutgoingBatchService {
 
     public void updateOutgoingBatch(OutgoingBatch batch);
     
+    public void updateCommonBatchExtractStatistics(OutgoingBatch batch);
+    
     public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
 
     public void updateOutgoingBatches(List<OutgoingBatch> batches);

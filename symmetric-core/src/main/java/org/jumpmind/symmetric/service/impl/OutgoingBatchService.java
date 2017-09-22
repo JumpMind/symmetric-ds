@@ -203,6 +203,16 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             close(transaction);
         }
     }
+    
+    public void updateCommonBatchExtractStatistics(OutgoingBatch outgoingBatch) {
+        sqlTemplate.update(getSql("updateCommonBatchExtractStatsSql"),
+                new Object[] { outgoingBatch.getByteCount(), outgoingBatch.getDataRowCount(), outgoingBatch.getDataInsertRowCount(), outgoingBatch.getDataUpdateRowCount(),
+                        outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getOtherRowCount(), outgoingBatch.getExtractRowCount(), outgoingBatch.getExtractInsertRowCount(),
+                        outgoingBatch.getExtractUpdateRowCount(), outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getBatchId(),
+                        outgoingBatch.getNodeId() },
+                new int[] { Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                        Types.NUMERIC, symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
+    }
 
     public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
@@ -231,7 +241,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC,
-
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
