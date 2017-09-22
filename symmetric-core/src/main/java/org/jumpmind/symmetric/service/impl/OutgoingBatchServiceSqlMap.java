@@ -226,12 +226,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + " join $(channel) c on c.channel_id = ob.channel_id  "
                 + " where ob.load_id = ? "
                 + " group by ob.load_id, c.queue, ob.status"
-                + " order by ob.load_id asc");
-        
-        putSql("getNextOutgoingBatchForEachNodeSql",
-                "select min(b.batch_id) as batch_id, b.node_id, b.status, b.channel_id        "
-              + "  from $(outgoing_batch) b where status != 'OK' and status != 'RT'          "
-              + "  group by b.node_id, b.status, b.channel_id");
+                + " order by ob.load_id asc");        
 
         putSql("deleteOutgoingBatchesForNodeSql", 
                 "delete from $(outgoing_batch) where node_id=? and channel_id=? and batch_id < "
