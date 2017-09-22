@@ -592,11 +592,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (this.threadPoolFactory == null) {
                     this.threadPoolFactory = new CustomizableThreadFactory(String.format("%s-dataextractor", parameterService.getEngineName().toLowerCase()));
                 }
+                
                 executor = Executors.newFixedThreadPool(1, this.threadPoolFactory);
 
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
-                extractInfo.setBatchCount(activeBatches.size());
+                extractInfo.setBatchCount(activeBatches.size());                
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
                                         
@@ -604,10 +605,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     
                     currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
                     final OutgoingBatch extractBatch = currentBatch;
-                    Callable<FutureOutgoingBatch> callable = new Callable<FutureOutgoingBatch>() {
-                        public FutureOutgoingBatch call() throws Exception {                            
-                            return extractBatch(extractBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
-                        }
+                    Callable<FutureOutgoingBatch> callable = () -> {
+                        return extractBatch(extractBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
                     };
                     
                     if (status.shouldExtractSkip) {
@@ -760,6 +759,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     protected FutureOutgoingBatch extractBatch(OutgoingBatch extractBatch, FutureExtractStatus status, ProcessInfo extractInfo,
             Node targetNode, IDataWriter dataWriter, ExtractMode mode, List<OutgoingBatch> activeBatches) throws Exception {
+        extractInfo.setThread(Thread.currentThread());
         extractInfo.setCurrentLoadId(extractBatch.getLoadId());
         extractInfo.setTotalDataCount(extractBatch.getDataRowCount());
         FutureOutgoingBatch outgoingBatch = new FutureOutgoingBatch(extractBatch, false);
