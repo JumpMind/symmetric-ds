@@ -72,8 +72,6 @@ public interface IOutgoingBatchService {
 
     public OutgoingBatches getOutgoingBatchErrors(int maxRows);
     
-    public List<OutgoingBatch> getNextOutgoingBatchForEachNode();
-
     public boolean isInitialLoadComplete(String nodeId);
     
     public boolean areAllLoadBatchesComplete(String nodeId);

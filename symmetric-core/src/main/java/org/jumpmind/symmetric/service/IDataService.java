@@ -78,7 +78,7 @@ public interface IDataService {
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
     public long insertReloadEvent(ISqlTransaction transaction, Node targetNode,
-            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy, Status status);
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy, Status status, long estimatedBatchRowCount);
     
     public void sendScript(String nodeId, String script, boolean isLoad);
     
@@ -99,7 +99,7 @@ public interface IDataService {
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad, long loadId, String createBy);
     
     public long insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
-            String nodeId, String routerId, boolean isLoad, long loadId, String createBy, Status status);
+            String nodeId, String routerId, boolean isLoad, long loadId, String createBy, Status status, long estimatedBatchRowCount);
 
     public long insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad, long loadId, String createBy);
 

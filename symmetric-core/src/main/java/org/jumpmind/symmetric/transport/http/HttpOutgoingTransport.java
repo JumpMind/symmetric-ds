@@ -198,7 +198,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
             connection.setRequestMethod("HEAD");
-            connection.setRequestProperty(WebConstants.THREAD_CHANNEL, queue);
+            connection.setRequestProperty(WebConstants.CHANNEL_QUEUE, queue);
 
             analyzeResponseCode(connection.getResponseCode());
         } catch (IOException ex) {

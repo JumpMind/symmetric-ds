@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.db2;
 import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -72,6 +73,9 @@ public class Db2As400DdlBuilder extends Db2DdlBuilder {
             ddl.append(")");
 
         }
+    }
+
+    protected void writeReorgStmt(Table table, StringBuilder ddl) {
     }
 
 }

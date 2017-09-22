@@ -104,7 +104,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected IStagingManager createStagingManager() {
         String directory = androidContext.getCacheDir().toString();
         log.info("Staging manager directory: " + directory);
-        return new StagingManager(directory);
+        return new StagingManager(directory,false);
     }
 
     @Override

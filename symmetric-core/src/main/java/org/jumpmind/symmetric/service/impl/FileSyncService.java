@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
@@ -75,11 +76,10 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -129,7 +129,7 @@ INodeCommunicationExecutor {
                         log.debug("Tracking changes for file sync");
                         Node local = engine.getNodeService().findIdentity();
                         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
-                                new ProcessInfoKey(local.getNodeId(), null, ProcessInfoKey.ProcessType.FILE_SYNC_TRACKER));
+                                new ProcessInfoKey(local.getNodeId(), null, ProcessType.FILE_SYNC_TRACKER));
                         boolean useCrc = engine.getParameterService().is(ParameterConstants.FILE_SYNC_USE_CRC);
 
                         if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_FAST_SCAN)) {
@@ -756,7 +756,7 @@ INodeCommunicationExecutor {
         if (local != null && sourceNode != null) {
             ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                     new ProcessInfoKey(nodeId, local.getNodeId(),
-                            ProcessInfoKey.ProcessType.FILE_SYNC_PUSH_HANDLER));
+                            ProcessType.FILE_SYNC_PUSH_HANDLER));
             try {
                 List<IncomingBatch> list = processZip(in, nodeId, processInfo);
                 NodeSecurity security = nodeService.findNodeSecurity(local.getNodeId(), true);

@@ -26,79 +26,26 @@ public class ProcessInfoKey implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public enum ProcessType {
-        ANY, PUSH_JOB, PULL_JOB, PUSH_HANDLER, PULL_HANDLER, REST_PULL_HANLDER, OFFLINE_PUSH, OFFLINE_PULL, ROUTER_JOB, INSERT_LOAD_EVENTS, GAP_DETECT, ROUTER_READER, MANUAL_LOAD, FILE_SYNC_PULL_JOB, FILE_SYNC_PUSH_JOB, FILE_SYNC_PULL_HANDLER, FILE_SYNC_PUSH_HANDLER, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT_JOB, FILE_SYNC_INITIAL_LOAD_EXTRACT_JOB, PULL_CONFIG_JOB;
-
-        public String toString() {
-            switch (this) {
-                case ANY:
-                    return "<Any>";
-                case MANUAL_LOAD:
-                    return "Manual Load";
-                case PUSH_JOB:
-                    return "Database Push";
-                case PULL_JOB:
-                    return "Database Pull";
-                case PULL_CONFIG_JOB:
-                    return "Config Pull";
-                case PUSH_HANDLER:
-                    return "Service Database Push";
-                case PULL_HANDLER:
-                    return "Service Database Pull";
-                case OFFLINE_PUSH:
-                    return "Offline Push";
-                case OFFLINE_PULL:
-                    return "Offline Pull";
-                case ROUTER_JOB:
-                    return "Routing";
-                case ROUTER_READER:
-                    return "Routing Reader";
-                case GAP_DETECT:
-                    return "Gap Detection";
-                case FILE_SYNC_PULL_JOB:
-                    return "File Sync Pull";
-                case FILE_SYNC_PUSH_JOB:
-                    return "File Sync Push";
-                case FILE_SYNC_PULL_HANDLER:
-                    return "Service File Sync Pull";
-                case FILE_SYNC_PUSH_HANDLER:
-                    return "Service File Sync Push";
-                case FILE_SYNC_TRACKER:
-                    return "File Sync Tracker";
-                case REST_PULL_HANLDER:
-                    return "REST Pull";
-                case INSERT_LOAD_EVENTS:
-                    return "Inserting Load Events";
-                case INITIAL_LOAD_EXTRACT_JOB:
-                    return "Initial Load Extractor";
-                case FILE_SYNC_INITIAL_LOAD_EXTRACT_JOB:
-                    return "File Sync Initial Load Extractor";
-                default:
-                    return name();
-            }
-        }
-    };
-
     private String sourceNodeId;
 
     private String targetNodeId;
 
     private ProcessType processType;
 
-    private String channelId;
-    
+    private String queue;
+
     public ProcessInfoKey(String sourceNodeId, String targetNodeId, ProcessType processType) {
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.processType = processType;
-        this.channelId = null;
+        this.queue = null;
     }
-    
-    public ProcessInfoKey(String sourceNodeId, String channelId, String targetNodeId, ProcessType processType) {
+
+    public ProcessInfoKey(String sourceNodeId, String queue, String targetNodeId, ProcessType processType) {
         this.sourceNodeId = sourceNodeId;
         this.targetNodeId = targetNodeId;
         this.processType = processType;
-        this.channelId = channelId;
+        this.queue = queue;
     }
 
     public String getSourceNodeId() {
@@ -113,10 +60,10 @@ public class ProcessInfoKey implements Serializable {
         return processType;
     }
 
-    public String getChannelId() {
-    	return channelId;
+    public String getQueue() {
+        return queue;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -124,7 +71,7 @@ public class ProcessInfoKey implements Serializable {
         result = prime * result + ((processType == null) ? 0 : processType.hashCode());
         result = prime * result + ((sourceNodeId == null) ? 0 : sourceNodeId.hashCode());
         result = prime * result + ((targetNodeId == null) ? 0 : targetNodeId.hashCode());
-        result = prime * result + ((channelId == null) ? 0 : channelId.hashCode());
+        result = prime * result + ((queue == null) ? 0 : queue.hashCode());
         return result;
     }
 
@@ -149,18 +96,18 @@ public class ProcessInfoKey implements Serializable {
                 return false;
         } else if (!targetNodeId.equals(other.targetNodeId))
             return false;
-        if (channelId == null) {
-            if (other.channelId != null)
+        if (queue == null) {
+            if (other.queue != null)
                 return false;
-        } else if (!channelId.equals(other.channelId))
+        } else if (!queue.equals(other.queue))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s,channelId=%s",
-                processType.toString(), sourceNodeId, targetNodeId, channelId);
+        return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s,queue=%s", processType.toString(), sourceNodeId,
+                targetNodeId, queue);
     }
 
 }

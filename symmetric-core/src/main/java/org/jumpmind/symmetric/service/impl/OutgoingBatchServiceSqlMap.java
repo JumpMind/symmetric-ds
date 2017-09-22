@@ -51,8 +51,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("insertOutgoingBatchSql",
                         "insert into $(outgoing_batch)                                                                                                                "
                         + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_row_count, other_row_count, " 
-                        + "  data_update_row_count, data_insert_row_count, data_delete_row_count, last_update_hostname, last_update_time, create_time, create_by, summary)   "
-                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?, ?)                                                                         ");
+                        + "  data_update_row_count, data_insert_row_count, data_delete_row_count, last_update_hostname, last_update_time, create_time, create_by, summary, data_row_count)   "
+                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?, ?, ?)                                                                         ");
 
         putSql("updateOutgoingBatchSql",
                         "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?,                                          "
@@ -226,12 +226,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 + " join $(channel) c on c.channel_id = ob.channel_id  "
                 + " where ob.load_id = ? "
                 + " group by ob.load_id, c.queue, ob.status"
-                + " order by ob.load_id asc");
-        
-        putSql("getNextOutgoingBatchForEachNodeSql",
-                "select min(b.batch_id) as batch_id, b.node_id, b.status, b.channel_id        "
-              + "  from $(outgoing_batch) b where status != 'OK' and status != 'RT'          "
-              + "  group by b.node_id, b.status, b.channel_id");
+                + " order by ob.load_id asc");        
 
         putSql("deleteOutgoingBatchesForNodeSql", 
                 "delete from $(outgoing_batch) where node_id=? and channel_id=? and batch_id < "

@@ -40,9 +40,9 @@ import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
@@ -106,7 +106,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                         suspendIgnoreChannels, IoConstants.ENCODING);
                 ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                         new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local
-                                .getNodeId(), ProcessType.PULL_HANDLER));
+                                .getNodeId(), ProcessType.PULL_HANDLER_EXTRACT));
                 try {
                     engine.getDataExtractorService().extract(processInfo, local, transport);
                     processInfo.setStatus(ProcessStatus.OK);

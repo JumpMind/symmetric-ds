@@ -37,7 +37,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -199,15 +199,15 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
         IOutgoingWithResponseTransport transport = null;
         ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
-                .getNodeId(), status.getChannelId(), remote.getNodeId(), ProcessType.PUSH_JOB));
+                .getNodeId(), status.getQueue(), remote.getNodeId(), ProcessType.PUSH_JOB_EXTRACT));
         Map<String, String> requestProperties = new HashMap<String, String>();
-        requestProperties.put(WebConstants.THREAD_CHANNEL, status.getChannelId());
+        requestProperties.put(WebConstants.CHANNEL_QUEUE, status.getQueue());
         
         try {
             transport = transportManager.getPushTransport(remote, identity,
                     identitySecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
 
-            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, status.getChannelId(), transport);
+            List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
             if (extractedBatches.size() > 0) {
                 
                 log.info("Push data sent to {}", remote);

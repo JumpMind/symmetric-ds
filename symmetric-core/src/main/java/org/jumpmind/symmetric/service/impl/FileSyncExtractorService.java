@@ -32,13 +32,12 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
-import org.jumpmind.symmetric.model.ProcessInfoKey;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
@@ -136,6 +135,6 @@ public class FileSyncExtractorService extends DataExtractorService {
     
     @Override
     protected ProcessType getProcessType() {
-        return ProcessInfoKey.ProcessType.FILE_SYNC_INITIAL_LOAD_EXTRACT_JOB;
+        return ProcessType.FILE_SYNC_INITIAL_LOAD_EXTRACT_JOB;
     }
 }

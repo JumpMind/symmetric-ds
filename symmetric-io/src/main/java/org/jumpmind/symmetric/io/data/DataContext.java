@@ -28,7 +28,6 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 import org.jumpmind.util.Context;
-import org.jumpmind.util.Statistics;
 
 public class DataContext extends Context {
 
@@ -47,8 +46,6 @@ public class DataContext extends Context {
     protected Map<String, Table> parsedTables = new HashMap<String, Table>();
     
     protected Table lastParsedTable = null;
-    
-    protected Statistics statistics;
 
     public DataContext(Batch batch) {
         this.batch = batch;
@@ -132,14 +129,6 @@ public class DataContext extends Context {
             transaction = ((DefaultDatabaseWriter) writer).getTransaction();
         }
         return transaction;
-    }
-    
-    public void setStatistics(Statistics statistics) {
-        this.statistics = statistics;
-    }
-    
-    public Statistics getStatistics() {
-        return statistics;
     }
 
 }

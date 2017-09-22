@@ -43,13 +43,16 @@ public class StagingManager implements IStagingManager {
     protected Set<String> resourcePaths;
     
     protected Map<String, IStagedResource> inUse;
+    
+    boolean clusterEnabled;
 
-    public StagingManager(String directory) {
+    public StagingManager(String directory, boolean clusterEnabled) {
         log.info("The staging directory was initialized at the following location: " + directory);
         this.directory = new File(directory);
         this.directory.mkdirs();
         this.resourcePaths = Collections.synchronizedSet(new TreeSet<String>());
         this.inUse = new ConcurrentHashMap<String, IStagedResource>();
+        this.clusterEnabled = clusterEnabled;
         refreshResourceList();
     }
 
@@ -177,8 +180,15 @@ public class StagingManager implements IStagingManager {
     
     public IStagedResource find(String path) {
         IStagedResource resource = inUse.get(path);
-        if (resource == null && resourcePaths.contains(path)) {
-        	resource = createStagedResource(path);
+        if (resource == null) {
+            boolean foundResourcePath = resourcePaths.contains(path);
+            if (!foundResourcePath && clusterEnabled) {
+                refreshResourceList();
+                foundResourcePath = resourcePaths.contains(path);
+            }        
+            if (foundResourcePath) {
+                resource = new StagedResource(directory, path, this);         
+            }
         }
         return resource;
     }

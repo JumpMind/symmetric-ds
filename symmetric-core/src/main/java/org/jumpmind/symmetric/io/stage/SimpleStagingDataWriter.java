@@ -18,7 +18,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.io.data.writer;
+package org.jumpmind.symmetric.io.stage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,12 +31,15 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.csv.CsvReader;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
+import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.util.Statistics;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.model.ProcessInfo;
+import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +57,11 @@ public class SimpleStagingDataWriter {
     protected BatchType batchType;
     protected String targetNodeId;
     protected DataContext context;
-
+    protected ProcessInfo processInfo;
     protected BufferedWriter writer;
     protected Batch batch;
 
-    public SimpleStagingDataWriter(BufferedReader reader, IStagingManager stagingManager, String category, long memoryThresholdInBytes,
+    public SimpleStagingDataWriter(ProcessInfo processInfo, BufferedReader reader, IStagingManager stagingManager, String category, long memoryThresholdInBytes,
             BatchType batchType, String targetNodeId, DataContext context, IProtocolDataWriterListener... listeners) {
         this.reader = new CsvReader(reader);
         this.reader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
@@ -70,6 +73,7 @@ public class SimpleStagingDataWriter {
         this.targetNodeId = targetNodeId;
         this.listeners = listeners;
         this.context = context;
+        this.processInfo = processInfo;
     }
 
     public void process() throws IOException {
@@ -83,7 +87,7 @@ public class SimpleStagingDataWriter {
             long startTime = System.currentTimeMillis(), ts = startTime, lineCount = 0;
             String batchStatsColumnsLine = null;
             String batchStatsLine = null;
-            Statistics batchStats = new Statistics();
+            Statistics batchStats = null;
 
             while (reader.readRecord()) {
                 line = reader.getRawRecord();
@@ -96,7 +100,6 @@ public class SimpleStagingDataWriter {
                 } else if (line.startsWith(CsvConstants.TABLE)) {
                     tableLine = new TableLine(catalogLine, schemaLine, line);
                     TableLine batchTableLine = batchTableLines.get(tableLine);
-
                     if (batchTableLine != null) {
                         tableLine = batchTableLine;
                         writeLine(line);
@@ -124,6 +127,7 @@ public class SimpleStagingDataWriter {
                 } else if (line.startsWith(CsvConstants.BATCH)) {
                     batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                             getArgLine(nodeLine), targetNodeId, false);
+                    processInfo.incrementBatchCount();
                     String location = batch.getStagedLocation();
                     resource = stagingManager.create(category, location, batch.getBatchId());
                     writer = resource.getWriter(memoryThresholdInBytes);
@@ -136,7 +140,7 @@ public class SimpleStagingDataWriter {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.start(context, batch);
                         }
-                    }
+                    }                    
                 } else if (line.startsWith(CsvConstants.COMMIT)) {
                     if (writer != null) {
                         writeLine(line);
@@ -146,7 +150,8 @@ public class SimpleStagingDataWriter {
                     }
                     batchTableLines.clear();
                     
-                    context.setStatistics(batchStats);
+                    batch.setStatistics(batchStats);
+                    batchStats = null;
                     if (listeners != null) {
                         for (IProtocolDataWriterListener listener : listeners) {
                             listener.end(context, batch, resource);
@@ -156,6 +161,7 @@ public class SimpleStagingDataWriter {
                 } else if (line.startsWith(CsvConstants.RETRY)) {
                     batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                             getArgLine(nodeLine), targetNodeId, false);
+                    processInfo.incrementBatchCount();
                     String location = batch.getStagedLocation();
                     resource = stagingManager.find(category, location, batch.getBatchId());
                     if (resource == null || resource.getState() == State.CREATE) {
@@ -181,6 +187,7 @@ public class SimpleStagingDataWriter {
                     batchStatsColumnsLine = line;
                 } else if (line.startsWith(CsvConstants.STATS)) {
                     batchStatsLine = line;
+                    batchStats = new Statistics();
                     putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
                 } else {
                     if (writer == null) {
@@ -202,6 +209,13 @@ public class SimpleStagingDataWriter {
                             writeLine(syncLine.columnsLine);
                         }
                     }
+                    
+                    if (line.startsWith(CsvConstants.INSERT) || line.startsWith(CsvConstants.DELETE) || line.startsWith(CsvConstants.UPDATE)
+                            || line.startsWith(CsvConstants.CREATE) || line.startsWith(CsvConstants.SQL)
+                            || line.startsWith(CsvConstants.BSH)) {
+                        processInfo.incrementCurrentDataCount();
+                    }
+                    
                     int size = line.length();
                     if (size > MAX_WRITE_LENGTH) {
                         log.debug("Exceeded max line length with {}", size);
@@ -225,11 +239,15 @@ public class SimpleStagingDataWriter {
                     ts = System.currentTimeMillis();
                 }
             }
+            
+            processInfo.setStatus(ProcessStatus.OK);
         } catch (IOException ex) {
             if (resource != null) {
                 resource.delete();
             }
 
+            processInfo.setStatus(ProcessStatus.ERROR);
+            
             /*
              * Just log an error here.  We want batches that come before us to continue to process and to be acknowledged
              */

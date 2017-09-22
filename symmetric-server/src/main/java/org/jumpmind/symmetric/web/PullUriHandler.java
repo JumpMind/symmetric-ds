@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
+import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -94,16 +94,16 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         ChannelMap map = new ChannelMap();
         map.addSuspendChannels(req.getHeader(WebConstants.SUSPENDED_CHANNELS));
         map.addIgnoreChannels(req.getHeader(WebConstants.IGNORED_CHANNELS));
-        map.setThreadChannel(req.getHeader(WebConstants.THREAD_CHANNEL));
+        map.setChannelQueue(req.getHeader(WebConstants.CHANNEL_QUEUE));
         
         // pull out headers and pass to pull() method
-        pull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
+        handlePull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
 
         log.debug("Done with Pull request from {}", nodeId);
 
     }
         
-    public void pull(String nodeId, String remoteHost, String remoteAddress,
+    protected void handlePull(String nodeId, String remoteHost, String remoteAddress,
             OutputStream outputStream,  String encoding, HttpServletResponse res, ChannelMap map) throws IOException {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
         long ts = System.currentTimeMillis();
@@ -123,13 +123,13 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding, 
                             map);
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
-                            nodeService.findIdentityNodeId(), map.getThreadChannel(), nodeId, ProcessType.PULL_HANDLER));
+                            nodeService.findIdentityNodeId(), map.getChannelQueue(), nodeId, ProcessType.PULL_HANDLER_EXTRACT));
                     
                     try {
                         Node targetNode = nodeService.findNode(nodeId, true);
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
-                        		map.getThreadChannel(), outgoingTransport);
-                        logDataReceivedFromPush(targetNode, batchList, processInfo, remoteHost);
+                        		map.getChannelQueue(), outgoingTransport);
+                        logDataReceivedFromPull(targetNode, batchList, processInfo, remoteHost);
                         
                         if (processInfo.getStatus() != ProcessStatus.ERROR) {
                             addPendingBatchCounts(targetNode.getNodeId(), res);
@@ -161,7 +161,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         }
     }
 
-    private void logDataReceivedFromPush(Node targetNode, List<OutgoingBatch> batchList, ProcessInfo processInfo, String remoteHost) {
+    private void logDataReceivedFromPull(Node targetNode, List<OutgoingBatch> batchList, ProcessInfo processInfo, String remoteHost) {
         int batchesCount = 0;
         int dataCount = 0;
         for (OutgoingBatch outgoingBatch : batchList) {

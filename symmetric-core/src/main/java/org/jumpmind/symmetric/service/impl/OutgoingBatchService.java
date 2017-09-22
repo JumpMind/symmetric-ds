@@ -268,7 +268,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isCommonFlag() ? 1 : 0, outgoingBatch.getReloadRowCount(),
                 outgoingBatch.getOtherRowCount(), outgoingBatch.getDataUpdateRowCount(), outgoingBatch.getDataInsertRowCount(),
                 outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getCreateBy(),
-                outgoingBatch.getSummary());
+                outgoingBatch.getSummary(), outgoingBatch.getDataRowCount());
         outgoingBatch.setBatchId(batchId);
     }
 
@@ -557,10 +557,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     public List<String> getNodesInError() {
         return sqlTemplate.query(getSql("selectNodesInErrorSql"), new StringMapper());
-    }
-
-    public List<OutgoingBatch> getNextOutgoingBatchForEachNode() {
-        return sqlTemplate.query(getSql("getNextOutgoingBatchForEachNodeSql"), new OutgoingBatchMapper(true, true));
     }
 
     public boolean isInitialLoadComplete(String nodeId) {
