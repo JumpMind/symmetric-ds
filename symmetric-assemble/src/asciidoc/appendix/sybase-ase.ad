@@ -1,7 +1,36 @@
 
 === Sybase ASE
 
-Sybase Adaptive Server Enterprise (ASE) was tested using the jConnect JDBC driver. The jConnect JDBC driver should be placed in the "lib" folder.
+Sybase Adaptive Server Enterprise (ASE) was tested using the jConnect 7 JDBC driver. The jConnect 7 JDBC driver should be placed in the "lib" folder.
+
+----
+driver class : com.sybase.jdbc4.jdbc.SybDriver
+----
+
+SymmetricDS requires the "select into" database option be turned on for Sybase ASE.   Run the following command with the sa account on the master database while replacing
+the database value with your database name.
+
+----
+sp_dboption 'YOUR_DATABASE', 'select into', true
+----
+
+SymmetricDS requires that the meta data information be installed on each database that will be used in replication.  Sybase provides these metadata store procedures in a script that is packaged with the installation.  
+
+Without the metadata stored procedures installed above the following error will be produced by SymmetricDS
+
+IMPORTANT: Error while reading the database metadata: JZ0SJ: Metadata accessor information was not found on this database. Please install the required tables as mentioned in the jConnect documentation.
+
+.Set the classpath to contain the jconnect jar and the classes directory
+----
+export CLASSPATH=/opt/sybase/jConnect-7_0/classes/jconn4.jar:/opt/sybase/jConnect-7_0/classes
+----
+
+.Install appropriate script from the jconnect driver folder in your Sybase installation under the /sp directory
+----
+java  IsqlApp -U sa -P {SA_PASSWORD} -S jdbc:sybase:Tds:{HOSTNAME}:{PORT}/{DATABASE} -I sql_server{SYBASE VERSION}.sql -c go
+----
+
+
 
 Columns of type DATETIME are accurate to 1/300th of a second, which means that the last digit of the milliseconds portion will end with 
 0, 3, or 6. An incoming DATETIME synced from another database will also have its millisconds rounded to one of these digits (0 and 1 become 
