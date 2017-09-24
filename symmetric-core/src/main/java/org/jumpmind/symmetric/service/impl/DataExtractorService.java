@@ -597,7 +597,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
-                extractInfo.setBatchCount(activeBatches.size());                
+                extractInfo.setTotalBatchCount(activeBatches.size());                
                 for (int i = 0; i < activeBatches.size(); i++) {
                     currentBatch = activeBatches.get(i);
                                         
@@ -1640,7 +1640,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(identity
                     .getNodeId(), nodeCommunication.getQueue(), nodeCommunication.getNodeId(),
                     getProcessType()));
-            processInfo.setBatchCount(batches.size());
+            processInfo.setTotalBatchCount(batches.size());
             try {
                 boolean areBatchesOk = true;
 

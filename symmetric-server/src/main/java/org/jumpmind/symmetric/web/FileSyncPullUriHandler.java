@@ -67,7 +67,7 @@ public class FileSyncPullUriHandler extends AbstractUriHandler {
                     engine.getNodeService().findNode(nodeId, true), outgoingTransport);
             Node targetNode = engine.getNodeService().findNode(nodeId, true);
             
-            if (processInfo.getBatchCount() == 0 && targetNode.isVersionGreaterThanOrEqualTo(3,8,0)) {
+            if (processInfo.getTotalBatchCount() == 0 && targetNode.isVersionGreaterThanOrEqualTo(3,8,0)) {
                 ServletUtils.sendError(res, HttpServletResponse.SC_NO_CONTENT,
                         "No files to pull.");                
             } else {                

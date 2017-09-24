@@ -45,7 +45,7 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
 
     public void open(DataContext context) {
         super.open(context);
-        processInfo.setBatchCount(0);
+        processInfo.setTotalBatchCount(0);
     }
 
     public void start(Batch batch) {
