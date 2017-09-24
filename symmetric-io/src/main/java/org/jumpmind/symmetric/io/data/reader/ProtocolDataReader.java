@@ -199,7 +199,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                 } else if (tokens[0].equals(CsvConstants.BATCH) || tokens[0].equals(CsvConstants.RETRY)) {
                     Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId, binaryEncoding, sourceNodeId, targetNodeId,
                             false);
-                    statistics.put(batch, new DataReaderStatistics());
+                    stats = stats != null ? stats : new DataReaderStatistics();
+                    statistics.put(batch, stats);
                     tokens = null;
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NO_BINARY_OLD_DATA)) {
@@ -281,6 +282,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     statsColumns = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
                 } else if (tokens[0].equals(CsvConstants.STATS)) {
                     statsValues = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
+                    stats = stats != null ? stats : new DataReaderStatistics();
                     putStats(stats, statsColumns, statsValues);
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
