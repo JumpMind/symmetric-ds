@@ -74,9 +74,6 @@ public class BufferedLogAppender extends AppenderSkeleton {
 
     public void setSize(int size) {
         this.size = size;
-        while (events.size() > size) {
-            events.remove(0);
-        }
     }
 
     public int getSize() {
