@@ -38,7 +38,9 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 	public static final String VAR_SOURCE_NODE_ID = "_source_node_id";
 	public static final String VAR_TRIGGER_DISABLED = "_trigger_disabled";
 	
-	
+	public static final String FUNCTION_TRANSACTION_ID = "_transactionid";
+	static final String SQL_DROP_FUNCTION = "DROP FUNCTION $(functionName)";
+    
     public Db2SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new Db2TriggerTemplate(this);
@@ -99,10 +101,25 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     	    log.debug("Failed checking for variable (usually means it doesn't exist yet) '" + sql + "'", e);
     		platform.getSqlTemplate().update("create variable " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " varchar(50)");
     	}
+    	
+    	    String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
+    	            
+            sql = "CREATE OR REPLACE FUNCTION $(functionName)()                                     "
+                    + "     RETURNS VARCHAR(100)                                                      "
+                    + "     LANGUAGE SQL                                                              "
+                    + "     READS SQL DATA                                                            "
+                    + "     RETURN                                                                    "
+                    + "          select c.application_id || '_' || u.uow_id                           "                                                                                                                                      
+                    + "          from sysibmadm.mon_connection_summary c ,sysibmadm.mon_current_uow u "     
+                    + "          where u.application_handle = c.application_handle and c.application_id = application_id()    ";
+            
+            install(sql, transactionIdFunction);
     }
     
     @Override
     public void dropRequiredDatabaseObjects() {
+        String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
+        uninstall(SQL_DROP_FUNCTION, transactionIdFunction);
     }
 
     @Override
@@ -139,14 +156,15 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
             Trigger trigger) {
-        return "null";
+        return "sym_transactionid()";
     }
 
     @Override
     public boolean supportsTransactionId() {
-        return false;
+        return true;
     }
 
+    
     public void cleanDatabase() {
     }
 
