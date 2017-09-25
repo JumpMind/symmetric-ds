@@ -671,22 +671,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             transferInfo.setStatus(ProcessStatus.OK);
                             
                             isProcessed = true;
-                        } catch (ExecutionException e) {
-                            if (isNotBlank(e.getMessage()) && e.getMessage().contains("string truncation")) {
-                                throw new RuntimeException("There is a good chance that the truncation error you are receiving is because contains_big_lobs on the '"
-                                        + currentBatch.getChannelId() + "' channel needs to be turned on.",
-                                        e.getCause() != null ? e.getCause() : e);
-                            }
-                            throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
                         } catch (TimeoutException e) {
-                            writeKeepAliveAck(writer, sourceNode, streamToFileEnabled);
-                        } finally {
+                            writeKeepAliveAck(writer, sourceNode, streamToFileEnabled);                            
+                        } catch (Exception e) {
                             if (transferInfo.getStatus() != ProcessStatus.OK) {
                                 transferInfo.setStatus(ProcessStatus.ERROR);
                             }
-                        }
+                            if (e instanceof ExecutionException) {
+                                if (isNotBlank(e.getMessage()) && e.getMessage().contains("string truncation")) {
+                                    throw new RuntimeException(
+                                            "There is a good chance that the truncation error you are receiving is because contains_big_lobs on the '"
+                                                    + currentBatch.getChannelId() + "' channel needs to be turned on.",
+                                            e.getCause() != null ? e.getCause() : e);
+                                }
+                                throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
+                            } else if (!(e instanceof RuntimeException)) {
+                                throw new RuntimeException(e);
+                            } else if (e instanceof RuntimeException) {
+                                throw (RuntimeException) e;
+                            }
+                        } 
                     }
                 }
             } catch (RuntimeException e) {
