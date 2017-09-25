@@ -630,17 +630,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
 
-                ProcessInfo transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(),
-                        extractInfo.getQueue(), targetNode.getNodeId(), extractInfo.getProcessType() == ProcessType.PUSH_JOB_EXTRACT ? ProcessType.PUSH_JOB_TRANSFER : ProcessType.PULL_HANDLER_TRANSFER));
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
                 for (int i = 0; i < futures.size(); i++) {
                     Future<FutureOutgoingBatch> future = futures.get(i);
                     currentBatch = activeBatchIter.next();
-                    transferInfo.setTotalDataCount(currentBatch.getExtractRowCount());
                     boolean isProcessed = false;
+                    ProcessInfo transferInfo = null;
                     while (!isProcessed) {
                         try {
-                            FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS); 
+                            FutureOutgoingBatch extractBatch = future.get(keepAliveMillis, TimeUnit.MILLISECONDS);
+                            
+                            transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(),
+                                    extractInfo.getQueue(), targetNode.getNodeId(), extractInfo.getProcessType() == ProcessType.PUSH_JOB_EXTRACT ? ProcessType.PUSH_JOB_TRANSFER : ProcessType.PULL_HANDLER_TRANSFER));
+                            transferInfo.setTotalDataCount(currentBatch.getExtractRowCount());
+
                             currentBatch = extractBatch.getOutgoingBatch();
                             
                             if (i == futures.size() - 1) {
@@ -674,7 +677,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         } catch (TimeoutException e) {
                             writeKeepAliveAck(writer, sourceNode, streamToFileEnabled);                            
                         } catch (Exception e) {
-                            if (transferInfo.getStatus() != ProcessStatus.OK) {
+                            if (transferInfo != null && transferInfo.getStatus() != ProcessStatus.OK) {
                                 transferInfo.setStatus(ProcessStatus.ERROR);
                             }
                             if (e instanceof ExecutionException) {
