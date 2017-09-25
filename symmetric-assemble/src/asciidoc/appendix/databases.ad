@@ -21,8 +21,8 @@ by database.
 |CLOB Sync
 
 |DB2
-|9.5
-|N
+|9.5,10,11
+|Y
 |Y
 |Y
 |Y
