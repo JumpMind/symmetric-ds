@@ -20,6 +20,9 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
+import static org.jumpmind.symmetric.common.TableConstants.SYM_NODE_HOST;
+import static org.jumpmind.symmetric.common.TableConstants.getTableName;
+
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -147,17 +150,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     @Override
-    public void markAllChannelAsSent(String channelId) {
-        markAllChannelAsSent(channelId, null);
-    }
-
-    @Override
-    public void markAllChannelAsSent(String channelId, String tableName) {
-        String sql = getSql("cancelChannelBatchesSql");
-        if (!StringUtils.isEmpty(tableName)) {
-            sql += getSql("cancelChannelBatchesTableSql");
-        }
-        sqlTemplate.update(sql, channelId, tableName);
+    public void markHeartbeatAsSent() {
+        sqlTemplate.update(getSql("updatePreviousHeartbeatToOkSql"), Constants.CHANNEL_HEARTBEAT, getTableName(getTablePrefix(), SYM_NODE_HOST));
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
