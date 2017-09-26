@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -892,7 +893,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
               
                         long routeTs = System.currentTimeMillis() - ts;
-                        if (routeTs > 60000 && context != null) {
+                        if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD && context != null) {
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
                                             + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",

@@ -71,6 +71,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long dataReadCount;
     private long peekAheadFillCount;
     private long maxPeekAheadQueueSize;
+    private long dataRereadCount;
     private List<DataGap> dataGaps = new ArrayList<DataGap>();
     private Set<String> transactions = new HashSet<String>();
     private long lastDataId = -1;
@@ -230,6 +231,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public void incrementDataReadCount(long dataReadCount) {
         this.dataReadCount += dataReadCount;
+    }
+    
+    public long getDataRereadCount() {
+        return dataRereadCount;
+    }
+    
+    public void incrementDataRereadCount() {
+        this.dataRereadCount++;
     }
 
     public long getPeekAheadFillCount() {

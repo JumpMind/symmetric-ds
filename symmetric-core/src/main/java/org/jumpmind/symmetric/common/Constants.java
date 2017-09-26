@@ -88,6 +88,8 @@ final public class Constants {
     
     public static final long LONG_OPERATION_THRESHOLD = 30000;
     
+    public static final long LOG_PROCESS_SUMMARY_THRESHOLD = 60000;
+    
     public static final String SYMMETRIC_ENGINE = "symmetricEngine";
     
     public static final String MBEAN_SERVER = "mbeanserver";

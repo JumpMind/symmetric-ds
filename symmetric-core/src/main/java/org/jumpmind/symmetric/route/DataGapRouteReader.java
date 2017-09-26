@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.route;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -91,6 +92,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected String lastTransactionId = null;
     
     protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
+    
+    long lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
 
     public DataGapRouteReader(ChannelRouterContext context, ISymmetricEngine engine) {
         this.engine = engine;
@@ -122,7 +125,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
     }
 
-    protected void execute() {        
+    protected void execute() {    
+
         long maxPeekAheadSizeInBytes = (long)(Runtime.getRuntime().maxMemory() * percentOfHeapToUse);
         ISymmetricDialect symmetricDialect = engine.getSymmetricDialect();
         ISqlReadCursor<Data> cursor = null;
@@ -146,7 +150,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             while (dataCount < maxDataToRoute || (lastTransactionId != null && transactional)) {
                 if (moreData && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
                     moreData = fillPeekAheadQueue(peekAheadQueue, peekAheadCount, cursor);
-                }
+                }                
 
                 int dataWithSameTransactionIdCount = 0;
                 
@@ -383,6 +387,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         boolean isFirstRead = context.getStartDataId() == 0;
         while (reading && dataCount < peekAheadCount) {
             data = cursor.next();
+            AppUtils.sleep(1000);
             if (data != null) {
                 if (process(data)) {
                     peekAheadQueue.add(data);
@@ -391,6 +396,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     context.incrementStat(System.currentTimeMillis() - ts,
                             ChannelRouterContext.STAT_READ_DATA_MS);
                 } else {
+                    context.incrementDataRereadCount();
                     context.incrementStat(System.currentTimeMillis() - ts,
                             ChannelRouterContext.STAT_REREAD_DATA_MS);
                 }
@@ -400,6 +406,15 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 }
                 context.setEndDataId(data.getDataId());
                 ts = System.currentTimeMillis();
+                
+                long totalTimeInMs = System.currentTimeMillis() - lastStatsPrintOutBaselineInMs;
+                if (totalTimeInMs > LOG_PROCESS_SUMMARY_THRESHOLD) {
+                    log.info(
+                            "Reading data to route for channel '{}' has been processing for {} seconds. The following stats have been gathered: datdaRereadCount={}, dataCount={}",
+                            context.getChannel().getChannelId(), (System.currentTimeMillis() - context.getCreatedTimeInMs()) / 1000,
+                            context.getDataRereadCount(), dataCount + context.getDataReadCount());
+                    lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
+                }
             } else {
                 moreData = false;
                 break;

@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.service.impl;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -1239,7 +1240,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (System.currentTimeMillis() - ts > batchStatusUpdateMillis && batch.getStatus() != Status.SE && batch.getStatus() != Status.RS) {
                         changeBatchStatus(Status.SE, batch, mode);
                     }
-                    if (System.currentTimeMillis() - ts > 60000) {
+                    if (System.currentTimeMillis() - ts > LOG_PROCESS_SUMMARY_THRESHOLD) {
                         log.info(
                                 "Batch '{}', for node '{}', for process 'send from stage' has been processing for {} seconds.  "
                                         + "The following stats have been gathered: {}",
