@@ -387,7 +387,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
         boolean isFirstRead = context.getStartDataId() == 0;
         while (reading && dataCount < peekAheadCount) {
             data = cursor.next();
-            AppUtils.sleep(1000);
             if (data != null) {
                 if (process(data)) {
                     peekAheadQueue.add(data);
