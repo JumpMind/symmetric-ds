@@ -241,7 +241,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             os = connection.getOutputStream();
 
             if (!fileUpload && useCompression) {
-                os = new GZIPOutputStream(os) {
+                os = new GZIPOutputStream(os, 128, true) {
                     {
                         this.def.setLevel(compressionLevel);
                         this.def.setStrategy(compressionStrategy);
