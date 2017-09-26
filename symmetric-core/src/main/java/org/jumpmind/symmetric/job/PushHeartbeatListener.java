@@ -27,9 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
-import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
@@ -89,7 +87,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             }
 
             log.debug("Updating my node info");
-            engine.getOutgoingBatchService().markAllChannelAsSent(Constants.CHANNEL_HEARTBEAT, getTableName());
+            engine.getOutgoingBatchService().markHeartbeatAsSent();
             engine.getNodeService().updateNodeHostForCurrentNode();
             log.debug("Done updating my node info");
 
@@ -110,12 +108,4 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 ParameterConstants.HEARTBEAT_SYNC_ON_PUSH_PERIOD_SEC);
     }
     
-    protected String getTableName() {
-        StringBuilder tableName = new StringBuilder();
-        tableName.append(engine.getParameterService().getTablePrefix());
-        tableName.append("_");
-        tableName.append(TableConstants.SYM_NODE_HOST);
-        return tableName.toString();
-    }
-
 }

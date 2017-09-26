@@ -43,10 +43,8 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("cancelLoadBatchesSql",
                 "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0, last_update_time=current_timestamp where load_id=?");
 
-        putSql("cancelChannelBatchesSql",
-                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and status != 'OK'");
-        
-        putSql("cancelChannelBatchesTableSql", " and summary=?");
+        putSql("updatePreviousHeartbeatToOkSql",
+                "update $(outgoing_batch) set ignore_count=1, status='OK', error_flag=0 where channel_id=? and summary=? and status != 'OK' and sent_count=0");
 
         putSql("insertOutgoingBatchSql",
                         "insert into $(outgoing_batch)                                                                                                                "

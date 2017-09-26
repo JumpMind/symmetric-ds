@@ -40,6 +40,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -177,8 +178,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
 
-    public boolean isUseCompression() {
-        return engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT);
+    public boolean isUseCompression(Node targetNode) {
+        // if the node is local, no need to use compression
+        ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
+        return engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_COMPRESSION_CLIENT) && targetEngine == null;
     }
 
     public int getCompressionLevel() {
@@ -231,7 +234,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             String securityToken, Map<String, String> requestProperties, 
             String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
                 getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
     }
@@ -239,7 +242,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
                 getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), false);
     }
@@ -247,7 +250,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("filesync/push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(),
+        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), getBasicAuthUsername(),
                 getBasicAuthPassword(), isOutputStreamEnabled(), getOutputStreamSize(), true);
     }    
