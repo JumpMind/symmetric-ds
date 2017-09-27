@@ -226,6 +226,10 @@ public class SnapshotUtil {
         
         extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
+        
+        extract(export, new File(tmpDir, "sym_node_channel_ctl.csv"), 
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_CHANNEL_CTL));
+        
         try {
             if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
                   engine.getNodeCommunicationService().persistToTableForSnapshot();
