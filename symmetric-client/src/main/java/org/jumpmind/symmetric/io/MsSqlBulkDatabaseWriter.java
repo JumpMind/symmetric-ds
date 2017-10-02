@@ -36,6 +36,7 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -78,7 +79,19 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     public boolean start(Table table) {
         this.table = table;
-        if (super.start(table)) {
+        if (super.start(table)) {            
+            if (sourceTable != null && targetTable == null) {
+                String qualifiedName = sourceTable.getFullyQualifiedTableName();
+                if (writerSettings.isIgnoreMissingTables()) {                    
+                    if (!missingTables.contains(qualifiedName)) {
+                        log.warn("Did not find the {} table in the target database", qualifiedName);
+                        missingTables.add(qualifiedName);
+                    }
+                } else {
+                    throw new SymmetricException("Could not load the %s table.  It is not in the target database", qualifiedName);
+                }
+            }
+            
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
                 for (Column column : targetTable.getColumns()) {
