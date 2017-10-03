@@ -66,11 +66,11 @@ public class StagingManager implements IStagingManager {
 
     private void refreshResourceList() {
         Collection<File> files = FileUtils.listFiles(this.directory,
-                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName(), State.DONE.getExtensionName() }, true);
+                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName() }, true);
         for (File file : files) {
             try {
                 String path = StagedResource.toPath(directory, file);
-                if (!resourcePaths.contains(path)) {
+                if (path != null && !resourcePaths.contains(path)) {
                     resourcePaths.add(path);
                 }
             } catch (IllegalStateException ex) {
