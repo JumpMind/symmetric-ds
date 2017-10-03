@@ -119,7 +119,12 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     @Override
     public void dropRequiredDatabaseObjects() {
         String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
-        uninstall(SQL_DROP_FUNCTION, transactionIdFunction);
+        try {
+            uninstall(SQL_DROP_FUNCTION, transactionIdFunction);
+        }
+        catch (Exception e) {
+            log.warn("Unable to uninstall function " + this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID);
+        }
     }
 
     @Override

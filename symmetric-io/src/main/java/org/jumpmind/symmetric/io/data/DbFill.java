@@ -219,7 +219,14 @@ public class DbFill {
                         missingTableNames);
             }
         }
-        tables = Database.sortByForeignKeys(tables);
+        //tables = Database.sortByForeignKeys(tables);
+        for(Table t : tables) {
+            log.info("Before Table " + t.getName());
+        }
+        tables = Database.sortByForeignKeysNew(tables, getAllDbTables());
+        for(Table t : tables) {
+            log.info("Table " + t.getName());
+        }
         buildForeignKeyReferences(tables);
         buildDependentColumnValues(tables);        
         fillTables(tables, tableProperties);
@@ -365,7 +372,10 @@ public class DbFill {
 
                     List<Table> groupTables = new ArrayList<Table>();
                     if (cascading && dmlType == INSERT) {
-                        groupTables.addAll(foreignTables.get(tableToProcess));
+                        List<Table> foreignTablesList = foreignTables.get(tableToProcess);
+                        if (foreignTablesList != null) {
+                            groupTables.addAll(foreignTablesList);
+                        }
                         if (groupTables.size() > 0) {
                             log.info("Cascade insert " + tableToProcess.getName() + ": " + toStringTables(groupTables));
                         }
