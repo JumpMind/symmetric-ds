@@ -65,8 +65,10 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -76,7 +78,6 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
@@ -348,16 +349,34 @@ public class DataService extends AbstractService implements IDataService {
         return channelId;
     }
     
+    @Override
     public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo) {
-        insertReloadEvents(targetNode, reverse, null, processInfo);
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        Node sourceNode = engine.getNodeService().findIdentity();
+        insertReloadEvents(targetNode, reverse, null, processInfo, triggerRouterService.getActiveTriggerHistories(), triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
     }
     
+    @Override
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
-
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        Node sourceNode = engine.getNodeService().findIdentity();
+        insertReloadEvents(targetNode, reverse, reloadRequests, processInfo, triggerRouterService.getActiveTriggerHistories(), triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()));
+    }
+    
+    @Override
+    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters) {
+        insertReloadEvents(targetNode, reverse, null, processInfo, activeHistories, triggerRouters);
+    }    
+    
+    
+    @Override
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters) {
         if (engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS)) {
             try {
-                synchronized (engine.getTriggerRouterService()) {
-                    engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS);
+                INodeService nodeService = engine.getNodeService();
+                ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                
+                synchronized (triggerRouterService) {
 
                     boolean isFullLoad = reloadRequests == null 
                             || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
@@ -375,10 +394,7 @@ public class DataService extends AbstractService implements IDataService {
                     if (isFullLoad) {
                         engine.getOutgoingBatchService().markAllAsSentForNode(targetNode.getNodeId(),
                                 false);
-                    }
-                    
-                    INodeService nodeService = engine.getNodeService();
-                    ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                    }                   
 
                     Node sourceNode = nodeService.findIdentity();
 
@@ -397,6 +413,7 @@ public class DataService extends AbstractService implements IDataService {
 
                         long loadId = engine.getSequenceService().nextVal(transaction, 
                                 Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        
                         processInfo.setCurrentLoadId(loadId);
                         
                         String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
@@ -405,22 +422,21 @@ public class DataService extends AbstractService implements IDataService {
                         List<TriggerHistory> triggerHistories = new ArrayList<TriggerHistory>();
 
                         if (isFullLoad) {
-                            triggerHistories = triggerRouterService.getActiveTriggerHistories();
+                            triggerHistories.addAll(activeHistories);
                             if (reloadRequests != null && reloadRequests.size() == 1) {
                                 String channelId = reloadRequests.get(0).getChannelId();
                                 if (channelId != null) {
                                     List<TriggerHistory> channelTriggerHistories = new ArrayList<TriggerHistory>();
     
                                     for (TriggerHistory history : triggerHistories) {
-                                        if (channelId.equals(engine.getTriggerRouterService().getTriggerById(history.getTriggerId()).getChannelId())) {
+                                        if (channelId.equals(findChannelFor(history, triggerRouters))) {
                                             channelTriggerHistories.add(history);
                                         }
                                     }
                                     triggerHistories = channelTriggerHistories;
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             for (TableReloadRequest reloadRequest : reloadRequests) {
                                 triggerHistories.addAll(engine.getTriggerRouterService()
                                         .getActiveTriggerHistories(new Trigger(reloadRequest.getTriggerId(), null)));
@@ -429,7 +445,7 @@ public class DataService extends AbstractService implements IDataService {
                         
                         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = triggerRouterService
                                 .fillTriggerRoutersByHistIdAndSortHist(sourceNode.getNodeGroupId(),
-                                        targetNode.getNodeGroupId(), triggerHistories);
+                                        targetNode.getNodeGroupId(), triggerHistories, triggerRouters);
 
                         if (isFullLoad) {
                             callReloadListeners(true, targetNode, transactional, transaction, loadId);
@@ -546,6 +562,15 @@ public class DataService extends AbstractService implements IDataService {
             log.info("Not attempting to insert reload events because sync trigger is currently running");
         }
 
+    }
+    
+    private String findChannelFor(TriggerHistory history, List<TriggerRouter> triggerRouters) {
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            if (triggerRouter.getTrigger().getTriggerId().equals(history.getTriggerId())) {
+                return triggerRouter.getTrigger().getChannelId();
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -962,15 +987,18 @@ public class DataService extends AbstractService implements IDataService {
 
     protected int getTransformMultiplier(Table table, TriggerRouter triggerRouter) {
         int transformMultiplier = 0;
-        for (TransformService.TransformTableNodeGroupLink transform : engine.getTransformService().getTransformTables(false)) {
-            if (triggerRouter.getRouter().getNodeGroupLink().equals(transform.getNodeGroupLink()) && 
-                    transform.getSourceTableName().equals(table.getName())) {
-                transformMultiplier++;
+        List<TransformTableNodeGroupLink> transforms = engine.getTransformService()
+                .findTransformsFor(triggerRouter.getRouter().getNodeGroupLink(), TransformPoint.EXTRACT);
+        if (transforms != null) {
+            for (TransformService.TransformTableNodeGroupLink transform : transforms) {
+                if (transform.getSourceTableName().equals(table.getName())) {
+                    transformMultiplier++;
+                }
             }
         }
         transformMultiplier = Math.max(1, transformMultiplier);
         return transformMultiplier;
-    }    
+    }
 
     private void insertFileSyncBatchForReload(Node targetNode, long loadId, String createBy,
             boolean transactional, ISqlTransaction transaction, ProcessInfo processInfo) {
@@ -1258,7 +1286,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     protected void insertDataEvent(ISqlTransaction transaction, DataEvent dataEvent) {
-        this.insertDataEvent(transaction, dataEvent.getDataId(), dataEvent.getBatchId(),
+        insertDataEvent(transaction, dataEvent.getDataId(), dataEvent.getBatchId(),
                 dataEvent.getRouterId());
     }
 
@@ -1365,7 +1393,7 @@ public class DataService extends AbstractService implements IDataService {
             } else {
                 TriggerHistory history = data.getTriggerHistory();
                 if (history != null && channelId == null) {
-                    Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId());
+                    Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(), false);
                     channelId = getReloadChannelIdForTrigger(trigger, engine.getConfigurationService().getChannels(false));
                 }
             }
