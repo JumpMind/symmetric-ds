@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
@@ -123,7 +124,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
     
-    protected boolean firstTimeCheckForAbandonedBatches = true;
+    protected boolean firstTimeCheck = true;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -185,9 +186,12 @@ public class RouterService extends AbstractService implements IRouterService {
         if (identity != null) {
             if (force || engine.getClusterService().lock(ClusterConstants.ROUTE)) {
                 try {
-                    if (firstTimeCheckForAbandonedBatches) {
+                    if (firstTimeCheck) {
                         engine.getOutgoingBatchService().updateAbandonedRoutingBatches();
-                        firstTimeCheckForAbandonedBatches = false;
+                        if (engine.getDataService().fixLastDataGap()) {
+                            engine.getContextService().save(ContextConstants.ROUTING_FULL_GAP_ANALYSIS, Boolean.TRUE.toString());
+                        }
+                        firstTimeCheck = false;
                     }
 
 
@@ -486,7 +490,7 @@ public class RouterService extends AbstractService implements IRouterService {
             processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
         } catch (RuntimeException ex) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
-            firstTimeCheckForAbandonedBatches = true;
+            firstTimeCheck = true;
             throw ex;
         }
         return dataCount;

@@ -145,8 +145,6 @@ public interface IDataService {
     
     public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId, int maxRowsToRetrieve);
     
-    public void updateDataGap(DataGap gap, DataGap.Status status);
-    
     public void insertDataGap(DataGap gap);
 
     public void insertDataGap(ISqlTransaction transaction, DataGap gap);
@@ -158,6 +156,8 @@ public interface IDataService {
     public void deleteDataGap(DataGap gap);
     
     public void deleteCapturedConfigChannelData();
+    
+    public boolean fixLastDataGap();
     
     public long findMaxDataId();
     

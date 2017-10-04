@@ -1986,15 +1986,6 @@ public class DataService extends AbstractService implements IDataService {
                     gap.getLastUpdateTime(), gap.getCreateTime() }, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP });
     }
-
-    public void updateDataGap(DataGap gap, DataGap.Status status) {
-        sqlTemplate.update(
-                getSql("updateDataGapSql"),
-                new Object[] { status.name(), AppUtils.getHostName(), gap.getLastUpdateTime(), gap.getStartId(),
-                        gap.getEndId() }, new int[] { Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() });
-    }
-
     
     @Override
     public void deleteDataGap(DataGap gap) {
@@ -2174,6 +2165,42 @@ public class DataService extends AbstractService implements IDataService {
         return mapper.getCaptureMap();
     }
     
+    @Override
+    public boolean fixLastDataGap() {
+        boolean fixed = false;
+        long maxDataId = findMaxDataId();
+        List<DataGap> gaps = findDataGaps();
+        if (gaps.size() > 0) {
+            DataGap lastGap = gaps.get(gaps.size()-1);
+            if (lastGap.getEndId() < maxDataId) {
+                fixed = true;
+                log.warn("The last data id of {} was bigger than the last gap's end_id of {}.  Increasing the gap size", maxDataId, lastGap.getEndId());
+                final long maxDataToSelect = parameterService
+                        .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+                ISqlTransaction transaction = null;
+                try {
+                    transaction = sqlTemplate.startSqlTransaction();
+                    deleteDataGap(transaction, lastGap);
+                    insertDataGap(transaction, new DataGap(lastGap.getStartId(), maxDataId+maxDataToSelect));
+                    transaction.commit();
+                } catch (Error ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } catch (RuntimeException ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } finally {
+                    close(transaction);
+                }
+            }
+        }
+        return fixed;
+    }
+    
     class TableRow {
         Table table;
         Row row;
@@ -2254,9 +2281,7 @@ public class DataService extends AbstractService implements IDataService {
         public String getFkName() {
             return fkName;
         }
-        
-        
-        
+                        
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {
