@@ -47,8 +47,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.h2.util.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
+import org.jumpmind.security.SecurityServiceFactory;
+import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
@@ -430,13 +433,18 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void encryptText(CommandLine line, List<String> args) {
         String plainText = popArg(args, "Text");
-        ISecurityService service = getSymmetricEngine().getSecurityService();
+        ISecurityService service = createSecurityService();
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
+    }
+    
+    private ISecurityService createSecurityService() {
+        TypedProperties properties = ClientSymmetricEngine.createTypedPropertiesFactory(propertiesFile, new Properties()).reload();
+        return SecurityServiceFactory.create(SecurityServiceType.SERVER, properties);
     }
 
     private void obfuscateText(CommandLine line, List<String> args) {
         String plainText = popArg(args, "Text");
-        ISecurityService service = getSymmetricEngine().getSecurityService();
+        ISecurityService service = createSecurityService();
         System.out.println(SecurityConstants.PREFIX_OBF + service.obfuscate(plainText));
     }
 
