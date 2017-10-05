@@ -2184,7 +2184,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables.add(table);
             }
         }
-        return Database.sortByForeignKeys(tables);
+        //return Database.sortByForeignKeys(tables);
+        return Database.sortByForeignKeys(tables, null);
     }
 
     protected void awaitTermination(ExecutorService executor, List<Future<?>> futures) {
