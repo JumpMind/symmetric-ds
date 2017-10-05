@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService.LoadStatusSummary;
 
 /**
@@ -105,6 +106,12 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(OutgoingBatch.Status ... statuses);
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(OutgoingBatch.Status ... statuses);    
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByNode(String nodeId,
+    		Date sinceCreateTime, Status... statuses);
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByNodeAndChannel(String nodeId, String channelId,
+    		Date sinceCreateTime, Status... statuses);
     
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, List<Long> loads);

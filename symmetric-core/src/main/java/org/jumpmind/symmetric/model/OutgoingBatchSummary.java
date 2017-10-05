@@ -42,6 +42,17 @@ public class OutgoingBatchSummary implements Serializable {
     private long totalMillis;
     private long minBatchId;
     
+    private long extractMillis;
+    private long transferMillis;
+    private long loadMillis;
+    private long routerMillis;
+    
+    private int insertCount;
+    private int updateCount;
+    private int deleteCount;
+    private int otherCount;
+    private int reloadCount;
+    
     public void setMinBatchId(long minBatchId) {
         this.minBatchId = minBatchId;
     }
@@ -129,6 +140,78 @@ public class OutgoingBatchSummary implements Serializable {
     public void setTotalMillis(long totalMillis) {
         this.totalMillis = totalMillis;
     }
+
+	public long getExtractMillis() {
+		return extractMillis;
+	}
+
+	public void setExtractMillis(long extractMillis) {
+		this.extractMillis = extractMillis;
+	}
+
+	public long getTransferMillis() {
+		return transferMillis;
+	}
+
+	public void setTransferMillis(long transferMillis) {
+		this.transferMillis = transferMillis;
+	}
+
+	public long getLoadMillis() {
+		return loadMillis;
+	}
+
+	public void setLoadMillis(long loadMillis) {
+		this.loadMillis = loadMillis;
+	}
+
+	public int getInsertCount() {
+		return insertCount;
+	}
+
+	public void setInsertCount(int insertCount) {
+		this.insertCount = insertCount;
+	}
+
+	public int getUpdateCount() {
+		return updateCount;
+	}
+
+	public void setUpdateCount(int updateCount) {
+		this.updateCount = updateCount;
+	}
+
+	public int getDeleteCount() {
+		return deleteCount;
+	}
+
+	public void setDeleteCount(int deleteCount) {
+		this.deleteCount = deleteCount;
+	}
+
+	public int getOtherCount() {
+		return otherCount;
+	}
+
+	public void setOtherCount(int otherCount) {
+		this.otherCount = otherCount;
+	}
+
+	public long getRouterMillis() {
+		return routerMillis;
+	}
+
+	public void setRouterMillis(long routerMillis) {
+		this.routerMillis = routerMillis;
+	}
+
+	public int getReloadCount() {
+		return reloadCount;
+	}
+
+	public void setReloadCount(int reloadCount) {
+		this.reloadCount = reloadCount;
+	}
 
     
 }

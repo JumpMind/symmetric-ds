@@ -595,32 +595,65 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         // Do we need to check for unbatched data?
         return false;
     }
-
-    public List<OutgoingBatchSummary> findOutgoingBatchSummary(Status... statuses) {
-        Object[] args = new Object[statuses.length];
-        StringBuilder inList = new StringBuilder();
+    
+    protected StringBuilder buildStatusList(Object[] args, Status...statuses) {
+    		StringBuilder inList = new StringBuilder();
         for (int i = 0; i < statuses.length; i++) {
             args[i] = statuses[i].name();
             inList.append("?,");
         }
+        return inList;
+    }
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByNode(String nodeId,
+    		Date sinceCreateTime, Status... statuses) {
+    		
+    		Object[] args = new Object[statuses.length + 1];
+    		args[args.length - 1] = nodeId;
+        StringBuilder inList = buildStatusList(args, statuses);
 
-        String sql = getSql("selectOutgoingBatchSummaryByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+    		String sql = getSql("selectOutgoingBatchSummaryPrefixSql", 
+        		"selectOutgoingBatchSummaryStatsPrefixSql",
+        		"whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+    		return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(false, false), args);
+    }
 
-        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(), args);
+    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByNodeAndChannel(String nodeId,
+    		String channelId, Date sinceCreateTime, Status... statuses) {
+    
+    		Object[] args = new Object[statuses.length + 2];
+    		args[args.length - 1] = nodeId;
+    		args[args.length - 2] = channelId;
+        StringBuilder inList = buildStatusList(args, statuses);
+
+    		String sql = getSql("selectOutgoingBatchSummaryPrefixSql", 
+        		"selectOutgoingBatchSummaryStatsPrefixSql",
+        		"whereStatusAndNodeAndChannelGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+    		return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(false, false), args);
+    }
+    
+    public List<OutgoingBatchSummary> findOutgoingBatchSummary(Status... statuses) {
+    		Object[] args = new Object[statuses.length];
+        StringBuilder inList = buildStatusList(args, statuses);
+
+        String sql = getSql("selectOutgoingBatchSummaryByNodePrefixSql", 
+        		"selectOutgoingBatchSummaryStatsPrefixSql",
+        		"whereStatusGroupByStatusAndNodeSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+
+        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(true, false), args);
     }
 
     public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(Status... statuses) {
         Object[] args = new Object[statuses.length];
-        StringBuilder inList = new StringBuilder();
-        for (int i = 0; i < statuses.length; i++) {
-            args[i] = statuses[i].name();
-            inList.append("?,");
-        }
-
-        String sql = getSql("selectOutgoingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
+        StringBuilder inList = buildStatusList(args, statuses);
+        
+        String sql = getSql("selectOutgoingBatchSummaryByNodeAndChannelPrefixSql",
+        		"selectOutgoingBatchSummaryStatsPrefixSql",
+        		"whereStatusGroupByStatusAndNodeAndChannelSql"
+        		).replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
-        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryChannelMapper(), args);
+        return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(true, true), args);
     }
 
     public Set<Long> getActiveLoads(String sourceNodeId) {
@@ -971,26 +1004,44 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
 
     class OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
+    		boolean withNode = false;
+    		boolean withChannel = false;
+    		
+    		public OutgoingBatchSummaryMapper(boolean withNode, boolean withChannel) {
+    			this.withNode = withNode;
+    			this.withChannel = withChannel;
+    		}
+    		
         public OutgoingBatchSummary mapRow(Row rs) {
             OutgoingBatchSummary summary = new OutgoingBatchSummary();
+            
+            if (withNode) {
+            		summary.setNodeId(rs.getString("node_id"));
+            }
+            if (withChannel) {
+            		summary.setChannel(rs.getString("channel_id"));
+            }
             summary.setBatchCount(rs.getInt("batches"));
             summary.setDataCount(rs.getInt("data"));
             summary.setStatus(Status.valueOf(rs.getString("status")));
-            summary.setNodeId(rs.getString("node_id"));
             summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
             summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
             summary.setTotalBytes(rs.getLong("total_bytes"));
             summary.setTotalMillis(rs.getLong("total_millis"));
-            return summary;
-        }
-    }
-
-    class OutgoingBatchSummaryChannelMapper extends OutgoingBatchSummaryMapper implements ISqlRowMapper<OutgoingBatchSummary> {
-        public OutgoingBatchSummary mapRow(Row rs) {
-            OutgoingBatchSummary summary = super.mapRow(rs);
-            summary.setChannel(rs.getString("channel_id"));
+            
             summary.setErrorFlag(rs.getBoolean("error_flag"));
             summary.setMinBatchId(rs.getLong("batch_id"));
+            summary.setInsertCount(rs.getInt("insert_event_count"));
+            summary.setUpdateCount(rs.getInt("update_event_count"));
+            summary.setDeleteCount(rs.getInt("delete_event_count"));
+            summary.setOtherCount(rs.getInt("other_event_count"));
+            summary.setOtherCount(rs.getInt("reload_event_count"));
+            
+            summary.setRouterMillis(rs.getLong("total_router_millis"));
+            summary.setExtractMillis(rs.getLong("total_extract_millis"));
+            summary.setTransferMillis(rs.getLong("total_network_millis"));
+            summary.setLoadMillis(rs.getLong("total_load_millis"));
+            
             return summary;
         }
     }
