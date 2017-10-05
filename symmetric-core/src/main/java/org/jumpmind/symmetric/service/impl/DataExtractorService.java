@@ -1288,24 +1288,35 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING) &&
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
                         ISymmetricEngine targetEngine = AbstractSymmetricEngine.findEngineByUrl(targetNode.getSyncUrl());
-                        if (targetEngine != null && extractedBatch.isFileResource()) {
+                        
+                        if (targetEngine != null && extractedBatch.isFileResource() && targetEngine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                             Node sourceNode = nodeService.findIdentity();
-                            IStagedResource targetResource = targetEngine.getStagingManager().create( 
-                                    Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
-                                    currentBatch.getBatchId());
-                            try {
-                                SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
-                                targetResource.setState(State.DONE);
+                            Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
+                            if(sourceNode.equals(targetNodeByEngine) || !targetNodeByEngine.equals(targetNode)) {
+                            	log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a miss configuration of the sync urls '{}'", 
+                            			targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
+                            } else {
+                            	IStagedResource targetResource = targetEngine.getStagingManager().create( 
+                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                        currentBatch.getBatchId());
+                                try {
+                                    SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
+                                    if(log.isDebugEnabled()) {
+                                    	log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
+                                    }
+                                    
+                                    targetResource.setState(State.DONE);
 
-                                isRetry = true;
-                                
+                                    isRetry = true;
+                                    
                                  if (currentBatch.getSentCount() == 1) {
 	                                	statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
 	                            		statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
                                  }
-                            } catch (Exception e) {   
-                                FileUtils.deleteQuietly(targetResource.getFile());
-                                throw new RuntimeException(e);
+                                } catch (Exception e) {   
+                                    FileUtils.deleteQuietly(targetResource.getFile());
+                                    throw new RuntimeException(e);
+                                }
                             }
                         }
                     }
