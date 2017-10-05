@@ -48,7 +48,7 @@ public interface ITriggerRouterService {
     
     public List<TriggerHistory> getActiveTriggerHistories(String tableName);
 
-    public List<TriggerRouter> getTriggerRouters(boolean refreshCache);
+    public List<TriggerRouter> getTriggerRouters(boolean refreshCache);        
     
     /**
      * Return a list of triggers used when extraction configuration data during 
@@ -187,6 +187,9 @@ public interface ITriggerRouterService {
     public void addExtraConfigTable(String table);
 
     public Map<Trigger, Exception> getFailedTriggers();
+    
+    public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters);
     
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories);

@@ -35,6 +35,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -51,6 +54,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricAdmin;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -58,6 +62,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.util.CustomizableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -72,7 +77,7 @@ public class SymmetricEngineHolder {
 
     private Map<String, ServerSymmetricEngine> engines = new HashMap<String, ServerSymmetricEngine>();
 
-    private Set<EngineStarter> enginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
+    private Set<EngineStarter> enginesStarting = new TreeSet<SymmetricEngineHolder.EngineStarter>();
 
     private Map<String, List<String>> enginesFailed = new HashMap<String, List<String>>();
     
@@ -216,10 +221,14 @@ public class SymmetricEngineHolder {
                     engineCount++;
                     enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
                 }
+                
+                ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5")), new CustomizableThreadFactory("symmetric-engine-startup"));
 
                 for (EngineStarter starter : enginesStarting) {
-                    starter.start();
+                    executor.execute(starter);
                 }
+                
+                executor.shutdown();
 
             }
 
@@ -549,13 +558,12 @@ public class SymmetricEngineHolder {
 
     static int threadNumber = 0;
 
-    class EngineStarter extends Thread {
+    class EngineStarter implements Runnable, Comparable<EngineStarter> {
 
         String propertiesFile;
         ISymmetricEngine engine;
 
         public EngineStarter(String propertiesFile) {
-            super("symmetric-engine-startup-"+threadNumber++);
             this.propertiesFile = propertiesFile;
         }
 
@@ -578,6 +586,11 @@ public class SymmetricEngineHolder {
         
         public ISymmetricEngine getEngine() {
             return engine;
+        }
+        
+        @Override
+        public int compareTo(EngineStarter o) {
+            return propertiesFile.compareTo(o.propertiesFile);
         }
     }
 }

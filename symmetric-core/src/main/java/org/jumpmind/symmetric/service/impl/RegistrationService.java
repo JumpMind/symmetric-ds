@@ -165,8 +165,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                  * registration is not allowed until this node has an identity
                  * and an initial load
                  */
+                boolean requiresInitialLoad = parameterService.is(ParameterConstants.REGISTRATION_REQUIRE_INITIAL_LOAD, true);
                 NodeSecurity security = nodeService.findNodeSecurity(identity.getNodeId());
-                if (security == null || security.getInitialLoadTime() == null) {
+                if (requiresInitialLoad && (security == null || security.getInitialLoadTime() == null)) {
                     RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                             RegistrationStatus.ER, remoteHost, remoteAddress);
                     req.setErrorMessage("Cannot register a client node until this node has an initial load (ie. node_security.initial_load_time is a non null value)");
@@ -284,7 +285,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
              * the configuration for the node
              */
             outgoingBatchService.markAllConfigAsSentForNode(processedNode.getNodeId());
-        	extractConfiguration(out, processedNode);
+            extractConfiguration(out, processedNode);
         }
         
         return processedNode.isSyncEnabled();
