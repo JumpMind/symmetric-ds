@@ -821,7 +821,11 @@ public class DataService extends AbstractService implements IDataService {
         
         if (reloadRequests != null && reloadRequests.size() > 0) {
             int sqlEventsSent = 0;
-            for (TriggerHistory triggerHistory : triggerHistories) {
+            
+            List<TriggerHistory> copyTriggerHistories = new ArrayList<TriggerHistory>(triggerHistories);
+            Collections.reverse(copyTriggerHistories);
+            
+            for (TriggerHistory triggerHistory : copyTriggerHistories) {
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
                 
