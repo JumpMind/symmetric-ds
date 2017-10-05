@@ -291,14 +291,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
             return targetNodes;
-        } else if (tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_TABLE_INFO)) {
-            Set<Node> targetNodes = new HashSet<Node>();
-            for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 9, 0)) {
-                    targetNodes.add(nodeThatMayBeRoutedTo);
-                }
-            }
-            return targetNodes;
         } else {
             return possibleTargetNodes;
         }

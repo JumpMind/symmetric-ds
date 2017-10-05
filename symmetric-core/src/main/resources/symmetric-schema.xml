@@ -430,18 +430,6 @@
             <reference local="target_node_group_id" foreign="node_group_id" />
         </foreign-key>
     </table>
-
-	<table name="node_group_table_info" description="Available tables by catalog schema for each node group">
-        <column name="node_group_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="Unique identifier for a node group, usually named something meaningful, like 'store' or 'warehouse'."/>
-        <column name="catalog_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Name of catalog for given table" />
-        <column name="schema_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Name of schema for given table" />
-        <column name="table_name" type="VARCHAR" size="255" required="true" primaryKey="true" description="Table name" />
-        <column name="default_catalog" type="BOOLEANINT" size="1" default="0" description="Whether or not this catalog is the default" />
-        <column name="default_schema" type="BOOLEANINT" size="1" default="0" description="Whether or not this schema is the default" />
-        <column name="create_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
-        <column name="last_update_by" type="VARCHAR" size="50"  description="The user who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" description="Timestamp when a user last updated this entry." />  
-    </table>
     
     <table name="node_host" description="Representation of an physical workstation or server that is hosting the SymmetricDS software. In a clustered environment there may be more than one entry per node in this table.">
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
