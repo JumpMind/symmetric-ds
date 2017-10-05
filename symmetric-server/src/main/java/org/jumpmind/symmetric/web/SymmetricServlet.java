@@ -237,7 +237,7 @@ public class SymmetricServlet extends HttpServlet {
         if (engine != null) {
             String removeString = "/" + engine.getEngineName();
             if (uri.startsWith(removeString)) {
-                uri = uri.substring(removeString.length());
+                uri = uri.substring(removeString.length()); 
             }
         }
         return uri;
@@ -253,13 +253,35 @@ public class SymmetricServlet extends HttpServlet {
         Throwable root = ExceptionUtils.getRootCause(ex);
         
         int errorCount = engine.getErrorCountFor(nodeId);
+        
+        String msg = String.format("Error while processing %s request for node: %s", method, nodeId);
+        
+        if (!StringUtils.isEmpty(externalId) && !StringUtils.equals(nodeId, externalId)) {            
+            msg += String.format(" externalId: %s", externalId);
+        }
+       
+        if (!StringUtils.isEmpty(hostName) && !StringUtils.isEmpty(address)) {
+            if (StringUtils.equals(hostName, address)) {
+                msg += String.format(" at %s", hostName);
+            } else {
+                msg += String.format(" at %s (%s)", address, hostName);
+            }
+        } else if (!StringUtils.isEmpty(hostName)) {
+            msg += String.format(" at %s", hostName);
+        } else if (!StringUtils.isEmpty(address)) {
+            msg += String.format(" at %s", address);
+        }
+        
+        msg += String.format(" with path: %s", ServletUtils.normalizeRequestUri(req));
+        
         if (!(ex instanceof IOException || root instanceof IOException) || errorCount >= MAX_NETWORK_ERROR_FOR_LOGGING) {
-            log.error("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req) });
-            log.error("", ex);            
+            log.error(msg, ex);
         } else {
-            log.info("Error while processing {} request for externalId: {}, node: {} at {} ({}) with path: {}.  The message is: {}",
-                    new Object[] { method, externalId, nodeId, address, hostName, ServletUtils.normalizeRequestUri(req), ex.getMessage() });
+            if (log.isDebugEnabled()) {
+                log.info(msg, ex);                
+            } else {                
+                log.info(msg + " The message is: " + ex.getMessage());
+            }
         }
         engine.incrementErrorCountForNode(nodeId);
     }

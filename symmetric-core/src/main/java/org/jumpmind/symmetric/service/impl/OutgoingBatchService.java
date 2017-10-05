@@ -576,7 +576,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     }
     
     public List<OutgoingBatch> getNextOutgoingBatchForEachNode() {
-        return sqlTemplate.query(
+        return sqlTemplateDirty.query(
                 getSql("getNextOutgoingBatchForEachNodeSql"),
                 new OutgoingBatchMapper(true, true));
     }

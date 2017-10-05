@@ -90,9 +90,11 @@ import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.util.FormatUtils;
 
@@ -233,6 +235,8 @@ public class RouterService extends AbstractService implements IRouterService {
         try {
 
             INodeService nodeService = engine.getNodeService();
+            IDataService dataService = engine.getDataService();
+            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             Node identity = nodeService.findIdentity();
             if (identity != null) {
                 boolean isClusteringEnabled = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
@@ -242,13 +246,25 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .getRegistrationTime() != null)) {
 
                     List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
+                    List<TriggerHistory> activeHistories = triggerRouterService.getActiveTriggerHistories();
+                    Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId = new HashMap<String, List<TriggerRouter>>();
+                    
                     if (nodeSecurities != null && nodeSecurities.size() > 0) {
                         gapDetector.setFullGapAnalysis(true);
                         boolean reverseLoadFirst = parameterService
                                 .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
                         boolean isInitialLoadQueued = false;
+
+                        
                         for (NodeSecurity security : nodeSecurities) {
-                            if (engine.getTriggerRouterService().getActiveTriggerHistories().size() > 0) {
+                            if (activeHistories.size() > 0) {
+                                Node targetNode = engine.getNodeService().findNode(security.getNodeId());
+                                List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
+                                if (triggerRouters == null) {
+                                    triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
+                                    triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
+                                }
+                                
                                 boolean thisMySecurityRecord = security.getNodeId().equals(
                                         identity.getNodeId());
                                 boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
@@ -260,9 +276,9 @@ public class RouterService extends AbstractService implements IRouterService {
                                 } else if (!thisMySecurityRecord && registered && initialLoadQueued
                                         &&  (!reverseLoadFirst || !reverseLoadQueued)) {
                                     long ts = System.currentTimeMillis();
-                                    engine.getDataService().insertReloadEvents(
-                                            engine.getNodeService().findNode(security.getNodeId()),
-                                            false, processInfo);
+                                    dataService.insertReloadEvents(
+                                            targetNode,
+                                            false, processInfo, activeHistories, triggerRouters);
                                     isInitialLoadQueued = true;
                                     ts = System.currentTimeMillis() - ts;
                                     if (ts > Constants.LONG_OPERATION_THRESHOLD) {
@@ -297,7 +313,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     
-                    processTableRequestLoads(identity, processInfo);
+                    processTableRequestLoads(identity, processInfo, activeHistories, triggerRoutersByTargetNodeGroupId);
                 }
             }
 
@@ -309,7 +325,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    public void processTableRequestLoads(Node source, ProcessInfo processInfo) {
+    public void processTableRequestLoads(Node source, ProcessInfo processInfo,  List<TriggerHistory> activeHistories,  Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId) {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             processInfo.setStatus(ProcessInfo.Status.CREATING);
@@ -345,9 +361,17 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             
             for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
+                Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0]);
+                ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+                List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
+                if (triggerRouters == null) {
+                    triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
+                    triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
+                }
+                
                 engine.getDataService().insertReloadEvents(
-                        engine.getNodeService().findNode(entry.getKey().split("::")[0]),
-                        false, entry.getValue(), processInfo);
+                        targetNode,
+                        false, entry.getValue(), processInfo, activeHistories, triggerRouters);
             }
             
             

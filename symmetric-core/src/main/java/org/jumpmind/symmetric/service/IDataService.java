@@ -70,9 +70,13 @@ public interface IDataService {
      */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
+    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
+    
     public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo);
 
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
+    
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     

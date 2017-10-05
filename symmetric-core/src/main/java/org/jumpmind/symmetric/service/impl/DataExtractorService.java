@@ -1147,6 +1147,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         writer.newLine();
                     }
                 }
+                
+                writer.flush();
             } else {
                 long totalCharsRead = 0, totalBytesRead = 0;
                 int numCharsRead = 0, numBytesRead = 0;

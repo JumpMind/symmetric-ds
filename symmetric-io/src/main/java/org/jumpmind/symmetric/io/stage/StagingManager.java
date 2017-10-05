@@ -66,11 +66,11 @@ public class StagingManager implements IStagingManager {
 
     private void refreshResourceList() {
         Collection<File> files = FileUtils.listFiles(this.directory,
-                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName(), State.DONE.getExtensionName() }, true);
+                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName() }, true);
         for (File file : files) {
             try {
                 String path = StagedResource.toPath(directory, file);
-                if (!resourcePaths.contains(path)) {
+                if (path != null && !resourcePaths.contains(path)) {
                     resourcePaths.add(path);
                 }
             } catch (IllegalStateException ex) {
@@ -182,10 +182,15 @@ public class StagingManager implements IStagingManager {
         if (resource == null) {
             boolean foundResourcePath = resourcePaths.contains(path);
             if (!foundResourcePath && clusterEnabled) {
-                refreshResourceList();
-                foundResourcePath = resourcePaths.contains(path);
-            }        
-            if (foundResourcePath) {
+                synchronized (this) {
+                    StagedResource staged = new StagedResource(directory, path, this);
+                    if (staged.exists() && staged.getState() == State.DONE) {
+                        resourcePaths.add(path);
+                        resource = staged;
+                        foundResourcePath = true;
+                    }
+                }
+            } else if (foundResourcePath) {
                 resource = new StagedResource(directory, path, this);         
             }
         }
