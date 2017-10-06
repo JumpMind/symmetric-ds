@@ -171,9 +171,9 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         if (this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
-            return "null";
-        } else {
             return "sym_transactionid()";
+        } else {
+            return "null";
         }
     }
 
