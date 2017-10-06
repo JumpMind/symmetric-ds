@@ -47,7 +47,13 @@ CREATE SYSTEM TEMPORARY TABLESPACE tmp_tbsp
 |DecFloat|No
 |Binary, VarBinary|No
 |===    
-    
+  
+By default DB2 will not capture the transaction id associated with the captured data.   This can be turned on with the following parameter.
+
+----
+db2.capture.transaction.id=false
+----
+  
 === DB2 for IBM i
 The DB2 for IBM i dialect can connect to a database on IBM iSeries (AS/400) machines.  It was tested with the
 http://jt400.sourceforge.net/[jt400 JDBC driver], which is already included in the SymmetricDS download.
