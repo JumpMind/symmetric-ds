@@ -133,6 +133,7 @@ task publishDoc {
 
         ant.scp(
             todir: "$publishUser:$publishPassword@$publishServer:~/www/doc/$majorMinorVersion",
+            port: $publishPort,
             trust: 'true',
             verbose: 'true') {
             fileset(dir: "$buildDir/doc") { include(name: '**/**')
