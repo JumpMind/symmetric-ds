@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.db2;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Channel;
@@ -75,7 +76,9 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
          * out the size of the table on iSeries so when you try to return the
          * entire table + additional columns we go past the max size for a row
          */
-        sql = sql.replace("d.transaction_id, ", "");
+        if (!this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
+            sql = sql.replace("d.transaction_id, ", "");
+        }
         return super.massageDataExtractionSql(sql, channel);
     }
 
@@ -101,32 +104,36 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
             platform.getSqlTemplate().update("create variable " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " varchar(50)");
         }
 
-        String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
-
-        sql = "CREATE OR REPLACE FUNCTION $(functionName)()                                     "
-                + "     RETURNS VARCHAR(100)                                                      "
-                + "     LANGUAGE SQL                                                              "
-                + "     READS SQL DATA                                                            "
-                + "     RETURN                                                                    "
-                + "          select c.application_id || '_' || u.uow_id                           "
-                + "          from sysibmadm.mon_connection_summary c ,sysibmadm.mon_current_uow u "
-                + "          where u.application_handle = c.application_handle and c.application_id = application_id()    ";
-
-        try {
-            install(sql, transactionIdFunction);
-        }
-        catch (Exception e) {
-            log.warn("Unable to install function " + this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID);
+        if (this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
+            String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
+    
+            sql = "CREATE OR REPLACE FUNCTION $(functionName)()                                     "
+                    + "     RETURNS VARCHAR(100)                                                      "
+                    + "     LANGUAGE SQL                                                              "
+                    + "     READS SQL DATA                                                            "
+                    + "     RETURN                                                                    "
+                    + "          select c.application_id || '_' || u.uow_id                           "
+                    + "          from sysibmadm.mon_connection_summary c ,sysibmadm.mon_current_uow u "
+                    + "          where u.application_handle = c.application_handle and c.application_id = application_id()    ";
+    
+            try {
+                install(sql, transactionIdFunction);
+            }
+            catch (Exception e) {
+                log.warn("Unable to install function " + this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID);
+            }
         }
     }
 
     @Override
     public void dropRequiredDatabaseObjects() {
-        String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
-        try {
-            uninstall(SQL_DROP_FUNCTION, transactionIdFunction);
-        } catch (Exception e) {
-            log.warn("Unable to uninstall function " + this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID);
+        if (this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
+            String transactionIdFunction = this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID;
+            try {
+                uninstall(SQL_DROP_FUNCTION, transactionIdFunction);
+            } catch (Exception e) {
+                log.warn("Unable to uninstall function " + this.parameterService.getTablePrefix() + FUNCTION_TRANSACTION_ID);
+            }
         }
     }
 
@@ -163,12 +170,16 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return "sym_transactionid()";
+        if (this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
+            return "null";
+        } else {
+            return "sym_transactionid()";
+        }
     }
 
     @Override
     public boolean supportsTransactionId() {
-        return true;
+        return this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false);
     }
 
     public void cleanDatabase() {
