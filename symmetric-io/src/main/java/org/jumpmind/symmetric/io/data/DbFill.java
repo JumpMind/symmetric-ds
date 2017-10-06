@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -135,6 +136,9 @@ public class DbFill {
     // For cascading-select, quick check by table if it shares a common value with other tables
     private Set<Table> commonDependencyTables = new HashSet<Table>();
     
+    // For cascading-select, to ensure composite keys contain proper values for all columns in the key
+    private Map<Table, HashSet<ForeignKey>> compositeForeignKeys = new HashMap<Table, HashSet<ForeignKey>>();
+    
     // -1 for no limit
     private static final int RANDOM_SELECT_SIZE = 100;
 
@@ -219,7 +223,14 @@ public class DbFill {
                         missingTableNames);
             }
         }
-        tables = Database.sortByForeignKeys(tables);
+        log.info("TABLES " + tables.size());
+        tables = Database.sortByForeignKeys(tables, getAllDbTables());
+        
+        StringBuffer tableOrder = new StringBuffer();
+        for(Table t : tables) {
+            tableOrder.append(t.getName()).append(", ");
+        }
+        log.info("ORDER (" + tables.size() + " tables): " + tableOrder.toString());
         buildForeignKeyReferences(tables);
         buildDependentColumnValues(tables);        
         fillTables(tables, tableProperties);
@@ -242,7 +253,13 @@ public class DbFill {
             for (ForeignKey fk : table.getForeignKeys()) {
                 for (Reference ref : fk.getReferences()) {
                     String key = table.getQualifiedTableName() + "." + ref.getLocalColumnName();
-                    foreignKeyReferences.put(key, new ForeignKeyReference(fk, ref));
+                    foreignKeyReferences.put(key,new ForeignKeyReference(fk, ref));
+                }
+                if (fk.getReferences().length > 1) {
+                    if (compositeForeignKeys.get(table) == null) {
+                        compositeForeignKeys.put(table, new HashSet<ForeignKey>());
+                    }
+                    compositeForeignKeys.get(table).add(fk);
                 }
             }
         }
@@ -268,7 +285,7 @@ public class DbFill {
                     List<Object> commonValue = new ArrayList<Object>();
                     StringBuilder sb = null;
                     for (ForeignKeyReference fkr : references) {
-                        String key = fkr.getForeignKey().getForeignTableName() + "." + fkr.getReference().getForeignColumnName();
+                        String key = table.getQualifiedColumnName(fkr.getReference().getForeignColumn());
                         commonDependencyValues.put(key, commonValue);
                         commonDependencyTables.add(getDbTable(fkr.getForeignKey().getForeignTableName()));
                         if (verbose) {
@@ -365,7 +382,10 @@ public class DbFill {
 
                     List<Table> groupTables = new ArrayList<Table>();
                     if (cascading && dmlType == INSERT) {
-                        groupTables.addAll(foreignTables.get(tableToProcess));
+                        List<Table> foreignTablesList = foreignTables.get(tableToProcess);
+                        if (foreignTablesList != null) {
+                            groupTables.addAll(foreignTablesList);
+                        }
                         if (groupTables.size() > 0) {
                             log.info("Cascade insert " + tableToProcess.getName() + ": " + toStringTables(groupTables));
                         }
@@ -935,15 +955,58 @@ public class DbFill {
 
             ForeignKeyReference fkr = foreignKeyReferences.get(table.getQualifiedColumnName(columns[i]));
             if (fkr != null) {
-                Map<String, Object> foreignRowValues = currentRowValues.get(fkr.getForeignKey().getForeignTableName());
-                if (foreignRowValues != null) {
-                    value = foreignRowValues.get(fkr.getReference().getForeignColumnName());
-                }
+                //Object curVal = row.get(columns[i].getName());
+                
+                //if (curVal == null) {
+                    Map<String, Object> foreignRowValues = currentRowValues.get(fkr.getForeignKey().getForeignTableName());
+                    if (foreignRowValues != null) {
+                        value = foreignRowValues.get(fkr.getReference().getForeignColumnName());
+                    }
+                    if (value == null) {
+                        //value = generateRandomValueForColumn(columns[i]);
+                    }
+               // } else {
+                   // value = curVal;
+                  // currentRowValues.get(fkr.getForeignKey().getForeignTableName()).put(fkr.getReference().getForeignColumnName(), curVal);
+               // }
             } else {
                 value = generateRandomValueForColumn(columns[i]);
             }
             row.put(columns[i].getName(), value);
         }
+        
+        /*
+        Set<ForeignKey> listCompositeForeignKeys = compositeForeignKeys.get(table);
+        
+        // Check for composite keys
+        if (listCompositeForeignKeys != null && listCompositeForeignKeys.size() > 0) {
+            if (listCompositeForeignKeys.size() > 1) {
+                // could be complicated as we have multiple composite keys on table 
+                
+                // Map<local column, list foreign table name>
+                Map<String, List<Reference>> columnToForeignTableMap = new HashMap<String,List<Reference>>();
+                Iterator i = listCompositeForeignKeys.iterator();
+                while (i.hasNext()) {
+                    ForeignKey fk = (ForeignKey) i.next();
+                    for (Reference ref : fk.getReferences()) {
+                        if (columnToForeignTableMap.get(fk.))
+                            
+                    }
+                    
+                }
+                
+            }
+            // Single composite key on table just ensure composite local columns match foreign table
+            else {
+                ForeignKey fk = listCompositeForeignKeys.iterator().next();
+                Map<String, Object> foreignRowValues = currentRowValues.get(fk.getForeignTableName());
+                
+                for (Reference ref : fk.getReferences()) {
+                    row.put(ref.getLocalColumnName(), foreignRowValues.get(ref.getForeignColumnName()));
+                }
+            }
+        }*/
+        
         currentRowValues.put(table.getName(), row);
         return row;
     }

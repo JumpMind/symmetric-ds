@@ -83,7 +83,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            
+            useDefaultDataWriter=false;
             switch (dataEventType) {
                 case INSERT:
                 	startCopy();
@@ -114,6 +114,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 case DELETE:
                 default:
                     endCopy();
+                    useDefaultDataWriter=true;
                     super.write(data);
                     break;
             } 
