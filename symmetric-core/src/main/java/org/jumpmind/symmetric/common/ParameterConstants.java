@@ -137,6 +137,7 @@ final public class ParameterConstants {
     public final static String AUTO_UPDATE_NODE_VALUES = "auto.update.node.values.from.properties";
 
     public final static String INITIAL_LOAD_BLOCK_CHANNELS = "initial.load.block.channels";
+    public final static String INITIAL_LOAD_UNBLOCK_CHANNELS_ON_ERROR = "initial.load.unblock.channels.on.error";
     public final static String INITIAL_LOAD_BEFORE_SQL = "initial.load.before.sql";
     public final static String INITIAL_LOAD_AFTER_SQL = "initial.load.after.sql";
     public final static String INITIAL_LOAD_REVERSE_BEFORE_SQL = "initial.load.reverse.before.sql";

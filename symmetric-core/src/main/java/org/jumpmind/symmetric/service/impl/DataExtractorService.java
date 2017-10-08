@@ -439,7 +439,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         // Remove non-load batches so that an initial load finishes before
         // any other batches are loaded.
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_BLOCK_CHANNELS, true)) {
-            if (!batches.containsBatchesInError() && batches.containsLoadBatches()) {
+            if (batches.containsLoadBatches() && !(parameterService.is(ParameterConstants.INITIAL_LOAD_UNBLOCK_CHANNELS_ON_ERROR, true) 
+            		 && batches.containsBatchesInError())) {
                 batches.removeNonLoadBatches();
             }
         }
