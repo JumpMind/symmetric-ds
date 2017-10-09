@@ -613,6 +613,31 @@ public class SnapshotUtil {
         }
         return null;
     }
+    
+    public static File createThreadsFile() {
+        FileWriter fwriter = null;
+        File file = new File("threads.txt");
+        try {
+            fwriter = new FileWriter(file);
+            ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+            long[] threadIds = threadBean.getAllThreadIds();
+            for (long l : threadIds) {
+                ThreadInfo info = threadBean.getThreadInfo(l, 100);
+                if (info != null) {
+                    String threadName = info.getThreadName();
+                    fwriter.append(StringUtils.rightPad(threadName, THREAD_INDENT_SPACE));
+                    fwriter.append(AppUtils.formatStackTrace(info.getStackTrace(), THREAD_INDENT_SPACE, false));
+                    fwriter.append("\n");
+                }
+            }
+            
+        } catch (Exception e) {
+            log.warn("Failed to export thread information", e);
+        } finally {
+            IOUtils.closeQuietly(fwriter);
+        }
+        return file;
+    }
 
 
     static class SortedProperties extends Properties {
