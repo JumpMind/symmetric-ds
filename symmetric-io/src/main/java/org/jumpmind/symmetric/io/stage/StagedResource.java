@@ -91,10 +91,14 @@ public class StagedResource implements IStagedResource {
     protected static String toPath(File directory, File file) {
         String path = file.getAbsolutePath();
         path = path.replaceAll("\\\\", "/");
-        path = path.substring(directory.getAbsolutePath().length(), file
-                .getAbsolutePath().length());
-        path = path.substring(1, path.lastIndexOf("."));
-        return path;
+        path = path.substring(directory.getAbsolutePath().length(), file.getAbsolutePath().length());
+        int extensionIndex = path.lastIndexOf(".");
+        if (extensionIndex > 0) {
+            path = path.substring(1, extensionIndex);
+            return path;
+        } else {
+            throw new IllegalStateException("Expected an extension of .done or .create at the end of the path and did not find it: " + path);
+        }
     }
     
     @Override

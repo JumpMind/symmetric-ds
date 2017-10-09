@@ -671,9 +671,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
 
                     if (jobManager != null) {
-                    	jobManager.init();
+                        jobManager.init();
                     }
-                    nodeService.captureTableMetaInfo(false, parameterService.getTablePrefix());
                     
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();

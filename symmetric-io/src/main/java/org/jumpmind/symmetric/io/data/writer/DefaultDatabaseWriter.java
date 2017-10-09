@@ -651,7 +651,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         failureMessage.append("Failed to process ");
         failureMessage.append(data.getDataEventType().toString().toLowerCase());
         failureMessage.append(" event in batch ");
-        failureMessage.append(batch.getBatchId());
+        failureMessage.append(batch.getNodeBatchId());
         failureMessage.append(".\n");
         
         if (logLastDmlDetails && this.currentDmlStatement != null) {

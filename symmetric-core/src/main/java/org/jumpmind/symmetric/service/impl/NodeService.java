@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +40,6 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -849,136 +847,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
     }
-
-    @Override
-    public void captureTableMetaInfo(boolean force, String tablePrefix) {
-        if (this.cachedNodeIdentity != null) {
-            String nodeGroupId = this.cachedNodeIdentity.getNodeGroupId();
-
-            // int existingCount =
-            // sqlTemplate.queryForInt(getSql("findNodeGroupTableInfoCountSql"),
-            // nodeGroupId);
-            NodeGroupTableMetaRowMapper mapper = new NodeGroupTableMetaRowMapper();
-            sqlTemplate.query(getSql("selectNodeGroupTableInfoSql"), mapper, nodeGroupId);
-
-            log.info("Node group meta info, group " + nodeGroupId + ", results found " + mapper.getPrevious().size());
-            
-            //f (force || mapper.getPrevious().size() == 0) {
-                Date now = new Date();
-                Set<String> symTables = null;
-                if (tablePrefix != null) {
-                    symTables = new HashSet<String>(TableConstants.getTables(tablePrefix));
-                }
-
-                String defaultCatalog = getSymmetricDialect().getPlatform().getDefaultCatalog();
-                String defaultSchema = getSymmetricDialect().getPlatform().getDefaultSchema();
-                
-                for (String catalog : this.platform.getDdlReader().getCatalogNames()) {
-                    for (String schema : this.platform.getDdlReader().getSchemaNames(catalog)) {
-                        for (String tableName : this.platform.getDdlReader().getTableNames(catalog, schema, new String[] { "TABLE" })) {
-                            if (symTables != null && tableName != null && !symTables.contains(tableName.toLowerCase())
-                                    && !tableName.toLowerCase().startsWith(tablePrefix)) {
-                                
-                                boolean defaultCatalogFlag = false;
-                                boolean defaultSchemaFlag = false;
-                                
-                                String key = catalog + ":" + schema + ":" + tableName;
-                                if (mapper.getPrevious().contains(key)) {
-                                    mapper.getPrevious().remove(key);
-                                } else {
-                                    if (catalog != null && catalog.equals(defaultCatalog)) {
-                                        defaultCatalogFlag = true;
-                                    }
-                                    if (schema != null && schema.equals(defaultSchema)) {
-                                        defaultSchemaFlag = true;
-                                    }
-                                    log.info("Node group meta info, table needs added to meta info for " + nodeGroupId + " : " + key);
-                                    
-                                    sqlTemplate.update(getSql("insertNodeGroupTableInfoSql"), nodeGroupId, catalog, schema, tableName,
-                                            defaultCatalogFlag ? 1 : 0 , defaultSchemaFlag  ? 1 : 0, now, this.cachedNodeIdentity.getNodeId(), now);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (mapper.getPrevious().size() > 0) {
-                    Iterator<String> i = mapper.getPrevious().iterator();
-                    while (i.hasNext()) {
-                        String key = i.next();
-                        String values[] = key.split(":");
-                        log.info("Node group meta info, table to be removed from meta info for " + nodeGroupId + " : " + key);
-                        
-                        sqlTemplate.update(getSql("deleteNodeGroupTableInfoSql"), nodeGroupId, values[0], values[1], values[2]);
-                    }
-                }
-            //}
-        }
-    }
-
-    @Override
-    public List<String> getCatalogsFromTableMetaInfo(String nodeGroupId) {
-        return sqlTemplate.query(getSql("selectCatalogsByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row row) {
-                return row.getString("catalog_name");
-            }
-        }, nodeGroupId);
-    }
-    
-    @Override
-    public List<String> getDefaultCatalogFromTableMetaInfo(String nodeGroupId) {
-        return sqlTemplate.query(getSql("selectDefaultCatalogByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row row) {
-                return row.getString("catalog_name");
-            }
-        }, nodeGroupId);
-    }
-
-    @Override
-    public List<String> getSchemasFromTableMetaInfo(String nodeGroupId, String catalog) {
-        return sqlTemplate.query(getSql("selectSchemasByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row row) {
-                return row.getString("schema_name");
-            }
-        }, nodeGroupId, catalog);
-    }
-    
-    @Override
-    public List<String> getDefaultSchemaFromTableMetaInfo(String nodeGroupId, String catalog) {
-        return sqlTemplate.query(getSql("selectDefaultSchemaByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row row) {
-                return row.getString("schema_name");
-            }
-        }, nodeGroupId, catalog);
-    }
-
-    @Override
-    public List<String> getTablesFromTableMetaInfo(String nodeGroupId, String catalog, String schema) {
-        return sqlTemplate.query(getSql("selectTablesByNodeGroupTableInfoSql"), new ISqlRowMapper<String>() {
-            @Override
-            public String mapRow(Row row) {
-                return row.getString("table_name");
-            }
-        }, nodeGroupId, catalog, schema);
-    }
-    
-    class NodeGroupTableMetaRowMapper implements ISqlRowMapper<Object> {
-        Set<String> previous = new HashSet<String>();
-
-        @Override
-        public Object mapRow(Row row) {
-            previous.add(row.getString("catalog_name") + ":" + row.getString("schema_name") + ":" + row.getString("table_name"));
-            return null;
-        }
-
-        public Set<String> getPrevious() {
-            return this.previous;
-        }
-    }
-
+        
     class NodeRowMapper implements ISqlRowMapper<Node> {
         public Node mapRow(Row rs) {
             Node node = new Node();

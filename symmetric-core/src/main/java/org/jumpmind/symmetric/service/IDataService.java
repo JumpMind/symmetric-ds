@@ -29,11 +29,11 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
@@ -71,9 +71,13 @@ public interface IDataService {
      */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
 
+    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
+    
     public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo);
 
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
+    
+    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
@@ -141,8 +145,6 @@ public interface IDataService {
     
     public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId, int maxRowsToRetrieve);
     
-    public void updateDataGap(DataGap gap, DataGap.Status status);
-    
     public void insertDataGap(DataGap gap);
 
     public void insertDataGap(ISqlTransaction transaction, DataGap gap);
@@ -155,6 +157,8 @@ public interface IDataService {
     
     public void deleteCapturedConfigChannelData();
     
+    public boolean fixLastDataGap();
+    
     public long findMaxDataId();
     
     public Data findData(long dataId);
@@ -166,5 +170,4 @@ public interface IDataService {
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
 
     public Map<String, Date> getLastDataCaptureByChannel();
-    
 }

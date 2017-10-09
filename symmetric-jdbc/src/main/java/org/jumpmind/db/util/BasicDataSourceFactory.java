@@ -81,8 +81,12 @@ public class BasicDataSourceFactory {
 
         String password = properties.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD, "");
         if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
-            password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC
+            try {
+                password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC
                     .length()));
+            } catch (Exception ex) {
+                throw new IllegalStateException("Failed to decrypt the datbaase password from your engine properties file stored under the " + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD + " property.   Please re-encrypt your password", ex);
+            }
         }
         dataSource.setPassword(password);
         dataSource.setInitialSize(properties.getInt(
