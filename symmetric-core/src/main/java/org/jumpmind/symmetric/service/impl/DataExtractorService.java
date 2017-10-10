@@ -866,6 +866,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 triggerReExtraction(currentBatch);
             }
 
+            if (currentBatch.getStatus() == Status.NE) {
+                IStagedResource resource = getStagedResource(currentBatch);
+                if (resource != null) {
+                    resource.delete();
+                }
+            }
+
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
             } else if (!isPreviouslyExtracted(currentBatch, true)) {
