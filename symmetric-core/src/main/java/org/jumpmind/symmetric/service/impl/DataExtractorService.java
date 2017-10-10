@@ -861,6 +861,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long extractTimeInMs = 0l;
             long byteCount = 0l;
             long transformTimeInMs = 0l;
+            
+            if (currentBatch.getStatus() == Status.NE) {
+                triggerReExtraction(currentBatch);
+            }
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
@@ -961,6 +965,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         processInfo.incrementCurrentBatchCount();
         return currentBatch;
+    }
+
+    protected void triggerReExtraction(OutgoingBatch currentBatch) {
+        // Allow user to reset batch status to NE in the DB to trigger a batch re-extract
+        IStagedResource resource = getStagedResource(currentBatch);
+        if (resource != null) {
+            resource.delete();
+        }
     }
 
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo) {
