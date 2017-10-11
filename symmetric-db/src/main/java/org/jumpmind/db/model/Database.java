@@ -91,27 +91,40 @@ public class Database implements Serializable, Cloneable {
         List<Table> finalList = new ArrayList<Table>();
         
         for(Table t : tables) {
-            resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList);
+            resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null);
         }
     
         Collections.reverse(finalList);
         return finalList;
     }
     
-    public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, List<Table> finalList) {
+    public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, List<Table> finalList, Table parentTable) {
         if (resolved.contains(t)) { return; }
         if (temporary.contains(t)) {log.info("Possible circular dependent: " + t.getName()); return; }
         if (!temporary.contains(t) && !resolved.contains(t)) {
             temporary.add(t);
-            for (ForeignKey fk : t.getForeignKeys()) {
-                Table fkTable = allTables.get(fk.getForeignTableName());
-                if (fkTable == t) {
-                    //selfDependent.add(t);
+            if (t == null) {
+                if (parentTable != null) {
+                    StringBuilder dependentTables = new StringBuilder();
+                    for (ForeignKey fk : parentTable.getForeignKeys()) {
+                        if(allTables.get(fk.getForeignTable()) == null) {
+                            if (dependentTables.length() > 0) { dependentTables.append(", "); }
+                        }
+                        dependentTables.append(fk.getForeignTableName());
+                    }
+                    log.warn("Unable to resolve foreign keys for table " + parentTable.getName() + " because the following dependent tables are not configured for replication [" + dependentTables.toString() + "].");
                 }
-                else {
-                    resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList);
-               }
-             }
+            } else {
+                for (ForeignKey fk : t.getForeignKeys()) {
+                    Table fkTable = allTables.get(fk.getForeignTableName());
+                    if (fkTable == t) {
+                        //selfDependent.add(t);
+                    }
+                    else {
+                        resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t);
+                   }
+                 }
+            }
             resolved.add(t);
             finalList.add(0, t);
         }
