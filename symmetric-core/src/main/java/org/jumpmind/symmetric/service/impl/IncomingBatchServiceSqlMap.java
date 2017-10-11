@@ -107,6 +107,31 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("getAllBatchesSql", "select batch_id, node_id from $(incoming_batch)");
     
+        putSql("selectIncomingBatchSummaryPrefixSql",
+                "select b.status ");
+        
+        putSql("selectIncomingBatchSummaryStatsPrefixSql",
+                ", count(*) as batches, sum(b.load_row_count) as data, min(b.create_time) as oldest_batch_time, "
+                        + " max(b.last_update_time) as last_update_time, "
+                        + " min(b.batch_id) as batch_id, "
+                        + " max(b.error_flag) as error_flag, "
+                        + " sum(b.byte_count) as total_bytes, "
+                        + " sum(b.router_millis + b.extract_millis + b.network_millis + b.filter_millis + b.load_millis) as total_millis, "
+                        + " sum(b.router_millis) as total_router_millis, "
+                        + " sum(b.extract_millis) as total_extract_millis, "
+                        + " sum(b.network_millis) as total_network_millis, "
+                        + " sum(b.filter_millis) as total_filter_millis, "
+                        + " sum(b.load_millis) as total_load_millis, "
+                        + " sum(b.load_insert_row_count) as insert_event_count, "  
+                        + " sum(b.load_update_row_count) as update_event_count, " 
+                        + " sum(b.load_delete_row_count) as delete_event_count, "  
+                        + " sum(b.other_row_count) as other_event_count, "
+                        + " sum(b.reload_row_count) as reload_event_count "
+                        + " from $(incoming_batch) b ");
+        
+        putSql("whereStatusAndNodeGroupByStatusSql",
+                " where b.status in (:STATUS_LIST) and b.node_id = ? group by b.status order by oldest_batch_time asc   ");
+       
     }
 
 }

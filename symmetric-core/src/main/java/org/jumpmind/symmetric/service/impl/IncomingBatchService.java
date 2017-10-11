@@ -41,9 +41,11 @@ import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
+import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.OutgoingBatchService.OutgoingBatchSummaryMapper;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -168,6 +170,29 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     }
 
+    @Override
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId, Date sinceCreateTime,
+    		Status... statuses) {
+    		
+    		Object[] args = new Object[statuses.length + 1];
+    		args[args.length - 1] = nodeId;
+        StringBuilder inList = buildStatusList(args, statuses);
+
+    		String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
+        		"selectIncomingBatchSummaryStatsPrefixSql",
+        		"whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+    		return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
+    }
+    
+    protected StringBuilder buildStatusList(Object[] args, Status...statuses) {
+		StringBuilder inList = new StringBuilder();
+	    for (int i = 0; i < statuses.length; i++) {
+	        args[i] = statuses[i].name();
+	        inList.append("?,");
+	    }
+	    return inList;
+	}
+    
     protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {
         return statuses.size() == 1 && statuses.get(0) == IncomingBatch.Status.ER;
     }
@@ -368,7 +393,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         String sql = getSql("selectIncomingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new IncomingBatchSummaryChannelMapper(), args);
+        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(true, true), args);
     }
 
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
@@ -381,7 +406,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
         String sql = getSql("selectIncomingBatchSummaryByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(), args);
+        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(true, false), args);
     }
 
     @Override
@@ -395,29 +420,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     @Override
     public List<BatchId> getAllBatches() {
         return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new BatchIdMapper());
-    }
-
-    class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
-        public IncomingBatchSummary mapRow(Row rs) {
-            IncomingBatchSummary summary = new IncomingBatchSummary();
-            summary.setBatchCount(rs.getInt("batches"));
-            summary.setStatus(Status.valueOf(rs.getString("status")));
-            summary.setNodeId(rs.getString("node_id"));
-            summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
-            summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
-            summary.setDataCount(rs.getInt("data"));
-            return summary;
-        }
-    }
-
-    class IncomingBatchSummaryChannelMapper extends IncomingBatchSummaryMapper {
-        public IncomingBatchSummary mapRow(Row rs) {
-            IncomingBatchSummary summary = super.mapRow(rs);
-            summary.setChannel(rs.getString("channel_id"));
-            summary.setErrorFlag(rs.getBoolean("error_flag"));
-            summary.setMinBatchId(rs.getLong("batch_id"));
-            return summary;
-        }
     }
 
     class BatchIdMapper implements ISqlRowMapper<BatchId> {
@@ -524,5 +526,48 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             return batch;
         }
     }
+
+    class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
+		boolean withNode = false;
+		boolean withChannel = false;
+		
+		public IncomingBatchSummaryMapper(boolean withNode, boolean withChannel) {
+			this.withNode = withNode;
+			this.withChannel = withChannel;
+		}
+		
+	    public IncomingBatchSummary mapRow(Row rs) {
+	    		IncomingBatchSummary summary = new IncomingBatchSummary();
+	        
+	        if (withNode) {
+	        		summary.setNodeId(rs.getString("node_id"));
+	        }
+	        if (withChannel) {
+	        		summary.setChannel(rs.getString("channel_id"));
+	        }
+	        summary.setBatchCount(rs.getInt("batches"));
+	        summary.setDataCount(rs.getInt("data"));
+	        summary.setStatus(Status.valueOf(rs.getString("status")));
+	        summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+	        summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
+	        summary.setTotalBytes(rs.getLong("total_bytes"));
+	        summary.setTotalMillis(rs.getLong("total_millis"));
+	        
+	        summary.setErrorFlag(rs.getBoolean("error_flag"));
+	        summary.setMinBatchId(rs.getLong("batch_id"));
+	        summary.setInsertCount(rs.getInt("insert_event_count"));
+	        summary.setUpdateCount(rs.getInt("update_event_count"));
+	        summary.setDeleteCount(rs.getInt("delete_event_count"));
+	        summary.setOtherCount(rs.getInt("other_event_count"));
+	        summary.setOtherCount(rs.getInt("reload_event_count"));
+	        
+	        summary.setRouterMillis(rs.getLong("total_router_millis"));
+	        summary.setExtractMillis(rs.getLong("total_extract_millis"));
+	        summary.setTransferMillis(rs.getLong("total_network_millis"));
+	        summary.setLoadMillis(rs.getLong("total_load_millis"));
+	        
+	        return summary;
+	    }
+	}
 
 }

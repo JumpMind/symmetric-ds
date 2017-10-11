@@ -178,7 +178,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 " where b.status in (:STATUS_LIST) and b.node_id = ? group by b.status order by b.node_id, oldest_batch_time asc   ");
        
         putSql("whereStatusAndNodeAndChannelGroupByStatusSql",
-                " where b.status in (:STATUS_LIST) and b.node_id = ? and b.channel_id = ? group by b.status order by b.node_id, oldest_batch_time asc   ");
+                " where b.status in (:STATUS_LIST) and b.node_id = ? and b.channel_id = ? group by b.status order by oldest_batch_time asc   ");
 
         putSql("updateOutgoingBatchesStatusSql",
                 "update $(outgoing_batch) set status=? where status = ?   ");
