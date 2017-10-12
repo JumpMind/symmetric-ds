@@ -147,7 +147,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public String getSyncTriggersExpression() {
-        return this.parameterService.getTablePrefix()+ "_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
+        return "$(defaultSchema)" + parameterService.getTablePrefix()+ "_get_session_variable('" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "') is null";
     }
 
     public void cleanDatabase() {
