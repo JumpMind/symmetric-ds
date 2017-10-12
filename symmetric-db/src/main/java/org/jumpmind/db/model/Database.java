@@ -23,11 +23,13 @@ import java.io.Serializable;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -64,18 +66,6 @@ public class Database implements Serializable, Cloneable {
 
     private Map<String, Integer> tableIndexCache = new HashMap<String, Integer>();
 
-    public static Table[] sortByForeignKeys(Table... tables) {
-        if (tables != null) {
-            List<Table> list = new ArrayList<Table>(tables.length);
-            for (Table table : tables) {
-                list.add(table);
-            }
-            list = sortByForeignKeys(list);
-            tables = list.toArray(new Table[list.size()]);
-        }
-        return tables;
-    }
-
     /**
      * Implements modified topological sort of tables (@see <a
      * href="http://en.wikipedia.org/wiki/Topological_sorting">topological
@@ -88,48 +78,79 @@ public class Database implements Serializable, Cloneable {
      *         foreign key for table B then table B will precede table A in the
      *         list.
      */
-    public static List<Table> sortByForeignKeys(List<Table> tables) {
-        List<Table> sorted = new ArrayList<Table>(tables.size());
-        List<Table> visited = new ArrayList<Table>(tables.size());
-        List<Table> stack = new ArrayList<Table>();
-        Map<String, Table> tableMap = new HashMap<String, Table>();
-
-        for (int i = 0; i < tables.size(); i++) {
-            if (tables.get(i) != null) {
-               tableMap.put(tables.get(i).getName(), tables.get(i));
+    public static List<Table> sortByForeignKeys(List<Table> tables, Map<String, Table> allTables) {
+        if (allTables == null) {
+            allTables = new HashMap<String, Table>();
+            for (Table t : tables) {
+                allTables.put(t.getName(), t);
             }
         }
-
-        for (int i = 0; i < tables.size(); i++) {
-            sortByForegnKeysVisit(tables.get(i), tableMap, sorted, visited, stack);
+        
+        Set<Table> resolved = new HashSet<Table>();
+        Set<Table> temporary = new HashSet<Table>();
+        List<Table> finalList = new ArrayList<Table>();
+        
+        for(Table t : tables) {
+            resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null);
         }
-
-        return sorted;
+    
+        Collections.reverse(finalList);
+        return finalList;
     }
-
-    private static void sortByForegnKeysVisit(Table table, Map<String, Table> tableMap,
-            List<Table> sorted, List<Table> visited, List<Table> stack) {
-        if (visited.contains(table)) {
-            return;
-        }
-        if (stack.contains(table)) {
-            return;
-        } // cycle detected - ignore this FK
-        visited.add(table);
-        stack.add(table);
-
-        for (ForeignKey fk : table.getForeignKeys()) {
-            Table foreignTable = tableMap.get(fk.getForeignTableName());
-            if (foreignTable != null) { // ignore foreign keys to tables outside
-                                        // of the input set
-                sortByForegnKeysVisit(foreignTable, tableMap, sorted, visited, stack);
+    
+    public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, List<Table> finalList, Table parentTable) {
+        if (resolved.contains(t)) { return; }
+        if (temporary.contains(t)) {log.info("Possible circular dependent: " + t.getName()); return; }
+        if (!temporary.contains(t) && !resolved.contains(t)) {
+            temporary.add(t);
+            if (t == null) {
+                if (parentTable != null) {
+                    StringBuilder dependentTables = new StringBuilder();
+                    for (ForeignKey fk : parentTable.getForeignKeys()) {
+                        if(allTables.get(fk.getForeignTable()) == null) {
+                            if (dependentTables.length() > 0) { dependentTables.append(", "); }
+                        }
+                        dependentTables.append(fk.getForeignTableName());
+                    }
+                    log.warn("Unable to resolve foreign keys for table " + parentTable.getName() + " because the following dependent tables are not configured for replication [" + dependentTables.toString() + "].");
+                }
+            } else {
+                for (ForeignKey fk : t.getForeignKeys()) {
+                    Table fkTable = allTables.get(fk.getForeignTableName());
+                    if (fkTable == t) {
+                        //selfDependent.add(t);
+                    }
+                    else {
+                        resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t);
+                   }
+                 }
             }
+            resolved.add(t);
+            finalList.add(0, t);
         }
-
-        sorted.add(table);
-        stack.remove(stack.size() - 1);
+    }
+    
+    public static String printTables(List<Table> tables) {
+        StringBuffer sb = new StringBuffer();
+        for (Table t : tables) {
+            sb.append(t.getName() + ",");
+        }
+        return sb.toString();
+    }
+    
+    public static Table[] sortByForeignKeys(Table... tables) {
+        if (tables != null) {
+            List<Table> list = new ArrayList<Table>(tables.length);
+            for (Table table : tables) {
+                list.add(table);
+            }
+            list = sortByForeignKeys(list, null);
+            tables = list.toArray(new Table[list.size()]);
+        }
+        return tables;
     }
 
+    
     /**
      * Adds all tables from the other database to this database. Note that the
      * other database is not changed.

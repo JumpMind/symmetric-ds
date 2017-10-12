@@ -47,7 +47,7 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         
-        list = Database.sortByForeignKeys(list);
+        list = Database.sortByForeignKeys(list, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t1));
         assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
@@ -87,7 +87,7 @@ public class DatabaseTest {
         list.add(t8);
         
         
-        list = Database.sortByForeignKeys(list);
+        list = Database.sortByForeignKeys(list, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t5));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
@@ -112,7 +112,7 @@ public class DatabaseTest {
         list.add(t2);
         list.add(t1);
         
-        list = Database.sortByForeignKeys(list);
+        list = Database.sortByForeignKeys(list, null);
         
         // for now just make sure it doesn't blow up
         

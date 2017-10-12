@@ -37,6 +37,7 @@ import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
@@ -44,6 +45,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.LogSqlBuilder;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScriptReader;
@@ -651,7 +653,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         failureMessage.append("Failed to process ");
         failureMessage.append(data.getDataEventType().toString().toLowerCase());
         failureMessage.append(" event in batch ");
-        failureMessage.append(batch.getBatchId());
+        failureMessage.append(batch.getNodeBatchId());
         failureMessage.append(".\n");
         
         if (logLastDmlDetails && this.currentDmlStatement != null) {
@@ -662,10 +664,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         
         if (logLastDmlDetails && this.currentDmlValues != null) {
             failureMessage.append("Failed sql parameters: ");
-            failureMessage.append(StringUtils.abbreviate(Arrays.toString(currentDmlValues), CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
+            failureMessage.append(StringUtils.abbreviate("[" + dmlValuesToString(currentDmlValues, this.currentDmlStatement.getTypes()) + "]", 
+                    CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
             failureMessage.append("\n");
             failureMessage.append("Failed sql parameters types: ");
-            failureMessage.append(Arrays.toString(this.currentDmlStatement.getTypes()));
+            failureMessage.append("[" + TypeMap.getJdbcTypeDescriptions(this.currentDmlStatement.getTypes()) + "]");
             failureMessage.append("\n");
         }
         
@@ -679,6 +682,24 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         data.writeCsvDataDetails(failureMessage);
         
         log.info(failureMessage.toString(), e);
+    }
+    
+    protected String dmlValuesToString(Object[] dmlValues, int[] types) {
+        StringBuilder buff = new StringBuilder();
+        if (dmlValues == null || dmlValues.length == 0) {
+            return "";
+        }
+        
+        LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
+        
+        for (int i = 0; i < dmlValues.length; i++) {
+            buff.append(logSqlBuilder.formatValue(dmlValues[i], types[i]));
+            if (i < dmlValues.length-1) {
+                buff.append(", ");
+            }
+        }
+        
+        return buff.toString();
     }
     
     @Override
@@ -806,8 +827,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         currentDmlValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
         if (log.isDebugEnabled()) {
-            log.debug("Submitting data {} with types {}", Arrays.toString(currentDmlValues),
-                    Arrays.toString(this.currentDmlStatement.getTypes()));
+            log.debug("Submitting data [{}] with types [{}]", 
+                    dmlValuesToString(currentDmlValues, this.currentDmlStatement.getTypes()),
+                    TypeMap.getJdbcTypeDescriptions(this.currentDmlStatement.getTypes()));
         }
         return transaction.addRow(data, currentDmlValues, this.currentDmlStatement.getTypes());
     }

@@ -20,9 +20,12 @@
  */
 package org.jumpmind.symmetric.db.nuodb;
 
+import java.util.List;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -130,6 +133,18 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
             } catch (Exception e) {
                 log.warn("Trigger does not exist");
             }
+        }
+    }
+    
+    @Override
+    public void cleanupTriggers() {        
+        List<String> names = platform.getSqlTemplate().query("select triggername from system.triggers where triggername like '"+parameterService.getTablePrefix().toUpperCase()+"_%'", new StringMapper());
+        int count = 0;
+        for (String name : names) {
+            count += platform.getSqlTemplate().update("drop trigger " + name + " if exists");
+        }
+        if (count > 0) {
+            log.info("Remove {} triggers", count);
         }
     }
 

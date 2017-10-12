@@ -2089,21 +2089,38 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public TriggerHistory findTriggerHistoryForGenericSync() {
-        String triggerTableName = TableConstants.getTableName(tablePrefix,
-                TableConstants.SYM_NODE);
-        TriggerHistory history = findTriggerHistory(null, null, triggerTableName
-                .toUpperCase());
+        String triggerTableName = TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE);
+        try {
+            Collection<TriggerHistory> histories = historyMap.values();
+            for (TriggerHistory triggerHistory : histories) {
+                if (triggerHistory.getSourceTableName().equalsIgnoreCase(triggerTableName) && triggerHistory.getInactiveTime() == null) {
+                    return triggerHistory;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to find trigger history for generic sync", e);
+        }
+        TriggerHistory history = findTriggerHistory(null, null, triggerTableName.toUpperCase());
         if (history == null) {
             history = findTriggerHistory(null, null, triggerTableName);
         }
         return history;
     }
 
+    @Override
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
+        return fillTriggerRoutersByHistIdAndSortHist(sourceNodeGroupId, targetNodeGroupId, triggerHistories, getAllTriggerRoutersForReloadForCurrentNode(
+                sourceNodeGroupId, targetNodeGroupId));
+    }
+    
+    @Override
+    public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistIdAndSortHist(
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters) {
+        
 
         final Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = fillTriggerRoutersByHistId(
-                sourceNodeGroupId, targetNodeGroupId, triggerHistories);
+                sourceNodeGroupId, targetNodeGroupId, triggerHistories, triggerRouters);
         final List<Table> sortedTables = getSortedTablesFor(triggerHistories);
 
         Comparator<TriggerHistory> comparator = new Comparator<TriggerHistory>() {
@@ -2147,13 +2164,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRoutersByHistoryId;
 
     }
-
+    
+    
+    @Override
     public Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
             String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories) {
+        return fillTriggerRoutersByHistId(sourceNodeGroupId, targetNodeGroupId, triggerHistories, getAllTriggerRoutersForReloadForCurrentNode(
+                sourceNodeGroupId, targetNodeGroupId));
+    }
 
-        List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>(
-                getAllTriggerRoutersForReloadForCurrentNode(
-                        sourceNodeGroupId, targetNodeGroupId));
+    protected Map<Integer, List<TriggerRouter>> fillTriggerRoutersByHistId(
+            String sourceNodeGroupId, String targetNodeGroupId, List<TriggerHistory> triggerHistories, List<TriggerRouter> triggerRouters) {
+
+        triggerRouters = new ArrayList<TriggerRouter>(triggerRouters);
 
         Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>(
                 triggerHistories.size());
@@ -2184,7 +2207,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables.add(table);
             }
         }
-        return Database.sortByForeignKeys(tables);
+        //return Database.sortByForeignKeys(tables);
+        return Database.sortByForeignKeys(tables, null);
     }
 
     protected void awaitTermination(ExecutorService executor, List<Future<?>> futures) {
