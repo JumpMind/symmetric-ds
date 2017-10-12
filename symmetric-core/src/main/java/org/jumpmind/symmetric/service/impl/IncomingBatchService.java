@@ -393,7 +393,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         String sql = getSql("selectIncomingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(true, true), args);
+        return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(true, true), args);
     }
 
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
