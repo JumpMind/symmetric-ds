@@ -259,12 +259,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         for (NodeSecurity security : nodeSecurities) {
                             if (activeHistories.size() > 0) {
                                 Node targetNode = engine.getNodeService().findNode(security.getNodeId());
-                                List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
-                                if (triggerRouters == null) {
-                                    triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
-                                    triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
-                                }
-                                
+                                                               
                                 boolean thisMySecurityRecord = security.getNodeId().equals(
                                         identity.getNodeId());
                                 boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
@@ -276,6 +271,13 @@ public class RouterService extends AbstractService implements IRouterService {
                                 } else if (!thisMySecurityRecord && registered && initialLoadQueued
                                         &&  (!reverseLoadFirst || !reverseLoadQueued)) {
                                     long ts = System.currentTimeMillis();
+                                    
+                                    List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
+                                    if (triggerRouters == null) {
+                                        triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
+                                        triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
+                                    }
+                                    
                                     dataService.insertReloadEvents(
                                             targetNode,
                                             false, processInfo, activeHistories, triggerRouters);
