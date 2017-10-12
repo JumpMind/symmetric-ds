@@ -568,12 +568,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
 
                     if (fileUrl != null) {
+                        log.info("Executing {} '{}' ({})", ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sqlScript, fileUrl);
                         new SqlScript(fileUrl, symmetricDialect.getPlatform().getSqlTemplate(),
                                 true, SqlScriptReader.QUERY_ENDS, getSymmetricDialect().getPlatform()
                                         .getSqlScriptReplacementTokens()).execute();
                         loaded = true;
                     } else {
-                        log.info("Could not find the sql script: {} to execute.  We would have run it if we had found it");
+                        log.warn("Could not find the {}: '{}' to execute.  We would have run it if we had found it", ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT, sqlScript);
                     }
                 }
             }
