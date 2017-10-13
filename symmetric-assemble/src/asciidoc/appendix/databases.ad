@@ -145,6 +145,15 @@ by database.
 |Y
 |Y
 |Y
+
+|NuoDB
+|2.6 and above
+|Y
+|Y
+|Y
+|Y
+|N
+|Y
                     
 |Oracle
 |10g and above
@@ -328,6 +337,13 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |select database()
 |N
 |
+
+|NuoDB
+|
+|N
+|
+|Y
+|select current_schema from system.dual
 
 |Oracle
 | 
