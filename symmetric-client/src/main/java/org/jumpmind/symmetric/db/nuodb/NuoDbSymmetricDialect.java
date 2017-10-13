@@ -37,7 +37,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
     
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from system.functions where functionname='$(functionName)' and schema in (select database() from system.dual)" ;
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from system.functions where functionname='$(functionName)' and schema in (select current_schema from system.dual)" ;
     
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "sync_triggers_disabled";
 
@@ -62,34 +62,35 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void createRequiredDatabaseObjects() {
-        String function = this.parameterService.getTablePrefix() + "_get_session_variable";
-        if(!installed(SQL_FUNCTION_INSTALLED, function)){
-            String sql = "create function $(functionName)(akey string) returns string                                                        " + 
-                    " as                                                        " +
-                    " VAR l_out string = NULL;                                                        " + 
-                    " try                                                        " + 
-                    " l_out = (SELECT context_value from session_cache where name = akey);                                                        " + 
-                    " catch(error)                                                        " + 
-                    " create temp table if not exists session_cache (name string primary key, context_value string) on commit preserve rows;                                                        " + 
-                    " end_try;                                                        " + 
-                    " return l_out;                                                        " + 
-                    " END_FUNCTION;";
+        String function = parameterService.getTablePrefix() + "_get_session_variable";
+        if (!installed(SQL_FUNCTION_INSTALLED, function)) {
+            String sql = "create function $(functionName)(akey string) returns string as\n" + 
+                    "VAR l_out string = NULL;\n" + 
+                    "try\n" + 
+                    "l_out = (SELECT context_value from " + parameterService.getTablePrefix() + "_session_cache where name = akey);\n" + 
+                    "catch(error)\n" + 
+                    "create temp table if not exists " + parameterService.getTablePrefix() + "_session_cache\n" +
+                    "(name string primary key, context_value string) on commit preserve rows;\n" + 
+                    "end_try;\n" + 
+                    "return l_out;\n" + 
+                    "END_FUNCTION;";
             install(sql, function);
         }
-        function = this.parameterService.getTablePrefix() + "_set_session_variable";
-        if(!installed(SQL_FUNCTION_INSTALLED, function)){
-            String sql = "create function $(functionName)(akey string, avalue string) returns string                                                        " + 
-                    " as                                                        " +
-                    " VAR l_new string = NULL;                                                        " + 
-                    " try                                                        " + 
-                    " INSERT INTO session_cache (name, context_value) values (akey, avalue) ON DUPLICATE KEY UPDATE context_value = avalue;                                                        " + 
-                    " catch(error)                                                        " + 
-                    " create temp table if not exists session_cache (name string primary key, context_value string) on commit preserve rows;                                                        " + 
-                    " INSERT INTO session_cache VALUES (akey, avalue);                                                        "+
-                    " l_new = error;                                                        "+
-                    " end_try;                                                        " + 
-                    " return l_new;                                                        " + 
-                    " END_FUNCTION;";
+        function = parameterService.getTablePrefix() + "_set_session_variable";
+        if (!installed(SQL_FUNCTION_INSTALLED, function)) {
+            String sql = "create function $(functionName)(akey string, avalue string) returns string as\n" +
+                    "VAR l_new string = NULL;\n" + 
+                    "try\n" + 
+                    "INSERT INTO " + parameterService.getTablePrefix() + "_session_cache (name, context_value) \n" +
+                    "values (akey, avalue) ON DUPLICATE KEY UPDATE context_value = avalue;\n" + 
+                    "catch(error)\n" + 
+                    "create temp table if not exists " + parameterService.getTablePrefix() + "_session_cache\n" +
+                    "(name string primary key, context_value string) on commit preserve rows;\n" + 
+                    "INSERT INTO " + parameterService.getTablePrefix() + "_session_cache VALUES (akey, avalue);\n" +
+                    "l_new = error;\n"+
+                    "end_try;\n" + 
+                    "return l_new;\n" + 
+                    "END_FUNCTION;";
             install(sql, function);
         }
     }
