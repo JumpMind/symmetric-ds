@@ -340,6 +340,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("About to syncTriggers for file snapshot because the file sync parameter has changed");
             engine.clearCaches();
+            engine.getFileSyncService().clearCache();
             Table fileSnapshotTable = engine.getDatabasePlatform()
                     .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
             engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);

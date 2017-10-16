@@ -1010,7 +1010,7 @@ public class DataService extends AbstractService implements IDataService {
                 && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             IFileSyncService fileSyncService = engine.getFileSyncService();
-            if (fileSyncService.getFileTriggerRoutersForCurrentNode().size() > 0) {
+            if (fileSyncService.getFileTriggerRoutersForCurrentNode(false).size() > 0) {
                 TriggerHistory fileSyncSnapshotHistory = triggerRouterService.findTriggerHistory(
                         null, null,
                         TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));

@@ -105,8 +105,11 @@ public class FileSyncService extends AbstractOfflineDetectorService implements I
 INodeCommunicationExecutor {
 
     private ISymmetricEngine engine;
-
-    // TODO cache trigger routers
+    
+    private List<FileTriggerRouter> fileTriggerRoutersCache = new ArrayList<FileTriggerRouter>();
+    private long fileTriggerRoutersCacheTime;
+    private Object cacheLock = new Object();
+    private Date lastUpdateTime;
 
     public FileSyncService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect(), engine.getExtensionService());
@@ -115,7 +118,21 @@ INodeCommunicationExecutor {
     }
 
     public boolean refreshFromDatabase() {
-        // TODO implement with cache
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTriggerLastUpdateTime"), Date.class);
+        Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
+        Date date3 = sqlTemplate.queryForObject(getSql("selectMaxFileTriggerRouterLastUpdateTime"), Date.class);
+        Date date = maxDate(date1, date2, date3);
+        
+        if (date != null) {
+            if (lastUpdateTime == null || lastUpdateTime.before(date)) {
+                if (lastUpdateTime != null) {
+                   log.info("Newer trigger router settings were detected");
+                }
+                lastUpdateTime = date;
+                clearCache();
+                return true;
+            }
+        }
         return false;
     }
 
@@ -167,7 +184,7 @@ INodeCommunicationExecutor {
         }
         Date currentDate = new Date();
         
-        List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
+        List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
         for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
             if (fileTriggerRouter.isEnabled()) {
                 try {
@@ -198,7 +215,7 @@ INodeCommunicationExecutor {
         int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
 
         try {
-            List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode();
+            List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.isEnabled()) {
                 	FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
@@ -276,21 +293,54 @@ INodeCommunicationExecutor {
                 new FileTriggerMapper(), triggerId);
     }
 
-    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode() {
-        return sqlTemplate.query(
-                getSql("selectFileTriggerRoutersSql", "fileTriggerRoutersForCurrentNodeWhere"),
-                new FileTriggerRouterMapper(), parameterService.getNodeGroupId());
+    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(boolean refreshCache) {
+        String myNodeGroupId = parameterService.getNodeGroupId();
+        List<FileTriggerRouter> allValues = getFileTriggerRouters(refreshCache);
+        List<FileTriggerRouter> currentValues = new ArrayList<FileTriggerRouter>();
+        
+        for(FileTriggerRouter ftr : allValues) {
+            if(ftr.getRouter().getNodeGroupLink().getSourceNodeGroupId().equals(myNodeGroupId) && ftr.isEnabled()) {
+                currentValues.add(ftr);
+            }
+        }
+        return currentValues;
     }
 
-    public List<FileTriggerRouter> getFileTriggerRouters() {
-        return sqlTemplate.query(getSql("selectFileTriggerRoutersSql"),
-                new FileTriggerRouterMapper());
+    public List<FileTriggerRouter> getFileTriggerRouters(boolean refreshCache) {
+        long fileTriggerRouterCacheTimeoutInMs = parameterService
+                .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        List<FileTriggerRouter> currentValues = fileTriggerRoutersCache;
+        
+        if(currentValues == null || refreshCache || 
+                System.currentTimeMillis() - this.fileTriggerRoutersCacheTime > fileTriggerRouterCacheTimeoutInMs) {
+            synchronized (cacheLock) {
+                List<FileTriggerRouter> newValues = sqlTemplate.query(getSql("selectFileTriggerRoutersSql"),
+                        new FileTriggerRouterMapper());
+                fileTriggerRoutersCache = newValues;
+                currentValues = newValues;
+                fileTriggerRoutersCacheTime = System.currentTimeMillis();
+            }
+        }
+        
+        return currentValues;
     }
 
-    public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId) {
-        return sqlTemplate.queryForObject(
-                getSql("selectFileTriggerRoutersSql", "whereTriggerRouterId"),
-                new FileTriggerRouterMapper(), triggerId, routerId);
+    public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId, boolean refreshCache) {
+        List<FileTriggerRouter> allValues = getFileTriggerRouters(refreshCache);
+        
+        for(FileTriggerRouter ftr: allValues) {
+            if(ftr.getRouterId().equals(routerId) && ftr.getTriggerId().equals(triggerId)) {
+                return ftr;
+            }
+        }
+        return null;
+    }
+    
+    
+    public void clearCache() {
+        synchronized (cacheLock) {
+            this.fileTriggerRoutersCacheTime = 0;
+        }
     }
 
     public void saveFileTrigger(FileTrigger fileTrigger) {
@@ -363,28 +413,27 @@ INodeCommunicationExecutor {
                                             Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                                             Types.VARCHAR });
         }
+        clearCache();
     }
 
     public void deleteFileTriggerRouter(String triggerId, String routerId) {
         sqlTemplate.update(getSql("deleteFileTriggerRouterSql"), triggerId, routerId);
+        clearCache();
     }
 
     public void deleteAllFileTriggerRouters() {
         sqlTemplate.update(getSql("deleteAllFileTriggerRoutersSql"));
+        clearCache();
     }
 
     public void deleteFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
         sqlTemplate.update(getSql("deleteFileTriggerRouterSql"), (Object) fileTriggerRouter
                 .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter().getRouterId());
+        clearCache();
     }
 
     public void deleteFileTrigger(FileTrigger fileTrigger) {
         sqlTemplate.update(getSql("deleteFileTriggerSql"), (Object) fileTrigger.getTriggerId());
-    }
-
-    public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger) {
-        return sqlTemplate.query(getSql("selectFileTriggerRoutersSql", "whereTriggerIdSql"),
-                new FileTriggerRouterMapper(), fileTrigger.getTriggerId());
     }
 
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter) {
@@ -703,7 +752,7 @@ INodeCommunicationExecutor {
                         .get("LAST_EVENT_TYPE")));
 
                 FileTriggerRouter triggerRouter = this.getFileTriggerRouter(
-                        fileSnapshot.getTriggerId(), fileSnapshot.getRouterId());
+                        fileSnapshot.getTriggerId(), fileSnapshot.getRouterId(), false);
                 if (triggerRouter != null) {
                     FileTrigger fileTrigger = triggerRouter.getFileTrigger();
 

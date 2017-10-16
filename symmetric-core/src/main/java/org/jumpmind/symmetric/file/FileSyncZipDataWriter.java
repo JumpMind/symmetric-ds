@@ -128,7 +128,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             String targetNodeId = context.getBatch().getTargetNodeId();
             Node targetNode = nodeService.findNode(targetNodeId);
             List<FileTriggerRouter> fileTriggerRouters = fileSyncService
-                    .getFileTriggerRoutersForCurrentNode();
+                    .getFileTriggerRoutersForCurrentNode(false);
             for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.isEnabled()
                         && fileTriggerRouter.isInitialLoadEnabled()
@@ -160,7 +160,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 Map<String, String> entriesByLastRouterId = new HashMap<String, String>();
                 for (FileSnapshot snapshot : snapshotEvents) {
                     FileTriggerRouter triggerRouter = fileSyncService.getFileTriggerRouter(
-                            snapshot.getTriggerId(), snapshot.getRouterId());
+                            snapshot.getTriggerId(), snapshot.getRouterId(), false);
                     if (triggerRouter != null) {
                         LastEventType eventType = snapshot.getLastEventType();
 

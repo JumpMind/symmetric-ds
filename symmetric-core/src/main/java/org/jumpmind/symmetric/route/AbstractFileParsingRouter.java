@@ -231,7 +231,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 	                .get("LAST_EVENT_TYPE")));
 	
 	        FileTriggerRouter triggerRouter = getEngine().getFileSyncService().getFileTriggerRouter(
-	                fileSnapshot.getTriggerId(), fileSnapshot.getRouterId());
+	                fileSnapshot.getTriggerId(), fileSnapshot.getRouterId(), true);
 	        if (triggerRouter != null) {
 	            FileTrigger fileTrigger = triggerRouter.getFileTrigger();
 	

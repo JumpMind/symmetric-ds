@@ -54,18 +54,18 @@ public interface IFileSyncService {
     public void deleteAllFileTriggerRouters();
 
     public void deleteFileTrigger(FileTrigger fileTrigger);
-
-    public List<FileTriggerRouter> getFileTriggerRouters(FileTrigger fileTrigger);
+    
+    public void clearCache();
 
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter);
 
     public void save(List<FileSnapshot> changes);
 
-    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode();
+    public List<FileTriggerRouter> getFileTriggerRoutersForCurrentNode(boolean refreshCache);
 
-    public List<FileTriggerRouter> getFileTriggerRouters();
+    public List<FileTriggerRouter> getFileTriggerRouters(boolean refreshCache);
 
-    public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId);
+    public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId, boolean refreshCache);
 
     public void loadFilesFromPush(String nodeId, InputStream in, OutputStream out);
 

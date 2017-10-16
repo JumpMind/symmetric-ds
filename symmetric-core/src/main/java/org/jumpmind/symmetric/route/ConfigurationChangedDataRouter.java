@@ -676,6 +676,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 Table fileSnapshotTable = engine.getDatabasePlatform()
                         .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
                 engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
+                engine.getFileSyncService().clearCache();
             }
 
         }

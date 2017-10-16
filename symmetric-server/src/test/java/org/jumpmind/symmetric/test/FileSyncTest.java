@@ -242,7 +242,7 @@ public class FileSyncTest extends AbstractTest {
     protected void testTargetWins(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
         IFileSyncService fileSyncService = rootServer.getFileSyncService();
-        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client",false);
         fileTriggerRouter.setConflictStrategy(FileConflictStrategy.TARGET_WINS);
         fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
         
@@ -268,7 +268,7 @@ public class FileSyncTest extends AbstractTest {
             ISymmetricEngine clientServer) throws Exception {
         
         IFileSyncService fileSyncService = rootServer.getFileSyncService();
-        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client", false);
         fileTriggerRouter.setConflictStrategy(FileConflictStrategy.MANUAL);
         fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
         
@@ -308,7 +308,7 @@ public class FileSyncTest extends AbstractTest {
         assertEquals(0, batches.size());
         
         IFileSyncService fileSyncService = rootServer.getFileSyncService();
-        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client");
+        FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client", false);
         fileTriggerRouter.setConflictStrategy(FileConflictStrategy.MANUAL);
         fileSyncService.saveFileTriggerRouter(fileTriggerRouter);
         
