@@ -29,6 +29,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 
@@ -67,9 +68,6 @@ public interface IIncomingBatchService {
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
 
-    public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId,
-    		Date sinceCreateTime, Status... statuses);
-    
     public void markIncomingBatchesOk(String nodeId);
     
     public void removingIncomingBatches(String nodeId);
@@ -83,6 +81,12 @@ public interface IIncomingBatchService {
     public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses);
     
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses);
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId,
+    		Date sinceCreateTime, Status... statuses);
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByNodeAndChannel(String nodeId, String channelId,
+    		Date sinceCreateTime, Status... statuses);
     
     public Map<String, Date> findLastUpdatedByChannel();
     

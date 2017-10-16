@@ -110,6 +110,12 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectIncomingBatchSummaryPrefixSql",
                 "select b.status ");
         
+        putSql("selectIncomingBatchSummaryByNodePrefixSql",
+                "select b.status, b.node_id ");
+        
+        putSql("selectIncomingBatchSummaryByNodeAndChannelPrefixSql",
+                "select b.status, b.node_id, b.channel_id ");
+        
         putSql("selectIncomingBatchSummaryStatsPrefixSql",
                 ", count(*) as batches, sum(b.load_row_count) as data, min(b.create_time) as oldest_batch_time, "
                         + " max(b.last_update_time) as last_update_time, "
@@ -131,7 +137,17 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
         
         putSql("whereStatusAndNodeGroupByStatusSql",
                 " where b.status in (:STATUS_LIST) and b.node_id = ? group by b.status order by oldest_batch_time asc   ");
-       
+        
+        putSql("whereStatusGroupByStatusAndNodeSql",
+                " where b.status in (:STATUS_LIST) group by b.status, b.node_id order by oldest_batch_time asc   ");
+
+        putSql("whereStatusGroupByStatusAndNodeAndChannelSql",
+                " where b.status in (:STATUS_LIST) group by b.status, b.node_id, b.channel_id order by b.node_id, oldest_batch_time asc   ");
+
+        putSql("whereStatusAndNodeAndChannelGroupByStatusSql",
+                " where b.status in (:STATUS_LIST) and b.node_id = ? and b.channel_id = ? group by b.status order by oldest_batch_time asc   ");
+
+   
     }
 
 }
