@@ -1,3 +1,5 @@
+package org.jumpmind.symmetric.ext;
+
 /**
  * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
@@ -18,7 +20,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.ext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.util.AppUtils;
 
-public class LoadTestHeartbeatListener
+public class StressTestHeartbeatListener
         implements org.jumpmind.symmetric.ext.IHeartbeatListener, org.jumpmind.symmetric.ext.ISymmetricEngineAware {
 
     private static final String SERVER_NODE_GROUP = "server";
@@ -55,33 +56,33 @@ public class LoadTestHeartbeatListener
 
     private static final String SYNC_CHANNEL = "default";
 
-    private static final String LOAD_TEST_CONTROL = "LOAD_TEST_CONTROL";
+    private static final String STRESS_TEST_CONTROL = "STRESS_TEST_CONTROL";
 
-    private static final String LOAD_TEST_STATUS = "LOAD_TEST_STATUS";
+    private static final String STRESS_TEST_STATUS = "STRESS_TEST_STATUS";
 
-    private static final String LOAD_TEST_ROW_OUTGOING = "LOAD_TEST_ROW_OUTGOING";
+    private static final String STRESS_TEST_ROW_OUTGOING = "STRESS_TEST_ROW_OUTGOING";
 
-    private static final String LOAD_TEST_ROW_INCOMING = "LOAD_TEST_ROW_INCOMING";
+    private static final String STRESS_TEST_ROW_INCOMING = "STRESS_TEST_ROW_INCOMING";
 
-    private String selectControlSql = "select * from " + LOAD_TEST_CONTROL;
+    private String selectControlSql = "select * from " + STRESS_TEST_CONTROL;
 
-    private String selectStatusSql = "select status from " + LOAD_TEST_STATUS + " where run_id=? and node_id = ?";
+    private String selectStatusSql = "select status from " + STRESS_TEST_STATUS + " where run_id=? and node_id = ?";
 
-    private String insertStatusSql = "insert into " + LOAD_TEST_STATUS
+    private String insertStatusSql = "insert into " + STRESS_TEST_STATUS
             + " (run_id,node_id,status,start_time) values (?,?,?,current_timestamp)";
 
-    private String updateStatusSql = "update " + LOAD_TEST_STATUS
+    private String updateStatusSql = "update " + STRESS_TEST_STATUS
             + " set status=?, end_time=current_timestamp where run_id=? and node_id = ?";
 
-    private String insertOutgoingSql = "insert into " + LOAD_TEST_ROW_OUTGOING
+    private String insertOutgoingSql = "insert into " + STRESS_TEST_ROW_OUTGOING
             + "(row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
 
-    private String dropOutgoingSql = "drop table if exists " + LOAD_TEST_ROW_OUTGOING;
+    private String dropOutgoingSql = "drop table if exists " + STRESS_TEST_ROW_OUTGOING;
 
-    private String insertIncomingSql = "insert into " + LOAD_TEST_ROW_INCOMING
+    private String insertIncomingSql = "insert into " + STRESS_TEST_ROW_INCOMING
             + "(row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
 
-    private String dropIncomingSql = "drop table if exists " + LOAD_TEST_ROW_INCOMING;
+    private String dropIncomingSql = "drop table if exists " + STRESS_TEST_ROW_INCOMING;
 
     private ISymmetricEngine engine;
 
@@ -94,52 +95,54 @@ public class LoadTestHeartbeatListener
     private Map<Integer, Long> outgoingCounts = new HashMap<Integer, Long>();
 
     /**
-     * Creates the LOAD_TEST_CONTROL and LOAD_TEST_STATUS tables and adds
+     * Creates the STRESS_TEST_CONTROL and STRESS_TEST_STATUS tables and adds
      * triggers
      */
-    private void initLoadTestControl() {
-        createLoadTestControlTable();
-        addLoadTestControlTriggers();
+    private void initStressTestControl() {
+        createStressTestControlTable();
+        addStressTestControlTriggers();
 
-        createLoadTestStatusTable();
-        addLoadTestStatusTriggers();
+        createStressTestStatusTable();
+        addStressTestStatusTriggers();
 
         initialized = true;
     }
 
     /**
-     * Creates the LOAD_TEST_ROW_OUTGOING table, seeds initial test data,
+     * Creates the STRESS_TEST_ROW_OUTGOING table, seeds initial test data,
      * configures the table, and loads the table to the client
      */
-    private void initLoadRowOutgoing(int payloadColumns, int runId, int initialSeedSize) {
-        createLoadTestRowOutgoingTable(payloadColumns);
+    private void initStressTestRowOutgoing(int payloadColumns, int runId, int initialSeedSize) {
+        createStressTestRowOutgoingTable(payloadColumns);
         seedOutgoing(runId, initialSeedSize);
-        addLoadTestRowOutgoingConfig();
+        addStressTestRowOutgoingConfig();
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
             // Drop the table using the config channel to force drop order
             engine.getDataService().sendSQL(client.getNodeId(), null, null, "SYM_PARAMETER", dropOutgoingSql);
-            engine.getDataService().sendSchema(client.getNodeId(), null, null, LOAD_TEST_ROW_OUTGOING, true);
-            engine.getDataService().reloadTable(client.getNodeId(), null, null, LOAD_TEST_ROW_OUTGOING);
+            engine.getDataService().sendSchema(client.getNodeId(), null, null, STRESS_TEST_ROW_OUTGOING, true);
+            if (initialSeedSize > 0) {
+                engine.getDataService().reloadTable(client.getNodeId(), null, null, STRESS_TEST_ROW_OUTGOING);
+            }
         }
     }
 
     /**
-     * Creates the LOAD_TEST_ROW_INCOMING table and configures the table
+     * Creates the STRESS_TEST_ROW_INCOMING table and configures the table
      */
-    private void initLoadRowIncoming(int payloadColumns) {
-        createLoadTestRowIncomingTable(payloadColumns);
-        addLoadTestRowIncomingConfig();
+    private void initStressTestRowIncoming(int payloadColumns) {
+        createStressTestRowIncomingTable(payloadColumns);
+        addStressTestRowIncomingConfig();
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
             // Drop the table using the config channel to force drop order
             engine.getDataService().sendSQL(client.getNodeId(), null, null, "SYM_PARAMETER", dropIncomingSql);
-            engine.getDataService().sendSchema(client.getNodeId(), null, null, LOAD_TEST_ROW_INCOMING, true);
+            engine.getDataService().sendSchema(client.getNodeId(), null, null, STRESS_TEST_ROW_INCOMING, true);
         }
     }
 
     /**
-     * Creates the LOAD_TEST_CONTROL table
+     * Creates the STRESS_TEST_CONTROL table
      */
-    private void createLoadTestControlTable() {
+    private void createStressTestControlTable() {
         Column runId = new Column("RUN_ID");
         runId.setMappedType("INTEGER");
         runId.setPrimaryKey(true);
@@ -159,16 +162,16 @@ public class LoadTestHeartbeatListener
         Column duration = new Column("DURATION_MINUTES");
         duration.setMappedType("BIGINT");
 
-        Table table = new Table(LOAD_TEST_CONTROL, runId, clientCommitSleepMs, clientCommitRows, serverCommitSleepMs, serverCommitRows,
+        Table table = new Table(STRESS_TEST_CONTROL, runId, clientCommitSleepMs, clientCommitRows, serverCommitSleepMs, serverCommitRows,
                 payloadColumns, initialSeedSize, duration);
 
         engine.getDatabasePlatform().createTables(true, true, table);
     }
 
     /**
-     * Creates the LOAD_TEST_STATUS table
+     * Creates the STRESS_TEST_STATUS table
      */
-    private void createLoadTestStatusTable() {
+    private void createStressTestStatusTable() {
         Column runId = new Column("RUN_ID");
         runId.setMappedType("INTEGER");
         runId.setPrimaryKey(true);
@@ -188,17 +191,17 @@ public class LoadTestHeartbeatListener
         Column endTime = new Column("END_TIME");
         endTime.setMappedType("TIMESTAMP");
 
-        Table table = new Table(LOAD_TEST_STATUS, runId, nodeId, status, startTime, endTime);
+        Table table = new Table(STRESS_TEST_STATUS, runId, nodeId, status, startTime, endTime);
 
         engine.getDatabasePlatform().createTables(true, true, table);
     }
 
     /**
-     * Creates the LOAD_TEST_RUN_OUTGOING table
+     * Creates the STRESS_TEST_RUN_OUTGOING table
      */
-    private void createLoadTestRowOutgoingTable(int payloadColumns) {
-        Column[] defaultColumns = getDefaultLoadRowColumns();
-        Table table = new Table(LOAD_TEST_ROW_OUTGOING, defaultColumns);
+    private void createStressTestRowOutgoingTable(int payloadColumns) {
+        Column[] defaultColumns = getDefaultStressTestRowColumns();
+        Table table = new Table(STRESS_TEST_ROW_OUTGOING, defaultColumns);
         List<Column> payloads = getPayloadColumns(payloadColumns);
 
         table.addColumns(payloads);
@@ -206,11 +209,11 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Creates the LOAD_TEST_RUN_INCOMING table
+     * Creates the STRESS_TEST_RUN_INCOMING table
      */
-    private void createLoadTestRowIncomingTable(int payloadColumns) {
-        Column[] defaultColumns = getDefaultLoadRowColumns();
-        Table table = new Table(LOAD_TEST_ROW_INCOMING, defaultColumns);
+    private void createStressTestRowIncomingTable(int payloadColumns) {
+        Column[] defaultColumns = getDefaultStressTestRowColumns();
+        Table table = new Table(STRESS_TEST_ROW_INCOMING, defaultColumns);
         List<Column> payloads = getPayloadColumns(payloadColumns);
 
         table.addColumns(payloads);
@@ -218,9 +221,9 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Creates the default columns for the LOAD_TEST_ROW_* tables
+     * Creates the default columns for the STRESS_TEST_ROW_* tables
      */
-    private Column[] getDefaultLoadRowColumns() {
+    private Column[] getDefaultStressTestRowColumns() {
         Column rowId = new Column("ROW_ID");
         rowId.setMappedType("INTEGER");
         rowId.setPrimaryKey(true);
@@ -244,7 +247,7 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Creates the payload columns for the LOAD_TEST_RUN_* tables
+     * Creates the payload columns for the STRESS_TEST_RUN_* tables
      */
     private List<Column> getPayloadColumns(int payloadColumns) {
         List<Column> payloads = new ArrayList<Column>();
@@ -260,38 +263,38 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Adds triggers to the LOAD_TEST_CONTROL table
+     * Adds triggers to the STRESS_TEST_CONTROL table
      */
-    private void addLoadTestControlTriggers() {
-        addTrigger(LOAD_TEST_CONTROL, SYNC_CHANNEL, SERVER_TO_CLIENT);
-        addTrigger(LOAD_TEST_CONTROL, SYNC_CHANNEL, CLIENT_TO_SERVER);
+    private void addStressTestControlTriggers() {
+        addTrigger(STRESS_TEST_CONTROL, SYNC_CHANNEL, SERVER_TO_CLIENT);
+        addTrigger(STRESS_TEST_CONTROL, SYNC_CHANNEL, CLIENT_TO_SERVER);
         engine.syncTriggers();
     }
 
     /**
-     * Adds triggers to the LOAD_TEST_STATUS table
+     * Adds triggers to the STRESS_TEST_STATUS table
      */
-    private void addLoadTestStatusTriggers() {
-        addTrigger(LOAD_TEST_STATUS, SYNC_CHANNEL, SERVER_TO_CLIENT);
-        addTrigger(LOAD_TEST_STATUS, SYNC_CHANNEL, CLIENT_TO_SERVER);
+    private void addStressTestStatusTriggers() {
+        addTrigger(STRESS_TEST_STATUS, SYNC_CHANNEL, SERVER_TO_CLIENT);
+        addTrigger(STRESS_TEST_STATUS, SYNC_CHANNEL, CLIENT_TO_SERVER);
         engine.syncTriggers();
     }
 
     /**
-     * Adds triggers and transforms to the LOAD_TEST_ROW_OUTGOING table
+     * Adds triggers and transforms to the STRESS_TEST_ROW_OUTGOING table
      */
-    private void addLoadTestRowOutgoingConfig() {
-        addTrigger(LOAD_TEST_ROW_OUTGOING, SYNC_CHANNEL, SERVER_TO_CLIENT);
+    private void addStressTestRowOutgoingConfig() {
+        addTrigger(STRESS_TEST_ROW_OUTGOING, SYNC_CHANNEL, SERVER_TO_CLIENT);
         addOutgoingTransform();
         engine.syncTriggers();
     }
 
     /**
-     * Adds triggers and transforms to the LOAD_TEST_ROW_INCOMING table
+     * Adds triggers and transforms to the STRESS_TEST_ROW_INCOMING table
      */
-    private void addLoadTestRowIncomingConfig() {
-        addTrigger(LOAD_TEST_ROW_INCOMING, SYNC_CHANNEL, SERVER_TO_CLIENT);
-        addTrigger(LOAD_TEST_ROW_INCOMING, SYNC_CHANNEL, CLIENT_TO_SERVER);
+    private void addStressTestRowIncomingConfig() {
+        addTrigger(STRESS_TEST_ROW_INCOMING, SYNC_CHANNEL, SERVER_TO_CLIENT);
+        addTrigger(STRESS_TEST_ROW_INCOMING, SYNC_CHANNEL, CLIENT_TO_SERVER);
         addIncomingTransform();
         engine.syncTriggers();
     }
@@ -319,14 +322,14 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Adds transforms to the LOAD_TEST_ROW_OUTGOING table
+     * Adds transforms to the STRESS_TEST_ROW_OUTGOING table
      */
     private void addOutgoingTransform() {
         TransformTableNodeGroupLink outgoingTransform = new TransformTableNodeGroupLink();
         outgoingTransform.setTransformPoint(TransformPoint.LOAD);
-        outgoingTransform.setTransformId("load_test_outgoing_transform");
-        outgoingTransform.setSourceTableName(LOAD_TEST_ROW_OUTGOING);
-        outgoingTransform.setTargetTableName(LOAD_TEST_ROW_OUTGOING);
+        outgoingTransform.setTransformId("stress_test_outgoing_transform");
+        outgoingTransform.setSourceTableName(STRESS_TEST_ROW_OUTGOING);
+        outgoingTransform.setTargetTableName(STRESS_TEST_ROW_OUTGOING);
         outgoingTransform.setColumnPolicy(ColumnPolicy.IMPLIED);
         outgoingTransform.setNodeGroupLink(engine.getConfigurationService().getNodeGroupLinkFor(SERVER_NODE_GROUP, CLIENT_NODE_GROUP, true));
 
@@ -341,14 +344,14 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Adds transforms to the LOAD_TEST_ROW_INCOMING table
+     * Adds transforms to the STRESS_TEST_ROW_INCOMING table
      */
     private void addIncomingTransform() {
         TransformTableNodeGroupLink incomingTransform = new TransformTableNodeGroupLink();
         incomingTransform.setTransformPoint(TransformPoint.LOAD);
-        incomingTransform.setTransformId("load_test_incoming_transform");
-        incomingTransform.setSourceTableName(LOAD_TEST_ROW_INCOMING);
-        incomingTransform.setTargetTableName(LOAD_TEST_ROW_INCOMING);
+        incomingTransform.setTransformId("stress_test_incoming_transform");
+        incomingTransform.setSourceTableName(STRESS_TEST_ROW_INCOMING);
+        incomingTransform.setTargetTableName(STRESS_TEST_ROW_INCOMING);
         incomingTransform.setColumnPolicy(ColumnPolicy.IMPLIED);
         incomingTransform.setNodeGroupLink(engine.getConfigurationService().getNodeGroupLinkFor(CLIENT_NODE_GROUP, SERVER_NODE_GROUP, true));
 
@@ -363,12 +366,12 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Checks the LOAD_TEST_CONTROL table for new load test runs and starts a
-     * load test accordingly
+     * Checks the STRESS_TEST_CONTROL table for new stress test runs and starts
+     * a stress test accordingly
      */
     private void runTest(final Node me) {
         if (!initialized) {
-            initLoadTestControl();
+            initStressTestControl();
         }
 
         List<Row> runs = engine.getSqlTemplate().query(selectControlSql);
@@ -382,8 +385,8 @@ public class LoadTestHeartbeatListener
             String status = engine.getSqlTemplate().queryForString(selectStatusSql, runId, me.getNodeId());
 
             if (isMasterNode(me) && StringUtils.isBlank(status)) {
-                initLoadRowOutgoing(payloadColumns, runId, initialSeedSize);
-                initLoadRowIncoming(payloadColumns);
+                initStressTestRowOutgoing(payloadColumns, runId, initialSeedSize);
+                initStressTestRowIncoming(payloadColumns);
                 long commitRows = run.getLong("SERVER_COMMIT_ROWS");
                 long sleepMs = run.getLong("SERVER_COMMIT_SLEEP_MS");
 
@@ -412,7 +415,7 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Fills the LOAD_TEST_OUTGOING table with test data
+     * Fills the STRESS_TEST_OUTGOING table with test data
      */
     private void seedOutgoing(int runId, long rows) {
         long currentRows = outgoingCounts.containsKey(runId) ? outgoingCounts.get(runId) : 0;
@@ -426,7 +429,7 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Fills the LOAD_TEST_OUTGOING table with test data
+     * Fills the STRESS_TEST_OUTGOING table with test data
      */
     private void fillOutgoing(int runId, long duration, long commitRows, long sleepMs) {
         long currentRows = outgoingCounts.containsKey(runId) ? outgoingCounts.get(runId) : 0;
@@ -445,7 +448,7 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Fills the LOAD_TEST_INCOMING table with test data
+     * Fills the STRESS_TEST_INCOMING table with test data
      */
     private void fillIncoming(int runId, long duration, long commitRows, long sleepMs) {
         long currentRows = 0;
@@ -462,7 +465,7 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Inserts test data into LOAD_TEST_OUTGOING
+     * Inserts test data into STRESS_TEST_OUTGOING
      */
     private void insertOutgoing(long rowId, int runId) {
         String nodeId = engine.getEngineName();
@@ -470,7 +473,7 @@ public class LoadTestHeartbeatListener
     }
 
     /**
-     * Inserts test data into LOAD_TEST_INCOMING
+     * Inserts test data into STRESS_TEST_INCOMING
      */
     private void insertIncoming(long rowId, int runId) {
         String nodeId = engine.getEngineName();

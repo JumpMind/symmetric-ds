@@ -170,29 +170,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     }
 
-    @Override
-    public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId, Date sinceCreateTime,
-    		Status... statuses) {
-    		
-    		Object[] args = new Object[statuses.length + 1];
-    		args[args.length - 1] = nodeId;
-        StringBuilder inList = buildStatusList(args, statuses);
 
-    		String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
-        		"selectIncomingBatchSummaryStatsPrefixSql",
-        		"whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
-    		return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
-    }
-    
-    protected StringBuilder buildStatusList(Object[] args, Status...statuses) {
-		StringBuilder inList = new StringBuilder();
-	    for (int i = 0; i < statuses.length; i++) {
-	        args[i] = statuses[i].name();
-	        inList.append("?,");
-	    }
-	    return inList;
-	}
-    
     protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {
         return statuses.size() == 1 && statuses.get(0) == IncomingBatch.Status.ER;
     }
@@ -382,32 +360,69 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return ids;
     }
 
-    public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses) {
-        Object[] args = new Object[statuses.length];
-        StringBuilder inList = new StringBuilder();
-        for (int i = 0; i < statuses.length; i++) {
-            args[i] = statuses[i].name();
-            inList.append("?,");
-        }
+    @Override
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId, Date sinceCreateTime,
+    		Status... statuses) {
+    		
+    		Object[] args = new Object[statuses.length + 1];
+    		args[args.length - 1] = nodeId;
+        StringBuilder inList = buildStatusList(args, statuses);
 
-        String sql = getSql("selectIncomingBatchSummaryByStatusAndChannelSql").replace(":STATUS_LIST",
+    		String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
+        		"selectIncomingBatchSummaryStatsPrefixSql",
+        		"whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+    		return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
+    }
+    
+    protected StringBuilder buildStatusList(Object[] args, Status...statuses) {
+		StringBuilder inList = new StringBuilder();
+	    for (int i = 0; i < statuses.length; i++) {
+	        args[i] = statuses[i].name();
+	        inList.append("?,");
+	    }
+	    return inList;
+	}
+    
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses) {
+    		Object[] args = new Object[statuses.length];
+        StringBuilder inList = buildStatusList(args, statuses);
+        
+        String sql = getSql("selectIncomingBatchSummaryByNodeAndChannelPrefixSql",
+        		"selectIncomingBatchSummaryStatsPrefixSql",
+        		"whereStatusGroupByStatusAndNodeAndChannelSql"
+        		).replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
         return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(true, true), args);
     }
 
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
-        Object[] args = new Object[statuses.length];
-        StringBuilder inList = new StringBuilder();
-        for (int i = 0; i < statuses.length; i++) {
-            args[i] = statuses[i].name();
-            inList.append("?,");
-        }
+		Object[] args = new Object[statuses.length];
+        StringBuilder inList = buildStatusList(args, statuses);
 
-        String sql = getSql("selectIncomingBatchSummaryByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+        String sql = getSql("selectIncomingBatchSummaryByNodePrefixSql", 
+        		"selectIncomingBatchSummaryStatsPrefixSql",
+        		"whereStatusGroupByStatusAndNodeSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
 
-        return sqlTemplate.query(sql, new IncomingBatchSummaryMapper(true, false), args);
+        return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(true, false), args);
     }
+    
+
+	public List<IncomingBatchSummary> findIncomingBatchSummaryByNodeAndChannel(String nodeId, String channelId,
+			Date sinceCreateTime, Status... statuses) {
+		
+    		Object[] args = new Object[statuses.length + 2];
+    		args[args.length - 1] = nodeId;
+    		args[args.length - 2] = channelId;
+        StringBuilder inList = buildStatusList(args, statuses);
+
+    		String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
+        		"selectIncomingBatchSummaryStatsPrefixSql",
+        		"whereStatusAndNodeAndChannelGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+    		return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
+    
+	}
+
 
     @Override
     public Map<String, Date> findLastUpdatedByChannel() {
