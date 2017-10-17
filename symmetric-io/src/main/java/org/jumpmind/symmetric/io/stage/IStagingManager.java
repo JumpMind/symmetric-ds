@@ -34,4 +34,6 @@ public interface IStagingManager {
     
     public Set<String> getResourceReferences();
 
+    public StagingFileLock acquireFileLock(String serverInfo, Object... path);
+
 }
