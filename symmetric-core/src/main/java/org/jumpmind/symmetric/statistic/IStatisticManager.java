@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -117,5 +118,7 @@ public interface IStatisticManager {
     public Map<String, ChannelStats> getWorkingChannelStats();
     
     public HostStats getWorkingHostStats();
+    
+    public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes);
         
 }

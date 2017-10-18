@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
@@ -514,6 +515,21 @@ public class StatisticManager implements IStatisticManager {
                 }
             }
         }
+    }
+    
+    public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
+
+        Map<String, ChannelStats> currentStats = getWorkingChannelStats();
+        NodeStatsByPeriodMap savedStatsPeriodMap = (NodeStatsByPeriodMap) statisticService.getNodeStatsForPeriod(start, end, nodeId,
+                periodSizeInMinutes);
+
+        for (String key : currentStats.keySet()) {
+            ChannelStats stat = currentStats.get(key);
+            Date date = stat.getStartTime();
+            savedStatsPeriodMap.add(date, stat);
+        }
+        
+        return savedStatsPeriodMap;
     }
 
     public Map<String, ChannelStats> getWorkingChannelStats() {
