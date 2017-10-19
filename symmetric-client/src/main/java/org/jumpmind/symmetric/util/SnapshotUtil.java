@@ -156,7 +156,8 @@ public class SnapshotUtil {
                     fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
                     TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
                     TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
-                    TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
+                    TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT,
+                    TableConstants.SYM_CONSOLE_USER_HIST);
         } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
         } finally {
