@@ -79,6 +79,8 @@ public class DbCompare {
 
     public DbCompareReport compare() {
         dbValueComparator.setNumericScale(config.getNumericScale());
+        
+        log.info("Starting DBCompare with config:\n{}", config.report());
 
         OutputStream sqlDiffOutput = getSqlDiffOutputStream();
         
@@ -110,12 +112,12 @@ public class DbCompare {
     }
 
     protected OutputStream getSqlDiffOutputStream() {
-        String sqlDiffFileName = config.getSqlDiffFileName();
-        if (!StringUtils.isEmpty(sqlDiffFileName) && !sqlDiffFileName.contains("%t")) {
+        String outputSqlDiffFileName = config.getOutputSql();
+        if (!StringUtils.isEmpty(outputSqlDiffFileName) && !outputSqlDiffFileName.contains("%t")) {
             try {                
-                return new FirstUseFileOutputStream(sqlDiffFileName);
+                return new FirstUseFileOutputStream(outputSqlDiffFileName);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to open stream to file '" + sqlDiffFileName + "'", e);
+                throw new RuntimeException("Failed to open stream to file '" + outputSqlDiffFileName + "'", e);
             }            
         } else {
             return null;
@@ -123,10 +125,10 @@ public class DbCompare {
     }
     
     protected OutputStream getSqlDiffOutputStream(DbCompareTables tables) {
-        String sqlDiffFileName = config.getSqlDiffFileName();
-        if (!StringUtils.isEmpty(sqlDiffFileName)) {
+        String outputSqlDiffFileName = config.getOutputSql();
+        if (!StringUtils.isEmpty(outputSqlDiffFileName)) {
             // allow file per table.
-            String fileNameFormatted = sqlDiffFileName.replace("%t", "%s");
+            String fileNameFormatted = outputSqlDiffFileName.replace("%t", "%s");
             fileNameFormatted = String.format(fileNameFormatted, tables.getSourceTable().getName());   
             fileNameFormatted = fileNameFormatted.replaceAll("\"", "").replaceAll("\\]", "").replaceAll("\\[", "");
             try {                
@@ -145,9 +147,9 @@ public class DbCompare {
         String targetSelect = getTargetComparisonSQL(tables, targetEngine.getDatabasePlatform());
 
         CountingSqlReadCursor sourceCursor = new CountingSqlReadCursor(sourceEngine.getDatabasePlatform().
-                getSqlTemplate().queryForCursor(sourceSelect, defaultRowMapper));
+                getSqlTemplateDirty().queryForCursor(sourceSelect, defaultRowMapper));
         CountingSqlReadCursor targetCursor = new CountingSqlReadCursor(targetEngine.getDatabasePlatform().
-                getSqlTemplate().queryForCursor(targetSelect, defaultRowMapper));
+                getSqlTemplateDirty().queryForCursor(targetSelect, defaultRowMapper));
 
         TableReport tableReport = new TableReport();
         tableReport.setSourceTable(tables.getSourceTable().getName());
@@ -236,8 +238,10 @@ public class DbCompare {
 
     protected String getSourceComparisonSQL(DbCompareTables tables, IDatabasePlatform platform) {
         String whereClause = config.getSourceWhereClause(tables.getSourceTable().getName());
-        return getComparisonSQL(tables.getSourceTable(),
+        String sql = getComparisonSQL(tables.getSourceTable(),
                 tables.getSourceTable().getPrimaryKeyColumns(), platform, whereClause);
+        log.info("Source comparison SQL: {}", sql);
+        return sql;
     }
 
     protected String getTargetComparisonSQL(DbCompareTables tables, IDatabasePlatform platform) {
@@ -253,7 +257,9 @@ public class DbCompare {
         }
         
         String whereClause = config.getTargetWhereClause(tables.getTargetTable().getName());
-        return getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform, whereClause);
+        String sql = getComparisonSQL(tables.getTargetTable(), tables.getTargetTable().getPrimaryKeyColumns(), platform, whereClause);
+        log.info("Target comparison SQL: {}", sql);
+        return sql;
     }
 
     protected String getComparisonSQL(Table table, Column[] sortByColumns, IDatabasePlatform platform, String whereClause) {
@@ -263,10 +269,12 @@ public class DbCompare {
                 null, null);
 
         StringBuilder sql = new StringBuilder(statement.getSql());
+        
+        sql.setLength(sql.length()-"where ".length()); // remove the trailing where so we can insert a table alias.
+        sql.append(" t where "); // main table alias.
         sql.append(whereClause).append(" ");
 
         sql.append(buildOrderBy(table, sortByColumns, platform));
-        log.info("Comparison SQL: {}", sql);
         return sql.toString();
     }
 
@@ -317,8 +325,8 @@ public class DbCompare {
         List<String> filteredTablesNames = filterTables(tableNames);
         
         if (!CollectionUtils.isEmpty(targetTableNames) && filteredTablesNames.size() != targetTableNames.size()) {
-            throw new SymmetricException("Table names must be the same length as the list of target "
-                    + "table names.  Check your arguments. table names = " 
+            throw new SymmetricException("Source table names must be the same length as the list of target "
+                    + "table names.  Check your arguments. source table names = " 
                     + filteredTablesNames + " target table names = " + targetTableNames); 
         }
 
@@ -494,19 +502,19 @@ public class DbCompare {
     }
 
     protected List<DbCompareTables> loadTablesFromArguments() {
-        if (CollectionUtils.isEmpty(config.getIncludedTableNames())) {
-            throw new RuntimeException("includedTableNames not provided,  includedTableNames must be provided "
+        if (CollectionUtils.isEmpty(config.getSourceTableNames())) {
+            throw new RuntimeException("sourceTableNames not provided,  sourceTableNames must be provided "
                     + "when not comparing using SymmetricDS config.");
         }
 
-        return loadTables(config.getIncludedTableNames(), config.getTargetTableNames());
+        return loadTables(config.getSourceTableNames(), config.getTargetTableNames());
     }
 
     protected List<String> filterTables(List<String> tables) {        
         List<String> filteredTables = new ArrayList<String>(tables.size());
 
-        if (!CollectionUtils.isEmpty(config.getIncludedTableNames())) {
-            for (String includedTableName : config.getIncludedTableNames()) {                
+        if (!CollectionUtils.isEmpty(config.getSourceTableNames())) {
+            for (String includedTableName : config.getSourceTableNames()) {                
                 for (String tableName : tables) {
                     if (compareTableNames(tableName, includedTableName)) {
                         filteredTables.add(tableName);
