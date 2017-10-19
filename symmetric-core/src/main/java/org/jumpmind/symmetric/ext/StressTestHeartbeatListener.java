@@ -35,6 +35,7 @@ import org.jumpmind.symmetric.io.data.transform.ColumnPolicy;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.Router;
@@ -54,7 +55,9 @@ public class StressTestHeartbeatListener
 
     private static final String CLIENT_TO_SERVER = "client_to_server";
 
-    private static final String SYNC_CHANNEL = "default";
+    private static final String CONTROL_CHANNEL = "stress_test_control";
+
+    private static final String SYNC_CHANNEL = "stress_test_sync";
 
     private static final String STRESS_TEST_CONTROL = "STRESS_TEST_CONTROL";
 
@@ -75,12 +78,12 @@ public class StressTestHeartbeatListener
             + " set status=?, end_time=current_timestamp where run_id=? and node_id = ?";
 
     private String insertOutgoingSql = "insert into " + STRESS_TEST_ROW_OUTGOING
-            + "(row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
+            + " (row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
 
     private String dropOutgoingSql = "drop table if exists " + STRESS_TEST_ROW_OUTGOING;
 
     private String insertIncomingSql = "insert into " + STRESS_TEST_ROW_INCOMING
-            + "(row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
+            + " (row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
 
     private String dropIncomingSql = "drop table if exists " + STRESS_TEST_ROW_INCOMING;
 
@@ -98,14 +101,37 @@ public class StressTestHeartbeatListener
      * Creates the STRESS_TEST_CONTROL and STRESS_TEST_STATUS tables and adds
      * triggers
      */
-    private void initStressTestControl() {
+    private void initStressTest() {
+
+        createChannels();
+
+        engine.getDatabasePlatform().getDdlBuilder().setDelimitedIdentifierModeOn(false);
+
         createStressTestControlTable();
-        addStressTestControlTriggers();
+        if (!engine.getTriggerRouterService().doesTriggerExistForTable(STRESS_TEST_CONTROL)) {
+            addStressTestControlTriggers();
+        }
 
         createStressTestStatusTable();
-        addStressTestStatusTriggers();
+        if (!engine.getTriggerRouterService().doesTriggerExistForTable(STRESS_TEST_STATUS)) {
+            addStressTestStatusTriggers();
+        }
+
+        engine.syncTriggers();
 
         initialized = true;
+    }
+
+    private void createChannels() {
+        if (engine.getConfigurationService().getChannel(CONTROL_CHANNEL) == null) {
+            Channel control = new Channel(CONTROL_CHANNEL, 100000);
+            engine.getConfigurationService().saveChannel(control, false);
+        }
+
+        if (engine.getConfigurationService().getChannel(SYNC_CHANNEL) == null) {
+            Channel sync = new Channel(SYNC_CHANNEL, 100001);
+            engine.getConfigurationService().saveChannel(sync, false);
+        }
     }
 
     /**
@@ -116,6 +142,7 @@ public class StressTestHeartbeatListener
         createStressTestRowOutgoingTable(payloadColumns);
         seedOutgoing(runId, initialSeedSize);
         addStressTestRowOutgoingConfig();
+        engine.syncTriggers();
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
             // Drop the table using the config channel to force drop order
             engine.getDataService().sendSQL(client.getNodeId(), null, null, "SYM_PARAMETER", dropOutgoingSql);
@@ -132,6 +159,7 @@ public class StressTestHeartbeatListener
     private void initStressTestRowIncoming(int payloadColumns) {
         createStressTestRowIncomingTable(payloadColumns);
         addStressTestRowIncomingConfig();
+        engine.syncTriggers();
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
             // Drop the table using the config channel to force drop order
             engine.getDataService().sendSQL(client.getNodeId(), null, null, "SYM_PARAMETER", dropIncomingSql);
@@ -164,7 +192,6 @@ public class StressTestHeartbeatListener
 
         Table table = new Table(STRESS_TEST_CONTROL, runId, clientCommitSleepMs, clientCommitRows, serverCommitSleepMs, serverCommitRows,
                 payloadColumns, initialSeedSize, duration);
-
         engine.getDatabasePlatform().createTables(true, true, table);
     }
 
@@ -266,18 +293,16 @@ public class StressTestHeartbeatListener
      * Adds triggers to the STRESS_TEST_CONTROL table
      */
     private void addStressTestControlTriggers() {
-        addTrigger(STRESS_TEST_CONTROL, SYNC_CHANNEL, SERVER_TO_CLIENT);
-        addTrigger(STRESS_TEST_CONTROL, SYNC_CHANNEL, CLIENT_TO_SERVER);
-        engine.syncTriggers();
+        addTrigger(STRESS_TEST_CONTROL, CONTROL_CHANNEL, SERVER_TO_CLIENT);
+        addTrigger(STRESS_TEST_CONTROL, CONTROL_CHANNEL, CLIENT_TO_SERVER);
     }
 
     /**
      * Adds triggers to the STRESS_TEST_STATUS table
      */
     private void addStressTestStatusTriggers() {
-        addTrigger(STRESS_TEST_STATUS, SYNC_CHANNEL, SERVER_TO_CLIENT);
-        addTrigger(STRESS_TEST_STATUS, SYNC_CHANNEL, CLIENT_TO_SERVER);
-        engine.syncTriggers();
+        addTrigger(STRESS_TEST_STATUS, CONTROL_CHANNEL, SERVER_TO_CLIENT);
+        addTrigger(STRESS_TEST_STATUS, CONTROL_CHANNEL, CLIENT_TO_SERVER);
     }
 
     /**
@@ -286,7 +311,6 @@ public class StressTestHeartbeatListener
     private void addStressTestRowOutgoingConfig() {
         addTrigger(STRESS_TEST_ROW_OUTGOING, SYNC_CHANNEL, SERVER_TO_CLIENT);
         addOutgoingTransform();
-        engine.syncTriggers();
     }
 
     /**
@@ -296,7 +320,6 @@ public class StressTestHeartbeatListener
         addTrigger(STRESS_TEST_ROW_INCOMING, SYNC_CHANNEL, SERVER_TO_CLIENT);
         addTrigger(STRESS_TEST_ROW_INCOMING, SYNC_CHANNEL, CLIENT_TO_SERVER);
         addIncomingTransform();
-        engine.syncTriggers();
     }
 
     /**
@@ -316,7 +339,6 @@ public class StressTestHeartbeatListener
             if (router != null) {
                 triggerRouter = new TriggerRouter(trigger, router);
                 engine.getTriggerRouterService().saveTriggerRouter(triggerRouter);
-                engine.getTriggerRouterService().syncTriggers();
             }
         }
     }
@@ -371,7 +393,7 @@ public class StressTestHeartbeatListener
      */
     private void runTest(final Node me) {
         if (!initialized) {
-            initStressTestControl();
+            initStressTest();
         }
 
         List<Row> runs = engine.getSqlTemplate().query(selectControlSql);
