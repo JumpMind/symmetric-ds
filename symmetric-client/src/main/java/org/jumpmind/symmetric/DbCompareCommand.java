@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.io.DbCompare;
 import org.jumpmind.symmetric.io.DbCompareConfig;
 import org.jumpmind.symmetric.io.DbCompareReport;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class DbCompareCommand extends AbstractCommandLauncher {
 
@@ -58,10 +59,12 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
+        
+        DbCompareConfig config = new DbCompareConfig();
 
         String source = line.getOptionValue('s');
         if (source == null) {
-            source = line.getOptionValue(OPTION_SOURCE);
+            source = getOptionValue(OPTION_SOURCE, "source", line, config);
         }
         if (StringUtils.isEmpty(source)) {
             throw new ParseException(String.format("-source properties file is required."));   
@@ -74,7 +77,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
         String target = line.getOptionValue('t');
         if (target == null) {
-            target = line.getOptionValue(OPTION_TARGET);
+            target = getOptionValue(OPTION_TARGET, "target", line, config);
         }
         if (StringUtils.isEmpty(target)) {
             throw new ParseException(String.format("-target properties file is required."));   
@@ -85,29 +88,30 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             throw new SymmetricException("Target properties file '" + targetProperties + "' does not exist."); 
         }
 
-        DbCompareConfig config = new DbCompareConfig();
-
-        if (line.hasOption(OPTION_OUTPUT_SQL)) {
-            config.setSqlDiffFileName(line.getOptionValue(OPTION_OUTPUT_SQL));
+        config.setOutputSql(getOptionValue(OPTION_OUTPUT_SQL, "outputSql", line, config));
+        config.setUseSymmetricConfig(Boolean.valueOf(getOptionValue(OPTION_USE_SYM_CONFIG, "useSymmetricConfig", line, config)));
+        String excludedTableNames = getOptionValue(OPTION_EXCLUDE, "excludedTableNames", line, config);
+        if (excludedTableNames != null) {            
+            config.setExcludedTableNames(Arrays.asList(excludedTableNames.split(",")));
         }
-        if (line.hasOption(OPTION_USE_SYM_CONFIG)) {
-            config.setUseSymmetricConfig(Boolean.valueOf(line.getOptionValue(OPTION_USE_SYM_CONFIG)));
-        }
-        if (line.hasOption(OPTION_EXCLUDE)) {
-            config.setExcludedTableNames(Arrays.asList(line.getOptionValue(OPTION_EXCLUDE).split(",")));
-        }
-        if (line.hasOption(OPTION_TARGET_TABLES)) {
-            config.setTargetTableNames(Arrays.asList(line.getOptionValue(OPTION_TARGET_TABLES).split(",")));
+        String targetTables = getOptionValue(OPTION_TARGET_TABLES, "targetTableNames", line, config);
+        if (targetTables != null) {            
+            config.setTargetTableNames(Arrays.asList(targetTables.split(",")));
         }
 
         config.setWhereClauses(parseWhereClauses(line));
         config.setTablesToExcludedColumns(parseExcludedColumns(line));
 
-        if (!CollectionUtils.isEmpty(line.getArgList())) {
-            config.setIncludedTableNames(Arrays.asList(line.getArgList().get(0).toString().split(",")));
+        String sourceTables = getOptionValue(OPTION_SOURCE_TABLES, "sourceTableNames", line, config);
+        if (sourceTables == null && !CollectionUtils.isEmpty(line.getArgList())) {
+            sourceTables = line.getArgList().get(0).toString(); 
+        }
+        
+        if (sourceTables != null) {            
+            config.setSourceTableNames(Arrays.asList(sourceTables.split(",")));
         }
 
-        String numericScaleArg = line.getOptionValue(OPTION_NUMERIC_SCALE);
+        String numericScaleArg = getOptionValue(OPTION_NUMERIC_SCALE, "numericScale", line, config);
         if (!StringUtils.isEmpty(numericScaleArg)) {            
             try {
                 config.setNumericScale(Integer.parseInt(numericScaleArg.trim()));
@@ -124,6 +128,26 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
         return false;
     }
+    
+    protected String getOptionValue(String optionName, String internalName, CommandLine line, DbCompareConfig config) {
+        String optionValue = line.hasOption(optionName) ? line.getOptionValue(optionName) : null;
+        if (optionValue == null) {
+            Properties props = getConfigProperties(line);
+            optionValue = props.getProperty(optionName);
+            if (optionValue == null) {
+                String optionNameUnderScore = optionName.replace('-', '_');
+                optionValue = props.getProperty(optionNameUnderScore);
+                if (optionValue != null) {
+                    config.setConfigSource(internalName, line.getOptionValue(OPTION_CONFIG_PROPERTIES));
+                }
+            } else {
+                config.setConfigSource(internalName, line.getOptionValue(OPTION_CONFIG_PROPERTIES));
+            }
+        } else {
+            config.setConfigSource(internalName, "command-line");
+        }
+        return optionValue;
+    }
 
     public static void main(String[] args) throws Exception {
         new DbCompareCommand().execute(args);
@@ -138,6 +162,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     private static final String OPTION_EXCLUDE = "exclude";
 
+    private static final String OPTION_SOURCE_TABLES = "source-tables";
+    
     private static final String OPTION_TARGET_TABLES = "target-tables";
 
     private static final String OPTION_USE_SYM_CONFIG = "use-sym-config";
@@ -213,6 +239,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                 Properties props = new Properties();
                 try {
                     props.load(new FileInputStream(configPropertiesFile));
+                    SymmetricUtils.replaceSystemAndEnvironmentVariables(props);
                     configProperties = props;
                     return configProperties;
                 } catch (Exception ex) {

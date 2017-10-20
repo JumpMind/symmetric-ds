@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -47,7 +48,7 @@ public class StagedResource implements IStagedResource {
 
     static final Logger log = LoggerFactory.getLogger(StagedResource.class);
     
-    protected int references = 0;
+    private AtomicInteger references = new AtomicInteger(0);
 
     protected File directory;
     
@@ -103,18 +104,18 @@ public class StagedResource implements IStagedResource {
     
     @Override
     public void reference() {
-        references++;
+        references.incrementAndGet();
         log.debug("Increased reference to {} for {} by {}", references, path, Thread.currentThread().getName());
     }
     
     @Override
     public void dereference() {
-        references--;
+        references.decrementAndGet();
         log.debug("Decreased reference to {} for {} by {}", references, path, Thread.currentThread().getName());
     }
     
     public boolean isInUse() {
-        return references > 0 || (readers != null && readers.size() > 0) || writer != null || 
+        return references.get() > 0 || (readers != null && readers.size() > 0) || writer != null || 
                 (inputStreams != null && inputStreams.size() > 0) ||
                 outputStream != null;
     }

@@ -27,7 +27,7 @@ import java.util.List;
 public class DbCompareReport {
 
     private List<TableReport> tableReports;
-    private final String TABLE_FORMAT = " %-30s%-30s%-13d%-13d%-13d%-13d%-13d%-13d%n";
+    private final String TABLE_FORMAT = " %-40s%-40s%-13d%-13d%-13d%-13d%-13d%-13d%n";
 
     public List<TableReport> getTableReports() {
         return tableReports;
@@ -45,18 +45,27 @@ public class DbCompareReport {
     }
     
     public void printReportHeader(PrintStream stream) {
-        stream.format("+-----------------------------+-----------------------------+------------+------------+------------+------------+------------+------------+%n");
-        stream.format("+Source                        Target                        Source Rows  Target Rows  Matched      Different    Missing      Extra        %n");
-        stream.format("+-----------------------------+-----------------------------+------------+------------+------------+------------+------------+------------+%n");
+        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+%n");
+        stream.format("+Source                                  Target                                  Source Rows  Target Rows  Matched      Different    Missing      Extra        %n");
+        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+%n");
     }
     
     public void printTableReport(TableReport report, PrintStream stream) {
-        stream.format(TABLE_FORMAT, report.getSourceTable(), report.getTargetTable(), report.getTargetRows(), 
-                report.getSourceRows(), report.getMatchedRows(), report.getDifferentRows(), report.getMissingRows(), report.getExtraRows());        
+        String sourceTable = report.getSourceTable();
+        String targetTable = report.getTargetTable();
+        if (sourceTable.length() > 30) {
+            sourceTable = DbCompareUtil.getUnqualifiedTableName(sourceTable);
+        }
+        if (targetTable.length() > 30) {
+            targetTable = DbCompareUtil.getUnqualifiedTableName(targetTable);
+        }
+        
+        stream.format(TABLE_FORMAT, sourceTable, targetTable, report.getSourceRows(),  
+                report.getTargetRows(), report.getMatchedRows(), report.getDifferentRows(), report.getMissingRows(), report.getExtraRows());        
     }
 
     public void printReportFooter(PrintStream stream) {
-        stream.format("+-----------------------------+-----------------------------+------------+------------+------------+------------+------------+------------+%n");
+        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+%n");
     }
         
     public static class TableReport {

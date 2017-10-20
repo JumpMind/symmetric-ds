@@ -292,4 +292,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
     }
 
+    protected void writeColumnNullableStmt(StringBuilder ddl) {
+    }
+
 }

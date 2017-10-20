@@ -38,7 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -101,14 +100,15 @@ import org.jumpmind.symmetric.web.rest.model.NodeStatus;
 import org.jumpmind.symmetric.web.rest.model.PullDataResults;
 import org.jumpmind.symmetric.web.rest.model.QueryResults;
 import org.jumpmind.symmetric.web.rest.model.RegistrationInfo;
-import org.jumpmind.symmetric.web.rest.model.RestError;
 import org.jumpmind.symmetric.web.rest.model.SendSchemaRequest;
 import org.jumpmind.symmetric.web.rest.model.SendSchemaResponse;
 import org.jumpmind.symmetric.web.rest.model.TableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -720,9 +720,9 @@ public class RestService {
      * <databaseType>Microsoft SQL Server</databaseType>
      * <databaseVersion>9.0</databaseVersion>
      * <deploymentType>professional</deploymentType>
-     * 	<externalId>root</externalId>
-     * 	<initialLoaded>true</initialLoaded>
-     * 	<lastHeartbeat>2012-11-17 14:52:19.267</lastHeartbeat>
+     *  <externalId>root</externalId>
+     *  <initialLoaded>true</initialLoaded>
+     *  <lastHeartbeat>2012-11-17 14:52:19.267</lastHeartbeat>
      * <nodeGroupId>RootSugarDB</nodeGroupId>
      * <nodeId>root</nodeId>
      * <registered>true</registered>
@@ -1295,22 +1295,34 @@ public class RestService {
     }
     
     private String getParameterImpl(ISymmetricEngine service, String name){
-    	String parameterName = name.replace('_', '.');
-    	if(parameterName.equals(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)){
-    		return "";
-    	}
-    	return service.getParameterService().getString(parameterName);
+        String parameterName = name.replace('_', '.');
+        if(parameterName.equals(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)){
+            return "";
+        }
+        return service.getParameterService().getString(parameterName);
     }
 
+    /**
+     *  The presence of this handler makes sure we return HTTP 406 when the rest API is disabled or 500 for general errors.
+     * @param ex
+     * @return
+     */
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public RestError handleError(Exception ex, HttpServletRequest req) {
+    public ResponseEntity<String> handleException(Exception ex) {
         int httpErrorCode = 500;
         Annotation annotation = ex.getClass().getAnnotation(ResponseStatus.class);
         if (annotation != null) {
             httpErrorCode = ((ResponseStatus) annotation).value().value();
         }
-        return new RestError(ex, httpErrorCode);
+
+        HttpHeaders headers = new HttpHeaders();
+        if (httpErrorCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            log.warn("Internal server error during rest service call.", ex);
+        } else {            
+            log.debug("Exception during rest services http=" + httpErrorCode, ex);
+        }
+        return new ResponseEntity<String>("SymmetricDS API Invocation failed. " + ex.getMessage(), headers, HttpStatus.valueOf(httpErrorCode));
     }
 
     private void startImpl(ISymmetricEngine engine) {
@@ -1689,7 +1701,7 @@ public class RestService {
                 results.setNbrResults(updates);
                 return results;
             }
-        	
+            
             List<Row> rows = sqlTemplate.query(sql);
             int nbrRows = 0;
             for (Row row : rows) {
