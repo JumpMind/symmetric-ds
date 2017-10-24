@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.RandomStringUtils;
+
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.Row;
@@ -77,13 +79,7 @@ public class StressTestHeartbeatListener
     private String updateStatusSql = "update " + STRESS_TEST_STATUS
             + " set status=?, end_time=current_timestamp where run_id=? and node_id = ?";
 
-    private String insertOutgoingSql = "insert into " + STRESS_TEST_ROW_OUTGOING
-            + " (row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
-
     private String dropOutgoingSql = "drop table if exists " + STRESS_TEST_ROW_OUTGOING;
-
-    private String insertIncomingSql = "insert into " + STRESS_TEST_ROW_INCOMING
-            + " (row_id,node_id,run_id,insert_time) values (?,?,?,current_timestamp)";
 
     private String dropIncomingSql = "drop table if exists " + STRESS_TEST_ROW_INCOMING;
 
@@ -140,7 +136,7 @@ public class StressTestHeartbeatListener
      */
     private void initStressTestRowOutgoing(int payloadColumns, int runId, int initialSeedSize) {
         createStressTestRowOutgoingTable(payloadColumns);
-        seedOutgoing(runId, initialSeedSize);
+        seedOutgoing(runId, initialSeedSize, payloadColumns);
         addStressTestRowOutgoingConfig();
         engine.syncTriggers();
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
@@ -417,7 +413,7 @@ public class StressTestHeartbeatListener
                     engine.getSqlTemplate().update(insertStatusSql, runId, client.getNodeId(), "RUNNING");
                 }
 
-                fillOutgoing(runId, duration, commitRows, sleepMs);
+                fillOutgoing(runId, duration, commitRows, sleepMs, payloadColumns);
 
                 engine.getSqlTemplate().update(updateStatusSql, "COMPLETE", runId, me.getNodeId());
 
@@ -425,7 +421,7 @@ public class StressTestHeartbeatListener
                 long commitRows = run.getLong("CLIENT_COMMIT_ROWS");
                 long sleepMs = run.getLong("CLIENT_COMMIT_SLEEP_MS");
 
-                fillIncoming(runId, duration, commitRows, sleepMs);
+                fillIncoming(runId, duration, commitRows, sleepMs, payloadColumns);
 
                 engine.getSqlTemplate().update(updateStatusSql, "COMPLETE", runId, me.getNodeId());
             }
@@ -439,11 +435,11 @@ public class StressTestHeartbeatListener
     /**
      * Fills the STRESS_TEST_OUTGOING table with test data
      */
-    private void seedOutgoing(int runId, long rows) {
+    private void seedOutgoing(int runId, long rows, int payloadColumns) {
         long currentRows = outgoingCounts.containsKey(runId) ? outgoingCounts.get(runId) : 0;
-
+        String sql = buildInsertSql(STRESS_TEST_ROW_OUTGOING, payloadColumns);
         while (currentRows < rows) {
-            insertOutgoing(currentRows, runId);
+            insert(sql, currentRows, runId, payloadColumns);
             currentRows++;
         }
 
@@ -453,14 +449,15 @@ public class StressTestHeartbeatListener
     /**
      * Fills the STRESS_TEST_OUTGOING table with test data
      */
-    private void fillOutgoing(int runId, long duration, long commitRows, long sleepMs) {
+    private void fillOutgoing(int runId, long duration, long commitRows, long sleepMs, int payloadColumns) {
         long currentRows = outgoingCounts.containsKey(runId) ? outgoingCounts.get(runId) : 0;
         long startTime = System.currentTimeMillis();
         long durationMs = duration * 60000;
 
+        String sql = buildInsertSql(STRESS_TEST_ROW_OUTGOING, payloadColumns);
         while (System.currentTimeMillis() - startTime < durationMs) {
             for (long commitRow = 0; commitRow < commitRows; commitRow++) {
-                insertOutgoing(currentRows + commitRow, runId);
+                insert(sql, currentRows + commitRow, runId, payloadColumns);
             }
             currentRows += commitRows;
             AppUtils.sleep(sleepMs);
@@ -472,14 +469,15 @@ public class StressTestHeartbeatListener
     /**
      * Fills the STRESS_TEST_INCOMING table with test data
      */
-    private void fillIncoming(int runId, long duration, long commitRows, long sleepMs) {
+    private void fillIncoming(int runId, long duration, long commitRows, long sleepMs, int payloadColumns) {
         long currentRows = 0;
         long startTime = System.currentTimeMillis();
         long durationMs = duration * 60000;
 
+        String sql = buildInsertSql(STRESS_TEST_ROW_INCOMING, payloadColumns);
         while (System.currentTimeMillis() - startTime < durationMs) {
             for (long commitRow = 0; commitRow < commitRows; commitRow++) {
-                insertIncoming(currentRows + commitRow, runId);
+                insert(sql, currentRows + commitRow, runId, payloadColumns);
             }
             currentRows += commitRows;
             AppUtils.sleep(sleepMs);
@@ -487,19 +485,37 @@ public class StressTestHeartbeatListener
     }
 
     /**
-     * Inserts test data into STRESS_TEST_OUTGOING
+     * Inserts test data into STRESS_TEST_OUTGOING or STRESS_TEST_INCOMING
      */
-    private void insertOutgoing(long rowId, int runId) {
+    private void insert(String sql, long rowId, int runId, int payloadColumns) {
         String nodeId = engine.getEngineName();
-        engine.getSqlTemplate().update(insertOutgoingSql, rowId, nodeId, runId);
+
+        Object[] values = new Object[payloadColumns + 3];
+        values[0] = rowId;
+        values[1] = nodeId;
+        values[2] = runId;
+
+        for (int c = 3; c < values.length; c++) {
+            values[c] = RandomStringUtils.randomAlphanumeric(100);
+        }
+
+        engine.getSqlTemplate().update(sql, values);
     }
 
-    /**
-     * Inserts test data into STRESS_TEST_INCOMING
-     */
-    private void insertIncoming(long rowId, int runId) {
-        String nodeId = engine.getEngineName();
-        engine.getSqlTemplate().update(insertIncomingSql, rowId, nodeId, runId);
+    private String buildInsertSql(String table, int payloadColumns) {
+        StringBuilder sql = new StringBuilder("insert into " + table);
+        StringBuilder columns = new StringBuilder(" (row_id,node_id,run_id,insert_time");
+        StringBuilder values = new StringBuilder(" values (?,?,?,current_timestamp");
+
+        List<Column> payloadColumnList = getPayloadColumns(payloadColumns);
+        for (Column column : payloadColumnList) {
+            columns.append(",").append(column.getName().toLowerCase());
+            values.append(",?");
+        }
+        columns.append(")");
+        values.append(")");
+
+        return sql.append(columns).append(values).toString();
     }
 
     @Override
