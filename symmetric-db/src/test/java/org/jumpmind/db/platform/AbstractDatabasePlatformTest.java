@@ -20,7 +20,8 @@
  */
 package org.jumpmind.db.platform;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -28,6 +29,7 @@ import java.util.Date;
 
 import org.jumpmind.db.platform.h2.H2DdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.junit.Test;
 
 public class AbstractDatabasePlatformTest {
@@ -78,7 +80,7 @@ public class AbstractDatabasePlatformTest {
         assertEquals(3, testDatabasePlatform.parseQualifiedTableName("\"CATALOG\".\"SCHEMA\".\"TABLE\"").size());
     }
     
-    private AbstractDatabasePlatform testDatabasePlatform = new AbstractDatabasePlatform() {
+    private AbstractDatabasePlatform testDatabasePlatform = new AbstractDatabasePlatform(new SqlTemplateSettings()) {
         @Override
         public String getName() {
             return "Test";

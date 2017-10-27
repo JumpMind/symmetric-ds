@@ -38,11 +38,9 @@ abstract public class AbstractJdbcDatabasePlatform extends AbstractDatabasePlatf
     
     protected ISqlTemplate sqlTemplateDirty;
 
-    protected SqlTemplateSettings settings;
-
     public AbstractJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
+        super(settings);
         this.dataSource = dataSource;
-        this.settings = settings;
         this.ddlBuilder = createDdlBuilder();
         this.sqlTemplate = createSqlTemplate();
         this.sqlTemplateDirty = createSqlTemplateDirty();

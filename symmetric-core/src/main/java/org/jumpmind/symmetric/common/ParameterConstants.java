@@ -420,6 +420,8 @@ final public class ParameterConstants {
 
     public final static String DB2_CAPTURE_TRANSACTION_ID = "db2.capture.transaction.id";
     
+    public final static String TREAT_BINARY_AS_LOB_ENABLED = "treat.binary.as.lob.enabled";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

@@ -26,6 +26,7 @@ public class SqlTemplateSettings {
     protected int queryTimeout;
     protected int batchSize = 100;
     protected boolean readStringsAsBytes;
+    protected boolean treatBinaryAsLob;
     protected int overrideIsolationLevel = -1;
     protected int resultSetType = java.sql.ResultSet.TYPE_FORWARD_ONLY;
     protected LogSqlBuilder logSqlBuilder;
@@ -63,6 +64,14 @@ public class SqlTemplateSettings {
     
     public boolean isReadStringsAsBytes() {
         return readStringsAsBytes;
+    }
+    
+    public void setTreatBinaryAsLob(boolean treatBinaryAsLob) {
+        this.treatBinaryAsLob = treatBinaryAsLob;
+    }
+    
+    public boolean isTreatBinaryAsLob() {
+        return treatBinaryAsLob;
     }
 
     public int getOverrideIsolationLevel() {

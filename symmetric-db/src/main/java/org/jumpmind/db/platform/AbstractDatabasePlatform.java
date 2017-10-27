@@ -64,6 +64,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
+import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.FormatUtils;
@@ -80,9 +81,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
-    /* The default name for models read from the database, if no name as given. */
+    /*
+     * The default name for models read from the database, if no name as given.
+     */
     protected static final String MODEL_DEFAULT_NAME = "default";
-    
+
     protected static final String PERMISSION_TEST_TABLE_NAME = "SYM_PERMISSION_TEST";
 
     /* The model reader for this platform. */
@@ -107,10 +110,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Boolean storesMixedCaseIdentifiers;
 
     protected boolean metadataIgnoreCase = true;
-    
+
     protected boolean useMultiThreadSyncTriggers = true;
 
-    public AbstractDatabasePlatform() {
+    protected SqlTemplateSettings settings;
+
+    public AbstractDatabasePlatform(SqlTemplateSettings settings) {
+        this.settings = settings;
     }
 
     public DatabaseInfo getDatabaseInfo() {
@@ -118,33 +124,30 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     abstract public ISqlTemplate getSqlTemplate();
-    
+
     abstract public ISqlTemplate getSqlTemplateDirty();
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression) {
-        
-        return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), table.getColumns(), null, textColumnExpression);
+
+        return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(), table.getPrimaryKeyColumns(),
+                table.getColumns(), null, textColumnExpression);
     }
 
-    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression) {
-        
-        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName,
-                tableName, keys, columns, nullKeyValues, getDdlBuilder(), textColumnExpression);
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName, String tableName, Column[] keys,
+            Column[] columns, boolean[] nullKeyValues, String textColumnExpression) {
+
+        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName, tableName, keys, columns, nullKeyValues,
+                getDdlBuilder(), textColumnExpression);
     }
 
-    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression,
-            boolean namedParameters) {
+    public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName, String tableName, Column[] keys,
+            Column[] columns, boolean[] nullKeyValues, String textColumnExpression, boolean namedParameters) {
 
-        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName,
-                tableName, keys, columns, nullKeyValues, getDdlBuilder(), textColumnExpression,
-                namedParameters);
+        return DmlStatementFactory.createDmlStatement(getName(), dmlType, catalogName, schemaName, tableName, keys, columns, nullKeyValues,
+                getDdlBuilder(), textColumnExpression, namedParameters);
 
     }
-    
-    
+
     public IDdlReader getDdlReader() {
         return ddlReader;
     }
@@ -160,8 +163,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public long getClearCacheModelTimeoutInMs() {
         return clearCacheModelTimeoutInMs;
     }
-    
-    public void dropTables(boolean continueOnError, Table...tables) {
+
+    public void dropTables(boolean continueOnError, Table... tables) {
         Database db = new Database();
         for (Table table : tables) {
             db.addTable(table);
@@ -179,13 +182,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         database.addTables(tables);
         createDatabase(database, dropTablesFirst, continueOnError);
     }
-    
-    public void createDatabase(Database targetDatabase, boolean dropTablesFirst,
-            boolean continueOnError) {
+
+    public void createDatabase(Database targetDatabase, boolean dropTablesFirst, boolean continueOnError) {
         if (dropTablesFirst) {
             dropDatabase(targetDatabase, true);
         }
-        
+
         String createSql = ddlBuilder.createTables(targetDatabase, false);
 
         if (log.isDebugEnabled()) {
@@ -193,7 +195,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
 
         String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
+        new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null)
+                .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError) {
@@ -208,8 +211,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             tablesProcessed.append(table.getFullyQualifiedTableName());
             tablesProcessed.append(", ");
             desiredDatabase.addTable(table);
-            Table currentTable = ddlReader.readTable(table.getCatalog(), table.getSchema(),
-                    table.getName());
+            Table currentTable = ddlReader.readTable(table.getCatalog(), table.getSchema(), table.getName());
             if (currentTable != null) {
                 currentDatabase.addTable(currentTable);
             }
@@ -224,7 +226,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (StringUtils.isNotBlank(alterSql.trim())) {
             log.info("Running alter sql:\n{}", alterSql);
             String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
-            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null).execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
+            new SqlScript(alterSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null)
+                    .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
         } else {
             log.info("Tables up to date.  No alters found for {}", tablesProcessed);
         }
@@ -238,13 +241,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return model;
     }
-        
-    
+
     public Database readFromDatabase(Table... tables) {
         Database fromDb = new Database();
         for (Table tableFromXml : tables) {
-            Table tableFromDatabase = getTableFromCache(tableFromXml.getCatalog(),
-                    tableFromXml.getSchema(), tableFromXml.getName(), true);
+            Table tableFromDatabase = getTableFromCache(tableFromXml.getCatalog(), tableFromXml.getSchema(), tableFromXml.getName(), true);
             if (tableFromDatabase != null) {
                 fromDb.addTable(tableFromDatabase);
             }
@@ -254,16 +255,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public Table readTableFromDatabase(String catalogName, String schemaName, String tableName) {
-        String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName,
-                schemaName, tableName);
+        String originalFullyQualifiedName = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
         String defaultedCatalogName = catalogName == null ? getDefaultCatalog() : catalogName;
-        String defaultedSchemaName = schemaName == null ? getDefaultSchema() : schemaName;   
-        
+        String defaultedSchemaName = schemaName == null ? getDefaultSchema() : schemaName;
+
         Table table = ddlReader.readTable(defaultedCatalogName, defaultedSchemaName, tableName);
         if (table == null && metadataIgnoreCase) {
-            
+
             IDdlReader reader = getDdlReader();
-            
+
             if (isNotBlank(catalogName)) {
                 List<String> catalogNames = reader.getCatalogNames();
                 if (catalogNames != null) {
@@ -287,23 +287,21 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     }
                 }
             }
-            
 
             List<String> tableNames = reader.getTableNames(defaultedCatalogName, defaultedSchemaName, null);
             if (tableNames != null) {
                 for (String name : tableNames) {
-                    if (name != null && name.equalsIgnoreCase(tableName))  {
+                    if (name != null && name.equalsIgnoreCase(tableName)) {
                         tableName = name;
                         break;
                     }
-                } 
+                }
             }
-            
-            if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(
-                    defaultedCatalogName, defaultedSchemaName, tableName))) {
+
+            if (!originalFullyQualifiedName.equals(Table.getFullyQualifiedTableName(defaultedCatalogName, defaultedSchemaName, tableName))) {
                 table = ddlReader.readTable(defaultedCatalogName, defaultedSchemaName, tableName);
             }
-            
+
         }
 
         if (table != null && log.isDebugEnabled()) {
@@ -323,8 +321,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return getTableFromCache(getDefaultCatalog(), getDefaultSchema(), tableName, forceReread);
     }
 
-    public Table getTableFromCache(String catalogName, String schemaName, String tableName,
-            boolean forceReread) {
+    public Table getTableFromCache(String catalogName, String schemaName, String tableName, boolean forceReread) {
         if (System.currentTimeMillis() - lastTimeCachedModelClearedInMs > clearCacheModelTimeoutInMs) {
             resetCachedTableModel();
         }
@@ -347,25 +344,23 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return retTable;
     }
 
-    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values) {
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values) {
         Column[] metaData = Table.orderColumns(columnNames, table);
         return getObjectValues(encoding, values, metaData);
     }
 
-    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames,
-            String[] values, boolean useVariableDates, boolean fitToColumn) {
+    public Object[] getObjectValues(BinaryEncoding encoding, Table table, String[] columnNames, String[] values, boolean useVariableDates,
+            boolean fitToColumn) {
         Column[] metaData = Table.orderColumns(columnNames, table);
         return getObjectValues(encoding, values, metaData, useVariableDates, fitToColumn);
     }
 
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData) {
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData) {
         return getObjectValues(encoding, values, orderedMetaData, false, false);
     }
 
-    public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
-            Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn) {
+    public Object[] getObjectValues(BinaryEncoding encoding, String[] values, Column[] orderedMetaData, boolean useVariableDates,
+            boolean fitToColumn) {
         if (values != null) {
             List<Object> list = new ArrayList<Object>(values.length);
             for (int i = 0; i < values.length; i++) {
@@ -377,8 +372,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     }
                 } catch (Exception ex) {
                     String valueTrimmed = FormatUtils.abbreviateForLogging(value);
-                    throw new RuntimeException("Could not convert a value of " + valueTrimmed + " for column " + 
-                            column.getName() + " of type " + column.getMappedType(), ex);
+                    throw new RuntimeException("Could not convert a value of " + valueTrimmed + " for column " + column.getName()
+                            + " of type " + column.getMappedType(), ex);
                 }
             }
 
@@ -387,13 +382,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return null;
         }
     }
-    
-    protected Object getObjectValue(String value, Column column, BinaryEncoding encoding,
-            boolean useVariableDates, boolean fitToColumn) throws DecoderException {
+
+    protected Object getObjectValue(String value, Column column, BinaryEncoding encoding, boolean useVariableDates, boolean fitToColumn)
+            throws DecoderException {
         Object objectValue = value;
         int type = column.getMappedTypeCode();
-        if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value
-                .equals(""))) && column.isRequired() && column.isOfTextType()) {
+        if ((value == null || (getDdlBuilder().getDatabaseInfo().isEmptyStringNulled() && value.equals(""))) && column.isRequired()
+                && column.isOfTextType()) {
             objectValue = REQUIRED_FIELD_NULL_SUBSTITUTE;
         }
         if (value != null) {
@@ -401,12 +396,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 objectValue = parseDate(type, value, useVariableDates);
             } else if (type == Types.CHAR) {
                 String charValue = value.toString();
-                if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo()
-                        .isBlankCharColumnSpacePadded())
-                        || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo()
-                                .isNonBlankCharColumnSpacePadded())) {
-                    objectValue = StringUtils
-                            .rightPad(value.toString(), column.getSizeAsInt(), ' ');
+                if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo().isBlankCharColumnSpacePadded())
+                        || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
+                    objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
                 }
             } else if (type == Types.BIGINT) {
                 objectValue = parseBigInteger(value);
@@ -414,19 +406,15 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 objectValue = parseInteger(value);
             } else if (type == Types.FLOAT) {
                 objectValue = parseFloat(value);
-            } else if (type == Types.NUMERIC || type == Types.DECIMAL
-                    || type == Types.DOUBLE || type == Types.REAL) {
+            } else if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.DOUBLE || type == Types.REAL) {
                 objectValue = parseBigDecimal(value);
             } else if (type == Types.BOOLEAN) {
                 objectValue = value.equals("1") ? Boolean.TRUE : Boolean.FALSE;
-            } else if (!(column.getJdbcTypeName() != null && FormatUtils.upper(column.getJdbcTypeName())
-                    .contains(TypeMap.GEOMETRY))
-                    && !(column.getJdbcTypeName() != null && FormatUtils.upper(column.getJdbcTypeName())
-                            .contains(TypeMap.GEOGRAPHY))
-                    && (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY
-                            || type == Types.VARBINARY ||
+            } else if (!(column.getJdbcTypeName() != null && FormatUtils.upper(column.getJdbcTypeName()).contains(TypeMap.GEOMETRY))
+                    && !(column.getJdbcTypeName() != null && FormatUtils.upper(column.getJdbcTypeName()).contains(TypeMap.GEOGRAPHY))
+                    && (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY || type == Types.VARBINARY ||
                     // SQLServer ntext type
-                    type == -10)) {
+                            type == -10)) {
                 if (encoding == BinaryEncoding.NONE) {
                     objectValue = value.getBytes();
                 } else if (encoding == BinaryEncoding.BASE64) {
@@ -450,11 +438,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return objectValue;
 
     }
-    
+
     protected Object parseFloat(String value) {
         return parseBigDecimal(value);
     }
-    
+
     protected Object parseBigDecimal(String value) {
         value = cleanNumber(value);
         /*
@@ -468,8 +456,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
          * point, but we need a period
          */
         return new BigDecimal(value.replace(',', '.'));
-    }    
-    
+    }
+
     protected Object parseBigInteger(String value) {
         try {
             value = cleanNumber(value);
@@ -477,17 +465,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } catch (NumberFormatException ex) {
             return new BigDecimal(value.replace(',', '.')).toBigInteger();
         }
-    }    
-        
+    }
+
     protected Object parseInteger(String value) {
         try {
             value = cleanNumber(value);
             return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
-            return new BigInteger(value);        
+            return new BigInteger(value);
         }
     }
-    
+
     protected String cleanNumber(String value) {
         value = value.trim();
         if (value.equalsIgnoreCase("true")) {
@@ -498,25 +486,23 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return value;
         }
     }
-    
+
     // TODO: this should be AbstractDdlBuilder.getInsertSql(Table table,
     // Map<String, Object> columnValues, boolean genPlaceholders)
-    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row,
-            boolean useVariableDates, boolean indexByPosition) {
+    public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates, boolean indexByPosition) {
         String[] values = new String[metaData.length];
         Set<String> keys = row.keySet();
         int i = 0;
-        for (String key : keys) {            
+        for (String key : keys) {
             Column column = metaData[i];
             String name = indexByPosition ? key : column.getName();
-            int type = column.getJdbcTypeCode();            
+            int type = column.getJdbcTypeCode();
             if (row.get(name) != null) {
                 if (type == Types.BOOLEAN || type == Types.BIT) {
                     values[i] = row.getBoolean(name) ? "1" : "0";
                 } else if (column.isOfNumericType()) {
                     values[i] = row.getString(name);
-                } else if (!column.isTimestampWithTimezone()
-                        && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
+                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
                     values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
@@ -531,12 +517,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     values[i] = row.getString(name);
                 }
             }
-            
+
             i++;
         }
         return values;
     }
-    
+
     protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
         Object dateObj = row.get(name);
         if (dateObj instanceof String) {
@@ -577,8 +563,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (StringUtils.isNotBlank(value)) {
             try {
                 boolean useTimestamp = (type == Types.TIMESTAMP)
-                        || (type == Types.DATE && getDdlBuilder().getDatabaseInfo()
-                                .isDateOverridesToTimestamp());
+                        || (type == Types.DATE && getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp());
 
                 if (useVariableDates && value.startsWith("${curdate")) {
                     long time = Long.parseLong(value.substring(10, value.length() - 1));
@@ -602,7 +587,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                              */
                             return Timestamp.valueOf("1970-01-01 " + value);
                         } else {
-                           return FormatUtils.parseDate(value, FormatUtils.TIME_PATTERNS);
+                            return FormatUtils.parseDate(value, FormatUtils.TIME_PATTERNS);
                         }
                     } else {
                         return FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS);
@@ -617,43 +602,43 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             return null;
         }
     }
-    
+
     @Override
     public Map<String, String> parseQualifiedTableName(String tableName) {
-                
+
         Map<String, String> tableNameParts = new LinkedHashMap<String, String>();
         if (StringUtils.isEmpty(tableName)) {
             return tableNameParts;
         }
-        
+
         String[] initialSplit = tableName.split(Pattern.quote(getDatabaseInfo().getCatalogSeparator()));
         if (initialSplit.length == 0) {
-            initialSplit = new String[] {tableName};
+            initialSplit = new String[] { tableName };
         }
         List<String> nameComponents = new ArrayList<String>();
         for (String part : initialSplit) {
             String[] subParts = part.split(Pattern.quote(getDatabaseInfo().getSchemaSeparator()));
             if (subParts.length == 0) {
-                subParts = new String[] {part};
+                subParts = new String[] { part };
             }
-            for (String subPart : subParts) { 
-                if (!StringUtils.isEmpty(subPart)) {                    
+            for (String subPart : subParts) {
+                if (!StringUtils.isEmpty(subPart)) {
                     nameComponents.add(subPart);
                 }
             }
         }
-        
+
         if (nameComponents.size() >= 3) {
             tableNameParts.put("catalog", nameComponents.get(0));
             tableNameParts.put("schema", nameComponents.get(1));
             tableNameParts.put("table", nameComponents.get(2));
         } else if (nameComponents.size() == 2) {
             tableNameParts.put("schema", nameComponents.get(0));
-            tableNameParts.put("table", nameComponents.get(1));            
+            tableNameParts.put("table", nameComponents.get(1));
         } else {
             tableNameParts.put("table", nameComponents.get(0));
         }
-        
+
         return tableNameParts;
     }
 
@@ -666,7 +651,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return result;
     }
-    
+
     public boolean isLob(int type) {
         return isClob(type) || isBlob(type);
     }
@@ -676,7 +661,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public boolean isBlob(int type) {
-        return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == -10;
+        if(settings.isTreatBinaryAsLob()) {
+            return type == Types.BLOB || type == Types.BINARY || type == Types.VARBINARY || type == Types.LONGVARBINARY || type == -10;
+        }
+        return type == Types.BLOB || type == Types.LONGVARBINARY || type == -10;
     }
 
     public List<Column> getLobColumns(Table table) {
@@ -741,8 +729,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } finally {
             IOUtils.closeQuietly(is);
         }
-    }        
-    
+    }
+
     public void prefixDatabase(String prefix, Database targetTables) {
         try {
             if (StringUtils.isNotBlank(prefix) && !prefix.endsWith("_")) {
@@ -762,23 +750,20 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
-    }    
+    }
 
     protected void prefixColumnNames(Table table, boolean storesUpperCaseIdentifiers) {
         Column[] columns = table.getColumns();
         for (Column column : columns) {
-            column.setName(storesUpperCaseIdentifiers ? FormatUtils.upper(column.getName()) : 
-                FormatUtils.lower(column.getName()));
+            column.setName(storesUpperCaseIdentifiers ? FormatUtils.upper(column.getName()) : FormatUtils.lower(column.getName()));
         }
     }
 
-    protected void prefixForeignKeys(Table table, String tablePrefix,
-            boolean storesUpperCaseIdentifiers) throws CloneNotSupportedException {
+    protected void prefixForeignKeys(Table table, String tablePrefix, boolean storesUpperCaseIdentifiers) throws CloneNotSupportedException {
         ForeignKey[] keys = table.getForeignKeys();
         for (ForeignKey key : keys) {
             String prefixedName = tablePrefix + key.getForeignTableName();
-            prefixedName = storesUpperCaseIdentifiers ? FormatUtils.upper(prefixedName) : 
-                FormatUtils.lower(prefixedName);
+            prefixedName = storesUpperCaseIdentifiers ? FormatUtils.upper(prefixedName) : FormatUtils.lower(prefixedName);
             key.setForeignTableName(prefixedName);
 
             String keyName = tablePrefix + key.getName();
@@ -787,43 +772,40 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
             Reference[] refs = key.getReferences();
             for (Reference reference : refs) {
-                reference.setForeignColumnName(storesUpperCaseIdentifiers ? FormatUtils.upper(reference
-                        .getForeignColumnName()) : FormatUtils.lower(reference.getForeignColumnName()));
-                reference.setLocalColumnName(storesUpperCaseIdentifiers ? FormatUtils.upper(reference
-                        .getLocalColumnName()) : FormatUtils.lower(reference.getLocalColumnName()));
+                reference.setForeignColumnName(storesUpperCaseIdentifiers ? FormatUtils.upper(reference.getForeignColumnName())
+                        : FormatUtils.lower(reference.getForeignColumnName()));
+                reference.setLocalColumnName(storesUpperCaseIdentifiers ? FormatUtils.upper(reference.getLocalColumnName())
+                        : FormatUtils.lower(reference.getLocalColumnName()));
             }
         }
     }
 
-    protected void prefixIndexes(Table table, String tablePrefix, boolean storesUpperCaseIdentifiers)
-            throws CloneNotSupportedException {
+    protected void prefixIndexes(Table table, String tablePrefix, boolean storesUpperCaseIdentifiers) throws CloneNotSupportedException {
         IIndex[] indexes = table.getIndices();
         if (indexes != null) {
             for (IIndex index : indexes) {
                 String prefixedName = tablePrefix + index.getName();
-                prefixedName = storesUpperCaseIdentifiers ? FormatUtils.upper(prefixedName)
-                        : FormatUtils.lower(prefixedName);
+                prefixedName = storesUpperCaseIdentifiers ? FormatUtils.upper(prefixedName) : FormatUtils.lower(prefixedName);
                 index.setName(prefixedName);
             }
         }
     }
 
-    
     public void alterCaseToMatchDatabaseDefaultCase(Database database) {
         Table[] tables = database.getTables();
         for (Table table : tables) {
             alterCaseToMatchDatabaseDefaultCase(table);
         }
     }
-    
+
     public String[] alterCaseToMatchDatabaseDefaultCase(String[] values) {
         String[] newValues = new String[values.length];
         for (int i = 0; i < values.length; i++) {
-            newValues[i] = alterCaseToMatchDatabaseDefaultCase(values[i]);            
+            newValues[i] = alterCaseToMatchDatabaseDefaultCase(values[i]);
         }
         return newValues;
     }
-    
+
     public String alterCaseToMatchDatabaseDefaultCase(String value) {
         if (StringUtils.isNotBlank(value)) {
             boolean storesUpperCase = isStoresUpperCaseIdentifiers();
@@ -833,13 +815,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return value;
     }
-    
+
     public void alterCaseToMatchDatabaseDefaultCase(Table... tables) {
         for (Table table : tables) {
             alterCaseToMatchDatabaseDefaultCase(table);
         }
     }
-    
+
     public void alterCaseToMatchDatabaseDefaultCase(Table table) {
         table.setName(alterCaseToMatchDatabaseDefaultCase(table.getName()));
 
@@ -857,7 +839,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 indexColumn.setName(alterCaseToMatchDatabaseDefaultCase(indexColumn.getName()));
             }
         }
-        
+
         ForeignKey[] fks = table.getForeignKeys();
         for (ForeignKey foreignKey : fks) {
             foreignKey.setName(alterCaseToMatchDatabaseDefaultCase(foreignKey.getName()));
@@ -879,11 +861,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return database;
 
     }
-    
+
     public boolean canColumnBeUsedInWhereClause(Column column) {
         return true;
     }
-    
+
     public java.util.Date parseTimestamp(int type, String value) {
         try {
             return Timestamp.valueOf(value);
@@ -896,32 +878,33 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 String timezone = value.substring(split).trim();
 
                 try {
-                    return Timestamp.valueOf(datetime); // Try it again without the timezone component.
+                    return Timestamp.valueOf(datetime); // Try it again without
+                                                        // the timezone
+                                                        // component.
                 } catch (IllegalArgumentException ex2) {
-                    return new Timestamp(FormatUtils.parseDate(datetime,
-                            FormatUtils.TIMESTAMP_PATTERNS,
-                            getTimeZone(timezone)).getTime());
+                    return new Timestamp(FormatUtils.parseDate(datetime, FormatUtils.TIMESTAMP_PATTERNS, getTimeZone(timezone)).getTime());
                 }
             }
-        }                
+        }
     }
-    
+
     public TimeZone getTimeZone(String value) {
-        TimeZone tz = TimeZone.getTimeZone("GMT" + value); // try as an offset. ("-05:00")
+        TimeZone tz = TimeZone.getTimeZone("GMT" + value); // try as an offset.
+                                                           // ("-05:00")
         if (tz.getRawOffset() == 0) {
             tz = TimeZone.getTimeZone(value); // try as a raw code. e.g. "EST"
         }
         return tz;
     }
-    
+
     @Override
     public void makePlatformSpecific(Database database) {
         Table[] tables = database.getTables();
         for (Table table : tables) {
             for (Column autoIncrementColumn : table.getAutoIncrementColumns()) {
                 if (!autoIncrementColumn.isPrimaryKey() && !getDatabaseInfo().isNonPKIdentityColumnsSupported()) {
-                    log.info("Removing auto increment from table " + table.getName() + " for column " + autoIncrementColumn.getName() + 
-                        " since it was not part of primary key and not supported on this database based on nonPKIdentityColumnsSupported.");
+                    log.info("Removing auto increment from table " + table.getName() + " for column " + autoIncrementColumn.getName()
+                            + " since it was not part of primary key and not supported on this database based on nonPKIdentityColumnsSupported.");
                     autoIncrementColumn.setAutoIncrement(false);
                 }
             }
@@ -973,13 +956,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return results;
     }
-    
+
     protected Table getPermissionTableDefinition() {
         Column idColumn = new Column("TEST_ID");
         idColumn.setMappedType("INTEGER");
         Column valueColumn = new Column("TEST_VALUE");
         valueColumn.setMappedType("INTEGER");
-        return new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);        
+        return new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);
     }
 
     protected PermissionResult getCreateSymTablePermission(Database database) {
@@ -1001,7 +984,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     protected PermissionResult getDropSymTablePermission() {
-        Table table = getPermissionTableDefinition();        
+        Table table = getPermissionTableDefinition();
 
         PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
 
@@ -1011,7 +994,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 result.setStatus(Status.PASS);
             } else {
                 result.setStatus(Status.NOT_APPLICABLE);
-            }            
+            }
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant DROP permission");
