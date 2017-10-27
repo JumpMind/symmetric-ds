@@ -156,8 +156,6 @@ import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
 
-import sun.java2d.BackBufferCapsProvider;
-
 /**
  * @see IDataExtractorService
  */
@@ -995,7 +993,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected StagingFileLock acquireStagingFileLock(OutgoingBatch batch) {
         boolean stagingFileAcquired = false;
-        long startTimeMs = System.currentTimeMillis();
         
         StagingFileLock fileLock = null;
         
