@@ -18,22 +18,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.io.stage;
+package org.jumpmind.symmetric.io;
 
-import java.util.Set;
 
-public interface IStagingManager {
-
-    public IStagedResource find(Object... path);
+public class DbCompareUtil {
     
-    public IStagedResource find(String path);
-
-    public IStagedResource create(Object... path);
-    
-    public long clean(long timeToLiveInMs);
-    
-    public Set<String> getResourceReferences();
-
-    public StagingFileLock acquireFileLock(String serverInfo, Object... path);
-
+    public static String getUnqualifiedTableName(String tableName) {
+        tableName = tableName.replace("\"", "");
+        tableName = tableName.replace("`", "");
+        int lastDot = tableName.lastIndexOf('.');
+        if (lastDot > -1) {
+            tableName = tableName.substring(lastDot+1, tableName.length());
+        }
+        
+        return tableName;
+    }
 }

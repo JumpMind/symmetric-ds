@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.PlatformUtils;
 
 /**
@@ -188,6 +189,19 @@ public abstract class TypeMap
     {
         return (Integer)_typeNameToTypeCode.get(typeName.toUpperCase());
     }
+    
+    public static String getJdbcTypeDescriptions(int[] types) {
+        StringBuilder buff = new StringBuilder(32);
+        for (int type : types) {
+            buff.append(getJdbcTypeName(type)).append(", ");
+        }
+        
+        if (buff.length() > 0) {
+            buff.setLength(buff.length()-2); // loose the last ", "
+        }
+        
+        return buff.toString();
+    }
 
     /**
      * Returns the JDBC type name that corresponds to the given type code
@@ -199,7 +213,11 @@ public abstract class TypeMap
      */
     public static String getJdbcTypeName(int typeCode)
     {
-        return (String)_typeCodeToTypeName.get(new Integer(typeCode));
+        String description = _typeCodeToTypeName.get(new Integer(typeCode)); 
+        if (StringUtils.isEmpty(description)) {
+            description = String.valueOf(typeCode);
+        }
+        return description;
     }
 
     /**

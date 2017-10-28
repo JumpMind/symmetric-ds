@@ -1,5 +1,5 @@
 /**
- * Licensed to JumpMind Inc under one or more contributor
+ * Licensed to JumpMind Inc under one or moefaulre contributor
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
@@ -20,34 +20,62 @@
  */
 package org.jumpmind.symmetric.io;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DbCompareConfig {
+    
+    final Logger log = LoggerFactory.getLogger(getClass());
     
     public final static String WHERE_CLAUSE = "where_clause";
     public final static String EXCLUDED_COLUMN = "exclude_columns";
     
-    private String sqlDiffFileName;
-    private List<String> includedTableNames;
+    private List<String> sourceTableNames;
     private List<String> targetTableNames;
     private List<String> excludedTableNames;
     private boolean useSymmetricConfig = true;
     private int numericScale = 3;
     private Map<String, String> whereClauses = new LinkedHashMap<String, String>();
     private Map<String, List<String>> tablesToExcludedColumns = new LinkedHashMap<String, List<String>>();
+    private String outputSql;
+    
+    private Map<String, String> configSources = new HashMap<String, String>();
+    
+    public DbCompareConfig() {
+        configSources.put("includedTableNames", "default");
+        configSources.put("targetTableNames", "default");
+        configSources.put("excludedTableNames", "default");
+        configSources.put("useSymmetricConfig", "default");
+        configSources.put("numericScale", "default");
+        configSources.put("whereClauses", "default");
+        configSources.put("tablesToExcludedColumns", "default");
+        configSources.put("sqlDiffFileName", "default");
+    }
     
     public String getSourceWhereClause(String tableName) {
-        return getWhereClause(tableName, "source");        
+        String whereClause = getWhereClause(tableName, "source");
+        if (StringUtils.isEmpty(whereClause)) {
+            whereClause = "1=1";
+        }
+        return whereClause;
     }
     
     public String getTargetWhereClause(String tableName) {
-        return getWhereClause(tableName, "target");
+        String whereClause = getWhereClause(tableName, "target");
+        if (StringUtils.isEmpty(whereClause)) {
+            String simpleTableName = DbCompareUtil.getUnqualifiedTableName(tableName);
+            whereClause = getWhereClause(simpleTableName, "target");
+        }
+        return whereClause;
     }
-    
+
     protected String getWhereClause(String tableName, String sourceOrTarget) {
         String tableNameLower = tableName.toLowerCase();
         String[] keys = {
@@ -62,7 +90,7 @@ public class DbCompareConfig {
             }            
         }
         
-        return "1=1";
+        return null;
     }
     
     protected boolean shouldIncludeColumn(String tableName, String columnName) {
@@ -83,18 +111,7 @@ public class DbCompareConfig {
         return true;
     }
     
-    public String getSqlDiffFileName() {
-        return sqlDiffFileName;
-    }
-    public void setSqlDiffFileName(String sqlDiffFileName) {
-        this.sqlDiffFileName = sqlDiffFileName;
-    }
-    public List<String> getIncludedTableNames() {
-        return includedTableNames;
-    }
-    public void setIncludedTableNames(List<String> includedTableNames) {
-        this.includedTableNames = includedTableNames;
-    }
+
     public List<String> getExcludedTableNames() {
         return excludedTableNames;
     }
@@ -116,11 +133,20 @@ public class DbCompareConfig {
     public Map<String, String> getWhereClauses() {
         return whereClauses;
     }
+    public void setConfigSource(String configName, String configSource) {
+        configSources.put(configName, configSource);
+    }
     @SuppressWarnings("unchecked")
     public void setWhereClauses(Map<String, String> whereClauses) {
         this.whereClauses = new CaseInsensitiveMap(whereClauses);
     }
+    public List<String> getSourceTableNames() {
+        return sourceTableNames;
+    }
 
+    public void setSourceTableNames(List<String> sourceTableNames) {
+        this.sourceTableNames = sourceTableNames;
+    }
     public List<String> getTargetTableNames() {
         return targetTableNames;
     }
@@ -135,5 +161,28 @@ public class DbCompareConfig {
 
     public void setTablesToExcludedColumns(Map<String, List<String>> tablesToExcludedColumns) {
         this.tablesToExcludedColumns = tablesToExcludedColumns;
+    }
+    
+    public String getOutputSql() {
+        return outputSql;
+    }
+
+    public void setOutputSql(String outputSql) {
+        this.outputSql = outputSql;
+    }
+
+    public String report() {
+        StringBuilder buff = new StringBuilder(128);
+        
+        buff.append("\tsourceTableNames=").append(sourceTableNames).append(" @").append(configSources.get("sourceTableNames")).append("\n");
+        buff.append("\ttargetTableNames=").append(targetTableNames).append(" @").append(configSources.get("targetTableNames")).append("\n");
+        buff.append("\texcludedTableNames=").append(excludedTableNames).append(" @").append(configSources.get("excludedTableNames")).append("\n");
+        buff.append("\tuseSymmetricConfig=").append(useSymmetricConfig).append(" @").append(configSources.get("useSymmetricConfig")).append("\n");
+        buff.append("\tnumericScale=").append(numericScale).append(" @").append(configSources.get("numericScale")).append("\n");
+        buff.append("\twhereClauses=").append(whereClauses).append("@").append(configSources.get("whereClauses")).append("\n");
+        buff.append("\ttablesToExcludedColumns=").append(tablesToExcludedColumns).append(" @").append(configSources.get("tablesToExcludedColumns")).append("\n");
+        buff.append("\toutputSql=").append(outputSql).append(" @").append(configSources.get("outputSql")).append("\n");
+        
+        return buff.toString();
     }
 }

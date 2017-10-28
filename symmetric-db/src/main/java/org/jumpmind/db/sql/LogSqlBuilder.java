@@ -129,7 +129,7 @@ public class LogSqlBuilder {
         return dynamicSql.toString();
     }
 
-    protected String formatValue(Object object, int type) {
+    public String formatValue(Object object, int type) {
         if (object == null) {
             return "null";
         }
