@@ -38,7 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -107,7 +106,9 @@ import org.jumpmind.symmetric.web.rest.model.TableName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -167,12 +168,22 @@ import com.wordnik.swagger.annotations.ApiParam;
  */
 @Controller
 public class RestService {
+    
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     ServletContext context;
-
+    
+//    // The presence of this handler makes sure we return HTTP 500 and log the exception.
+//    @ExceptionHandler(Exception.class)
+//    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+//    public @ResponseBody ResponseEntity<Object> handleException(Exception e) {
+//        
+//                log.warn("Exception during rest services.", e);
+//                return handleExceptionInternal(e, "Helo", header(), 500, request);
+//    }
+    
     /**
      * Provides a list of {@link Engine} that are configured on the node.
      * 
@@ -1292,16 +1303,23 @@ public class RestService {
     public final String getParameter(@PathVariable("engine") String engineName, @PathVariable("name") String name) {
         return getSymmetricEngine(engineName).getParameterService().getString(name.replace('_', '.'));
     }
-
+    
+    // The presence of this handler makes sure we return HTTP 406 when the rest API is disabled or 500 for general errors.
     @ExceptionHandler(Exception.class)
-    @ResponseBody
-    public RestError handleError(Exception ex, HttpServletRequest req) {
+    public ResponseEntity<String> handleException(Exception ex) {
         int httpErrorCode = 500;
         Annotation annotation = ex.getClass().getAnnotation(ResponseStatus.class);
         if (annotation != null) {
             httpErrorCode = ((ResponseStatus) annotation).value().value();
         }
-        return new RestError(ex, httpErrorCode);
+
+        HttpHeaders headers = new HttpHeaders();
+        if (httpErrorCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+            log.warn("Internal server error during rest service call.", ex);
+        } else {            
+            log.debug("Exception during rest services http=" + httpErrorCode, ex);
+        }
+        return new ResponseEntity<String>("SymmetricDS API Invocation failed. " + ex.getMessage(), headers, HttpStatus.valueOf(httpErrorCode));
     }
 
     private void startImpl(ISymmetricEngine engine) {
