@@ -33,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.sql.JDBCType;
 import java.util.Collection;
 
 import org.apache.commons.io.IOUtils;
@@ -48,6 +49,7 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.UniqueIndex;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.FormatUtils;
 import org.xmlpull.v1.XmlPullParser;
@@ -434,6 +436,17 @@ public class DatabaseXmlUtil {
         return writer.toString();
     }
     
+    public static boolean isOracle(Column column) {
+        Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
+                .values();
+        for(PlatformColumn col: platformColumns) {
+            if(col.getName().equals(DatabaseNamesConstants.ORACLE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public static void write(Table table, Writer output) {
 
         try {
@@ -448,7 +461,11 @@ public class DatabaseXmlUtil {
                     output.write(" required=\"" + column.isRequired() + "\"");
                 }
                 if (column.getMappedType() != null) {
-                    output.write(" type=\"" + column.getMappedType() + "\"");
+                    if(isOracle(column) && column.getMappedType().equalsIgnoreCase("date")) {
+                        output.write(" type=\"" + JDBCType.TIMESTAMP.getName() + "\"");
+                    } else {
+                        output.write(" type=\"" + column.getMappedType() + "\"");
+                    }
                 }
                 if (column.getSize() != null) {
                     output.write(" size=\"" + column.getSize() + "\"");
