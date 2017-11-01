@@ -33,7 +33,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.sql.JDBCType;
 import java.util.Collection;
 
 import org.apache.commons.io.IOUtils;
@@ -48,6 +47,7 @@ import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.exception.IoException;
@@ -462,7 +462,7 @@ public class DatabaseXmlUtil {
                 }
                 if (column.getMappedType() != null) {
                     if(isOracle(column) && column.getMappedType().equalsIgnoreCase("date")) {
-                        output.write(" type=\"" + JDBCType.TIMESTAMP.getName() + "\"");
+                        output.write(" type=\"" + TypeMap.TIMESTAMP + "\"");
                     } else {
                         output.write(" type=\"" + column.getMappedType() + "\"");
                     }
