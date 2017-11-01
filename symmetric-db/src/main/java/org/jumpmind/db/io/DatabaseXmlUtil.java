@@ -437,9 +437,9 @@ public class DatabaseXmlUtil {
     }
     
     public static boolean isOracle(Column column) {
-        Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
+        if(column.getPlatformColumns() != null) {
+            Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
                 .values();
-        if(platformColumns != null) {
             for(PlatformColumn col: platformColumns) {
                 if(col.getName().equals(DatabaseNamesConstants.ORACLE)) {
                     return true;
