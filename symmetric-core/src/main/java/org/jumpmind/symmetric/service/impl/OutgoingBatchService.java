@@ -155,16 +155,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     @Override
     public void markAllChannelAsSent(String channelId, String tableName) {
         // Select relevant batch id's
+        List<Row> elgibleBatches = null;
+        
         String sql = getSql("cancelChannelBatchesSelectSql");
         if (!StringUtils.isEmpty(tableName)) {
             sql += getSql("cancelChannelBatchesSelectTableSql");
+            elgibleBatches = sqlTemplateDirty.query(sql, new Object[] { channelId, "OK", tableName });
+        } else {
+            elgibleBatches = sqlTemplateDirty.query(sql, new Object[] { channelId, "OK" });
         }
-        
-        List<Row> elgibleBatches = sqlTemplateDirty.query(sql, new Object[] { channelId, "OK", tableName });
         
         String updateSql = getSql("cancelChannelBatchSql");
         if (elgibleBatches != null) {
-            for(Row elgibleBatch : elgibleBatches) {
+            for (Row elgibleBatch : elgibleBatches) {
                 String nodeId = elgibleBatch.getString("node_id");
                 long batchId = elgibleBatch.getLong("batch_id");                
                 sqlTemplate.update(updateSql, nodeId, batchId);
