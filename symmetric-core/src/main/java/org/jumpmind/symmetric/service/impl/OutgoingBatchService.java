@@ -165,8 +165,8 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             elgibleBatches = sqlTemplateDirty.query(sql, new Object[] { channelId, "OK" });
         }
         
-        String updateSql = getSql("cancelChannelBatchSql");
         if (elgibleBatches != null) {
+            String updateSql = getSql("cancelChannelBatchSql");
             for (Row elgibleBatch : elgibleBatches) {
                 String nodeId = elgibleBatch.getString("node_id");
                 long batchId = elgibleBatch.getLong("batch_id");                
