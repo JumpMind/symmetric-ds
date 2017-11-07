@@ -1445,7 +1445,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 DatabaseMetaData meta = connection.getMetaData();
                 ResultSet rs = null;
                 try {
-                    rs = meta.getTables(catalog, schema, null, tableTypes);
+                    rs = meta.getTables(catalog, schema, getDefaultTablePattern(), tableTypes);
                     while (rs.next()) {
                         String tableName = rs.getString("TABLE_NAME");
                         if (tableName == null) {

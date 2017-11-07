@@ -57,7 +57,8 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
-        setDefaultTablePattern(null);
+        setDefaultTablePattern("%");
+        setDefaultColumnPattern("%");
     }
 
     @Override
