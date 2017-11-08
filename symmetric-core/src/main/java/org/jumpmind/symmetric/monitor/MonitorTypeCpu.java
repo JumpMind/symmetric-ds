@@ -63,8 +63,14 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         long processCpuTime = getProcessCpuTime();
         long elapsedCpu = processCpuTime - prevProcessCpuTime;
         long elapsedTime = upTime - prevUpTime;
-
-        event.setValue((long) (elapsedCpu / (elapsedTime * 1000f * availableProcessors)));
+        
+        long value = (long) (elapsedCpu / (elapsedTime * 1000f * availableProcessors));
+        if (value >= 100) {
+            event.setValue(100);
+        } else {
+            event.setValue(value);
+        }
+        
         return event;
     }
 
