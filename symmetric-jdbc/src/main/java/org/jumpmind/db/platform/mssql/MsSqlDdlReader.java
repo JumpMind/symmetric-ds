@@ -333,7 +333,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 		}, tableName, schema);
 	}
     
-    protected IConnectionHandler getConnectionHandler() {
-        return new ChangeCatalogConnectionHandler(platform.getDefaultCatalog());
+    protected IConnectionHandler getConnectionHandler(String catalog) {
+        return new ChangeCatalogConnectionHandler(catalog == null ? platform.getDefaultCatalog() : catalog);
     }
 }
