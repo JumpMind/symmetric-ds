@@ -850,6 +850,10 @@ abstract public class AbstractTriggerTemplate {
                         }
                     } else if (isOld && symmetricDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
+                    } else if(this.getClass().getName().equals("org.jumpmind.symmetric.db.mssql.MsSqlTriggerTemplate") 
+                        && column.getJdbcTypeName() != null 
+                        && StringUtils.equalsIgnoreCase(column.getJdbcTypeName(), "VARBINARY")) {
+                        templateToUse = binaryColumnTemplate;
                     } else {
                         templateToUse = blobColumnTemplate;
                     }
