@@ -682,8 +682,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             heartbeat(false);
                         }
 
-                        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true)) {
-                            pullService.pullConfigData(false);
+                        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true) 
+                                || parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AFTER_UPGRADE, true)) {
+                            pullService.pullConfigData(parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AT_STARTUP, true));
                         }
 
                     } else {

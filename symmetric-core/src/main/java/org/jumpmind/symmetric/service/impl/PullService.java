@@ -181,8 +181,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         Node local = nodeService.findIdentity();
         RemoteNodeStatus status = null;
 
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AFTER_UPGRADE, true) &&
-                !parameterService.isRegistrationServer() && local != null && (force || !Version.version().equals(local.getConfigVersion()))) {
+        if (!parameterService.isRegistrationServer() && local != null 
+            && (force || 
+                (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIG_AFTER_UPGRADE, true) 
+                    && !Version.version().equals(local.getConfigVersion())))) {
             Node remote = new Node();
             remote.setSyncUrl(parameterService.getRegistrationUrl());    
             status = new RemoteNodeStatus(remote.getNodeId(), Constants.CHANNEL_CONFIG, configurationService.getChannels(false));
