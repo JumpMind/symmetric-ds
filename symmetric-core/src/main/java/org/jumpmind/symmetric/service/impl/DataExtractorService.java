@@ -1764,6 +1764,30 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 batches, channel.getMaxBatchSize(), processInfo);
         return multiBatchStatingWriter;
     }
+    
+    protected boolean tableContainsLobs(Table table) {
+        Column[] columns = table.getColumns();
+        for (Column c : columns) {
+            if (platform.isLob(c.getJdbcTypeCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean lobColumnsMoreThan16k(Table table, CsvData data) {
+        String[] colNames = table.getColumnNames();
+        Map<String, String> colMap = data.toColumnNameValuePairs(colNames, CsvData.ROW_DATA);
+        List<Column> lobColumns = platform.getLobColumns(table);
+
+        for (Column c : lobColumns) {
+            String value = colMap.get(c.getName());
+            if (value != null && value.equals("\b")) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     class ExtractRequestMapper implements ISqlRowMapper<ExtractRequest> {
         public ExtractRequest mapRow(Row row) {
@@ -1870,6 +1894,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (data == null) {
                     reloadSource.close();
                     reloadSource = null;
+                } else {
+                    this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
                 }
                 lastTriggerHistory = null;
             }
@@ -1916,8 +1942,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             data = (Data) this.reloadSource.next();
                             this.sourceTable = reloadSource.getSourceTable();
                             this.targetTable = this.reloadSource.getTargetTable();
-                            this.requiresLobSelectedFromSource = this.reloadSource
-                                    .requiresLobsSelectedFromSource();
+                            this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
                             
                             if (data == null) {
                                 data = (Data)next();
@@ -1940,7 +1965,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         routerId, triggerHistory, false, true);
                                 this.targetTable = columnsAccordingToTriggerHistory.lookup(
                                         routerId, triggerHistory, true, false);
-                                this.requiresLobSelectedFromSource = trigger == null ? false : trigger.isUseStreamLobs();
+                                if (tableContainsLobs(sourceTable)) {
+                                    if ((data.getRowData() != null && lobColumnsMoreThan16k(sourceTable, data))
+                                            || trigger.isUseStreamLobs()) {
+                                        this.requiresLobSelectedFromSource = true;
+                                    }
+                                } else {
+                                    this.requiresLobSelectedFromSource = false;
+                                }
                             }
 
                             data.setNoBinaryOldData(requiresLobSelectedFromSource
@@ -2022,7 +2054,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return data;
         }
 
-        public boolean requiresLobsSelectedFromSource() {
+        public boolean requiresLobsSelectedFromSource(CsvData data) {
             return requiresLobSelectedFromSource;
         }
 
@@ -2222,11 +2254,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             });
         }
 
-        public boolean requiresLobsSelectedFromSource() {
+        public boolean requiresLobsSelectedFromSource(CsvData data) {
             if (this.currentInitialLoadEvent != null
                     && this.currentInitialLoadEvent.getTriggerRouter() != null) {
-                return this.currentInitialLoadEvent.getTriggerRouter().getTrigger()
-                        .isUseStreamLobs();
+                if (tableContainsLobs(sourceTable)) {
+                    if (data != null && lobColumnsMoreThan16k(sourceTable, data)) {
+                        return true;
+                    }
+                }
+                return this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs();
             } else {
                 return false;
             }
