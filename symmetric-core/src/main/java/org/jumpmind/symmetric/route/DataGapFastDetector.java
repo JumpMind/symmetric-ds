@@ -97,6 +97,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected long earliestTransactionTime = 0;
     
     protected boolean supportsTransactionViews;
+    
+    protected static Map<String, Boolean> firstTime = Collections.synchronizedMap(new HashMap<String, Boolean>());
 
     public DataGapFastDetector(IDataService dataService, IParameterService parameterService, IContextService contextService,
             ISymmetricDialect symmetricDialect, IRouterService routerService, IStatisticManager statisticManager, INodeService nodeService) {
@@ -110,35 +112,39 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
 
     public void beforeRouting() {
-        maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
-        detectInvalidGaps = parameterService.is(ParameterConstants.ROUTING_DETECT_INVALID_GAPS);
-        reset();
-
-        if (isFullGapAnalysis()) {
-            ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
-                    nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
-            processInfo.setStatus(Status.QUERYING);
-            log.info("Full gap analysis is running");
-            long ts = System.currentTimeMillis();
-            gaps = dataService.findDataGaps();
-            if (detectInvalidGaps) {
-                fixOverlappingGaps(gaps, processInfo);
-            }
-            queryDataIdMap();
-            processInfo.setStatus(Status.OK);
-            log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
-            afterRouting();
+        try {
+            maxDataToSelect = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
+            detectInvalidGaps = parameterService.is(ParameterConstants.ROUTING_DETECT_INVALID_GAPS) || firstTime.get(parameterService.getEngineName()) == null;
             reset();
-            log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
-        } else if (gaps == null || parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            ProcessInfo processInfo = this.statisticManager.newProcessInfo(new ProcessInfoKey(
-                    nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
-            processInfo.setStatus(Status.QUERYING);
-            gaps = dataService.findDataGaps();
-            if (detectInvalidGaps) {
-                fixOverlappingGaps(gaps, processInfo);
+
+            if (isFullGapAnalysis()) {
+                ProcessInfo processInfo = this.statisticManager
+                        .newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
+                processInfo.setStatus(Status.QUERYING);
+                log.info("Full gap analysis is running");
+                long ts = System.currentTimeMillis();
+                gaps = dataService.findDataGaps();
+                if (detectInvalidGaps) {
+                    fixOverlappingGaps(gaps, processInfo);
+                }
+                queryDataIdMap();
+                processInfo.setStatus(Status.OK);
+                log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
+                afterRouting();
+                reset();
+                log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
+            } else if (gaps == null || parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+                ProcessInfo processInfo = this.statisticManager
+                        .newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(), null, ProcessType.GAP_DETECT));
+                processInfo.setStatus(Status.QUERYING);
+                gaps = dataService.findDataGaps();
+                if (detectInvalidGaps) {
+                    fixOverlappingGaps(gaps, processInfo);
+                }
+                processInfo.setStatus(Status.OK);
             }
-            processInfo.setStatus(Status.OK);
+        } finally {
+            firstTime.put(parameterService.getEngineName(), true);
         }
     }
 

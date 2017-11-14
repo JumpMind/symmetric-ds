@@ -61,16 +61,30 @@ task generateAppendixes {
     }
 }
 
+ext.getDocDir = {
+    if (project.properties.containsKey('pro')) {
+        return file("$buildDir/../../../symmetric-pro/symmetric-pro/src/main/resources/VAADIN/doc")
+    } else {
+        return file("$buildDir/doc")
+    }
+}
+
+task cleanDocs {
+    dependsOn asciidoctor
+    def destinationDir = getDocDir()
+    doFirst {
+        println "Deleting $destinationDir.path"
+        delete destinationDir
+    }
+}
+
 task generateDocs(type: Copy) {
     
-    dependsOn asciidoctor
+    dependsOn cleanDocs
 	group = 'SymmetricDS'
 	description = 'Generates user manual and documentation'
     
-    destinationDir = file("$buildDir/doc")
-    if (project.properties.containsKey('pro')) {
-        destinationDir = file("$buildDir/../../../symmetric-pro/symmetric-pro/src/main/resources/VAADIN/doc")
-    }
+    destinationDir = getDocDir()
 
     into('html') {
         from ("$buildDir/src/asciidoc/html5") { include "user-guide.html" }
@@ -113,12 +127,7 @@ task generateDocs(type: Copy) {
 
     into('pdf') {
         from ("$buildDir/src/asciidoc/pdf/operations") { include "operations.pdf" }
-    }
-    
-    doFirst {
-        println "Deleting $destinationDir.path"
-        delete destinationDir
-    }
+    }    
 
 }
 
