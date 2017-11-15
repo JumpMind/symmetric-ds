@@ -864,11 +864,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
             long extractTimeInMs = 0l;
             long byteCount = 0l;
-            long transformTimeInMs = 0l;
-            
-            if (currentBatch.getStatus() == Status.NE) {
-                triggerReExtraction(currentBatch);
-            }
+            long transformTimeInMs = 0l;            
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
@@ -965,10 +961,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         BatchLock batchLock = new BatchLock(semaphoreKey);
         
-        Semaphore lock = locks.get(semaphoreKey);
-        if (lock == null) {
-            lock = new Semaphore(1);
-            locks.put(semaphoreKey, lock);
+        Semaphore lock = null;
+        
+        synchronized (DataExtractorService.this) {
+            lock = locks.get(semaphoreKey);
+            if (lock == null) {
+                lock = new Semaphore(1);
+                locks.put(semaphoreKey, lock);
+            }
         }
         try {
             lock.acquire(); // In-memory, intra-process lock.
@@ -1035,10 +1035,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void releaseLock(BatchLock lock, OutgoingBatch batch, boolean useStagingDataWriter) {
-        if (lock != null) {            
-            if (lock.inMemoryLock != null) {            
-                lock.inMemoryLock.release();
-                locks.remove(lock.semaphoreKey);
+        if (lock != null) {
+            if (lock.inMemoryLock != null) {
+                synchronized (DataExtractorService.this) {
+                    if (!lock.inMemoryLock.hasQueuedThreads()) {
+                        locks.remove(lock.semaphoreKey);
+                    }
+                    lock.inMemoryLock.release();
+                }
             }
             if (lock.fileLock != null) {
                 lock.fileLock.releaseLock();
