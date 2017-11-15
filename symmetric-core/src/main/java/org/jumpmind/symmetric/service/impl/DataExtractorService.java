@@ -1765,25 +1765,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return multiBatchStatingWriter;
     }
     
-    protected boolean tableContainsLobs(Table table) {
-        Column[] columns = table.getColumns();
-        for (Column c : columns) {
-            if (platform.isLob(c.getJdbcTypeCode())) {
-                return true;
-            }
-        }
-        return false;
-    }
+    protected boolean hasLobsThatNeedExtract(Table table, CsvData data) {
+        if (table.containsLobColumns(platform)) {
+            String[] colNames = table.getColumnNames();
+            Map<String, String> colMap = data.toColumnNameValuePairs(colNames, CsvData.ROW_DATA);
 
-    protected boolean lobColumnsMoreThan16k(Table table, CsvData data) {
-        String[] colNames = table.getColumnNames();
-        Map<String, String> colMap = data.toColumnNameValuePairs(colNames, CsvData.ROW_DATA);
-        List<Column> lobColumns = platform.getLobColumns(table);
-
-        for (Column c : lobColumns) {
-            String value = colMap.get(c.getName());
-            if (value != null && value.equals("\b")) {
-                return true;
+            List<Column> lobColumns = table.getLobColumns(platform);
+            for (Column c : lobColumns) {
+                String value = colMap.get(c.getName());
+                if (value != null && value.equals("\b")) {
+                    return true;
+                }
             }
         }
         return false;
@@ -1965,11 +1957,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         routerId, triggerHistory, false, true);
                                 this.targetTable = columnsAccordingToTriggerHistory.lookup(
                                         routerId, triggerHistory, true, false);
-                                if (tableContainsLobs(sourceTable)) {
-                                    if ((data.getRowData() != null && lobColumnsMoreThan16k(sourceTable, data))
-                                            || trigger.isUseStreamLobs()) {
-                                        this.requiresLobSelectedFromSource = true;
-                                    }
+                                
+                                if (trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
+                                    this.requiresLobSelectedFromSource = true;
                                 } else {
                                     this.requiresLobSelectedFromSource = false;
                                 }
@@ -2257,10 +2247,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public boolean requiresLobsSelectedFromSource(CsvData data) {
             if (this.currentInitialLoadEvent != null
                     && this.currentInitialLoadEvent.getTriggerRouter() != null) {
-                if (tableContainsLobs(sourceTable)) {
-                    if (data != null && lobColumnsMoreThan16k(sourceTable, data)) {
-                        return true;
-                    }
+                if (this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs()
+                        || (data != null && hasLobsThatNeedExtract(sourceTable, data))) {
+                    return true;
                 }
                 return this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs();
             } else {
