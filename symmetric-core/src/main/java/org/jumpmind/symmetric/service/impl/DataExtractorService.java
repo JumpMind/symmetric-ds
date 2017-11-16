@@ -868,12 +868,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
             } else if (!isPreviouslyExtracted(currentBatch, true)) {
-
                 BatchLock lock = null;
                 try {
+                    log.debug("{} attempting to acquire lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     lock = acquireLock(currentBatch, useStagingDataWriter);
-
+                    log.debug("{} acquired lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     if (!isPreviouslyExtracted(currentBatch, true)) {
+                        log.debug("{} extracting batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                         currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                         if (updateBatchStatistics) {
                             changeBatchStatus(Status.QY, currentBatch, mode);
@@ -910,12 +911,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     throw ex;
-                } finally {
+                } finally {                    
                     IStagedResource resource = getStagedResource(currentBatch);
                     if (resource != null) {
                         resource.setState(State.DONE);
                     }
                     releaseLock(lock, currentBatch, useStagingDataWriter);
+                    log.debug("{} released lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                 }
             }
 
