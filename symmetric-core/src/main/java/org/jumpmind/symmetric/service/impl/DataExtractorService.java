@@ -981,6 +981,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long byteCount = 0l;
             long transformTimeInMs = 0l;            
 
+            if (currentBatch.isReextractFlag()) {
+                triggerReExtraction(currentBatch);
+                currentBatch.setReextractFlag(false);
+            }
+
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
             } else if (!isPreviouslyExtracted(currentBatch, true)) {

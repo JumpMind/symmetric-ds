@@ -224,7 +224,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
         transaction.prepareAndExecute(getSql("updateOutgoingBatchSql"),
-                new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0,
+                new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0, outgoingBatch.isReextractFlag() ? 1 : 0,
                         outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0, outgoingBatch.getByteCount(),
                         outgoingBatch.getExtractCount(), outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
                         outgoingBatch.getDataRowCount(), outgoingBatch.getReloadRowCount(), outgoingBatch.getDataInsertRowCount(),
@@ -240,7 +240,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
                         outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
                         outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
-                new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC,
@@ -279,7 +279,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             batchId = sequenceService.nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH);
         }
         transaction.prepareAndExecute(getSql("insertOutgoingBatchSql"), batchId, outgoingBatch.getNodeId(), outgoingBatch.getChannelId(),
-                outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0,
+                outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0, outgoingBatch.isReextractFlag() ? 1: 0,
                 outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isCommonFlag() ? 1 : 0, outgoingBatch.getReloadRowCount(),
                 outgoingBatch.getOtherRowCount(), outgoingBatch.getDataUpdateRowCount(), outgoingBatch.getDataInsertRowCount(),
                 outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getCreateBy(),
@@ -1127,6 +1127,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     batch.setLastUpdatedTime(rs.getDateTime("last_update_time"));
                     batch.setCreateTime(rs.getDateTime("create_time"));
                     batch.setLoadFlag(rs.getBoolean("load_flag"));
+                    batch.setReextractFlag(rs.getBoolean("reextract_flag"));
                     batch.setErrorFlag(rs.getBoolean("error_flag"));
                     batch.setCommonFlag(rs.getBoolean("common_flag"));
                     batch.setExtractJobFlag(rs.getBoolean("extract_job_flag"));

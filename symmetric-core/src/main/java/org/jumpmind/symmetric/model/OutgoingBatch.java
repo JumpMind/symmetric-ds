@@ -36,6 +36,8 @@ public class OutgoingBatch extends AbstractBatch {
 
     private static final long serialVersionUID = 1L;
 
+    private boolean reextractFlag;
+    
     private boolean extractJobFlag;
 
     private Date extractStartTime;
@@ -53,6 +55,14 @@ public class OutgoingBatch extends AbstractBatch {
         setChannelId(channelId);
         setStatus(status);
         setCreateTime(new Date());
+    }
+    
+    public void setReextractFlag(boolean reextractFlag) {
+        this.reextractFlag = reextractFlag;
+    }
+
+    public boolean isReextractFlag() {
+        return reextractFlag;
     }
 
     @Override

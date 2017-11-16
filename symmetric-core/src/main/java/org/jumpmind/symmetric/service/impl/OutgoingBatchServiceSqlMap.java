@@ -51,12 +51,12 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertOutgoingBatchSql",
                         "insert into $(outgoing_batch)                                                                                                                "
-                        + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, load_flag, common_flag, reload_row_count, other_row_count, " 
+                        + "  (batch_id, node_id, channel_id, status, load_id, extract_job_flag, reextract_flag, load_flag, common_flag, reload_row_count, other_row_count, " 
                         + "  data_update_row_count, data_insert_row_count, data_delete_row_count, last_update_hostname, last_update_time, create_time, create_by, summary, data_row_count)   "
-                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?, ?, ?)                                                                         ");
+                        + "  values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp, ?, ?, ?)                                                                         ");
 
         putSql("updateOutgoingBatchSql",
-                        "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, load_flag=?, error_flag=?,                                          "
+                        "update $(outgoing_batch) set status=?, load_id=?, extract_job_flag=?, reextract_flag=?, load_flag=?, error_flag=?,                                          "
                         + "  byte_count=?, extract_count=?, sent_count=?, load_count=?, data_row_count=?,                                 "
                         + "  reload_row_count=?, data_insert_row_count=?, data_update_row_count=?, data_delete_row_count=?, other_row_count=?,   "
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
@@ -105,7 +105,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectOutgoingBatchPrefixSql",
                         "select b.node_id, b.channel_id, b.status,                                                                              "
-                        + "  b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_row_count,                                           "
+                        + "  b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_row_count, b.reextract_flag,                                          "
                         + "  b.reload_row_count, b.data_insert_row_count, b.data_update_row_count, b.data_delete_row_count, b.other_row_count,             "
                         + "  b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, "
                         + "  b.extract_start_time, b.transfer_start_time, b.load_start_time, b.sql_state, b.sql_code,  "
