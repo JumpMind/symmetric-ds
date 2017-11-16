@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -190,7 +189,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IClusterService clusterService;
 
-    private Map<String, Semaphore> locks = new ConcurrentHashMap<String, Semaphore>();
+    private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
     
     private CustomizableThreadFactory threadPoolFactory;
 
@@ -957,30 +956,25 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }   
 
     private BatchLock acquireLock(OutgoingBatch batch, boolean useStagingDataWriter) {
-        String semaphoreKey = getSemaphoreKey(batch, useStagingDataWriter);
-        
-        BatchLock batchLock = new BatchLock(semaphoreKey);
-        
-        Semaphore lock = null;
-        
+        String semaphoreKey = getSemaphoreKey(batch, useStagingDataWriter);        
+        BatchLock lock = null;        
         synchronized (DataExtractorService.this) {
             lock = locks.get(semaphoreKey);
             if (lock == null) {
-                lock = new Semaphore(1);
+                lock = new BatchLock(semaphoreKey);
                 locks.put(semaphoreKey, lock);
             }
+            lock.referenceCount++;
         }
         try {
             lock.acquire(); // In-memory, intra-process lock.
-            batchLock.inMemoryLock = lock;
             if (isStagingFileLockRequired(batch)) { // File-system, inter-process lock for clustering.
                 StagingFileLock fileLock = acquireStagingFileLock(batch);
                 if (fileLock.isAcquired()) {
-                    batchLock.fileLock = fileLock;
+                    lock.fileLock = fileLock;
                 } else { // Didn't get the fileLock, ditch the in-memory lock as well.
                     locks.remove(semaphoreKey);
                     lock.release();
-                    batchLock.inMemoryLock = null;
                     throw new SymmetricException("Failed to get extract lock on batch " + batch.getNodeBatchId());
                 }
             }
@@ -988,7 +982,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new org.jumpmind.exception.InterruptedException(e);
         }
         
-        return batchLock;
+        return lock;
     }
 
     protected StagingFileLock acquireStagingFileLock(OutgoingBatch batch) {
@@ -1036,13 +1030,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected void releaseLock(BatchLock lock, OutgoingBatch batch, boolean useStagingDataWriter) {
         if (lock != null) {
-            if (lock.inMemoryLock != null) {
-                synchronized (DataExtractorService.this) {
-                    if (!lock.inMemoryLock.hasQueuedThreads()) {
-                        locks.remove(lock.semaphoreKey);
-                    }
-                    lock.inMemoryLock.release();
+            synchronized (DataExtractorService.this) {
+                lock.referenceCount--;
+                if (lock.referenceCount == 0) {
+                    locks.remove(lock.semaphoreKey);
                 }
+                lock.release();
             }
             if (lock.fileLock != null) {
                 lock.fileLock.releaseLock();
@@ -2357,9 +2350,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public BatchLock(String semaphoreKey) {
             this.semaphoreKey = semaphoreKey;
         }
+        
+        public void acquire() throws InterruptedException {
+            inMemoryLock.acquire();
+        }
+        
+        public void release() {
+            inMemoryLock.release();
+        }
+        
         String semaphoreKey;
-        Semaphore inMemoryLock;
+        private Semaphore inMemoryLock = new Semaphore(1);
         StagingFileLock fileLock;
+        int referenceCount = 0;
     }
 
 
