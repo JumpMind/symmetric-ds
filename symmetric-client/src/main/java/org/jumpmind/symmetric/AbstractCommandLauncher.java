@@ -54,6 +54,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.util.AppUtils;
@@ -121,7 +122,10 @@ public abstract class AbstractCommandLauncher {
         this.app = app;
         this.argSyntax = argSyntax;
         this.messageKeyPrefix = messageKeyPrefix;
-        TransportManagerFactory.initHttps("all", true);
+        TypedProperties serverProperties = new TypedProperties(System.getProperties());
+        boolean allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, true);
+        String allowServerNames = serverProperties.get(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, "all");
+        TransportManagerFactory.initHttps(allowServerNames, allowSelfSignedCerts);
     }
     
     protected static void initFromServerProperties() {

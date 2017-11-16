@@ -529,7 +529,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
         }
         final Set<String> readyChannels = new HashSet<String>();
-        sqlTemplate.query(sql, new ISqlRowMapper<String>() {
+        sqlTemplateDirty.query(sql, new ISqlRowMapper<String>() {
             public String mapRow(Row row) {
                 readyChannels.add(row.getString("channel_id"));
                 return null;

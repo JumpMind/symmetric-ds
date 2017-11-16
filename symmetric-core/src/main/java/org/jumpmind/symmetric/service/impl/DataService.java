@@ -875,13 +875,15 @@ public class DataService extends AbstractService implements IDataService {
                             && engine.getGroupletService().isTargetEnabled(triggerRouter,
                                     targetNode)) {
                         
-                        String tableName = triggerRouter.qualifiedTargetTableName(triggerHistory);
-                        String formattedBeforeSql = String.format(currentRequest.getBeforeCustomSql(), tableName) + ";";
+                        List<String> sqlStatements = resolveTargetTables(currentRequest.getBeforeCustomSql(), 
+                                triggerRouter, triggerHistory, targetNode);
                         
-                        insertSqlEvent(transaction, triggerHistory, triggerRouter.getTrigger().getChannelId(),
-                                targetNode, formattedBeforeSql,
-                                true, loadId, createBy);
-                        sqlEventsSent++;
+                        for (String sql : sqlStatements) {
+                            insertSqlEvent(transaction, triggerHistory, triggerRouter.getTrigger().getChannelId(),
+                                    targetNode, sql,
+                                    true, loadId, createBy);
+                            sqlEventsSent++;
+                        }
                         if (!transactional) {
                             transaction.commit();
                         }
@@ -1077,8 +1079,11 @@ public class DataService extends AbstractService implements IDataService {
                         sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerRouter.getTargetTable(triggerHistory));
         
         if (StringUtils.isNotBlank(overrideDeleteStatement)) {
-            createPurgeEvent(transaction, overrideDeleteStatement, targetNode, sourceNode,
-                    triggerRouter, triggerHistory, isLoad, loadId, createBy);
+            List<String> sqlStatements = resolveTargetTables(overrideDeleteStatement, triggerRouter, triggerHistory, targetNode);
+            for (String sql : sqlStatements) {
+                createPurgeEvent(transaction, sql, targetNode, sourceNode,
+                        triggerRouter, triggerHistory, isLoad, loadId, createBy);
+            }
             
         } else if (transforms != null && transforms.size() > 0) {
             List<String> sqlStatements = symmetricDialect.createPurgeSqlForMultipleTables(targetNode, triggerRouter, 
@@ -1095,6 +1100,38 @@ public class DataService extends AbstractService implements IDataService {
                 targetNode, sourceNode,
                 triggerRouter, triggerHistory, isLoad, loadId, createBy);
         }
+        
+    }
+    
+    public List<String> resolveTargetTables(String sql, TriggerRouter triggerRouter, TriggerHistory triggerHistory, Node targetNode) {
+        if (sql == null) { return null; }
+        
+        List<String> sqlStatements = new ArrayList<String>();                  
+        if (sql != null && sql.contains("%s")) {
+            Set<String> tableNames = new HashSet<String>();
+            Node sourceNode = engine.getNodeService().findIdentity();
+            String sourceTableName = triggerRouter.qualifiedTargetTableName(triggerHistory);
+            
+            List<TransformTableNodeGroupLink> transforms = 
+                    this.engine.getTransformService().findTransformsFor(
+                            sourceNode.getNodeGroupId(), targetNode.getNodeGroupId(), triggerRouter.getTargetTable(triggerHistory));
+            
+            if (transforms != null) {
+                for (TransformTableNodeGroupLink transform : transforms) {
+                    tableNames.add(transform.getFullyQualifiedTargetTableName());
+                }
+            } else {
+                tableNames.add(sourceTableName);
+            }
+            
+            for (String tableName : tableNames) {
+                sqlStatements.add(String.format(sql, tableName));
+            }
+        }
+        else {
+            sqlStatements.add(sql);
+        }
+        return sqlStatements;
         
     }
 

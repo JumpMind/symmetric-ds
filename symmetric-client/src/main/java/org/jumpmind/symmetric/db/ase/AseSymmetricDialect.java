@@ -1,5 +1,4 @@
 /**
- * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
@@ -27,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -125,7 +125,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    protected boolean doesTriggerExistOnPlatform(final String catalogName, String schema, String tableName,
+    protected boolean doesTriggerExistOnPlatform(final String catalogName, final String schema, final String tableName,
             final String triggerName) {
         return ((JdbcSqlTemplate) platform.getSqlTemplate())
         .execute(new IConnectionCallback<Boolean>() {
@@ -138,7 +138,33 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                         con.setCatalog(catalogName);
                     }
                     stmt.setString(1, triggerName);
-                    ResultSet rs = stmt.executeQuery();
+                    ResultSet rs = null;
+                    try {                        
+                        rs = stmt.executeQuery();
+                    } catch (Exception ex) {
+                        try {                            
+                            stmt.close();
+                        } catch (Exception exClose) {
+                            log.debug("Falied to close stmt", exClose);
+                        }
+                        if (catalogName != null) {                            
+                            log.info("Tried: select count(*) from dbo.sysobjects where type = 'TR' AND name ='{}' which failed, will try again with catalog.", triggerName);
+                            // try again with the source catalog prefixed.
+                            try {
+                                PreparedStatement stmt2 = con
+                                        .prepareStatement(String.format("select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = ?", catalogName));
+                                stmt2.setString(1, triggerName);
+                                log.debug(String.format("TRY AGAIN Exceute:  select count(*) from %s.dbo.sysobjects where type = 'TR' AND name ='%s'", catalogName, triggerName));
+                                rs = stmt2.executeQuery();
+                            } catch (Exception ex2) {
+                                log.error(String.format("Failed again with catalog... select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = '%s'", catalogName, triggerName), ex2);
+                                throw new RuntimeException(String.format("Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'", triggerName), ex);
+                            }
+                        } else {
+                            throw new RuntimeException(String.format("Detect trigger query failed. select count(*) from dbo.sysobjects where type = 'TR' AND name ='%s'", triggerName), ex);
+                        }
+                        
+                    }
                     if (rs.next()) {
                         int count = rs.getInt(1);
                         return count > 0;

@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +83,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     private String fullyQualifiedTableNameLowerCase;
     
     private String tableNameLowerCase;
+    
+    private ArrayList<Column> lobColumns;
 
     public Table() {
     }
@@ -119,6 +122,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     public void removeAllColumns() {
         columns.clear();
+        lobColumns = null;
     }
 
     public void removeAllIndices() {
@@ -280,6 +284,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void addColumn(Column column) {
         if (column != null) {
             columns.add(column);
+            lobColumns = null;
         }
     }
 
@@ -294,6 +299,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void addColumn(int idx, Column column) {
         if (column != null) {
             columns.add(idx, column);
+            lobColumns = null;
         }
     }
 
@@ -313,6 +319,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             } else {
                 columns.add(columns.indexOf(previousColumn), column);
             }
+            lobColumns = null;
         }
     }
 
@@ -362,6 +369,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void removeColumn(Column column) {
         if (column != null) {
             columns.remove(column);
+            lobColumns= null;
         }
     }
 
@@ -373,6 +381,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      */
     public void removeColumn(int idx) {
         columns.remove(idx);
+        lobColumns = null;
     }
 
     /**
@@ -986,6 +995,30 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
 
     public String getTableKey() {
         return getFullyQualifiedTableName() + "-" + calculateTableHashcode();
+    }
+    
+    public boolean containsLobColumns(IDatabasePlatform platform) {
+        if(lobColumns == null) {
+            lobColumns = populateLobColumns(platform);
+        }
+        return lobColumns.size() > 0;
+    }
+    
+    public List<Column> getLobColumns(IDatabasePlatform platform) {
+        if(lobColumns == null) {
+            lobColumns = populateLobColumns(platform);
+        }
+        return lobColumns;
+    }
+    
+    private ArrayList<Column> populateLobColumns(IDatabasePlatform platform) {
+        ArrayList<Column> lobColumns = new ArrayList<Column>();
+        for(Column c: columns) {
+            if(platform.isLob(c.getMappedTypeCode())){
+                lobColumns.add(c);
+            }
+        }
+        return lobColumns;
     }
 
     public String getFullyQualifiedTableName() {

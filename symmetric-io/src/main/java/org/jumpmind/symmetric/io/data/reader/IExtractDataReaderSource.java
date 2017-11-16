@@ -40,7 +40,7 @@ public interface IExtractDataReaderSource {
     
     public CsvData next();
     
-    public boolean requiresLobsSelectedFromSource();
+    public boolean requiresLobsSelectedFromSource(CsvData data);
     
     public void close();
 
