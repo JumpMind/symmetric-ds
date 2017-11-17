@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -327,12 +328,18 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             gapsAdded.add(dataGap);
             gapsAll.add(dataGap);
         } else {
-            log.info("Data IDs: " + dataIds.toString());
-            log.info("Data Gaps: " + gaps.toString());
-            log.info("Added Data Gaps: " + gapsAdded.toString());
-            log.info("Deleted Data Gaps: " + gapsDeleted.toString());            
+            printGapState();            
         }
         return isOkay;
+    }
+    
+    private void printGapState() {
+        StringBuilder buff = new StringBuilder();
+        buff.append("\nData IDs: " + dataIds).append("\n");
+        buff.append("Data Gaps: " + gaps).append("\n");
+        buff.append("Added Data Gaps: " + gapsAdded) .append("\n");
+        buff.append("Deleted Data Gaps: " + gapsDeleted).append("\n");
+        log.info(buff.toString());
     }
 
     protected long saveDataGaps(long ts, long printStats) {
@@ -351,7 +358,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         log.info("There are {} data gap changes, which is within the max of {}, so switching to database", 
                                 totalGapChanges, maxGapChanges);
                         useInMemoryGaps = false;
-                        printStats = insertDataGaps(transaction, ts, printStats);
+                        printStats = insertDataGaps(transaction, ts, printStats, gaps);
                     } else {
                         if (!useInMemoryGaps) {
                             log.info("There are {} data gap changes, which exceeds the max of {}, so switching to in-memory", 
@@ -363,7 +370,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     }
                 } else {
                     printStats = deleteDataGaps(transaction, ts, printStats);
-                    printStats = insertDataGaps(transaction, ts, printStats);
+                    printStats = insertDataGaps(transaction, ts, printStats, gapsAdded);
                 }
                 transaction.commit();
             } catch (Error ex) {
@@ -398,10 +405,10 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         }
         return printStats;
     }
-
-    protected long insertDataGaps(ISqlTransaction transaction, long ts, long printStats) {
+    
+    protected long insertDataGaps(ISqlTransaction transaction, long ts, long printStats, Collection<DataGap> argGaps) {
         int counter = 0;
-        for (DataGap dataGap : gapsAdded) {
+        for (DataGap dataGap : argGaps) {
             dataService.insertDataGap(transaction, dataGap);
             counter++;
             if (System.currentTimeMillis() - printStats > 30000) {
@@ -458,6 +465,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     }
     
     protected void fixOverlappingGaps(List<DataGap> gaps, ProcessInfo processInfo) {
+        List<DataGap> gapsCopy = new ArrayList<DataGap>(gaps);
+        boolean ok = true;
         try {
             ISqlTransaction transaction = null;
             log.debug("Looking for overlapping gaps");
@@ -465,12 +474,13 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
                 transaction = sqlTemplate.startSqlTransaction();
                 DataGap prevGap = null, lastGap = null;
-                for (int i = 0; i < gaps.size(); i++) {
-                    DataGap curGap = gaps.get(i);
+                for (int i = 0; i < gapsCopy.size(); i++) {
+                    DataGap curGap = gapsCopy.get(i);
                     if (lastGap != null) {
+                        ok = false;
                         log.warn("Removing gap found after last gap: " + curGap);
                         dataService.deleteDataGap(transaction, curGap);
-                        gaps.remove(i--);
+                        gapsCopy.remove(i--);
                     } else {
                         if (lastGap == null && curGap.gapSize() >= maxDataToSelect - 1) {
                             lastGap = curGap;
@@ -478,6 +488,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
 
                         if (prevGap != null) {
                             if (prevGap.overlaps(curGap)) {
+                                ok = false;
                                 log.warn("Removing overlapping gaps: " + prevGap + ", " + curGap);
                                 dataService.deleteDataGap(transaction, prevGap);
                                 dataService.deleteDataGap(transaction, curGap);
@@ -490,8 +501,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                                 }
                                 log.warn("Inserting new gap to fix overlap: " + newGap);
                                 dataService.insertDataGap(transaction, newGap);
-                                gaps.remove(i--);
-                                gaps.set(i, newGap);
+                                gapsCopy.remove(i--);
+                                gapsCopy.set(i, newGap);
                                 curGap = newGap;
                             }
                         }
@@ -499,6 +510,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     prevGap = curGap;
                 }
                 transaction.commit();
+                
+                if (!ok) {
+                    printGapState();
+                }
+                
             } catch (Error ex) {
                 if (transaction != null) {
                     transaction.rollback();
