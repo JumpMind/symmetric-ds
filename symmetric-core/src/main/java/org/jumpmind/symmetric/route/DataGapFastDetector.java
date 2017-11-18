@@ -464,8 +464,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         return map;
     }
     
-    protected void fixOverlappingGaps(List<DataGap> gaps, ProcessInfo processInfo) {
-        List<DataGap> gapsCopy = new ArrayList<DataGap>(gaps);
+    protected void fixOverlappingGaps(List<DataGap> gapsToCheck, ProcessInfo processInfo) {
+        List<DataGap> gapsCopy = new ArrayList<DataGap>(gapsToCheck);
         boolean ok = true;
         try {
             ISqlTransaction transaction = null;
@@ -510,11 +510,12 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                     prevGap = curGap;
                 }
                 transaction.commit();
-                
                 if (!ok) {
                     printGapState();
-                }
-                
+                    log.info("Fixed gaps: " + gapsCopy);
+                }   
+                gaps.clear();
+                gaps.addAll(gapsCopy);
             } catch (Error ex) {
                 if (transaction != null) {
                     transaction.rollback();
@@ -535,6 +536,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             throw ex;
         }
     }
+
 
     public Long mapRow(Row row) {
         return row.getLong("data_id");
