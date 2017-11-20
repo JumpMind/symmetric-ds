@@ -73,6 +73,9 @@ public class DbCompareConfig {
             String simpleTableName = DbCompareUtil.getUnqualifiedTableName(tableName);
             whereClause = getWhereClause(simpleTableName, "target");
         }
+        if (StringUtils.isEmpty(whereClause)) {
+            whereClause = "1=1";
+        }        
         return whereClause;
     }
 

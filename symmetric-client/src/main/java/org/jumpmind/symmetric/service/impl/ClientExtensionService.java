@@ -41,7 +41,8 @@ public class ClientExtensionService extends ExtensionService {
         this.springContext = springContext;
     }
 
-    public void refresh() {
+    @Override
+    public synchronized void refresh() {
         super.refresh();
 
         if (springContext != null) {

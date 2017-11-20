@@ -137,6 +137,11 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
     }
     
     @Override
+    public String getIndexName(IIndex index) {
+        return super.getIndexName(index).replace("-", "_");
+    }
+    
+    @Override
     protected String mapDefaultValue(Object defaultValue, int typeCode) {
         if (TypeMap.isDateTimeType(typeCode) && defaultValue != null) {
             String defaultValueStr = defaultValue.toString();

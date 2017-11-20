@@ -108,6 +108,10 @@
         <priority value="ERROR" />
     </category>
     
+    <category name="com.vaadin.server.communication">
+		<priority value="FATAL" />
+	</category>
+    
     <category name="org.atmosphere">
         <priority value="FATAL" />
     </category>

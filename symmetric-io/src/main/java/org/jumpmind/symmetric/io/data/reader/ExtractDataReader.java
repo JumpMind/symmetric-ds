@@ -172,7 +172,7 @@ public class ExtractDataReader implements IDataReader {
     }
 
     protected CsvData enhanceWithLobsFromSourceIfNeeded(Table table, CsvData data) {
-        if (this.currentSource.requiresLobsSelectedFromSource()
+        if (this.currentSource.requiresLobsSelectedFromSource(data)
                 && (data.getDataEventType() == DataEventType.UPDATE || data.getDataEventType() == DataEventType.INSERT)) {
             List<Column> lobColumns = platform.getLobColumns(table);
             if (lobColumns.size() > 0) {

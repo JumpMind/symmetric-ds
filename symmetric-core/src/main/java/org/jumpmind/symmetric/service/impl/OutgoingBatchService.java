@@ -149,9 +149,21 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         } while (updateCount > 0);
     }
 
+    
     @Override
     public void markHeartbeatAsSent() {
-        sqlTemplate.update(getSql("updatePreviousHeartbeatToOkSql"), Constants.CHANNEL_HEARTBEAT, getTableName(getTablePrefix(), SYM_NODE_HOST));
+        String sql = getSql("cancelChannelBatchesSelectSql");
+        
+        List<Row> elgibleBatches = sqlTemplateDirty.query(sql, new Object[] { Constants.CHANNEL_HEARTBEAT, "OK",  getTableName(getTablePrefix(), SYM_NODE_HOST) });
+        
+        if (elgibleBatches != null) {
+            String updateSql = getSql("cancelChannelBatchSql");
+            for (Row elgibleBatch : elgibleBatches) {
+                String nodeId = elgibleBatch.getString("node_id");
+                long batchId = elgibleBatch.getLong("batch_id");                
+                sqlTemplate.update(updateSql, nodeId, batchId);
+            }
+        }
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
