@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
@@ -104,6 +105,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
     public void write(CsvData data) {
         DataEventType eventType = data.getDataEventType();
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE) {
+        		if (eventType == DataEventType.INSERT) {
+        			statistics.get(this.batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
+        		}
+        		else {
+        			statistics.get(this.batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
+        		}
             Map<String, String> columnData = data.toColumnNameValuePairs(
                     snapshotTable.getColumnNames(), CsvData.ROW_DATA);
             Map<String, String> oldColumnData = data.toColumnNameValuePairs(
