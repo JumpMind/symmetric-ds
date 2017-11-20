@@ -21,8 +21,13 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Indicates the status of an attempt to transport data from or to a remove
@@ -44,7 +49,9 @@ public class RemoteNodeStatus implements Serializable {
     private long reloadBatchesProcessed;
     private boolean complete = false;
     private Map<String, Channel> channels;
-
+    private Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
+    private Set<String> tableSummary = new LinkedHashSet<String>();
+ 
     public RemoteNodeStatus(String nodeId, String channelId, Map<String, Channel> channels) {
         this.status = Status.NO_DATA;
         this.nodeId = nodeId;
@@ -96,6 +103,7 @@ public class RemoteNodeStatus implements Serializable {
         if (incomingBatches != null) {
             for (IncomingBatch incomingBatch : incomingBatches) {
                 if (incomingBatch.getIgnoreCount() == 0) {
+                    incrementTableCounts(incomingBatch);
                     dataProcessed += incomingBatch.getLoadRowCount();
                 }
                 batchesProcessed++;
@@ -127,6 +135,7 @@ public class RemoteNodeStatus implements Serializable {
             for (OutgoingBatch batch : outgoingBatches) {
                 batchesProcessed++;
                 if (batch.getIgnoreCount() == 0) {
+                    incrementTableCounts(batch);
                     dataProcessed += batch.totalRowCount();
                 }
                 Channel channel = channels.get(batch.getChannelId());
@@ -162,5 +171,66 @@ public class RemoteNodeStatus implements Serializable {
     public boolean isComplete() {
         return complete;
     }
+    
+    public Map<String, Integer> getTableCounts() {
+        return tableCounts;
+    }
+    
+    public String getTableSummary() {
+        final int MAX_SUMMARY_LENGTH = 512;
+        if (tableCounts != null && !tableCounts.isEmpty()) {
+            StringBuilder buff = new StringBuilder();
+            for (String table : tableCounts.keySet()) {
+                Integer count = tableCounts.get(table);
+                buff.append(table).append(" (").append(count).append(" row");
+                if (count != 1) {
+                    buff.append("s");
+                }
+                buff.append("), ");
+            }
+            
+            if (buff.length() > 2) {
+                buff.setLength(buff.length() - 2);
+            }
+            
+            return StringUtils.abbreviate(buff.toString(), MAX_SUMMARY_LENGTH);
+        } else if (!tableSummary.isEmpty()) {
+            StringBuilder buff = new StringBuilder();
+            for (String table : tableSummary) {
+                buff.append(table).append(", ");
+            }
+            if (buff.length() > 2) {
+                buff.setLength(buff.length() - 2);
+            }
+            
+            return StringUtils.abbreviate(buff.toString(), MAX_SUMMARY_LENGTH);
+        } else {
+            return "";
+        }
+    }
+    
+    protected void incrementTableCounts(AbstractBatch batch) {
+        if (!batch.getTableCounts().isEmpty() ) {            
+            for (String table : batch.getTableCounts().keySet()) {
+                
+                Integer value = tableCounts.get(table);
+                if (value == null) {
+                    tableCounts.put(table, Integer.valueOf(1));
+                } else {
+                    tableCounts.replace(table, value.intValue()+batch.getTableCounts().get(table));
+                }
+            }
+        } else if (!StringUtils.isEmpty(batch.getSummary())) {
+            String[] tables = batch.getSummary().split(",");
+            for (String table : tables) {
+                String tableTrimmed = table.trim();
+                if (!tableSummary.contains(tableTrimmed)) {                    
+                    tableSummary.add(tableTrimmed);
+                }
+            }
+        }
+    }
+    
+    
 
 }

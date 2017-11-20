@@ -363,6 +363,10 @@ public class AbstractBatch implements Serializable {
     public String getCreateBy() {
         return createBy;
     }
+    
+    public Map<String, Integer> getTableCounts() {
+        return new LinkedHashMap<String, Integer>(tableCounts);
+    }
 
     public String getSummary() {
         if ((summary == null || summary.length() == 0) && tableCounts != null) {
