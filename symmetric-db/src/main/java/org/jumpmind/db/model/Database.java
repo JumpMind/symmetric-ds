@@ -148,7 +148,7 @@ public class Database implements Serializable, Cloneable {
                 if (parentTable != null) {
                     StringBuilder dependentTables = new StringBuilder();
                     for (ForeignKey fk : parentTable.getForeignKeys()) {
-                        if(allTables.get(fk.getForeignTable()) == null) {
+                        if(fk.getForeignTable() != null && allTables.get(fk.getForeignTable().getName()) == null) {
                             if (dependentTables.length() > 0) { dependentTables.append(", "); }
                         }
                         dependentTables.append(fk.getForeignTableName());
@@ -159,17 +159,14 @@ public class Database implements Serializable, Cloneable {
                             missingDependencyMap.get(parentTable).add(fk.getForeignTableName());
                         }
                     }
-                    log.warn("Unable to resolve foreign keys for table " + parentTable.getName() + " because the following dependent tables are not configured for replication [" + dependentTables.toString() + "].");
+                    log.info("Unable to resolve foreign keys for table " + parentTable.getName() + " because the following dependent tables were not included [" + dependentTables.toString() + "].");
                 }
             } else {
                 temporary.add(t);
                 
                 for (ForeignKey fk : t.getForeignKeys()) {
                     Table fkTable = allTables.get(fk.getForeignTableName());
-                    if (fkTable == t) {
-                        //selfDependent.add(t);
-                    }
-                    else {
+                    if (fkTable != null) {
                         depth.increment(); 
                         resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
                                 dependencyMap, depth, position, tablePrefix, resolvedPosition, parentPosition);

@@ -553,14 +553,18 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 if (threadFactory == null) {
                     threadFactory = new CustomizableThreadFactory(parameterService.getEngineName().toLowerCase() + "-dataloader");
                 }
+                
                 ExecutorService executor = Executors.newFixedThreadPool(1, threadFactory);
                 LoadIntoDatabaseOnArrivalListener loadListener = new LoadIntoDatabaseOnArrivalListener(processInfo,
                         sourceNode.getNodeId(), listener, executor);
-                new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING, 
-                        memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
                 
-                /* Previously submitted tasks will still be executed */
-                executor.shutdown();
+                try {
+                    new SimpleStagingDataWriter(transport.openReader(), stagingManager, Constants.STAGING_CATEGORY_INCOMING,
+                            memoryThresholdInBytes, BatchType.LOAD, targetNodeId, ctx, loadListener).process();
+                } finally {
+                    /* Previously submitted tasks will still be executed */
+                    executor.shutdown();
+                }
 
                 OutputStreamWriter outWriter = null;
                 if (out != null) {
