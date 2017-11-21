@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,12 +74,25 @@ public class Database implements Serializable, Cloneable {
      * and ignore cycles.
      * 
      * @param tables
-     *            List of tables to sort.
+     *          List of tables to sort.
+     * @param allTables
+     *          List of tables in database, if null the tables param will be used.
+     * @param tablePrefix
+     *          The SymmetricDS runtime table prefix.
+     * @param dependencyMap
+     *          Map to separate dependent tables into groups.  The key will be an integer based counter (1,2...) to identify the grouping.  
+     *          The value will contain all the tables that are dependent on each other but independent for other tables in other groups.
+     *          Used to identify which tables could be placed in a specific group.
+     *          This should be passed in empty so that it can be used by reference after the method finishes.
+     * @param missingDependencyMap
+     *          This is a used for any tables that are missing from the tables param that should be included in synchronization to avoid FK issues.                    
      * @return List of tables in their dependency order - if table A has a
      *         foreign key for table B then table B will precede table A in the
      *         list.
      */
-    public static List<Table> sortByForeignKeys(List<Table> tables, Map<String, Table> allTables) {
+    public static List<Table> sortByForeignKeys(List<Table> tables, Map<String, Table> allTables, String tablePrefix,
+            Map<Integer, Set<Table>> dependencyMap, Map<Table, Set<String>> missingDependencyMap) {
+        
         if (allTables == null) {
             allTables = new HashMap<String, Table>();
             for (Table t : tables) {
@@ -86,23 +100,50 @@ public class Database implements Serializable, Cloneable {
             }
         }
         
+        if (dependencyMap == null) {
+            dependencyMap = new HashMap<Integer, Set<Table>>();
+        }
+        if (missingDependencyMap == null) {
+            missingDependencyMap = new HashMap<Table, Set<String>>();
+        }
         Set<Table> resolved = new HashSet<Table>();
         Set<Table> temporary = new HashSet<Table>();
         List<Table> finalList = new ArrayList<Table>();
         
+        MutableInt depth = new MutableInt(1);
+        MutableInt position = new MutableInt(1);
+        MutableInt parentPosition = new MutableInt(-1);
+        
+        Map<Table, Integer> resolvedPosition = new HashMap<Table, Integer>();
+        
+        if (tablePrefix == null) { tablePrefix = "sym"; }
+        
         for(Table t : tables) {
-            resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null);
+            if (t != null && !t.getName().toUpperCase().startsWith("SYM")) {
+                depth.setValue(1);
+                parentPosition.setValue(-1);
+                resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap, 
+                        dependencyMap, depth, position, tablePrefix, resolvedPosition, parentPosition);
+            }
         }
     
         Collections.reverse(finalList);
         return finalList;
     }
     
-    public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, List<Table> finalList, Table parentTable) {
-        if (resolved.contains(t)) { return; }
+    public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, 
+            List<Table> finalList, Table parentTable, Map<Table, Set<String>> missingDependencyMap,
+            Map<Integer, Set<Table>> dependencyMap, MutableInt depth, MutableInt position, String tablePrefix, 
+            Map<Table, Integer> resolvedPosition, MutableInt parentPosition) {
+        
+        if (resolved.contains(t)) { 
+            parentPosition.setValue(resolvedPosition.get(t));
+            return; 
+        }
+        
         if (temporary.contains(t)) {log.info("Possible circular dependent: " + t.getName()); return; }
         if (!temporary.contains(t) && !resolved.contains(t)) {
-            temporary.add(t);
+            Set<Integer> parentTablesChannels = new HashSet<Integer>();
             if (t == null) {
                 if (parentTable != null) {
                     StringBuilder dependentTables = new StringBuilder();
@@ -111,23 +152,103 @@ public class Database implements Serializable, Cloneable {
                             if (dependentTables.length() > 0) { dependentTables.append(", "); }
                         }
                         dependentTables.append(fk.getForeignTableName());
+                        if (missingDependencyMap.get(parentTable) == null) {
+                            missingDependencyMap.put(parentTable, new HashSet<String>());
+                        }
+                        if (allTables.get(fk.getForeignTableName()) == null) {
+                            missingDependencyMap.get(parentTable).add(fk.getForeignTableName());
+                        }
                     }
                     log.warn("Unable to resolve foreign keys for table " + parentTable.getName() + " because the following dependent tables are not configured for replication [" + dependentTables.toString() + "].");
                 }
             } else {
+                temporary.add(t);
+                
                 for (ForeignKey fk : t.getForeignKeys()) {
                     Table fkTable = allTables.get(fk.getForeignTableName());
                     if (fkTable == t) {
                         //selfDependent.add(t);
                     }
                     else {
-                        resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t);
+                        depth.increment(); 
+                        resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
+                                dependencyMap, depth, position, tablePrefix, resolvedPosition, parentPosition);
+                        Integer resolvedParentTableChannel = resolvedPosition.get(fkTable);
+                        if (resolvedParentTableChannel != null) {
+                            parentTablesChannels.add(resolvedParentTableChannel);
+                        }
+                        
                    }
                  }
             }
-            resolved.add(t);
-            finalList.add(0, t);
+                
+            
+            if (t != null) {
+                if (parentPosition.intValue() > 0) {
+                    if (dependencyMap.get(parentPosition.intValue()) == null) { 
+                        dependencyMap.put(parentPosition.intValue(), new HashSet<Table>());
+                    }
+                    
+                    if (parentTablesChannels.size() > 1) {
+                        parentPosition.setValue(mergeChannels(parentTablesChannels, dependencyMap, resolvedPosition));
+                    } 
+                    dependencyMap.get(parentPosition.intValue()).add(t);
+                }
+                else {
+                    if (dependencyMap.get(position.intValue()) == null) {
+                        dependencyMap.put(position.intValue(), new HashSet<Table>());
+                    }
+                    
+                    dependencyMap.get(position.intValue()).add(t);
+                }
+                
+                resolved.add(t);
+                resolvedPosition.put(t, parentPosition.intValue() > 0 ? parentPosition.intValue() : position.intValue());
+                finalList.add(0, t);
+                
+                if (depth.intValue() == 1) {
+                    if (parentPosition.intValue() < 0) {
+                        position.increment();
+                    }
+                }
+                else {
+                    depth.decrement();
+                    
+                }
+            }
         }
+    }
+    
+    protected static Integer mergeChannels(Set<Integer> parentTablesChannels, Map<Integer, Set<Table>> dependencyMap, 
+            Map<Table, Integer> resolvedPosition) {
+        
+        Iterator<Integer> i = parentTablesChannels.iterator();
+        Set<Table> mergedTables = new HashSet<Table>();
+        Integer minChannelId = null;
+        Set<Integer> unusedChannels = new HashSet<Integer>();
+        while (i.hasNext()) {
+            Integer channelToMerge = (Integer) i.next();
+            if (dependencyMap.get(channelToMerge) != null) {
+                mergedTables.addAll(dependencyMap.get(channelToMerge));
+                
+                if (minChannelId == null) { 
+                    minChannelId = channelToMerge;
+                } else if (channelToMerge < minChannelId) {
+                    unusedChannels.add(minChannelId);
+                    minChannelId = channelToMerge;
+                } else {
+                    unusedChannels.add(channelToMerge);
+                }
+            }
+        }
+        dependencyMap.put(minChannelId, mergedTables);
+        for (Table t : mergedTables) {
+            resolvedPosition.put(t, minChannelId);
+        }
+        for (Integer unusedChannel : unusedChannels) {
+            dependencyMap.remove(unusedChannel);
+        }
+        return minChannelId;
     }
     
     public static String printTables(List<Table> tables) {
@@ -144,12 +265,15 @@ public class Database implements Serializable, Cloneable {
             for (Table table : tables) {
                 list.add(table);
             }
-            list = sortByForeignKeys(list, null);
+            list = sortByForeignKeys(list, null, null, null, null);
             tables = list.toArray(new Table[list.size()]);
         }
         return tables;
     }
 
+    public static List<Table> sortByForeignKeys(List<Table> tables) {
+        return sortByForeignKeys(tables, null, null, null, null);
+    }
     
     /**
      * Adds all tables from the other database to this database. Note that the

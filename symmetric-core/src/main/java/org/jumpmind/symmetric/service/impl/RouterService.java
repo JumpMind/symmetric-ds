@@ -1159,4 +1159,16 @@ public class RouterService extends AbstractService implements IRouterService {
     	}
     	return table;
     }
+
+    @Override
+    public Set<Channel> getCommomBatchChannels(List<Channel> channels, String nodeGroupId, List<TriggerRouter> triggerRouters) {
+        Set<Channel> commonBatchChannels = new HashSet<Channel>();
+        
+        for (Channel channel : channels) {
+            if (producesCommonBatches(channel, nodeGroupId, triggerRouters)) {
+                commonBatchChannels.add(channel);
+            }
+        }
+        return commonBatchChannels;
+    }
 }
