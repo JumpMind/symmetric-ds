@@ -48,6 +48,9 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
         super(dataSource, settings);
 
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
+        if (sqlScriptReplacementTokens == null) {
+        		sqlScriptReplacementTokens = new HashMap<String, String>();
+        }
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
 
@@ -86,7 +89,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
-        return sqlScriptReplacementTokens;
+    	    return sqlScriptReplacementTokens;
     }
 
     @Override

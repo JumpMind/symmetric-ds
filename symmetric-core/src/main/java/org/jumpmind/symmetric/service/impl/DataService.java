@@ -1622,8 +1622,11 @@ public class DataService extends AbstractService implements IDataService {
                 if (triggerRouters != null && triggerRouters.size() > 0) {
                     for (TriggerRouter triggerRouter : triggerRouters) {
                         eventCount++;
+                        String channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine
+                                .getConfigurationService().getChannels(false));
+                        
                         insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                overrideInitialLoadSelect, false, -1, "reloadTable", Status.NE, null, -1);
+                                overrideInitialLoadSelect, false, -1, "reloadTable", Status.NE, channelId, -1);
                     }
                 }
             }

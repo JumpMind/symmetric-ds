@@ -147,7 +147,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         export.setCompatible(Compatible.H2);
         String output = export.exportTables(tables).toLowerCase();
 
-        Assert.assertEquals(output, 48, StringUtils.countMatches(output, "create table "));
+        Assert.assertEquals(output, 47, StringUtils.countMatches(output, "create table "));
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             return;
         }
