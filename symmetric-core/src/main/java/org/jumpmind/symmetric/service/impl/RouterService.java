@@ -44,6 +44,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.SyntaxParsingException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
@@ -988,6 +989,25 @@ public class RouterService extends AbstractService implements IRouterService {
             for (TriggerRouter triggerRouter : triggerRouters) {
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter.getRouter(),
                         context.getChannel());
+                
+                if(!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && triggerRouter.isCacheReload() && 
+                                 ( data.getDataEventType() == DataEventType.INSERT 
+                                || data.getDataEventType() == DataEventType.UPDATE 
+                                || data.getDataEventType() == DataEventType.DELETE)) {
+                    Set<String> caches = this.engine.getStagingManager().getResourceReferences();
+                    boolean clearedCache = false;
+                    for(String possibleFile : caches) {
+                        IStagedResource resource = this.engine.getStagingManager().find(possibleFile);
+                        if(StringUtils.containsIgnoreCase(resource.getPath(), Constants.STAGING_CATEGORY_RELOADCACHE + "/" + data.getTableName() + "/")) {
+                            resource.delete();
+                            clearedCache = true;
+                        }
+                    }
+                    if(clearedCache) {
+                        log.info("Cleared reload cache for {} as a data change came to the router", data.getTableName());
+                    }
+                }
+                
                 Collection<String> nodeIds = null;
                 if (!context.getChannel().isIgnoreEnabled()
                         && triggerRouter.isRouted(data.getDataEventType())) {

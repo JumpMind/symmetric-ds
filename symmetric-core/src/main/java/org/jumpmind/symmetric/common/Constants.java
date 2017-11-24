@@ -63,6 +63,8 @@ final public class Constants {
 
     public static final String STAGING_CATEGORY_INCOMING = "incoming";
 
+    public static final String STAGING_CATEGORY_RELOADCACHE = "reloadcache";
+
     public static final String CLIENT_SPRING_XML = "classpath:/symmetric-client.xml";
     
     public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";

@@ -60,6 +60,8 @@ public class TriggerRouter implements Serializable {
     private String lastUpdateBy;
     
     private boolean pingBackEnabled = false;
+
+    private boolean cacheReload = false;
     
     public TriggerRouter() {
         this(new Trigger(), new Router());
@@ -78,6 +80,14 @@ public class TriggerRouter implements Serializable {
     
     public boolean isEnabled() {
         return enabled;
+    }
+    
+    public void setCacheReload(boolean cacheReload) {
+        this.cacheReload = cacheReload;
+    }
+    
+    public boolean isCacheReload() {
+        return cacheReload;
     }
 
     public Date getCreateTime() {

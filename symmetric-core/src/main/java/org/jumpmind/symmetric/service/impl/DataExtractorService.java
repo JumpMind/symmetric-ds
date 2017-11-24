@@ -80,6 +80,8 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.csv.CsvReader;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
@@ -1130,7 +1132,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo) {
         return new ExtractDataReader(symmetricDialect.getPlatform(), 
-                new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo));
+                new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo, stagingManager));
     }
 
     protected Statistics getExtractStats(IDataWriter writer) {
@@ -1504,7 +1506,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 if (targetNode != null) {
                     IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                            new SelectFromSymDataSource(batch, sourceNode, targetNode, new ProcessInfo()));
+                            new SelectFromSymDataSource(batch, sourceNode, targetNode, new ProcessInfo(), this.stagingManager));
                     DataContext ctx = new DataContext();
                     ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -1534,7 +1536,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
             if (targetNode != null) {
                 IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                        new SelectFromSymDataSource(outgoingBatch, sourceNode, targetNode, new ProcessInfo()));
+                        new SelectFromSymDataSource(outgoingBatch, sourceNode, targetNode, new ProcessInfo(), this.stagingManager));
                 DataContext ctx = new DataContext();
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -2023,10 +2025,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private ProcessInfo processInfo;
         
         private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
+        
+        private IStagingManager stagingManager;
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
-                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
+                Node sourceNode, Node targetNode, ProcessInfo processInfo, IStagingManager stagingManager) {
             this.processInfo = processInfo;
+            this.stagingManager = stagingManager;
             this.outgoingBatch = outgoingBatch;
             this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),
                     outgoingBatch.getChannelId(), symmetricDialect.getBinaryEncoding(),
@@ -2103,8 +2108,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             
                             SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
                                     triggerRouter, triggerHistory, initialLoadSelect);
+                            
                             this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
-                                    event);
+                                    event, stagingManager);
                             data = (Data) this.reloadSource.next();
                             this.sourceTable = reloadSource.getSourceTable();
                             this.targetTable = this.reloadSource.getTargetTable();
@@ -2244,6 +2250,54 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     class SelectFromTableSource implements IExtractDataReaderSource {
 
+        class SqlReadFromCacheCursor implements ISqlReadCursor<Data>{
+
+            private TriggerHistory triggerHistory;
+            private CsvReader br;
+            private int expectedCommaCount;
+            
+            public SqlReadFromCacheCursor(BufferedReader reader, TriggerHistory triggerHistory, int expectedCommaCount) {
+                this.triggerHistory = triggerHistory;
+                this.expectedCommaCount = expectedCommaCount;
+                this.br = new CsvReader(reader, ',');
+                this.br.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
+                this.br.setCaptureRawRecord(true);
+                this.br.setSafetySwitch(false);
+            }
+            
+            @Override
+            public Data next() {
+                try {
+                    if(!br.readRecord()) {
+                        return null;
+                    }
+                } catch (IOException e) {
+                    throw new SymmetricException("error on reading from cache", e);
+                }
+                String csvRow = br.getRawRecord();
+                
+                int commaCount = StringUtils.countMatches(csvRow, ",");
+                if (expectedCommaCount <= commaCount) {
+                    Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
+                            .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
+                            null, null);
+                    data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
+                            .getRouterId());
+                    return data;
+                } else {
+                    throw new SymmetricException(
+                            "The extracted row data did not have the expected (%d) number of columns (actual=%s): %s.",
+                            expectedCommaCount, commaCount, csvRow);
+                }
+            }
+
+            @Override
+            public void close() {
+                br.close();
+            }
+            
+        }
+        
         private OutgoingBatch outgoingBatch;
 
         private Batch batch;
@@ -2265,10 +2319,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private TriggerRouter triggerRouter;
         
         private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
+        
+        private IStagingManager stagingManager;
+        
+        private CsvWriter cacheWriter;
+        
+        private IStagedResource cacheFile;
 
         public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
-                SelectFromTableEvent event) {
+                SelectFromTableEvent event, IStagingManager stagingManager) {
             this.outgoingBatch = outgoingBatch;
+            this.stagingManager = stagingManager;
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<DataExtractorService.SelectFromTableEvent>(
                     1);
             initialLoadEvents.add(event);
@@ -2367,12 +2428,38 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         protected void closeCursor() {
+            if(this.cacheWriter != null) {
+                this.cacheWriter.flush();
+                this.cacheWriter.close();
+                this.cacheWriter = null;
+            }
+            
+            if(this.cacheFile != null && this.cacheFile.exists()) {
+                this.cacheFile.close();
+                this.cacheFile.setState(State.DONE);
+                this.cacheFile = null;
+            }
+            
             if (this.cursor != null) {
                 this.cursor.close();
                 this.cursor = null;
                 this.currentInitialLoadEvent = null;
             }
         }
+        
+        public String MD5(String md5) {
+            try {
+                 java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+                 byte[] array = md.digest(md5.getBytes());
+                 StringBuffer sb = new StringBuffer();
+                 for (int i = 0; i < array.length; ++i) {
+                   sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+                }
+                 return sb.toString();
+             } catch (java.security.NoSuchAlgorithmException e) {
+             }
+             return null;
+         }
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter, String overrideSelectSql) {
@@ -2391,6 +2478,32 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
             
+            final boolean useCache = stagingManager != null && triggerRouter.isCacheReload() && !symmetricDialect.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
+
+            IStagedResource possibleCacheFile = stagingManager != null ? stagingManager.find(Constants.STAGING_CATEGORY_RELOADCACHE, sourceTable.getName(), MD5(initialLoadSql)) : null;
+            this.cacheFile = null;
+            this.cacheWriter = null;
+            
+            if(possibleCacheFile != null && possibleCacheFile.getState() == State.CREATE && (System.currentTimeMillis() - possibleCacheFile
+                            .getLastUpdateTime()) > 60 * 1000) {
+                possibleCacheFile.delete();
+                possibleCacheFile = null;
+                log.info("Purged possible incomplete reload cache for {}", sourceTable.getName());
+            }
+            
+            if(useCache && possibleCacheFile != null && possibleCacheFile.exists() && possibleCacheFile.getState() == State.DONE) {
+                log.info("Reading from cache on reload for table {}. Using file: {}", sourceTable.getName(), possibleCacheFile.getFile().getPath());
+                this.cursor = new SqlReadFromCacheCursor(possibleCacheFile.getReader(), triggerHistory, expectedCommaCount);
+                return;
+            }else if(useCache && (possibleCacheFile == null || !possibleCacheFile.exists())) {
+                this.cacheFile = stagingManager.create(Constants.STAGING_CATEGORY_RELOADCACHE, sourceTable.getName(), MD5(initialLoadSql));
+                this.cacheWriter = new CsvWriter(cacheFile.getWriter(0), ',') ;
+                this.cacheWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+                log.info("About to write to cache on reload for table {}. Using file: {}", sourceTable.getName(), cacheFile.getFile().getPath());
+            }else if(!useCache && possibleCacheFile != null) {
+                possibleCacheFile.delete();
+            }
+
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
                     String csvRow = null;                    
@@ -2412,6 +2525,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 null, null);
                         data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
                                 .getRouterId());
+                        
+                        if(cacheWriter != null) {
+                            if(cacheFile.isInUse()) {
+                                try {
+                                    cacheWriter.writeRecord(CsvUtils.tokenizeCsvData(csvRow));
+                                    cacheFile.refreshLastUpdateTime();
+                                } catch (IOException e) {
+                                    cacheFile.delete();
+                                    cacheFile = null;
+                                    cacheWriter = null;
+                                    throw new SymmetricException("error on writing to cache", e);
+                                }
+                            }else {
+                                log.info("Looks like changes came to the data router for {}, stop writing to cache", sourceTable.getName());
+                                cacheWriter.close();
+                                cacheFile.delete();
+                                cacheFile = null;
+                                cacheWriter = null;
+                            }
+                        }
                         return data;
                     } else {
                         throw new SymmetricException(

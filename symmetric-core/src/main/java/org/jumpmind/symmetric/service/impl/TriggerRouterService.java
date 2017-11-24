@@ -1012,9 +1012,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         triggerRouter.getLastUpdateTime(),
                         triggerRouter.isEnabled() ? 1 : 0,
                         triggerRouter.getTrigger().getTriggerId(),
-                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
+                        triggerRouter.getRouter().getRouterId(),
+                        triggerRouter.isCacheReload() ? 1 : 0}, new int[] { Types.NUMERIC,
                         Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR })) {
+                        Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT })) {
             triggerRouter.setCreateTime(triggerRouter.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerRouterSql"),
@@ -1026,9 +1027,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             triggerRouter.getLastUpdateTime(),
                             triggerRouter.isEnabled() ? 1 : 0,
                             triggerRouter.getTrigger().getTriggerId(),
-                            triggerRouter.getRouter().getRouterId() }, new int[] { Types.NUMERIC,
+                            triggerRouter.getRouter().getRouterId(),
+                            triggerRouter.isCacheReload() ? 1 : 0}, new int[] { Types.NUMERIC,
                             Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.TIMESTAMP,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR });
+                            Types.VARCHAR, Types.TIMESTAMP, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT });
         }
         
         clearCache();
@@ -2073,6 +2075,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggerRouter.setInitialLoadOrder(rs.getInt("initial_load_order"));
             triggerRouter.setInitialLoadSelect(rs.getString("initial_load_select"));
             triggerRouter.setEnabled(rs.getBoolean("enabled"));
+            triggerRouter.setCacheReload(rs.getBoolean("cache_reload"));
             triggerRouter.setInitialLoadDeleteStmt(rs.getString("initial_load_delete_stmt"));
 
             triggerRouter.setPingBackEnabled(rs.getBoolean("ping_back_enabled"));
