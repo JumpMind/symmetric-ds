@@ -404,7 +404,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         IOfflineClientListener defaultlistener = new DefaultOfflineClientListener(parameterService,
                 nodeService);
         extensionService.addExtensionPoint(defaultlistener);
-        extensionService.addExtensionPoint(defaultlistener);
 
         if (registerEngine) {
             registerHandleToEngine();

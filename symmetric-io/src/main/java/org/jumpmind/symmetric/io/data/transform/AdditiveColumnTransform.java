@@ -81,12 +81,12 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                 data.getTableName(), false);
         if (table == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Could not find the target table {}" , data.getFullyQualifiedTableName());
+                log.debug("Could not find the target table '{}'" , data.getFullyQualifiedTableName());
             }
             throw new IgnoreColumnException();
         } else if (table.getColumnWithName(column.getTargetColumnName()) == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Could not find the target column {}" , column.getTargetColumnName());
+                log.debug("Could not find the target column '{}'" , column.getTargetColumnName());
             }
             throw new IgnoreColumnException();
         } else {
