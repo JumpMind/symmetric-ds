@@ -325,4 +325,6 @@ public interface ISymmetricEngine {
 
     public String getLastException();
     
+    public String getEngineDescription(String mesage);
+    
 }

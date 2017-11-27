@@ -33,6 +33,7 @@ import javax.servlet.ServletContext;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpVersion;
@@ -241,6 +242,8 @@ public class SymmetricWebServer {
     }
 
     public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
+        
+        printAsciiArt();
 
         TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
 
@@ -303,6 +306,14 @@ public class SymmetricWebServer {
         }
 
         return this;
+    }
+
+    protected void printAsciiArt() {
+        try {            
+            log.info("\n{}", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart")));
+        } catch (Exception ex) {
+            // ignored.
+        }
     }
 
     protected ServletContext getServletContext() {

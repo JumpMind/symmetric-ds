@@ -154,9 +154,9 @@ public abstract class AbstractCommandLauncher {
                     IOUtils.closeQuietly(fis);
                 }
             } else if (!serverPropertiesFile.exists()) {
-                log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
+                log.debug("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
             } else if (!serverPropertiesFile.isFile()) {
-                log.warn("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
+                log.debug("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". Object is not a file.");
             }
             serverPropertiesInitialized = true;
         }

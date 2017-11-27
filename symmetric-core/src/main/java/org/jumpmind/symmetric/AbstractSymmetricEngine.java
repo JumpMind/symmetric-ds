@@ -27,8 +27,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -131,6 +131,7 @@ import org.jumpmind.symmetric.transport.ConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -639,7 +640,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                    } else if (node != null) {
                         
                         log.info(
-                                "Starting registered node [group={}, id={}, externalId={}]",
+                                "Starting registered node [group={}, id={}, nodeId={}]",
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
 
@@ -677,7 +678,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
-                    log.info("Started SymmetricDS");
                     lastRestartTime = new Date();
                     started = true;
 
@@ -694,15 +694,28 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
         }
 
-        log.info(
-                "SymmetricDS: type={}, name={}, version={}, groupId={}, externalId={}, databaseName={}, databaseVersion={}, driverName={}, driverVersion={}",
-                new Object[] { getDeploymentType(), getEngineName(), Version.version(),
-                        getParameterService().getNodeGroupId(),
-                        getParameterService().getExternalId(), symmetricDialect.getName(),
-                        symmetricDialect.getVersion(), symmetricDialect.getDriverName(),
-                        symmetricDialect.getDriverVersion() });
+        if (started) {
+            log.info(getEngineDescription("STARTED:"));
+        } else {
+            log.info(getEngineDescription("NOT STARTED:"));
+        }
+
         return started;
     }
+    
+    public String getEngineDescription(String msg) {
+        if (lastRestartTime == null) {
+            return "";
+        }
+        String formattedUptime = FormatUtils.formatDurationReadable(System.currentTimeMillis() - lastRestartTime.getTime());
+        
+        return String.format( "SymmetricDS Node %s\n\t nodeId=%s\n\t groupId=%s\n\t type=%s\n\t name=%s\n\t softwareVersion=%s\n\t databaseName=%s\n\t databaseVersion=%s\n\t driverName=%s\n\t driverVersion=%s\n\t uptime=%s",
+                 msg, getParameterService().getExternalId(), getParameterService().getNodeGroupId(), 
+                getDeploymentType(), getEngineName(), Version.version(), symmetricDialect.getName(),
+                symmetricDialect.getVersion(), symmetricDialect.getDriverName(),
+                symmetricDialect.getDriverVersion(), formattedUptime );        
+    }
+    
     
     
     public synchronized void uninstall() {

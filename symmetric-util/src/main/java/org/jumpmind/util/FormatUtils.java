@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.jumpmind.exception.ParseException;
 
@@ -340,6 +341,28 @@ public final class FormatUtils {
 
     public static String stripTurkeyDottedI(String str) {
         return str.replace("\u0130", "I").replace("\u0131", "i");
+    }
+    
+    public static String formatDurationReadable(long duration) {
+        String result =  DurationFormatUtils.formatDurationWords(duration, true, true);
+        
+        result = result.replaceAll("hours", "hrs");
+        result = result.replaceAll("hour", "hr");
+        result = result.replaceAll("seconds", "sec.");
+        result = result.replaceAll("second", "sec.");
+        result = result.replaceAll("minutes", "mins");
+        result = result.replaceAll("minute", "min");
+        
+        return result;
+    }
+    
+    public static String formatDateTimeISO(Date date) {
+        if (date != null) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return dateFormat.format(date);
+        } else {
+            return "null";            
+        }
     }
 
 }
