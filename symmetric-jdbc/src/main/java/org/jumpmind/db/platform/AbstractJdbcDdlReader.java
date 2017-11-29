@@ -554,6 +554,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
     }
 
+    @Override
     public Table readTable(final String catalog, final String schema, final String table) {
         try {
             log.debug("reading table: " + table);
