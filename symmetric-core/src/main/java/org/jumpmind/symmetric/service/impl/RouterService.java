@@ -205,9 +205,13 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     insertInitialLoadEvents();
+                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
 
                     long ts = System.currentTimeMillis();
                     gapDetector.beforeRouting();
+                    
+                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+                    
                     dataCount = routeDataForEachChannel();
                     ts = System.currentTimeMillis() - ts;
                     if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
@@ -474,6 +478,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 readyChannels = getReadyChannels();
             }
             for (NodeChannel nodeChannel : channels) {
+                engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
@@ -753,6 +758,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 if (context != null) {
+                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
 	                context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
 	                context.logStats(log, totalTime);
 	                context.cleanup();
@@ -919,7 +925,8 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
               
                         long routeTs = System.currentTimeMillis() - ts;
-                        if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD && context != null) {
+                        if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
+                            engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
                                             + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",

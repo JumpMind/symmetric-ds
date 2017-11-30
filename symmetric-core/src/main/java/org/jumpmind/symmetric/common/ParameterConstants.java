@@ -280,6 +280,7 @@ final public class ParameterConstants {
     public final static String CLUSTER_SERVER_ID = "cluster.server.id";
     public final static String CLUSTER_LOCKING_ENABLED = "cluster.lock.enabled";
     public final static String CLUSTER_LOCK_TIMEOUT_MS = "cluster.lock.timeout.ms";
+    public final static String CLUSTER_LOCK_REFRESH_MS = "cluster.lock.refresh.ms";
     public final static String LOCK_TIMEOUT_MS = "lock.timeout.ms";
     public final static String LOCK_WAIT_RETRY_MILLIS = "lock.wait.retry.ms";
 

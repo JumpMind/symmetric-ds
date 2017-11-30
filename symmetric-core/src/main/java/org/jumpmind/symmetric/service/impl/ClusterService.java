@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -55,7 +56,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     private String serverId = null;
     
-    private Map<String, Lock> lockCache;
+    private Map<String, Lock> lockCache = new ConcurrentHashMap<String, Lock>();
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
         super(parameterService, dialect);
@@ -113,7 +114,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
 
     protected void initCache() {
-        lockCache = new HashMap<String, Lock>();
+        lockCache .clear();
         for (String action : actions) {
             Lock lock = new Lock();
             lock.setLockAction(action);
@@ -166,8 +167,13 @@ public class ClusterService extends AbstractService implements IClusterService {
             String serverId) {
         if (isClusteringEnabled()) {
             try {
-                return sqlTemplate.update(getSql("acquireClusterLockSql"), new Object[] { serverId,
+                
+                boolean lockAcquired = sqlTemplate.update(getSql("acquireClusterLockSql"), new Object[] { serverId,
                         timeLockAcquired, action, TYPE_CLUSTER, timeToBreakLock, serverId }) == 1;
+                if (lockAcquired) {
+                    updateCacheLockTime(action, timeLockAcquired);
+                }
+                return lockAcquired;
             } catch (ConcurrencySqlException ex) {
                 log.debug("Ignoring concurrency error and reporting that we failed to get the cluster lock: {}", ex.getMessage());
             }
@@ -185,6 +191,15 @@ public class ClusterService extends AbstractService implements IClusterService {
             }
         }
         return false;
+    }
+
+    protected void updateCacheLockTime(String action, Date timeLockAcquired) {
+        Lock lock = lockCache.get(action);
+        if (lock != null) {
+            synchronized (lock) {
+                lock.setLockTime(timeLockAcquired);
+            }
+        }
     }
 
     protected boolean lockShared(final String action) {
@@ -348,6 +363,7 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     protected boolean unlockCluster(String action, String serverId) {
         if (isClusteringEnabled()) {
+            updateCacheLockTime(action, null);
             return sqlTemplate.update(getSql("releaseClusterLockSql"), new Object[] { action,
                     TYPE_CLUSTER, serverId }) > 0;
         } else {
@@ -459,6 +475,30 @@ public class ClusterService extends AbstractService implements IClusterService {
                 lock.setLastLockTime(null);
                 lock.setLockTime(null);
             }
+        }
+    }
+
+    @Override
+    public boolean refreshLock(String action) {
+        if (isLockRefreshNeeded(action)) {
+            return lock(action); 
+        }
+        return true;
+    }
+    
+    protected boolean isLockRefreshNeeded(String action) {
+        if (isClusteringEnabled()) {
+            Lock lock = lockCache.get(action);
+            long clusterLockRefreshMs = this.parameterService.getLong(ParameterConstants.CLUSTER_LOCK_REFRESH_MS);
+            long refreshTime = new Date().getTime() - clusterLockRefreshMs;
+            
+            if (lock != null && lock.getLockTime() != null && lock.getLockTime().getTime() < refreshTime) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
     }
 
