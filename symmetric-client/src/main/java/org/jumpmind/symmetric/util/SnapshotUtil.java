@@ -61,7 +61,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -79,7 +78,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.JarBuilder;
+import org.jumpmind.util.ZipBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +86,7 @@ import org.slf4j.LoggerFactory;
 public class SnapshotUtil {
 
     protected static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
-    
+
     protected static final int THREAD_INDENT_SPACE = 50;
 
     public static File getSnapshotDirectory(ISymmetricEngine engine) {
@@ -103,14 +102,14 @@ public class SnapshotUtil {
         IParameterService parameterService = engine.getParameterService();
         File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
-        
+
         File logDir = null;
-        
+
         String parameterizedLogDir = parameterService.getString("server.log.dir");
         if (isNotBlank(parameterizedLogDir)) {
             logDir = new File(parameterizedLogDir);
         }
-        
+
         if (logDir != null && logDir.exists()) {
             log.info("Using server.log.dir setting as the location of the log files");
         } else {
@@ -130,17 +129,18 @@ public class SnapshotUtil {
             if (!logDir.exists()) {
                 logDir = new File("target");
             }
-            
+
             if (logDir.exists()) {
                 File[] files = logDir.listFiles();
                 if (files != null) {
                     for (File file : files) {
-                        if (file.getName().toLowerCase().endsWith(".log")) {
+                        String lowerCaseFileName = file.getName().toLowerCase();
+                        if (lowerCaseFileName.contains(".log")
+                                && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))) {
                             try {
                                 FileUtils.copyFileToDirectory(file, tmpDir);
                             } catch (IOException e) {
-                                log.warn("Failed to copy " + file.getName()
-                                        + " to the snapshot directory", e);
+                                log.warn("Failed to copy " + file.getName() + " to the snapshot directory", e);
                             }
                         }
                     }
@@ -152,11 +152,10 @@ public class SnapshotUtil {
         FileWriter fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "config-export.csv"));
-            engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
-                    fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
-                    TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
-                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
-                    TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
+            engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(), fwriter,
+                    TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY, TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
+                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER, TableConstants.SYM_MONITOR_EVENT,
+                    TableConstants.SYM_CONSOLE_EVENT);
         } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
         } finally {
@@ -174,26 +173,24 @@ public class SnapshotUtil {
 
         TreeSet<Table> tables = new TreeSet<Table>();
         FileOutputStream fos = null;
-        try {            
-            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService(); 
+        try {
+            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
             for (TriggerHistory triggerHistory : triggerHistories) {
                 Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
-                        triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
-                        false);
+                        triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
                 if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
                     tables.add(table);
                 }
             }
-            
+
             List<Trigger> triggers = triggerRouterService.getTriggers();
             for (Trigger trigger : triggers) {
-                Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(), trigger.getSourceTableName(),
-                        false);
+                Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                        trigger.getSourceTableName(), false);
                 if (table != null) {
                     tables.add(table);
-                }            
+                }
             }
 
             fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
@@ -201,86 +198,80 @@ public class SnapshotUtil {
             export.setFormat(Format.XML);
             export.setNoData(true);
             export.exportTables(fos, tables.toArray(new Table[tables.size()]));
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
             IOUtils.closeQuietly(fos);
         }
 
         String tablePrefix = engine.getTablePrefix();
-        
+
         DbExport export = new DbExport(engine.getDatabasePlatform());
         export.setFormat(Format.CSV);
         export.setNoCreateInfo(true);
-        
+
         extract(export, new File(tmpDir, "sym_identity.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_IDENTITY));
-        
-        extract(export, new File(tmpDir, "sym_node.csv"),  
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
-        
-        extract(export, new File(tmpDir, "sym_node_security.csv"), 
+
+        extract(export, new File(tmpDir, "sym_node.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE));
+
+        extract(export, new File(tmpDir, "sym_node_security.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_SECURITY));
 
-        extract(export, new File(tmpDir, "sym_node_host.csv"),  
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
-        
-        extract(export, new File(tmpDir, "sym_trigger_hist.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
+        extract(export, new File(tmpDir, "sym_node_host.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST));
+
+        extract(export, new File(tmpDir, "sym_trigger_hist.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST));
         try {
             if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-                  engine.getNodeCommunicationService().persistToTableForSnapshot();
-                  engine.getClusterService().persistToTableForSnapshot();
+                engine.getNodeCommunicationService().persistToTableForSnapshot();
+                engine.getClusterService().persistToTableForSnapshot();
             }
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             log.warn("Unable to add SYM_NODE_COMMUNICATION to the snapshot.", e);
         }
-            
-        extract(export, new File(tmpDir, "sym_lock.csv"),
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
-                   
-        extract(export, new File(tmpDir, "sym_node_communication.csv"), 
+
+        extract(export, new File(tmpDir, "sym_lock.csv"), TableConstants.getTableName(tablePrefix, TableConstants.SYM_LOCK));
+
+        extract(export, new File(tmpDir, "sym_node_communication.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_COMMUNICATION));
-        
-        extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_outgoing_batch.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
 
-        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_outgoing_batch_not_ok.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));        
+        extract(export, 50000, "where status = 'OK' order by batch_id desc", new File(tmpDir, "sym_outgoing_batch_ok.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));
 
-        extract(export, 10000, "order by create_time desc", new File(tmpDir, "sym_incoming_batch.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
+        extract(export, 10000, "where status != 'OK' order by batch_id desc", new File(tmpDir, "sym_outgoing_batch_not_ok.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_OUTGOING_BATCH));
 
-        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_incoming_batch_not_ok.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));          
+        extract(export, 10000, "where status = 'OK' order by create_time desc", new File(tmpDir, "sym_incoming_batch_ok.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));
 
-        extract(export, 5000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"), 
+        extract(export, 10000, "where status != 'OK' order by create_time", new File(tmpDir, "sym_incoming_batch_not_ok.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_INCOMING_BATCH));
+
+        extract(export, 10000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA_GAP));
 
-        extract(export, new File(tmpDir, "sym_table_reload_request.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));        
+        extract(export, new File(tmpDir, "sym_table_reload_request.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));
 
-        extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));        
+        extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
 
-        extract(export, new File(tmpDir, "sym_console_event.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_EVENT));        
+        extract(export, new File(tmpDir, "sym_console_event.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_EVENT));
 
-        extract(export, new File(tmpDir, "sym_monitor_event.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT));        
+        extract(export, new File(tmpDir, "sym_monitor_event.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_MONITOR_EVENT));
 
-        extract(export, new File(tmpDir, "sym_extract_request.csv"), 
-                TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST));        
+        extract(export, new File(tmpDir, "sym_extract_request.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST));
 
         if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
-            final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements",
-                    "mon$io_stats", "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables"};
+            final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements", "mon$io_stats",
+                    "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables" };
             for (String table : monTables) {
                 extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
             }
         }
-        
-        
+
         fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "threads.txt"));
@@ -307,7 +298,7 @@ public class SnapshotUtil {
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
             SortedProperties parameters = new SortedProperties();
             parameters.putAll(effectiveParameters);
-            parameters.remove("db.password");            
+            parameters.remove("db.password");
             parameters.store(fos, "parameters.properties");
         } catch (IOException e) {
             log.warn("Failed to export parameter information", e);
@@ -330,10 +321,10 @@ public class SnapshotUtil {
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
             Properties changedParameters = new SortedProperties();
             Map<String, ParameterMetaData> parameters = ParameterConstants.getParameterMetaData();
-            for (String key: parameters.keySet()) {
+            for (String key : parameters.keySet()) {
                 String defaultValue = defaultParameters.getProperty((String) key);
                 String currentValue = effectiveParameters.getProperty((String) key);
-                if (defaultValue == null  && currentValue != null || (defaultValue != null && ! defaultValue.equals(currentValue))) {
+                if (defaultValue == null && currentValue != null || (defaultValue != null && !defaultValue.equals(currentValue))) {
                     changedParameters.put(key, currentValue == null ? "" : currentValue);
                 }
             }
@@ -347,7 +338,7 @@ public class SnapshotUtil {
 
         writeRuntimeStats(engine, tmpDir);
         writeJobsStats(engine, tmpDir);
-        
+
         if ("true".equals(System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB))) {
             writeDirectoryListing(engine, tmpDir);
         }
@@ -365,9 +356,8 @@ public class SnapshotUtil {
         }
 
         try {
-            File jarFile = new File(getSnapshotDirectory(engine), tmpDir.getName()
-                    + ".zip");
-            JarBuilder builder = new JarBuilder(tmpDir, jarFile, new File[] { tmpDir }, Version.version());
+            File jarFile = new File(getSnapshotDirectory(engine), tmpDir.getName() + ".zip");
+            ZipBuilder builder = new ZipBuilder(tmpDir, jarFile, new File[] { tmpDir });
             builder.build();
             FileUtils.deleteDirectory(tmpDir);
             return jarFile;
@@ -375,42 +365,40 @@ public class SnapshotUtil {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
     }
-    
+
     protected static void extract(DbExport export, File file, String... tables) {
         extract(export, Integer.MAX_VALUE, null, file, tables);
     }
-    
+
     protected static void extract(DbExport export, int maxRows, String whereClause, File file, String... tables) {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
             export.setMaxRows(maxRows);
             export.setWhereClause(whereClause);
-            export.exportTables(
-                    fos,
-                    tables);
+            export.exportTables(fos, tables);
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
             IOUtils.closeQuietly(fos);
         }
     }
-    
+
     protected static void writeDirectoryListing(ISymmetricEngine engine, File tmpDir) {
         try {
             File home = new File(System.getProperty("user.dir"));
             if (home.getName().equalsIgnoreCase("bin")) {
                 home = home.getParentFile();
             }
-            
+
             StringBuilder output = new StringBuilder();
             printDirectoryContents(home, output);
             FileUtils.write(new File(tmpDir, "directory-listing.txt"), output);
         } catch (Exception ex) {
-            log.warn("Failed to output the direcetory listing" , ex);
+            log.warn("Failed to output the direcetory listing", ex);
         }
     }
-    
+
     protected static void printDirectoryContents(File dir, StringBuilder output) throws IOException {
         output.append("\n");
         output.append(dir.getCanonicalPath());
@@ -424,8 +412,7 @@ public class SnapshotUtil {
             output.append(file.canExecute() ? "x" : "-");
             output.append(StringUtils.leftPad(file.length() + "", 11));
             output.append(" ");
-            output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file
-                    .lastModified())));
+            output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
             output.append(" ");
             output.append(file.getName());
             output.append("\n");
@@ -445,6 +432,7 @@ public class SnapshotUtil {
             fos = new FileOutputStream(new File(tmpDir, "runtime-stats.properties"));
             Properties runtimeProperties = new Properties() {
                 private static final long serialVersionUID = 1L;
+
                 public synchronized Enumeration<Object> keys() {
                     return Collections.enumeration(new TreeSet<Object>(super.keySet()));
                 }
@@ -455,14 +443,14 @@ public class SnapshotUtil {
                 BasicDataSource dbcp = (BasicDataSource) dataSource;
                 runtimeProperties.setProperty("connections.idle", String.valueOf(dbcp.getNumIdle()));
                 runtimeProperties.setProperty("connections.used", String.valueOf(dbcp.getNumActive()));
-                runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxActive()));   
+                runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxActive()));
             }
-            
+
             Runtime rt = Runtime.getRuntime();
             runtimeProperties.setProperty("memory.free", String.valueOf(rt.freeMemory()));
             runtimeProperties.setProperty("memory.used", String.valueOf(rt.totalMemory() - rt.freeMemory()));
             runtimeProperties.setProperty("memory.max", String.valueOf(rt.maxMemory()));
-            
+
             List<MemoryPoolMXBean> memoryPools = new ArrayList<MemoryPoolMXBean>(ManagementFactory.getMemoryPoolMXBeans());
             long usedHeapMemory = 0;
             for (MemoryPoolMXBean memoryPool : memoryPools) {
@@ -474,40 +462,34 @@ public class SnapshotUtil {
                 }
             }
             runtimeProperties.setProperty("memory.heap.total", Long.toString(usedHeapMemory));
-            
+
             OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
             runtimeProperties.setProperty("os.name", System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ")");
             runtimeProperties.setProperty("os.processors", String.valueOf(osBean.getAvailableProcessors()));
             runtimeProperties.setProperty("os.load.average", String.valueOf(osBean.getSystemLoadAverage()));
-            
+
             runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
             runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime().toString());
-            
+
             runtimeProperties.setProperty("time.server", new Date().toString());
             runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
-            runtimeProperties.setProperty("batch.unrouted.data.count",
-                    Long.toString(engine.getRouterService().getUnroutedDataCount()));
+            runtimeProperties.setProperty("batch.unrouted.data.count", Long.toString(engine.getRouterService().getUnroutedDataCount()));
             runtimeProperties.setProperty("batch.outgoing.errors.count",
                     Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
             runtimeProperties.setProperty("batch.outgoing.tosend.count",
                     Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
             runtimeProperties.setProperty("batch.incoming.errors.count",
                     Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
-            
+
             List<DataGap> gaps = engine.getDataService().findDataGapsByStatus(DataGap.Status.GP);
-            runtimeProperties.setProperty("data.gap.count",
-                    Long.toString(gaps.size()));
+            runtimeProperties.setProperty("data.gap.count", Long.toString(gaps.size()));
             if (gaps.size() > 0) {
-                runtimeProperties.setProperty("data.gap.start.id",
-                        Long.toString(gaps.get(0).getStartId()));
-                runtimeProperties.setProperty("data.gap.end.id",
-                        Long.toString(gaps.get(gaps.size()-1).getEndId()));                
+                runtimeProperties.setProperty("data.gap.start.id", Long.toString(gaps.get(0).getStartId()));
+                runtimeProperties.setProperty("data.gap.end.id", Long.toString(gaps.get(gaps.size() - 1).getEndId()));
             }
-            
-            runtimeProperties.setProperty("data.id.min",
-                    Long.toString(engine.getDataService().findMinDataId()));            
-            runtimeProperties.setProperty("data.id.max",
-                    Long.toString(engine.getDataService().findMaxDataId()));            
+
+            runtimeProperties.setProperty("data.id.min", Long.toString(engine.getDataService().findMinDataId()));
+            runtimeProperties.setProperty("data.id.max", Long.toString(engine.getDataService().findMaxDataId()));
 
             runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
             runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
@@ -515,7 +497,7 @@ public class SnapshotUtil {
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
-            
+
             runtimeProperties.store(fos, "runtime-stats.properties");
         } catch (Exception e) {
             log.warn("Failed to export runtime-stats information", e);
@@ -523,7 +505,7 @@ public class SnapshotUtil {
             IOUtils.closeQuietly(fos);
         }
     }
-    
+
     protected static void writeJobsStats(ISymmetricEngine engine, File tmpDir) {
         FileWriter writer = null;
         try {
@@ -531,13 +513,12 @@ public class SnapshotUtil {
             IJobManager jobManager = engine.getJobManager();
             IClusterService clusterService = engine.getClusterService();
             INodeService nodeService = engine.getNodeService();
-            writer.write("Clustering is " + (clusterService.isClusteringEnabled() ? "" : "not ") + 
-                    "enabled and there are " + nodeService.findNodeHosts(nodeService.findIdentityNodeId()).size() +
-                    " instances in the cluster\n\n");
-            writer.write(StringUtils.rightPad("Job Name", 30) + StringUtils.rightPad("Schedule", 20) + 
-                    StringUtils.rightPad("Status", 10) + StringUtils.rightPad("Server Id", 30) +
-                    StringUtils.rightPad("Last Server Id", 30) + StringUtils.rightPad("Last Finish Time", 30) +
-                    StringUtils.rightPad("Last Run Period", 20) + StringUtils.rightPad("Avg. Run Period", 20) + "\n");
+            writer.write("Clustering is " + (clusterService.isClusteringEnabled() ? "" : "not ") + "enabled and there are "
+                    + nodeService.findNodeHosts(nodeService.findIdentityNodeId()).size() + " instances in the cluster\n\n");
+            writer.write(StringUtils.rightPad("Job Name", 30) + StringUtils.rightPad("Schedule", 20) + StringUtils.rightPad("Status", 10)
+                    + StringUtils.rightPad("Server Id", 30) + StringUtils.rightPad("Last Server Id", 30)
+                    + StringUtils.rightPad("Last Finish Time", 30) + StringUtils.rightPad("Last Run Period", 20)
+                    + StringUtils.rightPad("Avg. Run Period", 20) + "\n");
             List<IJob> jobs = jobManager.getJobs();
             Map<String, Lock> locks = clusterService.findLocks();
             for (IJob job : jobs) {
@@ -548,17 +529,16 @@ public class SnapshotUtil {
                 if (lock != null) {
                     lastServerId = lock.getLastLockingServerId();
                 }
-                String schedule = StringUtils.isBlank(job.getCronExpression()) ? Long.toString(job
-                        .getTimeBetweenRunsInMs()) : job.getCronExpression();
+                String schedule = StringUtils.isBlank(job.getCronExpression()) ? Long.toString(job.getTimeBetweenRunsInMs())
+                        : job.getCronExpression();
                 String lastFinishTime = getLastFinishTime(job, lock);
-    
-                writer.write(StringUtils.rightPad(job.getClusterLockName().replace("_", " "), 30)+ 
-                        StringUtils.rightPad(schedule, 20) + StringUtils.rightPad(status, 10) + 
-                        StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30) +
-                        StringUtils.rightPad(lastServerId == null ? "" : lastServerId, 30) + 
-                        StringUtils.rightPad(lastFinishTime == null ? "" : lastFinishTime, 30) + 
-                        StringUtils.rightPad(job.getLastExecutionTimeInMs() + "", 20) + 
-                        StringUtils.rightPad(job.getAverageExecutionTimeInMs() + "", 20) + "\n");
+
+                writer.write(StringUtils.rightPad(job.getClusterLockName().replace("_", " "), 30) + StringUtils.rightPad(schedule, 20)
+                        + StringUtils.rightPad(status, 10) + StringUtils.rightPad(runningServerId == null ? "" : runningServerId, 30)
+                        + StringUtils.rightPad(lastServerId == null ? "" : lastServerId, 30)
+                        + StringUtils.rightPad(lastFinishTime == null ? "" : lastFinishTime, 30)
+                        + StringUtils.rightPad(job.getLastExecutionTimeInMs() + "", 20)
+                        + StringUtils.rightPad(job.getAverageExecutionTimeInMs() + "", 20) + "\n");
             }
         } catch (Exception e) {
             log.warn("Failed to write jobs information", e);
@@ -576,8 +556,7 @@ public class SnapshotUtil {
                 status = "RUNNING";
             }
         } else {
-            status = job.isRunning() ? "RUNNING" : job.isPaused() ? "PAUSED" : job
-                    .isStarted() ? "IDLE" : "STOPPED";
+            status = job.isRunning() ? "RUNNING" : job.isPaused() ? "PAUSED" : job.isStarted() ? "IDLE" : "STOPPED";
         }
         return status;
     }
@@ -586,11 +565,10 @@ public class SnapshotUtil {
         if (lock != null && lock.getLastLockTime() != null) {
             return DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(lock.getLastLockTime());
         } else {
-            return job.getLastFinishTime() == null ? null : DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(job
-                    .getLastFinishTime());
+            return job.getLastFinishTime() == null ? null : DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(job.getLastFinishTime());
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public static Map<File, Layout> findSymmetricLogFile() {
         Enumeration<Appender> appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
@@ -610,7 +588,6 @@ public class SnapshotUtil {
         }
         return null;
     }
-
 
     static class SortedProperties extends Properties {
         private static final long serialVersionUID = 1L;

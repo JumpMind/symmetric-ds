@@ -650,6 +650,40 @@ public class DataGapDetectorTest {
     }
 
     @Test
+    public void testGapsFailedToDelete() throws Exception {
+        when(parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)).thenReturn(10L);
+        when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAP_CHANGES)).thenReturn(2);
+
+        List<Long> dataIds = new ArrayList<Long>();
+        dataIds.add(4L);
+
+        List<DataGap> dataGaps = new ArrayList<DataGap>();
+        dataGaps.add(new DataGap(1, 1));
+        dataGaps.add(new DataGap(2, 2));
+        dataGaps.add(new DataGap(3, 13));
+        
+        runGapDetector(dataGaps, dataIds, false);
+
+        verify(dataService).findDataGaps();
+        verify(dataService).deleteAllDataGaps(sqlTransaction);
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 14));
+        verifyNoMoreInteractions(dataService);
+        Mockito.reset(dataService);
+
+        dataIds = new ArrayList<Long>();
+        dataIds.add(3L);
+        dataGaps = detector.getDataGaps();
+
+        runGapDetector(dataGaps, dataIds, false);
+
+        verify(dataService).deleteAllDataGaps(sqlTransaction);
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(1, 1));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(2, 2));
+        verify(dataService).insertDataGap(sqlTransaction, new DataGap(5, 14));
+        verifyNoMoreInteractions(dataService);        
+    }
+
+    @Test
     public void testRandom() throws Exception {        
         for (int loop = 0; loop < 5000; loop++) {
             List<DataGap> dataGaps = getRandomDataGaps();
@@ -746,6 +780,7 @@ public class DataGapDetectorTest {
         int lastIndex = dataGaps.size() - 1;
         boolean isLastGapInserted = false;
         boolean isLastGapModified = false;
+        long lastGapSize = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         for (DataGap dataGap : dataGaps) {
             long lastDataId = -1;
             for (Long dataId : dataIds) {
@@ -771,7 +806,7 @@ public class DataGapDetectorTest {
             if (lastDataId >= dataGap.getStartId() && lastDataId < dataGap.getEndId()) {
                 if (index == lastIndex) {
                     isLastGapInserted = true;
-                    verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastDataId + 1, lastDataId + 50000000));                        
+                    verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastDataId + 1, lastDataId + lastGapSize));                        
                 } else {
                     verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastDataId + 1, dataGap.getEndId()));
                 }
@@ -781,8 +816,8 @@ public class DataGapDetectorTest {
         
         if (!isLastGapInserted && isLastGapModified) {
             DataGap lastGap = dataGaps.get(lastIndex);
-            if (lastGap.getEndId() - lastGap.getStartId() < 50000000 - 1) {
-                verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastGap.getEndId() + 1, lastGap.getEndId() + 50000000));                        
+            if (lastGap.getEndId() - lastGap.getStartId() < lastGapSize - 1) {
+                verify(dataService).insertDataGap(sqlTransaction, new DataGap(lastGap.getEndId() + 1, lastGap.getEndId() + lastGapSize));                        
             }
         }
 
@@ -811,9 +846,10 @@ public class DataGapDetectorTest {
     }
 
     private void checkGap(DataGap gap) {
+        long lastGapSize = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         if (gap.getStartId() > gap.getEndId()) {
             throw new RuntimeException("Detected an invalid gap range: " + gap);
-        } else if (gap.gapSize() < 50000000 - 1 && gap.gapSize() >= (long) (50000000 * 0.75)) {
+        } else if (gap.gapSize() < lastGapSize - 1 && gap.gapSize() >= (long) (lastGapSize * 0.75)) {
             throw new RuntimeException("Detected a very large gap range: " + gap);
         }
     }
@@ -836,7 +872,7 @@ public class DataGapDetectorTest {
             }
             
             List<DataGap> outDataGaps = detector.getDataGaps();
-            verifyInteractionsInMemory(dataGaps, dataIds, outDataGaps);
+            verifyInteractionsInMemory(dataGaps, dataIds, outDataGaps, false);
             
             dataGaps = outDataGaps;
             Mockito.reset(dataService);
@@ -853,7 +889,7 @@ public class DataGapDetectorTest {
             do {
                 dataIds = getRandomDatas(dataGaps);
             } while (dataIds.size() == 0);
-            
+
             if (useMemory = rand.nextBoolean()) {
                 when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAP_CHANGES)).thenReturn(0);
             } else {
@@ -870,12 +906,13 @@ public class DataGapDetectorTest {
             List<DataGap> outDataGaps = detector.getDataGaps();
             
             if (useMemory) {
-                verifyInteractionsInMemory(dataGaps, dataIds, outDataGaps);
+                verifyInteractionsInMemory(dataGaps, dataIds, outDataGaps, false);
             } else {
                 if (lastUseMemory) {
-                    verify(dataService).deleteAllDataGaps(sqlTransaction);
+                    verifyInteractionsInMemory(dataGaps, dataIds, outDataGaps, true);
+                } else {
+                    verifyInteractions(dataGaps, dataIds, true);
                 }
-                verifyInteractions(dataGaps, dataIds, !lastUseMemory);
             }
 
             dataGaps = outDataGaps;
@@ -884,11 +921,12 @@ public class DataGapDetectorTest {
         }
     }
 
-    private void verifyInteractionsInMemory(List<DataGap> dataGaps, List<Long> dataIds, List<DataGap> outDataGaps) {
+    private void verifyInteractionsInMemory(List<DataGap> dataGaps, List<Long> dataIds, List<DataGap> outDataGaps, boolean switchingToDatabase) {
         int index = 0;
         int lastIndex = dataGaps.size() - 1;
         boolean isLastGapInserted = false;
         boolean isLastGapModified = false;
+        long lastGapSize = parameterService.getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
         HashSet<DataGap> allGaps = new HashSet<DataGap>(outDataGaps);
         for (DataGap dataGap : dataGaps) {
             long lastDataId = -1;
@@ -913,7 +951,7 @@ public class DataGapDetectorTest {
             if (lastDataId >= dataGap.getStartId() && lastDataId < dataGap.getEndId()) {
                 if (index == lastIndex) {
                     isLastGapInserted = true;
-                    checkInsertGapInMemory(allGaps, new DataGap(lastDataId + 1, lastDataId + 50000000));
+                    checkInsertGapInMemory(allGaps, new DataGap(lastDataId + 1, lastDataId + lastGapSize));
                 } else {
                     checkInsertGapInMemory(allGaps, new DataGap(lastDataId + 1, dataGap.getEndId()));
                 }
@@ -923,14 +961,20 @@ public class DataGapDetectorTest {
         
         if (!isLastGapInserted && isLastGapModified) {
             DataGap lastGap = dataGaps.get(lastIndex);
-            if (lastGap.getEndId() - lastGap.getStartId() < 50000000 - 1) {
-                checkInsertGapInMemory(allGaps, new DataGap(lastGap.getEndId() + 1, lastGap.getEndId() + 50000000));
+            if (lastGap.getEndId() - lastGap.getStartId() < lastGapSize - 1) {
+                checkInsertGapInMemory(allGaps, new DataGap(lastGap.getEndId() + 1, lastGap.getEndId() + lastGapSize));
             }
         }
         
         verify(dataService).deleteAllDataGaps(sqlTransaction);
-        verify(dataService).insertDataGap(sqlTransaction, new DataGap(outDataGaps.get(0).getStartId(), 
-                outDataGaps.get(outDataGaps.size() - 1).getEndId()));
+        if (switchingToDatabase) {
+            for (DataGap dataGap : outDataGaps) {
+                verify(dataService).insertDataGap(sqlTransaction, dataGap);
+            }
+        } else {
+            verify(dataService).insertDataGap(sqlTransaction, new DataGap(outDataGaps.get(0).getStartId(), 
+                    outDataGaps.get(outDataGaps.size() - 1).getEndId()));
+        }
         verifyNoMoreInteractions(dataService);
     }
 

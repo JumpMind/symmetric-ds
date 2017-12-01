@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -190,7 +189,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IClusterService clusterService;
 
-    private Map<String, Semaphore> locks = new ConcurrentHashMap<String, Semaphore>();
+    private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
     
     private CustomizableThreadFactory threadPoolFactory;
 
@@ -864,21 +863,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
             long extractTimeInMs = 0l;
             long byteCount = 0l;
-            long transformTimeInMs = 0l;
-            
-            if (currentBatch.getStatus() == Status.NE) {
-                triggerReExtraction(currentBatch);
-            }
+            long transformTimeInMs = 0l;            
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
             } else if (!isPreviouslyExtracted(currentBatch, true)) {
-
                 BatchLock lock = null;
                 try {
+                    log.debug("{} attempting to acquire lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     lock = acquireLock(currentBatch, useStagingDataWriter);
-
+                    log.debug("{} acquired lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     if (!isPreviouslyExtracted(currentBatch, true)) {
+                        log.debug("{} extracting batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                         currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                         if (updateBatchStatistics) {
                             changeBatchStatus(Status.QY, currentBatch, mode);
@@ -915,12 +911,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     throw ex;
-                } finally {
+                } finally {                    
                     IStagedResource resource = getStagedResource(currentBatch);
                     if (resource != null) {
                         resource.setState(State.DONE);
                     }
                     releaseLock(lock, currentBatch, useStagingDataWriter);
+                    log.debug("{} released lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                 }
             }
 
@@ -961,26 +958,25 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }   
 
     private BatchLock acquireLock(OutgoingBatch batch, boolean useStagingDataWriter) {
-        String semaphoreKey = getSemaphoreKey(batch, useStagingDataWriter);
-        
-        BatchLock batchLock = new BatchLock(semaphoreKey);
-        
-        Semaphore lock = locks.get(semaphoreKey);
-        if (lock == null) {
-            lock = new Semaphore(1);
-            locks.put(semaphoreKey, lock);
+        String semaphoreKey = getSemaphoreKey(batch, useStagingDataWriter);        
+        BatchLock lock = null;        
+        synchronized (DataExtractorService.this) {
+            lock = locks.get(semaphoreKey);
+            if (lock == null) {
+                lock = new BatchLock(semaphoreKey);
+                locks.put(semaphoreKey, lock);
+            }
+            lock.referenceCount++;
         }
         try {
             lock.acquire(); // In-memory, intra-process lock.
-            batchLock.inMemoryLock = lock;
             if (isStagingFileLockRequired(batch)) { // File-system, inter-process lock for clustering.
                 StagingFileLock fileLock = acquireStagingFileLock(batch);
                 if (fileLock.isAcquired()) {
-                    batchLock.fileLock = fileLock;
+                    lock.fileLock = fileLock;
                 } else { // Didn't get the fileLock, ditch the in-memory lock as well.
                     locks.remove(semaphoreKey);
                     lock.release();
-                    batchLock.inMemoryLock = null;
                     throw new SymmetricException("Failed to get extract lock on batch " + batch.getNodeBatchId());
                 }
             }
@@ -988,7 +984,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new org.jumpmind.exception.InterruptedException(e);
         }
         
-        return batchLock;
+        return lock;
     }
 
     protected StagingFileLock acquireStagingFileLock(OutgoingBatch batch) {
@@ -1035,10 +1031,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void releaseLock(BatchLock lock, OutgoingBatch batch, boolean useStagingDataWriter) {
-        if (lock != null) {            
-            if (lock.inMemoryLock != null) {            
-                lock.inMemoryLock.release();
-                locks.remove(lock.semaphoreKey);
+        if (lock != null) {
+            synchronized (DataExtractorService.this) {
+                lock.referenceCount--;
+                if (lock.referenceCount == 0) {
+                    locks.remove(lock.semaphoreKey);
+                }
+                lock.release();
             }
             if (lock.fileLock != null) {
                 lock.fileLock.releaseLock();
@@ -1764,6 +1763,22 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 batches, channel.getMaxBatchSize(), processInfo);
         return multiBatchStatingWriter;
     }
+    
+    protected boolean hasLobsThatNeedExtract(Table table, CsvData data) {
+        if (table.containsLobColumns(platform)) {
+            String[] colNames = table.getColumnNames();
+            Map<String, String> colMap = data.toColumnNameValuePairs(colNames, CsvData.ROW_DATA);
+
+            List<Column> lobColumns = table.getLobColumns(platform);
+            for (Column c : lobColumns) {
+                String value = colMap.get(c.getName());
+                if (value != null && value.equals("\b")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     class ExtractRequestMapper implements ISqlRowMapper<ExtractRequest> {
         public ExtractRequest mapRow(Row row) {
@@ -1870,6 +1885,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (data == null) {
                     reloadSource.close();
                     reloadSource = null;
+                } else {
+                    this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
                 }
                 lastTriggerHistory = null;
             }
@@ -1916,8 +1933,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             data = (Data) this.reloadSource.next();
                             this.sourceTable = reloadSource.getSourceTable();
                             this.targetTable = this.reloadSource.getTargetTable();
-                            this.requiresLobSelectedFromSource = this.reloadSource
-                                    .requiresLobsSelectedFromSource();
+                            this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
                             
                             if (data == null) {
                                 data = (Data)next();
@@ -1940,7 +1956,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         routerId, triggerHistory, false, true);
                                 this.targetTable = columnsAccordingToTriggerHistory.lookup(
                                         routerId, triggerHistory, true, false);
-                                this.requiresLobSelectedFromSource = trigger == null ? false : trigger.isUseStreamLobs();
+                                
+                                if (trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
+                                    this.requiresLobSelectedFromSource = true;
+                                } else {
+                                    this.requiresLobSelectedFromSource = false;
+                                }
                             }
 
                             data.setNoBinaryOldData(requiresLobSelectedFromSource
@@ -2022,7 +2043,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return data;
         }
 
-        public boolean requiresLobsSelectedFromSource() {
+        public boolean requiresLobsSelectedFromSource(CsvData data) {
             return requiresLobSelectedFromSource;
         }
 
@@ -2222,11 +2243,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             });
         }
 
-        public boolean requiresLobsSelectedFromSource() {
+        public boolean requiresLobsSelectedFromSource(CsvData data) {
             if (this.currentInitialLoadEvent != null
                     && this.currentInitialLoadEvent.getTriggerRouter() != null) {
-                return this.currentInitialLoadEvent.getTriggerRouter().getTrigger()
-                        .isUseStreamLobs();
+                if (this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs()
+                        || (data != null && hasLobsThatNeedExtract(sourceTable, data))) {
+                    return true;
+                }
+                return this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs();
             } else {
                 return false;
             }
@@ -2328,9 +2352,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         public BatchLock(String semaphoreKey) {
             this.semaphoreKey = semaphoreKey;
         }
+        
+        public void acquire() throws InterruptedException {
+            inMemoryLock.acquire();
+        }
+        
+        public void release() {
+            inMemoryLock.release();
+        }
+        
         String semaphoreKey;
-        Semaphore inMemoryLock;
+        private Semaphore inMemoryLock = new Semaphore(1);
         StagingFileLock fileLock;
+        int referenceCount = 0;
     }
 
 

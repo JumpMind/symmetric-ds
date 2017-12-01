@@ -118,7 +118,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         return stringValues;
     }
 
-    public boolean requiresLobsSelectedFromSource() {
+    public boolean requiresLobsSelectedFromSource(CsvData data) {
         return streamLobs;
     }
 
