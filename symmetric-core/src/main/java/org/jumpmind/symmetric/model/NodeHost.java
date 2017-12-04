@@ -42,6 +42,7 @@ public class NodeHost implements Serializable {
     
     private String nodeId;
     private String hostName;
+    private String instanceId;
     private String ipAddress;
     private String osUser;
     private String osName;
@@ -64,12 +65,14 @@ public class NodeHost implements Serializable {
         this.createTime = new Date();
     }
 
-    public NodeHost(String nodeId) {
+    public NodeHost(String nodeId, String instanceId) {
         this();
         this.nodeId = nodeId;        
+        this.instanceId = instanceId;
     }        
 
-    public void refresh(IDatabasePlatform platform) {
+    public void refresh(IDatabasePlatform platform, String instanceId) {
+        this.instanceId = instanceId;
         this.hostName = AppUtils.getHostName();
         setIpAddress(AppUtils.getIpAddress());
         this.osUser = System.getProperty("user.name");
@@ -104,6 +107,14 @@ public class NodeHost implements Serializable {
 
     public void setHostName(String hostName) {
         this.hostName = hostName;
+    }
+    
+    public String getInstanceId() {
+        return instanceId;
+    }
+    
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
     public String getIpAddress() {

@@ -192,11 +192,11 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void updateNodeHost(NodeHost nodeHost) {
 
-        Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
+        Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getHostName(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
                 nodeHost.getOsVersion(), nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(), nodeHost.getTotalMemoryBytes(),
                 nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(), nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(),
                 nodeHost.getSymmetricVersion(), nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
-                nodeHost.getNodeId(), nodeHost.getHostName() };
+                nodeHost.getNodeId(), nodeHost.getInstanceId()};
 
         if (sqlTemplate.update(getSql("updateNodeHostSql"), params) <= 0) {
             sqlTemplate.update(getSql("insertNodeHostSql"), params);
@@ -206,9 +206,9 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void updateNodeHostForCurrentNode() {
         if (nodeHostForCurrentNode == null) {
-            nodeHostForCurrentNode = new NodeHost(findIdentityNodeId());
+            nodeHostForCurrentNode = new NodeHost(findIdentityNodeId(), engine.getClusterService().getInstanceId());
         }
-        nodeHostForCurrentNode.refresh(platform);
+        nodeHostForCurrentNode.refresh(platform, engine.getClusterService().getInstanceId());
         updateNodeHost(nodeHostForCurrentNode);
     }
 
@@ -894,6 +894,7 @@ public class NodeService extends AbstractService implements INodeService {
             NodeHost nodeHost = new NodeHost();
             nodeHost.setNodeId(rs.getString("node_id"));
             nodeHost.setHostName(rs.getString("host_name"));
+            nodeHost.setInstanceId(rs.getString("instance_id"));
             nodeHost.setIpAddress(rs.getString("ip_address"));
             nodeHost.setOsUser(rs.getString("os_user"));
             nodeHost.setOsName(rs.getString("os_name"));
