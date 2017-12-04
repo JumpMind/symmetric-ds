@@ -43,22 +43,17 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     protected ISymmetricEngine engine;
 
-    protected boolean isUpgradeTo38;
+    protected boolean isUpgradeFromPre38;
+    protected boolean isUpgradeFrom38;
     
     @Override
     public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel,
             Database desiredModel) throws IOException {
         StringBuilder sb = new StringBuilder();
-        String monitorTableName = tablePrefix + "_" + TableConstants.SYM_MONITOR;
-        String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
-        if (currentModel.findTable(nodeTableName) != null && 
-                currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
-            log.info("Detected upgrade to version 3.8");
-            isUpgradeTo38 = true;
-        } else {
-            isUpgradeTo38 = false;
-        }
-        if (isUpgradeTo38) {
+        
+        isUpgradeFromPre38 = isUpgradeFromPre38(tablePrefix, currentModel, desiredModel);
+
+        if (isUpgradeFromPre38) {
             Table transformTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE);
             if (transformTable != null && transformTable.findColumn("update_action") != null) {
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
@@ -109,10 +104,17 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         return sb.toString();
     }
 
+    private boolean isUpgradeFrom38(String tablePrefix, Database currentModel, Database desiredModel) {
+        
+        
+        
+        return false;
+    }
+
     @Override
     public String afterUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database model) throws IOException {
         StringBuilder sb = new StringBuilder();
-        if (isUpgradeTo38) {
+        if (isUpgradeFromPre38) {
             engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_SEQUENCE +
                     " set cache_size = 10 where sequence_name = ?", Constants.SEQUENCE_OUTGOING_BATCH);
             engine.getSqlTemplate().update("update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL +
@@ -148,6 +150,19 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 engine.getTriggerRouterService().dropTriggers(hist);
             }
         }
+    }
+    
+    protected boolean isUpgradeFromPre38(String tablePrefix, Database currentModel,
+            Database desiredModel) {
+        String monitorTableName = tablePrefix + "_" + TableConstants.SYM_MONITOR;
+        String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
+        if (currentModel.findTable(nodeTableName) != null && 
+                currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
+            log.info("Detected upgrade from pre-3.8 version.");
+            return true;
+        } else {
+            return false;
+        }        
     }
     
     @Override

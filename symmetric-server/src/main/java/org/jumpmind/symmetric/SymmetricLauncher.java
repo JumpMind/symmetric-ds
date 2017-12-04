@@ -265,6 +265,9 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
 
         if (heapDumpPath != null) {
             File directory = new File(heapDumpPath);
+            if (!directory.exists()) { // Happens if whole tmp directory is removed.
+                return;
+            }
             Collection<File> files = FileUtils.listFiles(directory, new String[] { "hprof" }, false);        
             List<File> recentFiles = new ArrayList<File>();
             List<File> oldFiles = new ArrayList<File>();

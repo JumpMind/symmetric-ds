@@ -210,8 +210,6 @@ public class RouterService extends AbstractService implements IRouterService {
                     long ts = System.currentTimeMillis();
                     gapDetector.beforeRouting();
                     
-                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
-                    
                     dataCount = routeDataForEachChannel();
                     ts = System.currentTimeMillis() - ts;
                     if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
@@ -758,7 +756,6 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 if (context != null) {
-                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
 	                context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
 	                context.logStats(log, totalTime);
 	                context.cleanup();

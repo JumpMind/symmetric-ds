@@ -125,6 +125,23 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
         lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
         unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
     }
+    
+    @Test
+    public void testGenerateInstanceId() {
+        ClusterService clusterService = (ClusterService) getClusterService();
+        {            
+            String instanceId = clusterService.generateInstanceId("looooooooooooooooooooooooooooooooooooooooooooong hostname.");
+            assertTrue((instanceId.length() <= 60), "");
+        }
+        {            
+            String instanceId = clusterService.generateInstanceId("short hostname");
+            assertTrue((instanceId.length() <= 60), "");
+        }
+        {            
+            String instanceId = clusterService.generateInstanceId(null);
+            assertTrue((instanceId.length() <= 60), "");
+        }
+    }
 
     private void lock(String action, String lockType, int expectedSharedCount) {
         Assert.assertTrue("Expected to obtain lock", getClusterService().lock(action, lockType));

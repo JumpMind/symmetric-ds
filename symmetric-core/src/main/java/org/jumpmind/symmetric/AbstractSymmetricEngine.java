@@ -339,7 +339,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.nodeService = new NodeService(this);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
-        this.clusterService = new ClusterService(parameterService, symmetricDialect);
+        this.dataService = new DataService(this, extensionService);
+        this.clusterService = new ClusterService(parameterService, symmetricDialect, nodeService);
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
         this.statisticManager = createStatisticManager();
         this.concurrentConnectionManager = new ConcurrentConnectionManager(parameterService,
@@ -354,7 +355,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.triggerRouterService = new TriggerRouterService(this);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
                 nodeService, configurationService, sequenceService, clusterService, extensionService);
-        this.dataService = new DataService(this, extensionService);
         this.routerService = buildRouterService();
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
