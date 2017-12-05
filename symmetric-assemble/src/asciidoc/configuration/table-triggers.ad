@@ -42,10 +42,13 @@ endif::pro[]
 Trigger Id:: Unique identifier for a trigger.
 Source Catalog:: Optional name for the catalog the configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  \
 Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
+Parameter values can be substituted using `$(name)` syntax.
 Source Schema:: Optional name for the schema a configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  
 Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
+Parameter values can be substituted using `$(name)` syntax.
 Source Table:: The name of the source table that will have a trigger installed to watch for data changes.  See <<Trigger Wildcards>> for using wildcards
 to specify multiple source tables.
+Parameter values can be substituted using `$(name)` syntax.
 Channel:: The channel_id of the channel that data changes will flow through.
 
 ifdef::pro[]
