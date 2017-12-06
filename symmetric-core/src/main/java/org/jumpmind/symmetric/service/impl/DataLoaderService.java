@@ -591,16 +591,23 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transferInfo.setStatus(ProcessStatus.OK);
                 ProcessInfo loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode.getNodeId()
                         , transferInfo.getQueue(), nodeService.findIdentityNodeId(), PULL_JOB_LOAD));
-                DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                        targetNodeId, transport.openReader()), null, listener, "data load") {
-                    @Override
-                    protected IDataWriter chooseDataWriter(Batch batch) {
-                        return buildDataWriter(loadInfo, sourceNode.getNodeId(),
-                                batch.getChannelId(), batch.getBatchId(),
-                                ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
-                    }
-                };
-                processor.process(ctx);
+                try {
+                    DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
+                            targetNodeId, transport.openReader()), null, listener, "data load") {
+                        @Override
+                        protected IDataWriter chooseDataWriter(Batch batch) {
+                            return buildDataWriter(loadInfo, sourceNode.getNodeId(),
+                                    batch.getChannelId(), batch.getBatchId(),
+                                    ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry());
+                        }
+                    };
+                    processor.process(ctx);
+                    loadInfo.setStatus(ProcessStatus.OK);
+                } catch (Throwable e) {
+                    loadInfo.setStatus(ProcessStatus.ERROR);
+                    throw e;
+                }
+                
             }
         } catch (Throwable ex) {
             error = ex;

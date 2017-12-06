@@ -656,6 +656,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
                             
                             if (extractBatch.isExtractSkipped) {
+                                transferInfo.setStatus(ProcessStatus.OK);
                                 break;
                             }
 
