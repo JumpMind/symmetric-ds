@@ -158,6 +158,7 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.FormatUtils;
+import org.jumpmind.util.FutureImpl;
 import org.jumpmind.util.Statistics;
 
 /**
@@ -598,7 +599,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.threadPoolFactory = new CustomizableThreadFactory(String.format("%s-dataextractor", parameterService.getEngineName().toLowerCase()));
                 }
                 
-                executor = Executors.newFixedThreadPool(1, this.threadPoolFactory);
+                executor = streamToFileEnabled ? Executors.newFixedThreadPool(1, this.threadPoolFactory) : null;
 
                 List<Future<FutureOutgoingBatch>> futures = new ArrayList<Future<FutureOutgoingBatch>>();
 
@@ -617,10 +618,22 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (status.shouldExtractSkip) {
                         break;
                     }
-                    futures.add(executor.submit(callable));
+                    
+                    if (executor != null) {
+                        futures.add(executor.submit(callable));
+                    } else {
+                        try {
+                            FutureOutgoingBatch batch = callable.call();
+                            futures.add(new FutureImpl<>(batch));
+                        } catch (RuntimeException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
 
-                if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+                if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS) && executor != null) {
                     executor.shutdown();
                     boolean isProcessed = false;
                     while (!isProcessed) {
@@ -660,7 +673,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 break;
                             }
 
-                            if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT) {
+                            if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT || (currentBatch.isExtractJobFlag() && parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB))) {
                                 transferInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
                                 transferInfo.setCurrentLoadId(currentBatch.getLoadId());
                                 boolean isRetry = extractBatch.isRetry() && extractBatch.getOutgoingBatch().getStatus() != OutgoingBatch.Status.IG;
