@@ -356,6 +356,8 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this node belongs to, such as 'store'." />
         <column name="external_id" type="VARCHAR" size="255" required="true" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
+        <column name="heartbeat_time" type="TIMESTAMP"  description="Deprecated.  Use node_host.heartbeat_time instead." />
+        <column name="timezone_offset" type="VARCHAR" size="6"  description="Deprecated.  Use node_host.timezone_offset instead." />        
         <column name="sync_enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this node should be sent synchronization. Disabled nodes are ignored by the triggers, so no entries are made in data_event for the node."/>
         <column name="sync_url" type="VARCHAR" size="255" description="The URL to contact the node for synchronization." />
         <column name="schema_version" type="VARCHAR" size="50" description="The version of the database schema this node manages. Useful for specifying synchronization by version. "/>
