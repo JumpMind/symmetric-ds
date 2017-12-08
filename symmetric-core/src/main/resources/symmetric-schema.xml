@@ -369,6 +369,7 @@
         <column name="batch_in_error_count" type="INTEGER" default="0" description="The number of outgoing batches that are in error at this node.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="created_at_node_id" type="VARCHAR" size="50"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
         <column name="deployment_type" type="VARCHAR" size="50"  description="An indicator as to the type of SymmetricDS software that is running.  Possible values are, but not limited to: engine, standalone, war, professional, mobile" />
+        <column name="deployment_sub_type" type="VARCHAR" size="50" description="An indicator as to the deployment sub type of the node.  Possible values are, but not limited to: load-only" />
     </table>
 
     <table name="node_communication" description="This table is used to coordinate communication with other nodes.">
