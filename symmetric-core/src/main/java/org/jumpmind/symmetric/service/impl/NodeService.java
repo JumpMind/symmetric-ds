@@ -192,11 +192,11 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void updateNodeHost(NodeHost nodeHost) {
 
-        Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getHostName(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
+        Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getInstanceId(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
                 nodeHost.getOsVersion(), nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(), nodeHost.getTotalMemoryBytes(),
                 nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(), nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(),
                 nodeHost.getSymmetricVersion(), nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
-                nodeHost.getNodeId(), nodeHost.getInstanceId()};
+                nodeHost.getNodeId(), nodeHost.getHostName()};
 
         if (sqlTemplate.update(getSql("updateNodeHostSql"), params) <= 0) {
             sqlTemplate.update(getSql("insertNodeHostSql"), params);
