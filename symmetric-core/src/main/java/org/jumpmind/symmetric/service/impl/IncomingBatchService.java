@@ -37,15 +37,13 @@ import org.jumpmind.db.sql.mapper.DateMapper;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
-import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.OutgoingBatchService.OutgoingBatchSummaryMapper;
 import org.jumpmind.util.FormatUtils;
 
 /**

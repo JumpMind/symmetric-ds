@@ -1116,11 +1116,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 
                 if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                     this.currentBatch = incomingBatch;
-                    context.put("currentBatch", this.currentBatch);
-                    
+                    context.put("currentBatch", this.currentBatch);                    
                     return true;
                 }
             }
+            processInfo.setStatus(ProcessStatus.OK);
             return false;
         }
 
