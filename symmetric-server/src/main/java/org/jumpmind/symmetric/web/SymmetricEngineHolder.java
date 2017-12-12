@@ -44,6 +44,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
@@ -526,7 +527,14 @@ public class SymmetricEngineHolder {
         properties.setProperty(ParameterConstants.ENGINE_NAME, engineName);
 
         if (StringUtils.isBlank(properties.getProperty(ParameterConstants.SYNC_URL))) {
-            throw new IllegalStateException("Missing property " + ParameterConstants.SYNC_URL);
+            ParameterMetaData parameterMeta = ParameterConstants.getParameterMetaData().get(ParameterConstants.SYNC_URL);
+            String defaultValue = "http://$(hostName):31415/sync/$(engineName)";
+            if (parameterMeta != null) {
+                defaultValue = parameterMeta.getDefaultValue();
+            }
+
+            log.debug("Defaulting node {} sync.url to {}", externalId, defaultValue);            
+            properties.setProperty(ParameterConstants.SYNC_URL, defaultValue);
         }
         if (StringUtils.isBlank(properties
                 .getProperty(BasicDataSourcePropertyConstants.DB_POOL_DRIVER))) {
