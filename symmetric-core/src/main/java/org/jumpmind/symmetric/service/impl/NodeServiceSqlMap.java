@@ -169,15 +169,15 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertNodeHostSql",
                 "insert into $(node_host)                                                                                                                                                                                                                                            "
-                        + "  (ip_address, host_name, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, jdbc_version, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, instance_id)"
+                        + "  (ip_address, instance_id, os_user, os_name, os_arch, os_version, available_processors, free_memory_bytes, total_memory_bytes, max_memory_bytes, java_version, java_vendor, jdbc_version, symmetric_version, timezone_offset, heartbeat_time, last_restart_time, create_time, node_id, host_name)"
                         + "  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, current_timestamp,?,?)");
 
         putSql("updateNodeHostSql",
                 ""
                         + "update $(node_host) set                                                                                                          "
-                        + "  ip_address=?, host_name=?, os_user=?, os_name=?, os_arch=?, os_version=?, available_processors=?, free_memory_bytes=?,                            "
+                        + "  ip_address=?, instance_id=?, os_user=?, os_name=?, os_arch=?, os_version=?, available_processors=?, free_memory_bytes=?,                            "
                         + "  total_memory_bytes=?, max_memory_bytes=?, java_version=?, java_vendor=?, jdbc_version=?, symmetric_version=?, timezone_offset=?, heartbeat_time=?,   "
-                        + "  last_restart_time=? where node_id=? and instance_id=?                                                                                  ");
+                        + "  last_restart_time=? where node_id=? and host_name=?                                                                                  ");
 
         putSql("findNodeHeartbeatsSql",
                 "select h.node_id, h.heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"

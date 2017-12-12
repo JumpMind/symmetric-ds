@@ -310,7 +310,7 @@ public class SymmetricWebServer {
 
     protected void printAsciiArt() {
         try {            
-            log.info("\n{}", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart")));
+            log.info("SymmetricWebServer START\r\n{}", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart")));
         } catch (Exception ex) {
             // ignored.
         }
