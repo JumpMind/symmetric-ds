@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -19,9 +21,16 @@ import org.jumpmind.persist.AbstractPersistenceManager;
 public class SqlPersistenceManager extends AbstractPersistenceManager {
 
     IDatabasePlatform databasePlatform;
+    
+    // [BEANUTILS-463]
+    // Added new SuppressPropertiesBeanIntrospector class to deal with a potential
+    // class loader vulnerability.
+    private final BeanUtilsBean BEAN_UTILS = new BeanUtilsBean();
 
     public SqlPersistenceManager(IDatabasePlatform databasePlatform) {
         this.databasePlatform = databasePlatform;
+        BEAN_UTILS.getPropertyUtils().addBeanIntrospector(
+                SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);
     }
     
     @Override
@@ -33,7 +42,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
             Set<String> propertyNames = objectToTableMapping.keySet();
             for (String propertyName : propertyNames) {
                 Object value = row.get(objectToTableMapping.get(propertyName).getName());
-                BeanUtils.copyProperty(object, propertyName, value);
+                BEAN_UTILS.copyProperty(object, propertyName, value);
             }
             return object;
         } catch (Exception e) {
@@ -251,7 +260,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
                 Set<String> propertyNames = objectToTableMapping.keySet();
                 for (String propertyName : propertyNames) {
                     Object value = row.get(objectToTableMapping.get(propertyName).getName());
-                    BeanUtils.copyProperty(object, propertyName, value);
+                    BEAN_UTILS.copyProperty(object, propertyName, value);
                 }
                 objects.add(object);
             }
@@ -292,7 +301,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
                 Set<String> propertyNames = objectToTableMapping.keySet();
                 for (String propertyName : propertyNames) {
                     Object value = row.get(objectToTableMapping.get(propertyName).getName());
-                    BeanUtils.copyProperty(object, propertyName, value);
+                    BEAN_UTILS.copyProperty(object, propertyName, value);
                 }
             }
         } catch (Exception e) {
@@ -352,7 +361,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
             Set<String> propertyNames = objectToTableMapping.keySet();
             for (String propertyName : propertyNames) {
                 objectValuesByColumnName.put(objectToTableMapping.get(propertyName).getName(),
-                        PropertyUtils.getProperty(object, propertyName));
+                        BEAN_UTILS.getProperty(object, propertyName));
             }
             return objectValuesByColumnName;
         } catch (IllegalAccessException e) {

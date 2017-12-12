@@ -5,7 +5,7 @@ apply from: symAssembleDir + '/common.gradle'
     dependencies {
         compile "net.java.dev.jna:jna:$jnaVersion"
         compile "net.java.dev.jna:jna-platform:$jnaVersion"
-        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }

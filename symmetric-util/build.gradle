@@ -7,6 +7,6 @@ apply from: symAssembleDir + '/common.gradle'
         compile "commons-io:commons-io:$commonsIoVersion"
         compile "commons-codec:commons-codec:$commonsCodecVersion"
         compile "commons-collections:commons-collections:$commonsCollectionVersion"
-        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
     }
