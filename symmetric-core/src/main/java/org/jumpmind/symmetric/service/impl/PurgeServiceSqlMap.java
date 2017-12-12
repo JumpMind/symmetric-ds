@@ -105,14 +105,14 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
                 
         putSql("purgeNodeHostJobStatsSql", "delete from $(node_host_job_stats) where start_time < ?");
         
-        putSql("selectIncomingErrorsBatchIdsSql", "select distinct e.batch_id as batch_id from sym_incoming_error e LEFT OUTER JOIN sym_incoming_batch i ON e.batch_id = i.batch_id where i.batch_id IS NULL");
+        putSql("selectIncomingErrorsBatchIdsSql", "select distinct e.batch_id as batch_id from $(incoming_error) e LEFT OUTER JOIN $(incoming_batch) i ON e.batch_id = i.batch_id where i.batch_id IS NULL");
         
-        putSql("deleteIncomingErrorsBatchIdsSql", "delete from sym_incoming_error where batch_id IN (?)");
+        putSql("deleteIncomingErrorsBatchIdsSql", "delete from $(incoming_error) where batch_id IN (?)");
         
-        putSql("deleteOutgoingBatchByCreateTimeSql", "delete from sym_outgoing_batch where create_time < ?");
-        putSql("deleteDataEventByCreateTimeSql", "delete from sym_data_event where create_time < ?");
-        putSql("deleteDataByCreateTimeSql", "delete from sym_data where create_time < ?");
-        putSql("deleteExtractRequestByCreateTimeSql", "delete from sym_extract_request where create_time < ?");
+        putSql("deleteOutgoingBatchByCreateTimeSql", "delete from $(outgoing_batch) where create_time < ?");
+        putSql("deleteDataEventByCreateTimeSql", "delete from $(data_event) where create_time < ?");
+        putSql("deleteDataByCreateTimeSql", "delete from $(data) where create_time < ?");
+        putSql("deleteExtractRequestByCreateTimeSql", "delete from $(extract_request) where create_time < ?");
 
         putSql("selectStrandedDataEventRangeSql" ,
 "select min(data_id) as min_id, max(data_id) as max_id from $(data_event) " +

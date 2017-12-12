@@ -263,13 +263,14 @@ bin/sym_service stop
     
 === Clustering
        
-A single SymmetricDS node may be clustered across a series of instances, creating a web farm.  A node might be clustered to provide load balancing and failover, for example.
+A single SymmetricDS node may be deployed across a series of servers to cooperate as a cluster.  A node can be clustered to provide load balancing and high availability.
 
-When clustered, a hardware load balancer is typically used.  
+When using clustering, a hardware load balancer is typically used, but a software load balancer, such as a reverse proxy, can also be used.  
 
-For clustered nodes running SymmetricDS 3.8 and later the recommended approach is to configure the load balancer to use sticky sessions or ensure the staging directory for all nodes in the cluster are using a shared network drive. 
+For clustered nodes running SymmetricDS 3.8 and later, the recommended approach is to configure the load balancer to use sticky sessions and ensure the staging directory for all nodes in the cluster are using a shared network drive.
+Sticky sessions are needed to support reservation requests, which allows for nodes to connect and obtain a reservation before connecting again and pushing their changes.  The shared staging directory is needed to support extract in background of the initial load, which is extracted by one node, but served by different nodes in the cluster.  If the `start.initial.load.extract.job` property is disabled, then shared staging is not required, but the performance of the initial load may be degraded.
 
-For clustered nodes running SymmetricDS 3.7 and earlier it is recommended to round robin client requests to the cluster and configure the load balancer for stateless connections.
+For clustered nodes running SymmetricDS 3.7 and earlier, it is recommended to round robin client requests to the cluster and configure the load balancer for stateless connections.
 
 ifndef::pro[]
 Also, the `sync.url` (discussed in <<Node Properties File>>) SymmetricDS property should be set to the URL of the load balancer.
