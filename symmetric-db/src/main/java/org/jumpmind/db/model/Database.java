@@ -117,9 +117,10 @@ public class Database implements Serializable, Cloneable {
         Map<Table, Integer> resolvedPosition = new HashMap<Table, Integer>();
         
         if (tablePrefix == null) { tablePrefix = "sym"; }
+        tablePrefix = tablePrefix.toLowerCase();
         
         for(Table t : tables) {
-            if (t != null && !t.getName().toUpperCase().startsWith("SYM")) {
+            if (t != null && !t.getNameLowerCase().startsWith(tablePrefix)) {
                 depth.setValue(1);
                 parentPosition.setValue(-1);
                 resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap, 
@@ -166,7 +167,7 @@ public class Database implements Serializable, Cloneable {
                 
                 for (ForeignKey fk : t.getForeignKeys()) {
                     Table fkTable = allTables.get(fk.getForeignTableName());
-                    if (fkTable != null) {
+                    if (fkTable != t) {
                         depth.increment(); 
                         resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
                                 dependencyMap, depth, position, tablePrefix, resolvedPosition, parentPosition);
