@@ -1015,6 +1015,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 }
                             };
                             processor.process(ctx);
+                            
+                            if (loadInfo.getCurrentBatchCount() == 0) {
+                                loadInfo.setStatus(ProcessStatus.OK);
+                            }
                         } catch (Exception e) {
                             isError = true;
                             throw e;
@@ -1120,7 +1124,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     return true;
                 }
             }
-            processInfo.setStatus(ProcessStatus.OK);
             return false;
         }
 
