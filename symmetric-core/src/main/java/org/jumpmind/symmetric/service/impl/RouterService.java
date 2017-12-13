@@ -50,6 +50,8 @@ import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
+import org.jumpmind.symmetric.load.DefaultReloadGenerator;
+import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
@@ -146,7 +148,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 engine.getSymmetricDialect()));
         extensionService.addExtensionPoint(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
         extensionService.addExtensionPoint("dbf", new DBFRouter(engine));
+
         extensionService.addExtensionPoint("csv", new CSVRouter(engine));
+        extensionService.addExtensionPoint(DefaultReloadGenerator.NAME, new DefaultReloadGenerator(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));   
@@ -255,7 +259,6 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .getRegistrationTime() != null)) {
 
                     List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
-                    List<TriggerHistory> activeHistories = triggerRouterService.getActiveTriggerHistories();
                     Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId = new HashMap<String, List<TriggerRouter>>();
                     
                     if (nodeSecurities != null && nodeSecurities.size() > 0) {
@@ -266,6 +269,8 @@ public class RouterService extends AbstractService implements IRouterService {
 
                         
                         for (NodeSecurity security : nodeSecurities) {
+                            List<TriggerHistory> activeHistories = triggerRouterService.getActiveTriggerHistories();
+                            
                             if (activeHistories.size() > 0) {
                                 Node targetNode = engine.getNodeService().findNode(security.getNodeId());
                                 boolean thisMySecurityRecord = security.getNodeId().equals(
@@ -321,7 +326,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     
-                    processTableRequestLoads(identity, processInfo, activeHistories, triggerRoutersByTargetNodeGroupId);
+                    processTableRequestLoads(identity, processInfo, triggerRoutersByTargetNodeGroupId);
                 }
             }
 
@@ -333,7 +338,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    public void processTableRequestLoads(Node source, ProcessInfo processInfo,  List<TriggerHistory> activeHistories,  Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId) {
+    public void processTableRequestLoads(Node source, ProcessInfo processInfo,  Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId) {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
@@ -342,13 +347,19 @@ public class RouterService extends AbstractService implements IRouterService {
             
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             for (TableReloadRequest load : loadsToProcess) {
+                Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId());
+                
                 if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
                    List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
                    fullLoad.add(load);
                
+                   List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
+                           .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
+                    
+                   List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
+
                    engine.getDataService().insertReloadEvents(
-                           engine.getNodeService().findNode(load.getTargetNodeId()),
-                           false, fullLoad, processInfo);
+                           targetNode,false, fullLoad, processInfo, activeHistories, triggerRouters);
                }
                else {
                    NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
@@ -376,6 +387,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
                     triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
                 }
+                List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
                 
                 engine.getDataService().insertReloadEvents(
                         targetNode,
@@ -1191,5 +1203,17 @@ public class RouterService extends AbstractService implements IRouterService {
     		table.addColumn(new Column(columnName));
     	}
     	return table;
+    }
+
+    @Override
+    public Set<Channel> getCommomBatchChannels(List<Channel> channels, String nodeGroupId, List<TriggerRouter> triggerRouters) {
+        Set<Channel> commonBatchChannels = new HashSet<Channel>();
+        
+        for (Channel channel : channels) {
+            if (producesCommonBatches(channel, nodeGroupId, triggerRouters)) {
+                commonBatchChannels.add(channel);
+            }
+        }
+        return commonBatchChannels;
     }
 }

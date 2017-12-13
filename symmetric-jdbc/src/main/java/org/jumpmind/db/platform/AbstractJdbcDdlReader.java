@@ -1400,8 +1400,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> schemas = new ArrayList<String>();
-                if (getConnectionHandler() != null) {
-                    getConnectionHandler().before(connection);
+                IConnectionHandler connectionHandler = getConnectionHandler(catalog);
+                if (connectionHandler != null) {
+                    connectionHandler.before(connection);
                 }
                 DatabaseMetaData meta = connection.getMetaData();
                 ResultSet rs = null;
@@ -1424,8 +1425,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     }
                     return schemas;
                 } finally {
-                    if (getConnectionHandler() != null) {
-                        getConnectionHandler().after(connection);
+                    if (connectionHandler != null) {
+                        connectionHandler.after(connection);
                     }
                     close(rs);
                 }
@@ -1433,7 +1434,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         });
     }
 
-    protected IConnectionHandler getConnectionHandler() {
+    protected IConnectionHandler getConnectionHandler(String catalog) {
         return null;
     }
     

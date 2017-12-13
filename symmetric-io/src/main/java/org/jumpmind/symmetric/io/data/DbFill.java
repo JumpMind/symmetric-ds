@@ -224,7 +224,7 @@ public class DbFill {
             }
         }
         log.info("TABLES " + tables.size());
-        tables = Database.sortByForeignKeys(tables, getAllDbTables());
+        tables = Database.sortByForeignKeys(tables, getAllDbTables(), null, null, null);
         
         StringBuffer tableOrder = new StringBuffer();
         for(Table t : tables) {

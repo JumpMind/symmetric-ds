@@ -20,10 +20,16 @@
  */
 package org.jumpmind.db.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -47,7 +53,7 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         
-        list = Database.sortByForeignKeys(list, null);
+        list = Database.sortByForeignKeys(list, null, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t1));
         assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
@@ -87,7 +93,7 @@ public class DatabaseTest {
         list.add(t8);
         
         
-        list = Database.sortByForeignKeys(list, null);
+        list = Database.sortByForeignKeys(list, null, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t5));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
@@ -112,12 +118,144 @@ public class DatabaseTest {
         list.add(t2);
         list.add(t1);
         
-        list = Database.sortByForeignKeys(list, null);
+        list = Database.sortByForeignKeys(list, null, null, null, null);
         
         // for now just make sure it doesn't blow up
         
     }
-
+    
+    @Test
+    public void testMultipleParentsTables() {
+        
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        
+        t1.addForeignKey(new ForeignKey("2","2"));
+        t2.addForeignKey(new ForeignKey("3","3"));
+        t2.addForeignKey(new ForeignKey("4","4"));
+        
+        t1.addForeignKey(new ForeignKey("4","4"));
+        
+        list.add(t2);
+        list.add(t1);
+        list.add(t4);
+        list.add(t3);
+        
+        list = Database.sortByForeignKeys(list, null, null, null, null);
+        
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
+        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t2));
+    }
+    
+    @Test
+    public void testSplitTreeTables() {
+        
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        
+        t1.addForeignKey(new ForeignKey("2","2"));
+        t2.addForeignKey(new ForeignKey("3","3"));
+        t1.addForeignKey(new ForeignKey("3","3"));
+        
+        list.add(t2);
+        list.add(t1);
+        list.add(t4);
+        list.add(t3);
+        
+        list = Database.sortByForeignKeys(list, null, null, null, null);
+        
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+    }
+    
+    @Test
+    public void testIndependentTreesSameTables() {
+        
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        
+        t2.addForeignKey(new ForeignKey("3","3"));
+        t1.addForeignKey(new ForeignKey("2","2"));
+        t1.addForeignKey(new ForeignKey("4","4"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+        
+        list = Database.sortByForeignKeys(list, null, null, null, null);
+        
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t1));
+    }
+    
+    @Test
+    public void testSelfReferenceTables() {
+        
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        
+        t1.addForeignKey(new ForeignKey("1","1"));
+        t1.addForeignKey(new ForeignKey("2","2"));
+        t2.addForeignKey(new ForeignKey("3","3"));
+        t3.addForeignKey(new ForeignKey("4","4"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+        
+        list = Database.sortByForeignKeys(list, null, null, null, null);
+        
+        assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t3));
+        assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
+        assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
+    }
+    
+    @Test
+    public void testMissingDepdendentTables() {
+        
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        
+        t1.addForeignKey(new ForeignKey("2","2"));
+        t1.addForeignKey(new ForeignKey("3","3"));
+        
+        list.add(t1);
+        list.add(t4);
+        
+        Map<Table, Set<String>> missingDependencyMap = new HashMap<Table, Set<String>>();
+        list = Database.sortByForeignKeys(list, null, null, null, missingDependencyMap);
+        
+        assertTrue(list.toString(), list.indexOf(t1) < list.indexOf(t4));
+        
+        assertTrue(missingDependencyMap.size() == 1);
+        assertTrue(missingDependencyMap.containsKey(t1));
+        Iterator i = missingDependencyMap.get(t1).iterator();
+        assertTrue(i.next().equals("2"));
+        assertTrue(i.next().equals("3"));
+        
+    }
+    
     @Test
     public void testRemoveAllTablesExcept() throws Exception {
         Database database = new Database();
@@ -131,7 +269,230 @@ public class DatabaseTest {
         
         assertEquals(1, database.getTableCount());
         assertNotNull(database.findTable("SYM_DATA"));
+   }
+    
+    @Test
+    public void testDependentMapIndependent() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
         
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
         
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.size() == 3);
+    }
+    
+    @Test
+    public void testDependentMapParentChild() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        
+        t1.addForeignKey(new ForeignKey("2","2"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(1).contains(t2));
+        assertTrue(dependencyMap.get(2).contains(t3));
+    }
+    
+    
+    @Test
+    public void testDependentMapParentChildReverseOrder() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        
+        t1.addForeignKey(new ForeignKey("2","2"));
+        
+        list.add(t2);
+        list.add(t1);
+        list.add(t3);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(1).contains(t2));
+        assertTrue(dependencyMap.get(2).contains(t3));
+    }
+    
+    @Test
+    public void testDependentMapTwoGroups() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        
+        Table t4 = new Table("4");
+        Table t5 = new Table("5");
+        Table t6 = new Table("6");
+        
+        t2.addForeignKey(new ForeignKey("1","1"));
+        t3.addForeignKey(new ForeignKey("1","1"));
+        
+        t5.addForeignKey(new ForeignKey("4","4"));
+        t6.addForeignKey(new ForeignKey("4","4"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+        list.add(t5);
+        list.add(t6);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(1).contains(t2));
+        assertTrue(dependencyMap.get(1).contains(t3));
+        
+        assertTrue(dependencyMap.get(2).contains(t4));
+        assertTrue(dependencyMap.get(2).contains(t5));
+        assertTrue(dependencyMap.get(2).contains(t6));
+    }
+    
+    @Test
+    public void testDependentMapCircular() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        
+        Table t5 = new Table("5");
+        
+        t4.addForeignKey(new ForeignKey("3","3"));
+        t3.addForeignKey(new ForeignKey("2","2"));
+        t4.addForeignKey(new ForeignKey("2","2"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+        list.add(t5);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(2).contains(t2));
+        assertTrue(dependencyMap.get(2).contains(t3));
+        assertTrue(dependencyMap.get(2).contains(t4));
+        assertTrue(dependencyMap.get(3).contains(t5));
+    }
+    
+    @Test
+    public void testDependentMapMultipleParents() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        Table t5 = new Table("5");
+        
+        t2.addForeignKey(new ForeignKey("1","1"));
+        t3.addForeignKey(new ForeignKey("1","1"));
+        
+        t3.addForeignKey(new ForeignKey("4","4"));
+        t5.addForeignKey(new ForeignKey("4","4"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t3);
+        list.add(t4);
+        list.add(t5);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(1).contains(t2));
+        assertTrue(dependencyMap.get(1).contains(t3));
+        assertTrue(dependencyMap.get(1).contains(t4));
+        assertTrue(dependencyMap.get(1).contains(t5));
+    }
+    
+    @Test
+    public void testDependentMapMergeGroups() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        Table t5 = new Table("5");
+        
+        t2.addForeignKey(new ForeignKey("1","1"));
+        t3.addForeignKey(new ForeignKey("1","1"));
+        
+        t3.addForeignKey(new ForeignKey("4","4"));
+        t3.addForeignKey(new ForeignKey("5","5"));
+        
+        list.add(t1);
+        list.add(t2);
+        list.add(t4);
+        list.add(t5);
+        list.add(t3);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(1).contains(t2));
+        assertTrue(dependencyMap.get(1).contains(t3));
+        assertTrue(dependencyMap.get(1).contains(t4));
+        assertTrue(dependencyMap.get(1).contains(t5));
+    }
+    
+    @Test
+    public void testDependentMapOutOfOrder() throws Exception {
+        List<Table> list = new ArrayList<Table>(4);
+        Table t1 = new Table("1");
+        Table t2 = new Table("2");
+        Table t3 = new Table("3");
+        Table t4 = new Table("4");
+        Table t5 = new Table("5");
+        
+        t5.addForeignKey(new ForeignKey("1","1"));
+        t4.addForeignKey(new ForeignKey("1","1"));
+        
+        list.add(t1);
+        list.add(t3);
+        list.add(t4);
+        list.add(t2);
+        list.add(t5);
+        
+        Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
+        
+        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        
+        assertTrue(dependencyMap.get(1).contains(t1));
+        assertTrue(dependencyMap.get(1).contains(t4));
+        assertTrue(dependencyMap.get(1).contains(t5));
+        assertTrue(dependencyMap.get(2).contains(t3));
+        assertTrue(dependencyMap.get(3).contains(t2));
     }
 }

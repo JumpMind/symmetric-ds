@@ -61,6 +61,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected long loadedBytes = 0;
     protected boolean needsBinaryConversion;    
     protected Table table = null;
+    
 
     public MySqlBulkDatabaseWriter(IDatabasePlatform platform,
             IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
@@ -72,6 +73,8 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.isLocal = isLocal;
         this.isReplace = isReplace;
         this.stagingManager = stagingManager;
+        this.writerSettings.setCreateTableFailOnError(false);
+        
     }
 
     public boolean start(Table table) {
