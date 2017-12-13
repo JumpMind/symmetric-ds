@@ -64,7 +64,7 @@ project(":symmetric-wrapper") {
     dependencies {
         compile "net.java.dev.jna:jna:$jnaVersion"
         compile "net.java.dev.jna:jna-platform:$jnaVersion"
-        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
@@ -86,7 +86,7 @@ project(':symmetric-util') {
         compile "commons-io:commons-io:$commonsIoVersion"
         compile "commons-codec:commons-codec:$commonsCodecVersion"
         compile "commons-collections:commons-collections:$commonsCollectionVersion"
-        compile "bouncycastle:bcprov-jdk15:$bouncyCastleVersion"
+        compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
     }
 }
@@ -189,7 +189,13 @@ project(':symmetric-client') {
 
         provided "org.mongodb:mongo-java-driver:2.12.3"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        provided "com.amazonaws:aws-java-sdk:1.9.17"
+        provided ("com.amazonaws:aws-java-sdk:1.9.17") {
+			exclude group: 'org.apache.httpcomponents'
+            exclude group: 'commons-logging'
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'commons-codec'            
+        }
+        provided 'org.apache.httpcomponents:httpclient:4.5.4' // This is required by com.amazonaws:aws-java-sdk.  It is called out here to upgrade the version because of a user's security concerns.
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
@@ -214,17 +220,15 @@ project(':symmetric-server') {
         compile "org.jdom:jdom:1.1"
         compile ("com.mangofactory:swagger-springmvc:0.6.5") {
             exclude group: 'asm'
+            exclude group: 'com.fasterxml.jackson.core'
         }
+        compile "com.fasterxml.jackson.core:jackson-databind:2.8.10" // This is required by com.mangofactory:swagger-springmvc. It is called out here to upgrade the version because of a user's security concerns.
+
         compile project(":symmetric-wrapper")
 
         provided "javax.jms:jms-api:1.1-rev-1"
         provided "org.mongodb:mongo-java-driver:2.12.3"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
-        provided ("com.amazonaws:aws-java-sdk:1.8.9.1") {
-            exclude group: 'commons-logging'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'commons-codec'
-        }
         compile "javax.servlet:javax.servlet-api:$servletVersion"
         provided "org.eclipse.jetty:jetty-annotations:$jettyVersion"
         provided "org.eclipse.jetty:jetty-servlets:$jettyVersion"
