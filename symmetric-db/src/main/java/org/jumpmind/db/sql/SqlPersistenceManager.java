@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.beanutils.SuppressPropertiesBeanIntrospector;
@@ -30,7 +29,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
     public SqlPersistenceManager(IDatabasePlatform databasePlatform) {
         this.databasePlatform = databasePlatform;
         BEAN_UTILS.getPropertyUtils().addBeanIntrospector(
-                SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);
+                SuppressPropertiesBeanIntrospector.SUPPRESS_CLASS);        
     }
     
     @Override
@@ -222,7 +221,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
                     Set<String> propertyNames = objectToTableMapping.keySet();
                     for (String propertyName : propertyNames) {
                         Object value = row.get(objectToTableMapping.get(propertyName).getName());
-                        BeanUtils.copyProperty(object, propertyName, value);
+                        BEAN_UTILS.copyProperty(object, propertyName, value);
                     }
                     objects.add(object);
                 }

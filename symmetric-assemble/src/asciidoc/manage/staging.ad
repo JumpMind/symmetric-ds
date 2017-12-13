@@ -2,7 +2,7 @@
 		
 SymmetricDS creates temporary extraction and data load files with the CSV payload of a synchronization when
 the value of the `stream.to.file.threshold.bytes` SymmetricDS property has been reached.  Before reaching the threshold, files
-are streamed to/from memory.  The default threshold value is 32,767 bytes. This feature may be turned off by setting the `stream.to.file.enabled`
+are streamed to/from memory.  The default threshold value is 0 bytes. This feature may be turned off by setting the `stream.to.file.enabled`
 property to false.
         
 SymmetricDS creates these temporary files in the directory specified by the `java.io.tmpdir` Java System property.
