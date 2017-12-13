@@ -9,13 +9,14 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class DefaultReloadGenerator implements IReloadGenerator, IBuiltInExtensionPoint {
 
+    public static final String NAME = "default reload generator";
+
     ISymmetricEngine engine;
     
-    @Override
-    public void setSymmetricEngine(ISymmetricEngine engine) {
+    public DefaultReloadGenerator(ISymmetricEngine engine) {
         this.engine = engine;
     }
-
+    
     @Override
     public List<TriggerHistory> getActiveTriggerHistories(Node targetNode) {
         return engine.getTriggerRouterService().getActiveTriggerHistories();
