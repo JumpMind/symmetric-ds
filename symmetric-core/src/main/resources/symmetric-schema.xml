@@ -452,11 +452,7 @@
         <column name="timezone_offset" type="VARCHAR" size="6"  description="The time zone offset in RFC822 format at the time of the last heartbeat. " />
         <column name="heartbeat_time" type="TIMESTAMP"  description="The last timestamp when the node sent a heartbeat, which is attempted every ten minutes by default." />
         <column name="last_restart_time" type="TIMESTAMP" required="true"  description="Timestamp when this instance was last restarted." />
-        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
-        <unique name="idx_nd_hst_instance_id">
-            <index-column name="node_id"/>
-            <index-column name="instance_id"/>
-        </unique>        
+        <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />        
     </table>
 
     <table name="node_host_channel_stats" description="">
