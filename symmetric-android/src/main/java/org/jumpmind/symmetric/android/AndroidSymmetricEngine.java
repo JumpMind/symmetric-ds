@@ -137,6 +137,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected IFileSyncService buildFileSyncService() {
         return new AndroidFileSyncService(this);
     }        
+    
+    @Override
+    protected IClusterService createClusterService() {
+        return new AndroidClusterService(parameterService, symmetricDialect, nodeService);
+    }
 
     class AndroidRouterService extends RouterService {
 
