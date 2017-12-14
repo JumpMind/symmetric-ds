@@ -26,7 +26,7 @@ insert into sym_node_group (node_group_id, description) values ('test-node-group
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-root-group','test-node-group', 'W');
 
-insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine');
+insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, 1, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine', null);
 insert into sym_node_identity values ('00000');
 
   
