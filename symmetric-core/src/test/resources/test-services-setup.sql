@@ -42,7 +42,7 @@ insert into sym_node values ('00000', 'test-root-group', '00000', 1, 'internal:/
 insert into sym_node values ('1', 'test-node-group', '1', 1, 'internal://root', '1', '2.0', '2.0','H2', '5.0', current_timestamp, null, 0, 0, '00000', 'engine', null);
 insert into sym_node values ('00001', 'test-node-group', '00001', 1, 'http://localhost:8080/sync', '1', '2.0', '2.0', 'H2', '5.0', current_timestamp, null, 0, 0, '00000', 'engine', null);
 insert into sym_node values ('00002', 'test-node-group', '00002', 0, null, null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine', null);
-insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '0', '2.0', '2.0', 'H2', '4', current_timestamp, null, 0, 0, '00000', 'engine', null);
+insert into sym_node values ('00003', 'test-node-group', '00003', 1, 'http://localhost:8080/', '1', '2.0', '2.0', 'H2', '4', current_timestamp, null, 0, 0, '00000', 'engine', null);
 insert into sym_node values ('00010', 'test-node-group2', '00010', 1, null, null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine', null);
 insert into sym_node values ('00030', 'test-node-group3', '00030', 1, null, null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine', null);
 insert into sym_node values ('00011', 'test-node-group2', '00011', 1, null, null, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine', null);
