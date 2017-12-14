@@ -360,7 +360,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
             Set<String> propertyNames = objectToTableMapping.keySet();
             for (String propertyName : propertyNames) {
                 objectValuesByColumnName.put(objectToTableMapping.get(propertyName).getName(),
-                        BEAN_UTILS.getProperty(object, propertyName));
+                        PropertyUtils.getProperty(object, propertyName));
             }
             return objectValuesByColumnName;
         } catch (IllegalAccessException e) {
