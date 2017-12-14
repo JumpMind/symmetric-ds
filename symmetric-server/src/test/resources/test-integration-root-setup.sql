@@ -26,7 +26,7 @@ insert into sym_node_group (node_group_id, description) values ('test-node-group
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-node-group','test-root-group', 'P');
 insert into sym_node_group_link (source_node_group_id, target_node_group_id, data_event_action) values ('test-root-group','test-node-group', 'W');
 
-insert into sym_node values ('00000', 'test-root-group', '00000', 1, null, 1, '2.0', '2.0', null, null, current_timestamp, null, 0, 0, '00000', 'engine', null);
+insert into sym_node (node_id, node_group_id, external_id, sync_enabled, sync_url, schema_version, symmetric_version, config_version, database_type, database_version, batch_to_send_count, batch_in_error_count, created_at_node_id, deployment_type, deployment_sub_type) values ('00000', 'test-root-group', '00000', 1, null, 1, '2.0', '2.0', null, null, 0, 0, '00000', 'engine', null);
 insert into sym_node_identity values ('00000');
 
   
