@@ -283,10 +283,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     protected Set<Node> filterOutOlderNodes(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
         if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
                 || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT) 
-                || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)
+                || tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
             Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
+                    if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                        targetNodes.add(nodeThatMayBeRoutedTo);
+                    }
+                }
+                else if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
                     targetNodes.add(nodeThatMayBeRoutedTo);
                 }
             }
