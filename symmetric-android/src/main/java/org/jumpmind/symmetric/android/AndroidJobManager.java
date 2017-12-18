@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.job.IJob;
@@ -135,9 +136,16 @@ public class AndroidJobManager implements IJobManager {
 
                     IParameterService parameterService = engine.getParameterService();
 
-                    if (parameterService.is(ParameterConstants.START_ROUTE_JOB)
-                            && parameterService.getInt("job.routing.period.time.ms") < System
-                                    .currentTimeMillis() - lastRouteTime) {
+                    String startRouteJob = parameterService.getString(ParameterConstants.START_ROUTE_JOB_38);
+                    boolean startRoutingJob = false;
+                    if (StringUtils.isBlank(startRouteJob)) {
+                        startRoutingJob = parameterService.is(ParameterConstants.START_ROUTE_JOB);
+                    } else {
+                        startRoutingJob = parameterService.is(ParameterConstants.START_ROUTE_JOB_38);
+                    }
+
+                    if (startRoutingJob
+                            && parameterService.getInt("job.routing.period.time.ms") < System.currentTimeMillis() - lastRouteTime) {
                         try {
                             engine.route();
                         } catch (Throwable ex) {

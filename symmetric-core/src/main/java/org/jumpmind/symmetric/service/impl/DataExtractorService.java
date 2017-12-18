@@ -512,7 +512,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
          * make sure that data is routed before extracting if the route job is
          * not configured to start automatically
          */
-        if (!parameterService.is(ParameterConstants.START_ROUTE_JOB) && parameterService.is(ParameterConstants.ROUTE_ON_EXTRACT)) {
+        String startRouteJob = parameterService.getString(ParameterConstants.START_ROUTE_JOB_38);
+        boolean startRoutingJob = false;
+        if (StringUtils.isBlank(startRouteJob)) {
+            startRoutingJob = parameterService.is(ParameterConstants.START_ROUTE_JOB);
+        } else {
+            startRoutingJob = parameterService.is(ParameterConstants.START_ROUTE_JOB_38);
+        }
+        
+        if (!startRoutingJob && parameterService.is(ParameterConstants.ROUTE_ON_EXTRACT)) {
             routerService.routeData(true);
         }
         
