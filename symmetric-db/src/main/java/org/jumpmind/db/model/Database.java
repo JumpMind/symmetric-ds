@@ -116,15 +116,12 @@ public class Database implements Serializable, Cloneable {
         
         Map<Table, Integer> resolvedPosition = new HashMap<Table, Integer>();
         
-        if (tablePrefix == null) { tablePrefix = "sym"; }
-        tablePrefix = tablePrefix.toLowerCase();
-        
         for(Table t : tables) {
-            if (t != null && !t.getNameLowerCase().startsWith(tablePrefix)) {
+            if (t != null) {
                 depth.setValue(1);
                 parentPosition.setValue(-1);
                 resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap, 
-                        dependencyMap, depth, position, tablePrefix, resolvedPosition, parentPosition);
+                        dependencyMap, depth, position, resolvedPosition, parentPosition);
             }
         }
     
@@ -134,7 +131,7 @@ public class Database implements Serializable, Cloneable {
     
     public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, 
             List<Table> finalList, Table parentTable, Map<Table, Set<String>> missingDependencyMap,
-            Map<Integer, Set<Table>> dependencyMap, MutableInt depth, MutableInt position, String tablePrefix, 
+            Map<Integer, Set<Table>> dependencyMap, MutableInt depth, MutableInt position,
             Map<Table, Integer> resolvedPosition, MutableInt parentPosition) {
         
         if (resolved.contains(t)) { 
@@ -170,7 +167,7 @@ public class Database implements Serializable, Cloneable {
                     if (fkTable != t) {
                         depth.increment(); 
                         resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
-                                dependencyMap, depth, position, tablePrefix, resolvedPosition, parentPosition);
+                                dependencyMap, depth, position, resolvedPosition, parentPosition);
                         Integer resolvedParentTableChannel = resolvedPosition.get(fkTable);
                         if (resolvedParentTableChannel != null) {
                             parentTablesChannels.add(resolvedParentTableChannel);
