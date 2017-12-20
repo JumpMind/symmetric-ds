@@ -102,6 +102,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                             }
                         }
                         String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED);
+                        formattedData = removeIllegalCharacters(formattedData);
                         byte[] dataToLoad = formattedData.getBytes();
                         copyIn.writeToCopy(dataToLoad, 0, dataToLoad.length);
                         loadedRows++;
@@ -128,6 +129,16 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
         
         statistics.get(batch).stopTimer(DataWriterStatisticConstants.DATABASEMILLIS);
+    }
+
+    protected String removeIllegalCharacters(String formattedData) {
+        StringBuilder buff = new StringBuilder(formattedData.length());
+        for (char c : formattedData.toCharArray()) {
+            if (c > 0) {
+                buff.append(c);
+            }
+        }
+        return buff.toString();
     }
 
     protected void flush() {
