@@ -43,7 +43,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     protected static final Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
 
     protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
-        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
+    		DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter)writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         String columnName = conflict.getDetectExpression();
         Table targetTable = writer.getTargetTable();

@@ -4,19 +4,20 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.model.IncomingBatch;
 
-public abstract class AbstractBulkDatabaseWriter extends DefaultDatabaseWriter{
+public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseWriter{
     
     protected boolean useDefaultDataWriter;
     
-    public AbstractBulkDatabaseWriter(IDatabasePlatform platform){
-        super(platform);
+    public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix){
+        super(symmetricPlatform, targetPlatform, tablePrefix);
     }
     
-    public AbstractBulkDatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings) {
-        super(platform, settings);
+    public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
+    		String tablePrefix, DatabaseWriterSettings settings) {
+        super(symmetricPlatform, targetPlatform, tablePrefix, settings);
     }
     
     public final void write(CsvData data) {

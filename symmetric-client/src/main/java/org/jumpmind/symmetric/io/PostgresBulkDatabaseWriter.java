@@ -59,9 +59,10 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected boolean needsBinaryConversion;
     
-    public PostgresBulkDatabaseWriter(IDatabasePlatform platform, DatabaseWriterSettings settings,
+    public PostgresBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+			IDatabasePlatform targetPlatform, String tablePrefix, DatabaseWriterSettings settings,
             NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
-        super(platform, settings);
+        super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
     }
@@ -145,7 +146,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     public void open(DataContext context) {
         super.open(context);
         try {
-            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
             Connection conn = jdbcExtractor.getNativeConnection(jdbcTransaction.getConnection());
             copyManager = new CopyManager((BaseConnection) conn);
         } catch (Exception ex) {
@@ -217,7 +218,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     private String createCopyMgrSql() {
         StringBuilder sql = new StringBuilder("COPY ");
-        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();
         String catalogSeparator = dbInfo.getCatalogSeparator();
         String schemaSeparator = dbInfo.getSchemaSeparator();

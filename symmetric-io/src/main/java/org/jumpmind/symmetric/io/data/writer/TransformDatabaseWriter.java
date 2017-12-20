@@ -29,11 +29,12 @@ import org.jumpmind.symmetric.io.data.transform.TransformTable;
 
 public class TransformDatabaseWriter extends TransformWriter {
 
-    public TransformDatabaseWriter(IDatabasePlatform platform,
+    public TransformDatabaseWriter(IDatabasePlatform symmetricPlatform,
+    			IDatabasePlatform targetPlatform, String tablePrefix, 
             DatabaseWriterSettings defaultSettings, Map<String, IColumnTransform<?>> columnTransforms, 
             TransformTable[] transforms) {
-        super(platform, TransformPoint.LOAD,
-                new DefaultDatabaseWriter(platform, defaultSettings), columnTransforms, transforms);
+        super(targetPlatform, TransformPoint.LOAD,
+                new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, tablePrefix, defaultSettings), columnTransforms, transforms);
         getDatabaseWriter().setConflictResolver(new DefaultTransformWriterConflictResolver(this));
     }
 

@@ -18,10 +18,6 @@
         <property name="typeName" value="mongodb" />
     </bean>
 
-	<bean id="jdbcLoaderFactory" class="org.jumpmind.symmetric.io.JdbcDataLoaderFactory">
-        <property name="typeName" value="jdbc" />
-    </bean>
-
     <bean id="databaseUpgradeListener" class="org.jumpmind.symmetric.db.DatabaseUpgradeListener" />
     
     <bean id="softwareUpgradeListener" class="org.jumpmind.symmetric.db.SoftwareUpgradeListener" />

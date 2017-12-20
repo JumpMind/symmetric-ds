@@ -32,14 +32,14 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
-import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,16 +62,18 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
     }
 
     public IDataWriter getDataWriter(final String sourceNodeId,
-            final ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+            final ISymmetricDialect symmetricDialect,
+            TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricDialect.getPlatform(),
+        DynamicDefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricDialect.getPlatform(),
+        		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
-                            DefaultDatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DefaultDatabaseWriter.class);
+                        	DynamicDefaultDatabaseWriter writer = transformWriter
+                                    .getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.enableSyncTriggers(transaction);
@@ -82,8 +84,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
                     @Override
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DefaultDatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DefaultDatabaseWriter.class);
+                        	DynamicDefaultDatabaseWriter writer = transformWriter
+                                    .getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
@@ -153,5 +155,4 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
         settings.setResolvedData(resolvedDatas);
         return settings;
     }
-
 }

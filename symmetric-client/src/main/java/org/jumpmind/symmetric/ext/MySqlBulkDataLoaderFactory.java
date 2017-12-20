@@ -55,7 +55,8 @@ public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory {
         return "mysql_bulk";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, 
+    			TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         
@@ -64,7 +65,8 @@ public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory {
         boolean isLocal = Boolean.parseBoolean(parameterService.getString("mysql.bulk.load.local", "true"));
         boolean isReplace = Boolean.parseBoolean(parameterService.getString("mysql.bulk.load.replace", "false"));
 
-        return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), stagingManager, jdbcExtractor, maxRowsBeforeFlush,
+        return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
+        		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
                 maxBytesBeforeFlush, isLocal, isReplace);
     }
 

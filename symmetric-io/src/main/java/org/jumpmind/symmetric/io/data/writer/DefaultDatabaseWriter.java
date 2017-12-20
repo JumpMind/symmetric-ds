@@ -88,10 +88,34 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         this.platform = platform;
     }
 
-    @Override
+    public IDatabasePlatform getPlatform() {
+		return platform;
+	}
+    
+    public IDatabasePlatform getPlatform(Table table) {
+		return platform;
+	}
+    
+    public IDatabasePlatform getPlatform(String table) {
+		return platform;
+	}
+
+	public ISqlTransaction getTransaction() {
+		return transaction;
+	}
+	
+	public ISqlTransaction getTransaction(Table table) {
+		return transaction;
+	}
+	
+	public ISqlTransaction getTransaction(String table) {
+		return transaction;
+	}
+
+	@Override
     public void open(DataContext context) {
         super.open(context);
-        this.transaction = platform.getSqlTemplate().startSqlTransaction();
+        this.transaction = this.platform.getSqlTemplate().startSqlTransaction();
     }
 
     @Override
@@ -119,14 +143,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     public void close() {
         super.close();
-        if (transaction != null) {
+        if (this.transaction != null) {
             this.transaction.close();
         }
     }
 
     @Override
     protected void commit(boolean earlyCommit) {
-        if (transaction != null) {
+        if (this.transaction != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 this.transaction.commit();
@@ -145,7 +169,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     @Override
     protected void rollback() {
-        if (transaction != null) {
+        if (this.transaction != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 this.transaction.rollback();
@@ -164,11 +188,12 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
                 this.lastUseConflictDetection = true;
-                this.currentDmlStatement = platform.createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
+                this.currentDmlStatement = getPlatform()
+                		.createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
-                transaction.prepare(this.currentDmlStatement.getSql());
+                getTransaction().prepare(this.currentDmlStatement.getSql());
             }
             try {
                 Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
@@ -180,14 +205,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (count > 0) {
                         return LoadStatus.SUCCESS;
                 } else {
-                    context.put(CUR_DATA,getCurData(transaction));
+                    context.put(CUR_DATA,getCurData(getTransaction()));
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    if (!platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)) {
+                    if (!getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                         context.put(CONFLICT_ERROR, ex);
-                        context.put(CUR_DATA,getCurData(transaction));
+                        context.put(CUR_DATA,getCurData(getTransaction()));
                         return LoadStatus.CONFLICT;
                     } else {
                         log.info("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
@@ -260,8 +285,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 Iterator<Column> it = lookupKeys.iterator();
                 while (it.hasNext()) {
                     Column col = it.next();
-                    if ((platform.isLob(col.getMappedTypeCode()) && data.isNoBinaryOldData())
-                            || !platform.canColumnBeUsedInWhereClause(col)) {
+                    if ((getPlatform().isLob(col.getMappedTypeCode()) && data.isNoBinaryOldData())
+                            || !getPlatform().canColumnBeUsedInWhereClause(col)) {
                         it.remove();
                     }
                 }
@@ -285,13 +310,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             && lookupDataMap.get(column.getName()) == null;
                 }
 
-                this.currentDmlStatement = platform.createDmlStatement(DmlType.DELETE,
+                this.currentDmlStatement = getPlatform().createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
                         lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues, writerSettings.getTextColumnExpression());
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
-                transaction.prepare(this.currentDmlStatement.getSql());
+                getTransaction().prepare(this.currentDmlStatement.getSql());
             }
             try {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
@@ -305,8 +330,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     return LoadStatus.CONFLICT;
                 }
             } catch (RuntimeException ex) {
-                if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
-                        && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)
+                        && !getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
                     return LoadStatus.CONFLICT;
                 } else {
@@ -409,8 +434,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     Iterator<Column> it = lookupKeys.iterator();
                     while (it.hasNext()) {
                         Column col = it.next();
-                        if ((platform.isLob(col.getMappedTypeCode()) && data.isNoBinaryOldData())
-                                || !platform.canColumnBeUsedInWhereClause(col)) {
+                        if ((getPlatform().isLob(col.getMappedTypeCode()) && data.isNoBinaryOldData())
+                                || !getPlatform().canColumnBeUsedInWhereClause(col)) {
                             it.remove();
                         }
                     }
@@ -438,7 +463,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                 && lookupDataMap.get(column.getName()) == null;
                     }
 
-                    this.currentDmlStatement = platform.createDmlStatement(DmlType.UPDATE,
+                    this.currentDmlStatement = getPlatform().createDmlStatement(DmlType.UPDATE,
                             targetTable.getCatalog(), targetTable.getSchema(),
                             targetTable.getName(),
                             lookupKeys.toArray(new Column[lookupKeys.size()]),
@@ -447,7 +472,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (log.isDebugEnabled()) {
                         log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                     }
-                    transaction.prepare(this.currentDmlStatement.getSql());
+                    getTransaction().prepare(this.currentDmlStatement.getSql());
 
                 }
 
@@ -465,13 +490,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (count > 0) {
                         return LoadStatus.SUCCESS;
                     } else {
-                        context.put(CUR_DATA,getCurData(transaction));
+                        context.put(CUR_DATA,getCurData(getTransaction()));
                         return LoadStatus.CONFLICT;
                     }
                 } catch (SqlException ex) {
-                    if (platform.getSqlTemplate().isUniqueKeyViolation(ex)
-                            && !platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
-                        context.put(CUR_DATA,getCurData(transaction));
+                    if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)
+                            && !getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                        context.put(CUR_DATA,getCurData(getTransaction()));
                         return LoadStatus.CONFLICT;
                     } else {
                         throw ex;
@@ -497,7 +522,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
-            transaction.commit();
+        		// Placeholder to ensure target platform and transaction is returned.  SYM_* tables are not created through this process.
+        		String tempNonSymTable = "NON_SYM_TABLE";
+        		
+        		getTransaction(tempNonSymTable).commit();
 
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
@@ -505,18 +533,18 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             StringReader reader = new StringReader(xml);
             Database db = DatabaseXmlUtil.read(reader, false);
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-                platform.alterCaseToMatchDatabaseDefaultCase(db);
+            		getPlatform().alterCaseToMatchDatabaseDefaultCase(db);
             }
             
-            platform.makePlatformSpecific(db);
+            getPlatform(tempNonSymTable).makePlatformSpecific(db);
            
             if (writerSettings.isAlterTable()) {
-                platform.alterDatabase(db, !writerSettings.isCreateTableFailOnError());
+            		getPlatform(tempNonSymTable).alterDatabase(db, !writerSettings.isCreateTableFailOnError());
             } else {
-                platform.createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
+            		getPlatform(tempNonSymTable).createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
             }
 
-            platform.resetCachedTableModel();
+            getPlatform().resetCachedTableModel();
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
         } catch (RuntimeException ex) {
@@ -537,11 +565,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             for (String sql : sqlStatements) {
                 try {
                     sql = preprocessSqlStatement(sql);
-                    transaction.prepare(sql);
+                    getTransaction().prepare(sql);
                     if (log.isDebugEnabled()) {
                         log.debug("About to run: {}", sql);
                     }
-                    count += transaction.prepareAndExecute(sql);
+                    count += getTransaction().prepareAndExecute(sql);
                     if (log.isDebugEnabled()) {
                         log.debug("{} rows updated when running: {}", count, sql);
                     }
@@ -707,7 +735,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     protected void bindVariables(Map<String, Object> variables) {
         super.bindVariables(variables);
-        ISqlTemplate template = platform.getSqlTemplate();
+        ISqlTemplate template = getPlatform().getSqlTemplate();
         Class<?> templateClass = template.getClass();
         if (templateClass.getSimpleName().equals("JdbcSqlTemplate")) {
             try {
@@ -758,7 +786,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);
 		}
 
-		sql = platform.scrubSql(sql);
+		sql = getPlatform().scrubSql(sql);
 		
         sql = FormatUtils.replace("sourceNodeId", (String) context.get("sourceNodeId"), sql);
         sql = FormatUtils.replace("sourceNodeExternalId",
@@ -776,7 +804,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     protected String quoteString(String string) {
     	if (!StringUtils.isEmpty(string)) {
-			String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
+			String quote = getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() 
+					? getPlatform()
 					.getDatabaseInfo().getDelimiterToken() : "";
 			return String.format("%s%s%s", quote, string, quote);
     	} else {
@@ -788,7 +817,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean doesColumnNeedUpdated(int targetColumnIndex, Column column, CsvData data, String[] rowData, String[] oldData,
             boolean applyChangesOnly) {
         boolean needsUpdated = true;
-        if (!platform.getDatabaseInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
+        if (!getPlatform().getDatabaseInfo().isAutoIncrementUpdateAllowed() && column.isAutoIncrement()) {
             needsUpdated = false;
         } else if (oldData != null && applyChangesOnly) {
             /*
@@ -796,7 +825,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
              * null, then we always have to update because we don't know if the
              * lob field was previously null.
              */
-            boolean containsEmptyLobColumn = platform.isLob(column.getMappedTypeCode())
+            boolean containsEmptyLobColumn = getPlatform().isLob(column.getMappedTypeCode())
                     && StringUtils.isBlank(oldData[targetColumnIndex]);
             needsUpdated = !StringUtils.equals(rowData[targetColumnIndex], oldData[targetColumnIndex])
                     || data.getParsedData(CsvData.OLD_DATA) == null
@@ -826,14 +855,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     protected int execute(CsvData data, String[] values) {
-        currentDmlValues = platform.getObjectValues(batch.getBinaryEncoding(), values,
+        currentDmlValues = getPlatform().getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
         if (log.isDebugEnabled()) {
             log.debug("Submitting data [{}] with types [{}]", 
                     dmlValuesToString(currentDmlValues, this.currentDmlStatement.getTypes()),
                     TypeMap.getJdbcTypeDescriptions(this.currentDmlStatement.getTypes()));
         }
-        return transaction.addRow(data, currentDmlValues, this.currentDmlStatement.getTypes());
+        return getTransaction().addRow(data, currentDmlValues, this.currentDmlStatement.getTypes());
     }
 
     @Override
@@ -841,26 +870,36 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         String tableNameKey = sourceTable.getTableKey();
         Table table = targetTables.get(tableNameKey);
         if (table == null) {
-            table = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-                    sourceTable.getName(), false);
-            if (table != null) {
-                table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
-                        sourceTable.getPrimaryKeyColumnNames(),
-                        this.writerSettings.isUsePrimaryKeysFromSource());
-
-                Column[] columns = table.getColumns();
-                for (Column column : columns) {
-                    if (column != null) {
-                        int typeCode = column.getMappedTypeCode();
-                        if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
-                                && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                            column.setMappedTypeCode(Types.VARCHAR);
-                        }
-                    }
-                }
-
-                targetTables.put(tableNameKey, table);
+        		try {
+	            table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+	                    sourceTable.getName(), false);
+	            if (table != null) {
+	                table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
+	                        sourceTable.getPrimaryKeyColumnNames(),
+	                        this.writerSettings.isUsePrimaryKeysFromSource());
+	
+	                Column[] columns = table.getColumns();
+	                for (Column column : columns) {
+	                    if (column != null) {
+	                        int typeCode = column.getMappedTypeCode();
+	                        if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
+	                                && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+	                            column.setMappedTypeCode(Types.VARCHAR);
+	                        }
+	                    }
+	                }
+	
+	                targetTables.put(tableNameKey, table);
+	            }
+        		} 
+        		catch (SqlException sqle) { 
+        			log.warn("Unable to read target table." ,sqle.getMessage());
             }
+            if (table == null && this instanceof DynamicDefaultDatabaseWriter) {
+        			if (((DynamicDefaultDatabaseWriter)this).isLoadOnly()) {
+        				table = sourceTable;
+        			}
+        		}
         }
         return table;
     }
@@ -869,25 +908,17 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return currentDmlStatement;
     }
 
-    public ISqlTransaction getTransaction() {
-        return transaction;
-    }
-
-    public IDatabasePlatform getPlatform() {
-        return platform;
-    }
-
     public DatabaseWriterSettings getWriterSettings() {
         return writerSettings;
     }
-
+    
     protected String getCurData(ISqlTransaction transaction) {
         String curVal = null;
         if (writerSettings.isSaveCurrentValueOnError()) {
             String[] keyNames = Table.getArrayColumns(context.getTable().getPrimaryKeyColumns());
             String[] columnNames = Table.getArrayColumns(context.getTable().getColumns());
 
-            org.jumpmind.db.model.Table targetTable = platform.getTableFromCache(
+            org.jumpmind.db.model.Table targetTable = getPlatform().getTableFromCache(
                     context.getTable().getCatalog(), context.getTable().getSchema(),
                     context.getTable().getName(), false);
 
@@ -900,7 +931,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
             Column[] columns = targetTable.getColumns();
 
-            Object[] objectValues = platform.getObjectValues(context.getBatch().getBinaryEncoding(), data,
+            Object[] objectValues = getPlatform()
+            		.getObjectValues(context.getBatch().getBinaryEncoding(), data,
                     columns);
 
             Map<String, Object> columnDataMap = CollectionUtils
@@ -912,7 +944,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 args[i] = columnDataMap.get(pkColumns[i].getName());
             }
 
-            DmlStatement sqlStatement = platform
+            DmlStatement sqlStatement = getPlatform()
                     .createDmlStatement(DmlType.SELECT, targetTable, writerSettings.getTextColumnExpression());
 
 
@@ -930,7 +962,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
 
             if (row != null) {
-                String[] existData = platform.getStringValues(context.getBatch().getBinaryEncoding(),
+                String[] existData = getPlatform().getStringValues(context.getBatch().getBinaryEncoding(),
                         columns, row, false, false);
                 if (existData != null) {
                     curVal =  CsvUtils.escapeCsvData(existData);
@@ -943,11 +975,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
     @Override
     protected void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
-        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        DatabaseInfo dbInfo = getPlatform(table).getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();
         String catalogSeparator = dbInfo.getCatalogSeparator();
         String schemaSeparator = dbInfo.getSchemaSeparator();
-        transaction.allowInsertIntoAutoIncrementColumns(value, table, quote, catalogSeparator, schemaSeparator);
+        getTransaction(table).allowInsertIntoAutoIncrementColumns(value, table, quote, catalogSeparator, schemaSeparator);
     }
     
 }

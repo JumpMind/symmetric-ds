@@ -78,7 +78,7 @@ public class DbExportImportTest extends AbstractServiceTest {
             platform.alterCaseToMatchDatabaseDefaultCase(table);
             platform.createTables(true, false, table);
 
-            DbImport importer = new DbImport(platform);
+            DbImport importer = new DbImport(platform, platform, engine.getParameterService().getTablePrefix());
             importer.setFormat(DbImport.Format.CSV);
             importer.importTables("\"A\"\n1149140000100490", table.getName());
 
@@ -234,7 +234,8 @@ public class DbExportImportTest extends AbstractServiceTest {
 
     protected void recreateImportTable() {
         ISymmetricEngine engine = getSymmetricEngine();
-        DbImport reCreateTablesImport = new DbImport(engine.getDatabasePlatform());
+        DbImport reCreateTablesImport = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
         reCreateTablesImport.setFormat(DbImport.Format.XML);
         reCreateTablesImport.setDropIfExists(true);
         reCreateTablesImport.setAlterCaseToMatchDatabaseDefaultCase(true);
@@ -257,7 +258,8 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         assertCountDbImportTableRecords(0);
 
-        DbImport importCsv = new DbImport(engine.getDatabasePlatform());
+        DbImport importCsv = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
         importCsv.setFormat(DbImport.Format.SQL);
         importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-good.sql"));
 
@@ -286,7 +288,8 @@ public class DbExportImportTest extends AbstractServiceTest {
     @Test
     public void importUniqueKeywordTable () throws Exception {
         ISymmetricEngine engine = getSymmetricEngine();
-        DbImport dbImport = new DbImport(engine.getDatabasePlatform());
+        DbImport dbImport = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
         dbImport.setFormat(DbImport.Format.XML);
         dbImport.setDropIfExists(true);
         dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
@@ -298,7 +301,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertEquals(0, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
         Assert.assertEquals(table.getColumnWithName("string_required_value").isUnique(), true);
 
-        DbImport importCsv = new DbImport(engine.getDatabasePlatform());
+        DbImport importCsv = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
         importCsv.setFormat(DbImport.Format.SQL);
         importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-unique-good.sql"));
         Assert.assertEquals(5, platform.getSqlTemplate().queryForInt("select count(*) from " + table.getName()));
@@ -324,7 +328,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         String dbName = engine.getDatabasePlatform().getName();
         if (dbName.equals(DatabaseNamesConstants.SQLITE)) {
             ISymmetricEngine engine = getSymmetricEngine();
-            DbImport dbImport = new DbImport(engine.getDatabasePlatform());
+            DbImport dbImport = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
             dbImport.setFormat(DbImport.Format.XML);
             dbImport.setDropIfExists(true);
             dbImport.setAlterCaseToMatchDatabaseDefaultCase(true);
@@ -365,7 +370,8 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         assertCountDbImportTableRecords(0);
 
-        DbImport importCsv = new DbImport(engine.getDatabasePlatform());
+        DbImport importCsv = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
         importCsv.setFormat(DbImport.Format.SYM_XML);
         importCsv.importTables(getClass().getResourceAsStream(FILE));
 
@@ -393,7 +399,8 @@ public class DbExportImportTest extends AbstractServiceTest {
         final String FILE = "/test-dbimport-1-xml-1.xml";
         ISymmetricEngine engine = getSymmetricEngine();
 
-        DbImport importer = new DbImport(engine.getDatabasePlatform());
+        DbImport importer = new DbImport(engine.getDatabasePlatform(), engine.getDatabasePlatform(), 
+        		engine.getParameterService().getTablePrefix());
         importer.setFormat(DbImport.Format.XML);
         importer.setDropIfExists(true);
         importer.setAlterCaseToMatchDatabaseDefaultCase(true);
@@ -437,7 +444,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         recreateImportTable();
 
-        DbImport importCsv = new DbImport(platform);
+        DbImport importCsv = new DbImport(platform, platform, engine.getParameterService().getTablePrefix());
         importCsv.setFormat(DbImport.Format.CSV);
         importCsv.importTables(csvOutput, table.getName());
 
@@ -463,7 +470,7 @@ public class DbExportImportTest extends AbstractServiceTest {
 
         recreateImportTable();
 
-        DbImport importCsv = new DbImport(platform);
+        DbImport importCsv = new DbImport(platform, platform, engine.getParameterService().getTablePrefix());
         importCsv.setFormat(DbImport.Format.SQL);
         importCsv.importTables(getClass().getResourceAsStream("/test-dbimport-1-backslashes.sql"));
 
@@ -493,7 +500,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         ISymmetricEngine engine = getSymmetricEngine();
         IDatabasePlatform platform = engine.getSymmetricDialect().getPlatform();
 
-        DbImport importXml = new DbImport(platform);
+        DbImport importXml = new DbImport(platform, platform, engine.getParameterService().getTablePrefix());
         importXml.setFormat(DbImport.Format.XML);
         importXml.importTables(getClass().getResourceAsStream("/test-dbexportimport-3-tables.xml"));
 

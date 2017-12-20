@@ -62,10 +62,11 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected boolean needsBinaryConversion;    
     protected Table table = null;
 
-    public MySqlBulkDatabaseWriter(IDatabasePlatform platform,
+    public MySqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+			IDatabasePlatform targetPlatform, String tablePrefix,
             IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
             int maxRowsBeforeFlush, long maxBytesBeforeFlush, boolean isLocal, boolean isReplace) {
-        super(platform);
+        super(symmetricPlatform, targetPlatform, tablePrefix);
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
         this.maxBytesBeforeFlush = maxBytesBeforeFlush;
@@ -181,11 +182,11 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 this.stagedInputFile.close();
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
 	        try {
-	            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+	            DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
 	            String quote = dbInfo.getDelimiterToken();
 	            String catalogSeparator = dbInfo.getCatalogSeparator();
 	            String schemaSeparator = dbInfo.getSchemaSeparator();
-	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
 	            Connection c = jdbcTransaction.getConnection();
 	            String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
 	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
@@ -199,9 +200,9 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 	            log.debug(sql);
 	            stmt.execute(sql);
 	            stmt.close();
-	            transaction.commit();
+	            getTargetTransaction().commit();
 	        } catch (SQLException ex) {
-	            throw platform.getSqlTemplate().translate(ex);
+	            throw getPlatform().getSqlTemplate().translate(ex);
 	        } finally {
 	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
 	            this.stagedInputFile.delete();
@@ -213,7 +214,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
     
     protected String getCommaDeliminatedColumns(Column[] cols) {
-        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();
         StringBuilder columns = new StringBuilder();
         columns.append("(");

@@ -67,9 +67,10 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected List<List<Object>> rowArrays = new ArrayList<List<Object>>();
 
-    public OracleBulkDatabaseWriter(IDatabasePlatform platform, String procedurePrefix,
+    public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+			IDatabasePlatform targetPlatform, String tablePrefix, String procedurePrefix,
             NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush, DatabaseWriterSettings settings) {
-        super(platform, settings);
+        super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         this.procedurePrefix = procedurePrefix;
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
@@ -100,7 +101,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
                 statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
                 if (filterBefore(data)) {
-                    Object[] rowData = platform.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
+                    Object[] rowData = getPlatform()
+                    		.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
                             targetTable.getColumns(), false, writerSettings.isFitToColumn());
 
                     rowData = convertObjectValues(rowData, targetTable.getColumns());
@@ -201,7 +203,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
                 timestamp = Timestamp.valueOf(timestampString);
 
-                timezone = ((AbstractDatabasePlatform)platform).getTimeZone(timezoneString);
+                timezone = ((AbstractDatabasePlatform)getPlatform()).getTimeZone(timezoneString);
                 // Even though we provide the timezone to the Oracle driver, apparently 
                 // the timestamp component needs to actually be in UTC.
                 if (type == OracleTypes.TIMESTAMPTZ) {
@@ -212,7 +214,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             timezoneCalender.setTimeZone(timezone);
             timezoneCalender.setTime(timestamp);
 
-            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
             Connection c = jdbcTransaction.getConnection();
 
             Connection oracleConnection = jdbcExtractor.getNativeConnection(c);
@@ -225,7 +227,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             return ts;
         } catch (Exception ex) {
             log.info("Failed to convert '" + value + "' to TIMESTAMPTZ." );
-            throw platform.getSqlTemplate().translate(ex);
+            throw getPlatform().getSqlTemplate().translate(ex);
         }
     }    
 
@@ -240,7 +242,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             date = dateFormat.parse(timestamp.toString());
         } catch (ParseException ex) {
             log.info("Failed to parse '" + timestamp + "'");
-            throw platform.getSqlTemplate().translate(ex);
+            throw getPlatform().getSqlTemplate().translate(ex);
         }
 
         Timestamp utcTimestamp = new Timestamp(date.getTime());
@@ -252,7 +254,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
             if (rowArrays.size() > 0) {
-                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
                 Connection c = jdbcTransaction.getConnection();
                 Connection oracleConnection = jdbcExtractor.getNativeConnection(c);
 
@@ -320,7 +322,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 failureMessage.append("\n");
             }
             log.info(failureMessage.toString());
-            throw platform.getSqlTemplate().translate(ex);
+            throw getPlatform().getSqlTemplate().translate(ex);
         } finally {
             lastEventType = null;
             rowArrays.clear();
@@ -337,10 +339,10 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void buildBulkDataType(int typeCode) {
         String typeName = getTypeName(typeCode);
-        if (platform.getSqlTemplate().queryForInt(
+        if (getPlatform().getSqlTemplate().queryForInt(
                 "select count(*) from user_types where type_name=?", typeName) == 0) {
             final String DDL = "create or replace type %s is table of %s";
-            platform.getSqlTemplate().update(
+            getPlatform().getSqlTemplate().update(
                     String.format(DDL, getTypeName(typeCode), getMappedType(typeCode)));
         }
     }
@@ -435,7 +437,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void buildBulkInsertProcedure(Table table) {
         String procedureName = buildProcedureName("i", table);
-        if (platform.getSqlTemplate().queryForInt(
+        if (getPlatform().getSqlTemplate().queryForInt(
                 "select count(*) from user_procedures where object_name=?", procedureName) == 0) {
             List<Column> columns = getBulkLoadableColumns(table);
             // needed for error codes
@@ -490,7 +492,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             if (log.isDebugEnabled()) {
                 log.debug(ddl.toString());
             }
-            platform.getSqlTemplate().update(ddl.toString());
+            getPlatform(table).getSqlTemplate().update(ddl.toString());
         }
     }   
 

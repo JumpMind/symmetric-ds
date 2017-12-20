@@ -423,6 +423,8 @@ final public class ParameterConstants {
     
     public final static String TREAT_BINARY_AS_LOB_ENABLED = "treat.binary.as.lob.enabled";
     
+    public final static String NODE_LOAD_ONLY = "load.only";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

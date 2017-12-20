@@ -111,8 +111,19 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
             throw new NullPointerException("Cannot load a null table");
         }
         this.lastData = null;
-        this.sourceTable = table;
-        this.targetTable = lookupTableAtTarget(this.sourceTable);
+        this.sourceTable = table;	
+        try {
+        		this.targetTable = lookupTableAtTarget(this.sourceTable);
+        }
+        catch (SqlException sqle) {
+        		log.warn("Unable to read target table." ,sqle.getMessage());
+        }
+        if (this.targetTable == null && this instanceof DynamicDefaultDatabaseWriter) {
+    			if (((DynamicDefaultDatabaseWriter)this).isLoadOnly()) {
+    				this.targetTable = table;
+    			}
+    		}
+    
         this.sourceTable.copyColumnTypesFrom(this.targetTable);
         if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
             this.targetTable = table;

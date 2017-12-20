@@ -53,12 +53,13 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+    			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         int maxRowsBeforeFlush = parameterService.getInt("oracle.bulk.load.max.rows.before.flush", 1000);
-        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), engine.getTablePrefix(),
-                jdbcExtractor, maxRowsBeforeFlush, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
+        		engine.getTablePrefix(), jdbcExtractor, maxRowsBeforeFlush, 
+        		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

@@ -56,7 +56,8 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
         return "mssql_bulk";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
+    			TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
@@ -68,7 +69,8 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
         String fieldTerminator = StringEscapeUtils.unescapeJava(parameterService.getString("mssql.bulk.load.field.terminator",
                 "||"));
 
-        return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), stagingManager, jdbcExtractor, maxRowsBeforeFlush,
+        return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
+        		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
                 fireTriggers, uncPath, fieldTerminator, rowTerminator);
     }
 

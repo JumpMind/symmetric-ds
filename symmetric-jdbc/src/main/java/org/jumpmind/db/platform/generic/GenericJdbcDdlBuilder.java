@@ -33,7 +33,8 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setHasNullDefault(Types.TIMESTAMP, true);
         databaseInfo.setHasNullDefault(Types.DATE, true);
         databaseInfo.setHasNullDefault(Types.TIME, true);
-
+        databaseInfo.setRequiresAutoCommitForDdl(true);
+        
         DataSource ds = platform.getDataSource();
         Connection c = null;
         try {

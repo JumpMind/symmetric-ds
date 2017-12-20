@@ -189,4 +189,5 @@ public interface IDatabasePlatform {
     
     public boolean isUseMultiThreadSyncTriggers();
     
+    public boolean supportsTransactions();
 }

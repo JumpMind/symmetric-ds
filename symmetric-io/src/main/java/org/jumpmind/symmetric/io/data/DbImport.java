@@ -59,9 +59,10 @@ import org.jumpmind.symmetric.io.data.reader.XmlDataReader;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterErrorIgnorer;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
+import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
@@ -108,7 +109,11 @@ public class DbImport {
     
     private boolean ignoreMissingTables = true;
 
-    protected IDatabasePlatform platform;
+    protected IDatabasePlatform symmetricPlatform;
+    
+    protected IDatabasePlatform targetPlatform;
+    
+    protected String tablePrefix;
     
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
@@ -116,9 +121,11 @@ public class DbImport {
         this.databaseWriterFilters = new ArrayList<IDatabaseWriterFilter>();
     }
 
-    public DbImport(IDatabasePlatform platform) {
+    public DbImport(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix) {
         this();
-        this.platform = platform;
+        this.symmetricPlatform = symmetricPlatform;
+        this.targetPlatform = targetPlatform;
+        this.tablePrefix = tablePrefix;
     }
 
     public void importTables(String importData, String tableName) {
@@ -195,35 +202,39 @@ public class DbImport {
     }
 
     protected void importTablesFromCsv(InputStream in, String tableName) {
-        Table table = platform.readTableFromDatabase(catalog, schema, tableName);
+    		DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
+        		this.tablePrefix, buildDatabaseWriterSettings());
+        Table table = writer.getPlatform(tableName).readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");
         }
 
         CsvTableDataReader reader = new CsvTableDataReader(BinaryEncoding.HEX, table.getCatalog(),
                 table.getSchema(), table.getName(), in);
-        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromXml(InputStream in) {        
         XmlDataReader reader = new XmlDataReader(in);
-        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
+        		tablePrefix, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
     
     protected void importTablesFromSymXml(InputStream in) {
         SymXmlDataReader reader = new SymXmlDataReader(in);
-        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
+        		tablePrefix, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromSql(InputStream in) {
         SqlDataReader reader = new SqlDataReader(in);
-        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(platform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
+        		tablePrefix, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
@@ -258,14 +269,6 @@ public class DbImport {
     
     public boolean isIgnoreMissingTables() {
         return ignoreMissingTables;
-    }
-
-    public IDatabasePlatform getPlatform() {
-        return platform;
-    }
-
-    public void setPlatform(IDatabasePlatform platform) {
-        this.platform = platform;
     }
 
     public boolean isUseVariableDates() {
