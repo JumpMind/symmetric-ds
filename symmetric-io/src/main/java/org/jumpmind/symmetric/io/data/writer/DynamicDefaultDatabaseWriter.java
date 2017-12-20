@@ -71,7 +71,8 @@ public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
 	
 	@Override
 	public ISqlTransaction getTransaction() {
-		return this.targetTable == null || isSymmetricTable(this.targetTable.getNameLowerCase()) ?
+		return this.targetTable == null || isSymmetricTable(this.targetTable.getNameLowerCase()) 
+				|| this.targetTransaction == null ?
 				super.transaction : this.targetTransaction;
 	}
 	
