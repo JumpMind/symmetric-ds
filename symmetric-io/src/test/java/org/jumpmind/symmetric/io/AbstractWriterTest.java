@@ -44,7 +44,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
+import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
 import org.jumpmind.util.Statistics;
 import org.junit.Assert;
@@ -120,7 +120,7 @@ abstract public class AbstractWriterTest {
     }
 
     protected long writeData(TableCsvData... datas) {
-        return writeData(new DefaultDatabaseWriter(platform, writerSettings), datas);
+        return writeData(new DynamicDefaultDatabaseWriter(platform, platform, "sym", writerSettings), datas);
     }
 
     protected long writeData(IDataWriter writer, TableCsvData... datas) {

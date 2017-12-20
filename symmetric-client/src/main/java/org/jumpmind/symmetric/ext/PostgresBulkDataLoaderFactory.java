@@ -51,13 +51,14 @@ public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+    			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
         int maxRowsBeforeFlush = parameterService.getInt("postgres.bulk.load.max.rows.before.flush", 10000);
         
-        return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), 
+        return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
+        			symmetricDialect.getTablePrefix(),
                 buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), jdbcExtractor,
                 maxRowsBeforeFlush);
     }

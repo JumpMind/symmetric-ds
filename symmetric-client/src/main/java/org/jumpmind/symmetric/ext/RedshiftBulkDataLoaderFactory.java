@@ -55,7 +55,8 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
         return "redshift_bulk";
     }
 
-    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, TransformWriter transformWriter,
+    public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
+    			TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
@@ -73,8 +74,8 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
                     IDatabasePlatform.class, IStagingManager.class, List.class,
                     List.class, Integer.TYPE, Long.TYPE, String.class,
                     String.class, String.class, String.class, String.class });
-            return (IDataWriter) dbWriterConstructor.newInstance(
-                    symmetricDialect.getPlatform(), stagingManager, filters, errorHandlers,
+            return (IDataWriter) dbWriterConstructor.newInstance(symmetricDialect.getPlatform(),
+                    symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers,
                     maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand, s3Endpoint);
 
         } catch (Exception e) {

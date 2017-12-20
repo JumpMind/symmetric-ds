@@ -60,10 +60,11 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected Table table = null;
     protected Table databaseTable = null;
 
-	public MsSqlBulkDatabaseWriter(IDatabasePlatform platform,
+	public MsSqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+			IDatabasePlatform tar, String tablePrefix,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
 			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator) {
-		super(platform);
+		super(symmetricPlatform, tar, tablePrefix);
 		this.jdbcExtractor = jdbcExtractor;
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;
@@ -101,7 +102,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            databaseTable = platform.getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+            databaseTable = getPlatform(table).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
                     sourceTable.getName(), false);
             String[] csvNames = targetTable.getColumnNames();
             String[] columnNames = databaseTable.getColumnNames();
@@ -179,7 +180,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     out.write(rowTerminator.getBytes());
                     loadedRows++;
                 } catch (Exception ex) {
-                    throw getPlatform().getSqlTemplate().translate(ex);
+                    throw getPlatform(table).getSqlTemplate().translate(ex);
                 } finally {
                     statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
                     statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
@@ -210,11 +211,11 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 filename = uncPath + "\\" + stagedInputFile.getFile().getName();
             }
 	        try {
-	            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+	            DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
 	            String quote = dbInfo.getDelimiterToken();
 	            String catalogSeparator = dbInfo.getCatalogSeparator();
 	            String schemaSeparator = dbInfo.getSchemaSeparator();
-	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
 	            Connection c = jdbcTransaction.getConnection();
 	            String rowTerminatorString = "";
                 /*
@@ -238,7 +239,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 	            stmt.close();
 	
 	        } catch (SQLException ex) {
-	            throw platform.getSqlTemplate().translate(ex);
+	            throw getPlatform().getSqlTemplate().translate(ex);
 	        } finally {
 	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
 	        }

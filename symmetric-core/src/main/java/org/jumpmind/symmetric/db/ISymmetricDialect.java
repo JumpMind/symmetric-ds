@@ -82,6 +82,10 @@ public interface ISymmetricDialect {
 
     public IDatabasePlatform getPlatform();
 
+    public void setTargetPlatform(IDatabasePlatform platform);
+
+    public IDatabasePlatform getTargetPlatform();
+
     public String getName();
 
     public String getVersion();
@@ -252,5 +256,4 @@ public interface ISymmetricDialect {
     public void setExtensionService(IExtensionService extensionService);
     
     public PermissionType[] getSymTablePermissions();
-    
 }

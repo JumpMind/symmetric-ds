@@ -6,18 +6,14 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 
-public class JdbcDatabaseWriter extends DefaultDatabaseWriter {
+public class JdbcDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
 	String tablePrefix;
 	
-	public JdbcDatabaseWriter(IDatabasePlatform platform) {
-		super(platform);
+	public JdbcDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix) {
+		super(symmetricPlatform, targetPlatform, tablePrefix);
 	}
 
-    public ISqlTransaction getTransaction() {
-        return null;
-    }
-    
     public void setTablePrefix(String prefix) {
     		this.tablePrefix = prefix;
     }

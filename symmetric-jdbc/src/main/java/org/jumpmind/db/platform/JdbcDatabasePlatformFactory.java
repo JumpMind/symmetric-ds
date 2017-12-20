@@ -147,6 +147,11 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(RaimaDatabasePlatform.JDBC_SUBPROTOCOL, RaimaDatabasePlatform.class);    
     }
 
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive)
+            throws DdlException {
+    		return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false);
+    }
+    
     /*
      * Creates a new platform for the specified database.  Note that this method installs
      * the data source in the returned platform instance.
@@ -157,12 +162,12 @@ public class JdbcDatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive, boolean isLoadOnly)
             throws DdlException {
 
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
-        String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource);
+        String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource, isLoadOnly);
 
         Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
 
@@ -199,8 +204,11 @@ public class JdbcDatabasePlatformFactory {
         return platformClass;
     }
 
-    protected static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource)
-             {
+    public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
+    		return determineDatabaseNameVersionSubprotocol(dataSource, false);
+    }
+    
+    public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
         Connection connection = null;
         String[] nameVersion = new String[3];
         try {
@@ -267,8 +275,12 @@ public class JdbcDatabasePlatformFactory {
 
             return nameVersion;
         } catch (SQLException ex) {
-            throw new SqlException("Error while reading the database metadata: "
-                    + ex.getMessage(), ex);
+        		if (!isLoadOnly) {
+	            throw new SqlException("Error while reading the database metadata: "
+	                    + ex.getMessage(), ex);
+        		} else {
+        			return nameVersion;
+        		}
         } finally {
             if (connection != null) {
                 try {

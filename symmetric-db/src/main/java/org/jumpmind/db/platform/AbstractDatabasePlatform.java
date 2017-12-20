@@ -41,6 +41,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -115,6 +117,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected SqlTemplateSettings settings;
 
+    protected Boolean supportsTransactions;
+    
     public AbstractDatabasePlatform(SqlTemplateSettings settings) {
         this.settings = settings;
     }
@@ -1072,4 +1076,21 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public boolean isUseMultiThreadSyncTriggers() {
         return useMultiThreadSyncTriggers;
     }
+    
+    @Override
+    public boolean supportsTransactions() {
+    		if (supportsTransactions == null) {
+    			if (this.getDataSource() instanceof DataSource) {
+    				try {
+    					supportsTransactions = ((DataSource) this.getDataSource()).getConnection().getMetaData().supportsTransactions();
+    				}
+    				catch (Exception e) {
+    					log.warn("Unable to determine if transactions are supported from connection meta data ", e);
+    				}
+    			} else {
+    				supportsTransactions = true;
+    			}
+    		}
+    		return supportsTransactions;
+    	}
 }

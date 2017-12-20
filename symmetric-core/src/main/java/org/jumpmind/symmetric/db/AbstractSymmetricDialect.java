@@ -77,6 +77,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected IDatabasePlatform platform;
 
+    protected IDatabasePlatform targetPlatform;
+    
     protected AbstractTriggerTemplate triggerTemplate;
 
     protected IParameterService parameterService;
@@ -603,22 +605,38 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getName() {
+    		if (!targetPlatform.equals(platform)) {
+    			return targetPlatform.getSqlTemplate().getDatabaseProductName();
+    		}
         return databaseName;
     }
 
     public String getVersion() {
+    		if (!targetPlatform.equals(platform)) {
+			return targetPlatform.getSqlTemplate().getDatabaseMajorVersion() + 
+					"." + targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
+		}
         return databaseMajorVersion + "." + databaseMinorVersion;
     }
 
     public int getMajorVersion() {
+    		if (!targetPlatform.equals(platform)) {
+			return targetPlatform.getSqlTemplate().getDatabaseMajorVersion();
+		}
         return databaseMajorVersion;
     }
 
     public int getMinorVersion() {
+    		if (!targetPlatform.equals(platform)) {
+			return targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
+		}
         return databaseMinorVersion;
     }
 
     public String getProductVersion() {
+    		if (!targetPlatform.equals(platform)) {
+			return targetPlatform.getSqlTemplate().getDatabaseProductVersion();
+		}
         return databaseProductVersion;
     }
 
@@ -873,4 +891,16 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
         return permissions;
     }
+
+    @Override
+    public IDatabasePlatform getTargetPlatform() {
+		return targetPlatform;
+	}
+
+    @Override
+    public void setTargetPlatform(IDatabasePlatform targetPlatform) {
+		this.targetPlatform = targetPlatform;
+	}
+    
+    
 }

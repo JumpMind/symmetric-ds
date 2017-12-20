@@ -66,7 +66,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Override
     protected long writeData(TableCsvData... datas) {
-        return writeData(new OracleBulkDatabaseWriter(platform, "sym",
+        return writeData(new OracleBulkDatabaseWriter(platform, platform, "sym_", "sym",
                 new CommonsDbcpNativeJdbcExtractor(), 1000, null), datas);
     }
 

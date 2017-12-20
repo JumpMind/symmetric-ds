@@ -59,7 +59,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Override
     protected long writeData(TableCsvData... datas) {
-        return writeData(new PostgresBulkDatabaseWriter(platform, new DatabaseWriterSettings(),
+        return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
                 new CommonsDbcpNativeJdbcExtractor(), 1000), datas);
     }
 

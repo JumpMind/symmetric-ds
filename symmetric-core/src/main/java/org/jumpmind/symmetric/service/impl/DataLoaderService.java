@@ -60,6 +60,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -699,11 +700,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
 
-        TransformWriter transformWriter = new TransformWriter(platform, TransformPoint.LOAD, null,
+        TransformWriter transformWriter = new TransformWriter(this.engine.getSymmetricDialect().getTargetPlatform(), TransformPoint.LOAD, null,
                 transformService.getColumnTransforms(), transforms);
 
         IDataWriter targetWriter = getFactory(channelId).getDataWriter(sourceNodeId,
-                symmetricDialect, transformWriter, dynamicFilters, dynamicErrorHandlers,
+                this.engine.getSymmetricDialect(), transformWriter, dynamicFilters, dynamicErrorHandlers,
                 getConflictSettingsNodeGroupLinks(link, false), resolvedDatas);
         transformWriter.setNestedWriter(new ProcessInfoDataWriter(targetWriter, processInfo));
         return transformWriter;
@@ -727,7 +728,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             factory = dataLoaderFactories.get("default");
         }
 
-        if (!factory.isPlatformSupported(platform)) {
+        if (!factory.isPlatformSupported(symmetricDialect.getTargetPlatform())) {
             log.warn(
                     "The current platform does not support a data loader type of '{}'.  Using the 'default' data loader.",
                     dataLoaderType);
@@ -1090,7 +1091,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
 
         public void beforeBatchEnd(DataContext context) {
-            enableSyncTriggers(context);
+        		// Only sync triggers if this is not a load only node.
+        		if (engine.getSymmetricDialect().getPlatform().equals(engine.getSymmetricDialect().getTargetPlatform())) {
+        			enableSyncTriggers(context);
+        		}
         }
 
         public boolean beforeBatchStarted(DataContext context) {
@@ -1129,7 +1133,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         public void afterBatchStarted(DataContext context) {
             Batch batch = context.getBatch();
-            ISqlTransaction transaction = context.findTransaction();
+            ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
             if (transaction != null) {
                 symmetricDialect.disableSyncTriggers(transaction, batch.getSourceNodeId());
             }
@@ -1160,7 +1164,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
         protected void enableSyncTriggers(DataContext context) {
             try {
-                ISqlTransaction transaction = context.findTransaction();
+                ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
                 if (transaction != null) {
                     symmetricDialect.enableSyncTriggers(transaction);
                 }
@@ -1238,7 +1242,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                 }
 
-                ISqlTransaction transaction = context.findTransaction();
+                ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
 
                 // If we were in the process of skipping or ignoring a batch
                 // then its status would have been OK. We should not
@@ -1316,7 +1320,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             return currentBatch;
         }
     }
-
+    
     public static class ConflictNodeGroupLink extends Conflict {
         private static final long serialVersionUID = 1L;
         protected NodeGroupLink nodeGroupLink;

@@ -64,10 +64,11 @@ public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     private String appendToCopyCommand;
     private String s3Endpoint;
 
-    public RedshiftBulkDatabaseWriter(IDatabasePlatform platform, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
+    public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+			IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, int maxRowsBeforeFlush, long maxBytesBeforeFlush, String bucket,
             String accessKey, String secretKey, String appendToCopyCommand, String s3Endpoint) {
-        super(platform);
+        super(symmetricPlatform, targetPlatform, tablePrefix);
         this.stagingManager = stagingManager;
         this.writerSettings.setDatabaseWriterFilters(filters);
         this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
@@ -176,7 +177,7 @@ public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
 
             try {
-                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) transaction;
+                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
                 Connection c = jdbcTransaction.getConnection();
                 String sql = "COPY " + getTargetTable().getFullyQualifiedTableName() +
                         " (" + Table.getCommaDeliminatedColumns(table.getColumns()) +
@@ -189,9 +190,9 @@ public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 log.debug(sql);
                 stmt.execute(sql);
                 stmt.close();
-                transaction.commit();
+                getTargetTransaction().commit();
             } catch (SQLException ex) {
-                throw platform.getSqlTemplate().translate(ex);
+                throw getPlatform().getSqlTemplate().translate(ex);
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
             }

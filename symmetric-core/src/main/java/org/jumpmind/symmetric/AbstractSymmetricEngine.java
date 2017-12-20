@@ -1023,10 +1023,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return dataService;
     }
 
-    public ISymmetricDialect getSymmetricDialect() {
-        return symmetricDialect;
-    }
-
     public IJobManager getJobManager() {
         return this.jobManager;
     }

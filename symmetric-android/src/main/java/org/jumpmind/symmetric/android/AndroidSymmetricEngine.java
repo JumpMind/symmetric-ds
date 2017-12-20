@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -228,4 +229,8 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         throw new NotImplementedException();
     }
 
+	@Override
+	public ISymmetricDialect getSymmetricDialect() {
+		return this.symmetricDialect;
+	}
 }

@@ -41,12 +41,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.LogSqlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -90,6 +93,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     
     public static final String PROPERTIES_FACTORY_CLASS_NAME = "properties.factory.class.name";
 
+    public static final String LOAD_ONLY_PROPERTY_PREFIX = "target.";
+    
     protected File propertiesFile;
 
     protected Properties properties;
@@ -231,6 +236,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                         "Failed to initialize the extension points.  Please fix the problem and restart the server.",
                         ex);
             }
+            checkLoadOnly();
         } catch (RuntimeException ex) {
             destroy();
             throw ex;
@@ -285,6 +291,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
+    		return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, false);
+    }
+    public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
+            DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly) {
         log.info("Initializing connection to database");
         if (dataSource == null) {
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
@@ -323,7 +333,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         boolean caseSensitive = !properties.is(ParameterConstants.DB_METADATA_IGNORE_CASE, true);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
-                createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive);
+                createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive, isLoadOnly);
     }
 
     protected static SqlTemplateSettings createSqlTemplateSettings(TypedProperties properties) {
@@ -458,6 +468,54 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         });
         return files;
     }
+    
+    protected void checkLoadOnly() {
+     	if (parameterService.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
+     		
+     		TypedProperties properties = new TypedProperties();
+			for (String prop : BasicDataSourcePropertyConstants.allProps ) {
+				properties.put(prop, parameterService.getString(LOAD_ONLY_PROPERTY_PREFIX + prop));
+			}
+			
+			String[] sqlTemplateProperties = new String[] {
+				ParameterConstants.DB_FETCH_SIZE,
+				ParameterConstants.DB_QUERY_TIMEOUT_SECS,
+				ParameterConstants.JDBC_EXECUTE_BATCH_SIZE,
+				ParameterConstants.JDBC_ISOLATION_LEVEL,
+				ParameterConstants.JDBC_READ_STRINGS_AS_BYTES,
+				ParameterConstants.TREAT_BINARY_AS_LOB_ENABLED,
+				ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS,
+				ParameterConstants.LOG_SQL_PARAMETERS_INLINE
+			};
+			for (String prop : sqlTemplateProperties) {
+				properties.put(prop, parameterService.getString(LOAD_ONLY_PROPERTY_PREFIX + prop));
+			}
+
+			IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true);
+			DataSource loadDataSource = targetPlatform.getDataSource();
+		    if (targetPlatform instanceof GenericJdbcDatabasePlatform) {
+			    	if (targetPlatform.getName() == null || targetPlatform.getName().equals(DatabaseNamesConstants.GENERIC)) {
+			    		String name = null;
+			    		try {
+			    			String nameVersion[] = JdbcDatabasePlatformFactory.determineDatabaseNameVersionSubprotocol(loadDataSource);
+			    			name = (String.format("%s%s", nameVersion[0], nameVersion[1]).toLowerCase());
+			    		}
+			    		catch (Exception e) {
+			    			log.info("Unable to determine database name and version, " + e.getMessage());
+			    		}
+		            if (name == null) {
+			        		name = DatabaseNamesConstants.GENERIC;
+			        }
+			    		((GenericJdbcDatabasePlatform) targetPlatform).setName(name);
+			    	}
+			    	targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(LOAD_ONLY_PROPERTY_PREFIX + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
+		    }
+		    getSymmetricDialect().setTargetPlatform(targetPlatform);
+		}
+     	else {
+     		getSymmetricDialect().setTargetPlatform(getSymmetricDialect().getPlatform());
+     	}
+	}
 
     public ApplicationContext getSpringContext() {
         return springContext;
@@ -471,4 +529,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return monitorService;
     }
 
+	@Override
+	public ISymmetricDialect getSymmetricDialect() {
+		return this.symmetricDialect;
+	}
 }
