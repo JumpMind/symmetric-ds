@@ -1738,6 +1738,28 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 extractId);
     }
 
+    public boolean CanProcessExtractRequest(ExtractRequest request, CommunicationType communicationType){
+        
+        boolean isFileExtractor = communicationType == CommunicationType.FILE_XTRCT;
+
+        boolean isFileChannel = false;
+        if(request.getTriggerRouter() == null){
+            isFileChannel = true;
+        }else {
+            Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerRouter().getTriggerId());
+            if(trigger == null){
+                isFileChannel = true;
+            }else{
+                Channel channel = configurationService.getChannel(trigger.getChannelId());
+                if(channel == null || channel.isFileSyncFlag()){
+                    isFileChannel = true;
+                }
+            }
+        }
+
+        return !isFileChannel ^ isFileExtractor;
+    }
+
     /**
      * This is a callback method used by the NodeCommunicationService that extracts an initial load
      * in the background.
@@ -1757,6 +1779,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (int i = 0; i < requests.size()
                 && (System.currentTimeMillis() - ts) <= Constants.LONG_OPERATION_THRESHOLD; i++) {
             ExtractRequest request = requests.get(i);
+            if(!CanProcessExtractRequest(request, nodeCommunication.getCommunicationType())){
+                continue;
+            }                
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId());
             log.info(
