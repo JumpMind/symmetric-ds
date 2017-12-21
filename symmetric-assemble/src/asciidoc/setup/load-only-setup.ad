@@ -1,0 +1,44 @@
+=== Load Only Node 
+
+Load only nodes can be configured for nodes that are only designed to load data into the database.   This prevents any triggers or runtime tables from being installed on this database but still allow data to be replicated to it.
+
+.Advantages of Load Only Nodes
+* No SymmetricDS runtime tables (SYM_*) installed inside the target database.
+* No SymmetricDS triggers installed inside the target database.
+* There is still support for bulk loaders if provided (MSSQL, Oracle, Postgres, MySQL for example).
+* Allows SymmetricDS to load data into dialects that are not fully supported yet or may not have full trigger support.
+
+.Constraints of Load Only Nodes
+* Can not be set up to capture changes
+* Requires a JDBC driver 
+* May require table creation outside of SymmetricDS
+* Requires an additional database to be used for SymmetricDS runtime usage.  H2 is the recommended approach for this runtime database.
+
+==== Setup Load Only Node
+
+1  First adjust the db.* properties in the load only engine properties file to utilize H2 for runtime information and configuration.
+[source,properties]
+----
+db.driver=org.h2.Driver
+db.url=jdbc:h2:file:load-only;LOCK_TIMEOUT=60000
+db.validation.query=select 1
+----
+
+NOTE: If you have multiple load only nodes under a single installation of SymmetricDS you will need to provide a unique H2 database name for each in the db.url above (default is load-only).  
+
+
+2  Second add the following properties to identify the node as load only and provide connection information for your load only database.
+----
+load.only=true
+target.db.driver=
+target.db.url=
+target.db.user=
+target.db.password=
+----
+NOTE: If additional database properties are needed you can add the prefix target. to any other existing SymmetricDS parameters <<Startup Parameters>>.
+
+3  Add the jar file containing the jdbc driver provided in the target.db.driver property to the /lib folder of SymmetricDS
+
+4  Restart SymmetricDS
+
+
