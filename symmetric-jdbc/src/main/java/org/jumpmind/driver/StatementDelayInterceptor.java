@@ -20,8 +20,6 @@
  */
 package org.jumpmind.driver;
 
-import java.util.Arrays;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +34,6 @@ public class StatementDelayInterceptor extends StatementInterceptor {
      */
     public StatementDelayInterceptor(Object wrapped) {
         super(wrapped);
-        
-        
         String delayProperty = StatementDelayInterceptor.class.getName() + ".delay";
         String delayValue = System.getProperty(delayProperty);
         if (delayValue != null) {

@@ -45,8 +45,6 @@ public class Driver implements java.sql.Driver {
         if (url == null || !url.toLowerCase().startsWith(DRIVER_PREFIX)) {
             return null;
         }
-
-//        Properties props = setupConnectProperties(url, info);
         
         String realUrl = getRealUrl(url);
         
