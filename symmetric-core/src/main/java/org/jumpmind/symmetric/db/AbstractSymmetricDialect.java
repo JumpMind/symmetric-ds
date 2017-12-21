@@ -605,14 +605,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getName() {
-    		if (!targetPlatform.equals(platform)) {
+    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
     			return targetPlatform.getSqlTemplate().getDatabaseProductName();
     		}
         return databaseName;
     }
 
     public String getVersion() {
-    		if (!targetPlatform.equals(platform)) {
+    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
 			return targetPlatform.getSqlTemplate().getDatabaseMajorVersion() + 
 					"." + targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
 		}
@@ -620,21 +620,21 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public int getMajorVersion() {
-    		if (!targetPlatform.equals(platform)) {
+    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
 			return targetPlatform.getSqlTemplate().getDatabaseMajorVersion();
 		}
         return databaseMajorVersion;
     }
 
     public int getMinorVersion() {
-    		if (!targetPlatform.equals(platform)) {
+    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
 			return targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
 		}
         return databaseMinorVersion;
     }
 
     public String getProductVersion() {
-    		if (!targetPlatform.equals(platform)) {
+    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
 			return targetPlatform.getSqlTemplate().getDatabaseProductVersion();
 		}
         return databaseProductVersion;
