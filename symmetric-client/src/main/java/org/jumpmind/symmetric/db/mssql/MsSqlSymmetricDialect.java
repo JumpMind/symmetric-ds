@@ -113,7 +113,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + tablePrefix.toLowerCase()
                             + "_data', '"
                             + tablePrefix.toLowerCase()
-                            + "_data_event') and (i.allow_row_locks !='true' "
+                            + "_data_event', '"
+                            + tablePrefix.toLowerCase()
+                            + "_monitor_event') and (i.allow_row_locks !='true' "
                             + lockEscalationClause
                             + ")") > 0) {
                 log.info("Updating indexes to prevent lock escalation");
@@ -121,12 +123,15 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 String dataTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data");
                 String dataEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data_event");
                 String outgoingBatchTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_outgoing_batch");
+                String monitorEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix) + "_monitor_event";
                 
                 sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + monitorEventTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 
                 if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
@@ -136,12 +141,16 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
 	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
 	                sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
 	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
+	                sqlTemplate.update("ALTER INDEX ALL ON " + monitorEventTable
+	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
 	              
 	                sqlTemplate.update("ALTER TABLE " + dataTable
 	                        + " SET (LOCK_ESCALATION = DISABLE)");
 	                sqlTemplate.update("ALTER TABLE " + dataEventTable
 	                        + " SET (LOCK_ESCALATION = DISABLE)");
 	                sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
+	                        + " SET (LOCK_ESCALATION = DISABLE)");
+	                sqlTemplate.update("ALTER TABLE " + monitorEventTable
 	                        + " SET (LOCK_ESCALATION = DISABLE)");
                 }
                 return true;
