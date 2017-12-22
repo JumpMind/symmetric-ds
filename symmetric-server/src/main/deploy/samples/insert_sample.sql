@@ -76,6 +76,14 @@ insert into sym_trigger
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
 values('sale_return_line_item','sale_return_line_item','sale_transaction',current_timestamp,current_timestamp);
 
+insert into sym_trigger 
+(trigger_id,source_table_name,channel_id, sync_on_insert, sync_on_update, sync_on_delete,last_update_time,create_time)
+values('sale_transaction_corp','sale_transaction','sale_transaction',0,0,0,current_timestamp,current_timestamp);
+
+insert into sym_trigger 
+(trigger_id,source_table_name,channel_id, sync_on_insert, sync_on_update, sync_on_delete,last_update_time,create_time)
+values('sale_return_line_item_corp','sale_return_line_item','sale_transaction',0,0,0,current_timestamp,current_timestamp);
+
 insert into sym_router 
 (router_id,source_node_group_id,target_node_group_id,router_type,create_time,last_update_time)
 values('corp_2_store', 'corp', 'store', 'default',current_timestamp, current_timestamp);
