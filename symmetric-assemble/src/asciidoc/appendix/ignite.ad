@@ -3,6 +3,8 @@
 
 Since SymmetricDS is trigger based and there are not triggers in Apache Ignite, data can only be loaded to an Apache Ignite instance.  The runtime SymmetricDS tables will also need to be installed in a full relational database to support integration with Apache Ignite.
 
+TIP:  See <<Load Only Node>> for more details on the general concepts of a load only node.
+
 The following steps explain how to configure a SymmetricDS instance using Apache Ignite as a destination node:
 
 * Configure and start an Apache Ignite cluster.
@@ -13,17 +15,17 @@ The following steps explain how to configure a SymmetricDS instance using Apache
 
 TIP:  The simplest solution to support Ignite is to add a new node (see <<Add Node>>) that is connected to an H2 database to store all the SYM_* runtime tables.
 
-* Configure the channels that will send data to the target node and the corresponding reload channel.  Set the Data Loader Type to "jdbc" on both of these channels.
 * Stop your SymmetricDS instance and edit the .properties file for the target node in the engines directory of the SymmetricDS installation.
 * Set the following properties in the engine file:
 
 [source,properties]
 ----  
-jdbc.db.url=jdbc:ignite:thin://localhost
-jdbc.db.driver=org.apache.ignite.IgniteJdbcThinDriver
-jdbc.db.user=
-jdbc.db.password=
-jdbc.create.table.not.null.columns.supported=false
+load.only=true
+target.db.url=jdbc:ignite:thin://localhost
+target.db.driver=org.apache.ignite.IgniteJdbcThinDriver
+target.db.user=
+target.db.password=
+target.create.table.not.null.columns.supported=false
 ----
 
 * Update the jdbc url, username, and password to the desired Apache Ignite instance.
