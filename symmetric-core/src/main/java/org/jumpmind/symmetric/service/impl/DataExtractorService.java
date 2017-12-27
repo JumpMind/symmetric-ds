@@ -1582,35 +1582,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(),
                 extractId);
     }
-
-    public boolean CanProcessExtractRequest(ExtractRequest request, CommunicationType communicationType){
-        
-        boolean isFileExtractor = communicationType == CommunicationType.FILE_XTRCT;
-
-        boolean isFileChannel = false;
-        if(request.getTriggerRouter() == null){
-            isFileChannel = true;
-        }else {
-            Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerRouter().getTriggerId());
-            if(trigger == null){
-                isFileChannel = true;
-            }else{
-                Channel channel = configurationService.getChannel(trigger.getChannelId());
-                if(channel == null || channel.isFileSyncFlag()){
-                    isFileChannel = true;
-                }
-            }
+    
+    protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
+        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
+        if (! trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_FILE_SNAPSHOT))) {
+            return true;
+        } else {            
+            return false;
         }
-
-        return !isFileChannel ^ isFileExtractor;
-    }
+    }    
 
     /**
      * This is a callback method used by the NodeCommunicationService that extracts an initial load
      * in the background.
      */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-        if (!isApplicable(nodeCommunication, status)) {
+        if (!isApplicable(nodeCommunication)) {
             log.debug("{} failed isApplicable check and will not run.", this);
             return;
         }
@@ -1624,7 +1612,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (int i = 0; i < requests.size()
                 && (System.currentTimeMillis() - ts) <= Constants.LONG_OPERATION_THRESHOLD; i++) {
             ExtractRequest request = requests.get(i);
-            if(!CanProcessExtractRequest(request, nodeCommunication.getCommunicationType())){
+            if (!canProcessExtractRequest(request, nodeCommunication.getCommunicationType())){
                 continue;
             }                
             Node identity = nodeService.findIdentity();
@@ -1774,9 +1762,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    protected boolean isApplicable(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+    protected boolean isApplicable(NodeCommunication nodeCommunication) {
         return nodeCommunication.getCommunicationType() != CommunicationType.FILE_XTRCT;
-    }
+    }    
 
     protected ProcessType getProcessType() {
         return ProcessInfoKey.ProcessType.INITIAL_LOAD_EXTRACT_JOB;
@@ -1815,6 +1803,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setStatus(ExtractStatus.valueOf(row.getString("status").toUpperCase()));
             request.setCreateTime(row.getDateTime("create_time"));
             request.setLastUpdateTime(row.getDateTime("last_update_time"));
+            request.setTriggerId(row.getString("trigger_id"));
+            request.setRouterId(row.getString("router_id"));
             request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
                     row.getString("trigger_id"), row.getString("router_id"), false));
             request.setQueue(row.getString("queue"));

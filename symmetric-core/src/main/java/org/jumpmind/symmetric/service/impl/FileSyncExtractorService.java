@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -35,14 +36,15 @@ import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.ProcessInfoKey.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
+import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class FileSyncExtractorService extends DataExtractorService {
     
@@ -51,6 +53,7 @@ public class FileSyncExtractorService extends DataExtractorService {
     private IStagingManager stagingManager;
     private IConfigurationService configurationService;
     private INodeCommunicationService nodeCommunicationService;
+    private ITriggerRouterService triggerRouterService;
 
     public FileSyncExtractorService(ISymmetricEngine engine) {
         super(engine);
@@ -59,12 +62,24 @@ public class FileSyncExtractorService extends DataExtractorService {
         this.stagingManager = engine.getStagingManager();
         this.configurationService = engine.getConfigurationService();
         this.nodeCommunicationService = engine.getNodeCommunicationService();
+        this.triggerRouterService = engine.getTriggerRouterService();
     }
     
     @Override
-    protected boolean isApplicable(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+    protected boolean isApplicable(NodeCommunication nodeCommunication) {
         return parameterService.is(ParameterConstants.FILE_SYNC_ENABLE) 
                 && nodeCommunication.getCommunicationType() == CommunicationType.FILE_XTRCT;
+    }
+    
+    @Override
+    protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
+        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
+        if (trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_FILE_SNAPSHOT))) {
+            return true;
+        } else {            
+            return false;
+        }
     }
     
     @Override
