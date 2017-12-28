@@ -61,23 +61,23 @@ import com.fasterxml.jackson.core.JsonToken;
 
 public class UpdateService extends AbstractService implements IUpdateService {
 
-	protected final long MILLIS_BETWEEN_CHECKS = 86400000l;
-	
-	protected final long MILLIS_AFTER_NODE_OFFLINE = 86400000l;
+    protected final long MILLIS_BETWEEN_CHECKS = 86400000l;
+
+    protected final long MILLIS_AFTER_NODE_OFFLINE = 86400000l;
 
     protected ISymmetricEngine engine;
-    
-	protected boolean sendUsage;
-    
-	protected boolean checkUpdates;
-    
-	protected String latestVersion;
-	
-	protected String downloadUrl;
-	
-	protected Thread sleepThread;
-	
-	protected boolean stopped = false;
+
+    protected boolean sendUsage;
+
+    protected boolean checkUpdates;
+
+    protected String latestVersion;
+
+    protected String downloadUrl;
+
+    protected Thread sleepThread;
+
+    protected boolean stopped = false;
 
     public UpdateService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -109,30 +109,30 @@ public class UpdateService extends AbstractService implements IUpdateService {
             sleepThread.start();
         }
     }
-    
+
     public void checkForUpdates() {
-    	try {
-    		log.debug("Starting check for updates");
-	        Properties prop = getProperties();
-	        if (sendUsage) {
-	        	addUsageProperties(prop);
-	        }
-	        byte[] postData = getPostData(prop);
-	        postDataForVersion(getUpdateUrl(), postData);
-	
-	        if (checkUpdates && latestVersion != null && Version.isOlderThanVersion(Version.version(), latestVersion)) {
-	        	log.warn("New version of SymmetricDS (" + latestVersion + ") is available for download from " + downloadUrl);
-	        }
-    	} catch (MalformedURLException e) {
-    		log.debug("Failed to obtain URL for checking updates", e);
-    	} catch (IOException e) {
-    		log.debug("Failed to communicate for checking updates", e);
-    	} finally {
-    		log.debug("Ending check for updates");
-    	}
+        try {
+            log.debug("Starting check for updates");
+            Properties prop = getProperties();
+            if (sendUsage) {
+                addUsageProperties(prop);
+            }
+            byte[] postData = getPostData(prop);
+            postDataForVersion(getUpdateUrl(), postData);
+
+            if (checkUpdates && latestVersion != null && Version.isOlderThanVersion(Version.version(), latestVersion)) {
+                log.warn("New version of SymmetricDS (" + latestVersion + ") is available for download from " + downloadUrl);
+            }
+        } catch (MalformedURLException e) {
+            log.debug("Failed to obtain URL for checking updates", e);
+        } catch (IOException e) {
+            log.debug("Failed to communicate for checking updates", e);
+        } finally {
+            log.debug("Ending check for updates");
+        }
     }
 
-    protected byte[] getPostData(Properties prop ) throws UnsupportedEncodingException {
+    protected byte[] getPostData(Properties prop) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         for (Object key : prop.keySet()) {
             sb.append(URLEncoder.encode(key.toString(), "UTF-8")).append("=");
@@ -151,13 +151,13 @@ public class UpdateService extends AbstractService implements IUpdateService {
 
         OutputStream os = conn.getOutputStream();
         os.write(postData);
-        os.close();          
+        os.close();
 
         parseHeaders(conn);
         parseResponse(conn);
         conn.disconnect();
     }
-    
+
     protected void parseHeaders(HttpURLConnection conn) {
     }
 
@@ -168,9 +168,9 @@ public class UpdateService extends AbstractService implements IUpdateService {
 
         JsonFactory factory = new JsonFactory();
         JsonParser parser = factory.createParser(line);
-        while (!parser.isClosed()){
+        while (!parser.isClosed()) {
             JsonToken jsonToken = parser.nextToken();
-            if (JsonToken.FIELD_NAME.equals(jsonToken)){
+            if (JsonToken.FIELD_NAME.equals(jsonToken)) {
                 String fieldName = parser.getCurrentName();
                 jsonToken = parser.nextToken();
 
@@ -185,28 +185,28 @@ public class UpdateService extends AbstractService implements IUpdateService {
 
     protected Properties getProperties() {
         Properties prop = new Properties();
-        
+
         IContextService contextService = engine.getContextService();
         String guid = contextService.getString(ContextConstants.GUID);
         if (guid == null) {
-        	guid = UUID.randomUUID().toString();
-        	contextService.save(ContextConstants.GUID, guid);
+            guid = UUID.randomUUID().toString();
+            contextService.save(ContextConstants.GUID, guid);
         }
         prop.put(ContextConstants.GUID, guid.replace("-", ""));
         prop.put("time_zone", AppUtils.getTimezoneOffset());
         prop.put("version", Version.version());
         return prop;
     }
-    
+
     protected void addUsageProperties(Properties prop) {
         Node node = engine.getNodeService().findIdentity();
         prop.put("node_id", node.getNodeId());
         prop.put("node_group_id", node.getNodeGroupId());
-        
+
         prop.put("hostname", AppUtils.getHostName());
         prop.put("ip_address", AppUtils.getIpAddress());
 
-    	OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         prop.put("os_processors", String.valueOf(osBean.getAvailableProcessors()));
         prop.put("os_name", System.getProperty("os.name"));
         prop.put("os_arch", System.getProperty("os.arch"));
@@ -216,27 +216,27 @@ public class UpdateService extends AbstractService implements IUpdateService {
         prop.put("jvm_vendor", Runtime.class.getPackage().getImplementationVendor());
         prop.put("jvm_version", Runtime.class.getPackage().getImplementationVersion());
         prop.put("jvm_memory", String.valueOf(Runtime.getRuntime().maxMemory()));
-        
+
         prop.put("nodes", engine.getNodeService().findAllNodeSecurity(true).size());
 
         int clusterNodeCount = 0;
         Date nodeCreateDate = null;
         boolean isClustered = engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
-    	long offlineTime = System.currentTimeMillis() - MILLIS_AFTER_NODE_OFFLINE;
-    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    	for (NodeHost host : engine.getNodeService().findNodeHosts(node.getNodeId())) {
-    		if (isClustered && host.getHeartbeatTime() != null && host.getHeartbeatTime().getTime() >= offlineTime) {
-    			clusterNodeCount++;
-    		}
-    		if (host.getCreateTime() != null && (nodeCreateDate == null || host.getCreateTime().before(nodeCreateDate))) {
-    			nodeCreateDate = host.getCreateTime();
-    		}
-    	}
+        long offlineTime = System.currentTimeMillis() - MILLIS_AFTER_NODE_OFFLINE;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        for (NodeHost host : engine.getNodeService().findNodeHosts(node.getNodeId())) {
+            if (isClustered && host.getHeartbeatTime() != null && host.getHeartbeatTime().getTime() >= offlineTime) {
+                clusterNodeCount++;
+            }
+            if (host.getCreateTime() != null && (nodeCreateDate == null || host.getCreateTime().before(nodeCreateDate))) {
+                nodeCreateDate = host.getCreateTime();
+            }
+        }
         prop.put("cluster.nodes", clusterNodeCount);
-    	prop.put("node_create_date", nodeCreateDate == null ? "" : dateFormat.format(nodeCreateDate));
-        
+        prop.put("node_create_date", nodeCreateDate == null ? "" : dateFormat.format(nodeCreateDate));
+
         prop.put("node_groups", engine.getConfigurationService().getNodeGroups().size());
-        
+
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
         int channelCount = 0;
         int advChannelCount = 0;
@@ -276,7 +276,7 @@ public class UpdateService extends AbstractService implements IUpdateService {
         }
         prop.put("tables", tableCount);
         prop.put("table_columns", columnCount);
-        
+
         prop.put("file_triggers", engine.getFileSyncService().getFileTriggers().size());
         prop.put("conflicts", engine.getDataLoaderService().getConflictSettingsNodeGroupLinks().size());
         prop.put("transforms", engine.getTransformService().getTransformTables(false).size());
@@ -296,39 +296,41 @@ public class UpdateService extends AbstractService implements IUpdateService {
                 }
             }
         }
-        
+
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);
         Map<String, Object> outMap = sqlTemplateDirty.queryForMap(getSql("countOutgoing"), cal.getTime());
         prop.put("out_batches", outMap.get("batch_count"));
         prop.put("out_bytes", outMap.get("byte_count") == null ? 0L : outMap.get("byte_count"));
         prop.put("out_rows", outMap.get("row_count") == null ? 0L : outMap.get("row_count"));
-        
+
         Map<String, Object> inMap = sqlTemplateDirty.queryForMap(getSql("countIncoming"), cal.getTime());
         prop.put("in_batches", outMap.get("batch_count"));
         prop.put("in_bytes", inMap.get("byte_count") == null ? 0L : inMap.get("byte_count"));
         prop.put("in_rows", inMap.get("row_count") == null ? 0L : inMap.get("row_count"));
     }
-    
+
     protected URL getUpdateUrl() throws MalformedURLException {
-    	return new URL("http://status.symmetricds.org/api/getlatest.php");
+        return new URL("http://status.symmetricds.org/api/getlatest.php");
     }
 
     public boolean isNewVersionAvailable() {
-    	return latestVersion != null && Version.isOlderThanVersion(Version.version(), latestVersion);
+        return latestVersion != null && Version.isOlderThanVersion(Version.version(), latestVersion);
     }
-    
+
     public String getLatestVersion() {
-    	return latestVersion;
+        return latestVersion;
     }
 
     public String getDownloadUrl() {
-    	return downloadUrl;
+        return downloadUrl;
     }
-    
+
     public void stop() {
         stopped = true;
-        sleepThread.interrupt();
+        if (sleepThread != null) {
+            sleepThread.interrupt();
+        }
     }
 
 }
