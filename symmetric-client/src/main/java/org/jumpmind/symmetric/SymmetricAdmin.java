@@ -371,6 +371,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 properties.load(is);
                 String name = properties.getProperty(ParameterConstants.ENGINE_NAME);
                 System.out.println(name + " -> " + file.getAbsolutePath());
+                count++;
             } catch (IOException ex) {
             } finally {
                 IOUtils.closeQuietly(is);
