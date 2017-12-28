@@ -74,6 +74,10 @@ public class UpdateService extends AbstractService implements IUpdateService {
 	protected String latestVersion;
 	
 	protected String downloadUrl;
+	
+	protected Thread sleepThread;
+	
+	protected boolean stopped = false;
 
     public UpdateService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -85,19 +89,24 @@ public class UpdateService extends AbstractService implements IUpdateService {
         sendUsage = parameterService.is(ParameterConstants.SEND_USAGE_STATS, true);
         checkUpdates = parameterService.is(ParameterConstants.CHECK_SOFTWARE_UPDATES, true);
         if (sendUsage || checkUpdates) {
-            new Thread() {
+            sleepThread = new Thread() {
                 public void run() {
-                	log.debug("Starting thread to check for updates, running every {} millis", MILLIS_BETWEEN_CHECKS);
-                	while (true) {
-	                    try {
-	                    	Thread.sleep(MILLIS_BETWEEN_CHECKS);
-	                        checkForUpdates();
-	                    } catch(Exception e) {
-	                    	log.debug("Failed to check updates", e);
-	                    }
-                	}
+                    log.debug("Starting thread to check for updates, running every {} millis", MILLIS_BETWEEN_CHECKS);
+                    while (!stopped) {
+                        try {
+                            Thread.sleep(MILLIS_BETWEEN_CHECKS);
+                            checkForUpdates();
+                        } catch (InterruptedException e) {
+                            log.debug("Stopping check update thread");
+                        } catch (Exception e) {
+                            log.debug("Failed to check updates", e);
+                        }
+                    }
                 }
-            }.start();
+            };
+
+            sleepThread.setDaemon(true);
+            sleepThread.start();
         }
     }
     
@@ -315,6 +324,11 @@ public class UpdateService extends AbstractService implements IUpdateService {
 
     public String getDownloadUrl() {
     	return downloadUrl;
+    }
+    
+    public void stop() {
+        stopped = true;
+        sleepThread.interrupt();
     }
 
 }

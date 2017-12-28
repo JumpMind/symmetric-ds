@@ -806,6 +806,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (nodeCommunicationService != null) {
         	nodeCommunicationService.stop();
         }
+        if (updateService != null) {
+            updateService.stop();
+        }
         
         if (statisticManager != null) {
             List<ProcessInfo> infos = statisticManager.getProcessInfos();
