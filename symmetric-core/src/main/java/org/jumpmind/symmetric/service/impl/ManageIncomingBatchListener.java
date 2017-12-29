@@ -82,7 +82,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
     private IDataLoaderService dataLoaderService;
 
-
     public ManageIncomingBatchListener(ProcessInfo processInfo, ISymmetricEngine engine) {
         this.processInfo = processInfo;
         this.engine = engine;
@@ -91,6 +90,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
         this.dataLoaderService = engine.getDataLoaderService();
         this.incomingBatchService = engine.getIncomingBatchService();
+        this.statisticManager = engine.getStatisticManager();
     }
 
     public void beforeBatchEnd(DataContext context) {
