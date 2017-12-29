@@ -46,6 +46,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
+import org.jumpmind.driver.Driver;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityServiceFactory;
@@ -295,9 +296,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         TypedProperties properties = this.propertiesFactory.reload();
         
+        Driver.register(properties);
+        
         String engineName = properties.get(ParameterConstants.ENGINE_NAME);
         if (!StringUtils.contains(engineName, '`') && !StringUtils.contains(engineName, '(')) {
-        	MDC.put("engineName", engineName);
+        	    MDC.put("engineName", engineName);
         }
         this.platform = createDatabasePlatform(properties);
 
@@ -394,7 +397,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
         
         if (parameterService.isRegistrationServer()) {
-        	this.updateService.init();
+        	    this.updateService.init();
         }
         
         this.jobManager = createJobManager();

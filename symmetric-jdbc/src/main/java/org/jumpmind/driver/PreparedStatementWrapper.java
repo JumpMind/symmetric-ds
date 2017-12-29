@@ -44,15 +44,18 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
+import org.jumpmind.properties.TypedProperties;
+
 public class PreparedStatementWrapper implements PreparedStatement {
 
     private WrapperInterceptor interceptor;
     private PreparedStatement wrapped;
     private String statement;
+    private TypedProperties engineProperties;
 
-    public PreparedStatementWrapper(PreparedStatement wrapped, String statement) {
+    public PreparedStatementWrapper(PreparedStatement wrapped, String statement, TypedProperties engineProperties) {
         this.wrapped = wrapped;
-        this.interceptor = WrapperInterceptor.createInterceptor(this);
+        this.interceptor = WrapperInterceptor.createInterceptor(this, engineProperties);
         this.statement = statement;
     }
     public void setBoolean(int arg1, boolean arg2) throws SQLException {
@@ -1287,6 +1290,11 @@ public class PreparedStatementWrapper implements PreparedStatement {
     public String getStatement() {
         return statement;
     }
-
+    public TypedProperties getEngineProperties() {
+        return engineProperties;
+    }
+    public void setEngineProperties(TypedProperties engineProperties) {
+        this.engineProperties = engineProperties;
+    }
 }
 

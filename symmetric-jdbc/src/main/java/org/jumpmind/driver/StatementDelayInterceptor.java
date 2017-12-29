@@ -20,6 +20,7 @@
  */
 package org.jumpmind.driver;
 
+import org.jumpmind.properties.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,19 +29,20 @@ public class StatementDelayInterceptor extends StatementInterceptor {
     private final static Logger log = LoggerFactory.getLogger(StatementDelayInterceptor.class);
     
     private long delay = 10;
-
+    
     /**
      * @param wrapped
      */
-    public StatementDelayInterceptor(Object wrapped) {
-        super(wrapped);
+    public StatementDelayInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
+        super(wrapped, systemPlusEngineProperties);
         String delayProperty = StatementDelayInterceptor.class.getName() + ".delay";
-        String delayValue = System.getProperty(delayProperty);
+        String delayValue = systemPlusEngineProperties.get(delayProperty);
         if (delayValue != null) {
             delay = Long.parseLong(delayValue.trim());
         }
     }
     
+    @Override
     public void preparedStatementExecute(String methodName, long elapsed, String sql) {
         if (sql.toLowerCase().startsWith("insert") || sql.toLowerCase().startsWith("update")) {
             try {
@@ -50,10 +52,7 @@ public class StatementDelayInterceptor extends StatementInterceptor {
             }
             
             log.info("PreparedStatement." + methodName + " DELAYED (" + (elapsed+delay) + "ms.) " + sql) ;
-        } else {
-          //  super.preparedStatementExecute(methodName, elapsed, sql);
         }
-                  
     }
     
     public void statementExecute(String methodName, long elapsed, Object... parameters) {

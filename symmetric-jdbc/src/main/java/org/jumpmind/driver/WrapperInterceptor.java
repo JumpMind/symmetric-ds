@@ -20,8 +20,14 @@
  */
 package org.jumpmind.driver;
 
+import static org.mockito.Matchers.endsWith;
+
 import java.lang.reflect.Constructor;
 
+import javax.management.RuntimeErrorException;
+
+import org.apache.derby.iapi.jdbc.EngineParameterMetaData;
+import org.jumpmind.properties.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,20 +36,23 @@ public abstract class WrapperInterceptor {
     
     private static Logger log = LoggerFactory.getLogger(WrapperInterceptor.class);
     
-    public static WrapperInterceptor createInterceptor(Object wrapped) {
-        String systemProperty = wrapped.getClass().getName() + ".interceptor";
-        String className = System.getProperty(systemProperty);
+    public static WrapperInterceptor createInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
+        String property = wrapped.getClass().getName() + ".interceptor";
+        if (systemPlusEngineProperties == null) {
+            throw new RuntimeException("systemPlusEngineProperties should not be null.");
+        }
+        String className = systemPlusEngineProperties.get(property);
         if (className != null && className.length() > 0) {            
             try {
                 Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-                Constructor<?> constructor = clazz.getConstructor(Object.class); 
-                return (WrapperInterceptor) constructor.newInstance(wrapped);
+                Constructor<?> constructor = clazz.getConstructor(Object.class, TypedProperties.class); 
+                return (WrapperInterceptor) constructor.newInstance(wrapped, systemPlusEngineProperties);
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to load and instantiate interceptor class [" + className + "]", ex);
             } 
         }
         if (wrapped instanceof PreparedStatementWrapper || wrapped instanceof StatementWrapper) {
-            return new StatementInterceptor(wrapped);
+            return new StatementInterceptor(wrapped, systemPlusEngineProperties);
         } else {            
             return new DummyInterceptor(wrapped);
         }

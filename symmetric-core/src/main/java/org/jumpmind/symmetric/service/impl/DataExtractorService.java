@@ -158,6 +158,7 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
+import org.jumpmind.util.ExceptionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.FutureImpl;
 import org.jumpmind.util.Statistics;
@@ -725,7 +726,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
             } catch (RuntimeException e) {
-                SQLException se = unwrapSqlException(e);              
+                SQLException se = ExceptionUtils.unwrapSqlException(e);              
                 if (currentBatch != null) {
                     try {
                         /* Reread batch in case the ignore flag has been set */
@@ -737,7 +738,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setSqlCode(se.getErrorCode());
                             currentBatch.setSqlMessage(se.getMessage());
                         } else {
-                            currentBatch.setSqlMessage(getRootMessage(e));
+                            currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(e));
                         }
                         currentBatch.revertStatsOnError();
                         if (currentBatch.getStatus() != Status.IG &&

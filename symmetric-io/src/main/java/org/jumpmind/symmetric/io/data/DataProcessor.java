@@ -249,7 +249,7 @@ public class DataProcessor {
                 dataResource.close();
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error("Failed to close dataResource:" + dataResource, ex);
         }
     }
 

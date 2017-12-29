@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jumpmind.db.sql.LogSqlBuilder;
+import org.jumpmind.properties.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ public class StatementInterceptor extends WrapperInterceptor {
     protected List<Object> psArgs = new ArrayList<Object>();
     protected LogSqlBuilder sqlBuilder = new LogSqlBuilder();
 
-    public StatementInterceptor(Object wrapped) {
+    public StatementInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
         super(wrapped);
     }
 

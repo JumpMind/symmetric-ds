@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingError;
 import org.jumpmind.symmetric.model.Node;
@@ -72,6 +73,8 @@ public interface IDataLoaderService {
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 
     public IncomingError getCurrentIncomingError(long batchId, String nodeId);
+    
+    public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError);
     
     public void insertIncomingError(IncomingError incomingError);
     
