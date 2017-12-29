@@ -36,6 +36,8 @@ public class ExtractRequest implements Serializable {
     private ExtractStatus status;
     private long startBatchId;
     private long endBatchId;
+    private String triggerId;
+    private String routerId;
     private TriggerRouter triggerRouter;
     private Date lastUpdateTime;
     private Date createTime;
@@ -111,6 +113,22 @@ public class ExtractRequest implements Serializable {
 
     public void setQueue(String queue) {
         this.queue = queue;
+    }
+
+    public String getTriggerId() {
+        return triggerId;
+    }
+
+    public void setTriggerId(String triggerId) {
+        this.triggerId = triggerId;
+    }
+
+    public String getRouterId() {
+        return routerId;
+    }
+
+    public void setRouterId(String routerId) {
+        this.routerId = routerId;
     }
 
 }

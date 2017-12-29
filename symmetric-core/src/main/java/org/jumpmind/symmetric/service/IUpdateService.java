@@ -22,14 +22,16 @@ package org.jumpmind.symmetric.service;
 
 public interface IUpdateService {
 
-	public void init();
+    public void init();
 
     public void checkForUpdates();
 
     public boolean isNewVersionAvailable();
 
     public String getLatestVersion();
-    
+
     public String getDownloadUrl();
+
+    public void stop();
 
 }
