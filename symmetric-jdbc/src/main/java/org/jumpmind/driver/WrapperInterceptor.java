@@ -20,13 +20,8 @@
  */
 package org.jumpmind.driver;
 
-import static org.mockito.Matchers.endsWith;
-
 import java.lang.reflect.Constructor;
 
-import javax.management.RuntimeErrorException;
-
-import org.apache.derby.iapi.jdbc.EngineParameterMetaData;
 import org.jumpmind.properties.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
