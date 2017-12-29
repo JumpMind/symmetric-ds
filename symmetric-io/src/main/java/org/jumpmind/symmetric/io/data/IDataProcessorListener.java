@@ -35,5 +35,7 @@ public interface IDataProcessorListener {
     public void batchSuccessful(DataContext context);
 
     public void batchInError(DataContext context, Throwable ex);
+    
+    public void batchProgressUpdate(DataContext context);
 
 }

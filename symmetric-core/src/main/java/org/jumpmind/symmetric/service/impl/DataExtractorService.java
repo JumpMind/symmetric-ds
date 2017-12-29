@@ -88,6 +88,7 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
+import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.ProtocolException;
@@ -828,7 +829,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     boolean isRetry = isRetry(extractBatch, targetNode);
                     outgoingBatch = new FutureOutgoingBatch(
-                            extractOutgoingBatch(extractInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode),
+                            extractOutgoingBatch(extractInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode, null),
                             isRetry);
                     status.batchExtractCount++;
                     status.byteExtractCount += extractBatch.getByteCount();
@@ -901,7 +902,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected OutgoingBatch extractOutgoingBatch(ProcessInfo extractInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch, boolean useStagingDataWriter, 
-            boolean updateBatchStatistics, ExtractMode mode) {
+            boolean updateBatchStatistics, ExtractMode mode, IDataProcessorListener listener) {
         
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode || ExtractMode.FOR_SYM_CLIENT == mode) {
             
@@ -947,7 +948,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.resetStats();
 
                         IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo);
-                        new DataProcessor(dataReader, writer, "extract").process(ctx);
+                        new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
                         if (stats != null) {
@@ -1635,6 +1636,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     List<NodeQueuePair> nodes = getExtractRequestNodes();
                     for (NodeQueuePair pair : nodes) {
+                        clusterService.refreshLock(ClusterConstants.INITIAL_LOAD_EXTRACT);
                         queue(pair.getNodeId(), pair.getQueue(), statuses);
                     } 
                 } finally {
@@ -1803,7 +1805,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             buildMultiBatchStagingWriter(request, identity, targetNode, batches, processInfo, channel);
                     
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
-                            firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
+                            firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT, new ClusterLockRefreshListener(clusterService));
                     
                     for (OutgoingBatch outgoingBatch : batches) {
                         resource = getStagedResource(outgoingBatch);  

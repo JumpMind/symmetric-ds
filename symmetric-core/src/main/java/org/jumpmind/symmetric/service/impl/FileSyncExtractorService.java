@@ -25,6 +25,7 @@ import java.util.List;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
+import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -79,14 +80,14 @@ public class FileSyncExtractorService extends DataExtractorService {
     
     @Override
     protected OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode, IDataWriter dataWriter, OutgoingBatch currentBatch,
-            boolean useStagingDataWriter, boolean updateBatchStatistics, ExtractMode mode) {
+            boolean useStagingDataWriter, boolean updateBatchStatistics, ExtractMode mode, IDataProcessorListener listener) {
         if (!parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
             return null;
         }
         
         Channel channel = configurationService.getChannel(currentBatch.getChannelId());
         if (channel.isFileSyncFlag()) {
-            return super.extractOutgoingBatch(processInfo, targetNode, dataWriter, currentBatch, useStagingDataWriter, updateBatchStatistics, mode);            
+            return super.extractOutgoingBatch(processInfo, targetNode, dataWriter, currentBatch, useStagingDataWriter, updateBatchStatistics, mode, null);            
         } else {
             log.debug("Skipping non-file sync channel {}", channel);
             return null;

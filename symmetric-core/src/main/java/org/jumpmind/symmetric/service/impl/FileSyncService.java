@@ -593,7 +593,7 @@ INodeCommunicationExecutor {
 
                         ((DataExtractorService) engine.getDataExtractorService()).extractOutgoingBatch(
                                 processInfo, targetNode, dataWriter, currentBatch, false, true,
-                                DataExtractorService.ExtractMode.FOR_SYM_CLIENT);
+                                DataExtractorService.ExtractMode.FOR_SYM_CLIENT, null);
                     }              
                     processedBatches.add(currentBatch);
                                         

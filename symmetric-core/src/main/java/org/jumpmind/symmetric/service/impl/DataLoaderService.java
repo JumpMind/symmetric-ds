@@ -1311,6 +1311,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 .getBatch().getNodeBatchId(), e);
             }
         }
+        
+        public void batchProgressUpdate(DataContext context){
+        }
 
         public List<IncomingBatch> getBatchesProcessed() {
             return batchesProcessed;
