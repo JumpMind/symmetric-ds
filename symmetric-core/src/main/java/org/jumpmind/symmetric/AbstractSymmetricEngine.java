@@ -396,10 +396,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
         }
         
-        if (parameterService.isRegistrationServer()) {
-        	    this.updateService.init();
-        }
-        
         this.jobManager = createJobManager();
 
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
