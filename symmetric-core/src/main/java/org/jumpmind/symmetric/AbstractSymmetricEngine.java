@@ -25,6 +25,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -46,7 +47,6 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.db.sql.SqlScriptReader;
-import org.jumpmind.driver.Driver;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityServiceFactory;
@@ -296,7 +296,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         TypedProperties properties = this.propertiesFactory.reload();
         
-        Driver.register(properties);
+        registerSymDSDriver(properties);
         
         String engineName = properties.get(ParameterConstants.ENGINE_NAME);
         if (!StringUtils.contains(engineName, '`') && !StringUtils.contains(engineName, '(')) {
@@ -409,6 +409,18 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             registerHandleToEngine();
         }
 
+    }
+
+    protected void registerSymDSDriver(TypedProperties engineProperties) {
+        try {            
+            Class<?> driverClass = Thread.currentThread().getContextClassLoader().loadClass("org.jumpmind.driver.Driver");
+            if (driverClass != null) {
+                Method method = driverClass.getMethod("register", TypedProperties.class);
+                method.invoke(null, engineProperties);
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to load org.jumpmind.driver.Driver", ex);
+        }
     }
 
     protected IClusterService createClusterService() {

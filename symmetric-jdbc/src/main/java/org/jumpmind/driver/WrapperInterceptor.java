@@ -39,7 +39,8 @@ public abstract class WrapperInterceptor {
     public static WrapperInterceptor createInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
         String property = wrapped.getClass().getName() + ".interceptor";
         if (systemPlusEngineProperties == null) {
-            throw new RuntimeException("systemPlusEngineProperties should not be null.");
+            systemPlusEngineProperties = new TypedProperties();
+            systemPlusEngineProperties.putAll(System.getProperties());
         }
         String className = systemPlusEngineProperties.get(property);
         if (className != null && className.length() > 0) {            

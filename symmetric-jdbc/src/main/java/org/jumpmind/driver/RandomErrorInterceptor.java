@@ -36,7 +36,7 @@ public class RandomErrorInterceptor extends StatementInterceptor {
     
     private static final int MIN = 1;
     private static final int MAX = 1000;
-    private static final int ERROR_THRESHOLD = (int)(MAX * 0.05);
+    private static final int ERROR_THRESHOLD = (int)(MAX * 0.01);
     
     private Random random = new Random();
 
@@ -47,7 +47,7 @@ public class RandomErrorInterceptor extends StatementInterceptor {
     @Override
     protected InterceptResult preparedStatementPreExecute(PreparedStatementWrapper ps, String methodName, Object[] parameters) {
         if (shouldThrowError()) {
-            throw new SqlException("Random error coming from RandomErrorInterceptor.");
+            throw new SqlException("MOCK/RANDOM ERROR coming from RandomErrorInterceptor.");
         } else {
             return new InterceptResult();
         }
@@ -63,7 +63,7 @@ public class RandomErrorInterceptor extends StatementInterceptor {
         if (count < 500) { // the database needs to be available for the engine to start up in the first place.
             return false;
         }
-        // for now, error 5% of the time.
+        // for now, error 1% of the time.
         int randomValue = random.nextInt(MAX - MIN + 1) + MIN;
         return (randomValue <= ERROR_THRESHOLD);
     }
