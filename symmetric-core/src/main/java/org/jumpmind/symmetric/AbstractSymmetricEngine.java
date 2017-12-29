@@ -392,11 +392,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 throw new RuntimeException(e);
             }
         }
-        
-        if (parameterService.isRegistrationServer()) {
-        	this.updateService.init();
-        }
-        
+
         this.jobManager = createJobManager();
 
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
@@ -682,6 +678,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
+                    
+                    if (parameterService.isRegistrationServer()) {
+                        this.updateService.init();
+                    }
+                    
                     lastRestartTime = new Date();
                     started = true;
 
