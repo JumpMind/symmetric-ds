@@ -35,11 +35,94 @@ endif::pro[]
 Node Group:: Targets the job at a specific node group id. To target all groups, use the value of 'ALL'.
 
 ifdef::pro[]
-Schedule:: Specifies how often this job should run.
+Schedule:: Specifies how often this job should run.  If the schedule is just a number, it is interpreted as milliseconds.  So 60000 means to run the job every minute.  Otherwise, a cron expression can be specified. Some sample cron expressions include:
+* Every fifth minute: 0 0/5 * * * *
+* Every night at midnight: 0 0 0 * * *
+* Every ten minutes at the 1 o'clock hour: 0 0/10 1 * * *
+
+Note that parameter values will be created for the schedule, in the form of job.<name>.cron OR job.<name>.period.time.ms, depending on if a cron of period of time was entered.  If both the cron and period parameters are present, the cron will take precedence. 
+
 endif::pro[]
 
 .Advanced Topics
 Job Expression:: The payload of the job. For BSH jobs, this should be a beanshell script. For Java jobs, this should be Java code of a class which implements the IJob interface. For SQL jobs, this should be a sql script.
+.BSH Jobs
+BSH jobs are written in beanshell script (http://www.beanshell.org/).  The beanshell has the following variables available:
+* engine - An instances of the current ISymmetricEngine
+* sqlTempalte - An instance of ISqlTemplate which can be used to run SQL statements.
+* log - An logger which can be used to write messages to the log.
+
+This is an example BSH job:
+
+[source,java]
+----
+    // Configuration for this extension... 
+    final String TABLE_NAME = "item"; 
+    final String CHANNEL_ID = "item"; 
+    final String ROUTER_ID = "corp_2_store"; 
+    // End Configuration.
+    String INSERT_RELOAD_DATA_TEMPLATE = 
+            "insert into sym_data ( table_name, event_type, row_data, trigger_hist_id, channel_id, transaction_id, create_time)" + 
+            "    select  t.source_table_name, 'R', 'item_id > ''1''', " + 
+            "            h.trigger_hist_id, t.channel_id, '1', current_timestamp" + 
+            "        from sym_trigger t inner join sym_trigger_router tr on" + 
+            "            t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on" + 
+            "            h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist" + 
+            "                where trigger_id=t.trigger_id)" + 
+            "    where channel_id=? and" + 
+            "        tr.router_id like ? and" + 
+            "        (t.source_table_name = ?)" + 
+            "    order by tr.initial_load_order asc;";
+
+        int updatedCount = sqlTemplate.update(INSERT_RELOAD_DATA_TEMPLATE, new Object[]{CHANNEL_ID, ROUTER_ID, TABLE_NAME});
+        if (updatedCount == 1) {
+            log.info("Issued reload for table '" + TABLE_NAME + "'");
+        } else {
+            throw new SymmetricException("SyncOnHeartbeatExtension is designed to insert exactly 1 sym_data row.  Instead inserted " + 
+                    updatedCount + ". Check TABLE_NAME, CHANNEL_ID, ROUTER_ID parameters in the extension itself.",  null);            
+        }
+----
+
+This is the same job as a Java job.  This might perform a little better, but you'll need to have a JDK (not just JRE) available on your nodes for this to compile.
+[source,java]
+----
+    // Configuration for this extension...
+    final String TABLE_NAME = "item"; 
+    final String CHANNEL_ID = "item"; 
+    final String ROUTER_ID = "corp_2_store"; 
+    // End Configuration.
+    String INSERT_RELOAD_DATA_TEMPLATE = 
+            "insert into sym_data ( table_name, event_type, row_data, trigger_hist_id, channel_id, transaction_id, create_time)" + 
+            "    select  t.source_table_name, 'R', 'item_id > ''1''', " + 
+            "            h.trigger_hist_id, t.channel_id, '1', current_timestamp" + 
+            "        from sym_trigger t inner join sym_trigger_router tr on" + 
+            "            t.trigger_id=tr.trigger_id inner join sym_trigger_hist h on" + 
+            "            h.trigger_hist_id=(select max(trigger_hist_id) from sym_trigger_hist" + 
+            "                where trigger_id=t.trigger_id)" + 
+            "    where channel_id=? and" + 
+            "        tr.router_id like ? and" + 
+            "        (t.source_table_name = ?)" + 
+            "    order by tr.initial_load_order asc;";
+
+        log.info("TESTING\n\n\n");
+        int updatedCount = sqlTemplate.update(INSERT_RELOAD_DATA_TEMPLATE, CHANNEL_ID, ROUTER_ID, TABLE_NAME);
+        if (updatedCount == 1) {
+            log.info("Issued reload for table '" + TABLE_NAME + "'");
+        } else {
+            throw new org.jumpmind.symmetric.SymmetricException("SyncOnHeartbeatExtension is designed to insert exactly 1 sym_data row.  Instead inserted " + 
+                    updatedCount + ". Check TABLE_NAME, CHANNEL_ID, ROUTER_ID parameters in the extension itself.");            
+        }
+----
+
+This is an example of a SQL job that updates the heartbeat_time of the current node.  Available tokens are: :NODE_ID and :NODE_GROUP_ID.
+[source,sql]
+----
+update sym_node_host set heartbeat_time = now() where node_id = :NODE_ID;
+delete from item where item_id = 0;
+insert into ITEM (ITEM_ID, NAME) values (0,'tesing');
+----
+
+
 
 ifdef::pro[]
 To add your job expression/script navigate to the Configure Jobs page, select your job and click the button "Edit Script". The following editor will appear.
