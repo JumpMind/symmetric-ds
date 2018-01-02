@@ -205,7 +205,8 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         this.currentBatch.getByteCount());
                 statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
             } else {
-                log.error("An error caused a batch to fail without attempting to load data", ex);
+                log.error("An error caused a batch to fail without attempting to load data for batch " + 
+                        (batch != null ? batch.getNodeBatchId() : "?"), ex);
             }
 
             enableSyncTriggers(context);
