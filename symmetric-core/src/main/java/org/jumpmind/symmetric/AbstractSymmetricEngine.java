@@ -693,6 +693,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
+                    
+                    if (parameterService.isRegistrationServer()) {
+                        this.updateService.init();
+                    }
+                    
                     lastRestartTime = new Date();
                     started = true;
 
