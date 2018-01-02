@@ -76,7 +76,8 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
             setNanOrNull(ps, i, arg, argType);
         } else {
             PreparedStatement nativeStatement = getNativeStmt(ps);
-            if (nativeStatement != null && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass().getName())) {
+            if (nativeStatement != null && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass().getName())
+                    && !(arg instanceof Boolean)) {
                 Class<?> clazz = nativeStatement.getClass();
                 Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class, int.class };
                 BigDecimal value = null;

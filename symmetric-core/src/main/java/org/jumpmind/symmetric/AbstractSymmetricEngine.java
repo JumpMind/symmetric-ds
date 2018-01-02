@@ -25,6 +25,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -295,9 +296,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         TypedProperties properties = this.propertiesFactory.reload();
         
+        registerSymDSDriver(properties);
+        
         String engineName = properties.get(ParameterConstants.ENGINE_NAME);
         if (!StringUtils.contains(engineName, '`') && !StringUtils.contains(engineName, '(')) {
-        	MDC.put("engineName", engineName);
+        	    MDC.put("engineName", engineName);
         }
         this.platform = createDatabasePlatform(properties);
 
@@ -393,10 +396,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
         }
         
-        if (parameterService.isRegistrationServer()) {
-        	this.updateService.init();
-        }
-        
         this.jobManager = createJobManager();
 
         extensionService.addExtensionPoint(new DefaultOfflineServerListener(
@@ -410,6 +409,18 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             registerHandleToEngine();
         }
 
+    }
+
+    protected void registerSymDSDriver(TypedProperties engineProperties) {
+        try {            
+            Class<?> driverClass = Thread.currentThread().getContextClassLoader().loadClass("org.jumpmind.driver.Driver");
+            if (driverClass != null) {
+                Method method = driverClass.getMethod("register", TypedProperties.class);
+                method.invoke(null, engineProperties);
+            }
+        } catch (Exception ex) {
+            log.debug("Failed to load org.jumpmind.driver.Driver", ex);
+        }
     }
 
     protected IClusterService createClusterService() {
@@ -682,6 +693,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     if (startJobs && jobManager != null) {
                         jobManager.startJobs();
                     }
+                    
+                    if (parameterService.isRegistrationServer()) {
+                        this.updateService.init();
+                    }
+                    
                     lastRestartTime = new Date();
                     started = true;
 
@@ -805,6 +821,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
         if (nodeCommunicationService != null) {
         	nodeCommunicationService.stop();
+        }
+        if (updateService != null) {
+            updateService.stop();
         }
         
         if (statisticManager != null) {

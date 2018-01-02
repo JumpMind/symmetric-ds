@@ -211,6 +211,9 @@ public class DataProcessor {
             
             if (System.currentTimeMillis() - ts > 60000 && context.getWriter() != null) {
                 Statistics stats = context.getWriter().getStatistics().get(batch);
+                if(listener != null) {
+                    listener.batchProgressUpdate(context);
+                }
                 if (stats != null) {
                     log.info(
                             "Batch '{}', for node '{}', for process '{}' has been processing for {} seconds.  The following stats have been gathered: {}",
@@ -246,7 +249,7 @@ public class DataProcessor {
                 dataResource.close();
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error("Failed to close dataResource:" + dataResource, ex);
         }
     }
 

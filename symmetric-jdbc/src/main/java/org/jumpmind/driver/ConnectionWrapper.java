@@ -39,15 +39,28 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import org.jumpmind.properties.TypedProperties;
+
 public class ConnectionWrapper implements Connection {
 
     private WrapperInterceptor interceptor;
     private Connection wrapped;
+    private TypedProperties engineProperties;         
 
     public ConnectionWrapper(Connection wrapped) {
         this.wrapped = wrapped;
-        this.interceptor = WrapperInterceptor.createInterceptor(this);
+        
+        // add system props.
+        TypedProperties systemPlusEngineProperties = new TypedProperties();
+        systemPlusEngineProperties.putAll(System.getProperties());
+        if (engineProperties != null) {
+            systemPlusEngineProperties.putAll(engineProperties);
+        }
+        engineProperties = systemPlusEngineProperties;
+        
+        this.interceptor = WrapperInterceptor.createInterceptor(this, engineProperties);
     }
+    
     public ConnectionWrapper(Connection wrapped, WrapperInterceptor interceptor) {
         this.wrapped = wrapped;
         this.interceptor = interceptor;
@@ -159,7 +172,7 @@ public class ConnectionWrapper implements Connection {
         if (postResult.isIntercepted()) {
             return (PreparedStatement) postResult.getInterceptResult();
         }
-        return new PreparedStatementWrapper(value, arg1);
+        return new PreparedStatementWrapper(value, arg1, engineProperties);
     }
 
     public PreparedStatement prepareStatement(String arg1, int arg2, int arg3) throws SQLException {
@@ -174,7 +187,7 @@ public class ConnectionWrapper implements Connection {
         if (postResult.isIntercepted()) {
             return (PreparedStatement) postResult.getInterceptResult();
         }
-        return new PreparedStatementWrapper(value, arg1);
+        return new PreparedStatementWrapper(value, arg1, engineProperties);
     }
 
     public PreparedStatement prepareStatement(String arg1, int arg2, int arg3, int arg4) throws SQLException {
@@ -189,7 +202,7 @@ public class ConnectionWrapper implements Connection {
         if (postResult.isIntercepted()) {
             return (PreparedStatement) postResult.getInterceptResult();
         }
-        return new PreparedStatementWrapper(value, arg1);
+        return new PreparedStatementWrapper(value, arg1, engineProperties);
     }
 
     public PreparedStatement prepareStatement(String arg1, int[] arg2) throws SQLException {
@@ -204,7 +217,7 @@ public class ConnectionWrapper implements Connection {
         if (postResult.isIntercepted()) {
             return (PreparedStatement) postResult.getInterceptResult();
         }
-        return new PreparedStatementWrapper(value, arg1);
+        return new PreparedStatementWrapper(value, arg1, engineProperties);
     }
 
     public PreparedStatement prepareStatement(String arg1, String[] arg2) throws SQLException {
@@ -219,7 +232,7 @@ public class ConnectionWrapper implements Connection {
         if (postResult.isIntercepted()) {
             return (PreparedStatement) postResult.getInterceptResult();
         }
-        return new PreparedStatementWrapper(value, arg1);
+        return new PreparedStatementWrapper(value, arg1, engineProperties);
     }
 
     public PreparedStatement prepareStatement(String arg1) throws SQLException {
@@ -234,7 +247,7 @@ public class ConnectionWrapper implements Connection {
         if (postResult.isIntercepted()) {
             return (PreparedStatement) postResult.getInterceptResult();
         }
-        return new PreparedStatementWrapper(value, arg1);
+        return new PreparedStatementWrapper(value, arg1, engineProperties);
     }
 
     public CallableStatement prepareCall(String arg1) throws SQLException {
@@ -794,6 +807,14 @@ public class ConnectionWrapper implements Connection {
             return (boolean) postResult.getInterceptResult();
         }
         return value;
+    }
+
+    public TypedProperties getEngineProperties() {
+        return engineProperties;
+    }
+
+    public void setEngineProperties(TypedProperties engineProperties) {
+        this.engineProperties = engineProperties;
     }
 
 }

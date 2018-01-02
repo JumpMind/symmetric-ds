@@ -155,7 +155,7 @@ public class IncomingBatch extends AbstractBatch {
 
     @Override
     public String toString() {
-        return Long.toString(getBatchId());
+        return "IncomingBatch " + getBatchId();
     }
 
     @Override

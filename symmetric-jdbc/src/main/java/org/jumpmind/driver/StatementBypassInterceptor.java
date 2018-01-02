@@ -21,6 +21,7 @@
 package org.jumpmind.driver;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.properties.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +29,8 @@ public class StatementBypassInterceptor extends StatementInterceptor {
     
     private final static Logger log = LoggerFactory.getLogger(StatementBypassInterceptor.class);
 
-    public StatementBypassInterceptor(Object wrapped) {
-        super(wrapped);
+    public StatementBypassInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
+        super(wrapped, systemPlusEngineProperties);
     }
     
     @Override

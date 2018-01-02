@@ -96,6 +96,7 @@ import org.jumpmind.symmetric.transport.NoContentException;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 import org.jumpmind.symmetric.transport.file.FileOutgoingTransport;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.ExceptionUtils;
 
 import bsh.EvalError;
 import bsh.Interpreter;
@@ -593,7 +594,7 @@ INodeCommunicationExecutor {
 
                         ((DataExtractorService) engine.getDataExtractorService()).extractOutgoingBatch(
                                 processInfo, targetNode, dataWriter, currentBatch, false, true,
-                                DataExtractorService.ExtractMode.FOR_SYM_CLIENT);
+                                DataExtractorService.ExtractMode.FOR_SYM_CLIENT, null);
                     }              
                     processedBatches.add(currentBatch);
                                         
@@ -656,7 +657,7 @@ INodeCommunicationExecutor {
             if (currentBatch != null) {
                 engine.getStatisticManager().incrementDataExtractedErrors(
                         currentBatch.getChannelId(), 1);
-                currentBatch.setSqlMessage(getRootMessage(e));
+                currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(e));
                 currentBatch.revertStatsOnError();
                 if (currentBatch.getStatus() != Status.IG) {
                     currentBatch.setStatus(Status.ER);
@@ -667,7 +668,7 @@ INodeCommunicationExecutor {
                 if (isStreamClosedByClient(e)) {
                     log.warn(
                             "Failed to extract file sync batch {}.  The stream was closed by the client.  The error was: {}",
-                            currentBatch, getRootMessage(e));
+                            currentBatch, ExceptionUtils.getRootMessage(e));
                 } else {
                     log.error("Failed to extract file sync batch " + currentBatch, e);
                 }

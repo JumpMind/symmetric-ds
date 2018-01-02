@@ -18,24 +18,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.io.data;
+package org.jumpmind.util;
 
+import java.sql.SQLException;
+import java.util.List;
 
-public interface IDataProcessorListener {
-
-    /**
-     * @return true if this batch should be processed
-     */
-    public boolean beforeBatchStarted(DataContext context);
+public class ExceptionUtils {
     
-    public void afterBatchStarted(DataContext context);
-
-    public void beforeBatchEnd(DataContext context);
-
-    public void batchSuccessful(DataContext context);
-
-    public void batchInError(DataContext context, Throwable ex);
+    public static SQLException unwrapSqlException(Throwable e) {
+        List<Throwable> exs = org.apache.commons.lang.exception.ExceptionUtils.getThrowableList(e);
+        for (Throwable throwable : exs) {
+            if (throwable instanceof SQLException) {
+                return (SQLException) throwable;
+            }
+        }
+        return null;
+    }
     
-    public void batchProgressUpdate(DataContext context);
+    public static String getRootMessage(Throwable ex) {
+        Throwable cause = org.apache.commons.lang.exception.ExceptionUtils.getRootCause(ex);
+        if (cause == null) {
+            cause = ex;
+        }
+        return cause.getMessage();
+    }
 
 }

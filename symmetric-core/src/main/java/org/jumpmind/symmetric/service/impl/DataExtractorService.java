@@ -88,6 +88,7 @@ import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
+import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.ProtocolException;
@@ -157,6 +158,7 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
+import org.jumpmind.util.ExceptionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.FutureImpl;
 import org.jumpmind.util.Statistics;
@@ -724,7 +726,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
             } catch (RuntimeException e) {
-                SQLException se = unwrapSqlException(e);              
+                SQLException se = ExceptionUtils.unwrapSqlException(e);              
                 if (currentBatch != null) {
                     try {
                         /* Reread batch in case the ignore flag has been set */
@@ -736,7 +738,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setSqlCode(se.getErrorCode());
                             currentBatch.setSqlMessage(se.getMessage());
                         } else {
-                            currentBatch.setSqlMessage(getRootMessage(e));
+                            currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(e));
                         }
                         currentBatch.revertStatsOnError();
                         if (currentBatch.getStatus() != Status.IG &&
@@ -828,7 +830,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     boolean isRetry = isRetry(extractBatch, targetNode);
                     outgoingBatch = new FutureOutgoingBatch(
-                            extractOutgoingBatch(extractInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode),
+                            extractOutgoingBatch(extractInfo, targetNode, dataWriter, extractBatch, streamToFileEnabled, true, mode, null),
                             isRetry);
                     status.batchExtractCount++;
                     status.byteExtractCount += extractBatch.getByteCount();
@@ -901,7 +903,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected OutgoingBatch extractOutgoingBatch(ProcessInfo extractInfo, Node targetNode,
             IDataWriter dataWriter, OutgoingBatch currentBatch, boolean useStagingDataWriter, 
-            boolean updateBatchStatistics, ExtractMode mode) {
+            boolean updateBatchStatistics, ExtractMode mode, IDataProcessorListener listener) {
         
         if (currentBatch.getStatus() != Status.OK || ExtractMode.EXTRACT_ONLY == mode || ExtractMode.FOR_SYM_CLIENT == mode) {
             
@@ -947,7 +949,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.resetStats();
 
                         IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo);
-                        new DataProcessor(dataReader, writer, "extract").process(ctx);
+                        new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
                         if (stats != null) {
@@ -1635,6 +1637,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 try {
                     List<NodeQueuePair> nodes = getExtractRequestNodes();
                     for (NodeQueuePair pair : nodes) {
+                        clusterService.refreshLock(ClusterConstants.INITIAL_LOAD_EXTRACT);
                         queue(pair.getNodeId(), pair.getQueue(), statuses);
                     } 
                 } finally {
@@ -1737,13 +1740,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(),
                 extractId);
     }
+    
+    protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
+        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
+        if (! trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
+                TableConstants.SYM_FILE_SNAPSHOT))) {
+            return true;
+        } else {            
+            return false;
+        }
+    }    
 
     /**
      * This is a callback method used by the NodeCommunicationService that extracts an initial load
      * in the background.
      */
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
-        if (!isApplicable(nodeCommunication, status)) {
+        if (!isApplicable(nodeCommunication)) {
             log.debug("{} failed isApplicable check and will not run.", this);
             return;
         }
@@ -1757,6 +1770,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (int i = 0; i < requests.size()
                 && (System.currentTimeMillis() - ts) <= Constants.LONG_OPERATION_THRESHOLD; i++) {
             ExtractRequest request = requests.get(i);
+            if (!canProcessExtractRequest(request, nodeCommunication.getCommunicationType())){
+                continue;
+            }                
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId());
             log.info(
@@ -1803,7 +1819,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             buildMultiBatchStagingWriter(request, identity, targetNode, batches, processInfo, channel);
                     
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
-                            firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT);
+                            firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT, new ClusterLockRefreshListener(clusterService));
                     
                     for (OutgoingBatch outgoingBatch : batches) {
                         resource = getStagedResource(outgoingBatch);  
@@ -1904,9 +1920,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    protected boolean isApplicable(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
+    protected boolean isApplicable(NodeCommunication nodeCommunication) {
         return nodeCommunication.getCommunicationType() != CommunicationType.FILE_XTRCT;
-    }
+    }    
 
     protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, Node sourceNode, Node targetNode, List<OutgoingBatch> batches,
             ProcessInfo processInfo, Channel channel) {
@@ -1945,6 +1961,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setStatus(ExtractStatus.valueOf(row.getString("status").toUpperCase()));
             request.setCreateTime(row.getDateTime("create_time"));
             request.setLastUpdateTime(row.getDateTime("last_update_time"));
+            request.setTriggerId(row.getString("trigger_id"));
+            request.setRouterId(row.getString("router_id"));
             request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
                     row.getString("trigger_id"), row.getString("router_id"), false));
             request.setQueue(row.getString("queue"));

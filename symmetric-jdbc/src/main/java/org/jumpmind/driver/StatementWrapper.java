@@ -34,7 +34,7 @@ public class StatementWrapper implements Statement {
 
     public StatementWrapper(Statement wrapped) {
         this.wrapped = wrapped;
-        this.interceptor = WrapperInterceptor.createInterceptor(this);
+        this.interceptor = WrapperInterceptor.createInterceptor(this, null);
     }
     public StatementWrapper(Statement wrapped, WrapperInterceptor interceptor) {
         this.wrapped = wrapped;

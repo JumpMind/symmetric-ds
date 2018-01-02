@@ -119,17 +119,6 @@ abstract public class AbstractService implements IService {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected SQLException unwrapSqlException(Throwable e) {
-        List<Throwable> exs = ExceptionUtils.getThrowableList(e);
-        for (Throwable throwable : exs) {
-            if (throwable instanceof SQLException) {
-                return (SQLException) throwable;
-            }
-        }
-        return null;
-    }
-
     protected Map<String, String> createSqlReplacementTokens() {
         Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
                 .getDatabaseInfo().getDelimiterToken(), symmetricDialect.getPlatform());
@@ -186,14 +175,6 @@ abstract public class AbstractService implements IService {
             nodeIds.add(node.getNodeId());
         }
         return nodeIds;
-    }
-
-    protected String getRootMessage(Exception ex) {
-        Throwable cause = ExceptionUtils.getRootCause(ex);
-        if (cause == null) {
-            cause = ex;
-        }
-        return cause.getMessage();
     }
 
     protected boolean isCalledFromSymmetricAdminTool() {
@@ -339,14 +320,21 @@ abstract public class AbstractService implements IService {
             if (batchId < batchIdInError) {                
                 for (OutgoingBatch outgoingBatch : batches) {
                     if (outgoingBatch.getBatchId() == batchId) {
-                        log.warn("We expected but did not receive an ack for batch {}.", outgoingBatch.getNodeBatchId());
+                        StringBuilder message = new StringBuilder(128);
+                        message.append("Expected but did not receive an ack for batch ");
+                        message.append(outgoingBatch.getNodeBatchId()).append(". ");
+                        
                         if (dataExtratorService != null) {
                             if (!outgoingBatch.isLoadFlag()) {
-                                log.info("This could be because the batch is corrupt.  Removing the batch from staging");
+                                message.append("This could be because the batch is corrupt - removing the batch from staging.");
+                                log.warn(message.toString());
                                 dataExtratorService.removeBatchFromStaging(outgoingBatch);
                             } else {
-                                log.info("This could be because the batch is corrupt.  Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually");
+                                message.append("This could be because the batch is corrupt. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.");
+                                log.warn(message.toString());
                             }
+                        } else {
+                            log.warn(message.toString());
                         }
                     }
                 }

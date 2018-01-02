@@ -524,7 +524,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
      */
     protected List<IncomingBatch> loadDataFromTransport(final ProcessInfo transferInfo,
             final Node sourceNode, IIncomingTransport transport, OutputStream out) throws IOException {
-        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener(transferInfo);
+        final ManageIncomingBatchListener listener = new ManageIncomingBatchListener(transferInfo, engine);
         final DataContext ctx = new DataContext();
         Throwable error = null;
         try {
@@ -612,7 +612,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         } catch (Throwable ex) {
             error = ex;
-            logAndRethrow(ex);
+            logOrRethrow(ex);
         } finally {
             transport.close();
 
@@ -624,7 +624,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         return listener.getBatchesProcessed();
     }
 
-    protected void logAndRethrow(Throwable ex) throws IOException {
+    protected void logOrRethrow(Throwable ex) throws IOException {
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
@@ -644,7 +644,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         } else if (ex instanceof IOException) {
             throw (IOException) ex;
         } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
-            log.error("Failed while parsing batch", ex);
+            log.error("Failed to process batch", ex);
+        } else {
+            log.debug("Failed to process batch", ex);
         }
     }
 
@@ -1075,249 +1077,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
             return isDone;
-        }
-    }
-
-    class ManageIncomingBatchListener implements IDataProcessorListener {
-
-        protected List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
-
-        protected IncomingBatch currentBatch;
-        
-        protected ProcessInfo processInfo;
-        
-        public ManageIncomingBatchListener(ProcessInfo processInfo) {
-            this.processInfo = processInfo;
-        }
-
-        public void beforeBatchEnd(DataContext context) {
-        		// Only sync triggers if this is not a load only node.
-        		if (engine.getSymmetricDialect().getPlatform().equals(engine.getSymmetricDialect().getTargetPlatform())) {
-        			enableSyncTriggers(context);
-        		}
-        }
-
-        public boolean beforeBatchStarted(DataContext context) {
-            this.currentBatch = null;
-            Batch batch = context.getBatch();
-            context.remove("currentBatch");
-            
-            if (parameterService.is(ParameterConstants.DATA_LOADER_ENABLED)
-                    || (batch.getChannelId() != null && batch.getChannelId().equals(
-                            Constants.CHANNEL_CONFIG))) {
-                if (batch.getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-                    /* Remove outgoing configuration batches because we are about to get 
-                     * the complete configuration.
-                     */
-                    IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-                    IDataService dataService = engine.getDataService();
-                    dataService.deleteCapturedConfigChannelData();
-                    outgoingBatchService.markAllConfigAsSentForNode(batch.getSourceNodeId());
-                }
-                IncomingBatch incomingBatch = new IncomingBatch(batch);
-                this.batchesProcessed.add(incomingBatch);
-                
-                if (batch.getStatistics() != null) {
-                    incomingBatch.mergeInjectedBatchStatistics(batch.getStatistics());
-                    processInfo.setTotalDataCount(incomingBatch.getExtractRowCount());
-                }
-                
-                if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
-                    this.currentBatch = incomingBatch;
-                    context.put("currentBatch", this.currentBatch);                    
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public void afterBatchStarted(DataContext context) {
-            Batch batch = context.getBatch();
-            ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
-            if (transaction != null) {
-                symmetricDialect.disableSyncTriggers(transaction, batch.getSourceNodeId());
-            }
-        }
-
-        public void batchSuccessful(DataContext context) {
-            Batch batch = context.getBatch();
-            this.currentBatch.setValues(context.getReader().getStatistics().get(batch), context
-                    .getWriter().getStatistics().get(batch), true);
-            statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
-                    this.currentBatch.getLoadRowCount());
-            statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
-                    this.currentBatch.getByteCount());
-            Status oldStatus = this.currentBatch.getStatus();
-            
-            try {
-                this.currentBatch.setStatus(Status.OK);
-                if (incomingBatchService.isRecordOkBatchesEnabled()) {
-                    incomingBatchService.updateIncomingBatch(this.currentBatch);
-                } else if (this.currentBatch.isRetry()) {
-                    incomingBatchService.deleteIncomingBatch(this.currentBatch);
-                }
-            } catch (RuntimeException ex) {
-                this.currentBatch.setStatus(oldStatus);
-                throw ex;
-            }
-        }
-
-        protected void enableSyncTriggers(DataContext context) {
-            try {
-                ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
-                if (transaction != null) {
-                    symmetricDialect.enableSyncTriggers(transaction);
-                }
-            } catch (Exception ex) {
-                log.error("", ex);
-            }
-        }
-
-        public void batchInError(DataContext context, Throwable ex) {
-            try {
-                if (this.currentBatch == null) {
-                    /*
-                     * if the current batch is null, there isn't anything we can
-                     * do other than log the error
-                     */
-                    throw ex;
-                }
-                
-                /*
-                 * Reread batch to make sure it wasn't set to IG or OK
-                 */
-                engine.getIncomingBatchService().refreshIncomingBatch(currentBatch);
-                
-                Batch batch = context.getBatch();
-                if (context.getWriter() != null
-                        && context.getReader().getStatistics().get(batch) != null
-                        && context.getWriter().getStatistics().get(batch) != null) {
-                    this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
-                            context.getWriter().getStatistics().get(batch), false);
-                    statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
-                            this.currentBatch.getLoadRowCount());
-                    statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
-                            this.currentBatch.getByteCount());
-                    statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
-                } else {
-                    log.error("An error caused a batch to fail without attempting to load data", ex);
-                }
-
-                enableSyncTriggers(context);
-
-                if (ex instanceof IOException || ex instanceof TransportException
-                        || ex instanceof IoException) {
-                    log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
-                    this.currentBatch.setSqlMessage(ex.getMessage());
-                } else {
-                    log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
-                    
-                    SQLException se = unwrapSqlException(ex);
-                    if (ex instanceof ConflictException) {
-                        String message = ex.getMessage();
-                        if (se != null && isNotBlank(se.getMessage())) {
-                            message = message + " " + se.getMessage();
-                        }
-                        this.currentBatch.setSqlMessage(message);
-                        this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
-                        this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
-                    } else if (se != null) {
-                        String sqlState = se.getSQLState();
-                        if (sqlState != null && sqlState.length() > 10) {
-                            sqlState = sqlState.replace("JDBC-", "");
-                            if (sqlState.length() > 10) {
-                                sqlState = sqlState.substring(0, 10);
-                            }
-                        }
-                        this.currentBatch.setSqlState(sqlState);
-                        this.currentBatch.setSqlCode(se.getErrorCode());
-                        this.currentBatch.setSqlMessage(se.getMessage());
-                        if (sqlTemplate.isForeignKeyViolation(se)) {
-                            this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
-                            this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
-                        }
-                    } else {
-                        this.currentBatch.setSqlMessage(ex.getMessage());
-                    }
-
-                }
-
-                ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
-
-                // If we were in the process of skipping or ignoring a batch
-                // then its status would have been OK. We should not
-                // set the status to ER.
-                if (this.currentBatch.getStatus() != Status.OK &&
-                        this.currentBatch.getStatus() != Status.IG) {
-
-                    this.currentBatch.setStatus(IncomingBatch.Status.ER);
-                    if (context.getTable() != null && context.getData() != null) {
-                        try {
-                            IncomingError error = new IncomingError();
-                            error.setBatchId(this.currentBatch.getBatchId());
-                            error.setNodeId(this.currentBatch.getNodeId());
-                            error.setTargetCatalogName(context.getTable().getCatalog());
-                            error.setTargetSchemaName(context.getTable().getSchema());
-                            error.setTargetTableName(context.getTable().getName());
-                            error.setColumnNames(Table.getCommaDeliminatedColumns(context
-                                    .getTable().getColumns()));
-                            error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
-                                    .getTable().getPrimaryKeyColumns()));
-                            error.setCsvData(context.getData());
-                            error.setCurData((String) context.get(DefaultDatabaseWriter.CUR_DATA));
-                            error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
-                            error.setEventType(context.getData().getDataEventType());
-                            error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
-                            error.setFailedRowNumber(this.currentBatch.getFailedRowNumber());
-                            if (ex instanceof ConflictException) {
-                                ConflictException conflictEx = (ConflictException) ex;
-                                Conflict conflict = conflictEx.getConflict();
-                                if (conflict != null) {
-                                    error.setConflictId(conflict.getConflictId());
-                                }
-                            }
-                            if (transaction != null) {
-                                insertIncomingError(transaction, error);
-                            } else {
-                                insertIncomingError(error);
-                            }
-                        } catch (UniqueKeyException e) {
-                            // ignore. we already inserted an error for this row
-                            if (transaction != null) {
-                                transaction.rollback();
-                            }
-                        }
-                    }
-                }
-
-                if (transaction != null) {
-                    if (incomingBatchService.isRecordOkBatchesEnabled()
-                            || this.currentBatch.isRetry()) {
-                        incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);
-                    } else {
-                        incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
-                    }
-                } else {
-                    if (incomingBatchService.isRecordOkBatchesEnabled()
-                            || this.currentBatch.isRetry()) {
-                        incomingBatchService.updateIncomingBatch(this.currentBatch);
-                    } else {
-                        incomingBatchService.insertIncomingBatch(this.currentBatch);
-                    }
-                }
-            } catch (Throwable e) {
-                log.error("Failed to record status of batch {}",
-                        this.currentBatch != null ? this.currentBatch.getNodeBatchId() : context
-                                .getBatch().getNodeBatchId(), e);
-            }
-        }
-
-        public List<IncomingBatch> getBatchesProcessed() {
-            return batchesProcessed;
-        }
-
-        public IncomingBatch getCurrentBatch() {
-            return currentBatch;
         }
     }
     
