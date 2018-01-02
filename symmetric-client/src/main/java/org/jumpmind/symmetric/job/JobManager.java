@@ -140,12 +140,13 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public synchronized void startJobsAfterConfigChange() {
-        for (IJob job : jobs) {
-            if (isAutoStartConfigured(job) 
-                    && !job.isStarted()) {
-                job.start();
+        if (jobs != null) {
+            for (IJob job : jobs) {
+                if (isAutoStartConfigured(job) && !job.isStarted()) {
+                    job.start();
+                }
             }
-        }        
+        }
     }
     
     protected boolean isAutoStartConfigured(IJob job) {

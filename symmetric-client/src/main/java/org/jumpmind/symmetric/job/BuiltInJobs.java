@@ -81,6 +81,7 @@ public class BuiltInJobs {
         jobDefinition.setJobExpression(argBuiltInJob.getClass().getName());
         jobDefinition.setNodeGroupId("ALL");
         jobDefinition.setCreateBy("SymmetricDS");
+        jobDefinition.setDefaultAutomaticStartup(builtInJob.getDefaults().isEnabled());
         builtInJob.setJobDefinition(jobDefinition);
     }    
 }

@@ -182,8 +182,10 @@ public final class FormatUtils {
             String card = cards[i];
             
             boolean foundToken = false;
-            if (i == 0 && !pattern.startsWith("*")) {
+            if (i == 0 && !pattern.startsWith("*") && pattern.endsWith("*")) {
                 foundToken = text.startsWith(card);
+            } else if (i == 0 && !pattern.startsWith("*")) {
+                foundToken = text.equals(card);
             } else {
                 foundToken = text.indexOf(card) != -1;
             }
