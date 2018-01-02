@@ -16,6 +16,29 @@ Load only nodes can be configured for nodes that are only designed to load data 
 
 ==== Setup Load Only Node
 
+ifdef::pro[]
+
+* To setup a load only node, begin by adding a new node to your configuration (See <<Add Node>> for details on adding a new node).
+* On the database setup screen of the add node wizard, select "Other" as the database type.
+
+image::manage/manage-load-only-other.png[]
+
+* Next upload the driver jar file that contains the necessary JDBC driver to connect to the database by clicking on the "upload" button.
+
+NOTE: Uploading a jar file is only available in the standalone installation of SymmetricDS, NOT with the deployed war file setup.  For a web container (war) based deployment you would need to add the driver jar to the web servers classpath and restart.  Then provide the driver class and url manually as explained in steps 4 and 5 below.
+
+NOTE: If the driver is already a supported database by SymmetricDA and the driver jar file was packaged with SymmetricDS (in the /lib folder) or has already been uploaded for another node there is no need to upload anything here.  
+
+* If uploaded jar file contains a valid implementation of the java.sql.Driver interface it will populate in the driver class name text field otherwise you will need to enter the driver class name.
+* Finally provide the jdbc url to use to connect to this database and test the connection.
+
+image::manage/manage-load-only-driver-url.png[]
+
+The remaining steps in the add node wizard are the same as if adding a full node so continue through the remainder of the node setup wizard to complete the configuration.
+
+endif::pro[]
+
+ifndef::pro[]
 1  First adjust the db.* properties in the load only engine properties file to utilize H2 for runtime information and configuration.
 [source,properties]
 ----
@@ -40,5 +63,5 @@ NOTE: If additional database properties are needed you can add the prefix target
 3  Add the jar file containing the jdbc driver provided in the target.db.driver property to the /lib folder of SymmetricDS
 
 4  Restart SymmetricDS
-
+endif::pro[]
 
