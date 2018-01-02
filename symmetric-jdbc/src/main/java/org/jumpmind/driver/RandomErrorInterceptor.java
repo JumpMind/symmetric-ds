@@ -32,7 +32,8 @@ import org.slf4j.LoggerFactory;
 public class RandomErrorInterceptor extends StatementInterceptor {
     private final static Logger log = LoggerFactory.getLogger(RandomErrorInterceptor.class);
     
-    private static AtomicInteger counter = new AtomicInteger(0);
+    private static AtomicInteger okCounter = new AtomicInteger(0);
+    private static AtomicInteger errorCounter = new AtomicInteger(0);
     
     private static final int MIN = 1;
     private static final int MAX = 1000;
@@ -47,8 +48,11 @@ public class RandomErrorInterceptor extends StatementInterceptor {
     @Override
     protected InterceptResult preparedStatementPreExecute(PreparedStatementWrapper ps, String methodName, Object[] parameters) {
         if (shouldThrowError()) {
-            throw new SqlException("MOCK/RANDOM ERROR coming from RandomErrorInterceptor.");
+            int errorCount = errorCounter.incrementAndGet();
+            int okCount = okCounter.get();
+            throw new SqlException("MOCK/RANDOM ERROR from RandomErrorInterceptor (" + okCount + " successful statements, " + errorCount + " error statements.)");
         } else {
+            okCounter.incrementAndGet();
             return new InterceptResult();
         }
     }
@@ -59,8 +63,8 @@ public class RandomErrorInterceptor extends StatementInterceptor {
     }
     
     protected boolean shouldThrowError() {
-        int count = counter.incrementAndGet();
-        if (count < 500) { // the database needs to be available for the engine to start up in the first place.
+        int count = okCounter.get();
+        if (count < 1000) { // the database needs to be available for the engine to start up in the first place.
             return false;
         }
         // for now, error 1% of the time.

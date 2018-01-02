@@ -419,7 +419,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 method.invoke(null, engineProperties);
             }
         } catch (Exception ex) {
-            log.warn("Failed to load org.jumpmind.driver.Driver", ex);
+            log.debug("Failed to load org.jumpmind.driver.Driver", ex);
         }
     }
 
