@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.JobDefinition.JobType;
@@ -30,6 +31,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class JavaJob extends AbstractJob {
     
     private JavaJob configuredJob;
+    protected ISqlTemplate sqlTemplate;
     
     public JavaJob() {
         super();
@@ -70,6 +72,7 @@ public class JavaJob extends AbstractJob {
         try {
             JavaJob job = (JavaJob)compiler.getCompiledClass(code);
             job.setEngine(engine);
+            job.setSqlTemplate(engine.getSqlTemplate());
             job.setJobName(getJobName());
             job.setJobDefinition(getJobDefinition());
             job.setParameterService(engine.getParameterService());
@@ -93,5 +96,13 @@ public class JavaJob extends AbstractJob {
             " public void doJob(boolean force) throws Exception {\n";
     final static String CODE_END = 
             "\n}\n}";
+
+    public ISqlTemplate getSqlTemplate() {
+        return sqlTemplate;
+    }
+
+    public void setSqlTemplate(ISqlTemplate sqlTemplate) {
+        this.sqlTemplate = sqlTemplate;
+    }
 
 }

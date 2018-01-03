@@ -40,7 +40,7 @@ public class JobDefinition {
     private boolean defaultAutomaticStartup;
     private String defaultSchedule;
     private String nodeGroupId;
-    private transient boolean automaticStartup;
+    private transient boolean automaticStartup = true;
     private transient String schedule;
     
     public boolean isCronSchedule() {

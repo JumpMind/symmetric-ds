@@ -20,9 +20,13 @@
  */
 package org.jumpmind.symmetric.job;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlScript;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.TokenConstants;
 import org.jumpmind.symmetric.model.JobDefinition.JobType;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -43,7 +47,8 @@ public class SqlJob extends AbstractJob {
         try {            
             if (getJobDefinition().getJobExpression() != null) {        
                 ISqlTemplate sqlTemplate = engine.getDatabasePlatform().getSqlTemplate();
-                SqlScript script = new SqlScript(getJobDefinition().getJobExpression(), sqlTemplate, true, null);
+                Map<String, String> replacementTokens = getReplacementTokens(engine, engine.getSymmetricDialect().getPlatform().getSqlScriptReplacementTokens());
+                SqlScript script = new SqlScript(getJobDefinition().getJobExpression(), sqlTemplate, true, replacementTokens);
                 script.execute(AUTO_COMMIT);
             }
         } catch (Exception ex) {
@@ -55,6 +60,18 @@ public class SqlJob extends AbstractJob {
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults();
+    }
+    
+    protected Map<String, String> getReplacementTokens(ISymmetricEngine engine, Map<String, String> startingReplacementTokens) {
+        Map<String, String> replacementTokens = new HashMap<String, String>();
+        
+        if (startingReplacementTokens != null) {
+            replacementTokens.putAll(startingReplacementTokens);
+        }
+        replacementTokens.put(TokenConstants.NODE_ID, engine.getNodeId());
+        replacementTokens.put(TokenConstants.NODE_GROUP_ID, engine.getNodeService().findIdentity().getNodeGroupId());
+        
+        return replacementTokens;
     }
 
 }
