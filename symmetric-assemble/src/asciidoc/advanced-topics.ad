@@ -74,18 +74,42 @@ include::advanced/offline.ad[]
 === Encrypted Passwords
        
 The `db.user` and `db.password` properties will accept encrypted text, which protects
-against casual observation.  The text is prefixed with `enc:` to indicate
-that it is encrypted.  To encrypt text, use the following command:
+against casual observation. This encryption can be done two different ways 
+using the command: encrypt-text 
+
+The first option is to pass the text as an argument:
+====
 
 [source, cli]
 ----
-symadmin -e {engine name} encrypt-text text-to-encrypt
+symadmin -e {engine name} encrypt-text 'text-to-encrypt'
 ----
-or
+
 [source, cli]
 ----
-symadmin -p {properties file} encrypt-text text-to-encrypt
+symadmin -p {properties file} encrypt-text 'text-to-encrypt'
 ----
+====
+NOTE: The text-to-encrypt should be surrounded with ' ' as shown above in order to avoid 
+erroneous encryption due to special characters.
+
+The second option is without an argument. In this case, it will prompt you to enter text:
+====
+
+[source, cli]
+----
+symadmin -e {engine name} encrypt-text
+Enter Text:
+----
+
+[source, cli]
+----
+symadmin -p {properties file} encrypt-text
+Enter Text:
+----
+====
+
+
 The text is encrypted using a secret key named "sym.secret" that is retrieved from a keystore file.
 By default, the keystore is located in `security/keystore`.
 The location and filename of the keystore can be overridden by setting the "sym.keystore.file" system property.

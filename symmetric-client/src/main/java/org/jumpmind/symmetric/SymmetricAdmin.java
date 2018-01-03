@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
@@ -433,7 +434,15 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     private void encryptText(CommandLine line, List<String> args) {
-        String plainText = popArg(args, "Text");
+        String plainText;
+        if(args.size() != 0) {
+            plainText = popArg(args, "Text"); 
+        } else {
+            @SuppressWarnings("resource")
+            Scanner textScanner = new Scanner(System.in);
+            System.out.print("Enter Text: ");
+            plainText = textScanner.next();
+        }
         ISecurityService service = createSecurityService();
         System.out.println(SecurityConstants.PREFIX_ENC + service.encrypt(plainText));
     }
