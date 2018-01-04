@@ -324,7 +324,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Node getCachedIdentity() {
-        return cachedNodeIdentity;
+        return findIdentity();
     }
 
     public Node findIdentity() {
@@ -342,8 +342,7 @@ public class NodeService extends AbstractService implements INodeService {
                 cachedNodeIdentity = (Node) getFirstEntry(list);
             } catch (SqlException ex) {
                 if (logSqlError) {
-                    log.info("Failed to load the node identity because: {} {}.  Returning {}",
-                            ex.getClass().getName(), ex.getMessage(), cachedNodeIdentity);
+                    log.info("Failed to load the node identity. Returning " + cachedNodeIdentity, ex);
                 }
             }
         }
