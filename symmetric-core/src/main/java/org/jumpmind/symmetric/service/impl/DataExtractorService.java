@@ -658,6 +658,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
 
+                final long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+                long totalBytesSend = 0;
+                boolean logMaxBytesReached = false;
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
                 for (int i = 0; i < futures.size(); i++) {
                     Future<FutureOutgoingBatch> future = futures.get(i);
@@ -684,12 +687,27 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
 
                             if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT || (currentBatch.isExtractJobFlag() && parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB))) {
+                                
+                                if(totalBytesSend > maxBytesToSync) {
+                                    if(!logMaxBytesReached) {
+                                        logMaxBytesReached = true;
+                                        log.info(
+                                                "Reached the total byte threshold after {} of {} batches were send for node '{}' (send {} bytes, the max is {}).  "
+                                                        + "The remaining batches will be send on a subsequent sync.",
+                                                new Object[] { i, futures.size(), targetNode.getNodeId(), totalBytesSend, maxBytesToSync });
+                                    }
+                                    transferInfo.setStatus(ProcessStatus.OK);
+                                    break;
+                                }
+                                
                                 transferInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
                                 transferInfo.setCurrentLoadId(currentBatch.getLoadId());
                                 boolean isRetry = extractBatch.isRetry() && extractBatch.getOutgoingBatch().getStatus() != OutgoingBatch.Status.IG;
                                 
                                 currentBatch = sendOutgoingBatch(transferInfo, targetNode, currentBatch, isRetry, 
                                         dataWriter, writer, mode);                                
+                                
+                                totalBytesSend += currentBatch.getByteCount();
                             }
                             
                             processedBatches.add(currentBatch);
