@@ -342,7 +342,8 @@ public class NodeService extends AbstractService implements INodeService {
                 cachedNodeIdentity = (Node) getFirstEntry(list);
             } catch (SqlException ex) {
                 if (logSqlError) {
-                    log.info("Failed to load the node identity. Returning " + cachedNodeIdentity, ex);
+                    // This is at debug level because it gets called pre-registration
+                    log.debug("Failed to load the node identity. Returning " + cachedNodeIdentity, ex);
                 }
             }
         }
