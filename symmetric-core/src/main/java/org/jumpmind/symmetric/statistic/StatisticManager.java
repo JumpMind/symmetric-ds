@@ -102,7 +102,6 @@ public class StatisticManager implements IStatisticManager {
     }
 
     protected void init() {
-        incrementRestart();
     }
 
 
