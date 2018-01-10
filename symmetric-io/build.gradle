@@ -5,7 +5,7 @@ apply from: symAssembleDir + '/common.gradle'
     dependencies {
         compile project(":symmetric-csv")
         compile project(":symmetric-db")
-        compile "org.beanshell:bsh:$bshVersion"
+        compile "org.apache-extras.beanshell:bsh:$bshVersion"
         compile "net.sourceforge.jeval:jeval:0.9.4"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(":symmetric-jdbc")
