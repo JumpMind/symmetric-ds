@@ -244,7 +244,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         
         
         putSql("getLoadStatusSummarySql", 
-                "select ob.load_id, count(ob.batch_id) as count, ob.status, c.queue, max(ob.last_update_time) as last_update_time,  "
+                "select ob.load_id, count(ob.batch_id) as count_ids, ob.status, c.queue, max(ob.last_update_time) as last_update_time,  "
                 + " min(ob.create_time) as create_time, sum(ob.data_row_count) as data_events, sum(ob.byte_count) as byte_count, " 
                 + " min(extract_start_time) as min_extract_start_time, min(transfer_start_time) as min_transfer_start_time, "
                 + " min(load_start_time) as min_load_start_time, "

@@ -748,7 +748,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             statusSummary.setLastUpdateTime(rs.getDateTime("last_update_time"));
             statusSummary.setByteCount(rs.getLong("byte_count"));
             statusSummary.setDataEventCount(rs.getLong("data_events"));
-            statusSummary.setCount(rs.getInt("count"));
+            statusSummary.setCount(rs.getInt("count_ids"));
             statusSummary.setExtractStartTime(rs.getDateTime("min_extract_start_time"));
             statusSummary.setTransferStartTime(rs.getDateTime("min_transfer_start_time"));
             statusSummary.setLoadStartTime(rs.getDateTime("min_load_start_time"));
