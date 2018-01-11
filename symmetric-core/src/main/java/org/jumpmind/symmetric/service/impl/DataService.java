@@ -496,9 +496,10 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistories, triggerRoutersByHistoryId, 
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
+                        insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                                transaction, mapReloadRequests, processInfo);
+                                
                         if (isFullLoad) {
-                            insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
-                                    transaction, processInfo);
 
                             callReloadListeners(false, targetNode, transactional, transaction, loadId);
                             if (!reverse) {
@@ -984,7 +985,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private void insertFileSyncBatchForReload(Node targetNode, long loadId, String createBy,
-            boolean transactional, ISqlTransaction transaction, ProcessInfo processInfo) {
+            boolean transactional, ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                 && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -999,6 +1000,10 @@ public class DataService extends AbstractService implements IDataService {
                 TriggerRouter fileSyncSnapshotTriggerRouter = triggerRouterService
                         .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
                                 routerid, true);
+
+                if(reloadRequests != null && reloadRequests.get(fileSyncSnapshotTriggerRouter.getTriggerId() + fileSyncSnapshotTriggerRouter.getRouterId()) == null){
+                    return;
+                }
                 
                 List<TriggerHistory> triggerHistories = Arrays.asList(fileSyncSnapshotHistory);
                 List<TriggerRouter> triggerRouters = Arrays.asList(fileSyncSnapshotTriggerRouter);
