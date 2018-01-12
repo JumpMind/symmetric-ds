@@ -1152,11 +1152,11 @@ public class DataService extends AbstractService implements IDataService {
                 .getConfigurationService().getChannels(false));
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, triggerHistory, channelId, null, null);
+        data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
                     triggerRouter.getRouter().getRouterId(), isLoad, loadId, createBy, Status.NE, null, -1);
         } else {
-            data.setNodeList(targetNode.getNodeId());
             insertData(transaction, data);
         }
     }
@@ -1173,11 +1173,11 @@ public class DataService extends AbstractService implements IDataService {
         Data data = new Data(history.getSourceTableName(), DataEventType.SQL,
                 CsvUtils.escapeCsvData(sql), null, history, isLoad ? reloadChannelId
                         : Constants.CHANNEL_CONFIG, null, null);
+        data.setNodeList(targetNode.getNodeId());
         if (isLoad) {
             insertDataAndDataEventAndOutgoingBatch(data, targetNode.getNodeId(),
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy);
         } else {
-            data.setNodeList(targetNode.getNodeId());
             insertData(data);
         }
     }
