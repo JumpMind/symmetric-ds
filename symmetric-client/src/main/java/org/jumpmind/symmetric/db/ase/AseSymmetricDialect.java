@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -69,13 +68,14 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
-            final String triggerName, String tableName) {
+            final String triggerName, String tableName, ISqlTransaction transaction) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            ((JdbcSqlTemplate) platform.getSqlTemplate())
-            .execute(new IConnectionCallback<Boolean>() {
+
+          ((JdbcSqlTransaction) transaction)
+            .executeCallback(new IConnectionCallback<Boolean>() {
                 public Boolean execute(Connection con) throws SQLException {
                     String previousCatalog = con.getCatalog();
                     Statement stmt = null;
@@ -87,6 +87,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                         stmt.execute(sql);
                     } catch (Exception e) {
                         log.warn("Error removing {}: {}", triggerName, e.getMessage());
+                        throw e;
                     } finally {
                         if (catalogName != null) {
                             con.setCatalog(previousCatalog);

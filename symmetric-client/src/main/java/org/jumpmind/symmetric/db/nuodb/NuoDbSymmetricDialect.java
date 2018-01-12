@@ -125,15 +125,11 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName) {
+            String triggerName, String tableName, ISqlTransaction transaction) {
         final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer); 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            try {
-                platform.getSqlTemplate().update(sql);
-            } catch (Exception e) {
-                log.warn("Trigger does not exist");
-            }
+            transaction.execute(sql);
         }
     }
     

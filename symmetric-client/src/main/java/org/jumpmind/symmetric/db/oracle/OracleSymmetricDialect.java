@@ -97,10 +97,10 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger,
-            TriggerHistory history, Channel channel, String tablePrefix, Table table) {
+            TriggerHistory history, Channel channel, String tablePrefix, Table table, ISqlTransaction transaction) {
         try {
             super.createTrigger(sqlBuffer, dml, trigger, history, channel,
-                    parameterService.getTablePrefix(), table);
+                    parameterService.getTablePrefix(), table, transaction);
         } catch (SqlException ex) {
             if (ex.getErrorCode() == 4095) {
                 try {

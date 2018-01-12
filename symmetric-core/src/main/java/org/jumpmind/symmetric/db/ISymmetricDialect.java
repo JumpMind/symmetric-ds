@@ -49,6 +49,10 @@ public interface ISymmetricDialect {
 
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml,
             Trigger trigger, TriggerHistory hist, Channel channel,
+            String tablePrefix, Table table, ISqlTransaction transaction);
+    
+    public void createTrigger(StringBuilder sqlBuffer, DataEventType dml,
+            Trigger trigger, TriggerHistory hist, Channel channel,
             String tablePrefix, Table table);
 
     public void createDdlTrigger(String tablePrefix, StringBuilder sqlBuffer, String triggerName);
@@ -59,6 +63,9 @@ public interface ISymmetricDialect {
      */
     public String getEngineName();
 
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, ISqlTransaction transaction);
+    
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName);
     
