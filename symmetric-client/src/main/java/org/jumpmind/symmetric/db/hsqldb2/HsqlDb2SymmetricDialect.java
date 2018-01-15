@@ -51,18 +51,14 @@ public class HsqlDb2SymmetricDialect extends AbstractSymmetricDialect implements
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName) {
+            String triggerName, String tableName, ISqlTransaction transaction) {
         final String dropSql = String.format("DROP TRIGGER %s", triggerName);
         logSql(dropSql, sqlBuffer);
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            try {
-                int count = platform.getSqlTemplate().update(dropSql);
-                if (count > 0) {
-                    log.info("Just dropped trigger {}", triggerName);
-                }
-            } catch (Exception e) {
-                log.warn("Error removing {}: {}", triggerName, e.getMessage());
+            int count = transaction.execute(dropSql);
+            if (count > 0) {
+                log.info("Just dropped trigger {}", triggerName);
             }
         }
     }

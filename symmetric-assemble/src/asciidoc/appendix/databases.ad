@@ -9,7 +9,7 @@ feature coverage in SymmetricDS.  The following table shows which features are a
 by database.
 
 .Support by Database
-[cols="15,13,^12,^12,^12,^12,^12,^12", options="header"]
+[cols="15,13,^12,^12,^12,^12,^12,^12,^12", options="header"]
 |====
 |Database
 |Versions
@@ -19,6 +19,7 @@ by database.
 |Update Loop Prevention
 |BLOB Sync
 |CLOB Sync
+|Transactional DDL
 
 |DB2
 |9.5
@@ -27,7 +28,8 @@ by database.
 |Y
 |Y
 |Y
-|Y   
+|Y
+|Y  
 
 |DB2
 |10,11
@@ -36,7 +38,8 @@ by database.
 |Y
 |Y
 |Y
-|Y                    
+|Y 
+|Y                   
 
 |DB2 for IBM i
 |6
@@ -45,7 +48,8 @@ by database.
 |Y
 |N
 |Y
-|Y                    
+|Y
+|N                    
 
 |DB2 for IBM z/OS
 |10
@@ -54,7 +58,8 @@ by database.
 |Y
 |N
 |Y
-|Y                    
+|Y
+|N                    
 
 |Derby
 |10.3.2.1
@@ -64,6 +69,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |Firebird
 |2.0
@@ -73,6 +79,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |Greenplum
 |8.2.15 and above
@@ -80,6 +87,7 @@ by database.
 |N
 |N
 |Y
+|N
 |N
 |N
 
@@ -91,6 +99,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |HSQLDB
 |1.8
@@ -100,6 +109,7 @@ by database.
 |Y
 |Y
 |Y
+|N
  
 |HSQLDB
 |2.0
@@ -109,6 +119,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |Informix
 |11
@@ -116,6 +127,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
 |N                    
  
@@ -127,6 +139,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |MySQL
 |5.0.2 and above
@@ -136,6 +149,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |MariaDB
 |5.1 and above
@@ -145,6 +159,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |NuoDB
 |2.6 and above
@@ -154,6 +169,7 @@ by database.
 |Y
 |N
 |Y
+|N
                     
 |Oracle
 |10g and above
@@ -163,10 +179,12 @@ by database.
 |Y
 |Y
 |Y
+|N
  
 |PostgreSQL
 |8.2.5 and above
 |Y (8.3 and above only)
+|Y
 |Y
 |Y
 |Y
@@ -181,6 +199,7 @@ by database.
 |Y
 |N
 |N
+|N
 
 |SQL Anywhere
 |9
@@ -190,9 +209,11 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |SQL Server
 |2005 and above
+|Y
 |Y
 |Y
 |Y
@@ -207,6 +228,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N                    
  
 |SQLite
@@ -217,6 +239,7 @@ by database.
 |Y
 |Y
 |Y
+|N
  
 |Sybase ASE
 |12.5
@@ -226,6 +249,7 @@ by database.
 |Y
 |Y
 |Y
+|N
    
 |Tibero
 |6 and above
@@ -234,7 +258,8 @@ by database.
 |Y
 |Y
 |Y
-|Y                    
+|Y
+|N                    
 |====
 
 

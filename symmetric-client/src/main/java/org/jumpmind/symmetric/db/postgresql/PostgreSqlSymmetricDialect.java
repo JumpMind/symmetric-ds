@@ -167,7 +167,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName, String tableName) {
+            String triggerName, String tableName, ISqlTransaction transaction) {
         Table table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
         if (table != null) {
             String quoteChar = platform.getDatabaseInfo().getDelimiterToken();
@@ -180,16 +180,8 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                     + "() cascade";
             logSql(dropFunction, sqlBuffer);
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-                try {
-                    platform.getSqlTemplate().update(dropSql);
-                } catch (Exception e) {
-                    log.warn("Failed to remove trigger using: " + dropSql, e);
-                }
-                try {
-                    platform.getSqlTemplate().update(dropFunction);
-                } catch (Exception e) {
-                    log.warn("Failed to remove function using: " + dropFunction, e);
-                }
+                transaction.execute(dropSql);
+                transaction.execute(dropFunction);
             }
         }
     }

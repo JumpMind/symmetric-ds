@@ -123,7 +123,7 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
-            String tableName) {
+            String tableName, ISqlTransaction transaction) {
         final String dropSql = String.format("DROP TRIGGER %s", triggerName);
         logSql(dropSql, sqlBuffer);
 
@@ -131,21 +131,13 @@ public class HsqlDbSymmetricDialect extends AbstractEmbeddedSymmetricDialect imp
         logSql(dropTable, sqlBuffer);
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            try {
-                int count = platform.getSqlTemplate().update(dropSql);
-                if (count > 0) {
-                    log.info("Just dropped trigger {}", triggerName);
-                }
-            } catch (Exception e) {
-                log.warn("Error removing {}: {}", triggerName, e.getMessage());
+            int count = transaction.execute(dropSql);
+            if (count > 0) {
+                log.info("Just dropped trigger {}", triggerName);
             }
-            try {
-                int count = platform.getSqlTemplate().update(dropTable);
-                if (count > 0) {
-                    log.info("Just dropped table {}_CONFIG", triggerName);
-                }
-            } catch (Exception e) {
-                log.warn("Error removing {}: {}", triggerName, e.getMessage());
+            count = transaction.execute(dropTable);
+            if (count > 0) {
+                log.info("Just dropped table {}_CONFIG", triggerName);
             }
         }
     }

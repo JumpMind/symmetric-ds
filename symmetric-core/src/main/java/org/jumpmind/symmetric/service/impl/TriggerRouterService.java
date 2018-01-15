@@ -47,6 +47,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -1338,46 +1339,43 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
-
-        if (StringUtils.isNotBlank(history.getNameForInsertTrigger())) {
-            symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                    history.getSourceSchemaName(), history.getNameForInsertTrigger(),
-                    history.getSourceTableName());
-        }
-
-        if (StringUtils.isNotBlank(history.getNameForDeleteTrigger())) {
-            symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                    history.getSourceSchemaName(), history.getNameForDeleteTrigger(),
-                    history.getSourceTableName());
-        }
-
-        if (StringUtils.isNotBlank(history.getNameForUpdateTrigger())) {
-            symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(),
-                    history.getSourceSchemaName(), history.getNameForUpdateTrigger(),
-                    history.getSourceTableName());
-        }
-
-        if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.triggerInactivated(null, history);
+        try {
+            if (StringUtils.isNotBlank(history.getNameForInsertTrigger())) {
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForInsertTrigger(), history.getSourceTableName());
             }
-        }
 
-        boolean triggerExists = symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getSourceTableName(),
-                history.getNameForInsertTrigger());
-        triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getSourceTableName(),
-                history.getNameForUpdateTrigger());
-        triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(),
-                history.getSourceSchemaName(), history.getSourceTableName(),
-                history.getNameForDeleteTrigger());
-        if (triggerExists) {
-            log.warn(
-                    "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id={} and trigger_hist_id={}",
-                    history.getTriggerId(), history.getTriggerHistoryId());
-        } else {
-            inactivateTriggerHistory(history);
+            if (StringUtils.isNotBlank(history.getNameForDeleteTrigger())) {
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForDeleteTrigger(), history.getSourceTableName());
+            }
+
+            if (StringUtils.isNotBlank(history.getNameForUpdateTrigger())) {
+                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                        history.getNameForUpdateTrigger(), history.getSourceTableName());
+            }
+
+            if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                    l.triggerInactivated(null, history);
+                }
+            }
+
+            boolean triggerExists = symmetricDialect.doesTriggerExist(history.getSourceCatalogName(), history.getSourceSchemaName(),
+                    history.getSourceTableName(), history.getNameForInsertTrigger());
+            triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(), history.getSourceSchemaName(),
+                    history.getSourceTableName(), history.getNameForUpdateTrigger());
+            triggerExists |= symmetricDialect.doesTriggerExist(history.getSourceCatalogName(), history.getSourceSchemaName(),
+                    history.getSourceTableName(), history.getNameForDeleteTrigger());
+            if (triggerExists) {
+                log.warn(
+                        "There are triggers that have been marked as inactive.  Please remove triggers represented by trigger_id={} and trigger_hist_id={}",
+                        history.getTriggerId(), history.getTriggerHistoryId());
+            } else {
+                inactivateTriggerHistory(history);
+            }
+        } catch (Error ex) {
+            log.error("Error while dropping triggers for table %s", history.getSourceTableName(), ex);
         }
     }
 
@@ -1708,15 +1706,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (newestHistory != null) {
                 // Make sure all the triggers are removed from the
                 // table
-                symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(), newestHistory.getNameForInsertTrigger(),
-                        trigger.getSourceTableName());
-                symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(), newestHistory.getNameForUpdateTrigger(),
-                        trigger.getSourceTableName());
-                symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(), newestHistory.getNameForDeleteTrigger(),
-                        trigger.getSourceTableName());
+                try {
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            newestHistory.getNameForInsertTrigger(), trigger.getSourceTableName());
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            newestHistory.getNameForUpdateTrigger(), trigger.getSourceTableName());
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            newestHistory.getNameForDeleteTrigger(), trigger.getSourceTableName());
+                } catch (Error e) {
+                    log.error("Failed to remove triggers for %s", trigger.getFullyQualifiedSourceTableName(), e);
+                }
             }
 
             for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
@@ -1772,54 +1771,62 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
 
-        if ((forceRebuild || !triggerIsActive) && triggerExists) {
-            symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
-                    oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
-                            : trigger.getSourceTableName());
-            triggerExists = false;
-            triggerRemoved = true;
-        }
-
-        boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate()
-                && !trigger.isSyncOnDelete();
-
-        if (hist == null
-                && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
-            insert(newTriggerHist);
-            hist = getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId(),
-                    trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogName(),
-                    trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaName(),
-                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                            .getSourceTableName());
-        }
-
+        ISqlTransaction transaction = null;
         try {
-            if (!triggerExists && triggerIsActive) {
-                symmetricDialect
-                        .createTrigger(sqlBuffer, dmlType, trigger, hist,
-                                configurationService.getChannel(trigger.getChannelId()),
-                                tablePrefix, table);
-                if (triggerRemoved) {
-                    statisticManager.incrementTriggersRebuiltCount(1);
-                } else {
-                    statisticManager.incrementTriggersCreatedCount(1);
-                }
-            } else if (triggerRemoved) {
-                statisticManager.incrementTriggersRemovedCount(1);
+            transaction = sqlTemplate.startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+            
+            if ((forceRebuild || !triggerIsActive) && triggerExists) {
+                symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
+                        oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
+                                : trigger.getSourceTableName(), transaction);
+                triggerExists = false;
+                triggerRemoved = true;
             }
 
-        } catch (RuntimeException ex) {
-            if (hist != null) {
-                log.info(
-                        "Cleaning up trigger hist row of {} after failing to create the associated trigger",
-                        hist.getTriggerHistoryId());
-                hist.setErrorMessage(ex.getMessage());
-                inactivateTriggerHistory(hist);
+            boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();
+
+            if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
+                insert(newTriggerHist);
+                hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                        trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogName(),
+                        trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaName(),
+                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableName());
+            }
+
+            try {
+                if (!triggerExists && triggerIsActive) {
+                    symmetricDialect
+                            .createTrigger(sqlBuffer, dmlType, trigger, hist,
+                                    configurationService.getChannel(trigger.getChannelId()),
+                                    tablePrefix, table, transaction);
+                    if (triggerRemoved) {
+                        statisticManager.incrementTriggersRebuiltCount(1);
+                    } else {
+                        statisticManager.incrementTriggersCreatedCount(1);
+                    }
+                } else if (triggerRemoved) {
+                    statisticManager.incrementTriggersRemovedCount(1);
+                }
+                transaction.commit();
+
+            } catch (RuntimeException ex) {
+                if (hist != null) {
+                    log.info(
+                            "Cleaning up trigger hist row of {} after failing to create the associated trigger",
+                            hist.getTriggerHistoryId());
+                    hist.setErrorMessage(ex.getMessage());
+                    inactivateTriggerHistory(hist);
+                }
+                throw ex;
+            }
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
             }
             throw ex;
+        } finally {
+            close(transaction);
         }
-
         return hist;
     }
     
