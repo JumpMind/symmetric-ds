@@ -324,7 +324,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public Node getCachedIdentity() {
-        return findIdentity();
+        return cachedNodeIdentity;
     }
 
     public Node findIdentity() {
