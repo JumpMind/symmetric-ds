@@ -115,7 +115,7 @@ public class RaimaDdlBuilder extends AbstractDdlBuilder {
         if(sourceColumn.getMappedType().equals("DECIMAL") && targetColumn.getMappedType().equals("DECIMAL")){
             int targetSize = targetColumn.getSizeAsInt();
             int sourceSize = sourceColumn.getSizeAsInt();
-            if (targetSize > 8 && sourceSize == 8 && 
+            if (targetSize > 8 && sourceSize > 8 && 
                     targetColumn.getScale() == sourceColumn.getScale()) {
                 return true;
             }else{

@@ -24,6 +24,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -38,7 +39,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void createRequiredDatabaseObjects() {
-    }
+    	}
 
     @Override
     public void dropRequiredDatabaseObjects() {
@@ -52,26 +53,22 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-        /*
-        schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
+    		schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
                 .getDefaultSchema()) : schema;
-        String checkSchemaSql = (schema != null && schema.length() > 0) ? " and schema='"
+        String checkSchemaSql = (schema != null && schema.length() > 0) ? " and schemaname='"
                 + schema + "'"
                 : "";
         return platform
                 .getSqlTemplate()
                 .queryForInt(
-                        "select count(*) from system.triggers where triggername = ? and tablename = ?"
+                        "select count(*) from sys_trigger where name = ? and tabname = ?"
                                 + checkSchemaSql, new Object[] { triggerName, tableName }) > 0;
-         */
-        return true;
     }
 
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName) {
-        /*
-        final String sql = "drop trigger " + triggerName;
+    		final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer);         
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
@@ -80,21 +77,25 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
                 log.warn("Trigger does not exist");
             }
         }
-        */
+        
     }
 
+    @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
+        transaction.prepareAndExecute("declare @sync_triggers_disabled smallint;");
         transaction.prepareAndExecute("set @sync_triggers_disabled = 1;");
         if (nodeId != null) {
-            transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
+            transaction.prepareAndExecute("declare @sync_node_disabled varchar(50);");
             transaction.prepareAndExecute("set @sync_node_disabled = '" + nodeId + "';");
         }
     }
 
+    @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("declare sync_triggers_disabled smallint; set @sync_triggers_disabled = null;");
-        transaction.prepareAndExecute("declare sync_node_disabled varchar(50); set @sync_node_disabled = null;");
+        transaction.prepareAndExecute("declare @sync_triggers_disabled smallint;");
+        transaction.prepareAndExecute("set @sync_triggers_disabled = null;");
+        transaction.prepareAndExecute("declare @sync_node_disabled varchar(50);");
+        transaction.prepareAndExecute("set @sync_node_disabled = null;");
     }
 
     public String getSyncTriggersExpression() {
