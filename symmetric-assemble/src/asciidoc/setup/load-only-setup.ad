@@ -12,7 +12,7 @@ Load only nodes can be configured for nodes that are only designed to load data 
 * Can not be set up to capture changes
 * Requires a JDBC driver 
 * May require table creation outside of SymmetricDS
-* Requires an additional database to be used for SymmetricDS runtime usage.  H2 is the recommended approach for this runtime database.
+* Requires an additional database to be used for SymmetricDS runtime usage.  H2 is used in the setup below but any other database could be used as the runtime database.
 
 ==== Setup Load Only Node
 
@@ -39,18 +39,23 @@ The remaining steps in the add node wizard are the same as if adding a full node
 endif::pro[]
 
 ifndef::pro[]
-1  First adjust the db.* properties in the load only engine properties file to utilize H2 for runtime information and configuration.
+1. Begin by setting up a <<Node Properties File>>.  You do not need to provide any of the db.* properties just yet as they will be adjusted in step 2.
+
+2. Adjust the db.* properties in the load only engine properties file to utilize H2 for runtime information and configuration.   The db.user and db.password values are required but do not have to contain values, an empty property for these is sufficient.
+
 [source,properties]
 ----
 db.driver=org.h2.Driver
 db.url=jdbc:h2:file:load-only;LOCK_TIMEOUT=60000
 db.validation.query=select 1
+db.user=
+db.password=
 ----
 
 NOTE: If you have multiple load only nodes under a single installation of SymmetricDS you will need to provide a unique H2 database name for each in the db.url above (default is load-only).  
 
 
-2  Second add the following properties to identify the node as load only and provide connection information for your load only database.
+3. Add the following properties to identify the node as load only and provide connection information for your load only database.
 ----
 load.only=true
 target.db.driver=
@@ -60,8 +65,8 @@ target.db.password=
 ----
 NOTE: If additional database properties are needed you can add the prefix target. to any other existing SymmetricDS parameters <<Startup Parameters>>.
 
-3  Add the jar file containing the jdbc driver provided in the target.db.driver property to the /lib folder of SymmetricDS
+4. Add the jar file containing the jdbc driver provided in the target.db.driver property to the /lib folder of SymmetricDS
 
-4  Restart SymmetricDS
+5. Restart SymmetricDS
 endif::pro[]
 
