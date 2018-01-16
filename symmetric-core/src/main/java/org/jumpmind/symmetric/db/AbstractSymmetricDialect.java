@@ -317,7 +317,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             transaction = platform.getSqlTemplate().startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
             removeTrigger(sqlBuffer, catalogName, schemaName, triggerName, tableName, transaction);
             transaction.commit();
-        } catch (SqlException ex) {
+        } catch (Exception ex) {
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -356,7 +356,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             transaction = platform.getSqlTemplate().startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
             createTrigger(sqlBuffer, dml, trigger, hist, channel, tablePrefix, table, transaction);
             transaction.commit();
-        } catch (SqlException ex) {
+        } catch (Exception ex) {
             if (transaction != null) {
                 transaction.rollback();
             }
