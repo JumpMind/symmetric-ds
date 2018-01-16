@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -136,11 +137,18 @@ public class DefaultParameterParser {
         if (args.length == 0) {
             System.err.println("Usage: <input_properties_file> <output_docbook_file> [true|false]");
         }
-        DefaultParameterParser parmParser = null;
+        String[] paths;
+        List<DefaultParameterParser> parmParsers = new ArrayList<DefaultParameterParser>();
         if (args[0].startsWith("classpath:")) {
-            parmParser = new DefaultParameterParser(args[0].replaceAll("classpath:", ""));
+            paths = args[0].replaceAll("classpath:", "").split(",");
+            for(String path: paths) {
+                parmParsers.add(new DefaultParameterParser(path));
+            }
         } else {
-            parmParser = new DefaultParameterParser(FileUtils.openInputStream(new File(args[0])));
+            paths = args[0].split(",");
+            for(String path: paths) {
+                parmParsers.add(new DefaultParameterParser(FileUtils.openInputStream(new File(path))));
+            }
         }
         new File(args[1]).getParentFile().mkdirs();
         
@@ -148,7 +156,11 @@ public class DefaultParameterParser {
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
         boolean isAsciiDocFormat = args.length > 3 && "asciidoc".equals(args[3]);
 
-        Map<String, ParameterMetaData> map = parmParser.parse();
+        TreeMap<String, ParameterMetaData> map = new TreeMap<String, ParameterMetaData>();
+        for(DefaultParameterParser parser: parmParsers) {
+            map.putAll(parser.parse());
+        }
+        
         if (!isAsciiDocFormat) {
             writer.write("<variablelist>\n");
         }
