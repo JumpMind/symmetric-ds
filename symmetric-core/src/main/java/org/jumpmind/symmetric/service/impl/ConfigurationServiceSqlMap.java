@@ -79,20 +79,19 @@ public class ConfigurationServiceSqlMap extends AbstractSqlMap {
           " from $(channel) c order by c.processing_order asc, c.channel_id                        ");
 
         putSql("selectNodeChannelsSql",
-          "select c.channel_id, nc.node_id, nc.ignore_enabled, nc.suspend_enabled, c.processing_order,       "
-        + "  c.max_batch_size, c.enabled, c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route, "
-        + "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, c.batch_algorithm,         "
-        + "  nc.last_extract_time, c.extract_period_millis, c.data_loader_type,                              " 
-        + "    last_update_time, last_update_by, create_time, c.reload_flag, c.file_sync_flag, c.queue,      "
-        + " c.max_network_kbps, c.data_event_action "
-        + "  from $(channel) c left outer join                                                               "
-        + "  $(node_channel_ctl) nc on c.channel_id = nc.channel_id and nc.node_id = ?                       "
-        + "  order by c.processing_order asc, c.channel_id                                                   ");
-
-        putSql("selectNodeChannelControlLastExtractTimeSql", ""
-         + "select channel_id, last_extract_time                 "
-         + "  from $(node_channel_ctl) where node_id = ?   "
-         + "  order by channel_id                                ");
+	        "select c.channel_id, c.processing_order,       "
+	      + "  c.max_batch_size, c.enabled, c.max_batch_to_send, c.max_data_to_route, c.use_old_data_to_route, "
+	      + "  c.use_row_data_to_route, c.use_pk_data_to_route, c.contains_big_lob, c.batch_algorithm,         "
+	      + "  c.extract_period_millis, c.data_loader_type,                              " 
+	      + "    last_update_time, last_update_by, create_time, c.reload_flag, c.file_sync_flag, c.queue,      "
+	      + " c.max_network_kbps, c.data_event_action "
+	      + "  from $(channel) c                                                               "
+	      + "  order by c.processing_order asc, c.channel_id                                                   ");
+	
+        putSql("selectNodeChannelControlSql", 
+	              " select channel_id, last_extract_time, suspend_enabled, ignore_enabled   "
+	              + "  from $(node_channel_ctl) where node_id = ?   "
+	              + "  order by channel_id                                ");
 
         putSql("insertChannelSql",
            "insert into $(channel) (channel_id, processing_order, max_batch_size,                 "
