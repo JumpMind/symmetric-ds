@@ -178,7 +178,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public void dropDatabase(Database database, boolean continueOnError) {
         String sql = ddlBuilder.dropTables(database);
-        new SqlScript(sql, getSqlTemplate(), !continueOnError, null).execute(continueOnError ? true : getDatabaseInfo().isRequiresAutoCommitForDdl());
+        new SqlScript(sql, getSqlTemplate(), !continueOnError, null).execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
     public void createTables(boolean dropTablesFirst, boolean continueOnError, Table... tables) {
@@ -200,7 +200,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
         String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
         new SqlScript(createSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null)
-                .execute(continueOnError ? true : getDatabaseInfo().isRequiresAutoCommitForDdl());
+                .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError) {
@@ -231,7 +231,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             log.info("Running alter sql:\n{}", alterSql);
             String delimiter = getDdlBuilder().getDatabaseInfo().getSqlCommandDelimiter();
             new SqlScript(alterSql, getSqlTemplate(), !continueOnError, false, false, delimiter, null)
-                    .execute(continueOnError ? true : getDatabaseInfo().isRequiresAutoCommitForDdl());
+                    .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
         } else {
             log.info("Tables up to date.  No alters found for {}", tablesProcessed);
         }
@@ -1079,18 +1079,17 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     
     @Override
     public boolean supportsTransactions() {
-    		if (supportsTransactions == null) {
-    			if (this.getDataSource() instanceof DataSource) {
-    				try {
-    					supportsTransactions = ((DataSource) this.getDataSource()).getConnection().getMetaData().supportsTransactions();
-    				}
-    				catch (Exception e) {
-    					log.warn("Unable to determine if transactions are supported from connection meta data ", e);
-    				}
-    			} else {
-    				supportsTransactions = true;
-    			}
-    		}
-    		return supportsTransactions;
-    	}
+        if (supportsTransactions == null) {
+            if (this.getDataSource() instanceof DataSource) {
+                try {
+                    supportsTransactions = ((DataSource) this.getDataSource()).getConnection().getMetaData().supportsTransactions();
+                } catch (Exception e) {
+                    log.warn("Unable to determine if transactions are supported from connection meta data ", e);
+                }
+            } else {
+                supportsTransactions = true;
+            }
+        }
+        return supportsTransactions;
+    }
 }
