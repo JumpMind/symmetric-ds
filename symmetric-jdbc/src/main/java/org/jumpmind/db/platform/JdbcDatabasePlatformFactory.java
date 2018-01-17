@@ -274,7 +274,7 @@ public class JdbcDatabasePlatformFactory {
             log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
 
             return nameVersion;
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
         		if (!isLoadOnly) {
 	            throw new SqlException("Error while reading the database metadata: "
 	                    + ex.getMessage(), ex);

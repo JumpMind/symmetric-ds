@@ -385,7 +385,30 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                     }
 
                     if (nodeId != null) {
-                        nodeChannels = sqlTemplate.query(getSql("selectNodeChannelsSql"), new NodeChannelMapper(nodeId), nodeId);
+                        nodeChannels = sqlTemplate.query(getSql("selectNodeChannelsSql"), new NodeChannelMapper(nodeId));
+                        
+                        List<NodeChannel> nodeChannelControls = sqlTemplate.query(getSql("selectNodeChannelControlSql"), 
+                                new ISqlRowMapper<NodeChannel>() {
+                            public NodeChannel mapRow(Row row) {
+                                NodeChannel nodeChannel = new NodeChannel();
+                                nodeChannel.setChannelId(row.getString("channel_id"));
+                                nodeChannel.setLastExtractTime(row.getDateTime("last_extract_time"));
+                                nodeChannel.setIgnoreEnabled(row.getBoolean("ignore_enabled"));
+                                nodeChannel.setSuspendEnabled(row.getBoolean("suspend_enabled"));
+                                
+                                return nodeChannel;
+                                };
+                            }, nodeId);
+                        
+                        for (NodeChannel nodeChannelControl : nodeChannelControls) {
+                            for (NodeChannel nodeChannel : nodeChannels) {
+                                if (nodeChannel.getChannelId().equals(nodeChannelControl.getChannelId())) {
+                                    nodeChannel.setIgnoreEnabled(nodeChannelControl.isIgnoreEnabled());
+                                    nodeChannel.setSuspendEnabled(nodeChannelControl.isSuspendEnabled());
+                                    nodeChannel.setLastExtractTime(nodeChannelControl.getLastExtractTime());
+                                }
+                            }
+                        }
                         nodeChannelCache.put(nodeId, nodeChannels);
                         loaded = true;
                     } else {
@@ -661,8 +684,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             NodeChannel nodeChannel = new NodeChannel();
             nodeChannel.setChannelId(row.getString("channel_id"));
             nodeChannel.setNodeId(nodeId);
-            nodeChannel.setIgnoreEnabled(row.getBoolean("ignore_enabled"));
-            nodeChannel.setSuspendEnabled(row.getBoolean("suspend_enabled"));
             nodeChannel.setProcessingOrder(row.getInt("processing_order"));
             nodeChannel.setMaxBatchSize(row.getInt("max_batch_size"));
             nodeChannel.setEnabled(row.getBoolean("enabled"));
@@ -673,7 +694,6 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             nodeChannel.setUsePkDataToRoute(row.getBoolean("use_pk_data_to_route"));
             nodeChannel.setContainsBigLob(row.getBoolean("contains_big_lob"));
             nodeChannel.setBatchAlgorithm(row.getString("batch_algorithm"));
-            nodeChannel.setLastExtractTime(row.getDateTime("last_extract_time"));
             nodeChannel.setExtractPeriodMillis(row.getLong("extract_period_millis"));
             nodeChannel.setDataLoaderType(row.getString("data_loader_type"));
             nodeChannel.setCreateTime(row.getDateTime("create_time"));

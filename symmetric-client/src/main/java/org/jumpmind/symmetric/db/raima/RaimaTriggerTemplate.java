@@ -22,8 +22,13 @@ package org.jumpmind.symmetric.db.raima;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.Channel;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
 
@@ -43,50 +48,57 @@ public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
         newColumnPrefix = "" ;
 
         sqlTemplates = new HashMap<String,String>();
-        sqlTemplates.put("insertTriggerTemplate" ,
+        sqlTemplates.put("insertTriggerTemplate", "declare sync_node_disabled varchar(50);");
+        
+        sqlTemplates.put("insertPostTriggerTemplate" ,
 "create trigger $(triggerName) after insert on $(schemaName)$(tableName) \n" + 
 "referencing new row as new_row \n" +
 "for each row begin atomic \n" +
-"declare sync_triggers_disabled smallint; \n" +
-"declare sync_node_disabled varchar(50); \n" +
+"declare local_sync_node_disabled varchar(50);\n" +
+"declare continue handler for sqlexception set local_sync_node_disabled = null;\n" +
 "$(custom_before_insert_text) \n" +
 "if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then \n" +
+"   set local_sync_node_disabled = @sync_node_disabled; \n" +
 "   insert into $(defaultSchema)$(prefixName)_data \n" +
 "   (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "   values('$(targetTableName)', 'I', $(triggerHistoryId), \n" +
 "   $(columns), \n" +
-"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(channelExpression), $(txIdExpression), local_sync_node_disabled, \n" +
 "   $(externalSelect), \n" +
 "   current_timestamp); \n" +
 "end if; \n" +
 "$(custom_on_insert_text) \n" +
 "end");
 
-        sqlTemplates.put("insertReloadTriggerTemplate" ,
+        sqlTemplates.put("insertReloadTriggerTemplate", "declare sync_node_disabled varchar(50);");
+        
+        sqlTemplates.put("insertPostReloadTriggerTemplate" ,
 "create trigger $(triggerName) after insert on $(schemaName)$(tableName) \n" + 
 "referencing new row as new_row \n" +
 "for each row begin atomic \n" +
-"declare sync_triggers_disabled smallint; \n" +
-"declare sync_node_disabled varchar(50); \n" +
+"declare local_sync_node_disabled varchar(50);\n" +
+"declare continue handler for sqlexception set local_sync_node_disabled = null;\n" +
 "$(custom_before_insert_text) \n" +
 "if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then \n" +
 "   insert into $(defaultSchema)$(prefixName)_data \n" +
 "   (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "   values('$(targetTableName)', 'R', $(triggerHistoryId), \n" +
 "   $(newKeys), \n" +
-"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(channelExpression), $(txIdExpression), local_sync_node_disabled, \n" +
 "   $(externalSelect), \n" +
 "   current_timestamp); \n" +
 "end if; \n" +
 "$(custom_on_insert_text) \n" +
 "end");
 
-        sqlTemplates.put("updateTriggerTemplate" ,
+        sqlTemplates.put("updateTriggerTemplate", "declare sync_node_disabled varchar(50);");
+        
+        sqlTemplates.put("updatePostTriggerTemplate" ,
 "create trigger $(triggerName) after update on $(schemaName)$(tableName) \n" + 
-"referencing new row as new_row old_row as old \n" +
+"referencing new row as new_row old row as old_row  \n" +
 "for each row begin atomic \n" +
-"declare sync_triggers_disabled smallint; \n" +
-"declare sync_node_disabled varchar(50); \n" +
+"declare local_sync_node_disabled varchar(50);\n" +
+"declare continue handler for sqlexception set local_sync_node_disabled = null;\n" +
 "$(custom_before_update_text) \n" +
 "if $(syncOnUpdateCondition) and $(syncOnIncomingBatchCondition) then \n" +
 "   insert into $(defaultSchema)$(prefixName)_data \n" +
@@ -95,19 +107,21 @@ public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
 "   $(oldKeys), \n" +
 "   $(columns), \n" +
 "   $(oldColumns), \n" +
-"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(channelExpression), $(txIdExpression), local_sync_node_disabled, \n" +
 "   $(externalSelect), \n" +
 "   current_timestamp); \n" +
 "end if; \n" +
 "$(custom_on_update_text) \n" +
 "end");
 
-        sqlTemplates.put("deleteTriggerTemplate" ,
+        sqlTemplates.put("deleteTriggerTemplate", "declare sync_node_disabled varchar(50);");
+        
+        sqlTemplates.put("deletePostTriggerTemplate" ,
 "create trigger $(triggerName) after delete on $(schemaName)$(tableName) \n" + 
 "referencing old row as old_row " +
 "for each row begin atomic \n" +
-"declare sync_triggers_disabled smallint; \n" +
-"declare sync_node_disabled varchar(50); \n" +
+"declare local_sync_node_disabled varchar(50);\n" +
+"declare continue handler for sqlexception set local_sync_node_disabled = null;\n" +
 "$(custom_before_delete_text) \n" +
 "if $(syncOnDeleteCondition) and $(syncOnIncomingBatchCondition) then \n" +
 "   insert into $(defaultSchema)$(prefixName)_data \n" +
@@ -115,7 +129,7 @@ public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
 "   values('$(targetTableName)', 'D', $(triggerHistoryId), \n" +
 "   $(oldKeys), \n" +
 "   $(oldColumns), \n" +
-"   $(channelExpression), $(txIdExpression), @sync_node_disabled, \n" +
+"   $(channelExpression), $(txIdExpression), local_sync_node_disabled, \n" +
 "   $(externalSelect), \n" +
 "   current_timestamp); \n" +
 "end if; \n" +
@@ -124,5 +138,4 @@ public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate", "select $(columns) from $(schemaName)$(tableName) as t where $(whereClause) ");
     }
-
 }

@@ -19,14 +19,30 @@
 package org.jumpmind.db.platform.raima;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ChangeCatalogConnectionHandler;
+import org.jumpmind.db.sql.IConnectionHandler;
+import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
 
 public class RaimaDdlReader extends AbstractJdbcDdlReader {
 
@@ -47,54 +63,75 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
             determineAutoIncrementFromResultSetMetaData(connection, table,
                     table.getColumns());
             table.setCatalog(null);
+            
+            if (table.getIndexCount() > 0) {
+            		Collection<IIndex> nonPkIndices = new ArrayList<IIndex>();
+            		
+            		for (IIndex index : table.getIndices()) {
+            			if (index.getColumnCount() == table.getPrimaryKeyColumnCount()) {
+            				int matches = 0;
+            				for (IndexColumn indexColumn : index.getColumns()) {
+            					for (String pkColName : table.getPrimaryKeyColumnNames()) {
+            						if (pkColName.equals(indexColumn.getName())) {
+            							matches++;
+            						}
+            					}
+            				}
+            				if (matches != index.getColumnCount()) {
+            					nonPkIndices.add(index);
+            				}
+            			}
+            			else {
+            				nonPkIndices.add(index);
+            			}
+            		}
+            		
+            		table.removeAllIndices();
+            		table.addIndices(nonPkIndices);
+            }
         }
         return table;
     }
 
-    /*
+    
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         return column;
     }
-    */
-
-    /*
+    
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return ((table.getName()).toUpperCase() + "..PRIMARY_KEY").equals(index.getName());
     }
-    */
-
-    /*
+    
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }
-    */
 
-    /*
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
 
             Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
             ResultSet fkData = null;
-           
+           /*
             try {
-                PreparedStatement ps = connection.prepareStatement(
-                        "SELECT f2.FIELD AS REFERENCED_COLUMN_NAME, t2.TABLENAME AS REFERENCED_TABLE_NAME, f.FIELD AS COLUMN_NAME, \"POSITION\", FOREIGNKEYNAME AS CONSTRAINT_NAME " +
-                        "FROM \"SYSTEM\".FOREIGNKEYS AS fk "+
-                        "INNER JOIN SYSTEM.TABLES AS t ON t.TABLEID = fk.FOREIGNTABLEID "+
-                        "INNER JOIN SYSTEM.TABLES AS t2 ON t2.TABLEID = fk.PRIMARYTABLEID "+
-                        "INNER JOIN SYSTEM.FIELDS AS f ON f.FIELDID = fk.FOREIGNFIELDID AND f.TABLENAME = t.TABLENAME AND f.\"SCHEMA\"= t.\"SCHEMA\" " + 
-                        "INNER JOIN SYSTEM.FIELDS AS f2 ON f2.FIELDID = fk.PRIMARYFIELDID AND f2.TABLENAME = t2.TABLENAME AND f2.\"SCHEMA\" = t2.\"SCHEMA\" " +
-                        "WHERE t.TABLENAME = ?");
+            		PreparedStatement ps = connection.prepareStatement(
+                        "SELECT f2.name AS REFERENCED_COLUMN_NAME, t2.name AS REFERENCED_TABLE_NAME, f.name AS COLUMN_NAME, \"POSITION\", fk_name AS CONSTRAINT_NAME " +
+                        "FROM sys_fkey AS fk  " +
+                        "INNER JOIN sys_table AS t ON t.name = fk.fktabname " +
+                        "INNER JOIN sys_table AS t2 ON t2.name = fk.pktabname " +
+                        "INNER JOIN sys_column AS f ON f.name = fk.fkcolname AND f.tabname = t.name AND f.dbname= t.dbname " +
+                        "INNER JOIN sys_column AS f2 ON f2.name = fk.pkcolname AND f2.tabname = t2.name AND f2.dbname= t2.dbname " +
+                        "WHERE t.name = ? ");
+
                 ps.setString(1, tableName);
-                
+               
                 fkData = ps.executeQuery();
                 while (fkData.next()) {
               
@@ -118,11 +155,10 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
             } finally {
                 close(fkData);
             }
+            */
             return fks.values();
     }
-    */
     
-    /*
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
         
@@ -160,7 +196,6 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
                 
         return triggers;
     }
-    */
     
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
@@ -171,4 +206,5 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
+    
 }

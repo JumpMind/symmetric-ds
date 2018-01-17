@@ -20,6 +20,9 @@
  */
 package org.jumpmind.db.platform.raima;
 
+import java.sql.Connection;
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -33,6 +36,16 @@ public class RaimaJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationSqlStates = new String[] { "40002" };
+        setIsolationLevel(Connection.TRANSACTION_READ_COMMITTED);
+    }
+    
+    @Override
+    protected int verifyArgType(Object arg, int argType) {
+        if (argType == Types.NUMERIC){
+            return Types.DECIMAL;
+        } else {
+            return super.verifyArgType(arg, argType);
+        }
     }
 
 }

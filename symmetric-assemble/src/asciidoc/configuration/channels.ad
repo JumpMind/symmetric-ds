@@ -55,7 +55,8 @@ Data loaders can also use other techniques to increase performance of data loads
 
 TIP: Tables that should be data loaded should be configured to use this channel.  Many times, a reload channel will 
 be set to bulk load to increase the performance of an initial load.  
-            
+
+Queue Name:: Determines a queue that the channel will sync in. Channels with the same queue name are processed synchronously (one at a time) and channels on different queues are processed asynchronously (in parallel).            
 
 ifdef::pro[]
 .Advanced Options

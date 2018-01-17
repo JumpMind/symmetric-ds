@@ -51,6 +51,7 @@ import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
+import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricAdmin;
 import org.jumpmind.symmetric.SymmetricException;
@@ -323,6 +324,19 @@ public class SymmetricEngineHolder {
                 log.warn("Could not encrypt password", ex);
             }
         }
+        
+        String loadOnlyPassword = properties.getProperty(ClientSymmetricEngine.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+        
+        if (StringUtils.isNotBlank(loadOnlyPassword) && !loadOnlyPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
+            try {
+                ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
+                properties.setProperty(ClientSymmetricEngine.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
+                        SecurityConstants.PREFIX_ENC + service.encrypt(loadOnlyPassword));
+            } catch (Exception ex) {
+                log.warn("Could not encrypt load only password", ex);
+            }
+        }
+
 
         String engineName = validateRequiredProperties(properties);
         passedInProperties.setProperty(ParameterConstants.ENGINE_NAME, engineName);
