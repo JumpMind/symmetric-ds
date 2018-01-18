@@ -1755,6 +1755,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         String oldCatalogName = null;
         if (oldhist != null) {
             oldTriggerName = oldhist.getTriggerNameForDmlType(dmlType);
+            if (oldTriggerName == null) {
+                oldTriggerName = getTriggerName(dmlType, maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist);
+            }
             oldSourceSchema = oldhist.getSourceSchemaName();
             oldCatalogName = oldhist.getSourceCatalogName();
             triggerExists = symmetricDialect.doesTriggerExist(oldCatalogName, oldSourceSchema,
@@ -1830,7 +1833,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return hist;
     }
     
-    protected String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
+    public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger,
             Table table, List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist) {
 
         String triggerName = null;

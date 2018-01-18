@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
@@ -155,6 +156,9 @@ public interface ITriggerRouterService {
     public Trigger getTriggerById(String triggerId);
     
     public Trigger getTriggerById(String triggerId, boolean refreshCache);
+    
+    public String getTriggerName(DataEventType dml, int maxTriggerNameLength, Trigger trigger, Table table,
+            List<TriggerHistory> activeTriggerHistories, TriggerHistory oldhist);
 
     public void insert(TriggerHistory newAuditRecord);
 
