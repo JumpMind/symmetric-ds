@@ -19,22 +19,43 @@ Load only nodes can be configured for nodes that are only designed to load data 
 ifdef::pro[]
 
 * To setup a load only node, begin by adding a new node to your configuration (See <<Add Node>> for details on adding a new node).
-* On the database setup screen of the add node wizard, select "Other" as the database type.
 
-image::manage/manage-load-only-other.png[]
+===== Setup Load Only Node For Supported Databases
+* On the database setup screen of the add node wizard, check the load only box after selecting your database type.
 
-* Next upload the driver jar file that contains the necessary JDBC driver to connect to the database by clicking on the "upload" button.
+image::manage/manage-load-only.png[]
+
+* The remaining steps in the add node wizard are the same as if adding a full node so continue through the remainder of the node setup wizard to complete the configuration.
+
+===== Setup Load Only Node For Unsupported Databases
+
+* Click the Add Driver... button to setup a new JDBC driver to support a load only node.
+
+image::manage/manage-load-only-driver.png[]
+
+* Enter the information for the new JDBC driver 
+
+Alias::
+Provide a name for the database as it will appear in the future drop down list of available databases.
+
+Upload::
+Upload button to upload a new JDBC driver jar file to the SymmetricDS /lib folder
+
+Driver Class::
+This will be populated by default by a class in the uploaded JDBC jar that implements the java.sql.Driver interface.
+
+Example Url::
+An exmaple jdbc connection url for this driver so that when it is selected in the future a template will provided.  
+
+* Click Save and the database setup screen will now be populated with your new driver information.
+
+* The remaining steps in the add node wizard are the same as if adding a full node so continue through the remainder of the node setup wizard to complete the configuration.
 
 NOTE: Uploading a jar file is only available in the standalone installation of SymmetricDS, NOT with the deployed war file setup.  For a web container (war) based deployment you would need to add the driver jar to the web servers classpath and restart.  Then provide the driver class and url manually as explained in steps 4 and 5 below.
 
 NOTE: If the driver is already a supported database by SymmetricDA and the driver jar file was packaged with SymmetricDS (in the /lib folder) or has already been uploaded for another node there is no need to upload anything here.  
 
-* If uploaded jar file contains a valid implementation of the java.sql.Driver interface it will populate in the driver class name text field otherwise you will need to enter the driver class name.
-* Finally provide the jdbc url to use to connect to this database and test the connection.
 
-image::manage/manage-load-only-driver-url.png[]
-
-The remaining steps in the add node wizard are the same as if adding a full node so continue through the remainder of the node setup wizard to complete the configuration.
 
 endif::pro[]
 
