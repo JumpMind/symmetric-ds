@@ -2,7 +2,7 @@
 ==== Import
 
 There are two ways a SymmetricDS configuration can be imported.  Both ways support importing an export that is in CSV format.  
-In order to import the SQL format you would run the SQL via database specific tools.
+In order to import in SQL format you would run the SQL script via database specific tools or import through the web console in Configure -> Overview.
 
 . During the creation of the master node, while selecting a profile
 +

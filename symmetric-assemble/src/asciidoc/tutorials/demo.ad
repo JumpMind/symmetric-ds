@@ -23,12 +23,18 @@ image::wizard-node-setup.png[]
 endif::pro[]
 
 ifndef::pro[]
-First, we need to copy over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder.    
-Each properties file represents a node.  
 
-Next, we need to populate the database with the demo configuration.  To do this, execute the following steps.
+Once SymmetricDS has been installed, we will need to populate the database with the demo configuration and sym tables. To do this, execute the following steps:
 
-* Open a command prompt and navigate to the `samples` subdirectory of your SymmetricDS installation.
+
+* First, open a command prompt and navigate to the `samples` subdirectory of your SymmetricDS installation.
+* Next we need to move over the `corp-000.properties`, `store-001.properties` and `store-002.properties` files from the `samples/` folder to the `engines/` folder. Each properties file in the engines directory represents a SymmetricDS node. To do this, run the following:
++
+[source,cli]
+----
+mv corp-000.properties store-001.properties store-002.properties ../engines
+----
++
 * Create the sample tables for items, prices, and sales, in the root database by executing the following command:
 +
 [source, cli]

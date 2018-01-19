@@ -28,12 +28,16 @@ import java.net.URL;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class parses and runs SQL from an input file or buffer using the
  * designed {@link ISqlTemplate}.
  */
 public class SqlScript {
+    
+    final static Logger log = LoggerFactory.getLogger(SqlScript.class);
 
     private ISqlTemplate sqlTemplate;
 
@@ -102,8 +106,12 @@ public class SqlScript {
         return execute(false);
     }
 
-    public long execute(final boolean autoCommit) {
+    public long execute(boolean autoCommit) {
         try {
+            if (!autoCommit && (!failOnDrop || !failOnError || !failOnSequenceCreate)) {
+                log.debug("Autocommit was set to false, however either failOnDrop({}) or failOnError({}) or failOnSequenceCreate({}) were set to false which means that autoCommit needs to be enabled.  We are setting it to true", failOnDrop, failOnError, failOnSequenceCreate);
+                autoCommit = true;
+            }
             long count = this.sqlTemplate.update(autoCommit, failOnError, failOnDrop, failOnSequenceCreate,
                     commitRate, this.resultsListener, this.scriptReader);
             return count;
