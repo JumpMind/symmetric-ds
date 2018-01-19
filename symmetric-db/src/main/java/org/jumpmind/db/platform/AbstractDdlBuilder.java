@@ -2323,6 +2323,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 if (index.isUnique()) {
                     ddl.append(" UNIQUE");
                 }
+                if (isFullTextIndex(index)) {
+	            		ddl.append(" FULLTEXT");
+	            }
                 ddl.append(" INDEX ");
                 printIdentifier(getIndexName(index), ddl);
                 ddl.append(" ON ");
@@ -2349,6 +2352,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
     }
 
+    protected boolean isFullTextIndex(IIndex index) {
+    		return false;
+    }
+    
     /**
      * Writes the given embedded index of the table.
      */
