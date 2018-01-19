@@ -280,6 +280,8 @@ public interface ISymmetricEngine {
     
     public String getDeploymentType();
     
+    public String getDeploymentSubType();
+    
     public IConcurrentConnectionManager getConcurrentConnectionManager();
     
     public ITransformService getTransformService();

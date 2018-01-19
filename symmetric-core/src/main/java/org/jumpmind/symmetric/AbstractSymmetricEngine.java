@@ -156,6 +156,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     
     protected String deploymentType;
 
+    protected String deploymentSubType;
+
     protected ITypedPropertiesFactory propertiesFactory;
 
     protected IDatabasePlatform platform;
@@ -280,6 +282,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
+    }
+    
+    public void setDeploymentSubType(String deploymentSubType) {
+        this.deploymentSubType = deploymentSubType;
     }
     
     protected abstract SecurityServiceType getSecurityServiceType();
@@ -729,9 +735,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         }
         String formattedUptime = FormatUtils.formatDurationReadable(System.currentTimeMillis() - lastRestartTime.getTime());
         
-        return String.format( "SymmetricDS Node %s\n\t nodeId=%s\n\t groupId=%s\n\t type=%s\n\t name=%s\n\t softwareVersion=%s\n\t databaseName=%s\n\t databaseVersion=%s\n\t driverName=%s\n\t driverVersion=%s\n\t uptime=%s",
+        return String.format( "SymmetricDS Node %s\n\t nodeId=%s\n\t groupId=%s\n\t type=%s\n\t subType=%s\n\t name=%s\n\t softwareVersion=%s\n\t databaseName=%s\n\t databaseVersion=%s\n\t driverName=%s\n\t driverVersion=%s\n\t uptime=%s",
                  msg, getParameterService().getExternalId(), getParameterService().getNodeGroupId(), 
-                getDeploymentType(), getEngineName(), Version.version(), symmetricDialect.getName(),
+                getDeploymentType(), getDeploymentSubType(), getEngineName(), Version.version(), symmetricDialect.getName(),
                 symmetricDialect.getVersion(), symmetricDialect.getDriverName(),
                 symmetricDialect.getDriverVersion(), formattedUptime );        
     }
@@ -1114,6 +1120,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return deploymentType;
     }
 
+    public String getDeploymentSubType() {
+    		return deploymentSubType;
+    }
+    
     public ITransformService getTransformService() {
         return this.transformService;
     }

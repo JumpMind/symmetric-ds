@@ -366,6 +366,7 @@ public class SymmetricEngineHolder {
         try {
 
             String registrationUrl = properties.getProperty(ParameterConstants.REGISTRATION_URL);
+            boolean loadOnly = properties.is(ParameterConstants.NODE_LOAD_ONLY, false);
             if (StringUtils.isNotBlank(registrationUrl)) {
                 Collection<ServerSymmetricEngine> all = getEngines().values();
                 for (ISymmetricEngine currentEngine : all) {

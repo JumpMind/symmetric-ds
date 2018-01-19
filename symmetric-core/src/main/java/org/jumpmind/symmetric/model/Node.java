@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -83,6 +84,8 @@ public class Node implements Serializable, Comparable<Node> {
     
     private String deploymentType;
     
+    private String deploymentSubType;
+    
     private int[] symmetricVersionParts;
     
     public Node() {
@@ -99,6 +102,8 @@ public class Node implements Serializable, Comparable<Node> {
         setExternalId(properties.getProperty(ParameterConstants.EXTERNAL_ID));
         setSyncUrl(properties.getProperty(ParameterConstants.SYNC_URL));
         setSchemaVersion(properties.getProperty(ParameterConstants.SCHEMA_VERSION));
+        String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
+        setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
     }
 
     public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
@@ -255,7 +260,15 @@ public class Node implements Serializable, Comparable<Node> {
         return deploymentType;
     }
     
-    public boolean requires13Compatiblity() {
+    public String getDeploymentSubType() {
+		return deploymentSubType;
+	}
+
+	public void setDeploymentSubType(String deploymentSubType) {
+		this.deploymentSubType = deploymentSubType;
+	}
+
+	public boolean requires13Compatiblity() {
         if (symmetricVersion != null) {
             if (symmetricVersion.equals("development")) {
                 return false;

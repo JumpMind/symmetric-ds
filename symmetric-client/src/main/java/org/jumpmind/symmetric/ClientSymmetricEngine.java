@@ -53,6 +53,7 @@ import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -122,6 +123,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             Properties properties, boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        setDeploymentSubTypeByProperties(properties);
         this.dataSource = dataSource;
         this.springContext = springContext;
         this.properties = properties;
@@ -132,6 +134,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        setDeploymentSubTypeByProperties(properties);
         this.dataSource = dataSource;
         this.properties = properties;
         this.init();
@@ -140,6 +143,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(File propertiesFile, boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        setDeploymentSubTypeByProperties(properties);
         this.propertiesFile = propertiesFile;
         this.init();
     }
@@ -151,6 +155,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
         super(true);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        setDeploymentSubTypeByProperties(properties);
         this.propertiesFile = propertiesFile;
         this.springContext = springContext;
         this.init();
@@ -160,8 +165,16 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
         super(registerEngine);
         setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        setDeploymentSubTypeByProperties(properties);
         this.properties = properties;
         this.init();
+    }
+    
+    protected void setDeploymentSubTypeByProperties(Properties properties) {
+    		if (properties != null) {
+	    		String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
+	        setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
+    		}
     }
 
     public ClientSymmetricEngine(Properties properties) {
