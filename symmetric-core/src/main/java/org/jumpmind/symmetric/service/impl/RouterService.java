@@ -269,10 +269,10 @@ public class RouterService extends AbstractService implements IRouterService {
 
                         
                         for (NodeSecurity security : nodeSecurities) {
-                            List<TriggerHistory> activeHistories = triggerRouterService.getActiveTriggerHistories();
+                        		Node targetNode = engine.getNodeService().findNode(security.getNodeId());
+                            List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
                             
                             if (activeHistories.size() > 0) {
-                                Node targetNode = engine.getNodeService().findNode(security.getNodeId());
                                 boolean thisMySecurityRecord = security.getNodeId().equals(
                                         identity.getNodeId());
                                 boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
