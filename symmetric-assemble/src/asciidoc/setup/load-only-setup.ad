@@ -56,7 +56,6 @@ NOTE: Uploading a jar file is only available in the standalone installation of S
 NOTE: If the driver is already a supported database by SymmetricDA and the driver jar file was packaged with SymmetricDS (in the /lib folder) or has already been uploaded for another node there is no need to upload anything here.  
 
 
-
 endif::pro[]
 
 ifndef::pro[]
