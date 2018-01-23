@@ -56,7 +56,7 @@ final public class DdlBuilderFactory {
      * @return the associated ddl builder
      */
     public static final IDdlBuilder createDdlBuilder(String databaseName) {
-        if (DatabaseNamesConstants.DB2.equals(databaseName)) {
+        if (DatabaseNamesConstants.DB2.equals(databaseName) || DatabaseNamesConstants.DB2ZOS.equalsIgnoreCase(databaseName)) {
             return new Db2DdlBuilder();
         } else if (DatabaseNamesConstants.DERBY.equalsIgnoreCase(databaseName)) {
             return new DerbyDdlBuilder();
