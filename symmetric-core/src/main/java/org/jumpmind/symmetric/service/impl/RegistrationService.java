@@ -123,7 +123,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
 		node.setNodeGroupId(nodeGroupId);
 		node.setDatabaseType(databaseType);
 		node.setDatabaseVersion(databaseVersion);
-		
+		node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
+
 		node = processRegistration(node, null, null, true);
 		
 		if (node.isSyncEnabled()) {
