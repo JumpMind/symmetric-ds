@@ -284,6 +284,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
         append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
         append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+        append(builder, WebConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
         append(builder, WebConstants.HOST_NAME, AppUtils.getHostName());
         append(builder, WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
         return builder.toString();

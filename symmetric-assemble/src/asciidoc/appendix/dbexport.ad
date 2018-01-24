@@ -29,7 +29,7 @@ They are as follows:
 
 - *--add-drop-table* : Add drop table commands to output.
 - *--catalog <arg>* : Look for tables in catalog
-- *--compatible <arg>* : Change export to be compatible with a given database: db2, derby, firebird, greenplum, h2, hsqldb, hsqldb2, informix, interbase, mssql, mysql,  oracle, postgres, sybase.
+- *--compatible <arg>* : Change export to be compatible with a given database: db2, db2zos, derby, firebird, greenplum, h2, hsqldb, hsqldb2, informix, interbase, mssql, mysql,  oracle, postgres, sybase.
 - *--debug* : Print debug information in logging.
 - *--dir <arg>* : Indicate a directory to use for the export of files.  If the directory is specified, then a file per table will be written to the directory.
 - *-e, --engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.

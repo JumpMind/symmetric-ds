@@ -258,6 +258,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         Node local = nodeService.findIdentity();
         if (local == null) {
             local = new Node(this.parameterService, symmetricDialect);
+            local.setDeploymentType(engine.getDeploymentType());
         }
         try {
             NodeSecurity localSecurity = nodeService.findNodeSecurity(local.getNodeId(), true);
