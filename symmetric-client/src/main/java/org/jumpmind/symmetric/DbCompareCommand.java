@@ -49,7 +49,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     @Override
     protected boolean printHelpIfNoOptionsAreProvided() {
-        return false;
+        return true;
     }
 
     @Override
