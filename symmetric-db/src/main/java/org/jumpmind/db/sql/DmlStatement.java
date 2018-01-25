@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -72,6 +73,8 @@ public class DmlStatement {
     protected boolean[] nullKeyValues;
     
     protected String textColumnExpression;
+    
+    protected static final String QUESTION_MARK = "<!QUESTION_MARK!>";
     
     public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
@@ -453,7 +456,6 @@ public class DmlStatement {
     
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat, Column[] columns) {
-    	final String QUESTION_MARK = "<!QUESTION_MARK!>";
         String newSql = sql;
         String quote = databaseInfo.getValueQuoteToken();
         String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
@@ -472,11 +474,9 @@ public class DmlStatement {
                 if (column.isOfTextType()) {
                     try {
                         String value = row.getString(name);
-                        value = value.replace("\\", "\\\\");
-                        value = value.replace("$", "\\$");
-                        value = value.replace("'", "''");
-                        value = value.replace("?", QUESTION_MARK);
-                        newSql = newSql.replaceFirst(regex, quote + value + quote);
+                        value = escapeText(value);
+                        //newSql = newSql.replaceFirst(regex, quote +value + quote);
+                        newSql = newSql.replaceFirst(regex, quote + Matcher.quoteReplacement(value) + quote);
                     } catch (RuntimeException ex) {
                         log.error("Failed to replace ? in {" + sql + "} with " + name + "="
                                 + row.getString(name));
@@ -552,6 +552,12 @@ public class DmlStatement {
             }
         }
         return null;
+    }
+    
+    protected String escapeText(String value) {
+        value = value.replace("?", QUESTION_MARK);
+        value = value.replace("'", "''");
+        return value;
     }
 
 }

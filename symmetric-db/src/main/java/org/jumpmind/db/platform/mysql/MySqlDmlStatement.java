@@ -56,4 +56,11 @@ public class MySqlDmlStatement extends DmlStatement {
         }
     }
     
+    @Override
+    protected String escapeText(String value) {
+        value = super.escapeText(value);
+        value = value.replace("\\", "\\\\");
+        value = value.replace("$", "\\$");
+        return value;
+    }
 }
