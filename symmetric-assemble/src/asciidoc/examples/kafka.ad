@@ -156,7 +156,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
         
-        producer.send(new ProducerRecord<String, String>("symmetricds", kafkaText));
+        String topic = "test";
+        
+        producer.send(new ProducerRecord<String, String>(topic, kafkaText));
         log.debug("Data to be sent to Kafka-" + kafkaText);
         
         producer.close();
@@ -303,7 +305,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
         
-        producer.send(new ProducerRecord<String, String>("test", kafkaText));
+        String topic = "test";
+        
+        producer.send(new ProducerRecord<String, String>(topic, kafkaText));
         log.debug("Data to be sent to Kafka-" + kafkaText);
         
         producer.close();
@@ -317,7 +321,7 @@ endif::pro[]
 
 
 * The default kafka server and port are set to localhost:9092 with a client id of "symmetricds-producer".  You will need to adjust these variables in the sendKafkaMessage function to match your Kafka setup if they are different.
-
+* The default topic used is "test".  You will need to create a topic named "test" on your kafka or adjust the topic in the extension (Line 129   String topic = "test";)
 [source, Java]
 -----
 configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");

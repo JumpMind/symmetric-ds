@@ -123,8 +123,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
 		node.setNodeGroupId(nodeGroupId);
 		node.setDatabaseType(databaseType);
 		node.setDatabaseVersion(databaseVersion);
-		
-		node = processRegistration(node, null, null, true, Constants.DEPLOYMENT_TYPE_REST);
+		node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
+
+		node = processRegistration(node, null, null, true);
 		
 		if (node.isSyncEnabled()) {
 			//set the node as registered as we have no 
@@ -144,7 +145,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
     
     protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
-            String remoteAddress, boolean isRequestedRegistration, String deploymentType)
+            String remoteAddress, boolean isRequestedRegistration)
             throws IOException {
 
     	Node processedNode = new Node();
@@ -227,14 +228,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
             }
 
             foundNode.setSyncEnabled(true);
-            if (Constants.DEPLOYMENT_TYPE_REST.equalsIgnoreCase(deploymentType)) {
-            	foundNode.setSymmetricVersion(null);
-            	foundNode.setDeploymentType(deploymentType);
-            }
             foundNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
             foundNode.setDatabaseType(nodePriorToRegistration.getDatabaseType());
             foundNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
             foundNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
+            foundNode.setDeploymentType(nodePriorToRegistration.getDeploymentType());
             nodeService.save(foundNode);                        
             
             /**
@@ -277,7 +275,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             throws IOException {
 
         Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,
-                remoteAddress, isRequestedRegistration, null);
+                remoteAddress, isRequestedRegistration);
 
         if (processedNode.isSyncEnabled()) {
             /*
