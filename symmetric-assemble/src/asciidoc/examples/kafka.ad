@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class KafkaWriterFilter implements IDatabaseWriterFilter {
     protected final String KAKFA_TEXT_CACHE = "KAKFA_TEXT_CACHE" + this.hashCode();
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(IDatabaseWriterFilter.class);
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
         if (table.getName().toUpperCase().startsWith("SYM_")) {
@@ -194,7 +194,7 @@ import org.slf4j.LoggerFactory;
 public class KafkaWriterFilter implements IDatabaseWriterFilter {
     protected final String KAKFA_TEXT_CACHE = "KAKFA_TEXT_CACHE" + this.hashCode();
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(IDatabaseWriterFilter.class);
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
         if (table.getName().toUpperCase().startsWith("SYM_")) {
