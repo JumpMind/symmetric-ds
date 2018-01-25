@@ -475,7 +475,6 @@ public class DmlStatement {
                     try {
                         String value = row.getString(name);
                         value = escapeText(value);
-                        //newSql = newSql.replaceFirst(regex, quote +value + quote);
                         newSql = newSql.replaceFirst(regex, quote + Matcher.quoteReplacement(value) + quote);
                     } catch (RuntimeException ex) {
                         log.error("Failed to replace ? in {" + sql + "} with " + name + "="
