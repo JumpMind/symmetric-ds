@@ -182,12 +182,10 @@ symmetric-assemble directory:
 
 The first step to using SymmetricDS in an Android application is to unzip the jar files into a location where the project will recognize them. 
 The latest Android SDK requires that these jar files be put into a libs directory under the app directory of the Android application project.
-
-+		
+		
 [IMPORTANT]
 In order to sync properly, the Sync URL of the corp-000 node must be updated to use the IP address of host rather than localhost. 
 Then, update the String REGISTRATION_URL in the DbProvider class of the Android project to the new Sync URL of the corp-000 node.
-+
 
 Next, set up an Android Emulator or connect and Android device. This can be done by opening the Android Virtual Device Manager. Click New and follow the steps. The higher 
 the Emulator's API, the better.
