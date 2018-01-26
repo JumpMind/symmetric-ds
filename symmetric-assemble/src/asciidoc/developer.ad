@@ -182,19 +182,51 @@ symmetric-assemble directory:
 
 The first step to using SymmetricDS in an Android application is to unzip the jar files into a location where the project will recognize them. 
 The latest Android SDK requires that these jar files be put into a libs directory under the app directory of the Android application project.
-
-+		
+		
 [IMPORTANT]
 In order to sync properly, the Sync URL of the corp-000 node must be updated to use the IP address of host rather than localhost. 
 Then, update the String REGISTRATION_URL in the DbProvider class of the Android project to the new Sync URL of the corp-000 node.
-+
 
-Next, set up an Android Emulator. This can be done by opening the Android Virtual Device Manager. Click New and follow the steps. The higher 
+Next, set up an Android Emulator or connect and Android device. This can be done by opening the Android Virtual Device Manager. Click New and follow the steps. The higher 
 the Emulator's API, the better.
 
 Run your Android Application by pressing the Run button in Android Studio. When prompted, select the emulator you just created. Monitor the 
 Console in Android Studio. Let the apk install on the emulator. Now watch the LogCat and wait as it attempts to register with your SymmetricDS 
 Master Node.
+
+The core functionality of SymmetricDS on Android is implemented by starting the SymmetricService class as an Android service. This requires 
+building the SymmetricDS Android libraries using the steps mentioned above and adding them to your Android project’s dependencies. 
+
+The SymmetricService Intent is defined in the AndroidManifest.xml using the following XML snippet:
+
+[source, xml]
+----
+<service android:name="org.jumpmind.symmetric.android.SymmetricService" android:enabled="true" >
+    <intent-filter>
+        <action android:name="org.jumpmind.symmetric.android.SymmetricService" />
+    </intent-filter>
+</service>
+----
+
+The SymmetricService Intent is started using the following java code:
+
+[source, java]
+----
+Intent intent = new Intent(getContext(), SymmetricService.class);
+
+// Replace extras with desired node configuration
+intent.putExtra(SymmetricService.INTENTKEY_SQLITEOPENHELPER_REGISTRY_KEY, DATABASE_NAME);
+intent.putExtra(SymmetricService.INTENTKEY_REGISTRATION_URL, REGISTRATION_URL);
+intent.putExtra(SymmetricService.INTENTKEY_EXTERNAL_ID, NODE_ID);
+intent.putExtra(SymmetricService.INTENTKEY_NODE_GROUP_ID, NODE_GROUP);
+intent.putExtra(SymmetricService.INTENTKEY_START_IN_BACKGROUND, true);
+
+Properties properties = new Properties();
+// Put any additional SymmetricDS parameters into properties
+intent.putExtra(SymmetricService.INTENTKEY_PROPERTIES, properties);
+
+getContext().startService(intent);
+----
 
 === Embedding in C/C++
 A minimal implementation of the SymmetricDS client is written in C, which includes a shared library named "libsymclient" and a command line executable

@@ -27,7 +27,7 @@ Before a node is allowed to register, it must have an open registration.  If the
 
 You can open registration from the command line with the following command:
 
-`bin/symadmin --engine <engine name> <node group> <external id>`
+`bin/symadmin open-registration --engine <engine name> <node group> <external id>`
 
 The <node group> and <external id> should match the `group.id` and `external.id` in the registering node's <<Node Properties File>>.
 
