@@ -195,16 +195,16 @@ Console in Android Studio. Let the apk install on the emulator. Now watch the Lo
 Master Node.
 
 The core functionality of SymmetricDS on Android is implemented by starting the SymmetricService class as an Android service. This requires 
-building the SymmetricDS Android libraries using the steps mentioned above and adding them to your Android project’s dependencies. 
+building the SymmetricDS Android libraries using the steps mentioned above and adding them to your Android project's dependencies. 
 
 The SymmetricService Intent is defined in the AndroidManifest.xml using the following XML snippet:
 
 [source, xml]
 ----
 <service android:name="org.jumpmind.symmetric.android.SymmetricService" android:enabled="true" >
-    <intent-filter>
-        <action android:name="org.jumpmind.symmetric.android.SymmetricService" />
-    </intent-filter>
+	<intent-filter>
+		<action android:name="org.jumpmind.symmetric.android.SymmetricService" />
+	</intent-filter>
 </service>
 ----
 
@@ -212,7 +212,7 @@ The SymmetricService Intent is started using the following java code:
 
 [source, java]
 ----
-Intent intent = new Intent(getContext(), SymmetricService.class);
+Intent intent = new Intent(getContext(), SymmetricService.class); 
 
 // Replace extras with desired node configuration
 intent.putExtra(SymmetricService.INTENTKEY_SQLITEOPENHELPER_REGISTRY_KEY, DATABASE_NAME);
@@ -224,9 +224,9 @@ intent.putExtra(SymmetricService.INTENTKEY_START_IN_BACKGROUND, true);
 Properties properties = new Properties();
 // Put any additional SymmetricDS parameters into properties
 intent.putExtra(SymmetricService.INTENTKEY_PROPERTIES, properties);
-
 getContext().startService(intent);
 ----
+
 
 === Embedding in C/C++
 A minimal implementation of the SymmetricDS client is written in C, which includes a shared library named "libsymclient" and a command line executable
