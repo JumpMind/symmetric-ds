@@ -39,6 +39,11 @@ public class SimpleClassCompilerException extends RuntimeException {
         this.diagnostics = diagnostics;
     }
     
+    public SimpleClassCompilerException(String message, List<Diagnostic<? extends JavaFileObject>> diagnostics) {
+        super(message);
+        this.diagnostics = diagnostics;
+    }
+    
     public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
         return diagnostics;
     }

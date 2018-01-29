@@ -66,6 +66,8 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
     protected IncomingBatch currentBatch;
 
+    protected boolean isNewErrorForCurrentBatch;
+
     protected ProcessInfo processInfo;
 
     private ISymmetricEngine engine;
@@ -194,6 +196,8 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
             engine.getIncomingBatchService().refreshIncomingBatch(currentBatch);
 
             Batch batch = context.getBatch();
+            isNewErrorForCurrentBatch = batch.getLineCount() != currentBatch.getFailedLineNumber();
+
             if (context.getWriter() != null
                     && context.getReader().getStatistics().get(batch) != null
                     && context.getWriter().getStatistics().get(batch) != null) {
@@ -327,6 +331,10 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
     public IncomingBatch getCurrentBatch() {
         return currentBatch;
+    }
+
+    public boolean isNewErrorForCurrentBatch() {
+        return isNewErrorForCurrentBatch;
     }
 
 }

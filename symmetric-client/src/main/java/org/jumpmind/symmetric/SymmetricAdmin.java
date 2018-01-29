@@ -41,6 +41,7 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -344,11 +345,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             sendScript(line, args);
             return true;
         } else {
-            System.err.println("ERROR: no subcommand '" + cmd + "' was found.");
-            System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
+            throw new ParseException("ERROR: no subcommand '" + cmd + "' was found.");
         }
 
-        return false;
     }
 
     private String popArg(List<String> args, String argName) {
@@ -381,7 +380,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         System.out.println(count + " engines returned");
     }
 
-    private void runJob(CommandLine line, List<String> args) {
+    private void runJob(CommandLine line, List<String> args) throws Exception{
         String jobName = popArg(args, "job name");
         if (jobName.equals("pull")) {
             getSymmetricEngine().pull();
@@ -394,7 +393,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else if (jobName.equals("heartbeat")) {
             getSymmetricEngine().heartbeat(false);
         } else {
-            System.err.println("ERROR: no job named '" + jobName + "' was found.");
+            throw new ParseException("ERROR: no job named '" + jobName + "' was found.");
         }
     }
 
