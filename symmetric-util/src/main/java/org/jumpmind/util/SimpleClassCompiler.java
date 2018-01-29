@@ -116,7 +116,7 @@ public class SimpleClassCompiler {
                     msg.append(origClassName + " at line " + diagnostic.getLineNumber() + ", column " + diagnostic.getColumnNumber() + ": " + 
                             diagnostic.getMessage(null)).append("\n");
                 }
-                throw new SimpleClassCompilerException(msg.toString());
+                throw new SimpleClassCompilerException(msg.toString(), diag.getDiagnostics());
             }
         }
 
