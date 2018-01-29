@@ -1209,6 +1209,30 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    public void insertScriptEvent(String channelId, Node targetNode, String script, boolean isLoad,
+            long loadId, String createBy) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = platform.getSqlTemplate().startSqlTransaction();
+            insertScriptEvent(transaction, channelId, targetNode, script, isLoad, loadId, createBy);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
+        }
+    }
+
     public void insertScriptEvent(ISqlTransaction transaction, String channelId,
             Node targetNode, String script, boolean isLoad, long loadId, String createBy) {
         TriggerHistory history = engine.getTriggerRouterService()
@@ -1656,6 +1680,80 @@ public class DataService extends AbstractService implements IDataService {
                     + sourceNode.getNodeGroupId();
         }
 
+    }
+
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, boolean sendCorrectionToPeers) {
+        try {
+            Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+            List<TableRow> tableRows = new ArrayList<TableRow>();
+            Row row = new Row(dataMap.size());
+            row.putAll(dataMap);
+            
+            Table localTable = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), false);
+            if (localTable == null) {
+                log.info("Could not find table " + table.getFullyQualifiedTableName());
+            }
+            tableRows.add(new TableRow(localTable, row, null, null, null));
+            List<TableRow> foreignTableRows;
+            try {
+                foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (foreignTableRows.isEmpty()) {
+                log.info("Could not determine foreign table rows to fix foreign key violation for "
+                        + "nodeId '{}' table '{}'", sourceNodeId, localTable.getName());
+            }
+
+            Collections.reverse(foreignTableRows);
+            Set<TableRow> visited = new HashSet<TableRow>();
+            Node sourceNode = engine.getNodeService().findNode(sourceNodeId);
+            Node identity = engine.getNodeService().findIdentity();
+            StringBuilder script = new StringBuilder();
+            List<Node> targetNodes = new ArrayList<Node>();
+            targetNodes.add(identity);
+            
+            if (sendCorrectionToPeers) {
+                targetNodes.addAll(engine.getNodeService().findEnabledNodesFromNodeGroup(sourceNode.getNodeGroupId()));
+                targetNodes.remove(sourceNode);
+            }
+
+            for (TableRow foreignTableRow : foreignTableRows) {
+                if (visited.add(foreignTableRow)) {
+                    Table foreignTable = foreignTableRow.getTable();
+                    String catalog = foreignTable.getCatalog();
+                    String schema = foreignTable.getSchema();
+                    if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                        catalog = null;
+                    }
+                    if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                        schema = null;
+                    }
+
+                    log.info(
+                            "Requesting foreign key correction reload "
+                                    + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
+                                    + "to correct table '{}' for column '{}'",
+                            sourceNodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(),
+                            foreignTableRow.getWhereSql(), localTable.getName(), foreignTableRow.getReferenceColumnName());
+             
+                    for (Node targetNode : targetNodes) {
+                        script.append("engine.getDataService().reloadTable(\"" + targetNode.getNodeId() + "\", " +
+                                ((schema == null) ? schema : "\"" + schema + "\"") + ", " +
+                                ((catalog == null) ? catalog : "\"" + catalog + "\"") + ", \"" +
+                                foreignTable.getName().replace("\"", "\\\"") + "\", \"" +
+                                foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\");\n");
+                    }
+                }
+            }
+
+            if (script.length() > 0) {
+                insertScriptEvent("config", sourceNode, script.toString(), false, -1, "fk");
+            }
+        } catch (Exception e) {
+            log.error("Unknown exception while processing foreign key for node id: " + sourceNodeId, e);
+        }
     }
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {

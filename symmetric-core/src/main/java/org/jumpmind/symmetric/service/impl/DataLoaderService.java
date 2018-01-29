@@ -20,7 +20,13 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.jumpmind.symmetric.model.ProcessType.MANUAL_LOAD;
+import static org.jumpmind.symmetric.model.ProcessType.OFFLINE_PULL;
+import static org.jumpmind.symmetric.model.ProcessType.PULL_CONFIG_JOB;
+import static org.jumpmind.symmetric.model.ProcessType.PULL_JOB_LOAD;
+import static org.jumpmind.symmetric.model.ProcessType.PULL_JOB_TRANSFER;
+import static org.jumpmind.symmetric.model.ProcessType.PUSH_HANDLER_LOAD;
+import static org.jumpmind.symmetric.model.ProcessType.PUSH_HANDLER_TRANSFER;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +37,6 @@ import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,7 +56,6 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
-import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -60,7 +64,6 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -68,7 +71,6 @@ import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
-import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
@@ -79,7 +81,6 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
-import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.IProtocolDataWriterListener;
@@ -108,17 +109,14 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
 import org.jumpmind.symmetric.model.ProcessInfoDataWriter;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
-import static org.jumpmind.symmetric.model.ProcessType.*;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataLoaderService;
-import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
@@ -130,7 +128,6 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
-import org.jumpmind.symmetric.transport.TransportException;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.CustomizableThreadFactory;
@@ -613,6 +610,12 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         } catch (Throwable ex) {
             error = ex;
+            if (parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE)
+                    && listener.getCurrentBatch() != null && listener.isNewErrorForCurrentBatch()
+                    && listener.getCurrentBatch().getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
+                engine.getDataService().reloadMissingForeignKeyRowsReverse(sourceNode.getNodeId(), ctx.getTable(),
+                        ctx.getData(), parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_PEERS));
+            }
             logOrRethrow(ex);
         } finally {
             transport.close();

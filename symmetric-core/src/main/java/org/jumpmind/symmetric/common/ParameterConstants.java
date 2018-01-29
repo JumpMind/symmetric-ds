@@ -120,6 +120,8 @@ final public class ParameterConstants {
     public final static String AUTO_RELOAD_ENABLED = "auto.reload";
     public final static String AUTO_RELOAD_REVERSE_ENABLED = "auto.reload.reverse";
     public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION = "auto.resolve.foreign.key.violation";
+    public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE = "auto.resolve.foreign.key.violation.reverse";
+    public final static String AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_PEERS = "auto.resolve.foreign.key.violation.reverse.peers";
     public final static String AUTO_INSERT_REG_SVR_IF_NOT_FOUND = "auto.insert.registration.svr.if.not.found";
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
     public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";

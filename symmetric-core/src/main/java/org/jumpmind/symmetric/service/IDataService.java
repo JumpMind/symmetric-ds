@@ -24,11 +24,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
+import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -58,6 +60,8 @@ public interface IDataService {
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId);
+
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, boolean sendCorrectionToPeers);
 
     /**
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
@@ -111,6 +115,9 @@ public interface IDataService {
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
     
+    public void insertScriptEvent(String channelId, Node targetNode, String script, boolean isLoad,
+            long loadId, String createBy);
+
     public void insertScriptEvent(ISqlTransaction transaction, String channelId,
             Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
