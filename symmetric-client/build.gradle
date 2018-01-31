@@ -8,7 +8,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile "org.springframework:spring-context:$springVersion"
         compile "commons-cli:commons-cli:$commonsCliVersion"
         compile "commons-vfs:commons-vfs:1.0"
-        compile "com.jcraft:jsch:0.1.48"
+        // compile "com.jcraft:jsch:0.1.48"
 
         provided "org.mongodb:mongo-java-driver:2.12.3"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
