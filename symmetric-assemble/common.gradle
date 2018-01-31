@@ -162,7 +162,7 @@ subprojects { subproject ->
     artifacts { testArtifacts testJar }
 
     ext {
-        bshVersion = '2.0b5'
+        bshVersion = '2.0b6'
         commonsBeanUtilsVersion = '1.9.3'
         commonsCliVersion = '1.2'
         commonsDbcpVersion = '1.3'
