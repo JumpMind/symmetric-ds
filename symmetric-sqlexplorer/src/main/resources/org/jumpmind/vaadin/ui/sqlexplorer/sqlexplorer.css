@@ -1,0 +1,32 @@
+.sqlexplorer .v-tree-node-selected::after {
+	border-radius: 0px;
+}
+
+.sqlexplorer .v-tree-node-caption-bold {
+	font-weight: bold;
+}
+
+.sqlexplorer .v-tabsheet-deco {
+    visibility: hidden;
+}
+
+.sqlexplorer .v-menubar-borderless .v-menubar-menuitem.v-menubar-menuitem-green {
+	color: #76aa2e;
+}
+
+.sqlexplorer .v-menubar-borderless .v-menubar-menuitem.v-menubar-menuitem-red {
+    color: #E84855;
+}
+
+.sqlexplorer .v-grid-cell.italics {
+    font-style: italic;
+}
+
+.sqlexplorer .v-grid-cell.rowheader {
+    background: #DFDFDF;
+}
+
+.sqlexplorer .v-table-cell-content-rowheader {
+    background: #DFDFDF;
+    font-weight: bold;
+}

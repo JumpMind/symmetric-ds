@@ -1,0 +1,90 @@
+apply from: symAssembleDir + '/common.gradle'
+
+buildscript {
+    repositories { 
+       jcenter()
+       maven { url 'http://repo.spring.io/plugins-release' } 
+       maven { url 'https://plugins.gradle.org/m2/' }
+       maven { url "http://maven.vaadin.com/vaadin-addons" }         
+    }
+
+    dependencies { 
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'     
+        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.2.2'    
+        classpath 'com.vaadin:vaadin-compatibility-server:8.1.2'
+        classpath 'com.vaadin:vaadin-compatibility-client-compiled:8.1.2'
+    }    
+}
+
+apply plugin: 'com.devsoap.plugin.vaadin'
+apply plugin: 'maven'
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-maven'
+apply plugin: 'propdeps-eclipse'
+
+configurations { deployerJars }
+
+vaadin.version = vaadinVersion
+vaadin.manageDependencies = false
+vaadin.manageRepositories = false
+vaadin.logToConsole = true
+vaadinSourcesJar.enabled=false
+vaadinJavadocJar.enabled=false
+vaadin.push = true
+vaadinCompile.gwtSdkFirstInClasspath=false
+artifacts {
+   archives file("$buildDir/libs/${jar.baseName}-${jar.version}.${jar.extension}")
+}
+    
+configurations.archives.with {    
+    artifacts.remove artifacts.find { it.archiveTask.is war }
+}
+
+dependencies {
+
+    deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    
+    compile project(":symmetric-jdbc")
+    compile project(":symmetric-io")
+    
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
+    compile "commons-io:commons-io:$commonsIoVersion"
+    
+    compile "org.springframework:spring-webmvc:$springVersion"
+    
+    compile group: 'com.vaadin', name: 'vaadin-compatibility-server', version: "$vaadinVersion"
+    compile group: 'com.vaadin', name: 'vaadin-compatibility-client-compiled', version: "$vaadinVersion"
+    compile group: 'com.vaadin', name: 'vaadin-compatibility-client', version: "$vaadinVersion"
+    
+    //compile "com.vaadin:vaadin-server:$vaadinVersion"
+    compile "com.vaadin:vaadin-push:$vaadinVersion"
+    compile "com.vaadin:vaadin-themes:$vaadinVersion"
+    compile "org.vaadin.addons:aceeditor:0.8.15"
+    compile "com.vaadin:vaadin-context-menu:2.0.0"
+
+	compile "org.apache.poi:poi-ooxml:3.17"
+//    provided ("com.vaadin:vaadin-client-compiler:$vaadinVersion") {
+//       exclude group:'org.eclipse.jetty'
+//    }
+    
+    provided "javax.servlet:javax.servlet-api:$servletVersion"
+    provided "javax.servlet.jsp:jsp-api:2.2"
+    provided "javax.websocket:javax.websocket-api:1.1"
+    
+    testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
+    testCompile "org.eclipse.jetty:jetty-jmx:$jettyVersion"
+    testCompile "org.eclipse.jetty:jetty-annotations:$jettyVersion"
+    testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    
+
+    testCompile "org.slf4j:slf4j-api:$slf4jVersion"
+    testCompile "org.slf4j:jul-to-slf4j:$slf4jVersion"
+    testCompile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testCompile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+    testCompile "log4j:log4j:$log4jVersion"
+    
+    
+}
+
+assemble.dependsOn jar
