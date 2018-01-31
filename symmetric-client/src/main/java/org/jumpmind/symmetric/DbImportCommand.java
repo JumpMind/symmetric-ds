@@ -110,7 +110,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
     
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-        DbImport dbImport = new DbImport(getDatabasePlatform(true), getDatabasePlatform(true), "sym_");
+        DbImport dbImport = new DbImport(getDatabasePlatform(true));
 
         if (line.hasOption(OPTION_FORMAT)) {
             dbImport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));

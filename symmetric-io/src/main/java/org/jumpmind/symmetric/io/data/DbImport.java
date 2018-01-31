@@ -62,7 +62,6 @@ import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterErrorIgnorer;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
-import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 
 /**
@@ -111,21 +110,15 @@ public class DbImport {
 
     protected IDatabasePlatform symmetricPlatform;
     
-    protected IDatabasePlatform targetPlatform;
-    
-    protected String tablePrefix;
-    
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
     public DbImport() {
         this.databaseWriterFilters = new ArrayList<IDatabaseWriterFilter>();
     }
 
-    public DbImport(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix) {
+    public DbImport(IDatabasePlatform symmetricPlatform) {
         this();
         this.symmetricPlatform = symmetricPlatform;
-        this.targetPlatform = targetPlatform;
-        this.tablePrefix = tablePrefix;
     }
 
     public void importTables(String importData, String tableName) {
@@ -202,8 +195,7 @@ public class DbImport {
     }
 
     protected void importTablesFromCsv(InputStream in, String tableName) {
-    		DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
-        		this.tablePrefix, buildDatabaseWriterSettings());
+    		DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         Table table = writer.getPlatform(tableName).readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");
@@ -217,24 +209,21 @@ public class DbImport {
 
     protected void importTablesFromXml(InputStream in) {        
         XmlDataReader reader = new XmlDataReader(in);
-        DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
-        		tablePrefix, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
     
     protected void importTablesFromSymXml(InputStream in) {
         SymXmlDataReader reader = new SymXmlDataReader(in);
-        DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
-        		tablePrefix, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
 
     protected void importTablesFromSql(InputStream in) {
         SqlDataReader reader = new SqlDataReader(in);
-        DefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricPlatform, targetPlatform, 
-        		tablePrefix, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
