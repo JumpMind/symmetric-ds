@@ -119,6 +119,15 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                 throw new ParseException("Failed to parse arg [" + numericScaleArg + "] " + ex);
             }
         }
+        
+        String dateTimeFormatArg = getOptionValue(OPTION_DATE_TIME_FORMAT, "dateTimeFormat", line, config);
+        if (!StringUtils.isEmpty(dateTimeFormatArg)) {
+            try {
+                config.setDateTimeFormat(dateTimeFormatArg);
+            } catch (Exception ex) {
+                throw new ParseException("Failed to parse arg [" + dateTimeFormatArg + "]" + ex);
+            }
+        }
 
         ISymmetricEngine sourceEngine = new ClientSymmetricEngine(sourceProperies);
         ISymmetricEngine targetEngine = new ClientSymmetricEngine(targetProperties);
@@ -133,10 +142,10 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         String optionValue = line.hasOption(optionName) ? line.getOptionValue(optionName) : null;
         if (optionValue == null) {
             Properties props = getConfigProperties(line);
-            optionValue = props.getProperty(optionName);
+            optionValue = props != null ? props.getProperty(optionName) : null;
             if (optionValue == null) {
                 String optionNameUnderScore = optionName.replace('-', '_');
-                optionValue = props.getProperty(optionNameUnderScore);
+                optionValue = props != null ? props.getProperty(optionNameUnderScore) : null;
                 if (optionValue != null) {
                     config.setConfigSource(internalName, line.getOptionValue(OPTION_CONFIG_PROPERTIES));
                 }
@@ -171,6 +180,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
     private static final String OPTION_OUTPUT_SQL = "output-sql";
 
     private static final String OPTION_NUMERIC_SCALE = "numeric-scale";
+    
+    private static final String OPTION_DATE_TIME_FORMAT = "date-time-format";
 
     private static final String OPTION_CONFIG_PROPERTIES = "config";
 
@@ -191,6 +202,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_USE_SYM_CONFIG, true);
         addOption(options, null, OPTION_OUTPUT_SQL, true);
         addOption(options, null, OPTION_NUMERIC_SCALE, true);
+        addOption(options, null, OPTION_DATE_TIME_FORMAT, true);
         addOption(options, null, OPTION_CONFIG_PROPERTIES, true);
     }
 
