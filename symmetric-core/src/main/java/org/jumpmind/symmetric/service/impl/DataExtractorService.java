@@ -2255,13 +2255,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             private TriggerHistory triggerHistory;
             private CsvReader br;
             private int expectedCommaCount;
+            private IStagedResource resourceFile;
             
-            public SqlReadFromCacheCursor(BufferedReader reader, TriggerHistory triggerHistory, int expectedCommaCount) {
+            public SqlReadFromCacheCursor(IStagedResource resourceFile, TriggerHistory triggerHistory, int expectedCommaCount) {
                 this.triggerHistory = triggerHistory;
                 this.expectedCommaCount = expectedCommaCount;
-                this.br = new CsvReader(reader, ',');
+                this.resourceFile = resourceFile;
+                this.br = new CsvReader(resourceFile.getReader(), ',');
                 this.br.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
                 this.br.setCaptureRawRecord(true);
+                this.br.setUseComments(true);
                 this.br.setSafetySwitch(false);
             }
             
@@ -2272,8 +2275,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         return null;
                     }
                 } catch (IOException e) {
+                    resourceFile.delete();
                     throw new SymmetricException("error on reading from cache", e);
                 }
+
                 String csvRow = br.getRawRecord();
                 
                 int commaCount = StringUtils.countMatches(csvRow, ",");
@@ -2285,6 +2290,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             .getRouterId());
                     return data;
                 } else {
+                    resourceFile.delete();
                     throw new SymmetricException(
                             "The extracted row data did not have the expected (%d) number of columns (actual=%s): %s.",
                             expectedCommaCount, commaCount, csvRow);
@@ -2492,14 +2498,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
             
             if(useCache && possibleCacheFile != null && possibleCacheFile.exists() && possibleCacheFile.getState() == State.DONE) {
-                log.info("Reading from cache on reload for table {}. Using file: {}", sourceTable.getName(), possibleCacheFile.getFile().getPath());
-                this.cursor = new SqlReadFromCacheCursor(possibleCacheFile.getReader(), triggerHistory, expectedCommaCount);
+                log.info("Reading from cache on reload for table {}", sourceTable.getName());
+                log.debug("Using cachefile: {}", possibleCacheFile.getFile().getPath());
+                this.cursor = new SqlReadFromCacheCursor(possibleCacheFile, triggerHistory, expectedCommaCount);
                 return;
             }else if(useCache && (possibleCacheFile == null || !possibleCacheFile.exists())) {
                 this.cacheFile = stagingManager.create(Constants.STAGING_CATEGORY_RELOADCACHE, sourceTable.getName(), MD5(initialLoadSql));
                 this.cacheWriter = new CsvWriter(cacheFile.getWriter(0), ',') ;
+                
                 this.cacheWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-                log.info("About to write to cache on reload for table {}. Using file: {}", sourceTable.getName(), cacheFile.getFile().getPath());
+                log.info("About to write to cache on reload for table {}.", sourceTable.getName());
+                log.debug("Using cachefile: {}", cacheFile.getFile().getPath());
+                try {
+                    cacheWriter.writeComment("Reload cache file of table: " + sourceTable.getName());
+                    cacheFile.refreshLastUpdateTime();
+                } catch (IOException e) {
+                    cacheFile.delete();
+                    cacheFile = null;
+                    cacheWriter = null;
+                    throw new SymmetricException("error on writing to cache", e);
+                }
             }else if(!useCache && possibleCacheFile != null) {
                 possibleCacheFile.delete();
             }
