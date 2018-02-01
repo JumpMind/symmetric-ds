@@ -79,6 +79,7 @@ public class DbCompare {
 
     public DbCompareReport compare() {
         dbValueComparator.setNumericScale(config.getNumericScale());
+        dbValueComparator.setDateTimeFormat(config.getDateTimeFormat());
         
         log.info("Starting DBCompare with config:\n{}", config.report());
 
