@@ -71,18 +71,19 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         return false;
     }
 
-    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+    protected void setDecimalValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {        
         if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null && arg.equals("NaN")) {
             setNanOrNull(ps, i, arg, argType);
         } else {
             PreparedStatement nativeStatement = getNativeStmt(ps);
-            if (nativeStatement != null && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass().getName())
-                    && !(arg instanceof Boolean)) {
+            if (nativeStatement != null && "com.sybase.jdbc4.jdbc.SybPreparedStatement".equals(nativeStatement.getClass().getName())) {
                 Class<?> clazz = nativeStatement.getClass();
                 Class<?>[] parameterTypes = new Class[] { int.class, BigDecimal.class, int.class, int.class };
                 BigDecimal value = null;
                 if (arg instanceof BigDecimal) {
                     value = (BigDecimal) arg;
+                } else if (arg instanceof Boolean) {
+                    // Leave the BigDecimal null for a Boolean
                 } else if (arg != null) {
                     value = new BigDecimal(arg.toString());
                 }
@@ -118,6 +119,12 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
                         parameterTypes = new Class[] { int.class, int.class };
                         Method method = clazz.getMethod("setInt", parameterTypes);
                         method.invoke(nativeStatement, params);
+                    } else if (arg instanceof Boolean) {
+                        Integer intValue = ((Boolean)arg) ? Integer.valueOf(1) : Integer.valueOf(0);
+                        params = new Object[] { new Integer(i), intValue };
+                        parameterTypes = new Class[] { int.class, int.class };
+                        Method method = clazz.getMethod("setInt", parameterTypes);
+                        method.invoke(nativeStatement, params);                        
                     }
                     else {
                         Method method = clazz.getMethod("setBigDecimal", parameterTypes);
@@ -142,8 +149,8 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         try {
             stmt = nativeJdbcExtractor.getNativePreparedStatement(ps);
         } catch (SQLException ex) {
-            log.debug("Could not find a native preparedstatement using {}", nativeJdbcExtractor
-                    .getClass().getName());
+            log.warn("Could not find a native preparedstatement using {}", nativeJdbcExtractor
+                    .getClass().getName(), ex);
         }
         return stmt;
     }

@@ -213,6 +213,11 @@ public class StagingManager implements IStagingManager {
         StagingFileLock stagingFileLock = new StagingFileLock();
         
         File lockFile = new File(lockFilePath);
+        File containingDirectory = lockFile.getParentFile();
+        
+        if (containingDirectory != null) {
+            containingDirectory.mkdirs();
+        }
         
         boolean acquired = false;
         try {

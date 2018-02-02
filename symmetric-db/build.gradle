@@ -4,7 +4,7 @@ apply from: symAssembleDir + '/common.gradle'
 
     dependencies {
         compile project(":symmetric-util")
-        compile "net.sf.kxml:kxml2:2.3.0"
+        compile "net.sf.kxml:kxml2:2.3.0" // Used by ddlutils / DatabaseXmlUtil
         compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }
