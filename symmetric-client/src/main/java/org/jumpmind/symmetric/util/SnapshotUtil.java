@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
@@ -58,13 +60,17 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
+import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.symmetric.job.IJob;
@@ -102,6 +108,7 @@ public class SnapshotUtil {
         IParameterService parameterService = engine.getParameterService();
         File tmpDir = new File(parameterService.getTempDirectory(), dirName);
         tmpDir.mkdirs();
+        log.info("Creating snapshot file in " + tmpDir.getAbsolutePath());
 
         File logDir = null;
 
@@ -279,6 +286,11 @@ public class SnapshotUtil {
                 extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
             }
         }
+        
+        if (engine.getSymmetricDialect() instanceof MySqlSymmetricDialect) {
+        	extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
+        			"show processlist");
+        }
 
         fwriter = null;
         try {
@@ -363,15 +375,18 @@ public class SnapshotUtil {
             IOUtils.closeQuietly(fos);
         }
 
+        File jarFile = null;
         try {
-            File jarFile = new File(getSnapshotDirectory(engine), tmpDir.getName() + ".zip");
+            jarFile = new File(getSnapshotDirectory(engine), tmpDir.getName() + ".zip");
             ZipBuilder builder = new ZipBuilder(tmpDir, jarFile, new File[] { tmpDir });
             builder.build();
             FileUtils.deleteDirectory(tmpDir);
-            return jarFile;
         } catch (Exception e) {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
+        
+        log.info("Done creating snapshot file");
+        return jarFile;
     }
 
     protected static void extract(DbExport export, File file, String... tables) {
@@ -389,6 +404,32 @@ public class SnapshotUtil {
             log.warn("Failed to export table definitions", e);
         } finally {
             IOUtils.closeQuietly(fos);
+        }
+    }
+
+    protected static void extractQuery(ISqlTemplate sqlTemplate, String fileName, String sql) {
+    	CsvWriter writer = null;
+        try {
+        	List<Row> rows = sqlTemplate.query(sql);
+        	writer = new CsvWriter(fileName);
+            boolean isFirstRow = true;
+        	for (Row row : rows) {
+        		if (isFirstRow) {
+            		for (String key : row.keySet()) {
+            			writer.write(key);
+            		}
+            		writer.endRecord();
+            		isFirstRow = false;
+        		}
+        		for (String key : row.keySet()) {
+        			writer.write(row.getString(key));
+        		}
+        		writer.endRecord();
+        	}
+        } catch (Exception e) {
+            log.warn("Failed to run extract query " + sql, e);
+        } finally {
+            writer.close();
         }
     }
 
@@ -477,7 +518,8 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("os.load.average", String.valueOf(osBean.getSystemLoadAverage()));
 
             runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
-            runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime().toString());
+            runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime() != null ? 
+            		engine.getLastRestartTime().toString() : "");
 
             runtimeProperties.setProperty("time.server", new Date().toString());
             runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
@@ -505,7 +547,19 @@ public class SnapshotUtil {
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
+            runtimeProperties.setProperty("hostname", AppUtils.getHostName());
+            runtimeProperties.setProperty("instance.id", engine.getClusterService().getInstanceId());
+            runtimeProperties.setProperty("server.id", engine.getClusterService().getServerId());
 
+            try {
+	            MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+	            ObjectName oName = new ObjectName("java.lang:type=OperatingSystem");
+	            runtimeProperties.setProperty("file.descriptor.open.count", mbeanServer.getAttribute(oName, "OpenFileDescriptorCount").toString());
+	            runtimeProperties.setProperty("file.descriptor.max.count", mbeanServer.getAttribute(oName, "MaxFileDescriptorCount").toString());
+            } catch (Exception e) {
+            	log.warn("Unable to access MBean attributes for operating system", e);
+            }
+            
             runtimeProperties.store(fos, "runtime-stats.properties");
         } catch (Exception e) {
             log.warn("Failed to export runtime-stats information", e);
