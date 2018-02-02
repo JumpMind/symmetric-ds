@@ -25,64 +25,87 @@
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
-    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
-        <layout class="org.apache.log4j.PatternLayout">
+    <appender name="ROLLING" class="org.jumpmind.util.SymRollingFileAppender">
+        <param name="File" value="target/junit.log" />
+        <param name="MaxFileSize" value="20MB" />
+        <param name="MaxBackupIndex" value="3" />
+        <param name="Append" value="true" />
+        <layout class="org.jumpmind.symmetric.web.SymPatternLayout">
             <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
         </layout>
     </appender>
-    
-    <appender name="ROLLING" class="org.jumpmind.util.SymRollingFileAppender">
-        <param name="File" value="target/junit.log" />
-        <param name="MaxFileSize" value="100MB" />
-        <param name="Append" value="true" />
-        <layout class="org.apache.log4j.PatternLayout">
+
+    <appender name="CONSOLE_ERR" class="org.apache.log4j.ConsoleAppender">
+        <param name="Threshold" value="WARN"/> 
+        <param name="Target" value="System.err" />
+        <layout class="org.jumpmind.symmetric.web.SymPatternLayout">
+              <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m (%l)%n" />
+        </layout>
+    </appender>
+    <appender name="CONSOLE_OUT" class="org.apache.log4j.ConsoleAppender">
+        <param name="Threshold" value="ALL"/>           
+        <layout class="org.jumpmind.symmetric.web.SymPatternLayout">
             <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
         </layout>
-    </appender>    
-    
-     <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>    
-    
+       <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="debug" />
+            <param name="LevelMax" value="info" />
+        </filter>        
+    </appender>
+
+    <appender name="BUFFERED" class="org.jumpmind.util.BufferedLogAppender"/>
+
+    <!-- Uncomment to send errors over email.  (1/2) -->
+    <!-- 
+	<appender name="EMAIL" class="org.apache.log4j.net.SMTPAppender">
+	    <param name="SMTPHost" value="mymailhost" />
+	    <param name="SMTPUsername" value="" />
+	    <param name="SMTPPassword" value="" />
+	    <param name="From" value="user@nowhere" />
+	    <param name="To" value="user@nowhere" />
+	    <param name="Subject" value="Error from SymmetricDS" />
+	    <param name="BufferSize" value="10" />
+	    <param name="LocationInfo" value="true" />
+	    <layout class="org.apache.log4j.PatternLayout">
+	        <param name="ConversionPattern" value="%t %m%n"/>
+	    </layout>
+	    <filter class="org.apache.log4j.varia.LevelRangeFilter">
+	        <param name="LevelMin" value="error" />
+	        <param name="LevelMax" value="fatal" />
+	    </filter>
+	</appender>
+	-->
+
+    <category name="org">
+        <priority value="WARN" />
+    </category>
+
     <category name="org.jumpmind">
         <priority value="INFO" />
+    </category>
+    
+    <category name="com.mangofactory.swagger.filters.AnnotatedParameterFilter">
+        <priority value="ERROR" />
     </category>
     
     <!-- To print out SQL 
     <category name="org.jumpmind.db.sql">
         <priority value="DEBUG" />
     </category>    
-     -->
-     
-     <!-- To print out data writer
-    <category name="org.jumpmind.symmetric.io">
-        <priority value="DEBUG" />
-    </category>
-                 -->   
-                 
-    <!-- In order to see http headers enable this
-    <category name="sun.net.www.protocol.http.HttpURLConnection">
-        <priority value="ALL" />
-    </category>                    
-     -->
-          
-    <category name="org.jumpmind.db.alter">
-        <priority value="DEBUG" />
-    </category>    
-    
-    <category name="com.mangofactory.swagger.filters.AnnotatedParameterFilter">
-        <priority value="ERROR" />
-    </category>    
-     
-    <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriterConflictResolver">
-        <priority value="DEBUG" />
-    </category>    
-    
+     -->         
+
+    <!-- Disable the not found override properties file warnings to avoid confusion -->
     <category name="org.jumpmind.symmetric.util.PropertiesFactoryBean">
         <priority value="ERROR" />
+    </category>    
+
+    <category name="org.jumpmind.symmetric.service.impl.ParameterService">
+        <priority value="ERROR" />
     </category>
-    
-    <category name="com.jumpmind">
-        <priority value="INFO" />
-    </category>            
+
+    <category name="org.jumpmind.symmetric.db.SqlScript">
+        <priority value="ERROR" />
+    </category>
 
     <category name="org.springframework">
         <priority value="ERROR" />
@@ -102,12 +125,53 @@
     
     <category name="org.atmosphere">
         <priority value="FATAL" />
-    </category>        
+    </category>
     
+    <!-- Uncomment to see CSV protocol from sending batches -->
+    <!--
+    <category name="org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter">
+        <priority value="DEBUG"/>
+    </category>
+    -->
+
+    <!-- Uncomment to see SQL statements from loading batches -->
+    <!--
+    <category name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter">
+        <priority value="DEBUG" />
+    </category>
+    -->
+    
+    <!-- Enable this to see debug messages in JMS publishing extensions -->
+    <!--
+    <category name="org.jumpmind.symmetric.integrate">
+        <priority value="DEBUG" />
+    </category>        
+    -->
+        
+    <!-- Enable this to see debug messages for why SymmetricDS tables are being altered -->
+    <!--    
+    <category name="org.jumpmind.db.alter">
+        <priority value="DEBUG" />
+    </category>        
+    -->
+    
+    <!-- In order to see http headers enable this, and also edit logging.properties
+    <category name="sun.net.www.protocol.http.HttpURLConnection">
+        <priority value="ALL" />
+    </category>                    
+     -->    
+
+    <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
     <root>
-        <priority value="WARN" />
-        <appender-ref ref="CONSOLE" />
+        <priority value="INFO" />
         <appender-ref ref="ROLLING" />
+        <appender-ref ref="CONSOLE_ERR" />
+        <appender-ref ref="CONSOLE_OUT" />
+        <appender-ref ref="BUFFERED" />
+        <!-- Uncomment to send errors over email. (2/2) -->
+        <!-- 
+        <appender-ref ref="EMAIL" />
+        -->
     </root>
 
 </log4j:configuration>

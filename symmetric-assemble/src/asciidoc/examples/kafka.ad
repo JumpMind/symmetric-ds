@@ -15,6 +15,8 @@ If your using the quick start you can run through steps 1-5 and finish with sett
 
 ==== SymmetricDS Setup
 
+* Add the kafka-clients-{version}.jar to your SymmetricDS installation /lib folder and restart SymmetricDS.
+
 * Create a new extension point for the <<IDatabaseWriterFilter>> implementation.  For this example we will setup a java based implementation that will write either CSV or JSON data to the Kafka queue for the "client" target node group.
 
 NOTE: Java based extension points require a full JDK (not just the JRE).
@@ -45,7 +47,7 @@ import org.slf4j.LoggerFactory;
 public class KafkaWriterFilter implements IDatabaseWriterFilter {
     protected final String KAKFA_TEXT_CACHE = "KAKFA_TEXT_CACHE" + this.hashCode();
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(IDatabaseWriterFilter.class);
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
         if (table.getName().toUpperCase().startsWith("SYM_")) {
@@ -194,7 +196,7 @@ import org.slf4j.LoggerFactory;
 public class KafkaWriterFilter implements IDatabaseWriterFilter {
     protected final String KAKFA_TEXT_CACHE = "KAKFA_TEXT_CACHE" + this.hashCode();
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(IDatabaseWriterFilter.class);
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
         if (table.getName().toUpperCase().startsWith("SYM_")) {

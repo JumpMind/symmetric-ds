@@ -47,6 +47,7 @@ public class DbValueComparator {
     private boolean stringNullEqualsEmptyString = true;
     private List<SimpleDateFormat> dateFormats = new ArrayList<SimpleDateFormat>();
     private int numericScale = -1;
+    private String dateTimeFormat;
 
     public DbValueComparator(ISymmetricEngine sourceEngine, ISymmetricEngine targetEngine) {
         this.sourceEngine = sourceEngine;
@@ -142,14 +143,25 @@ public class DbValueComparator {
         Date sourceDate = parseDate(sourceEngine, sourceColumn, sourceValue);
         Date targetDate = parseDate(targetEngine, targetColumn, targetValue);
         
-        // if either column is a simple date, clear the time for comparison purposes.
-        if (sourceColumn.getJdbcTypeCode() == Types.DATE
-                || targetColumn.getJdbcTypeCode() == Types.DATE) {
+        if (sourceColumn.getJdbcTypeCode() != Types.DATE
+                && targetColumn.getJdbcTypeCode() != Types.DATE) {
+            if (dateTimeFormat != null) {
+                String sourceDateFormatted = formatDateTime(sourceDate);
+                String targetDateFormatted = formatDateTime(targetDate);
+                return compareDefault(sourceColumn, targetColumn, sourceDateFormatted, targetDateFormatted);
+            }
+        } else { // if either column is a simple date, clear the time for comparison purposes.
             sourceDate = DateUtils.truncate(sourceDate, Calendar.DATE);
             targetDate = DateUtils.truncate(targetDate, Calendar.DATE);
         }
-        
         return compareDefault(sourceColumn, targetColumn, sourceDate, targetDate);
+    }
+    
+    public String formatDateTime(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat(dateTimeFormat);
+        
+        String formattedDate = formatter.format(date);
+        return formattedDate;
     }
 
     @SuppressWarnings("unchecked")
@@ -204,6 +216,13 @@ public class DbValueComparator {
     public void setNumericScale(int numericScale) {
         this.numericScale = numericScale;
     }    
-
+    
+    public String getDateTimeFormat() {
+        return dateTimeFormat;
+    }
+    
+    public void setDateTimeFormat(String format) {
+        this.dateTimeFormat = format;
+    }
 
 }

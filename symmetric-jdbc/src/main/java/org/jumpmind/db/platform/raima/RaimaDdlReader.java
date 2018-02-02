@@ -19,6 +19,7 @@
 package org.jumpmind.db.platform.raima;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -32,14 +33,13 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
+import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.ChangeCatalogConnectionHandler;
-import org.jumpmind.db.sql.IConnectionHandler;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -113,52 +113,6 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
         return getPlatform().getDdlBuilder().getForeignKeyName(table, fk).equals(index.getName());
     }
 
-    @Override
-    protected Collection<ForeignKey> readForeignKeys(Connection connection,
-            DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
-
-            Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
-            ResultSet fkData = null;
-           /*
-            try {
-            		PreparedStatement ps = connection.prepareStatement(
-                        "SELECT f2.name AS REFERENCED_COLUMN_NAME, t2.name AS REFERENCED_TABLE_NAME, f.name AS COLUMN_NAME, \"POSITION\", fk_name AS CONSTRAINT_NAME " +
-                        "FROM sys_fkey AS fk  " +
-                        "INNER JOIN sys_table AS t ON t.name = fk.fktabname " +
-                        "INNER JOIN sys_table AS t2 ON t2.name = fk.pktabname " +
-                        "INNER JOIN sys_column AS f ON f.name = fk.fkcolname AND f.tabname = t.name AND f.dbname= t.dbname " +
-                        "INNER JOIN sys_column AS f2 ON f2.name = fk.pkcolname AND f2.tabname = t2.name AND f2.dbname= t2.dbname " +
-                        "WHERE t.name = ? ");
-
-                ps.setString(1, tableName);
-               
-                fkData = ps.executeQuery();
-                while (fkData.next()) {
-              
-                    String fkName = fkData.getString(5);
-                    ForeignKey fk = (ForeignKey) fks.get(fkName);
-
-                    if (fk == null) {
-                        fk = new ForeignKey(fkName);
-                        fk.setForeignTableName(fkData.getString(2));
-                        fks.put(fkName, fk);
-                    }
-
-                    Reference ref = new Reference();
-
-                    ref.setForeignColumnName(fkData.getString(1));
-                    ref.setLocalColumnName(fkData.getString(3));
-                    ref.setSequenceValue(fkData.getInt(4));
-                    
-                    fk.addReference(ref);
-                }
-            } finally {
-                close(fkData);
-            }
-            */
-            return fks.values();
-    }
-    
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
         

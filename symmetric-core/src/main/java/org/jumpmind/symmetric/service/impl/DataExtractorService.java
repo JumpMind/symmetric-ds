@@ -235,15 +235,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 TableConstants.SYM_TABLE_RELOAD_REQUEST, TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT);
     }
     
-    protected boolean filter(Node targetNode, String tableName) {
-        
+    protected boolean filter(Node targetNode, String tableName) {        
         boolean pre37 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_7_0);
         boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_8_0);
         boolean pre3818 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_8_18);
+        boolean pre39 =  Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_9_0);
 
         tableName = tableName.toLowerCase();
         boolean include = true;
-        if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
+        if (pre39 && tableName.contains(TableConstants.SYM_JOB)) {
+            include = false;
+        } else if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
             include = false;
         } else if (pre38 && (tableName.contains(TableConstants.SYM_MONITOR) || 
                 tableName.contains(TableConstants.SYM_NOTIFICATION))) {
