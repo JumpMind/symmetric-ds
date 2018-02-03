@@ -169,12 +169,12 @@ public class SecurityService implements ISecurityService {
     public Cipher getCipher(int mode) throws Exception {
         if (secretKey == null) {
             secretKey = getSecretKey();
-            log.info("Initialized with " + secretKey.getAlgorithm());
+            log.info("Initialized with {} {}-bit", secretKey.getAlgorithm(), secretKey.getEncoded().length * 8);
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
-        log.debug("Using {} algorithm provided by {}.", cipher.getAlgorithm(), cipher.getProvider()
-                .getName());
+        log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(), 
+        		secretKey.getEncoded().length * 8, cipher.getProvider().getName());
         return cipher;
     }
 
@@ -208,7 +208,6 @@ public class SecurityService implements ISecurityService {
         if (entry == null) {
             log.debug("Generating secret key");
             entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
-            log.info("Generated secret key using " + entry.getSecretKey().getAlgorithm());
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
@@ -234,32 +233,33 @@ public class SecurityService implements ISecurityService {
     }
 
     protected SecretKey getDefaultSecretKey() throws Exception {
-        SecureRandom random = new SecureRandom();
-        byte bytes[] = null; 
-        
-        try {
-			bytes = new byte[SecurityConstants.BITSIZES[0]];
-			random.nextBytes(bytes);
-        	secretKey = new SecretKeySpec(bytes, SecurityConstants.KEYSPECS[0]);
-            initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[0]), Cipher.ENCRYPT_MODE);
-        } catch (Exception e) {
-        	try {
-				bytes = new byte[SecurityConstants.BITSIZES[1]];
-				random.nextBytes(bytes);	
-				SecretKeyFactory kf = SecretKeyFactory.getInstance(SecurityConstants.KEYSPECS[1]);
-				secretKey = kf.generateSecret(new DESedeKeySpec(bytes));
-				initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[1]), Cipher.ENCRYPT_MODE);
-        	} catch (Exception ee) {
-				bytes = new byte[SecurityConstants.BITSIZES[2]];
-				random.nextBytes(bytes);		
-				secretKey = new SecretKeySpec(bytes, SecurityConstants.KEYSPECS[2]);
-				initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[2]), Cipher.ENCRYPT_MODE);
-        	}
-        }
- 
+    	for (int i = 0; i < SecurityConstants.CIPHERS.length; i++) {
+            try {
+            	if (SecurityConstants.CIPHERS[i].startsWith("DESede")) {
+					SecretKeyFactory kf = SecretKeyFactory.getInstance(SecurityConstants.KEYSPECS[i]);
+					secretKey = kf.generateSecret(new DESedeKeySpec(getBytes(SecurityConstants.BYTESIZES[i])));            		
+            	} else {
+            		secretKey = new SecretKeySpec(getBytes(SecurityConstants.BYTESIZES[i]), SecurityConstants.KEYSPECS[i]);
+            	}
+                initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[i]), Cipher.ENCRYPT_MODE);
+				log.info("Generated secret key using {} {}", SecurityConstants.CIPHERS[i],
+						SecurityConstants.BYTESIZES[i] * 8);
+                break;
+            } catch (Exception e) {
+            	log.debug("Cannot use {} {}-bit because: {}", SecurityConstants.CIPHERS[i],
+            			SecurityConstants.BYTESIZES[i] * 8, e.getMessage());
+            }
+    	} 
         return secretKey;
     }
 
+    protected byte[] getBytes(int byteSize) {
+    	SecureRandom random = new SecureRandom();
+    	byte[] bytes = new byte[byteSize];
+    	random.nextBytes(bytes);
+    	return bytes;    	
+    }
+    
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
         FileOutputStream os = new FileOutputStream(
                 System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
