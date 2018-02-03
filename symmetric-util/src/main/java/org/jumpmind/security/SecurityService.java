@@ -24,18 +24,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.KeySpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NotImplementedException;
@@ -51,8 +49,6 @@ public class SecurityService implements ISecurityService {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected SecretKey secretKey;
-
-    protected SecureRandom secRand;
 
     protected SecurityService() {
     }
@@ -160,13 +156,9 @@ public class SecurityService implements ISecurityService {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (c >= 'a' && c <= 'm') {
+            if ((c >= 'a' && c <= 'm') || (c >= 'A' && c <= 'M')) {
                 c += 13;
-            } else if (c >= 'A' && c <= 'M') {
-                c += 13;
-            } else if (c >= 'n' && c <= 'z') {
-                c -= 13;
-            } else if (c >= 'N' && c <= 'Z') {
+            } else if ((c >= 'n' && c <= 'z') || (c >= 'N' && c <= 'Z')) {
                 c -= 13;
             }
             sb.append(c);
@@ -177,6 +169,7 @@ public class SecurityService implements ISecurityService {
     public Cipher getCipher(int mode) throws Exception {
         if (secretKey == null) {
             secretKey = getSecretKey();
+            log.info("Initialized with " + secretKey.getAlgorithm());
         }
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
@@ -188,8 +181,7 @@ public class SecurityService implements ISecurityService {
     protected void initializeCipher(Cipher cipher, int mode) throws Exception {
         AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
 
-        if (paramSpec instanceof PBEParameterSpec
-                || (paramSpec == null && cipher.getAlgorithm().startsWith("PBE"))) {
+        if (paramSpec instanceof PBEParameterSpec || cipher.getAlgorithm().startsWith("PBE")) {
             paramSpec = new PBEParameterSpec(SecurityConstants.SALT,
                     SecurityConstants.ITERATION_COUNT);
             cipher.init(mode, secretKey, paramSpec);
@@ -197,7 +189,7 @@ public class SecurityService implements ISecurityService {
             paramSpec = new IvParameterSpec(SecurityConstants.SALT);
             cipher.init(mode, secretKey, paramSpec);
         } else {
-            cipher.init(mode, secretKey, (AlgorithmParameterSpec) null);
+            cipher.init(mode, secretKey);
         }
     }
 
@@ -216,6 +208,7 @@ public class SecurityService implements ISecurityService {
         if (entry == null) {
             log.debug("Generating secret key");
             entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
+            log.info("Generated secret key using " + entry.getSecretKey().getAlgorithm());
             ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
             saveKeyStore(ks, password);
         } else {
@@ -224,51 +217,46 @@ public class SecurityService implements ISecurityService {
         return entry.getSecretKey();
     }
 
-    private SecureRandom getSecRan() {
-        if (secRand == null) {
-            secRand = new SecureRandom();
-            secRand.setSeed(System.currentTimeMillis());
-        }
-        return secRand;
-    }
-
     public String nextSecureHexString(int len) {
-        if (len <= 0)
+        if (len <= 0) {
             throw new IllegalArgumentException("length must be positive");
-        SecureRandom secRan = getSecRan();
-        MessageDigest alg = null;
-        try {
-            alg = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException ex) {
-            return null;
-        }
-        alg.reset();
-        int numIter = len / 40 + 1;
-        StringBuffer outBuffer = new StringBuffer();
-        for (int iter = 1; iter < numIter + 1; iter++) {
-            byte randomBytes[] = new byte[40];
-            secRan.nextBytes(randomBytes);
-            alg.update(randomBytes);
-            byte hash[] = alg.digest();
-            for (int i = 0; i < hash.length; i++) {
-                Integer c = new Integer(hash[i]);
-                String hex = Integer.toHexString(c.intValue() + 128);
-                if (hex.length() == 1)
-                    hex = "0" + hex;
-                outBuffer.append(hex);
-            }
-
         }
 
-        return outBuffer.toString().substring(0, len);
+        SecureRandom random = new SecureRandom();
+        int maxInt = SecurityConstants.PASSWORD_CHARS.length();
+        char[] password = new char[len];
+ 
+        for (int i = 0; i < len; i++) {
+            password[i] = SecurityConstants.PASSWORD_CHARS.charAt(random.nextInt(maxInt));
+        }
+
+        return new String(password);
     }
 
     protected SecretKey getDefaultSecretKey() throws Exception {
-        String keyPassword = nextSecureHexString(8);
-        KeySpec keySpec = new PBEKeySpec(keyPassword.toCharArray(), SecurityConstants.SALT,
-                SecurityConstants.ITERATION_COUNT, 56);
-        SecretKey secretKey = SecretKeyFactory.getInstance(SecurityConstants.ALGORITHM)
-                .generateSecret(keySpec);
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = null; 
+        
+        try {
+			bytes = new byte[SecurityConstants.BITSIZES[0]];
+			random.nextBytes(bytes);
+        	secretKey = new SecretKeySpec(bytes, SecurityConstants.KEYSPECS[0]);
+            initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[0]), Cipher.ENCRYPT_MODE);
+        } catch (Exception e) {
+        	try {
+				bytes = new byte[SecurityConstants.BITSIZES[1]];
+				random.nextBytes(bytes);	
+				SecretKeyFactory kf = SecretKeyFactory.getInstance(SecurityConstants.KEYSPECS[1]);
+				secretKey = kf.generateSecret(new DESedeKeySpec(bytes));
+				initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[1]), Cipher.ENCRYPT_MODE);
+        	} catch (Exception ee) {
+				bytes = new byte[SecurityConstants.BITSIZES[2]];
+				random.nextBytes(bytes);		
+				secretKey = new SecretKeySpec(bytes, SecurityConstants.KEYSPECS[2]);
+				initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[2]), Cipher.ENCRYPT_MODE);
+        	}
+        }
+ 
         return secretKey;
     }
 

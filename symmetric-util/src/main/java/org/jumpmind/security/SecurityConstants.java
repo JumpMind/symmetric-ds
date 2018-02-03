@@ -44,7 +44,14 @@ public class SecurityConstants {
     
     public static final String PREFIX_OBF = "obf:";
 
-    public static final String ALGORITHM = System.getProperty("sym.secret.key.defalt.algorithm","PBEWithMD5AndDES");
+    public static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.+!*";
+
+	public static final String[] CIPHERS = new String[] { "AES/GCM/PKCS5Padding", "DESede/ECB/PKCS5Padding",
+			"DES/ECB/PKCS5Padding" };
+
+    public static final String[] KEYSPECS = new String[] { "AES", "DESede", "DES" };
+
+	public static final int[] BITSIZES = new int[] { 32, 25, 8 };
 
     public static final int ITERATION_COUNT = 3;
 
