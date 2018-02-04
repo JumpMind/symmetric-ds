@@ -1,4 +1,5 @@
-#Introduction
+# Introduction
+
 This library provides a sql explorer component that can be used in Vaadin applications.  This component is used by the Metl and SymmetricDS Pro applications.
 
 # Usage
@@ -17,7 +18,7 @@ repositories {
 }
 
 dependencies {
-  compile 'org.jumpmind.vaadin:sqlexplorer-vaadin:1.0.11'
+  compile 'org.jumpmind.symmetric:symmetric-sqlexplorer:3.9.x-SNAPSHOT'
 }
 ```
 
