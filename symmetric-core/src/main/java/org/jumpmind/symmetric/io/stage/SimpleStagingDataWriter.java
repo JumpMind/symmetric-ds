@@ -251,8 +251,7 @@ public class SimpleStagingDataWriter {
             /*
              * Just log an error here.  We want batches that come before us to continue to process and to be acknowledged
              */
-            log.error("Failed to parse batch", ex);
-
+            log.error("Failed to process batch. Context: " + context.getContext() , ex);
         }
     }
 
