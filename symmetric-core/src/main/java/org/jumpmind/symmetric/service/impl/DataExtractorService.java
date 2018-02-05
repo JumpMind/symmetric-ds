@@ -621,10 +621,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         
                     channelsProcessed.add(currentBatch.getChannelId());
                     
-                    currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
                     final OutgoingBatch extractBatch = currentBatch;
                     Callable<FutureOutgoingBatch> callable = () -> {
-                        return extractBatch(extractBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
+                        OutgoingBatch refreshedBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, extractBatch);
+                        return extractBatch(refreshedBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
                     };
                     
                     if (status.shouldExtractSkip) {
