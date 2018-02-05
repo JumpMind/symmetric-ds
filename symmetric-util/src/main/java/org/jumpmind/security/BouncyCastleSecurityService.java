@@ -40,7 +40,7 @@ public class BouncyCastleSecurityService extends SecurityService {
 
     public KeyPair generateRSAKeyPair() throws Exception {
         KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-        kpGen.initialize(1024, new SecureRandom());
+        kpGen.initialize(2048, new SecureRandom());
         return kpGen.generateKeyPair();
     }
 
