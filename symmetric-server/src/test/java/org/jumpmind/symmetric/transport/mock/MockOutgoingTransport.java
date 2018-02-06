@@ -57,6 +57,11 @@ public class MockOutgoingTransport implements IOutgoingTransport {
         bWriter = new BufferedWriter(writer);
         return bWriter;
     }
+    
+    @Override
+    public BufferedWriter getWriter() {
+        return bWriter;
+    }
 
     public boolean isOpen() {
         return true;

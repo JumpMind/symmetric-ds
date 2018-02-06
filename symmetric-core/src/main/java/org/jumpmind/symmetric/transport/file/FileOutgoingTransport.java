@@ -79,6 +79,11 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
         }
         return writer;
     }
+    
+    @Override
+    public BufferedWriter getWriter() {
+        return writer;
+    }
 
     @Override
     public OutputStream openStream() {

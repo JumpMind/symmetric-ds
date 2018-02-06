@@ -31,6 +31,8 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 public interface IOutgoingTransport {
 
     public BufferedWriter openWriter();
+    
+    public BufferedWriter getWriter();
 
     public OutputStream openStream();
 
