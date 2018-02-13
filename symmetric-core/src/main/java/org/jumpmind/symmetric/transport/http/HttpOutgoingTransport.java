@@ -275,6 +275,11 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new IoException(ex);
         }
     }
+    
+    @Override
+    public BufferedWriter getWriter() {
+        return writer;
+    }
 
     /**
      * @throws {@link ConnectionRejectedException}

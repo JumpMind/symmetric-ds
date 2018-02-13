@@ -73,6 +73,11 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
     public BufferedWriter openWriter() {
         return writer;
     }
+    
+    @Override
+    public BufferedWriter getWriter() {
+        return writer;
+    }    
 
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return configurationService.getSuspendIgnoreChannelLists();

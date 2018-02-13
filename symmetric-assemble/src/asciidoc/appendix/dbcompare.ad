@@ -3,7 +3,7 @@
 The DbCompare utility provides the ability to compare two SQL-based data sources and output a report of the differences, and optionally generate SQL to bring the target into sync with the source.
 
 ifdef::pro[]
-The dbcompare wizard is accessible from the explore tab of the pro console.  
+The dbcompare wizard is accessible for multi-homed nodes from the explore tab of the pro console.  
 The pop-up window asks for source and target engines for the comparison as well as the the tables to be compared.  
 
 image::appendix/dbcompare/dbcompare-tab.png[width=600]
@@ -36,11 +36,23 @@ endif::pro[]
 ifndef::pro[]
 
 The dbcompare utility can be run directly from the command line.
-To run dbcompare enter the command *dbcompare [tablename...]* followed by any parameters from the command line in the bin directory of the Symmetric instance.  
-The *--help* parameter will display all the possible configurable parameters for the compare utility.
-They are as follows:
+The dbcompare command is as follows:
+[source]
+----
+dbcompare (tablename...) <optional-arguments>
+----
 
-- *--config <arg>* : A reference to a properties file path containing additional configuration for dbcompare.  This properties file supports table where clauses in the format [table].[source|target].whereclause.  A property called "where_clause" will specify a where clause used on all tables.  For example, with a table called item, use item.where_clause=field > now()-2.
+A table name or list of comma separated table names must be included in order for dbcompare to work properly. The *dbcompare (tablename...)* can be followed by any optional parameters from the command line in the bin directory of the Symmetric instance.  
+The *--help* option will display all the possible configurable parameters for the compare utility.
+Possible options include:
+
+- *--config <arg>* : A reference to a properties file path containing additional configuration arguments for dbcompare. This properties file allows you to include table specific configuration and specify arguments such as where_clause and exclude_columns. Where clauses in the file should be formatted as [table].[source|target].where_clause. For example, with a table called item, use item.where_clause=field > now()-2. If you do not specify a table before "where_clause", then it will be used on all tables. 
+
+** Example of config properties file:
+
+image::appendix/dbcompare/dbcompare-config.png[width=1000]
+
+- *--date-time-format <arg>*: The format to be used when comparing date time values. For example, using the format 'yyyy-MM-dd HH:mm:ss' would convert date time values into yyyy-MM-dd HH:mm:ss and then compare.
 - *--exclude <arg>* : A comma-separated list of table names to exclude from comparison.
 - *-h, --help* : Print help with each option and description.
 - *--numeric-scale <arg>* : When comparing decimals, how many decimal places to consider while doing the comparison.  Remaining digits will be rounded.  Default value is 3.

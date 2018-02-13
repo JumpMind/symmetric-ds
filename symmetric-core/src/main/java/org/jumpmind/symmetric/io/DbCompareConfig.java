@@ -42,6 +42,7 @@ public class DbCompareConfig {
     private List<String> excludedTableNames;
     private boolean useSymmetricConfig = true;
     private int numericScale = 3;
+    private String dateTimeFormat;
     private Map<String, String> whereClauses = new LinkedHashMap<String, String>();
     private Map<String, List<String>> tablesToExcludedColumns = new LinkedHashMap<String, List<String>>();
     private String outputSql;
@@ -132,6 +133,12 @@ public class DbCompareConfig {
     }
     public void setNumericScale(int numericScale) {
         this.numericScale = numericScale;
+    }
+    public String getDateTimeFormat() {
+        return dateTimeFormat;
+    }
+    public void setDateTimeFormat(String format) {
+        this.dateTimeFormat= format;
     }
     public Map<String, String> getWhereClauses() {
         return whereClauses;

@@ -33,6 +33,16 @@ import java.util.logging.Logger;
 import org.jumpmind.properties.TypedProperties;
 import org.slf4j.MDC;
 
+/**
+ * Simple configuration (note the jdbc:symds prefix):
+ * 
+ * db.url=jdbc:symds:h2:file:demo-corp;LOCK_TIMEOUT=60000;AUTO_SERVER=TRUE
+ * 
+ * In the your engine.properties file, you can configure interceptors:
+ * org.jumpmind.driver.PreparedStatementWrapper.interceptor=org.jumpmind.driver.StatementDelayInterceptor
+ * OR
+ * org.jumpmind.driver.PreparedStatementWrapper.interceptor=org.jumpmind.driver.RandomErrorInterceptor
+ */
 public class Driver implements java.sql.Driver {
     
     private static final String DRIVER_PREFIX = "jdbc:symds:";
@@ -68,6 +78,8 @@ public class Driver implements java.sql.Driver {
         TypedProperties engineProperties = null;
         if (engineName != null) {
             engineProperties = allEngineProperties.get(engineName);
+        } else {
+            System.out.println("Unknown engine...");
         }
         
         ConnectionWrapper connectionWrapper = new ConnectionWrapper(connection);

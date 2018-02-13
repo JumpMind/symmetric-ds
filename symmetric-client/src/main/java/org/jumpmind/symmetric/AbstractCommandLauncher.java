@@ -64,7 +64,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public abstract class AbstractCommandLauncher {
 
-    protected static final Logger log;
+    private static final Logger log;
     
     public static final String DEFAULT_SERVER_PROPERTIES;
 

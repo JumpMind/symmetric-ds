@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -528,22 +529,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             routerService.routeData(true);
         }
         
-        OutgoingBatches batches = null;
-        if (queue != null) {
-            NodeGroupLinkAction defaultAction = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
-                    targetNode.getNodeGroupId(), false).getDataEventAction();
-            ProcessType processType = extractInfo.getKey().getProcessType();
-            NodeGroupLinkAction action = null;
-
-            if (processType.equals(ProcessType.PUSH_JOB_EXTRACT)) {
-                action = NodeGroupLinkAction.P;
-            } else if (processType.equals(ProcessType.PULL_HANDLER_EXTRACT)) {
-                action = NodeGroupLinkAction.W;
-            }
-            batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, action, defaultAction, false);
-        } else {
-            batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
-        }
+        OutgoingBatches batches = loadPendingBatches(extractInfo, targetNode, queue, transport);
 
         if (batches.containsBatches()) {
 
@@ -564,6 +550,60 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         return Collections.emptyList();
 
+    }
+
+    protected OutgoingBatches loadPendingBatches(ProcessInfo extractInfo, Node targetNode, String queue, IOutgoingTransport transport) {
+        
+        BufferedWriter writer = transport.getWriter();         
+        
+        Callable<OutgoingBatches> getOutgoingBatches = () -> {                            
+            OutgoingBatches batches = null;
+            if (queue != null) {
+                NodeGroupLinkAction defaultAction = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
+                        targetNode.getNodeGroupId(), false).getDataEventAction();
+                ProcessType processType = extractInfo.getKey().getProcessType();
+                NodeGroupLinkAction action = null;
+                
+                if (processType.equals(ProcessType.PUSH_JOB_EXTRACT)) {
+                    action = NodeGroupLinkAction.P;
+                } else if (processType.equals(ProcessType.PULL_HANDLER_EXTRACT)) {
+                    action = NodeGroupLinkAction.W;
+                }
+                // TODO the pull slow down here.
+                // here we have a InternalOutgoingTransport, with an open Writer to the pull connection (if this is a Pull).
+                // When pushing, this is an HttpOutgoingTransport, with an unopened writer.
+                // at this point the transport can a) give the writer without creating it. b) sendKeepalive
+                batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, action, defaultAction, false);
+            } else {
+                batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
+            }
+            return batches;
+        };
+        
+        if (writer != null) {
+            final boolean streamToFileEnabled = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+            long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
+            Node sourceNode = nodeService.findIdentity();
+            FutureTask<OutgoingBatches> getOutgoingBatchesTask = new FutureTask<OutgoingBatches>(getOutgoingBatches);            
+            ExecutorService executor = Executors.newFixedThreadPool(1);
+            executor.execute(getOutgoingBatchesTask);
+            
+            while (true) {                
+                try {
+                    return getOutgoingBatchesTask.get(keepAliveMillis, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException ex) {
+                    writeKeepAliveAck(writer, sourceNode, streamToFileEnabled);
+                } catch (Exception ex) {
+                    throw new SymmetricException("Failed to execute getOutgoingBatchesTask ", ex);
+                }
+            }
+        } else {
+            try {                
+                return getOutgoingBatches.call();
+            } catch (Exception ex) {
+                throw new SymmetricException("Failed to execute getOutgoingBatchesTask ", ex);
+            }
+        }
     }
     
     /**
@@ -621,10 +661,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         
                     channelsProcessed.add(currentBatch.getChannelId());
                     
-                    currentBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, currentBatch);
                     final OutgoingBatch extractBatch = currentBatch;
                     Callable<FutureOutgoingBatch> callable = () -> {
-                        return extractBatch(extractBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
+                        OutgoingBatch refreshedBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, extractBatch);
+                        return extractBatch(refreshedBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
                     };
                     
                     if (status.shouldExtractSkip) {

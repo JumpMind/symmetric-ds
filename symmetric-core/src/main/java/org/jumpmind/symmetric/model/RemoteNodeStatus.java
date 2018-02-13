@@ -182,11 +182,7 @@ public class RemoteNodeStatus implements Serializable {
             StringBuilder buff = new StringBuilder();
             for (String table : tableCounts.keySet()) {
                 Integer count = tableCounts.get(table);
-                buff.append(table).append(" (").append(count).append(" row");
-                if (count != 1) {
-                    buff.append("s");
-                }
-                buff.append("), ");
+                buff.append(table).append(", ");
             }
             
             if (buff.length() > 2) {
