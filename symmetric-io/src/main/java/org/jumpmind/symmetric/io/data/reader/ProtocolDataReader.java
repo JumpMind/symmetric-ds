@@ -73,7 +73,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected BatchType batchType;
     protected int lineNumber = 0;
     protected String[] tokens;
-
+    protected boolean streamToFile = true;
+    
     public ProtocolDataReader(BatchType batchType, String targetNodeId, StringBuilder input) {
         this(batchType, targetNodeId, new BufferedReader(new StringReader(input.toString())));
     }
@@ -96,6 +97,13 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
         this.reader = reader;
         this.targetNodeId = targetNodeId;
         this.batchType = batchType;
+    }
+    
+    public ProtocolDataReader(BatchType batchType, String targetNodeId, Reader reader, boolean streamToFile) {
+        this.reader = reader;
+        this.targetNodeId = targetNodeId;
+        this.batchType = batchType;
+        this.streamToFile = streamToFile;
     }
 
     public ProtocolDataReader(BatchType batchType, String targetNodeId, File file) {
@@ -197,10 +205,16 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     return data;
 
                 } else if (tokens[0].equals(CsvConstants.BATCH) || tokens[0].equals(CsvConstants.RETRY)) {
+                    
                     Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId, binaryEncoding, sourceNodeId, targetNodeId,
                             false);
                     stats = stats != null ? stats : new DataReaderStatistics();
                     statistics.put(batch, stats);
+                    
+                    if (tokens[0].equals(CsvConstants.RETRY) && !streamToFile) {
+                        batch.setInvalidRetry(true);
+                    }
+                    
                     tokens = null;
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NO_BINARY_OLD_DATA)) {
@@ -380,4 +394,5 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
             }
         }
     }
+    
 }

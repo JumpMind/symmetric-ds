@@ -53,6 +53,7 @@ public class Batch {
     protected boolean complete = false;
     protected BatchType batchType;
     protected Statistics statistics;
+    protected boolean invalidRetry = false;
     
     protected Map<String, Long> timers = new HashMap<String, Long>();
         
@@ -211,6 +212,14 @@ public class Batch {
         return statistics;
     }
 
+    public void setInvalidRetry(boolean invalidRetry) {
+        this.invalidRetry = invalidRetry;
+    }
+    
+    public boolean isInvalidRetry() {
+        return invalidRetry;
+    }
+    
     public String encodeBinary(String value) {
         if (value != null) {
             if (binaryEncoding == BinaryEncoding.HEX) {

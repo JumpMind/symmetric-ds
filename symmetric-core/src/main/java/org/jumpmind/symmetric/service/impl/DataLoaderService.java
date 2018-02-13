@@ -57,6 +57,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -549,7 +550,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
             long memoryThresholdInBytes = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
             String targetNodeId = nodeService.findIdentityNodeId();
-            if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+            
+            boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED);
+            if (streamToFile) {
                 transferInfo.setStatus(ProcessStatus.TRANSFERRING);
                 
                 if (threadFactory == null) {
@@ -592,7 +595,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         , transferInfo.getQueue(), nodeService.findIdentityNodeId(), PULL_JOB_LOAD));
                 try {
                     DataProcessor processor = new DataProcessor(new ProtocolDataReader(BatchType.LOAD,
-                            targetNodeId, transport.openReader()), null, listener, "data load") {
+                            targetNodeId, transport.openReader(), streamToFile), null, listener, "data load") {
                         @Override
                         protected IDataWriter chooseDataWriter(Batch batch) {
                             return buildDataWriter(loadInfo, sourceNode.getNodeId(),
@@ -647,6 +650,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (SyncDisabledException) ex;
         } else if (ex instanceof IOException) {
             throw (IOException) ex;
+        } else if (ex instanceof InvalidRetryException) {
+            throw (InvalidRetryException) ex;
         } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
             log.error("Failed to process batch", ex);
         } else {
