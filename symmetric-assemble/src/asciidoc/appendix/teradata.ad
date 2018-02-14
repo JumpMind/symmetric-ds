@@ -1,0 +1,26 @@
+=== Teradata
+
+NOTE: Teradata is only supported as a <<Load Only Node>>.   It can only be used as a target to load data into from other dialects.
+
+==== Drivers
+
+All jdbc driver jar files need to be placed in the SymmetricDS installation /lib directory or on the classpath of the app server for a deployment through a war file.   
+
+.The following jars were required to load data into 15.10
+* terajdbc4.jar
+* tdgssconfig.jar
+
+==== Database Permissions
+
+The user provided at the setup of the node but have select access to the DBC database.
+
+[source, SQL]  
+----
+GRANT SELECT ON "DBC" TO {USER} WITH GRANT OPTION;
+----
+
+==== Loading Data 
+
+There is a bulk loader provided for Teradata that can be used by setting the <<Channels>> data loader type to bulk for any reload channels used.   This will use the FASTLOADCSV process provided by Teradata.   
+
+NOTE: To use the FASTLOADCSV the Teradata table must be empty.
