@@ -53,5 +53,6 @@ final public class DatabaseNamesConstants {
     public final static String NUODB = "nuodb";
     public final static String TIBERO = "tibero";
     public final static String RAIMA = "raima";
+    public final static String TERADATA = "teradata";
 
 }

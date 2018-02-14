@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.writer.IgnoreBatchException;
@@ -88,9 +89,11 @@ public class DataProcessor {
                 currentBatch = dataReader.nextBatch();
                 if (currentBatch != null) {
                     context.setBatch(currentBatch);
+                    
                     boolean endBatchCalled = false;
                     IDataWriter dataWriter = null;
                     try {
+                        
                         boolean processBatch = listener == null ? true : listener
                                 .beforeBatchStarted(context);
 
@@ -106,6 +109,10 @@ public class DataProcessor {
                             if (listener != null) {
                                 listener.afterBatchStarted(context);
                             }
+                        }
+                        
+                        if (currentBatch.isInvalidRetry()) {
+                            throw new InvalidRetryException();
                         }
 
                         // pull and process any data events that are not wrapped

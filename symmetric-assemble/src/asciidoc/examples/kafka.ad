@@ -15,6 +15,8 @@ If your using the quick start you can run through steps 1-5 and finish with sett
 
 ==== SymmetricDS Setup
 
+NOTE: The Java SDK is required to compile and run the kafka extension in this example.  The Java JRE will not be sufficient.
+
 * Add the kafka-clients-{version}.jar to your SymmetricDS installation /lib folder and restart SymmetricDS.
 
 * Create a new extension point for the <<IDatabaseWriterFilter>> implementation.  For this example we will setup a java based implementation that will write either CSV or JSON data to the Kafka queue for the "client" target node group.

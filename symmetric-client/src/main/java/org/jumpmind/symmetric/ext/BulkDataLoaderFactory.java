@@ -55,6 +55,10 @@ public class BulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngi
         } else if (DatabaseNamesConstants.REDSHIFT.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
             return new RedshiftBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (engine.getSymmetricDialect().getTargetPlatform().getName() != null &&
+        		engine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.TERADATA)) {
+            return new TeradataBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
         } else {
             return dataLoaderFactories.get(new DefaultDataLoaderFactory().getTypeName()).getDataWriter(sourceNodeId,
                     symmetricDialect, transformWriter, filters, errorHandlers, conflictSettings, resolvedData);
@@ -70,7 +74,8 @@ public class BulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngi
                 || DatabaseNamesConstants.ORACLE.equals(platform.getName())
                 || DatabaseNamesConstants.POSTGRESQL.equals(platform.getName())
                 || DatabaseNamesConstants.GREENPLUM.equals(platform.getName())
-                || DatabaseNamesConstants.REDSHIFT.equals(platform.getName())) {
+                || DatabaseNamesConstants.REDSHIFT.equals(platform.getName())
+                	|| (platform.getName() != null && platform.getName().startsWith(DatabaseNamesConstants.TERADATA))) {
             return true;
         }
         return false;

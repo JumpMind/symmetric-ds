@@ -9,7 +9,7 @@ feature coverage in SymmetricDS.  The following table shows which features are a
 by database.
 
 .Support by Database
-[cols="15,13,^12,^12,^12,^12,^12,^12,^12", options="header"]
+[cols="15,13,^12,^12,^12,^12,^12,^12,^12,^12", options="header"]
 |====
 |Database
 |Versions
@@ -20,6 +20,7 @@ by database.
 |BLOB Sync
 |CLOB Sync
 |Transactional DDL
+|Load Only
 
 |DB2
 |9.5
@@ -30,6 +31,7 @@ by database.
 |Y
 |Y
 |Y  
+|N
 
 |DB2
 |10,11
@@ -40,6 +42,7 @@ by database.
 |Y
 |Y 
 |Y                   
+|N
 
 |DB2 for IBM i
 |6
@@ -50,6 +53,7 @@ by database.
 |Y
 |Y
 |N                    
+|N
 
 |DB2 for IBM z/OS
 |10
@@ -60,6 +64,7 @@ by database.
 |Y
 |Y
 |N                    
+|N
 
 |Derby
 |10.3.2.1
@@ -69,6 +74,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
 
 |Firebird
@@ -80,6 +86,7 @@ by database.
 |Y
 |Y
 |N
+|N
 
 |Greenplum
 |8.2.15 and above
@@ -87,6 +94,7 @@ by database.
 |N
 |N
 |Y
+|N
 |N
 |N
 |N
@@ -100,6 +108,7 @@ by database.
 |Y
 |Y
 |N
+|N
 
 |HSQLDB
 |1.8
@@ -109,6 +118,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
  
 |HSQLDB
@@ -120,6 +130,7 @@ by database.
 |Y
 |Y
 |N
+|N
 
 |Informix
 |11
@@ -130,7 +141,8 @@ by database.
 |N
 |N
 |N                    
- 
+|N                    
+
 |Interbase
 |9.0
 |N
@@ -139,6 +151,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
 
 |MySQL
@@ -150,6 +163,7 @@ by database.
 |Y
 |Y
 |N
+|N
 
 |MariaDB
 |5.1 and above
@@ -159,6 +173,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
 
 |NuoDB
@@ -170,6 +185,7 @@ by database.
 |N
 |Y
 |N
+|N
                     
 |Oracle
 |10g and above
@@ -179,6 +195,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
  
 |PostgreSQL
@@ -190,6 +207,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 
 |Redshift
 |1.0
@@ -197,6 +215,7 @@ by database.
 |N
 |N
 |Y
+|N
 |N
 |N
 |N
@@ -210,6 +229,7 @@ by database.
 |Y
 |Y
 |N
+|N
 
 |SQL Server
 |2005 and above
@@ -220,6 +240,7 @@ by database.
 |Y
 |Y
 |Y
+|N
  
 |SQL Server Azure
 |Tested on 11.00.2065
@@ -230,6 +251,7 @@ by database.
 |Y
 |N
 |N                    
+|N
  
 |SQLite
 |3.x
@@ -239,6 +261,7 @@ by database.
 |Y
 |Y
 |Y
+|N
 |N
  
 |Sybase ASE
@@ -250,6 +273,18 @@ by database.
 |Y
 |Y
 |N
+|N
+ 
+|Teradata
+|15.10 and above
+|Y
+|Y
+|Y
+|N
+|N
+|N
+|N  
+|Y
    
 |Tibero
 |6 and above
@@ -259,7 +294,9 @@ by database.
 |Y
 |Y
 |Y
-|N                    
+|N 
+|N
+                   
 |====
 
 
@@ -470,4 +507,5 @@ include::sqllite.ad[]
 include::sybase-ase.ad[]
 include::redshift.ad[]
 include::sqlite.ad[]
+include::teradata.ad[]
 include::tibero.ad[]

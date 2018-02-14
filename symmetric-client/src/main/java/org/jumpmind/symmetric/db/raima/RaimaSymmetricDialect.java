@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.raima;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
@@ -39,6 +40,14 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void createRequiredDatabaseObjects() {
+    		ISqlTransaction transaction = platform.getSqlTemplate().startSqlTransaction();
+    		try {
+    			transaction.prepareAndExecute("declare sync_node_disabled varchar(50);");
+    			transaction.prepareAndExecute("declare sync_triggers_disabled smallint;");
+    		} catch(SqlException e) {
+    			log.info("Raima dialect global variables already declared, no need to declare again.");
+    		}
+    		
     	}
 
     @Override
@@ -82,24 +91,20 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-        transaction.prepareAndExecute("declare @sync_triggers_disabled smallint;");
-        transaction.prepareAndExecute("set @sync_triggers_disabled = 1;");
+        transaction.prepareAndExecute("set sync_triggers_disabled = 1;");
         if (nodeId != null) {
-            transaction.prepareAndExecute("declare @sync_node_disabled varchar(50);");
-            transaction.prepareAndExecute("set @sync_node_disabled = '" + nodeId + "';");
+            transaction.prepareAndExecute("set sync_node_disabled = '" + nodeId + "';");
         }
     }
 
     @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
-        transaction.prepareAndExecute("declare @sync_triggers_disabled smallint;");
-        transaction.prepareAndExecute("set @sync_triggers_disabled = null;");
-        transaction.prepareAndExecute("declare @sync_node_disabled varchar(50);");
-        transaction.prepareAndExecute("set @sync_node_disabled = null;");
+        transaction.prepareAndExecute("set sync_triggers_disabled = null;");
+        transaction.prepareAndExecute("set sync_node_disabled = null;");
     }
 
     public String getSyncTriggersExpression() {
-        return "@sync_triggers_disabled is null";
+        return "sync_triggers_disabled is null";
     }
 
     public void cleanDatabase() {

@@ -345,38 +345,46 @@ public class RouterService extends AbstractService implements IRouterService {
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
             gapDetector.setFullGapAnalysis(true);
             
+            boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
+            boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
+
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId());
-                
-                if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
-                   List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
-                   fullLoad.add(load);
-               
-                   List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                           .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
-                    
-                   List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
+                if (!useExtractJob || streamToFile) {
+                    if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
+                        List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
+                        fullLoad.add(load);
 
-                   engine.getDataService().insertReloadEvents(
-                           targetNode,false, fullLoad, processInfo, activeHistories, triggerRouters);
-               }
-               else {
-                   NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
-                   
-                   boolean registered = targetNodeSecurity != null  && (targetNodeSecurity.getRegistrationTime() != null 
-                   		|| targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
-                   if (registered) {  
-                       // Make loads unique to the target and create time
-                       String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
-                       if (!requestsSplitByLoad.containsKey(key)) {
-                           requestsSplitByLoad.put(key, new ArrayList<TableReloadRequest>());
-                       }
-                       requestsSplitByLoad.get(key).add(load);
-                   } else {
-                       log.warn("There was a load queued up for '{}', but the node is not registered.  It is being ignored", load.getTargetNodeId());
-                   }
-               }
+                        List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
+                                .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
+
+                        List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class)
+                                .getActiveTriggerHistories(targetNode);
+
+                        engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters);
+                    } else {
+                        NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
+
+                        boolean registered = targetNodeSecurity != null && (targetNodeSecurity.getRegistrationTime() != null
+                                || targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
+                        if (registered) {
+                            // Make loads unique to the target and create time
+                            String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
+                            if (!requestsSplitByLoad.containsKey(key)) {
+                                requestsSplitByLoad.put(key, new ArrayList<TableReloadRequest>());
+                            }
+                            requestsSplitByLoad.get(key).add(load);
+                        } else {
+                            log.warn("There was a load queued up for '{}', but the node is not registered.  It is being ignored",
+                                    load.getTargetNodeId());
+                        }
+                    }
+                } else {
+                    log.error("Can't process load for '{}' because of confilcting parameters: {}={} and {}={}", load.getTargetNodeId(),
+                            ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED,
+                            streamToFile);
+                }
             }
             
             for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
@@ -393,8 +401,6 @@ public class RouterService extends AbstractService implements IRouterService {
                         targetNode,
                         false, entry.getValue(), processInfo, activeHistories, triggerRouters);
             }
-            
-            
         }
     }
     public boolean isValidLoadTarget(String targetNodeId) {
