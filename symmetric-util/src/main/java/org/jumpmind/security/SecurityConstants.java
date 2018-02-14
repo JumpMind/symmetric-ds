@@ -44,7 +44,7 @@ public class SecurityConstants {
     
     public static final String PREFIX_OBF = "obf:";
 
-    public static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.+!*";
+    public static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 	public static final String[] CIPHERS = new String[] { "AES/GCM/PKCS5Padding", "AES/GCM/PKCS5Padding",
 			"DESede/ECB/PKCS5Padding", "DES/ECB/PKCS5Padding" };
