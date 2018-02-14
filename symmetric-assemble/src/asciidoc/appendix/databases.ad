@@ -9,7 +9,7 @@ feature coverage in SymmetricDS.  The following table shows which features are a
 by database.
 
 .Support by Database
-[cols="15,13,^12,^12,^12,^12,^12,^12,^12", options="header"]
+[cols="15,13,^12,^12,^12,^12,^12,^12,^12,^12", options="header"]
 |====
 |Database
 |Versions
@@ -141,7 +141,8 @@ by database.
 |N
 |N
 |N                    
- 
+|N                    
+
 |Interbase
 |9.0
 |N
