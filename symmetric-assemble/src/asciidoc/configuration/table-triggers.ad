@@ -42,13 +42,13 @@ endif::pro[]
 Trigger Id:: Unique identifier for a trigger.
 Source Catalog:: Optional name for the catalog the configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  \
 Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
-Parameter values can be substituted using `$(name)` syntax.
+Parameter values can be substituted using `$(name)` syntax.  See <<Variables>>.
 Source Schema:: Optional name for the schema a configured table is in.  If the name includes * then a wildcard match on the table name will be attempted.  
 Wildcard names can include a list of names that are comma separated.  The ! symbol may be used to indicate a NOT match condition.
-Parameter values can be substituted using `$(name)` syntax.
+Parameter values can be substituted using `$(name)` syntax.  See <<Variables>>.
 Source Table:: The name of the source table that will have a trigger installed to watch for data changes.  See <<Trigger Wildcards>> for using wildcards
 to specify multiple source tables.
-Parameter values can be substituted using `$(name)` syntax.
+Parameter values can be substituted using `$(name)` syntax.  See <<Variables>>.
 Channel:: The channel_id of the channel that data changes will flow through.
 
 ifdef::pro[]
@@ -83,7 +83,7 @@ It will be used in the generated database trigger to populate the EXTERNAL_DATA 
 Excluded Column Names:: Specify a comma-delimited list of columns that should not be synchronized from this table.  
 Included Column Names:: Specify a comma-delimited list of columns only should be synchronized from this table.  
 Sync Key Names:: Specify a comma-delimited list of columns that should be used as the key for synchronization operations.  By default, if not specified, then the primary key of the table will be used.
-Channel Expression:: An expression that will be used to capture the channel id in the trigger.  This expression will only be used if the channel_id is set to 'dynamic'.  The variable "$(schemaName)" can be used, which is replaced with the source schema of the table.
+Channel Expression:: An expression that will be used to capture the channel id in the trigger.  This expression will only be used if the channel_id is set to 'dynamic'.  The variable "$(schemaName)" can be used, which is replaced with the source schema of the table.  See <<Variables>>.
 
 .Sample Triggers
 ====

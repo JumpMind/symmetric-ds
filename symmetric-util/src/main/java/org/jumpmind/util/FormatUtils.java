@@ -70,7 +70,9 @@ public final class FormatUtils {
     }
 
     public static String replace(String prop, String replaceWith, String sourceString) {
-        return StringUtils.replace(sourceString, "$(" + prop + ")", replaceWith);
+        Map<String, String> replacements = new HashMap<String, String>(1);
+        replacements.put(prop, replaceWith);
+        return replaceTokens(sourceString, replacements, true);
     }
 
     public static String replaceToken(String text, String tokenToReplace, String replaceWithText,
@@ -100,12 +102,25 @@ public final class FormatUtils {
                 Matcher matcher = pattern.matcher(text);
                 StringBuffer buffer = new StringBuffer();
                 while (matcher.find()) {
-                    String[] match = matcher.group(1).split("\\|");
-                    String replacement = replacements.get(match[0]);
+                    String[] matchPipe = matcher.group(1).split("\\|");
+                    String[] matchColon = matchPipe[0].split(":");
+                    String replacement = replacements.get(matchColon[0]);
                     if (replacement != null) {
                         matcher.appendReplacement(buffer, "");
-                        if (match.length == 2) {
-                            replacement = formatString(match[1], replacement);
+                        if (matchColon.length == 2) {
+                            int startIndex = Integer.parseInt(matchColon[1]);
+                            if (startIndex <= replacement.length()) {
+                                replacement = replacement.substring(Integer.parseInt(matchColon[1]));
+                            }
+                        } else if (matchColon.length == 3) {
+                            int startIndex = Integer.parseInt(matchColon[1]);
+                            int endIndex = Integer.parseInt(matchColon[2]);
+                            if (startIndex <= replacement.length() && endIndex <= replacement.length()) { 
+                                replacement = replacement.substring(startIndex, endIndex);
+                            }
+                        }
+                        if (matchPipe.length == 2) {
+                            replacement = formatString(matchPipe[1], replacement);
                         }
                         buffer.append(replacement);
                     }
@@ -119,7 +134,6 @@ public final class FormatUtils {
             }
         }
         return text;
-
     }
 
     public static String formatString(String format, String arg) {

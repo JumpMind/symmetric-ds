@@ -115,6 +115,9 @@ Implement this extension point to receive callback events when a batch is acknow
 ===== IReloadListener
 Implement this extension point to listen in and take action before or after a reload is requested for a Node. The callback for this listener happens at the point of extraction.
 
+===== IReloadVariableFilter
+Implement this extension point to filter the SQL used by the initial load to query source tables and purge target tables.  The extension receives the SQL and can replace variable names with values, which allows for adding new variables.  The org.jumpmind.util.FormatUtils.replace() method can be used to find and replace variables.
+
 ===== ISyncUrlExtension
 This extension point is used to select an appropriate URL based on the URI provided in the sync_url column of sym_node.
 
