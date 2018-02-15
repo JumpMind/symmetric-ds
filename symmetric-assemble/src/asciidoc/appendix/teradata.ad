@@ -21,6 +21,12 @@ GRANT SELECT ON "DBC" TO {USER} WITH GRANT OPTION;
 
 ==== Loading Data 
 
+Turn off the initial load extract in background job
+
+----
+initial.load.use.extract.job.enabled=false
+----
+
 There is a bulk loader provided for Teradata that can be used by setting the <<Channels>> data loader type to bulk for any reload channels used.   This will use the FASTLOADCSV process provided by Teradata.   
 
 NOTE: To use the FASTLOADCSV the Teradata table must be empty.
