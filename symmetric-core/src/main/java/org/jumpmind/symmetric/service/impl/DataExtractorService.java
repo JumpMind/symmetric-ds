@@ -1291,17 +1291,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                                 isRetry = true;
                                 
-                                	statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
-                            		statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
+                                 if (currentBatch.getSentCount() == 1) {
+	                                	statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
+	                            		statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
+                                 }
                             } catch (Exception e) {   
                                 FileUtils.deleteQuietly(targetResource.getFile());
                                 throw new RuntimeException(e);
                             }
                         }
-                        statisticManager.incrementDataSent(currentBatch.getChannelId(),
-                                currentBatch.getDataRowCount());
-                        statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), 
-                                currentBatch.getByteCount());
                     }
                     
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
@@ -1317,7 +1315,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
                     new DataProcessor(dataReader, new ProcessInfoDataWriter(dataWriter, processInfo), "send from stage")
                             .process(ctx);
-                    if (dataReader.getStatistics().size() > 0) {
+                    if (dataReader.getStatistics().size() > 0 && currentBatch.getSentCount() == 1) {
                         Statistics stats = dataReader.getStatistics().values().iterator().next();
                         statisticManager.incrementDataSent(currentBatch.getChannelId(),
                                 stats.get(DataReaderStatistics.READ_RECORD_COUNT));
@@ -1431,9 +1429,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
                 
-                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataRowCount());
-                statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
-
+                if (batch.getSentCount() == 1) {
+	                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataRowCount());
+	                statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
+                }
+                
                 if (log.isDebugEnabled() && totalThrottleTime > 0) {
                     log.debug("Batch '{}' for node '{}' took {}ms for {} bytes and was throttled for {}ms because limit is set to {} KB/s",
                             batch.getBatchId(), batch.getNodeId(), (System.currentTimeMillis() - startTime), totalBytesRead,
