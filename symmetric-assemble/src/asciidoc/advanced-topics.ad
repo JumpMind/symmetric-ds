@@ -581,3 +581,42 @@ directory is cleared out before each subsequent delivery of files.
 
 The acknowledgement of a batch happens the same way it is acknowledged in database synchronization. The client responds with an 
 acknowledgement as part of the response during a file push or pull.
+
+=== Variables
+
+Variables can be used throughout configuration with the `$(variableName)` syntax.  Check the documentation for each configuration 
+item to see which variables it supports.  A substring of the variable value can be specified with a starting index and an optional
+ending index.  The first character is at index 0, and the end index is not included in the substring.
+Therefore, the length of the substring will be end index minus start index.
+
+[source, cli]
+----
+$(variableName:start)
+$(variableName:start:end)
+----
+
+Examples when `$(externalId)` is set to `00001-002`:
+
+[source, cli]
+----
+$(externalId:0:5) - returns 00001
+$(externalId:6) - returns 002
+----
+
+The variable value can be formatted using a https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax[format string]
+supported by `java.lang.String.format()`.
+
+[source, cli]
+----
+$(variableName|format_string)
+----
+
+Examples when `$(externalId)` is set to `1`:
+
+[source, cli]
+----
+$(variableName|%05d) - returns 00001
+----
+
+
+

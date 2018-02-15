@@ -109,6 +109,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingFileLock;
+import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
@@ -143,6 +144,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
@@ -197,6 +199,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     private INodeCommunicationService nodeCommunicationService;
 
     private IClusterService clusterService;
+    
+    private IExtensionService extensionService;
 
     private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
     
@@ -216,6 +220,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.nodeCommunicationService = engine.getNodeCommunicationService();
         this.clusterService = engine.getClusterService();
         this.sequenceService = engine.getSequenceService();
+        this.extensionService = engine.getExtensionService();
         setSqlMap(new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -2419,12 +2424,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
                 overrideSelectSql = overrideSelectSql.trim().substring(5);
             }
-            final String initialLoadSql = symmetricDialect.createInitialLoadSqlFor(
+            String sql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
                     triggerHistory,
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
                     overrideSelectSql);
-
+            for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
+                sql = filter.filterInitalLoadSql(sql, node, targetTable);
+            }
+            
+            final String initialLoadSql = sql;
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
             final boolean selectedAsCsv = symmetricDialect.getParameterService().is(
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 

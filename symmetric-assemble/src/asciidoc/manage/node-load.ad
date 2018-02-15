@@ -50,7 +50,7 @@ insert into SYM_TABLE_RELOAD_REQUEST (target_node_id, source_node_id, trigger_id
 
 ===== Load data for a specific table with partial data
 Insert a row into <<TABLE_RELOAD_REQUEST>> and set the reload_select to the where clause to run while extracting data.  There are 3 variables
-available for replacement.
+available for replacement.  See <<Variables>>.
 
 * $(groupId)
 * $(nodeId)
@@ -112,6 +112,8 @@ Partial loads will then see a table selection screen.  Full loads will immediate
 * $(groupId)
 * $(nodeId)
 * $(externalId)
+
+See <<Variables>>.
 
 image::manage/manage-load-data-tables.png[]
 

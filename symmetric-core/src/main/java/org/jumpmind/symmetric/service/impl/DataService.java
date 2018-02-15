@@ -68,6 +68,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
+import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
@@ -986,6 +987,9 @@ public class DataService extends AbstractService implements IDataService {
         sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
         sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
+        for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
+            sql = filter.filterPurgeSql(sql, targetNode, table);
+        }
         
         int rowCount = sqlTemplate.queryForInt(sql);
         return rowCount;
@@ -1148,6 +1152,12 @@ public class DataService extends AbstractService implements IDataService {
         sql = FormatUtils.replace("sourceGroupId", sourceNode.getNodeGroupId(), sql);
         sql = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), sql);
         sql = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), sql);
+        Table table = new Table(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
+                triggerHistory.getSourceTableName(), triggerHistory.getParsedColumnNames(), triggerHistory.getParsedPkColumnNames());
+        for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
+            sql = filter.filterPurgeSql(sql, targetNode, table);
+        }
+
         String channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine
                 .getConfigurationService().getChannels(false));
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,

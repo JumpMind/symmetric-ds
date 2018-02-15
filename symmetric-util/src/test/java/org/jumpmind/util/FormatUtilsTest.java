@@ -47,7 +47,17 @@ public class FormatUtilsTest {
         assertEquals(afterSql, FormatUtils.replaceTokens(beforeSql, replacementTokens, false));
         
     }
-    
+
+    @Test
+    public void testReplace() {
+        assertEquals(FormatUtils.replace("nodeId", "001", "nodeId = $(nodeId)"), "nodeId = 001");
+        assertEquals(FormatUtils.replace("nodeId", "001", "nodeId = $(nodeId:0)"), "nodeId = 001");
+        assertEquals(FormatUtils.replace("nodeId", "001", "nodeId = $(nodeId:0:10)"), "nodeId = 001");
+        assertEquals(FormatUtils.replace("nodeId", "1234567890ABC", "nodeId = $(nodeId:10)"), "nodeId = ABC");
+        assertEquals(FormatUtils.replace("nodeId", "1234567890ABC", "nodeId = $(nodeId:10:11)"), "nodeId = A");        
+        assertEquals(FormatUtils.replace("nodeId", "001-002", "nodeId = $(nodeId:4)"), "nodeId = 002");
+    }
+
     @Test
     public void testIsWildcardMatch() {
         assertTrue(FormatUtils.isWildCardMatch("TEST_1", "TEST_*"));
