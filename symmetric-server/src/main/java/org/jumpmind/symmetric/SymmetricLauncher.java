@@ -168,10 +168,10 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_NO_DIRECT_BUFFER)) {
             noDirectBuffer = true;
         }
-
-        boolean jmxEnabledFlag = !line.hasOption(OPTION_JMX_DISABLE); 
         
-        if (jmxEnabledFlag) {
+        boolean jmxDisabledFlag = line.hasOption(OPTION_JMX_DISABLE); 
+        
+        if (!jmxDisabledFlag) {
             if (line.hasOption(OPTION_JMX_PORT)) {
                 jmxPort = new Integer(line.getOptionValue(OPTION_JMX_PORT));
             } else {
@@ -220,7 +220,9 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             webServer.setBasicAuthUsername(httpBasicAuthUser);
             webServer.setBasicAuthPassword(httpBasicAuthPassword);
             
-            webServer.setJmxEnabled(jmxEnabledFlag);
+            if (jmxDisabledFlag) {                
+                webServer.setJmxEnabled(false);
+            }
             if (jmxPort > 0) {
                 webServer.setJmxPort(jmxPort);
             }
