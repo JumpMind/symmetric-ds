@@ -187,7 +187,7 @@ public class StagingManager implements IStagingManager {
             boolean foundResourcePath = resourcePaths.contains(path);
             if (!foundResourcePath && clusterEnabled) {
                 synchronized (this) {
-                    StagedResource staged = new StagedResource(directory, path, this);
+                    IStagedResource staged = createStagedResource(path);
                     if (staged.exists() && staged.getState() == State.DONE) {
                         resourcePaths.add(path);
                         resource = staged;
@@ -195,7 +195,7 @@ public class StagingManager implements IStagingManager {
                     }
                 }
             } else if (foundResourcePath) {
-                resource = new StagedResource(directory, path, this);         
+                resource = createStagedResource(path);         
             }
         }
         return resource;
