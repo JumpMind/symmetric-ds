@@ -29,6 +29,8 @@ public class Constants {
     public static final String ENV_SYM_HOME = "SYM_HOME";
     
     public static final String SYSPROP_TMPDIR = "java.io.tmpdir";
+    
+    public static final String JAR_NAME = "symmetric-wrapper.jar";
 
     public static final int RC_BAD_USAGE = 1;
     public static final int RC_INVALID_ARGUMENT = 2;

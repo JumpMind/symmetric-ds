@@ -20,7 +20,10 @@
  */
 package org.jumpmind.symmetric.wrapper;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,11 +90,14 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void start() {
+        if (isRunning()) {
+            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
+        }
+
         if (!isInstalled()) {
             super.start();
-        } else if (isRunning()) {
-            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         } else {
+            stopProcesses(true);
             Advapi32Ex advapi = Advapi32Ex.INSTANCE;
             SC_HANDLE manager = openServiceManager();
             SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
@@ -164,7 +170,7 @@ public class WindowsService extends WrapperService {
                 }
                 closeServiceHandle(service);
                 closeServiceHandle(manager);
-                return (status.dwCurrentState == Winsvc.SERVICE_RUNNING);
+                return (status.dwCurrentState == Winsvc.SERVICE_RUNNING) && super.isRunning();
             }
             closeServiceHandle(manager);
         }
@@ -175,12 +181,37 @@ public class WindowsService extends WrapperService {
     protected boolean isPidRunning(int pid) {
         boolean isRunning = false;
         if (pid != 0) {
-            Kernel32 kernel = Kernel32.INSTANCE;
-            HANDLE process = kernel.OpenProcess(Kernel32.SYNCHRONIZE, false, pid);
-            if (process != null) {
-                int rc = kernel.WaitForSingleObject(process, 0);
-                kernel.CloseHandle(process);
-                isRunning = (rc == Kernel32.WAIT_TIMEOUT);
+            boolean foundProcess = false;
+            String[] path = config.getJavaCommand().split("/|\\\\");
+            String javaExe = path[path.length - 1].toLowerCase();
+            try {
+                ProcessBuilder pb = new ProcessBuilder("query", "process", String.valueOf(pid));
+                Process proc = pb.start();
+                pb.redirectErrorStream(true);
+                BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                String line = stdout.readLine();
+                line = stdout.readLine();
+                stdout.close();
+
+                if (line != null) {
+                    String[] array = line.split("\\s+");
+                    if (array.length > 0) {
+                        foundProcess = true;
+                        String exeName = array[array.length - 1];
+                        isRunning = exeName.toLowerCase().contains(javaExe);
+                    }
+                }
+
+            } catch (IOException e) {
+            }
+            if (!foundProcess) {
+                Kernel32Ex kernel = Kernel32Ex.INSTANCE;
+                HANDLE process = kernel.OpenProcess(Kernel32.SYNCHRONIZE, false, pid);
+                if (process != null) {
+                    int rc = kernel.WaitForSingleObject(process, 0);
+                    kernel.CloseHandle(process);
+                    isRunning = (rc == Kernel32.WAIT_TIMEOUT);
+                }
             }
         }
         return isRunning;
@@ -490,6 +521,13 @@ public class WindowsService extends WrapperService {
             }
 
             if (!isRunning) {
+                try {
+                    stopProcesses(true);
+                } catch (Throwable e) {
+                    logEvent(WinNT.EVENTLOG_ERROR_TYPE, "Failed to stop abandoned processes.", e);
+                    updateStatus(Winsvc.SERVICE_STOPPED, 0);
+                    System.exit(Constants.RC_FAIL_STOP_SERVER);                    
+                }
                 try {
                     execJava(false);
                 } catch (Throwable e) {

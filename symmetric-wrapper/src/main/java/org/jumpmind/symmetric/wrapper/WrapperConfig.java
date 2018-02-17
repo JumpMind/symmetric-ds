@@ -121,6 +121,10 @@ public class WrapperConfig {
     public List<String> getOptions() {
         return prop.get("wrapper.java.additional");
     }
+    
+    public List<String> getApplicationParameters() {
+        return getListProperty(prop, "wrapper.app.parameter");
+    }
 
     public ArrayList<String> getCommand(boolean isConsole) {
         ArrayList<String> cmdList = new ArrayList<String>();
