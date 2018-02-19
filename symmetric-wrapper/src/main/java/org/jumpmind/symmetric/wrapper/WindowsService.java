@@ -25,11 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.symmetric.wrapper.Constants.Status;
+import org.jumpmind.symmetric.wrapper.WrapperConfig.FailureAction;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.HANDLER_FUNCTION;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.SERVICE_STATUS_HANDLE;
@@ -321,6 +323,27 @@ public class WindowsService extends WrapperService {
                 if (service != null) {
                     Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
                     advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
+
+                    WinsvcEx.SC_ACTION.ByReference actionRef = null;
+                    WinsvcEx.SC_ACTION[] actionArray = null;
+                    List<FailureAction> failureActions = config.getFailureActions();
+                    if (failureActions.size() > 0) {
+                        actionRef = new WinsvcEx.SC_ACTION.ByReference();
+                        actionArray = (WinsvcEx.SC_ACTION[]) actionRef.toArray(failureActions.size());
+                    }
+                    int i = 0;
+                    for (FailureAction failureAction : failureActions) {
+                        actionArray[i].type = failureAction.getType();
+                        actionArray[i].delay = failureAction.getDelay();
+                        i++;
+                    }
+                 
+                    WinsvcEx.SERVICE_FAILURE_ACTIONS actions = new WinsvcEx.SERVICE_FAILURE_ACTIONS(config.getFailureResetPeriod(), "", 
+                            config.getFailureActionCommand(), failureActions.size(), actionRef);
+                    advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_FAILURE_ACTIONS, actions);
+
+                    WinsvcEx.SERVICE_FAILURE_ACTIONS_FLAG flag = new WinsvcEx.SERVICE_FAILURE_ACTIONS_FLAG(false);
+                    advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, flag);
 
                     if (config.isDelayStart()) {
                         WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO delayedInfo = new WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO(true);

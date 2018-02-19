@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.SERVICE_INFO;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
@@ -37,8 +38,15 @@ public interface WinsvcEx extends Winsvc {
     int SERVICE_DEMAND_START = 0x00000003;
     int SERVICE_ERROR_NORMAL = 0x00000001;
     int SERVICE_CONFIG_DESCRIPTION = 1;
+    int SERVICE_CONFIG_FAILURE_ACTIONS = 2;
     int SERVICE_CONFIG_DELAYED_AUTO_START_INFO = 3;
+    int SERVICE_CONFIG_FAILURE_ACTIONS_FLAG = 4;
 
+    int SC_ACTION_NONE = 0;
+    int SC_ACTION_RESTART = 1;
+    int SC_ACTION_REBOOT = 2;
+    int SC_ACTION_RUN_COMMAND = 3;
+    
     public interface SERVICE_MAIN_FUNCTION extends StdCallCallback {
         void serviceMain(int argc, Pointer argv);
     }
@@ -61,7 +69,7 @@ public interface WinsvcEx extends Winsvc {
         }
     }
     
-    public static class SERVICE_DELAYED_AUTO_START_INFO extends Structure {
+    public static class SERVICE_DELAYED_AUTO_START_INFO extends SERVICE_INFO {
         public int fDelayedAutostart;
 
         public SERVICE_DELAYED_AUTO_START_INFO() {
@@ -76,4 +84,64 @@ public interface WinsvcEx extends Winsvc {
             return Arrays.asList(new String[] { "fDelayedAutostart" });
         }
     }
+    
+    public static class SERVICE_FAILURE_ACTIONS_FLAG extends SERVICE_INFO {
+        public boolean fFailureActionsOnNonCrashFailures;
+        
+        public SERVICE_FAILURE_ACTIONS_FLAG() {
+        }
+
+        public SERVICE_FAILURE_ACTIONS_FLAG(boolean fFailureActionsOnNonCrashFailures) {
+            this.fFailureActionsOnNonCrashFailures = fFailureActionsOnNonCrashFailures;
+        }
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList(new String[] { "fFailureActionsOnNonCrashFailures" });
+        }        
+    }
+
+    public static class SERVICE_FAILURE_ACTIONS extends SERVICE_INFO {
+        public int dwResetPeriod;
+        public String lpRebootMsg;
+        public String lpCommand;
+        public int cActions;
+        public SC_ACTION.ByReference lpsaActions;
+        
+        public SERVICE_FAILURE_ACTIONS() {
+        }
+
+        public SERVICE_FAILURE_ACTIONS(int dwResetPeriod, String lpRebootMsg, String lpCommand, int cActions, SC_ACTION.ByReference lpsaActions) {
+            this.dwResetPeriod = dwResetPeriod;
+            this.lpRebootMsg = lpRebootMsg;
+            this.lpCommand = lpCommand;
+            this.cActions = cActions;
+            this.lpsaActions = lpsaActions;
+        }
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList(new String[] { "dwResetPeriod", "lpRebootMsg", "lpCommand", "cActions", "lpsaActions" });
+        }        
+    }
+
+    public static class SC_ACTION extends Structure {
+        public static class ByReference extends SC_ACTION implements Structure.ByReference {}
+        public int type;
+        public int delay;
+        
+        public SC_ACTION() {
+        }
+
+        public SC_ACTION(int type, int delay) {
+            this.type = type;
+            this.delay = delay;
+        }
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList(new String[] { "type", "delay" });
+        }        
+    }
+    
 }

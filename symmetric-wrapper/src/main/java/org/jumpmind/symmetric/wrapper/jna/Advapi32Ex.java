@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
-import org.jumpmind.symmetric.wrapper.jna.WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO;
 
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -45,8 +44,6 @@ public interface Advapi32Ex extends Advapi32 {
             String loadOrderGroup, String tagId, String dependencies, String user, String password);
 
     boolean ChangeServiceConfig2(SC_HANDLE service, int infoLevel, SERVICE_INFO info);
-
-    boolean ChangeServiceConfig2(SC_HANDLE service, int infoLevel, SERVICE_DELAYED_AUTO_START_INFO info);
     
     boolean DeleteService(SC_HANDLE serviceHandle);
 
