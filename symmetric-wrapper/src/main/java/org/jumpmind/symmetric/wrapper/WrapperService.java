@@ -71,6 +71,7 @@ public abstract class WrapperService {
             throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         }
 
+        stopProcesses(true);
         System.out.println("Waiting for server to start");
         ArrayList<String> cmdLine = getWrapperCommand("exec");
         Process process = null;
@@ -187,7 +188,7 @@ public abstract class WrapperService {
                                 logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
                                 child.destroy();
                                 childReader.close();
-                                stopProcess(serverPid, "symmetricds");
+                                stopProcess(serverPid, "server");
                                 break;
                             }
                             if (line.equalsIgnoreCase("Restarting")) {
@@ -229,18 +230,43 @@ public abstract class WrapperService {
     }
 
     public void stop() {
-        int symPid = readPidFromFile(config.getServerPidFile());
-        int wrapperPid = readPidFromFile(config.getWrapperPidFile());
-        if (!isPidRunning(symPid) && !isPidRunning(wrapperPid)) {
-            throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
-        }
-        System.out.println("Waiting for server to stop");
-        if (!(stopProcess(wrapperPid, "wrapper") && stopProcess(symPid, "symmetricds"))) {
-            throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, 0, "Server did not stop");
-        }
+        stopProcesses(false);
+        deletePidFile(config.getServerPidFile());
+        deletePidFile(config.getWrapperPidFile());
         System.out.println("Stopped");
     }
-    
+
+    protected void stopProcesses(boolean isStopAbandoned) {
+        int serverPid = readPidFromFile(config.getServerPidFile());
+        int wrapperPid = readPidFromFile(config.getWrapperPidFile());
+        boolean isServerRunning = isPidRunning(serverPid);
+        boolean isWrapperRunning = isPidRunning(wrapperPid);
+
+        if (!isStopAbandoned) {
+            if (!isServerRunning && !isWrapperRunning) {
+                throw new WrapperException(Constants.RC_SERVER_NOT_RUNNING, 0, "Server is not running");
+            }
+
+            System.out.println("Waiting for server to stop");
+        }
+
+        if (isWrapperRunning) {
+            if (isStopAbandoned) {
+                System.out.println("Stopping abandoned wrapper PID " + wrapperPid);
+            }
+            isWrapperRunning = !stopProcess(wrapperPid, "wrapper");
+        }
+        if (isServerRunning) {
+            if (isStopAbandoned) {
+                System.out.println("Stopping abandoned server PID " + serverPid);
+            }
+            isServerRunning = !stopProcess(serverPid, "server");
+        }
+        if (isWrapperRunning || isServerRunning) {
+            throw new WrapperException(Constants.RC_FAIL_STOP_SERVER, 0, "Server did not stop");
+        }
+    }
+
     protected boolean stopProcess(int pid, String name) {
         killProcess(pid, false);
         if (waitForPid(pid)) {
@@ -287,17 +313,20 @@ public abstract class WrapperService {
 
     public void status() {
         boolean isRunning = isRunning();
+        int wrapperPid = readPidFromFile(config.getWrapperPidFile());
+        int serverPid = readPidFromFile(config.getServerPidFile());
+        
         System.out.println("Installed: " + isInstalled());
         System.out.println("Running: " + isRunning);
-        if (isRunning) {
-            System.out.println("Wrapper PID: " + readPidFromFile(config.getWrapperPidFile()));
-            System.out.println("Server PID: " + readPidFromFile(config.getServerPidFile()));
-        }
+        System.out.println("Wrapper PID: " + wrapperPid);
+        System.out.println("Wrapper Running: " + isPidRunning(wrapperPid));
+        System.out.println("Server PID: " + serverPid);
+        System.out.println("Server Running: " + isPidRunning(serverPid));
     }
 
     public boolean isRunning() {
-        return isPidRunning(readPidFromFile(config.getWrapperPidFile())) ||
-                isPidRunning(readPidFromFile(config.getServerPidFile()));
+        return isPidRunning(readPidFromFile(config.getWrapperPidFile()))
+                && isPidRunning(readPidFromFile(config.getServerPidFile()));
     }
 
     public int getWrapperPid() {

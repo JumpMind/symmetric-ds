@@ -1467,7 +1467,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }            
             
         } catch (Exception ex) {
-            log.error(String.format("Failed to retrieve tables for trigger with id of %s", trigger.getTriggerId()), ex);
+            throw new RuntimeException(String.format("Failed to retrieve tables for trigger with id of %s", trigger.getTriggerId()), ex);
         }
         return tables;
     }

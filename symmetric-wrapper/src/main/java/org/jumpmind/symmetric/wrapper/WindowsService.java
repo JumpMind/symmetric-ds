@@ -20,13 +20,18 @@
  */
 package org.jumpmind.symmetric.wrapper;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.symmetric.wrapper.Constants.Status;
+import org.jumpmind.symmetric.wrapper.WrapperConfig.FailureAction;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.HANDLER_FUNCTION;
 import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.SERVICE_STATUS_HANDLE;
@@ -87,11 +92,14 @@ public class WindowsService extends WrapperService {
 
     @Override
     public void start() {
+        if (isRunning()) {
+            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
+        }
+
         if (!isInstalled()) {
             super.start();
-        } else if (isRunning()) {
-            throw new WrapperException(Constants.RC_SERVER_ALREADY_RUNNING, 0, "Server is already running");
         } else {
+            stopProcesses(true);
             Advapi32Ex advapi = Advapi32Ex.INSTANCE;
             SC_HANDLE manager = openServiceManager();
             SC_HANDLE service = advapi.OpenService(manager, config.getName(), Winsvc.SERVICE_ALL_ACCESS);
@@ -164,7 +172,7 @@ public class WindowsService extends WrapperService {
                 }
                 closeServiceHandle(service);
                 closeServiceHandle(manager);
-                return (status.dwCurrentState == Winsvc.SERVICE_RUNNING);
+                return (status.dwCurrentState == Winsvc.SERVICE_RUNNING) && super.isRunning();
             }
             closeServiceHandle(manager);
         }
@@ -175,12 +183,37 @@ public class WindowsService extends WrapperService {
     protected boolean isPidRunning(int pid) {
         boolean isRunning = false;
         if (pid != 0) {
-            Kernel32 kernel = Kernel32.INSTANCE;
-            HANDLE process = kernel.OpenProcess(Kernel32.SYNCHRONIZE, false, pid);
-            if (process != null) {
-                int rc = kernel.WaitForSingleObject(process, 0);
-                kernel.CloseHandle(process);
-                isRunning = (rc == Kernel32.WAIT_TIMEOUT);
+            boolean foundProcess = false;
+            String[] path = config.getJavaCommand().split("/|\\\\");
+            String javaExe = path[path.length - 1].toLowerCase();
+            try {
+                ProcessBuilder pb = new ProcessBuilder("query", "process", String.valueOf(pid));
+                Process proc = pb.start();
+                pb.redirectErrorStream(true);
+                BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                String line = stdout.readLine();
+                line = stdout.readLine();
+                stdout.close();
+
+                if (line != null) {
+                    String[] array = line.split("\\s+");
+                    if (array.length > 0) {
+                        foundProcess = true;
+                        String exeName = array[array.length - 1];
+                        isRunning = exeName.toLowerCase().contains(javaExe);
+                    }
+                }
+
+            } catch (IOException e) {
+            }
+            if (!foundProcess) {
+                Kernel32Ex kernel = Kernel32Ex.INSTANCE;
+                HANDLE process = kernel.OpenProcess(Kernel32.SYNCHRONIZE, false, pid);
+                if (process != null) {
+                    int rc = kernel.WaitForSingleObject(process, 0);
+                    kernel.CloseHandle(process);
+                    isRunning = (rc == Kernel32.WAIT_TIMEOUT);
+                }
             }
         }
         return isRunning;
@@ -290,6 +323,27 @@ public class WindowsService extends WrapperService {
                 if (service != null) {
                     Advapi32Ex.SERVICE_DESCRIPTION desc = new Advapi32Ex.SERVICE_DESCRIPTION(config.getDescription());
                     advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_DESCRIPTION, desc);
+
+                    WinsvcEx.SC_ACTION.ByReference actionRef = null;
+                    WinsvcEx.SC_ACTION[] actionArray = null;
+                    List<FailureAction> failureActions = config.getFailureActions();
+                    if (failureActions.size() > 0) {
+                        actionRef = new WinsvcEx.SC_ACTION.ByReference();
+                        actionArray = (WinsvcEx.SC_ACTION[]) actionRef.toArray(failureActions.size());
+                    }
+                    int i = 0;
+                    for (FailureAction failureAction : failureActions) {
+                        actionArray[i].type = failureAction.getType();
+                        actionArray[i].delay = failureAction.getDelay();
+                        i++;
+                    }
+                 
+                    WinsvcEx.SERVICE_FAILURE_ACTIONS actions = new WinsvcEx.SERVICE_FAILURE_ACTIONS(config.getFailureResetPeriod(), "", 
+                            config.getFailureActionCommand(), failureActions.size(), actionRef);
+                    advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_FAILURE_ACTIONS, actions);
+
+                    WinsvcEx.SERVICE_FAILURE_ACTIONS_FLAG flag = new WinsvcEx.SERVICE_FAILURE_ACTIONS_FLAG(false);
+                    advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, flag);
 
                     if (config.isDelayStart()) {
                         WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO delayedInfo = new WinsvcEx.SERVICE_DELAYED_AUTO_START_INFO(true);
@@ -490,6 +544,13 @@ public class WindowsService extends WrapperService {
             }
 
             if (!isRunning) {
+                try {
+                    stopProcesses(true);
+                } catch (Throwable e) {
+                    logEvent(WinNT.EVENTLOG_ERROR_TYPE, "Failed to stop abandoned processes.", e);
+                    updateStatus(Winsvc.SERVICE_STOPPED, 0);
+                    System.exit(Constants.RC_FAIL_STOP_SERVER);                    
+                }
                 try {
                     execJava(false);
                 } catch (Throwable e) {

@@ -21,11 +21,15 @@
 package org.jumpmind.symmetric.wrapper;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.symmetric.wrapper.jna.CLibrary;
@@ -138,7 +142,49 @@ public class UnixService extends WrapperService {
 
     @Override
     protected boolean isPidRunning(int pid) {
+        File procFile = new File("/proc/" + pid + "/cmdline");
+        if (procFile.canRead()) {
+            try {
+                List<String> args = readProcFile(procFile);
+                String appName = config.getApplicationParameters().get(0);
+                boolean isJava = false;
+                boolean isMe = false;
+
+                for (String arg : args) {
+                    if (arg.contains(config.getJavaCommand())) {
+                        isJava = true;
+                    }
+                    if (arg.contains(appName) || arg.contains(Constants.JAR_NAME)) {
+                        isMe = true;
+                    }
+                }
+                return isJava && isMe;
+            } catch (IOException e) {
+            }
+        }        
         return pid != 0 && CLibrary.INSTANCE.kill(pid, 0) == 0;
+    }
+
+    private List<String> readProcFile(File procFile) throws IOException {
+        FileInputStream in = new FileInputStream(procFile);
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        List<String> args = new ArrayList<String>();
+        byte buffer[] = new byte[512];
+        int len = 0;
+
+        while ((len = in.read(buffer)) != -1) {
+            for (int i = 0; i < len; i++) {
+                if (buffer[i] == (byte) 0x0) {
+                    bout.flush();
+                    args.add(new String(bout.toString()));
+                    bout.reset();
+                } else {
+                    bout.write(buffer[i]);
+                }
+            }
+        }
+        in.close();
+        return args;
     }
 
     @Override

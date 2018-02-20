@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jumpmind.symmetric.wrapper.jna.WinsvcEx;
+
 public class WrapperConfig {
 
 	protected String configFile;
@@ -110,6 +112,31 @@ public class WrapperConfig {
         return getProperty(prop, "wrapper.ntservice.starttype", "auto").equalsIgnoreCase("delay");
     }
 
+    public String getFailureActionCommand() {
+        return getProperty(prop, "wrapper.ntservice.failure.action.command", "");
+    }
+    
+    public int getFailureResetPeriod() {
+        return Integer.parseInt(getProperty(prop, "wrapper.ntservice.failure.reset.period", "300"));
+    }
+
+    public List<FailureAction> getFailureActions() {
+        List<String> types = getListProperty(prop, "wrapper.ntservice.failure.action.type");
+        List<String> delays = getListProperty(prop, "wrapper.ntservice.failure.action.delay");
+        int count = types.size() >= 3 ? 3 : types.size();
+        List<FailureAction> actions = new ArrayList<FailureAction>(count);
+        int i = 0;
+        for (String type : types) {
+            String delay = "0";
+            if (i < delays.size()) {
+                delay = delays.get(i); 
+            }
+            actions.add(new FailureAction(type, delay));
+            i++;
+        }
+        return actions;
+    }
+
     public List<String> getDependencies() {
         return prop.get("wrapper.ntservice.dependency");
     }
@@ -120,6 +147,10 @@ public class WrapperConfig {
     
     public List<String> getOptions() {
         return prop.get("wrapper.java.additional");
+    }
+    
+    public List<String> getApplicationParameters() {
+        return getListProperty(prop, "wrapper.app.parameter");
     }
 
     public ArrayList<String> getCommand(boolean isConsole) {
@@ -247,5 +278,33 @@ public class WrapperConfig {
             value = new ArrayList<String>(0);
         }
         return value;
+    }
+    
+    public class FailureAction {
+        int type;
+        int delay;
+        
+        public FailureAction(String type, String delay) {
+            if (type != null) {
+                if (type.equalsIgnoreCase("restart")) {
+                    this.type = WinsvcEx.SC_ACTION_RESTART;
+                } else if (type.equalsIgnoreCase("reboot")) {
+                    this.type = WinsvcEx.SC_ACTION_REBOOT;
+                } else if (type.equalsIgnoreCase("run_command")) {
+                    this.type = WinsvcEx.SC_ACTION_RUN_COMMAND;
+                } else {
+                    this.type = WinsvcEx.SC_ACTION_NONE;
+                }
+            }
+            this.delay = Integer.parseInt(delay);
+        }
+        
+        public int getType() {
+            return type;
+        }
+        
+        public int getDelay() {
+            return delay;
+        }
     }
 }
