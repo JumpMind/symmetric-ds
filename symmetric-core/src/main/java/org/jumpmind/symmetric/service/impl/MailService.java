@@ -30,6 +30,7 @@ import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.jumpmind.properties.TypedProperties;
@@ -101,9 +102,10 @@ public class MailService extends AbstractService implements IMailService {
         try {
             MimeMessage message = new MimeMessage(session);
             message.setSentDate(new Date());
-            message.setRecipients(RecipientType.BCC, recipients);
+            message.setRecipients(RecipientType.TO, recipients);
             message.setSubject(subject);
             message.setText(text);
+            message.setFrom(new InternetAddress(prop.getProperty(JAVAMAIL_FROM)));
             try {
                 transport.sendMessage(message, message.getAllRecipients());
             } catch (MessagingException e) {
