@@ -28,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -196,10 +197,18 @@ public class UnixService extends WrapperService {
     protected int getProcessPid(Process process) {
         int pid = 0;
         try {
-            Field field = process.getClass().getDeclaredField("pid");
-            field.setAccessible(true);
-            pid = field.getInt(process);
+            // Java 9
+            Method method = Process.class.getDeclaredMethod("pid", (Class[]) null);
+            Object object = method.invoke(process);
+            pid = ((Long) object).intValue();
         } catch (Exception e) {
+            try {
+                // Prior to Java 9
+                Field field = process.getClass().getDeclaredField("pid");
+                field.setAccessible(true);
+                pid = field.getInt(process);
+            } catch (Exception ex) {
+            }
         }
         return pid;
     }

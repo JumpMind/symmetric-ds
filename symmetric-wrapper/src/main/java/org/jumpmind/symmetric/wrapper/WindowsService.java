@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -271,11 +272,19 @@ public class WindowsService extends WrapperService {
     protected int getProcessPid(Process process) {
         int pid = 0;
         try {
-            Field field = process.getClass().getDeclaredField("handle");
-            field.setAccessible(true);
-            HANDLE processHandle = new HANDLE(Pointer.createConstant(field.getLong(process)));
-            pid = Kernel32.INSTANCE.GetProcessId(processHandle);
+            // Java 9
+            Method method = Process.class.getDeclaredMethod("pid", (Class[]) null);
+            Object object = method.invoke(process);
+            pid = ((Long) object).intValue();
         } catch (Exception e) {
+            try {
+                // Prior to Java 9
+                Field field = process.getClass().getDeclaredField("handle");
+                field.setAccessible(true);
+                HANDLE processHandle = new HANDLE(Pointer.createConstant(field.getLong(process)));
+                pid = Kernel32.INSTANCE.GetProcessId(processHandle);
+            } catch (Exception ex) {
+            }
         }
         return pid;
     }
