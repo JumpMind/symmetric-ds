@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.db.raima;
 
+import java.sql.Types;
+
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -110,6 +112,11 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
     public void cleanDatabase() {
     }
 
+    @Override
+    public int getSqlTypeForIds() {
+        return Types.BIGINT;
+    }
+    
     @Override
     public boolean isClobSyncSupported() {
         return false;

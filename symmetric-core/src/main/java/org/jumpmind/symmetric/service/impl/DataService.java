@@ -2094,7 +2094,7 @@ public class DataService extends AbstractService implements IDataService {
                 // or the largest known data id that was already routed.
                 lastGapStartId = Math.max(minDataId, maxRoutedDataId); 
             }
-            if (lastGapStartId > 0) {
+            if (lastGapStartId > -1) {
                 lastGapStartId++;
             }
             DataGap gap = new DataGap(lastGapStartId, lastGapStartId + maxDataToSelect);
