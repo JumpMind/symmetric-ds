@@ -297,6 +297,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     public void syncEnded(DataContext context, List<IncomingBatch> batchesProcessed, Throwable ex) {
 
         IParameterService parameterService = engine.getParameterService();
+        INodeService nodeService = engine.getNodeService();
         
         if (context.get(CTX_KEY_FLUSH_TRANSFORMS_NEEDED) != null) {
             log.info("About to refresh the cache of transformation because new configuration came through the data loader");
@@ -328,14 +329,15 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         }
         
         if (context.get(CTX_KEY_RESYNC_TABLE_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)
+                && (parameterService.is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD)
+                        || nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true).hasInitialLoaded())) {
             @SuppressWarnings("unchecked")
             Set<Table> tables = (Set<Table>)context.get(CTX_KEY_RESYNC_TABLE_NEEDED);
             for (Table table : tables) {
-            		if (engine.getSymmetricDialect().getPlatform().equals(engine.getSymmetricDialect().getTargetPlatform())
-            				|| table.getName().startsWith(engine.getTablePrefix())) {
-            			engine.getTriggerRouterService().syncTriggers(table, false);
-            		}
+        		if (engine.getSymmetricDialect().getPlatform().equals(engine.getSymmetricDialect().getTargetPlatform())) {
+        			engine.getTriggerRouterService().syncTriggers(table, false);
+        		}
             }
             context.remove(CTX_KEY_RESYNC_TABLE_NEEDED);
         }    
