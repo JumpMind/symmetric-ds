@@ -911,13 +911,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     throw ex;
-                } finally {                    
-                    IStagedResource resource = getStagedResource(currentBatch);
-                    if (resource != null) {
-                        resource.setState(State.DONE);
+                } finally {
+                    try {                        
+                        IStagedResource resource = getStagedResource(currentBatch);
+                        if (resource != null) {
+                            resource.setState(State.DONE);
+                        }
+                    } finally {                        
+                        releaseLock(lock, currentBatch, useStagingDataWriter);
+                        log.debug("{} released lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     }
-                    releaseLock(lock, currentBatch, useStagingDataWriter);
-                    log.debug("{} released lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                 }
             }
 
