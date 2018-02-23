@@ -128,6 +128,7 @@ public interface IRegistrationService {
     public String getRedirectionUrlFor(String externalId);
     
     public void requestNodeCopy();
-       
+ 
+    public void setAllowClientRegistration(boolean enabled);
 
 }
