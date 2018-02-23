@@ -171,6 +171,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                             "Requesting syncTriggers because {} is false and sym_node_security changed to indicate that an initial load has completed",
                             ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);
                     context.put(CTX_KEY_RESYNC_NEEDED, true);
+                    engine.getRegistrationService().setAllowClientRegistration(false);
                 }
             }
         }

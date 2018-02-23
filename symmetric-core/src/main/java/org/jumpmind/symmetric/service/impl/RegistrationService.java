@@ -97,6 +97,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     
     private ISymmetricEngine engine;
 
+    private boolean allowClientRegistration = true;
+
     public RegistrationService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
@@ -150,7 +152,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     	Node processedNode = new Node();
     	processedNode.setSyncEnabled(false);
-        Node identity = nodeService.findIdentity();
+
+        if (!allowClientRegistration) {
+            log.warn("Cannot register a client node until this node has synced triggers");
+            return processedNode;
+        }
+    	
+    	Node identity = nodeService.findIdentity();
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                     RegistrationStatus.ER, remoteHost, remoteAddress);
@@ -729,6 +737,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     "Failed after trying to copy %s times.",
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
         }        
+    }
+
+    public void setAllowClientRegistration(boolean enabled) {
+        this.allowClientRegistration = enabled;
     }
 
     class RegistrationRequestMapper implements ISqlRowMapper<RegistrationRequest> {
