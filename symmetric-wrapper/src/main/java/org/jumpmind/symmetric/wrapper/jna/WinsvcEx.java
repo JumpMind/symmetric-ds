@@ -28,6 +28,7 @@ import org.jumpmind.symmetric.wrapper.jna.Advapi32Ex.SERVICE_INFO;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
+import com.sun.jna.WString;
 import com.sun.jna.platform.win32.Winsvc;
 
 @IgnoreJRERequirement
@@ -104,14 +105,14 @@ public interface WinsvcEx extends Winsvc {
     public static class SERVICE_FAILURE_ACTIONS extends SERVICE_INFO {
         public int dwResetPeriod;
         public String lpRebootMsg;
-        public String lpCommand;
+        public WString lpCommand;
         public int cActions;
         public SC_ACTION.ByReference lpsaActions;
         
         public SERVICE_FAILURE_ACTIONS() {
         }
 
-        public SERVICE_FAILURE_ACTIONS(int dwResetPeriod, String lpRebootMsg, String lpCommand, int cActions, SC_ACTION.ByReference lpsaActions) {
+        public SERVICE_FAILURE_ACTIONS(int dwResetPeriod, String lpRebootMsg, WString lpCommand, int cActions, SC_ACTION.ByReference lpsaActions) {
             this.dwResetPeriod = dwResetPeriod;
             this.lpRebootMsg = lpRebootMsg;
             this.lpCommand = lpCommand;

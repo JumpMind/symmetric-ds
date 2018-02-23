@@ -348,7 +348,7 @@ public class WindowsService extends WrapperService {
                     }
                  
                     WinsvcEx.SERVICE_FAILURE_ACTIONS actions = new WinsvcEx.SERVICE_FAILURE_ACTIONS(config.getFailureResetPeriod(), "", 
-                            config.getFailureActionCommand(), failureActions.size(), actionRef);
+                            new WString(config.getFailureActionCommand()), failureActions.size(), actionRef);
                     advapi.ChangeServiceConfig2(service, WinsvcEx.SERVICE_CONFIG_FAILURE_ACTIONS, actions);
 
                     WinsvcEx.SERVICE_FAILURE_ACTIONS_FLAG flag = new WinsvcEx.SERVICE_FAILURE_ACTIONS_FLAG(false);
