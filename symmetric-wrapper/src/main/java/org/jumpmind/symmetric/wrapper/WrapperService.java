@@ -308,7 +308,7 @@ public abstract class WrapperService {
         start();
     }
     
-    public void relaunchAsPrivileged(String cmd, String args) {
+    public void relaunchAsPrivileged(String className) {
     }
 
     public void status() {

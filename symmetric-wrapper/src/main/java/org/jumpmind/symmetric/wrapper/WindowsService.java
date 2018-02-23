@@ -236,12 +236,15 @@ public class WindowsService extends WrapperService {
     }
 
     @Override
-    public void relaunchAsPrivileged(String cmd, String args) {
+    public void relaunchAsPrivileged(String className) {
+        String quote = getWrapperCommandQuote();
+        String args = "-DSYM_HOME=" + System.getenv("SYM_HOME") +
+                " -Djava.io.tmpdir=" + quote + System.getProperty("java.io.tmpdir") + quote +
+                " -cp " + quote + config.getClassPath() + quote + " " + className;
         Shell32Ex.SHELLEXECUTEINFO execInfo = new Shell32Ex.SHELLEXECUTEINFO();
-        execInfo.lpFile = new WString(cmd);
-        if (args != null) {
-            execInfo.lpParameters = new WString(args);
-        }
+        execInfo.lpFile = new WString(config.getJavaCommand().replaceAll("(?i)java$", "javaw")
+                .replaceAll("(?i)java.exe$", "javaw.exe"));
+        execInfo.lpParameters = new WString(args);
         execInfo.nShow = Shell32Ex.SW_SHOWDEFAULT;
         execInfo.fMask = Shell32Ex.SEE_MASK_NOCLOSEPROCESS;
         execInfo.lpVerb = new WString("runas");

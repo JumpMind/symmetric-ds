@@ -168,7 +168,25 @@ public class WrapperConfig {
             maxMem += "M";
         }        
         cmdList.add("-Xmx" + maxMem);
+        
+        cmdList.add("-cp");
+        cmdList.add(getClassPath());
 
+        List<String> javaAdditional = getListProperty(prop, "wrapper.java.additional");
+        cmdList.addAll(javaAdditional);
+        
+        List<String> appParams =  getListProperty(prop, "wrapper.app.parameter");
+        appParams.remove("--no-log-console");
+        cmdList.addAll(appParams);
+        
+        if (!isConsole) {
+            cmdList.add("--no-log-console");
+        }
+
+        return cmdList;
+    }
+
+    public String getClassPath() {
         String version = System.getProperty("java.version");
         boolean expandWildcard = version != null && version.startsWith("1.5");
 
@@ -186,22 +204,7 @@ public class WrapperConfig {
             }
             sb.append(classPath);
         }
-        
-        cmdList.add("-cp");
-        cmdList.add(sb.toString());
-
-        List<String> javaAdditional = getListProperty(prop, "wrapper.java.additional");
-        cmdList.addAll(javaAdditional);
-        
-        List<String> appParams =  getListProperty(prop, "wrapper.app.parameter");
-        appParams.remove("--no-log-console");
-        cmdList.addAll(appParams);
-        
-        if (!isConsole) {
-            cmdList.add("--no-log-console");
-        }
-
-        return cmdList;
+        return sb.toString();
     }
 
     private String expandWildcard(String classPath) {
