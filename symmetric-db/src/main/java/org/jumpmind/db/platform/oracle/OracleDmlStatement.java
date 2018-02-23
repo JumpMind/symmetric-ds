@@ -38,13 +38,10 @@ public class OracleDmlStatement extends DmlStatement {
    
     @Override
     protected void appendColumnParameter(StringBuilder sql, Column column) {
-        String name = column.getJdbcTypeName();
         if (column.isTimestampWithTimezone()) {
             sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
                     .append(",");
-        } else if (name != null && (
-                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
-                name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
+        } else if (isGeometry(column)) {
             sql.append("SYM_WKT2GEOM(?)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
@@ -56,8 +53,7 @@ public class OracleDmlStatement extends DmlStatement {
         if (column.isTimestampWithTimezone()) {
             sql.append(quote).append(column.getName()).append(quote)
                     .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
-                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
+        } else if (isGeometry(column)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
                     .append("SYM_WKT2GEOM(?)");
         } else {
@@ -70,7 +66,8 @@ public class OracleDmlStatement extends DmlStatement {
         int typeCode = super.getTypeCode(column, isDateOverrideToTimestamp);
         if (column.getJdbcTypeName().startsWith("XML")) {
             typeCode = Types.VARCHAR;
-        } else if (typeCode == Types.LONGVARCHAR) {
+        } else if (typeCode == Types.LONGVARCHAR
+                || isGeometry(column)) {
             typeCode = Types.CLOB;
         }
         return typeCode;
@@ -85,6 +82,15 @@ public class OracleDmlStatement extends DmlStatement {
             super.appendColumnNameForSql(sql, column, select);
         }        
     }
-
-
+    
+    protected boolean isGeometry(Column column) {
+        String name = column.getJdbcTypeName();
+        if (name != null && (
+                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
+                name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
