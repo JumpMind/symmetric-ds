@@ -96,6 +96,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
     private IExtensionService extensionService;
     
     private ISymmetricEngine engine;
+    
+    private boolean allowClientRegistration = true;
 
     public RegistrationService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -149,6 +151,12 @@ public class RegistrationService extends AbstractService implements IRegistratio
 
     	Node processedNode = new Node();
     	processedNode.setSyncEnabled(false);
+    	
+    	if (!allowClientRegistration) {
+    	    log.warn("Cannot register a client node until this node has synced triggers");
+    	    return processedNode;
+    	}
+    	
         Node identity = nodeService.findIdentity();
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
@@ -733,6 +741,10 @@ public class RegistrationService extends AbstractService implements IRegistratio
         }        
     }
 
+    public void setAllowClientRegistration(boolean enabled) {
+        this.allowClientRegistration = enabled;
+    }
+    
     class RegistrationRequestMapper implements ISqlRowMapper<RegistrationRequest> {
         public RegistrationRequest mapRow(Row rs) {
             RegistrationRequest request = new RegistrationRequest();
