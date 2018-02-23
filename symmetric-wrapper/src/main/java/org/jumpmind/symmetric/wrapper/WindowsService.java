@@ -188,7 +188,7 @@ public class WindowsService extends WrapperService {
             String[] path = config.getJavaCommand().split("/|\\\\");
             String javaExe = path[path.length - 1].toLowerCase();
             try {
-                ProcessBuilder pb = new ProcessBuilder("query", "process", String.valueOf(pid));
+                ProcessBuilder pb = new ProcessBuilder("wmic", "process", String.valueOf(pid), "get", "name");
                 Process proc = pb.start();
                 pb.redirectErrorStream(true);
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -200,8 +200,7 @@ public class WindowsService extends WrapperService {
                     String[] array = line.split("\\s+");
                     if (array.length > 0) {
                         foundProcess = true;
-                        String exeName = array[array.length - 1];
-                        isRunning = exeName.toLowerCase().contains(javaExe);
+                        isRunning = array[0].toLowerCase().contains(javaExe);
                     }
                 }
 
