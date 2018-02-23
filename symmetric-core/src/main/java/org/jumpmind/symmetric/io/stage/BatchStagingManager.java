@@ -12,6 +12,7 @@ import java.util.Set;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.BatchId;
+import org.jumpmind.symmetric.service.ClusterConstants;
 
 public class BatchStagingManager extends StagingManager {
 
@@ -35,13 +36,22 @@ public class BatchStagingManager extends StagingManager {
 
     @Override
     public long clean(long ttlInMs) {
-        boolean purgeBasedOnTTL = engine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_PURGE_ON_TTL_ENABLED, false);
-        if (purgeBasedOnTTL) {
-            return super.clean(ttlInMs);
-        } else {
-            synchronized (StagingManager.class) {
-                return purgeStagingBasedOnDatabaseStatus(ttlInMs);
+        if (!engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
+            log.debug("Could not get a lock to run stage management");
+            return 0;
+        }
+        
+        try {            
+            boolean purgeBasedOnTTL = engine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_PURGE_ON_TTL_ENABLED, false);
+            if (purgeBasedOnTTL) {
+                return super.clean(ttlInMs);
+            } else {
+                synchronized (StagingManager.class) {
+                    return purgeStagingBasedOnDatabaseStatus(ttlInMs);
+                }
             }
+        } finally {
+            engine.getClusterService().unlock(ClusterConstants.STAGE_MANAGEMENT);
         }
     }
     
