@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
+import org.jumpmind.symmetric.ext.IRegistrationRedirect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeHost;
@@ -186,7 +187,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
             }
 
-            String redirectUrl = getRedirectionUrlFor(nodePriorToRegistration.getExternalId());
+            String redirectUrl = null;
+            IRegistrationRedirect registrationRedirect = extensionService.getExtensionPoint(IRegistrationRedirect.class);
+            if (registrationRedirect != null) {
+                redirectUrl = registrationRedirect.getRedirectionUrlFor(nodePriorToRegistration.getExternalId(),
+                        nodePriorToRegistration.getNodeGroupId());
+            } else {
+                redirectUrl = getRedirectionUrlFor(nodePriorToRegistration.getExternalId());
+            }
+
             if (redirectUrl != null) {
                 log.info("Redirecting {} to {} for registration.",
                         nodePriorToRegistration.getExternalId(), redirectUrl);
