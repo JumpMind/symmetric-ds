@@ -156,7 +156,7 @@ public class DataService extends AbstractService implements IDataService {
 
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
                                         triggerHistory, request.getReloadSelect(), false, -1, null,
-                                        Status.NE, null, -1);
+                                        Status.NE, -1);
 
                                 if (!targetNode.requires13Compatiblity() && deleteAtClient) {
                                     insertSqlEvent(
