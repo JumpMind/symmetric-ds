@@ -87,9 +87,9 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
     }
 
     public boolean isComplete() {
-        boolean complete = false;
+        boolean complete = true;
         for (RemoteNodeStatus status : this) {
-            complete |= status.isComplete();
+            complete &= status.isComplete();
         }
         return complete;
     }
