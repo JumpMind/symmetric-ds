@@ -188,7 +188,7 @@ subprojects { subproject ->
         slf4jVersion = '1.7.21'
         mockitoVersion = '1.9.5'
         powerMockVersion = '1.5.3'
-        mysqlVersion = '5.1.30'
+        mysqlVersion = '5.1.45'
         servletVersion = '3.1.0'
         springVersion = '4.3.13.RELEASE'
         jtdsVersion = '1.2.8'
