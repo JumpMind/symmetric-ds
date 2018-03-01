@@ -49,6 +49,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
@@ -1343,6 +1344,8 @@ public class RestService {
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         StringBuilder buffer = new StringBuilder();
         triggerRouterService.syncTriggers(buffer, force);
+
+        assertTriggerCreation(triggerRouterService, null);
     }
 
     private void syncTriggersByTableImpl(ISymmetricEngine engine, String catalogName,
@@ -1354,7 +1357,17 @@ public class RestService {
         if (table == null) {
             throw new NotFoundException();
         }
+
         triggerRouterService.syncTriggers(table, force);
+        assertTriggerCreation(triggerRouterService, table);
+    }
+
+    private void assertTriggerCreation(ITriggerRouterService triggerRouterService, Table table){
+        for(Map.Entry<Trigger, Exception> failedTriggers : triggerRouterService.getFailedTriggers().entrySet()){
+            if(table == null || failedTriggers.getKey().getFullyQualifiedSourceTableName().equalsIgnoreCase(table.getFullyQualifiedTableName())){
+                throw new SymmetricException("Trigger creation failed", failedTriggers.getValue());
+            }
+        }
     }
 
     private void dropTriggersImpl(ISymmetricEngine engine) {
