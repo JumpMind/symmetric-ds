@@ -130,7 +130,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 log.debug("Could not get a lock to run an outgoing purge");
             }
         } catch (Exception ex) {
-            log.error("", ex);
+            log.error("Error during outgoing purge", ex);
         } finally {
             log.info("The outgoing purge process has completed");
         }
