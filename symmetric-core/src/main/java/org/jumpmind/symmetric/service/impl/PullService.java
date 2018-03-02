@@ -151,14 +151,14 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 lastDataProcessed = status.getDataProcessed() - cumulativeDataProcessed;
                 if (!status.failed() && (lastDataProcessed > 0 || lastBatchesProcessed > 0)) {
                     log.info(
-                            "Pull data received from {} on queue {}. {} rows and {} batches were processed. {}",
+                            "Pull data received from {} on queue {}. {} rows and {} batches were processed. ({})",
                             new Object[] { node.toString(), nodeCommunication.getQueue(), lastDataProcessed, lastBatchesProcessed, status.getTableSummary() });
                     statisticManager.addJobStats(node.getNodeId(), 1, "Pull",
                             begin, end, status.getDataProcessed());
 
                 } else if (status.failed()) {
                     log.debug(
-                            "There was a failure while pulling data from {} on queue {}. {} rows and {} batches were processed. {}",
+                            "There was a failure while pulling data from {} on queue {}. {} rows and {} batches were processed. ({})",
                             new Object[] { node.toString(), nodeCommunication.getQueue(),
                                     lastDataProcessed, lastBatchesProcessed, status.getTableSummary()});
                 }

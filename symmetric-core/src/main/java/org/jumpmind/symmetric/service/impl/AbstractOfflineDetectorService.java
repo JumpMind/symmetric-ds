@@ -91,20 +91,20 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             status.setStatus(Status.OFFLINE);
         } else if (isServiceUnavailable(error)) {
             if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn("{} at {} was unavailable.", new Object[] {remoteNode, syncUrl});
+                log.warn("Remote node {} at {} was unavailable.", new Object[] {remoteNode, syncUrl});
             } else {
-                log.info("{} at {} was unavailable.  It may be starting up.", new Object[] {remoteNode, syncUrl});
+                log.info("Remote node {} at {} was unavailable.  It may be starting up.", new Object[] {remoteNode, syncUrl});
             }
             status.setStatus(Status.OFFLINE);            
         } else if (isBusy(error)) {
             if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn("{} at {} was busy", new Object[] {remoteNode, syncUrl});
+                log.warn("Remote node {} at {} was busy", new Object[] {remoteNode, syncUrl});
             } else {
-                log.info("{} at {} was busy", new Object[] {remoteNode, syncUrl});
+                log.info("Remote node {} at {} was busy", new Object[] {remoteNode, syncUrl});
             }
             status.setStatus(Status.BUSY);
         } else if (isNotAuthenticated(error)) {
-            log.warn("{} at {} was not authorized", new Object[] {remoteNode, syncUrl});
+            log.warn("Authorization denied from {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isSyncDisabled(error)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
