@@ -116,7 +116,7 @@ public class TransportManagerFactory {
     }
     
     protected HttpTransportManager createHttpTransportManager(ISymmetricEngine symmetricEngine) {
-        String impl = symmetricEngine.getParameterService().getString("http.transport.manager.impl");
+        String impl = symmetricEngine.getParameterService().getString("http.transport.manager.class");
         if (StringUtils.isEmpty(impl)) {
             return new HttpTransportManager(symmetricEngine);     
         } else {
