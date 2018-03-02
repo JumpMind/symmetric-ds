@@ -125,13 +125,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
                     }
-                    log.info("The outgoing purge process has completed");
                 }
             } else {
                 log.debug("Could not get a lock to run an outgoing purge");
             }
         } catch (Exception ex) {
             log.error("", ex);
+        } finally {
+            log.info("The outgoing purge process has completed");
         }
         return rowsPurged;
     }

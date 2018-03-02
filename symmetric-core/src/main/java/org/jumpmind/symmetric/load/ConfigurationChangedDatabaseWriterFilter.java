@@ -166,7 +166,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                 Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
                 String initialLoadEnabled = newData.get("INITIAL_LOAD_ENABLED");
                 String initialLoadTime = newData.get("INITIAL_LOAD_TIME");
-                if (StringUtils.isNotBlank(initialLoadTime) && "0".equals(initialLoadEnabled)) {
+                String nodeId = newData.get("NODE_ID");
+                if (nodeId != null && nodeId.equals(context.getBatch().getTargetNodeId()) &&
+                        StringUtils.isNotBlank(initialLoadTime) && "0".equals(initialLoadEnabled)) {
                     log.info(
                             "Requesting syncTriggers because {} is false and sym_node_security changed to indicate that an initial load has completed",
                             ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);

@@ -146,8 +146,8 @@ public class Database implements Serializable, Cloneable {
                 if (parentTable != null) {
                     StringBuilder dependentTables = new StringBuilder();
                     for (ForeignKey fk : parentTable.getForeignKeys()) {
-                        if(fk.getForeignTable() != null && allTables.get(fk.getForeignTable().getName()) == null) {
-                            if (dependentTables.length() > 0) { dependentTables.append(", "); }
+                        if (dependentTables.length() > 0) {
+                            dependentTables.append(", ");
                         }
                         dependentTables.append(fk.getForeignTableName());
                         if (missingDependencyMap.get(parentTable) == null) {
