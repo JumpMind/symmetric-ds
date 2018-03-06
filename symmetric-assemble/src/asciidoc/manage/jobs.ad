@@ -59,7 +59,7 @@ The route job will respect the <<configuration/channels.ad#max-batch-size,Max Ba
 of a captured database transaction and the batch algorithm is set to something other than _nontransactional_
 the batch may exceed the specified max size.
 
-The route job delegates to a <<_routers,router>> to decided which nodes need to received the data.  The correct <<_routers, router>> is looked up by 
+The route job delegates to a <<_routers,router>> to decide which nodes need to receive the data.  The correct <<_routers, router>> is looked up by 
 referencing the captured `trigger_hist_id` in the <<DATA>> table and using <<Table Routing>> configuration.  
 
 After <<OUTGOING_BATCH,outgoing batches>> have been created by the Route Job, they need to be transported to the target node. 
