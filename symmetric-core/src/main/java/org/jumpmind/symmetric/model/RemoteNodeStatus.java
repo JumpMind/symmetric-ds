@@ -41,13 +41,15 @@ public class RemoteNodeStatus implements Serializable {
         OFFLINE, BUSY, NOT_AUTHORIZED, REGISTRATION_REQUIRED, SYNC_DISABLED, NO_DATA, DATA_PROCESSED, DATA_ERROR, UNKNOWN_ERROR
     };
 
+    private final Object monitor = new Object();
+
     private String nodeId;
     private String queue;
     private Status status;
     private long dataProcessed;
     private long batchesProcessed;
     private long reloadBatchesProcessed;
-    private boolean complete = false;
+    private volatile boolean complete = false;
     private Map<String, Channel> channels;
     private Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
     private Set<String> tableSummary = new LinkedHashSet<String>();
@@ -165,11 +167,25 @@ public class RemoteNodeStatus implements Serializable {
     }
 
     public void setComplete(boolean complete) {
-        this.complete = complete;
+
+        synchronized (monitor) {
+            this.complete = complete;
+            monitor.notifyAll();
+        }
     }
     
     public boolean isComplete() {
         return complete;
+    }
+
+    public boolean waitCompleted(long milliseconds) throws InterruptedException {
+        synchronized (monitor) {
+            if (complete){
+                return true;
+            }
+            monitor.wait(milliseconds);
+            return complete;
+        }
     }
     
     public Map<String, Integer> getTableCounts() {
