@@ -1374,7 +1374,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             } else {
                 inactivateTriggerHistory(history);
             }
-        } catch (Error ex) {
+        } catch (Throwable ex) {
             log.error("Error while dropping triggers for table %s", history.getSourceTableName(), ex);
         }
     }
