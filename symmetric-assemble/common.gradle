@@ -176,7 +176,7 @@ subprojects { subproject ->
         h2Version = '1.3.176'
         derbyVersion = '10.10.2.0'
         mariaDbVersion = '1.1.7'
-        postgresqlVersion = '9.4-1212.jre7'
+        postgresqlVersion =  '42.2.1'
         hsqldbVersion = '2.3.2'
         sqliteVersion = '3.8.7'
         firebirdVersion = '2.1.6'
@@ -213,7 +213,7 @@ subprojects { subproject ->
         provided "org.apache.derby:derbytools:$derbyVersion"
         provided "mysql:mysql-connector-java:$mysqlVersion"
         provided ("org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion") { exclude group: 'net.java.dev.jna' }
-        provided "jdbc.postgresql:postgresql:$postgresqlVersion"
+        provided "org.postgresql:postgresql:$postgresqlVersion"
         provided "jdbc:ojdbc:11.2.0.3"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
         provided "org.voltdb:voltdbclient:$voltDbVersion"
