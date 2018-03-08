@@ -23,6 +23,7 @@ import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
@@ -195,6 +196,10 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             println("$$ LANGUAGE plpgsql; ", ddl);
         } else {
             ddl.append("CREATE SEQUENCE ");
+            if (StringUtils.isNotBlank(table.getSchema())) {
+            		printIdentifier(table.getSchema(), ddl);
+            		ddl.append(".");
+            }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             printEndOfStatement(ddl);
         }
@@ -219,6 +224,10 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             printEndOfStatement(ddl);
         } else {
             ddl.append("DROP SEQUENCE ");
+            if (StringUtils.isNotBlank(table.getSchema())) {
+	        		printIdentifier(table.getSchema(), ddl);
+	        		ddl.append(".");
+	        }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             printEndOfStatement(ddl);
         }
@@ -232,6 +241,10 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             ddl.append("()");
         } else {
             ddl.append(" DEFAULT nextval('");
+            if (StringUtils.isNotBlank(table.getSchema())) {
+	        		printIdentifier(table.getSchema(), ddl);
+	        		ddl.append(".");
+	        }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             ddl.append("')");
         }
