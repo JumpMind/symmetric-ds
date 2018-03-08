@@ -55,7 +55,6 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -156,7 +155,7 @@ public class DataService extends AbstractService implements IDataService {
 
                                 insertReloadEvent(transaction, targetNode, triggerRouter,
                                         triggerHistory, request.getReloadSelect(), false, -1, null,
-                                        Status.NE, null, -1);
+                                        Status.NE, -1);
 
                                 if (!targetNode.requires13Compatiblity() && deleteAtClient) {
                                     insertSqlEvent(
@@ -451,8 +450,10 @@ public class DataService extends AbstractService implements IDataService {
                         if (isFullLoad) {
                             callReloadListeners(true, targetNode, transactional, transaction, loadId);
 
-                            insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId,
-                                createBy, transactional, transaction);
+                            if (reloadRequests == null || reloadRequests.size() == 0) {
+                                insertCreateSchemaScriptPriorToReload(targetNode, nodeIdRecord, loadId,
+                                    createBy, transactional, transaction);
+                            }
                         }
                         Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests);
                         
@@ -470,12 +471,10 @@ public class DataService extends AbstractService implements IDataService {
                         }
                         processInfo.setTotalDataCount(totalTableCount);
                         
-                        if (isFullLoad || (reloadRequests != null && reloadRequests.size() > 0)) {
-                            insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
-                                transactional, transaction, reverse, 
-                                triggerHistories, triggerRoutersByHistoryId, 
-                                mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
-                        }
+                        insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
+                            transactional, transaction, reverse, 
+                            triggerHistories, triggerRoutersByHistoryId, 
+                            mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
                         
                         insertCreateBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
@@ -492,20 +491,15 @@ public class DataService extends AbstractService implements IDataService {
                         insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
                                 triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo);
                         
-                        
-                        if (isFullLoad) {
-                            String afterSql = parameterService
-                                    .getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
-                                            : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
-                            if (isNotBlank(afterSql)) {
-                                insertSqlEvent(transaction, targetNode, afterSql, true, loadId,
-                                        createBy);
-                            }
-                        }
-                        insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
-                                transaction, processInfo);
+                        insertSqlEventsAfterReload(targetNode, nodeIdRecord, loadId, createBy,
+                                transactional, transaction, reverse, 
+                                triggerHistories, triggerRoutersByHistoryId, 
+                                mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
                         if (isFullLoad) {
+                            insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                                    transaction, processInfo);
+
                             callReloadListeners(false, targetNode, transactional, transaction, loadId);
                             if (!reverse) {
                                 nodeService.setInitialLoadEnabled(transaction, nodeIdRecord, false,
@@ -516,7 +510,7 @@ public class DataService extends AbstractService implements IDataService {
                             }
                         }
                                                 
-                        if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
+                        if (isFullLoad && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
                         	insertNodeSecurityUpdate(transaction, nodeIdRecord,
                                     targetNode.getNodeId(), true, loadId, createBy, symNodeSecurityReloadChannel);
                         }
@@ -649,76 +643,55 @@ public class DataService extends AbstractService implements IDataService {
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId,
             Map<String, TableReloadRequest> reloadRequests, boolean isFullLoad, String channelId) {
 
-            if (!Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
-                /*
-                 * Insert node security so the client doing the initial load knows
-                 * that an initial load is currently happening
-                 */
-                insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), true,
-                        loadId, createBy, channelId);
-    
-                if (isFullLoad) {
-                    /*
-                     * Mark incoming batches as OK at the target node because we marked
-                     * outgoing batches as OK at the source
-                     */
-                    insertSqlEvent(
-                            transaction,
-                            targetNode,
-                            String.format(
-                                    "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
-                                    tablePrefix, engine.getNodeService().findIdentityNodeId()), true,
-                            loadId, createBy);
-                }
-            }
-            
-            if (!isFullLoad && reloadRequests != null && reloadRequests.size() > 0) {
-                String beforeSql = "";
-                int beforeSqlSent = 0;
-                
-                for (TriggerHistory triggerHistory : triggerHistories) {
-                    List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
-                            .getTriggerHistoryId());
-                    for (TriggerRouter triggerRouter : triggerRouters) {
-                        String key = triggerRouter.getTriggerId() + triggerRouter.getRouterId();
-                        TableReloadRequest currentRequest = reloadRequests.get(key);
-                        if (currentRequest == null) {
-                            throw new SymmetricException("Could not locate table reload request for key '" + key + 
-                                    "'. Available requests are: " + reloadRequests.keySet());
-                        }
-                        beforeSql = currentRequest.getBeforeCustomSql();
-                        
-                        if (isNotBlank(beforeSql)) {
-                            String tableName = triggerRouter.qualifiedTargetTableName(triggerHistory);
-                            String formattedBeforeSql = String.format(beforeSql, tableName) + ";";
-                            
-                            insertSqlEvent(
-                                    transaction,
-                                    targetNode,
-                                    formattedBeforeSql, true,
-                                    loadId, createBy);  
-                            beforeSqlSent++;
-                        }
-                    }
-                }
-                if (beforeSqlSent > 0) {
-                    log.info("Before sending load {} to target node {} the before sql [{}] was sent for {} tables", new Object[] {
-                            loadId, targetNode, beforeSql, beforeSqlSent });
-                }
-                
-            } else {
-                String beforeSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_BEFORE_SQL
-                        : ParameterConstants.INITIAL_LOAD_BEFORE_SQL);
-                if (isNotBlank(beforeSql)) {
-                    insertSqlEvent(
-                            transaction,
-                            targetNode,
-                            beforeSql, true,
-                            loadId, createBy);            
+        if (isFullLoad && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
+            /*
+             * Insert node security so the client doing the initial load knows
+             * that an initial load is currently happening
+             */
+            insertNodeSecurityUpdate(transaction, nodeIdRecord, targetNode.getNodeId(), true,
+                    loadId, createBy, channelId);
+
+            /*
+             * Mark incoming batches as OK at the target node because we marked
+             * outgoing batches as OK at the source
+             */
+            insertSqlEvent(
+                    transaction,
+                    targetNode,
+                    String.format(
+                            "update %s_incoming_batch set status='OK', error_flag=0 where node_id='%s' and status != 'OK'",
+                            tablePrefix, engine.getNodeService().findIdentityNodeId()), true,
+                    loadId, createBy);
+        }
+
+        if (reloadRequests == null || reloadRequests.size() == 0) {
+            String beforeSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_BEFORE_SQL
+                    : ParameterConstants.INITIAL_LOAD_BEFORE_SQL);
+            if (isNotBlank(beforeSql)) {
+                insertSqlEvent(
+                        transaction,
+                        targetNode,
+                        beforeSql, true,
+                        loadId, createBy);            
             }
         }
     }
 
+    private void insertSqlEventsAfterReload(Node targetNode, String nodeIdRecord, long loadId,
+            String createBy, boolean transactional, ISqlTransaction transaction, boolean reverse,
+            List<TriggerHistory> triggerHistories,
+            Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId,
+            Map<String, TableReloadRequest> reloadRequests, boolean isFullLoad, String channelId) {
+
+        if (reloadRequests == null || reloadRequests.size() == 0) {
+            String afterSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
+                            : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
+            if (isNotBlank(afterSql)) {
+                insertSqlEvent(transaction, targetNode, afterSql, true, loadId, createBy);
+            }
+        }
+    }
+    
     private void insertCreateBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,

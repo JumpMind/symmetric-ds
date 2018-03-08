@@ -284,7 +284,7 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     	
     	for (final Trigger trigger : triggers) {
     		String name = trigger.getName();
-    		String sourceSql = "SHOW CREATE TRIGGER "+name;
+    		String sourceSql = "SHOW CREATE TRIGGER "+ catalog + "." + name;
     		sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
     			public Trigger mapRow(Row row) {
     				trigger.setSource(row.getString("SQL Original Statement"));

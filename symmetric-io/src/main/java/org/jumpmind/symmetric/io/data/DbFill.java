@@ -784,15 +784,20 @@ public class DbFill {
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
-            int size = 0;
-            // Assume if the size is 0 there is no max size configured.
-            if (column.getSizeAsInt() != 0) {
-                size = column.getSizeAsInt()>50?50:column.getSizeAsInt();
-            } else {
-                // No max length so default to 50
-                size = 50;
-            }
-            objectValue = randomString(size);
+        		if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("JSON")) {
+        			objectValue = "{\"jumpmind\":\"symmetricds\"}";
+        		}
+        		else {
+	            int size = 0;
+	            // Assume if the size is 0 there is no max size configured.
+	            if (column.getSizeAsInt() != 0) {
+	                size = column.getSizeAsInt()>50?50:column.getSizeAsInt();
+	            } else {
+	                // No max length so default to 50
+	                size = 50;
+	            }
+	            objectValue = randomString(size);
+        		}
         } else if (type == Types.OTHER) {
             if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomUUID();

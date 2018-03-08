@@ -62,7 +62,7 @@ import org.jumpmind.util.AppUtils;
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    private ISymmetricEngine engine;
+    protected ISymmetricEngine engine;
     private AtomicReference<String> cachedHostName = new AtomicReference<String>();
     private AtomicReference<String> cachedIpAddress = new AtomicReference<String>();
     private AtomicLong cacheTime = new AtomicLong(-1);

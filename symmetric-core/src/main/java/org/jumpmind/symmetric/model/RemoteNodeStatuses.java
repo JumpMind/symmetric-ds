@@ -87,22 +87,27 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
     }
 
     public boolean isComplete() {
-        boolean complete = false;
+        boolean complete = true;
         for (RemoteNodeStatus status : this) {
-            complete |= status.isComplete();
+            complete &= status.isComplete();
         }
         return complete;
     }
 
     public void waitForComplete(long timeout) {
-        long ts = System.currentTimeMillis();
-        while (!isComplete() && System.currentTimeMillis() - ts < timeout) {
-            AppUtils.sleep(50);
-        }
-
-        if (!isComplete()) {
-            throw new InterruptedException(String.format(
-                    "Timed out after %sms", timeout));
+        long deadline = System.currentTimeMillis() + timeout;
+        for (RemoteNodeStatus status : this) {
+            long timeLeft = deadline-System.currentTimeMillis();
+            
+            try {
+                if(timeLeft <= 0 || !status.waitCompleted(timeLeft)){
+                    throw new InterruptedException(String.format(
+                            "Timed out after %sms", timeout));
+                }
+            } catch (java.lang.InterruptedException e) {
+                throw new InterruptedException(String.format(
+                        "Timed out after %sms", timeout));
+            }
         }
     }
 }

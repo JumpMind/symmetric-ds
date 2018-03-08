@@ -296,7 +296,12 @@ public class DbTree extends Tree {
 	protected List<DbTreeNode> getTriggerTreeNodes(IDdlReader reader,
 			DbTreeNode parent, String catalogName, String schemaName) {
 		List<DbTreeNode> list = new ArrayList<DbTreeNode>();
-		List<Trigger> triggers = reader.getTriggers(catalogName, schemaName, parent.getName());
+		List<Trigger> triggers = new ArrayList<Trigger>();
+		try {
+			triggers = reader.getTriggers(catalogName, schemaName, parent.getName());
+		} catch (Exception e) {
+			log.warn("Unable to look up triggers for catalog, schema, table : " + catalogName + "." + schemaName + "." + parent.getName());
+		}
 		for (Trigger trigger : triggers) {
 			DbTreeNode treeNode = new DbTreeNode(this, trigger.getName(), NODE_TYPE_TRIGGER, FontAwesome.CROSSHAIRS, parent);
 			if (catalogName != null) {
@@ -332,6 +337,9 @@ public class DbTree extends Tree {
                 List<DbTreeNode> catalogTableChildren = getTableTreeNodes(reader,catalogNode,catalogNode.getName(),null);
                 if(catalogTableChildren.size() == 0){
                     addTreeNode(catalogNode,false);
+                }
+                else {
+                		addTreeNode(catalogNode,true);
                 }
             }else{
                 addTreeNode(catalogNode,true);
