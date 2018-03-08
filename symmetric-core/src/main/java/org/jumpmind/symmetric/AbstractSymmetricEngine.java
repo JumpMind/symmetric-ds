@@ -705,6 +705,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     }
                     
                     lastRestartTime = new Date();
+                    statisticManager.incrementRestart();
                     started = true;
 
                 } else {
