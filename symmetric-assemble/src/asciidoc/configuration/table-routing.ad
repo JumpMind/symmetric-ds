@@ -102,10 +102,6 @@ Initial Load Order:: Order sequence of this table when an initial load is sent t
 multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to 
 a negative number, then the table will be excluded from an initial load.
 
-Initial Load Batch Count:: Only applicable if the initial load extract job is enabled. The number of batches to split 
-an initial load of a table across.  If 0 then a select count(*) will be used to dynamically determine the number of 
-batches based on the max_batch_size of the reload channel.
-
 Enabled:: Each individual trigger-router combination can be disabled or enabled if needed. By default, a trigger router is enabled, 
 but if you have a reason you wish to define a trigger router combination prior to it being active, 
 ifndef::pro[you can set the enabled flag to 0.]
