@@ -2255,6 +2255,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             		}
                             	
                             }
+                            if (parameterService.is(ParameterConstants.MYSQL_TINYINT_DDL_TO_BOOLEAN, false)) {
+	                            	for (Column column : copyTargetTable.getColumns()) {
+	                            		if (column.getJdbcTypeCode() == Types.TINYINT) {
+	                            			column.setJdbcTypeCode(Types.BOOLEAN);
+	                            			column.setMappedTypeCode(Types.BOOLEAN);
+	                            		}
+	                        		}
+                            }
                             data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
                     }

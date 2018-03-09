@@ -428,6 +428,8 @@ final public class ParameterConstants {
     
     public final static String NODE_LOAD_ONLY = "load.only";
     
+    public final static String MYSQL_TINYINT_DDL_TO_BOOLEAN = "mysql.tinyint.ddl.to.boolean";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }
