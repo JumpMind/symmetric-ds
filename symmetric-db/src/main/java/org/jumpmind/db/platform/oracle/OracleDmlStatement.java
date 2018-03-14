@@ -43,6 +43,8 @@ public class OracleDmlStatement extends DmlStatement {
                     .append(",");
         } else if (isGeometry(column)) {
             sql.append("SYM_WKT2GEOM(?)").append(",");
+        } else if (column.getJdbcTypeName().startsWith("XMLTYPE")) {
+            sql.append("XMLTYPE(?)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
@@ -56,6 +58,9 @@ public class OracleDmlStatement extends DmlStatement {
         } else if (isGeometry(column)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
                     .append("SYM_WKT2GEOM(?)");
+        } else if (column.getJdbcTypeName().startsWith("XMLTYPE")) {
+            sql.append(quote).append(column.getName()).append(quote).append(" = ")
+                    .append("XMLTYPE(?)");
         } else {
             super.appendColumnEquals(sql, column);
         }        
@@ -64,10 +69,9 @@ public class OracleDmlStatement extends DmlStatement {
     @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int typeCode = super.getTypeCode(column, isDateOverrideToTimestamp);
-        if (column.getJdbcTypeName().startsWith("XML")) {
-            typeCode = Types.VARCHAR;
-        } else if (typeCode == Types.LONGVARCHAR
-                || isGeometry(column)) {
+        if (typeCode == Types.LONGVARCHAR
+                || isGeometry(column)
+                || column.getJdbcTypeName().startsWith("XMLTYPE")) {
             typeCode = Types.CLOB;
         }
         return typeCode;
