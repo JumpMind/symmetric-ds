@@ -429,8 +429,20 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                 ((defaultValue.endsWith("::uuid") && Types.OTHER == typeCode) ||
                  (defaultValue.contains("::") && Types.ARRAY == typeCode))) {
             ddl.append(defaultValue);
+        } else if (Types.BOOLEAN == typeCode) {
+        		boolean isNull = false;
+            if (defaultValue==null || defaultValue.equalsIgnoreCase("null")) {
+                isNull = true;
+            }
+            if (!isNull) {
+            		ddl.append(databaseInfo.getValueQuoteToken());
+                ddl.append(escapeStringValue(defaultValue));
+                ddl.append(databaseInfo.getValueQuoteToken());
+            } else {
+                ddl.append(defaultValue);
+            }
         } else {
-            super.printDefaultValue(defaultValue, typeCode, ddl);
+        		super.printDefaultValue(defaultValue, typeCode, ddl);
         }
     }
 
