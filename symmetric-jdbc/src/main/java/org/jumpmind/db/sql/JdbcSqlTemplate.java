@@ -352,7 +352,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         long endTime = System.currentTimeMillis();
                         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
 
-                        return stmt.getUpdateCount();
+                        int updateCount;
+                        do{
+                            updateCount = stmt.getUpdateCount();
+                        }while(stmt.getMoreResults() || stmt.getUpdateCount() != -1);
+
+                        return updateCount;
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
                     } finally {
@@ -375,7 +380,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         long endTime = System.currentTimeMillis();
                         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
 
-                        return ps.getUpdateCount();
+                        int updateCount;
+                        do{
+                            updateCount = ps.getUpdateCount();
+                        }while(ps.getMoreResults() || ps.getUpdateCount() != -1);
+
+                        return updateCount;
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
                     } finally {
