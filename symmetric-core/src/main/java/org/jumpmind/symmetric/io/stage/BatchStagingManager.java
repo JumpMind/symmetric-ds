@@ -57,6 +57,7 @@ public class BatchStagingManager extends StagingManager {
     
     protected long purgeStagingBasedOnDatabaseStatus(long ttlInMs) {
         boolean recordIncomingBatchesEnabled = engine.getIncomingBatchService().isRecordOkBatchesEnabled();
+        long minTtlInMs = engine.getParameterService().getLong(ParameterConstants.STREAM_TO_FILE_MIN_TIME_TO_LIVE_MS,600000);
         List<Long> outgoingBatches = ttlInMs == 0 ? new ArrayList<Long>() : engine.getOutgoingBatchService().getAllBatches();
         List<BatchId> incomingBatches =  ttlInMs == 0 ? new ArrayList<BatchId>() :  engine.getIncomingBatchService().getAllBatches();
         Map<String, Long> biggestIncomingByNode = getBiggestBatchIds(incomingBatches);
@@ -74,6 +75,7 @@ public class BatchStagingManager extends StagingManager {
                  */
                 if (resource != null && !resource.isInUse()) {
                     boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
+                    boolean resourceClearsMinTimeHurdle = (System.currentTimeMillis() - resource.getLastUpdateTime()) > minTtlInMs;
                     if (path[0].equals(STAGING_CATEGORY_OUTGOING)) {
                         try {
                             Long batchId = new Long(path[path.length - 1]);
@@ -94,7 +96,8 @@ public class BatchStagingManager extends StagingManager {
                             BatchId batchId = new BatchId(new Long(path[path.length - 1]), path[1]);
                             Long biggestBatchId = biggestIncomingByNode.get(batchId.getNodeId());
                             if ((recordIncomingBatchesEnabled && !incomingBatches.contains(batchId) && 
-                                    biggestBatchId != null && biggestBatchId > batchId.getBatchId())
+                                    biggestBatchId != null && biggestBatchId > batchId.getBatchId() &&
+                                    resourceClearsMinTimeHurdle)
                                     || (!recordIncomingBatchesEnabled && resourceIsOld) || ttlInMs == 0) {
                                 purgedFileCount++;
                                 purgedFileSize+=resource.getSize();
