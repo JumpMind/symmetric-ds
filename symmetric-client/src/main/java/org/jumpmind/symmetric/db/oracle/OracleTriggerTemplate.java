@@ -45,6 +45,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         clobColumnTemplate = "decode(dbms_lob.getlength(to_clob($(tableAlias).\"$(columnName)\")), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
         blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||$(prefixName)_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
         booleanColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
+        xmlColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\".getclobval()), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\".getclobval(),'\\','\\\\'),'\"','\\\"')||'\"')" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = ":new" ;
         oldTriggerValue = ":old" ;
@@ -100,8 +101,8 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "           end if;                                                                       \n" +
 "           $(custom_on_insert_text)                                                      \n" +
 "        end;                                                                             \n");
-        
-        
+
+
         sqlTemplates.put("updateTriggerTemplate" ,
 "create or replace trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                       \n" +
 "                                for each row begin                                                                                                                                                       \n" +
@@ -165,7 +166,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                  end;                                                                                                                                                                   \n" +
 "                                  $(custom_on_update_text)                                                                                                                                               \n" +
 "                                end;                                                                                                                                                                     \n" );
-        
+
         sqlTemplates.put("deleteTriggerTemplate" ,
 "create or replace trigger  $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                    \n" +
 "                                for each row begin                                                                                                                                                     \n" +
@@ -183,7 +184,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "                                      $(txIdExpression),                                                                                                                                               \n" +
 "                                      $(prefixName)_pkg.disable_node_id,                                                                                                                               \n" +
 "                                      $(externalSelect),                                                                                                                                               \n" +
-"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                \n" + 
+"                                      " + getCreateTimeExpression(symmetricDialect) + "                                                                                                                \n" +
 "                                    );                                                                                                                                                                 \n" +
 "                                  end if;                                                                                                                                                              \n" +
 "                                  $(custom_on_delete_text)                                                                                                                                             \n" +
@@ -192,14 +193,14 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t  where $(whereClause)                                                                                                                " );
     }
-    
+
     protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
         String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
         if (StringUtils.isEmpty(timezone)) {
             return "CURRENT_TIMESTAMP";
         } else {
             return String.format("CURRENT_TIMESTAMP AT TIME ZONE '%s'", timezone);
-        }    
+        }
     }
 
 }
