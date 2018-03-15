@@ -183,7 +183,7 @@ abstract public class AbstractTransportManager {
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
-        batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK));
+        batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK) || status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
         batchInfo.setResend(status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
 
         if (!batchInfo.isOk()) {
