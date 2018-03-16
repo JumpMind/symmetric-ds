@@ -1023,8 +1023,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                     StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
                 }
             } catch (SQLException ex) {
-                log.warn("Parameter arg '{}' type: {} caused exception: {}", arg, argType, ex.getMessage());
-                throw ex;
+                String msg = String.format("Parameter arg '%s' type: %s caused exception: %s", arg, TypeMap.getJdbcTypeName(argType), ex.getMessage()); 
+                throw new SQLException(msg, ex);
             }
         }
     }    
