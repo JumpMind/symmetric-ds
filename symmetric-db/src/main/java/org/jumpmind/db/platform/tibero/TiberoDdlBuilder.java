@@ -76,7 +76,7 @@ public class TiberoDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
 
         databaseInfo.setPrimaryKeyEmbedded(false);
-        databaseInfo.setDateOverridesToTimestamp(true);
+        databaseInfo.setDateOverridesToTimestamp(false);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
