@@ -193,7 +193,9 @@ public class WindowsService extends WrapperService {
                 pb.redirectErrorStream(true);
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                 String line = stdout.readLine();
-                line = stdout.readLine();
+                do {
+                    line = stdout.readLine();    
+                } while (line != null && line.trim().equals(""));
                 stdout.close();
 
                 if (line != null) {
@@ -201,6 +203,9 @@ public class WindowsService extends WrapperService {
                     if (array.length > 0) {
                         foundProcess = true;
                         isRunning = array[0].toLowerCase().contains(javaExe);
+                        if (!isRunning) {
+                            System.out.println("Ignoring old process ID being used by " + array[0]);
+                        }
                     }
                 }
 
