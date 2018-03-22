@@ -36,11 +36,15 @@ public class BatchStagingManager extends StagingManager {
 
     @Override
     public long clean(long ttlInMs) {
-        if (!engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
-            log.debug("Could not get a lock to run stage management");
-            return 0;
+        try {
+            if (!engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
+                log.debug("Could not get a lock to run stage management");
+                return 0;
+            }
+        } catch (Exception e) {
+            // during setup or un-install, it's possible sym_lock table isn't available yet
         }
-        
+
         try {            
             boolean purgeBasedOnTTL = engine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_PURGE_ON_TTL_ENABLED, false);
             if (purgeBasedOnTTL) {
@@ -51,7 +55,10 @@ public class BatchStagingManager extends StagingManager {
                 }
             }
         } finally {
-            engine.getClusterService().unlock(ClusterConstants.STAGE_MANAGEMENT);
+            try {
+                engine.getClusterService().unlock(ClusterConstants.STAGE_MANAGEMENT);
+            } catch (Exception e) {
+            }
         }
     }
     
