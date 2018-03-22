@@ -158,7 +158,7 @@ public abstract class TypeMap
         registerJdbcType(Types.VARBINARY,     VARBINARY,     JdbcTypeCategoryEnum.BINARY);
         registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(ORACLE_TIMESTAMPTZ,  TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ,   JdbcTypeCategoryEnum.DATETIME);
+        registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ,  JdbcTypeCategoryEnum.DATETIME);
 
         // only available in JDK 1.4 and above:
         if (PlatformUtils.supportsJava14JdbcTypes())

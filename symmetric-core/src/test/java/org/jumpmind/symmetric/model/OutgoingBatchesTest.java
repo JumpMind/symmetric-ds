@@ -20,15 +20,19 @@
  */
 package org.jumpmind.symmetric.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
-import org.jumpmind.util.AppUtils;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class OutgoingBatchesTest {
@@ -222,21 +226,28 @@ public class OutgoingBatchesTest {
         channels.add(channelB);
         channels.add(channelA);
 
+        Date startTime = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(startTime);
+
+        // Channel A is in error and has oldest batch
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>();
         OutgoingBatch batch1 = new OutgoingBatch("1", channelA.getChannelId(), Status.NE);
         batch1.setStatus(OutgoingBatch.Status.ER);
         batch1.setErrorFlag(true);
-        batch1.setLastUpdatedTime(new Date());
+        batch1.setLastUpdatedTime(cal.getTime());
         batches.add(batch1);
 
-        AppUtils.sleep(50);
-
+        // Channel B is in error and has newest batch
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, 1);
         OutgoingBatch batch2 = new OutgoingBatch("1", channelB.getChannelId(), Status.NE);
         batch2.setStatus(OutgoingBatch.Status.ER);
         batch2.setErrorFlag(true);
-        batch2.setLastUpdatedTime(new Date());
+        batch2.setLastUpdatedTime(cal.getTime());
         batches.add(batch2);
 
+        // Channel C is fine
         OutgoingBatch batch3 = new OutgoingBatch("1", channelC.getChannelId(), Status.NE);
         batches.add(batch3);
 
@@ -244,19 +255,63 @@ public class OutgoingBatchesTest {
 
         outgoingBatches.sortChannels(channels);
 
+        // Order should be non-error channels, followed by error channels ordered by oldest first
         assertEquals(channelC, channels.get(0));
         assertEquals(channelA, channels.get(1));
         assertEquals(channelB, channels.get(2));
 
-        AppUtils.sleep(50);
-
-        batch1.setLastUpdatedTime(new Date());
+        // Make channel A look like it just tried, so it's newest
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, 2);
+        batch1.setLastUpdatedTime(cal.getTime());
 
         outgoingBatches.sortChannels(channels);
 
         assertEquals(channelC, channels.get(0));
         assertEquals(channelB, channels.get(1));
         assertEquals(channelA, channels.get(2));
+
+        // Additional batch on channel A that is old
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, -1);
+        OutgoingBatch batch4 = new OutgoingBatch("1", channelA.getChannelId(), Status.NE);
+        batch4.setStatus(OutgoingBatch.Status.ER);
+        batch4.setErrorFlag(true);
+        batch4.setLastUpdatedTime(cal.getTime());
+        batches.add(batch4);
+
+        // Additional batch on channel B that is oldest
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, -2);
+        OutgoingBatch batch5 = new OutgoingBatch("1", channelB.getChannelId(), Status.NE);
+        batch5.setStatus(OutgoingBatch.Status.ER);
+        batch5.setErrorFlag(true);
+        batch5.setLastUpdatedTime(cal.getTime());
+        batches.add(batch5);
+
+        // Make channel B look like it just tried, so it's newest
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, 3);
+        batch2.setLastUpdatedTime(cal.getTime());
+
+        // Sorting should get maximum last update time for each channel and sort error channels by oldest first
+        outgoingBatches.sortChannels(channels);
+        
+        assertEquals(channelC, channels.get(0));
+        assertEquals(channelA, channels.get(1));
+        assertEquals(channelB, channels.get(2));        
+
+        // Make channel A look like it just tried, so it's newest
+        cal.setTime(startTime);
+        cal.add(Calendar.SECOND, 4);
+        batch1.setLastUpdatedTime(cal.getTime());
+
+        // Sorting should get maximum last update time for each channel and sort error channels by oldest first
+        outgoingBatches.sortChannels(channels);
+        
+        assertEquals(channelC, channels.get(0));
+        assertEquals(channelB, channels.get(1));
+        assertEquals(channelA, channels.get(2));        
     }
 
     protected OutgoingBatches buildSampleBatches(String channelId, int batchCount) {
