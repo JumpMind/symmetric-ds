@@ -658,7 +658,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
 
-                final long maxBytesToSync = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
+                final long initialLoadMaxBytesToSync = parameterService.getLong(ParameterConstants.INITIAL_LOAD_TRANSPORT_MAX_BYTES_TO_SYNC);
                 long totalBytesSend = 0;
                 boolean logMaxBytesReached = false;
                 Iterator<OutgoingBatch> activeBatchIter = activeBatches.iterator();                
@@ -688,11 +688,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             if (streamToFileEnabled || mode == ExtractMode.FOR_PAYLOAD_CLIENT || (currentBatch.isExtractJobFlag() && parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB))) {
                                 
-                                if(totalBytesSend > maxBytesToSync) {
+                                if(totalBytesSend > initialLoadMaxBytesToSync) {
                                     if(!logMaxBytesReached) {
                                         logMaxBytesReached = true;
                                         log.info(
-                                                "Reached the total byte threshold after {} of {} batches were send for node '{}' (send {} bytes, the max is {}).  "
+                                                "Reached the total byte threshold for initial load after {} of {} batches were send for node '{}' (send {} bytes, the max is {}).  "
                                                         + "The remaining batches will be send on a subsequent sync.",
                                                 new Object[] { i, futures.size(), targetNode.getNodeId(), totalBytesSend, maxBytesToSync });
                                     }
