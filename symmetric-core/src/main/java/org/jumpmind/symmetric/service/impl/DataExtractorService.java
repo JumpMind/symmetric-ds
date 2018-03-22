@@ -739,9 +739,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     if(!logMaxBytesReached) {
                                         logMaxBytesReached = true;
                                         log.info(
-                                                "Reached the total byte threshold for initial load after {} of {} batches were send for node '{}' (send {} bytes, the max is {}).  "
+                                                "Reached the total byte threshold for initial load after {} of {} batches were sent for node '{}' (sent {} bytes, the max is {}).  "
                                                         + "The remaining batches will be send on a subsequent sync.",
-                                                new Object[] { i, futures.size(), targetNode.getNodeId(), totalBytesSend, maxBytesToSync });
+                                                new Object[] { i, futures.size(), targetNode.getNodeId(), totalBytesSend, initialLoadMaxBytesToSync });
                                     }
                                     transferInfo.setStatus(ProcessStatus.OK);
                                     break;
