@@ -543,6 +543,8 @@ public class Database implements Serializable, Cloneable {
 
                     if (targetTable != null) {
                         fk.setForeignTable(targetTable);
+                        fk.setForeignTableCatalog(targetTable.getCatalog());
+                        fk.setForeignTableSchema(targetTable.getSchema());
                     } else {
                         log.debug("The foreignkey "
                                 + fkDesc

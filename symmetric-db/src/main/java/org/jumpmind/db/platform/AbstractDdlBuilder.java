@@ -2460,13 +2460,20 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" FOREIGN KEY (");
             writeLocalReferences(key, ddl);
             ddl.append(") REFERENCES ");
-            // TODO: use getDelimitedIdentifier() around catalog/schema, but we'll need to get the case right
-            // TODO : use same catalog and schema than table because catalog and schema are not present in table object
-            if (StringUtils.isNotBlank(table.getCatalog())) {
-                ddl.append(table.getCatalog()).append(".");
+            
+            if (StringUtils.isNotBlank(key.getForeignTableCatalog())) {
+            		printIdentifier(key.getForeignTableCatalog(), ddl);
+            		ddl.append(".");
+            } else if (StringUtils.isNotBlank(table.getCatalog())) {
+            		printIdentifier(table.getCatalog(), ddl);
+            		ddl.append(".");
             }
-            if (StringUtils.isNotBlank(table.getSchema())) {
-                ddl.append(table.getSchema()).append(".");
+            if (StringUtils.isNotBlank(key.getForeignTableSchema())) {
+            		printIdentifier(key.getForeignTableSchema(), ddl);
+            		ddl.append(".");
+            } else if (StringUtils.isNotBlank(table.getSchema())) {
+                printIdentifier(table.getSchema(), ddl);
+                ddl.append(".");
             }
             printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
