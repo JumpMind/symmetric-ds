@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.web;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.PatternLayout;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
