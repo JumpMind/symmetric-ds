@@ -205,8 +205,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         long minGapStartId = sqlTemplate.queryForLong(getSql("minDataGapStartId"));
-        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[] { time.getTime(), 
-                OutgoingBatch.Status.OK.name() });
+        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[] { time.getTime() });
         int strandedEventDeletedCount = purgeByMinMax(minMaxEvent, minGapStartId, MinMaxDeleteSql.STRANDED_DATA_EVENT,
                 time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(strandedEventDeletedCount);
