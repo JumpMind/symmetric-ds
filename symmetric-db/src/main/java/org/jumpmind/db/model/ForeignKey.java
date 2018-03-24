@@ -51,6 +51,10 @@ public class ForeignKey implements Cloneable, Serializable {
     /** Whether this foreign key has an associated auto-generated index. */
     private boolean autoIndexPresent;
 
+    private String foreignTableCatalog;
+    
+    private String foreignTableSchema;
+    
     /**
      * Creates a new foreign key object that has no name.
      */
@@ -118,6 +122,8 @@ public class ForeignKey implements Cloneable, Serializable {
     public void setForeignTable(Table foreignTable) {
         this.foreignTable = foreignTable;
         this.foreignTableName = (foreignTable == null ? null : foreignTable.getName());
+        this.foreignTableCatalog = (foreignTable == null ? null : foreignTable.getCatalog());
+        this.foreignTableSchema = (foreignTable == null ? null : foreignTable.getSchema());
     }
 
     /**
@@ -291,7 +297,9 @@ public class ForeignKey implements Cloneable, Serializable {
         result.name = name;
         result.foreignTableName = foreignTableName;
         result.references = new ListOrderedSet();
-
+        result.foreignTableCatalog = foreignTableCatalog;
+        result.foreignTableSchema = foreignTableSchema;
+        
         for (Iterator<?> it = references.iterator(); it.hasNext();) {
             result.references.add(((Reference) it.next()).clone());
         }
@@ -432,4 +440,23 @@ public class ForeignKey implements Cloneable, Serializable {
 
         return result.toString();
     }
+
+	public String getForeignTableCatalog() {
+		return foreignTableCatalog;
+	}
+
+	public void setForeignTableCatalog(String foreignTableCatalog) {
+		this.foreignTableCatalog = foreignTableCatalog;
+	}
+
+	public String getForeignTableSchema() {
+		return foreignTableSchema;
+	}
+
+	public void setForeignTableSchema(String foreignTableSchema) {
+		this.foreignTableSchema = foreignTableSchema;
+	}
+    
+    
+   
 }

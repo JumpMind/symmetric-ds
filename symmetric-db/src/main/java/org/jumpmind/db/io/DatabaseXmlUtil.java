@@ -271,6 +271,10 @@ public class DatabaseXmlUtil {
                                     fk.setName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("foreignTable")) {
                                     fk.setForeignTableName(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("foreignTableCatalog")) {
+                                    fk.setForeignTableCatalog(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("foreignTableSchema")) {
+                                    fk.setForeignTableSchema(attributeValue);
                                 }
                             }
                             table.addForeignKey(fk);
@@ -515,7 +519,10 @@ public class DatabaseXmlUtil {
 
             for (ForeignKey fk : table.getForeignKeys()) {
                 output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml(fk.getName()) + "\" foreignTable=\""
-                        + StringEscapeUtils.escapeXml(fk.getForeignTableName()) + "\">\n");
+                        + StringEscapeUtils.escapeXml(fk.getForeignTableName()) + "\" foreignTableCatalog=\""
+                        + StringEscapeUtils.escapeXml(fk.getForeignTableCatalog() == null ? "" : fk.getForeignTableCatalog()) + 
+                        "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml(fk.getForeignTableSchema() == null ? "" : fk.getForeignTableSchema())  + "\">\n");
+                        		
                 for (Reference ref : fk.getReferences()) {
                     output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml(ref.getLocalColumnName())
                             + "\" foreign=\"" + StringEscapeUtils.escapeXml(ref.getForeignColumnName()) + "\"/>\n");

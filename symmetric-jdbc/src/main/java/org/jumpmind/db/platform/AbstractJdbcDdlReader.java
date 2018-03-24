@@ -1077,7 +1077,14 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         if (fk == null) {
             fk = new ForeignKey(fkName);
             fk.setForeignTableName((String) values.get(getName("PKTABLE_NAME")));
-            knownFks.put(fkName, fk);
+            try {
+            		fk.setForeignTableCatalog((String) values.get(getName("PKTABLE_CAT")));
+            } catch (Exception e) { }
+            try {
+        			fk.setForeignTableSchema((String) values.get(getName("PKTABLE_SCHEM")));
+	        	} catch (Exception e) { }
+	        
+	        knownFks.put(fkName, fk);
         }
 
         Reference ref = new Reference();
