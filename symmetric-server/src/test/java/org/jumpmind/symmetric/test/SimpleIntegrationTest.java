@@ -1000,8 +1000,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         int batchId = getServer().getSqlTemplate().queryForInt("select min(batch_id) from sym_outgoing_batch");
         int purgeCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
 
-        // Purge always leaves the last item in a table, so we have to abandon at least two
-        getServer().getSqlTemplate().update("delete from sym_outgoing_batch where batch_id in (?, ?)", batchId, batchId + 1);
+        getServer().getSqlTemplate().update("delete from sym_outgoing_batch where batch_id = ?", batchId);
 
         IParameterService parameterService = getServer().getParameterService();
         int purgeRetentionMinues = parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES);
