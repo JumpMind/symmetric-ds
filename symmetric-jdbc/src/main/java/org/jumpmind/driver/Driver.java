@@ -72,7 +72,7 @@ public class Driver implements java.sql.Driver {
         
         String realUrl = getRealUrl(url);
         
-        Connection connection = DriverManager.getConnection(realUrl);
+        Connection connection = DriverManager.getConnection(realUrl, info);
 
         String engineName = MDC.get("engineName");
         TypedProperties engineProperties = null;
