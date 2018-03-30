@@ -322,7 +322,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 case STRANDED_DATA_EVENT:
                     deleteSql = getSql("deleteStrandedDataEvent");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType };
                     break;
             }
 
