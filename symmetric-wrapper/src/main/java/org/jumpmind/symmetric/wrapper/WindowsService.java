@@ -192,10 +192,15 @@ public class WindowsService extends WrapperService {
                 Process proc = pb.start();
                 pb.redirectErrorStream(true);
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                String line = stdout.readLine();
-                do {
-                    line = stdout.readLine();    
-                } while (line != null && line.trim().equals(""));
+                String line = null, curLine = null;
+                boolean isHeaderLine = true;
+                while ((curLine = stdout.readLine()) != null) {
+                    if (isHeaderLine) {
+                        isHeaderLine = false;
+                    } else if (line == null && !curLine.trim().equals("")) {
+                        line = curLine;
+                    }
+                }
                 stdout.close();
 
                 if (line != null) {
