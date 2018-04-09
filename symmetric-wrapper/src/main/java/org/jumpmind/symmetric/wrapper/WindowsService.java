@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.wrapper;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -194,23 +193,17 @@ public class WindowsService extends WrapperService {
                 proc.getOutputStream().close();
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                 String line = null, curLine = null;
-                curLine = stdout.readLine();
-                if (curLine != null && !curLine.trim().equals("")) {
-                    while ((curLine = stdout.readLine()) != null) {
-                        if (line == null && !curLine.trim().equals("")) {
-                            line = curLine;
-                            break;
-                        }
+                boolean isHeaderLine = true;
+                while ((curLine = stdout.readLine()) != null && line == null) {
+                    System.out.println(curLine);
+                    if (isHeaderLine) {
+                        isHeaderLine = false;
+                    } else if (line == null && !curLine.trim().equals("")) {
+                        line = curLine;
                     }
                 }
-                while (stdout.read() != -1) {
-                }
                 stdout.close();
-                InputStream errout = proc.getErrorStream();
-                while (errout.read() != -1) {
-                }
-                errout.close();
-
+                
                 if (line != null) {
                     String[] array = line.split("\\s+");
                     if (array.length > 0) {
