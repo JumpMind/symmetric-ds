@@ -497,7 +497,7 @@ public class DataService extends AbstractService implements IDataService {
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
                         insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
-                                transaction, mapReloadRequests, processInfo);
+                                transaction, mapReloadRequests, isFullLoad, processInfo);
                                 
                         if (isFullLoad) {
 
@@ -985,7 +985,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     private void insertFileSyncBatchForReload(Node targetNode, long loadId, String createBy,
-            boolean transactional, ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
+            boolean transactional, ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, boolean isFullLoad, ProcessInfo processInfo) {
         if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                 && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -1001,7 +1001,7 @@ public class DataService extends AbstractService implements IDataService {
                         .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
                                 routerid, true);
 
-                if(reloadRequests != null && reloadRequests.get(fileSyncSnapshotTriggerRouter.getTriggerId() + fileSyncSnapshotTriggerRouter.getRouterId()) == null){
+                if(!isFullLoad && reloadRequests != null && reloadRequests.get(fileSyncSnapshotTriggerRouter.getTriggerId() + fileSyncSnapshotTriggerRouter.getRouterId()) == null){
                     return;
                 }
                 
