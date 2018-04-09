@@ -186,44 +186,43 @@ public class WindowsService extends WrapperService {
         boolean isRunning = false;
         if (pid != 0) {
             boolean foundProcess = false;
-            if (!System.getProperty("os.name").contains("2003")) {
-                String[] path = config.getJavaCommand().split("/|\\\\");
-                String javaExe = path[path.length - 1].toLowerCase();
-                try {
-                    ProcessBuilder pb = new ProcessBuilder("wmic", "process", String.valueOf(pid), "get", "name");
-                    Process proc = pb.start();
-                    BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                    String line = null, curLine = null;
-                    curLine = stdout.readLine();
-                    if (curLine != null && !curLine.trim().equals("")) {
-                        while ((curLine = stdout.readLine()) != null) {
-                            if (line == null && !curLine.trim().equals("")) {
-                                line = curLine;
-                                break;
-                            }
+            String[] path = config.getJavaCommand().split("/|\\\\");
+            String javaExe = path[path.length - 1].toLowerCase();
+            try {
+                ProcessBuilder pb = new ProcessBuilder("wmic", "process", String.valueOf(pid), "get", "name");
+                Process proc = pb.start();
+                proc.getOutputStream().close();
+                BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                String line = null, curLine = null;
+                curLine = stdout.readLine();
+                if (curLine != null && !curLine.trim().equals("")) {
+                    while ((curLine = stdout.readLine()) != null) {
+                        if (line == null && !curLine.trim().equals("")) {
+                            line = curLine;
+                            break;
                         }
                     }
-                    while (stdout.read() != -1) {
-                    }
-                    stdout.close();
-                    InputStream errout = proc.getErrorStream();
-                    while (errout.read() != -1) {
-                    }
-                    errout.close();
-    
-                    if (line != null) {
-                        String[] array = line.split("\\s+");
-                        if (array.length > 0) {
-                            foundProcess = true;
-                            isRunning = array[0].toLowerCase().contains(javaExe);
-                            if (!isRunning) {
-                                System.out.println("Ignoring old process ID being used by " + array[0]);
-                            }
-                        }
-                    }
-    
-                } catch (IOException e) {
                 }
+                while (stdout.read() != -1) {
+                }
+                stdout.close();
+                InputStream errout = proc.getErrorStream();
+                while (errout.read() != -1) {
+                }
+                errout.close();
+
+                if (line != null) {
+                    String[] array = line.split("\\s+");
+                    if (array.length > 0) {
+                        foundProcess = true;
+                        isRunning = array[0].toLowerCase().contains(javaExe);
+                        if (!isRunning) {
+                            System.out.println("Ignoring old process ID being used by " + array[0]);
+                        }
+                    }
+                }
+
+            } catch (IOException e) {
             }
             if (!foundProcess) {
                 Kernel32Ex kernel = Kernel32Ex.INSTANCE;
