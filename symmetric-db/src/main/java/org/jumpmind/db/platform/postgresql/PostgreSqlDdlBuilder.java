@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.postgresql;
 import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
@@ -38,6 +39,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -107,6 +109,11 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     public static boolean isUsePseudoSequence() {
         return "true".equalsIgnoreCase(System.getProperty(
                 "org.jumpmind.symmetric.ddl.use.table.seq", "false"));
+    }
+    
+    public static boolean isMapCharToJson() {
+        return "true".equalsIgnoreCase(System.getProperty(
+                "org.jumpmind.symmetric.ddl.use.postgres.map.json", "true"));
     }
 
     @Override
@@ -445,5 +452,22 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         		super.printDefaultValue(defaultValue, typeCode, ddl);
         }
     }
-
+    
+    
+    @Override
+    protected String getSqlType(Column column) {
+    		
+    		String type = super.getSqlType(column);
+    		if (type.startsWith("CHAR") && column.getPlatformColumns() != null) {
+    			if (isMapCharToJson()) {
+    				for (Map.Entry<String, PlatformColumn> platformColumn : column.getPlatformColumns().entrySet()) {
+		    			if (platformColumn.getValue() != null && platformColumn.getValue().getType() != null &&
+		    					platformColumn.getValue().getType().equals("JSON")) {
+		    				type = "JSONB";
+		    			}
+		    		}
+    			}
+    		}
+    		return type;
+    }
 }
