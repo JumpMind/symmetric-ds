@@ -2050,7 +2050,54 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     class ColumnsAccordingToTriggerHistory {
-        Map<Integer, Table> cache = new HashMap<Integer, Table>();
+        class CacheKey{
+            private String routerId;
+            private int triggerHistoryId;
+            private boolean setTargetTableName;
+            private boolean useDatabaseDefinition;
+            
+            public CacheKey(String routerId, int triggerHistoryId, boolean setTargetTableName,
+                    boolean useDatabaseDefinition) {
+                 this.routerId = routerId;
+                 this.triggerHistoryId = triggerHistoryId;
+                 this.setTargetTableName = setTargetTableName;
+                 this.useDatabaseDefinition = useDatabaseDefinition;
+            }
+            @Override
+            public int hashCode() {
+                final int prime = 31;
+                int result = 1;
+                result = prime * result + ((routerId == null) ? 0 : routerId.hashCode());
+                result = prime * result + (setTargetTableName ? 1231 : 1237);
+                result = prime * result + triggerHistoryId;
+                result = prime * result + (useDatabaseDefinition ? 1231 : 1237);
+                return result;
+            }
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj)
+                    return true;
+                if (obj == null)
+                    return false;
+                if (getClass() != obj.getClass())
+                    return false;
+                CacheKey other = (CacheKey) obj;
+                if (routerId == null) {
+                    if (other.routerId != null)
+                        return false;
+                } else if (!routerId.equals(other.routerId))
+                    return false;
+                if (setTargetTableName != other.setTargetTableName)
+                    return false;
+                if (triggerHistoryId != other.triggerHistoryId)
+                    return false;
+                if (useDatabaseDefinition != other.useDatabaseDefinition)
+                    return false;
+                return true;
+            }
+        }
+        
+        Map<CacheKey, Table> cache = new HashMap<CacheKey, Table>();
         Node sourceNode;
         Node targetNode;
         
@@ -2058,13 +2105,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.sourceNode = sourceNode;
             this.targetNode = targetNode;
         }
-
         public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {            
-            final int prime = 31;
-            int key = prime + ((routerId == null) ? 0 : routerId.hashCode());
-            key = prime * key + (setTargetTableName ? 1231 : 1237);
-            key = prime * key + ((triggerHistory == null) ? 0 : triggerHistory.getTriggerHistoryId());
-            key = prime * key + (useDatabaseDefinition ? 1231 : 1237);
+            CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName, useDatabaseDefinition);
             Table table = cache.get(key);
             if (table == null) {
                 table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, sourceNode,
