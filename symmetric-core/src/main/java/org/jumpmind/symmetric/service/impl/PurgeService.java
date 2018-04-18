@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 public class PurgeService extends AbstractService implements IPurgeService {
 
     enum MinMaxDeleteSql {
-        DATA, DATA_EVENT, OUTGOING_BATCH, STRANDED_DATA, STRANDED_DATA_EVENT
+        DATA, DATA_RANGE, DATA_EVENT, DATA_EVENT_RANGE, OUTGOING_BATCH, STRANDED_DATA, STRANDED_DATA_EVENT
     };
 
     private IClusterService clusterService;
@@ -159,18 +159,33 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("Getting range for outgoing batch");
         long[] minMax = queryForMinMax(getSql("selectOutgoingBatchRangeSql"),
                 new Object[] { time.getTime(), OutgoingBatch.Status.OK.name() });
-        long minGapStartId = sqlTemplate.queryForLong(getSql("minDataGapStartId"));
+        long minGapStartId = sqlTemplateDirty.queryForLong(getSql("minDataGapStartId"));
         int maxNumOfBatchIdsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_BATCH_IDS);
         int maxNumOfDataEventsToPurgeInTx = parameterService
-                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
-        int dataEventsPurgedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA_EVENT,
+                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);        
+        int dataEventsPurgedCount = 0;
+
+        if (parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
+            log.info("Getting first batch_id for outstanding batches");
+            long minBatchId = sqlTemplateDirty.queryForLong(getSql("minOutgoingBatchNotStatusSql"), OutgoingBatch.Status.OK.name());
+            long rangeMinMax[] = new long[] { minMax[0], Math.min(minBatchId > 0 ? minBatchId - 1 : minMax[1], minMax[1]) };
+            if (rangeMinMax[1] == minMax[1]) {
+                minMax[1] = -1;
+            } else {
+                minMax[0] = minBatchId + 1;
+            }
+            dataEventsPurgedCount = purgeByMinMax(rangeMinMax, minGapStartId, MinMaxDeleteSql.DATA_EVENT_RANGE,
+                    time.getTime(), maxNumOfDataEventsToPurgeInTx);
+        }
+
+        dataEventsPurgedCount += purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA_EVENT,
                 time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(dataEventsPurgedCount);
+
         int outgoingbatchPurgedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.OUTGOING_BATCH,
                 time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         statisticManager.incrementPurgedBatchOutgoingRows(outgoingbatchPurgedCount);
-        
         
         return dataEventsPurgedCount + outgoingbatchPurgedCount;
     }
@@ -190,13 +205,42 @@ public class PurgeService extends AbstractService implements IPurgeService {
     private long purgeDataRows(final Calendar time) {
         log.info("Getting range for data");
         long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[0]);
-        long minGapStartId = sqlTemplate.queryForLong(getSql("minDataGapStartId"));
-        int maxNumOfDataIdsToPurgeInTx = parameterService
-                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
-        int dataDeletedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA, time.getTime(),
+        long minGapStartId = sqlTemplateDirty.queryForLong(getSql("minDataGapStartId"));
+        int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+        long dataDeletedCount = 0;
+
+        if (parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
+            log.info("Getting count of outstanding batches");
+            long outstandingCount = sqlTemplateDirty.queryForLong(getSql("countOutgoingBatchNotStatusSql"), 
+                    OutgoingBatch.Status.OK.name());
+            long maxOutstandingCount = parameterService.getLong(ParameterConstants.PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD);
+            log.info("Found "+ outstandingCount + " outstanding batches, threshold is " + maxOutstandingCount);
+            
+            if (outstandingCount <= maxOutstandingCount) {
+                long minDataId = 0;
+                if (outstandingCount > 0) {
+                    log.info("Getting first data_id for outstanding batches");
+                    minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinNotStatusSql"), 
+                            OutgoingBatch.Status.OK.name());
+                }
+                long rangeMinMax[] = new long[] { minMax[0], Math.min(Math.min(minDataId > 0 ? minDataId - 1 : minMax[1], 
+                        minMax[1]), minGapStartId - 1) };
+                if (rangeMinMax[1] == minMax[1]) {
+                    minMax[1] = -1;
+                } else if (rangeMinMax[1] == minDataId - 1) {
+                    minMax[0] = minDataId + 1;
+                } else if (rangeMinMax[1] == minGapStartId - 1) {
+                    minMax[0] = minGapStartId + 1;
+                }
+                dataDeletedCount = purgeByMinMax(rangeMinMax, minGapStartId, MinMaxDeleteSql.DATA_RANGE,
+                        time.getTime(), maxNumOfDataIdsToPurgeInTx);
+            }
+        }
+
+        dataDeletedCount += purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA, time.getTime(),
                 maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(dataDeletedCount);
-        
+
         return dataDeletedCount;
     }
     
@@ -204,9 +248,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         log.info("Getting range for stranded data events");
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
-        long minGapStartId = sqlTemplate.queryForLong(getSql("minDataGapStartId"));
-        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[] { time.getTime(), 
-                OutgoingBatch.Status.OK.name() });
+        long minGapStartId = sqlTemplateDirty.queryForLong(getSql("minDataGapStartId"));
+        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[] { time.getTime() });
         int strandedEventDeletedCount = purgeByMinMax(minMaxEvent, minGapStartId, MinMaxDeleteSql.STRANDED_DATA_EVENT,
                 time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(strandedEventDeletedCount);
@@ -222,7 +265,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private long[] queryForMinMax(String sql, Object... params) {
-        long[] minMax = sqlTemplate.queryForObject(sql, new ISqlRowMapper<long[]>() {
+        long[] minMax = sqlTemplateDirty.queryForObject(sql, new ISqlRowMapper<long[]>() {
             public long[] mapRow(Row rs) {
                 // Max - 1 so we always leave 1 row behind, which keeps MySQL autoinc from resetting
                 return new long[] { rs.getLong("min_id"), rs.getLong("max_id")-1 };
@@ -301,12 +344,22 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, 
                             idSqlType, idSqlType, idSqlType, idSqlType, Types.VARCHAR};
                     break;
+                case DATA_RANGE:
+                    deleteSql = getSql("deleteDataByRangeSql");
+                    args = new Object[] { minId, maxId };
+                    argTypes = new int[] { idSqlType, idSqlType };
+                    break;
                 case DATA_EVENT:
                     deleteSql = getSql("deleteDataEventSql");
                     args = new Object[] { minId, maxId, OutgoingBatch.Status.OK.name(), minId,
                             maxId };
                     argTypes = new int[] { idSqlType, idSqlType, Types.VARCHAR, idSqlType, idSqlType};
 
+                    break;
+                case DATA_EVENT_RANGE:
+                    deleteSql = getSql("deleteDataEventByRangeSql");
+                    args = new Object[] { minId, maxId };
+                    argTypes = new int[] { idSqlType, idSqlType };
                     break;
                 case OUTGOING_BATCH:
                     deleteSql = getSql("deleteOutgoingBatchSql");
@@ -323,7 +376,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 case STRANDED_DATA_EVENT:
                     deleteSql = getSql("deleteStrandedDataEvent");
                     args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType };
                     break;
             }
 
@@ -387,7 +440,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     private long purgeIncomingBatch(final Calendar time) {
         log.info("Getting range for incoming batch");
-        List<NodeBatchRange> nodeBatchRangeList = sqlTemplate.query(
+        List<NodeBatchRange> nodeBatchRangeList = sqlTemplateDirty.query(
                 getSql("selectIncomingBatchRangeSql"), new ISqlRowMapper<NodeBatchRange>() {
                     public NodeBatchRange mapRow(Row rs) {
                         return new NodeBatchRange(rs.getString("node_id"), rs.getLong("min_id"), rs

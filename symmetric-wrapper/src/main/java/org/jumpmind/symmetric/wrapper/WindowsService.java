@@ -190,14 +190,34 @@ public class WindowsService extends WrapperService {
             try {
                 ProcessBuilder pb = new ProcessBuilder("wmic", "process", String.valueOf(pid), "get", "name");
                 Process proc = pb.start();
-                pb.redirectErrorStream(true);
+                proc.getOutputStream().close();
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                String line = stdout.readLine();
-                do {
-                    line = stdout.readLine();    
-                } while (line != null && line.trim().equals(""));
-                stdout.close();
+                BufferedReader stderr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            while (stderr.read() != -1) {
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+                String line = null, curLine = null;
+                boolean isHeaderLine = true;
+                while ((curLine = stdout.readLine()) != null && line == null) {
+                    System.out.println(curLine);
+                    if (isHeaderLine) {
+                        isHeaderLine = false;
+                    } else if (line == null && !curLine.trim().equals("")) {
+                        line = curLine;
+                    }
+                }
+                stdout.close();
+                
                 if (line != null) {
                     String[] array = line.split("\\s+");
                     if (array.length > 0) {

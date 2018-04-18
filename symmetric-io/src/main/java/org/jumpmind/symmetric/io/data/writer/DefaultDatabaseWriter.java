@@ -548,7 +548,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             statistics.get(batch).increment(DataWriterStatisticConstants.CREATECOUNT);
             return true;
         } catch (RuntimeException ex) {
-            log.error("Failed to alter table using the following xml: {}", xml);
+            log.error("Failed to alter table using the following xml: " + xml, ex); // This is not logged upstream
             throw ex;
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
