@@ -402,7 +402,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 String charValue = value.toString();
                 if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo().isBlankCharColumnSpacePadded())
                         || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
-                    objectValue = StringUtils.rightPad(value.toString(), column.getSizeAsInt(), ' ');
+                    objectValue = StringUtils.rightPad(charValue, column.getSizeAsInt(), ' ');
                 }
             } else if (type == Types.BIGINT) {
                 objectValue = parseBigInteger(value);
@@ -433,6 +433,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (objectValue instanceof String) {
             String stringValue = cleanTextForTextBasedColumns((String) objectValue);
             int size = column.getSizeAsInt();
+            
+            if(settings.isRightTrimCharValues()){
+            	stringValue = StringUtils.stripEnd(stringValue, null);
+            }
+            
             if (fitToColumn && size > 0 && stringValue.length() > size) {
                 stringValue = stringValue.substring(0, size);
             }
