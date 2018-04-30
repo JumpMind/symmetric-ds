@@ -17,6 +17,12 @@ ifdef::pro[]
 
 The Staging Area screen shows files that are currently in the staging area.  Staging area can be cleared at any time by clicking the *Clear Staging* button.
 
+[IMPORTANT] 
+.Clear Staging Performance Impacts
+====
+The staging area is designed to hold extracted data while it is waiting to be processed through a push or pull request.  This will contain a mix of staged batch files that have been completed, files that are in process, and files that are waiting to be processed.   So clearing this will remove all types of files both for both incoming and outgoing batches.   If a file is not found in staging as a result of clearing it, the batch will need to be re-extracted.   If an incoming batch is not found when its ready to be loaded a resent request will be made to the source node that it can be sent across the network again.   So use caution when clearing staging if there are a lot of files present otherwise there could be an impact on performance while these batches are re-extracted or resent.
+====
+
 image::manage/staging.png[]
 
 endif::pro[]
