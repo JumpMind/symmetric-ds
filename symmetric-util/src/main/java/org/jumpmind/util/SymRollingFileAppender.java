@@ -23,6 +23,7 @@ package org.jumpmind.util;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -96,13 +97,25 @@ public class SymRollingFileAppender extends RollingFileAppender {
         }
 
         try {
-            CRC32 crc = new CRC32();
-            crc.update(ArrayUtils.toString(event.getThrowableStrRep()).getBytes("UTF8"));
-            return event.getThrowableInformation().getThrowable().getClass().getSimpleName() + ":" + crc.getValue();
+            StringBuilder buff = new StringBuilder(128);
+            Throwable throwable = event.getThrowableInformation().getThrowable();
+            buff.append(throwable.getClass().getSimpleName());
+            if (throwable.getStackTrace().length == 0) {
+                buff.append("-jvm-optimized");    
+            }
+            buff.append(":");
+            buff.append(getThrowableHash(event.getThrowableStrRep()));
+            return buff.toString();
         } catch (Exception ex) {
             LogLog.error("Failed to hash stack trace.", ex);
             return null;
         }
+    }
+    
+    protected long getThrowableHash(String[] throwableString) throws UnsupportedEncodingException {
+        CRC32 crc = new CRC32();
+        crc.update(ArrayUtils.toString(throwableString).getBytes("UTF8"));
+        return crc.getValue();
     }
 
     protected LoggingEvent appendKey(LoggingEvent event, String key) {

@@ -147,19 +147,12 @@ public class UnixService extends WrapperService {
         if (procFile.canRead()) {
             try {
                 List<String> args = readProcFile(procFile);
-                String appName = config.getApplicationParameters().get(0);
-                boolean isJava = false;
-                boolean isMe = false;
-
                 for (String arg : args) {
                     if (arg.contains(config.getJavaCommand())) {
-                        isJava = true;
-                    }
-                    if (arg.contains(appName) || arg.contains(Constants.JAR_NAME)) {
-                        isMe = true;
+                        return true;
                     }
                 }
-                return isJava && isMe;
+                return false;
             } catch (IOException e) {
             }
         }        

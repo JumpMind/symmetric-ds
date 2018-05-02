@@ -430,6 +430,8 @@ final public class ParameterConstants {
     
     public final static String TREAT_BINARY_AS_LOB_ENABLED = "treat.binary.as.lob.enabled";
     
+    public final static String RIGHT_TRIM_CHAR_VALUES = "right.trim.char.values";
+    
     public final static String NODE_LOAD_ONLY = "load.only";
     
     public final static String MYSQL_TINYINT_DDL_TO_BOOLEAN = "mysql.tinyint.ddl.to.boolean";

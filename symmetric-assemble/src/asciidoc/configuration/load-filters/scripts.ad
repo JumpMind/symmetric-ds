@@ -58,10 +58,10 @@ insert into sym_load_filter
 	'ITEM_SELLING_PRICE',1,1,1,'
 	if (OLD_COST > COST) {
 		// row will not be loaded
-		return false  
-	}
+		return false
+	} else {
 		// row will be loaded
-		return true   
+		return true
 	}
 	',
 	null,null,null,null,null,
