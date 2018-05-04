@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
@@ -93,6 +94,10 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         }
 
         Table table = super.readTable(connection, metaData, values);
+        
+        if(StringUtils.equalsIgnoreCase(table.getSchema(),"sys")){
+            return null;
+        }
 
         if (table != null) {
             // Sql Server does not return the auto-increment status via the
