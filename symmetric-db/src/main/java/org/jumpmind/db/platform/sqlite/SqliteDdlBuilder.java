@@ -172,6 +172,13 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
     }
 
     @Override
+    protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
+        ddl.append("(");
+        super.writeColumnDefaultValue(table, column, ddl);
+        ddl.append(")");
+    }
+
+    @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         // SQL Lite does not allow auto increment columns on a composite primary key.  Solution is to turn off
         // Auto increment and still support composite key
