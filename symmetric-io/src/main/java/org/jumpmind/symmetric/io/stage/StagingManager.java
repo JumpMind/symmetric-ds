@@ -96,7 +96,7 @@ public class StagingManager implements IStagingManager {
             long purgedMemCount = 0;
             long purgedMemSize = 0;
             for (String key : keys) {
-                IStagedResource resource = new StagedResource(directory, key, this);
+                IStagedResource resource = createStagedResource(key);
                 /* resource could have deleted itself between the time the keys were cloned and now */
                 if (resource != null) {
                     boolean resourceIsOld = (System.currentTimeMillis() - resource
