@@ -166,18 +166,41 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
             }
         }else if (defaultValue != null){
         	String defaultValueStr = defaultValue.toString();
-        	if(defaultValueStr.equalsIgnoreCase("newsequentialid()") || StringUtils.containsIgnoreCase(defaultValueStr, "newid()")){
-        		return "(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(6)))";
+        	if(StringUtils.containsIgnoreCase(defaultValueStr, "newid()")){
+        		return "hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(6))";
         	}
+
+        	if(defaultValueStr.equalsIgnoreCase("newsequentialid()")){
+        	    return "hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || substr(printf('%014X', (strftime('%s', 'now') * 1000 + substr(strftime('%f','now'), 4, 3))), 3, 12)";
+            }
+        }
+        
+        if(defaultValue != null && defaultValue.toString().toUpperCase().startsWith("GETUTCDATE()")){
+        	return "CURRENT_TIMESTAMP";
+        }
+        
+        if(defaultValue != null && defaultValue.toString().toUpperCase().startsWith("GETDATE()")){
+        	return "datetime('now','localtime')";
         }
         return super.mapDefaultValue(defaultValue, typeCode);
     }
-	
-	@Override
+
+    @Override
+    protected void writeColumnDefaultValue(Table table, Column column, StringBuilder ddl) {
+        ddl.append("(");
+        super.writeColumnDefaultValue(table, column, ddl);
+        ddl.append(")");
+    }
+
+    @Override
     protected boolean isShouldUseQuotes(String defaultValue) {
-    	boolean shouldUse = !(defaultValue.toLowerCase().startsWith("(hex(randomblob"));
+    	boolean shouldNotUseWhen = (
+    			defaultValue.toLowerCase().startsWith("hex(randomblob")
+    			||
+    			defaultValue.toLowerCase().startsWith("datetime(")
+    			);
     	
-    	return shouldUse;
+    	return !shouldNotUseWhen;
     };
 
     @Override
