@@ -65,7 +65,7 @@ public class JobCreator {
                     return (AbstractJob) constructor.newInstance(jobDefinition.getJobName(), engine, taskScheduler);
                 }
             }
-            // look for 3 arg constructor of engine, taskScheduler.
+            // look for 2 arg constructor of engine, taskScheduler.
             for (Constructor constructor : constructors) {
                 if (constructor.getParameterTypes().length == 2
                         && constructor.getParameterTypes()[0].isAssignableFrom(ISymmetricEngine.class)
