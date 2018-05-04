@@ -22,7 +22,11 @@ package org.jumpmind.db.platform.sqlite;
 
 import java.sql.Connection;
 import java.sql.Types;
+import java.util.Collection;
+import java.util.Iterator;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.alter.*;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -179,4 +183,47 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         super.createTable(table, ddl, temporary, recreate);
     }
     
+    @Override
+    protected void renameTable(Table sourceTable, Table tempTable, StringBuilder ddl) {
+        dropTemporaryTable(tempTable, ddl);
+       
+        for(IIndex index : sourceTable.getIndices()) {
+            writeExternalIndexDropStmt(tempTable, index, ddl);
+        }
+        
+        ddl.append("ALTER TABLE ");
+        ddl.append(getFullyQualifiedTableNameShorten(sourceTable));
+        ddl.append(" RENAME TO ");
+        ddl.append(getFullyQualifiedTableNameShorten(tempTable));
+        printEndOfStatement(ddl);
+    }
+
+    @Override
+    protected void processTableStructureChanges(Database currentModel, Database desiredModel, Collection<TableChange> changes, StringBuilder ddl) {
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
+
+            if (change instanceof AddColumnChange) {
+                AddColumnChange addColumnChange = (AddColumnChange) change;
+                processChange(currentModel, desiredModel, addColumnChange, ddl);
+                changeIt.remove();
+            }
+        }
+
+        super.processTableStructureChanges(currentModel, desiredModel, changes, ddl);
+    }
+
+    /*
+     * Processes the addition of a column to a table.
+     */
+    protected void processChange(Database currentModel, Database desiredModel,
+                                 AddColumnChange change, StringBuilder ddl) {
+        ddl.append("ALTER TABLE ");
+        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
+        printIndent(ddl);
+        ddl.append("ADD ");
+        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
+        printEndOfStatement(ddl);
+        change.apply(currentModel, delimitedIdentifierModeOn);
+    }
 }
