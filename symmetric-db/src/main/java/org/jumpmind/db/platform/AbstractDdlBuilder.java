@@ -2032,7 +2032,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 		}
 	}
 
-	protected String mapDefaultValue(Object defaultValue, int typeCode) {
+	public String mapDefaultValue(Object defaultValue, int typeCode) {
 		if (defaultValue == null) {
 			defaultValue = "NULL";
 		}

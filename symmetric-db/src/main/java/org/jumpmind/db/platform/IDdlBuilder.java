@@ -47,6 +47,8 @@ public interface IDdlBuilder {
     public String alterTable(Table currentTable, Table desiredTable, IAlterDatabaseInterceptor... alterDatabaseInterceptors);
     
     public String dropTables(Database database);
+
+    public String mapDefaultValue(Object defaultValue, int typeCode);
     
     /*
      * Determines whether delimited identifiers are used or normal SQL92

@@ -107,7 +107,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
     
     @Override
-    protected String mapDefaultValue(Object defaultValue, int typeCode) {
+    public String mapDefaultValue(Object defaultValue, int typeCode) {
         String newValue = super.mapDefaultValue(defaultValue, typeCode).trim();
         if (newValue.startsWith("(") && newValue.endsWith(")")) {
             newValue = newValue.substring(1, newValue.length()-1);

@@ -376,7 +376,7 @@ public class ModelComparator {
                 || (sourceDefaultValue != null && targetDefaultValue == null)
                 || (sourceDefaultValue != null && targetDefaultValue != null &&
                 ((isBigDecimal && ((BigDecimal) sourceDefaultValue).compareTo((BigDecimal) targetDefaultValue) != 0) ||
-                (!isBigDecimal && !sourceDefaultValue.toString().equals(targetDefaultValue.toString()))))) {
+                (!isBigDecimal && !ddlBuilder.mapDefaultValue(targetDefaultValue, desiredTypeCode).equals(sourceDefaultValue.toString()))))) {
             log.debug(
                     "The {} column on the {} table changed default value from {} to {} ",
                     new Object[] { sourceColumn.getName(), sourceTable.getName(),
