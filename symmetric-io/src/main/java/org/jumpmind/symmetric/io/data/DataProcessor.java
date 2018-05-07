@@ -205,7 +205,10 @@ public class DataProcessor {
                         batch.startTimer(STAT_WRITE_DATA);
                         batch.incrementLineCount();
                         if (context.getWriter() == null) {
-                        		context.setWriter(chooseDataWriter(batch));
+                                IDataWriter writer = chooseDataWriter(batch);
+                                writer.open(context);
+                                writer.start(batch);
+                                context.setWriter(writer);
                         }
                         context.getWriter().write(currentData);
                         batch.incrementDataWriteMillis(batch.endTimer(STAT_WRITE_DATA));
