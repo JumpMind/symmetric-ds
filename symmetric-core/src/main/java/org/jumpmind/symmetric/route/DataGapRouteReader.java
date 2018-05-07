@@ -144,7 +144,13 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     || !symmetricDialect.supportsTransactionId();
 
             processInfo.setStatus(ProcessStatus.QUERYING);
-            cursor = prepareCursor();
+            try {
+                cursor = prepareCursor();
+            } catch (RuntimeException e) {
+                log.info("Failed to execute query, but will try again", e);
+                AppUtils.sleep(1000);
+                cursor = prepareCursor();
+            }
             processInfo.setStatus(ProcessStatus.EXTRACTING);
             boolean moreData = true;
             while (dataCount < maxDataToRoute || (lastTransactionId != null && transactional)) {

@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
+import org.jumpmind.util.AppUtils;
 
 /**
  * @see IPurgeService
@@ -78,7 +79,14 @@ public class PurgeService extends AbstractService implements IPurgeService {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-        rowsPurged += purgeOutgoing(retentionCutoff, force);
+
+        try {
+            rowsPurged += purgeOutgoing(retentionCutoff, force);
+        } catch (RuntimeException e) {
+            log.info("Failed to execute purge, but will try again", e);
+            AppUtils.sleep(1000);
+            rowsPurged += purgeOutgoing(retentionCutoff, force);
+        }
         
         List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
         for (IPurgeListener purgeListener : purgeListeners) {
@@ -92,8 +100,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-        rowsPurged += purgeIncoming(retentionCutoff, force);
-        
+
+        try {
+            rowsPurged += purgeIncoming(retentionCutoff, force);
+        } catch (RuntimeException e) {
+            log.info("Failed to execute purge, but will try again", e);
+            AppUtils.sleep(1000);
+            rowsPurged += purgeIncoming(retentionCutoff, force);
+        }
+
         List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
         for (IPurgeListener purgeListener : purgeListeners) {
             rowsPurged += purgeListener.purgeIncoming(force);
