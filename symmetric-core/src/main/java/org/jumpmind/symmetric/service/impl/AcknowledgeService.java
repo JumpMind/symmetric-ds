@@ -71,7 +71,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         } else {
             OutgoingBatch outgoingBatch = outgoingBatchService
                     .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
-            Status status = batch.isOk() ? Status.OK : batch.isResend() ? Status.RS : Status.ER;
+            Status status = batch.isResend() ? Status.RS : batch.isOk() ? Status.OK : Status.ER;
             if (outgoingBatch != null) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
