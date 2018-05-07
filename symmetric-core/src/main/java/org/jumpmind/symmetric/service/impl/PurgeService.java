@@ -46,7 +46,6 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
-import org.jumpmind.util.AppUtils;
 
 /**
  * @see IPurgeService
@@ -82,10 +81,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
         try {
             rowsPurged += purgeOutgoing(retentionCutoff, force);
-        } catch (RuntimeException e) {
-            log.info("Failed to execute purge, but will try again", e);
-            AppUtils.sleep(1000);
-            rowsPurged += purgeOutgoing(retentionCutoff, force);
+        } catch (Exception ex) {
+            try {
+                log.info("Failed to execute purge, but will try again,", ex);
+                rowsPurged += purgeOutgoing(retentionCutoff, force);
+            } catch (Exception e) {
+                log.error("Failed to execute purge, so aborting,", ex);    
+            }
+        } finally {
+            log.info("The outgoing purge process has completed");
         }
         
         List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
@@ -100,15 +104,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         Calendar retentionCutoff = Calendar.getInstance();
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
-
-        try {
-            rowsPurged += purgeIncoming(retentionCutoff, force);
-        } catch (RuntimeException e) {
-            log.info("Failed to execute purge, but will try again", e);
-            AppUtils.sleep(1000);
-            rowsPurged += purgeIncoming(retentionCutoff, force);
-        }
-
+        rowsPurged += purgeIncoming(retentionCutoff, force);
+        
         List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
         for (IPurgeListener purgeListener : purgeListeners) {
             rowsPurged += purgeListener.purgeIncoming(force);
@@ -119,35 +116,29 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
     public long purgeOutgoing(Calendar retentionCutoff, boolean force) {
         long rowsPurged = 0;
-        try {
-            if (force || clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
-                try {
-                    log.info("The outgoing purge process is about to run for data older than {}",
-                            SimpleDateFormat.getDateTimeInstance()
-                                    .format(retentionCutoff.getTime()));
-                    // VoltDB doesn't support capture, or subselects.  So we'll just be purging heartbeats
-                    // by date here.
-                    if (getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.VOLTDB)) { 
-                        rowsPurged += purgeOutgoingByRetentionCutoff(retentionCutoff);
-                    } else {
-                        rowsPurged += purgeStrandedBatches();
-                        rowsPurged += purgeDataRows(retentionCutoff);
-                        rowsPurged += purgeOutgoingBatch(retentionCutoff);
-                        rowsPurged += purgeStranded(retentionCutoff);
-                        rowsPurged += purgeExtractRequests();                        
-                    }
-                } finally {
-                    if (!force) {
-                        clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
-                    }
+        if (force || clusterService.lock(ClusterConstants.PURGE_OUTGOING)) {
+            try {
+                log.info("The outgoing purge process is about to run for data older than {}",
+                        SimpleDateFormat.getDateTimeInstance()
+                                .format(retentionCutoff.getTime()));
+                // VoltDB doesn't support capture, or subselects.  So we'll just be purging heartbeats
+                // by date here.
+                if (getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.VOLTDB)) { 
+                    rowsPurged += purgeOutgoingByRetentionCutoff(retentionCutoff);
+                } else {
+                    rowsPurged += purgeStrandedBatches();
+                    rowsPurged += purgeDataRows(retentionCutoff);
+                    rowsPurged += purgeOutgoingBatch(retentionCutoff);
+                    rowsPurged += purgeStranded(retentionCutoff);
+                    rowsPurged += purgeExtractRequests();                        
                 }
-            } else {
-                log.debug("Could not get a lock to run an outgoing purge");
+            } finally {
+                if (!force) {
+                    clusterService.unlock(ClusterConstants.PURGE_OUTGOING);
+                }
             }
-        } catch (Exception ex) {
-            log.error("", ex);
-        } finally {
-            log.info("The outgoing purge process has completed");
+        } else {
+            log.debug("Could not get a lock to run an outgoing purge");
         }
         return rowsPurged;
     }
