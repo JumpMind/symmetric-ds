@@ -276,8 +276,12 @@ abstract public class AbstractJob implements Runnable, IJob {
             }
         }
 
-        if(jobDefinition.getNodeGroupId() != null && !jobDefinition.getNodeGroupId().equals("ALL") && !jobDefinition.getNodeGroupId().equals(engine.getNodeService().findIdentity().getNodeGroupId())){
-            log.info("Job should be only run on node groups '{}' but this is '{}'", jobDefinition.getNodeGroupId(), engine.getNodeService().findIdentity().getNodeGroupId());
+        if (jobDefinition.getNodeGroupId() != null 
+                && !jobDefinition.getNodeGroupId().equals("ALL") 
+                && !jobDefinition.getNodeGroupId().equals(engine.getNodeService().findIdentity().getNodeGroupId())){
+            log.info("Job should be only run on node groups '{}' but this is '{}'", 
+                    jobDefinition.getNodeGroupId(), 
+                    engine.getNodeService().findIdentity().getNodeGroupId());
             return false;
         }
 
