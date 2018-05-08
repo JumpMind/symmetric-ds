@@ -541,9 +541,12 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("data.id.min", Long.toString(engine.getDataService().findMinDataId()));
             runtimeProperties.setProperty("data.id.max", Long.toString(engine.getDataService().findMaxDataId()));
 
-            runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
-            runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
-            runtimeProperties.put("jvm.version", Runtime.class.getPackage().getImplementationVersion());
+            String jvmTitle = Runtime.class.getPackage().getImplementationTitle();
+            runtimeProperties.put("jvm.title", jvmTitle != null ? jvmTitle : "Unknown");
+            String jvmVendor = Runtime.class.getPackage().getImplementationVendor();
+            runtimeProperties.put("jvm.vendor", jvmVendor != null ? jvmVendor : "Unknown");
+            String jvmVersion = Runtime.class.getPackage().getImplementationVersion();
+            runtimeProperties.put("jvm.version", jvmVersion != null ? jvmVersion : "Unknown");
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
