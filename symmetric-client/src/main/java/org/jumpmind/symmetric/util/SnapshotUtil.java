@@ -224,6 +224,7 @@ public class SnapshotUtil {
         extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
 
+        export.setIgnoreMissingTables(true);
         extract(export, new File(tmpDir, "sym_console_event.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_EVENT));
 
