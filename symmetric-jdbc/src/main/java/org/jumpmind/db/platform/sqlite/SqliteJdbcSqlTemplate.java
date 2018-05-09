@@ -51,7 +51,10 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     public boolean isUniqueKeyViolation(Throwable ex) {
         SQLException sqlEx = findSQLException(ex);
-        return (sqlEx != null && sqlEx.getMessage() != null && sqlEx.getMessage().contains("[SQLITE_CONSTRAINT]"));
+        return (sqlEx != null && sqlEx.getMessage() != null && (
+                sqlEx.getMessage().contains("[SQLITE_CONSTRAINT]") || 
+                sqlEx.getMessage().contains("[SQLITE_CONSTRAINT_PRIMARYKEY]") ||
+                sqlEx.getMessage().contains("[SQLITE_CONSTRAINT_UNIQUE]")));
     }
     
     @Override
