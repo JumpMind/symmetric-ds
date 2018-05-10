@@ -237,15 +237,13 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                             expireChecked++;
                         }
                         if (isAllDataRead || isGapEmpty) {
-                            if (log.isDebugEnabled()) {
-                                if (dataGap.getStartId() == dataGap.getEndId()) {
-                                    log.debug("Found a gap in data_id at {}.  Skipping it because " +
-                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId());
-                                } else {
-                                    log.debug("Found a gap in data_id from {} to {}.  Skipping it because " +
-                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
-                                            dataGap.getStartId(), dataGap.getEndId());
-                                }
+                            if (dataGap.getStartId() == dataGap.getEndId()) {
+                                log.info("Found a gap in data_id at {}.  Skipping it because " +
+                                        (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId());
+                            } else {
+                                log.info("Found a gap in data_id from {} to {}.  Skipping it because " +
+                                        (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
+                                        dataGap.getStartId(), dataGap.getEndId());
                             }
                             gapsDeleted.add(dataGap);
                             gapsAll.remove(dataGap);
