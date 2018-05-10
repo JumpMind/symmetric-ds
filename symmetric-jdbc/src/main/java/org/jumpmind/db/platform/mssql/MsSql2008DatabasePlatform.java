@@ -40,7 +40,7 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
     
     @Override
     protected IDdlBuilder createDdlBuilder() {
-        return new MsSql2008DdlBuilder(getName());
+        return new MsSql2008DdlBuilder();
     }
     
     @Override

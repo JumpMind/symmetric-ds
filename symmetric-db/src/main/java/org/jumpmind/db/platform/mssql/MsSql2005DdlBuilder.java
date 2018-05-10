@@ -27,13 +27,9 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     
     public MsSql2005DdlBuilder() {
-        super(DatabaseNamesConstants.MSSQL2005);
+        this.databaseName = DatabaseNamesConstants.MSSQL2005;
     }
-    
-    public MsSql2005DdlBuilder(String databaseName) {
-        super(databaseName);
-    }
-    
+
     protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
         println(              "BEGIN                                                                                        ", ddl);
         println(              "DECLARE @sql NVARCHAR(2000)                                                                  ", ddl);        

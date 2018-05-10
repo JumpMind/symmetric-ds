@@ -27,18 +27,13 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
     
-    public MsSql2008DdlBuilder(String databaseName) {
-        super(databaseName);
-    }
-    
     public MsSql2008DdlBuilder() {
-        super(DatabaseNamesConstants.MSSQL2008);
-        
+        this.databaseName = DatabaseNamesConstants.MSSQL2008;
+    
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.DATE);
         databaseInfo.addNativeTypeMapping(Types.DATE, "TIME", Types.TIME);
         databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_SQL_VARIANT, "SQL_VARIANT", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME2");
-        // TODO add MSSQL 2008 types for time, datetimeoffset, and datetime2
+        databaseInfo.addNativeTypeMapping(ColumnTypes.MAPPED_TIMESTAMPTZ, "DATETIMEOFFSET");
     }
-
 }

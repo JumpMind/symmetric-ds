@@ -53,7 +53,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected IDdlBuilder createDdlBuilder() {
-        return new MsSql2000DdlBuilder(getName());
+        return new MsSql2000DdlBuilder();
     }
 
     @Override

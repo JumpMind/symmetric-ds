@@ -20,6 +20,7 @@ package org.jumpmind.db.platform.mssql;
  */
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.jumpmind.db.model.ColumnTypes.MAPPED_TIMESTAMPTZ;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -181,7 +182,9 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 return Types.LONGNVARCHAR;
             } else if ( typeName.toUpperCase().equals("SQL_VARIANT")) {
                 return Types.BINARY;
-            }
+            } else if (typeName != null && typeName.equalsIgnoreCase("DATETIMEOFFSET")) {
+                return MAPPED_TIMESTAMPTZ;            
+            } 
         }
         return super.mapUnknownJdbcTypeForColumn(values); 
     }

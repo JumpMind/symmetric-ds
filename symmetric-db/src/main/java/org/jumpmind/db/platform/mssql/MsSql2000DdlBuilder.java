@@ -87,11 +87,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     /* We use a generic date format. */
     private DateFormat _genericTimeFormat = new SimpleDateFormat("HH:mm:ss");
 
-    public MsSql2000DdlBuilder(String databaseName) {
-        super(databaseName);
-        setup();
-    }
-    
     public MsSql2000DdlBuilder() {
         super(DatabaseNamesConstants.MSSQL2000);
         setup();
