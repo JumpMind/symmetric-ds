@@ -340,11 +340,19 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
         this.currentGap = dataGaps.remove(0);
 
-        return sqlTemplate.queryForCursor(sql, new ISqlRowMapper<Data>() {
+        ISqlRowMapper<Data> dataMapper = new ISqlRowMapper<Data>() {
             public Data mapRow(Row row) {
                 return engine.getDataService().mapData(row);
             }
-        }, args, types);
+        };
+
+        try {
+            return sqlTemplate.queryForCursor(sql, dataMapper, args, types);
+        } catch (RuntimeException e) {
+            log.info("Failed to execute query, but will try again,", e);
+            AppUtils.sleep(1000);
+            return sqlTemplate.queryForCursor(sql, dataMapper, args, types);
+        }
 
     }
 

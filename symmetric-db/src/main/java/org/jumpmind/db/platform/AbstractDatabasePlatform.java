@@ -31,14 +31,7 @@ import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
@@ -95,7 +88,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected IDdlBuilder ddlBuilder;
 
-    protected Map<String, Table> tableCache = new HashMap<String, Table>();
+    protected Map<String, Table> tableCache = Collections.synchronizedMap(new HashMap<String, Table>());
 
     private long lastTimeCachedModelClearedInMs = System.currentTimeMillis();
 
@@ -315,10 +308,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public void resetCachedTableModel() {
-        synchronized (this.getClass()) {
-            this.tableCache = new HashMap<String, Table>();
-            lastTimeCachedModelClearedInMs = System.currentTimeMillis();
-        }
+        this.tableCache = Collections.synchronizedMap(new HashMap<String, Table>());
+        lastTimeCachedModelClearedInMs = System.currentTimeMillis();
     }
 
     public Table getTableFromCache(String tableName, boolean forceReread) {
@@ -333,16 +324,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         String key = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
         Table retTable = model != null ? model.get(key) : null;
         if (retTable == null || forceReread) {
-            synchronized (this.getClass()) {
-                try {
-                    Table table = readTableFromDatabase(catalogName, schemaName, tableName);
-                    tableCache.put(key, table);
-                    retTable = table;
-                } catch (RuntimeException ex) {
-                    throw ex;
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
+            try {
+                Table table = readTableFromDatabase(catalogName, schemaName, tableName);
+                tableCache.put(key, table);
+                retTable = table;
+            } catch (RuntimeException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
         }
         return retTable;

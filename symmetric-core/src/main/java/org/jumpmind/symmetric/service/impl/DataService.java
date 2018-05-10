@@ -55,6 +55,7 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -520,9 +521,15 @@ public class DataService extends AbstractService implements IDataService {
 
                         if (reloadRequests != null && reloadRequests.size() > 0) {
                             for (TableReloadRequest request : reloadRequests) {
-                                transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), loadId, new Date(),
+                                int rowsAffected = transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), loadId, new Date(),
                                         request.getTargetNodeId(), request.getSourceNodeId(), request.getTriggerId(), 
-                                        request.getRouterId(), request.getCreateTime());
+                                        request.getRouterId(), request.getCreateTime()); 
+                                if (rowsAffected == 0) {
+                                    throw new SymmetricException(String.format("Failed to update a table_reload_request for loadId '%s' "
+                                            + "targetNodeId '%s' sourceNodeId '%s' triggerId '%s' routerId '%s' createTime '%s'", 
+                                            loadId, request.getTargetNodeId(), request.getSourceNodeId(), request.getTriggerId(), 
+                                                    request.getRouterId(), request.getCreateTime()));
+                                }
                             }
                             log.info("Table reload request(s) for load id " + loadId + " have been processed.");
                         }

@@ -110,52 +110,6 @@ public class SnapshotUtil {
         tmpDir.mkdirs();
         log.info("Creating snapshot file in " + tmpDir.getAbsolutePath());
 
-        File logDir = null;
-
-        String parameterizedLogDir = parameterService.getString("server.log.dir");
-        if (isNotBlank(parameterizedLogDir)) {
-            logDir = new File(parameterizedLogDir);
-        }
-
-        if (logDir != null && logDir.exists()) {
-            log.info("Using server.log.dir setting as the location of the log files");
-        } else {
-            logDir = new File("logs");
-
-            if (!logDir.exists()) {
-                Map<File, Layout> matches = findSymmetricLogFile();
-                if (matches != null && matches.size() == 1) {
-                    logDir = matches.keySet().iterator().next().getParentFile();
-                }
-            }
-
-            if (!logDir.exists()) {
-                logDir = new File("../logs");
-            }
-
-            if (!logDir.exists()) {
-                logDir = new File("target");
-            }
-
-            if (logDir.exists()) {
-                File[] files = logDir.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        String lowerCaseFileName = file.getName().toLowerCase();
-                        if (lowerCaseFileName.contains(".log")
-                                && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))) {
-                            try {
-                                FileUtils.copyFileToDirectory(file, tmpDir);
-                            } catch (IOException e) {
-                                log.warn("Failed to copy " + file.getName() + " to the snapshot directory", e);
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-
         FileWriter fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "config-export.csv"));
@@ -270,6 +224,7 @@ public class SnapshotUtil {
         extract(export, 5000, "order by relative_dir, file_name", new File(tmpDir, "sym_file_snapshot.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
 
+        export.setIgnoreMissingTables(true);
         extract(export, new File(tmpDir, "sym_console_event.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONSOLE_EVENT));
 
@@ -373,6 +328,52 @@ public class SnapshotUtil {
             log.warn("Failed to export thread information", e);
         } finally {
             IOUtils.closeQuietly(fos);
+        }
+
+        File logDir = null;
+
+        String parameterizedLogDir = parameterService.getString("server.log.dir");
+        if (isNotBlank(parameterizedLogDir)) {
+            logDir = new File(parameterizedLogDir);
+        }
+
+        if (logDir != null && logDir.exists()) {
+            log.info("Using server.log.dir setting as the location of the log files");
+        } else {
+            logDir = new File("logs");
+        }
+
+        if (!logDir.exists()) {
+            Map<File, Layout> matches = findSymmetricLogFile();
+            if (matches != null && matches.size() == 1) {
+                logDir = matches.keySet().iterator().next().getParentFile();
+            }
+        }
+
+        if (!logDir.exists()) {
+            logDir = new File("../logs");
+        }
+
+        if (!logDir.exists()) {
+            logDir = new File("target");
+        }
+
+        if (logDir.exists()) {
+            log.info("Copying log files into snapshot file");
+            File[] files = logDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    String lowerCaseFileName = file.getName().toLowerCase();
+                    if (lowerCaseFileName.contains(".log")
+                            && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))) {
+                        try {
+                            FileUtils.copyFileToDirectory(file, tmpDir);
+                        } catch (IOException e) {
+                            log.warn("Failed to copy " + file.getName() + " to the snapshot directory", e);
+                        }
+                    }
+                }
+            }
         }
 
         File jarFile = null;
@@ -541,9 +542,12 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("data.id.min", Long.toString(engine.getDataService().findMinDataId()));
             runtimeProperties.setProperty("data.id.max", Long.toString(engine.getDataService().findMaxDataId()));
 
-            runtimeProperties.put("jvm.title", Runtime.class.getPackage().getImplementationTitle());
-            runtimeProperties.put("jvm.vendor", Runtime.class.getPackage().getImplementationVendor());
-            runtimeProperties.put("jvm.version", Runtime.class.getPackage().getImplementationVersion());
+            String jvmTitle = Runtime.class.getPackage().getImplementationTitle();
+            runtimeProperties.put("jvm.title", jvmTitle != null ? jvmTitle : "Unknown");
+            String jvmVendor = Runtime.class.getPackage().getImplementationVendor();
+            runtimeProperties.put("jvm.vendor", jvmVendor != null ? jvmVendor : "Unknown");
+            String jvmVersion = Runtime.class.getPackage().getImplementationVersion();
+            runtimeProperties.put("jvm.version", jvmVersion != null ? jvmVersion : "Unknown");
             RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
             List<String> arguments = runtimeMxBean.getInputArguments();
             runtimeProperties.setProperty("jvm.arguments", arguments.toString());
