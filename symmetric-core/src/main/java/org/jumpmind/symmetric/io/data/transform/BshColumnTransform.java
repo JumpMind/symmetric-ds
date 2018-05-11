@@ -36,6 +36,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -105,6 +106,12 @@ public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform,
             }
            
             String transformExpression = column.getTransformExpression();
+            
+            if (StringUtils.isEmpty(transformExpression)) {
+                throw new SymmetricException("transformExpression cannot be empty. Check "
+                        + "configuration for transform '" + column.getTransformId() + "'");
+            }
+            
             String globalScript = parameterService.getString(ParameterConstants.BSH_TRANSFORM_GLOBAL_SCRIPT);
             String methodName = String.format("transform_%d()",
                     Math.abs(transformExpression.hashCode() + (globalScript == null ? 0 : globalScript.hashCode())));
