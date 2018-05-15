@@ -33,9 +33,12 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         
         putSql("minDataGapStartId", "select min(start_id) from $(data_gap)");
         
-        putSql("deleteExtractRequestSql", "delete from $(extract_request) where status=? and last_update_time < ? and "
-                + "0 = (select count(1) from $(outgoing_batch) where status != 'OK' and batch_id between $(extract_request).start_batch_id and $(extract_request).end_batch_id)");
-        
+        putSql("deleteExtractRequestSql", "delete from $(extract_request) where status=? and last_update_time < ? and ("
+                +"(start_batch_id = end_batch_id and not exists (select 1 from $(outgoing_batch) where status != 'OK' and batch_id =  $(extract_request).start_batch_id))"
+                +"or"
+                +"(start_batch_id < end_batch_id and not exists (select 1 from $(outgoing_batch) where status != 'OK' and batch_id between  $(extract_request).start_batch_id and  $(extract_request).end_batch_id))"
+                +")");
+
         putSql("deleteRegistrationRequestSql", "delete from $(registration_request) where status in (?,?,?) and last_update_time < ?");
         
         putSql("deleteMonitorEventSql", "delete from $(monitor_event) where event_time < ?");
