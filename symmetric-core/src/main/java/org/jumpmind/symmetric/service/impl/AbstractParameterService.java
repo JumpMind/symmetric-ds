@@ -139,14 +139,14 @@ abstract public class AbstractParameterService {
     }
 
     public String getTempDirectory() {
-    	String engineName = this.getEngineName();
-    	String tmpDirBase = getString("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
+        String engineName = this.getEngineName();
+        String tmpDirBase = getString("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
 
-    	if (StringUtils.trimToNull(engineName) == null) {
-    		return tmpDirBase;
-    	} else {
-    		return tmpDirBase+File.separator+engineName;
-    	}
+        if (StringUtils.trimToNull(engineName) == null) {
+            return tmpDirBase;
+        } else {
+            return tmpDirBase + File.separator + engineName;
+        }
     }
 
     protected abstract TypedProperties rereadApplicationParameters();
