@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.File;
@@ -356,10 +357,13 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected IStagingManager createStagingManager() {
-        String directory = parameterService.getTempDirectory();
+        String directory = parameterService.getString(ParameterConstants.STAGING_DIR);
+        if (isBlank(directory)) {
+            directory = parameterService.getTempDirectory();
+        }
         return new BatchStagingManager(this, directory);
     }
-    
+
     @Override
     protected IStatisticManager createStatisticManager() {
         String statisticManagerClassName = parameterService.getString(ParameterConstants.STATISTIC_MANAGER_CLASS);

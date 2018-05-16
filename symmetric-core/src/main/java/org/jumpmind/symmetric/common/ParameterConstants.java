@@ -394,6 +394,8 @@ final public class ParameterConstants {
     
     public final static String LOG_CONFLICT_RESOLUTION = "log.conflict.resolution";
     
+    public final static String STAGING_DIR = "staging.dir";
+
     public final static String STATISTIC_MANAGER_CLASS = "statistic.manager.class";
 
     public final static String DB2_CAPTURE_TRANSACTION_ID = "db2.capture.transaction.id";
