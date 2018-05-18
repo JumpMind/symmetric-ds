@@ -447,6 +447,14 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
+    public Node findRootNode() {
+        List<Node> nodeList = sqlTemplate.query(getSql("selectNodePrefixSql", "findRootNodeSql"), new NodeRowMapper());
+        if (nodeList.size() > 0) {
+            return nodeList.get(0);
+        }
+        return null;
+    }
+    
     /**
      * Lookup a node_security in the database, which contains private
      * information used to authenticate.

@@ -2,17 +2,19 @@
 === License Key
 
 The web console requires a valid license key before it will allow access to screens.
-The user is prompted automatically to enter a valid license if one is missing, or it can updated from the configuration screen.
-The license key contains a group of fields to define how the software is licensed for use.
+The user is prompted automatically to enter a valid license key if one is missing.
+The license key can also be updated from the Configure License screen.
 
 License Info:: A description of the license type.
 Holder:: The company name or email address of the license holder.
 Effective Date:: Date and time when the license will become valid.
 Expiration Date:: Date and time when the license will no longer be valid.
+Max Maintenance:: The end date and time for maintenance and support.  Defaults to expiration date if not present.
 Max Nodes:: The maximum number of nodes that can be created for synchronization.
 Max Tables:: The maximum number of table triggers that can be created for synchronization.
 Max Rows:: The maximum number of rows that can be synchronized in a 24-hour period.
-Max Maintenance:: The end date and time for maintenance and support.  Defaults to expiration date if not present. 
+Instance ID:: If present in the license key, this unique identifier must match the installation. If not present, the instance ID for the current installation is shown in parentheses.
+ 
 
 The license key is a block of encoded text that is sent to the user over email, or it can be retrieved from the
 http://support.jumpmind.com/[Support Center].  When an installed license key expires, the web console

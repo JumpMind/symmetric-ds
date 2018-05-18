@@ -430,7 +430,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     protected IClusterService createClusterService() {
-        return new ClusterService(parameterService, symmetricDialect, nodeService);
+        return new ClusterService(parameterService, symmetricDialect, nodeService, extensionService);
     }
 
     protected IRouterService buildRouterService() {

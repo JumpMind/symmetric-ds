@@ -20,7 +20,30 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.jumpmind.symmetric.service.ClusterConstants.*;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_SHARED;
+import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
+import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
+import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
+import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
+import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.PULL;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_DATA_GAPS;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_INCOMING;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_OUTGOING;
+import static org.jumpmind.symmetric.service.ClusterConstants.PURGE_STATISTICS;
+import static org.jumpmind.symmetric.service.ClusterConstants.PUSH;
+import static org.jumpmind.symmetric.service.ClusterConstants.ROUTE;
+import static org.jumpmind.symmetric.service.ClusterConstants.STAGE_MANAGEMENT;
+import static org.jumpmind.symmetric.service.ClusterConstants.STATISTICS;
+import static org.jumpmind.symmetric.service.ClusterConstants.SYNC_CONFIG;
+import static org.jumpmind.symmetric.service.ClusterConstants.SYNC_TRIGGERS;
+import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
+import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
+import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
+import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,7 +69,9 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.NodeHost;
+import org.jumpmind.symmetric.service.IClusterInstanceGenerator;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
@@ -67,11 +92,15 @@ public class ClusterService extends AbstractService implements IClusterService {
     
     private INodeService nodeService;
     
+    private IExtensionService extensionService;
+    
     private Map<String, Lock> lockCache = new ConcurrentHashMap<String, Lock>();
 
-    public ClusterService(IParameterService parameterService, ISymmetricDialect dialect, INodeService nodeService) {
+    public ClusterService(IParameterService parameterService, ISymmetricDialect dialect, INodeService nodeService,
+            IExtensionService extensionService) {
         super(parameterService, dialect);
         this.nodeService = nodeService;
+        this.extensionService = extensionService;
         setSqlMap(new ClusterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
         initCache();
@@ -106,13 +135,24 @@ public class ClusterService extends AbstractService implements IClusterService {
         String instanceIdLocation = instanceIdFile.getAbsolutePath();
         
         try {            
-            instanceId = IOUtils.toString(new FileInputStream(instanceIdLocation));
+            instanceId = IOUtils.toString(new FileInputStream(instanceIdLocation)).trim();
         } catch (Exception ex) {
             log.debug("Failed to load instance id from file '" + instanceIdLocation + "'", ex);
         }
-        
-        if (instanceId == null) {
-            String newInstanceId = generateInstanceId(AppUtils.getHostName());
+
+        IClusterInstanceGenerator generator = null;
+        if (extensionService != null) {
+            generator = extensionService.getExtensionPoint(IClusterInstanceGenerator.class);
+        }
+
+        if (StringUtils.isBlank(instanceId) || (generator != null && !generator.isValid(instanceId))) {
+            String newInstanceId = null;
+            if (generator != null) {
+                newInstanceId = generator.generateInstanceId();
+            }
+            if (newInstanceId == null) {
+                newInstanceId = generateInstanceId(AppUtils.getHostName());
+            }
             try {            
                 instanceIdFile.getParentFile().mkdirs();
                 IOUtils.write(newInstanceId, new FileOutputStream(instanceIdLocation));
