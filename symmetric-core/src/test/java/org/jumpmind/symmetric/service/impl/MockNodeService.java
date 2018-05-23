@@ -334,4 +334,9 @@ public class MockNodeService implements INodeService {
     public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
         return null;
     }
+
+    @Override
+    public Node findRootNode() {
+        return null;
+    }
 }

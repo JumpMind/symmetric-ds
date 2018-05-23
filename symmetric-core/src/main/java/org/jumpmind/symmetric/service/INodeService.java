@@ -205,6 +205,8 @@ public interface INodeService {
 
     public NetworkedNode getRootNetworkedNode();
     
+    public Node findRootNode();
+
     public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken);
     
     

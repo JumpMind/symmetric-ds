@@ -430,7 +430,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     protected IClusterService createClusterService() {
-        return new ClusterService(parameterService, symmetricDialect, nodeService);
+        return new ClusterService(parameterService, symmetricDialect, nodeService, extensionService);
     }
 
     protected IRouterService buildRouterService() {
@@ -634,6 +634,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return start(true);
     }
 
+    private boolean isFirstStart = true;
+
     public synchronized boolean start(boolean startJobs) {
         isInitialized = false;
         if (!starting && !started) {
@@ -702,6 +704,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     
                     if (parameterService.isRegistrationServer()) {
                         this.updateService.init();
+                    }
+
+                    if(isFirstStart){
+                        isFirstStart = false;
+                    }else{
+                        this.clearCaches();
                     }
                     
                     lastRestartTime = new Date();
@@ -990,6 +998,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public void clearCaches() {
+        getExtensionService().refresh();
         getTriggerRouterService().clearCache();
         getParameterService().rereadParameters();
         getTransformService().clearCache();
@@ -997,7 +1006,13 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         getConfigurationService().initDefaultChannels();
         getConfigurationService().clearCache();
         getNodeService().flushNodeAuthorizedCache();
+        getNodeService().flushNodeCache();
+        getNodeService().flushNodeGroupCache();
         getJobManager().startJobsAfterConfigChange();
+        getLoadFilterService().clearCache();
+        getMonitorService().flushMonitorCache();
+        getMonitorService().flushNotificationCache();
+        getFileSyncService().clearCache();
     }
 
     public void reOpenRegistration(String nodeId) {
