@@ -40,6 +40,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DataTruncationException;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -709,9 +710,32 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             failureMessage.append("\n");
         }
 
+        if (e instanceof DataTruncationException) {
+        		logDataTruncation(data, failureMessage);
+        }
         data.writeCsvDataDetails(failureMessage);
         
         log.info(failureMessage.toString(), e);
+    }
+    
+    protected void logDataTruncation(CsvData data, StringBuilder failureMessage) {
+    		String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+    		int rowIndex = 0;
+    		for (Column col : targetTable.getColumns()) {
+    			if (col.getJdbcTypeCode() == Types.VARCHAR) { // CHAR
+    				if (rowData[rowIndex].length() > Integer.parseInt(col.getSize())) {
+    					failureMessage.append("Failed truncation column: ");
+    					failureMessage.append(col.getName());
+    					failureMessage.append(" with size of: ");
+    					failureMessage.append(Integer.parseInt(col.getSize()));
+    					failureMessage.append(" failed to load data: ");
+    					failureMessage.append(rowData[rowIndex]);
+    					failureMessage.append("\n");
+    				}
+    			}
+    			
+    			rowIndex++;
+    		}
     }
     
     protected String dmlValuesToString(Object[] dmlValues, int[] types) {
