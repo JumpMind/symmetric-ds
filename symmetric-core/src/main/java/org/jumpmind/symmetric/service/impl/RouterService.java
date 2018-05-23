@@ -49,9 +49,9 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.load.DefaultReloadGenerator;
 import org.jumpmind.symmetric.load.IReloadGenerator;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
@@ -92,6 +92,7 @@ import org.jumpmind.symmetric.route.LookupTableDataRouter;
 import org.jumpmind.symmetric.route.NonTransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.route.SubSelectDataRouter;
+import org.jumpmind.symmetric.route.TPSRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -148,6 +149,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 engine.getSymmetricDialect()));
         extensionService.addExtensionPoint(FileSyncDataRouter.ROUTER_TYPE, new FileSyncDataRouter(engine));
         extensionService.addExtensionPoint("dbf", new DBFRouter(engine));
+        extensionService.addExtensionPoint("tps", new TPSRouter(engine));
 
         extensionService.addExtensionPoint("csv", new CSVRouter(engine));
         extensionService.addExtensionPoint(DefaultReloadGenerator.NAME, new DefaultReloadGenerator(engine));

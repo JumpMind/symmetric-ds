@@ -27,7 +27,7 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
     }
     
 	@Override
-	public List<String> parse(File file, int lineNumber) {
+	public List<String> parse(File file, int lineNumber, int tableIndex) {
 		List<String> rows = new ArrayList<String>();
 		
 		InputStream fileInputStream = null;
