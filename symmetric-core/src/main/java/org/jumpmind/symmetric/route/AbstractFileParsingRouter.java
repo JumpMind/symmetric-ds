@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.route;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,9 +28,11 @@ import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IContextService;
 
+import nl.cad.tpsparse.tps.NotATopSpeedFileException;
+
 public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 
-	public abstract List<String> parse(File file, int lineNumber);
+	public abstract List<String> parse(File file, int lineNumber, int tableId);
 	public abstract String getColumnNames();
 	
 	public abstract ISymmetricEngine getEngine();
@@ -79,56 +82,85 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 			}
 			
 			if (triggerId != null) {
-				String baseDir = getEngine().getFileSyncService().getFileTrigger(triggerId).getBaseDir();
-				File file = createSourceFile(baseDir, relativeDir, fileName);
-				
-				
-				Integer lineNumber = contextService.getString(filePath) == null ? 0 : new Integer(contextService.getString(filePath));
-				
-				List<String> dataRows = parse(file, lineNumber);
-				String columnNames = getColumnNames();
-				
-				String nodeList = buildNodeList(nodes);
-				String externalData = new StringBuilder(EXTERNAL_DATA_TRIGGER_KEY)
-						.append("=")
-						.append(triggerId)
-						.append(",")
-						.append(EXTERNAL_DATA_ROUTER_KEY)
-						.append("=")
-						.append(dataMetaData.getRouter().getRouterId())
-						.append(",")
-						.append(EXTERNAL_DATA_FILE_DATA_ID)
-						.append("=")
-						.append(dataMetaData.getData().getDataId()).toString();
-				
-				for (String row : dataRows) {
-					Data data = new Data();
+				try {
+					String baseDir = getEngine().getFileSyncService().getFileTrigger(triggerId).getBaseDir();
+					File file = createSourceFile(baseDir, relativeDir, fileName);
 					
-					data.setChannelId(channelId);
-					data.setDataEventType(DataEventType.INSERT);
-					data.setRowData(row);
-					data.setTableName(targetTableName);
-					data.setNodeList(nodeList);
-					data.setTriggerHistory(getTriggerHistory(targetTableName, columnNames));
-					data.setExternalData(externalData);
-					data.setDataId(getEngine().getDataService().insertData(data));
-					lineNumber++;
-				}
-				if (!dataRows.isEmpty()) {
-					try {
-						contextService.save(filePath, lineNumber.toString());
-						deleteFileIfNecessary(dataMetaData);
+					String nodeList = buildNodeList(nodes);
+					String externalData = new StringBuilder(EXTERNAL_DATA_TRIGGER_KEY)
+							.append("=")
+							.append(triggerId)
+							.append(",")
+							.append(EXTERNAL_DATA_ROUTER_KEY)
+							.append("=")
+							.append(dataMetaData.getRouter().getRouterId())
+							.append(",")
+							.append(EXTERNAL_DATA_FILE_DATA_ID)
+							.append("=")
+							.append(dataMetaData.getData().getDataId()).toString();
+					
+					
+					Map<Integer, String> tableNames = getTableNames(getTargetTableName(targetTableName, fileName), file);
+					int tableIndex=0;
+					for (Map.Entry<Integer, String> tableEntry : tableNames.entrySet()) {
+						String contextId = filePath + "[" + tableEntry.getValue() + "]";
+						Integer lineNumber = contextService.getString(contextId) == null ? 0 : new Integer(contextService.getString(contextId));
+						
+						List<String> dataRows = parse(file, lineNumber, tableEntry.getKey());
+						String columnNames = getColumnNames();
+						
+						for (String row : dataRows) {
+							Data data = new Data();
+							
+							data.setChannelId(channelId);
+							data.setDataEventType(DataEventType.INSERT);
+							data.setRowData(row);
+							data.setTableName(tableEntry.getValue());
+							data.setNodeList(nodeList);
+							data.setTriggerHistory(getTriggerHistory(tableEntry.getValue(), columnNames));
+							data.setExternalData(externalData);
+							data.setDataId(getEngine().getDataService().insertData(data));
+							lineNumber++;
+						}
+						if (!dataRows.isEmpty()) {
+							try {
+								contextService.save(contextId, lineNumber.toString());
+								if ((tableNames.size() - 1) == tableIndex) {
+									deleteFileIfNecessary(dataMetaData);
+								}
+							}
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						log.info("Finished parsing file[table] " + fileName + "[" + tableEntry.getValue() + "]");
+						tableIndex++;
 					}
-					catch (Exception e) {
-						e.printStackTrace();
-					}
+				} catch (IOException ioe) {
+					log.error("Unable to load file", ioe);
+				} catch (NotATopSpeedFileException ntsf) {
+					log.error("The file " + fileName + " is not a valid TopSpeed file.", ntsf);
 				}
+				
 			}
 		}
 		return new HashSet<String>();
 
 	}
+	
+	public  Map<Integer, String>  getTableNames(String tableName, File file) throws IOException {
+		Map<Integer, String>  tableNames = new HashMap<Integer, String>();
+		tableNames.put(1, (String) tableName);
+		return tableNames;
+	}
 
+	public String getTargetTableName(String targetTableName, String fileName) {
+		if (targetTableName == null) {
+			targetTableName = fileName.substring(0, fileName.indexOf("."));
+		}
+		return targetTableName;
+	}
+	
 	public String buildNodeList(Set<Node> nodes) {
 		StringBuffer sb = new StringBuffer();
 		for (Node n : nodes) {

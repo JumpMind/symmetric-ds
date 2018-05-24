@@ -24,7 +24,7 @@ public class CSVRouter extends AbstractFileParsingRouter implements IDataRouter,
     }
     
     @Override
-    public List<String> parse(File file, int lineNumber) {
+    public List<String> parse(File file, int lineNumber, int tableIndex) {
         List<String> rows = new ArrayList<String>();
         int currentLine = 1;
         

@@ -362,4 +362,8 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         return (T) result;
     }
 
+   @Override
+	public boolean isDataTruncationViolation(Throwable ex) {
+		return false;
+	}
 }
