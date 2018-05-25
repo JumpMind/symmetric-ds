@@ -31,13 +31,14 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.CassandraDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
+import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
-import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -66,6 +67,27 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
             TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
+    		
+    		if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("CassandraPlatform")) {
+    			try {
+    				
+    				// TODO Evalute if ConflictResolver will work for Cassandra and if so remove duplicate code.
+    				return new CassandraDatabaseWriter(symmetricDialect.getPlatform(),
+    		        		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
+    		        		new DefaultTransformWriterConflictResolver(transformWriter), 
+    		        		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
+    		                        resolvedData));
+
+    			} catch (Exception e) {
+    				log.warn(
+    						"Failed to create the cassandra database writer.  Check to see if all of the required jars have been added");
+    				if (e instanceof RuntimeException) {
+    					throw (RuntimeException) e;
+    				} else {
+    					throw new RuntimeException(e);
+    				}
+    			}
+    		}
         DynamicDefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricDialect.getPlatform(),
         		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {

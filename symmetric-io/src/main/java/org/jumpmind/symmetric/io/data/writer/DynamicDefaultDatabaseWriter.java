@@ -35,8 +35,8 @@ public class DynamicDefaultDatabaseWriter extends DefaultDatabaseWriter {
 		this.targetPlatform = targetPlatform;
     }
     
-    private boolean isSymmetricTable(String tableName) {
-		return tableName.startsWith(this.tablePrefix);
+    protected boolean isSymmetricTable(String tableName) {
+		return tableName.toUpperCase().startsWith(this.tablePrefix.toUpperCase());
 	}
 	
     public boolean isLoadOnly() {

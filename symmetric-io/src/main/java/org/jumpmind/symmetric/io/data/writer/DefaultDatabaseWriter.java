@@ -194,7 +194,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
-                getTransaction().prepare(this.currentDmlStatement.getSql());
+                prepare();
             }
             try {
                 Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
@@ -317,7 +317,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
-                getTransaction().prepare(this.currentDmlStatement.getSql());
+                prepare();
             }
             try {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
@@ -473,8 +473,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (log.isDebugEnabled()) {
                         log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                     }
-                    getTransaction().prepare(this.currentDmlStatement.getSql());
-
+                    prepare();
                 }
 
                 rowData = (String[]) changedColumnValueList
@@ -566,11 +565,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             for (String sql : sqlStatements) {
                 try {
                     sql = preprocessSqlStatement(sql);
-                    getTransaction().prepare(sql);
+                    prepare(sql, data);
                     if (log.isDebugEnabled()) {
                         log.debug("About to run: {}", sql);
                     }
-                    count += getTransaction().prepareAndExecute(sql);
+                    count += prepareAndExecute(sql);
                     if (log.isDebugEnabled()) {
                         log.debug("{} rows updated when running: {}", count, sql);
                     }
@@ -878,6 +877,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return needsUpdated;
     }
 
+    protected void prepare() {
+    		getTransaction().prepare(this.currentDmlStatement.getSql());
+    }
+    
+    protected void prepare(String sql, CsvData data) {
+    		getTransaction().prepare(sql);
+    }
+    
     protected int execute(CsvData data, String[] values) {
         currentDmlValues = getPlatform().getObjectValues(batch.getBinaryEncoding(), values,
                 currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
@@ -935,6 +942,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     public DatabaseWriterSettings getWriterSettings() {
         return writerSettings;
     }
+    
+    public int prepareAndExecute(String sql) {
+    		return getTransaction().prepareAndExecute(sql);
+    	}
     
     protected String getCurData(ISqlTransaction transaction) {
         String curVal = null;
