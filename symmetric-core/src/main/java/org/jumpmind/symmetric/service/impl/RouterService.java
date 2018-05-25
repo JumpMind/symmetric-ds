@@ -383,9 +383,9 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                 } else {
-                    log.error("Can't process load for '{}' because of confilcting parameters: {}={} and {}={}", load.getTargetNodeId(),
-                            ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED,
-                            streamToFile);
+                    throw new SymmetricException(String.format("Node '%s' can't process load for '%s' because of confilcting parameters: %s=%s and %s=%s", 
+                            source.getNodeId(), load.getTargetNodeId(), ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED,
+                            streamToFile));
                 }
             }
             

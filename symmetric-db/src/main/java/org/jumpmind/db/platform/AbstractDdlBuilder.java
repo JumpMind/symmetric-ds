@@ -821,14 +821,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 
 			Table realTargetTable = getRealTargetTableFor(desiredModel, sourceTable, targetTable);
 
-			dropTemporaryTable(tempTable, ddl);
-			createTemporaryTable(tempTable, ddl);
-			writeCopyDataStatement(sourceTable, tempTable, ddl);
-			/*
-			 * Note that we don't drop the indices here because the DROP TABLE will take
-			 * care of that Likewise, foreign keys have already been dropped as necessary
-			 */
-			dropTable(sourceTable, ddl, false, true);
+			renameTable(sourceTable, tempTable, ddl);
+
 			createTable(realTargetTable, ddl, false, true);
 			if (canMigrateData) {
 				writeCopyDataStatement(tempTable, targetTable, ddl);
@@ -839,6 +833,18 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 			ddl.append(tableDdl);
 		}
 	}
+    
+    protected void renameTable(Table sourceTable, Table tempTable, StringBuilder ddl) {
+        dropTemporaryTable(tempTable, ddl);
+        createTemporaryTable(tempTable, ddl);
+        writeCopyDataStatement(sourceTable, tempTable, ddl);
+        /*
+         * Note that we don't drop the indices here because the DROP
+         * TABLE will take care of that Likewise, foreign keys have
+         * already been dropped as necessary
+         */
+        dropTable(sourceTable, ddl, false, true);
+    }
 
 	protected Database copy(Database currentModel) {
 		try {
