@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.Context;
@@ -151,7 +152,11 @@ public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform,
             }
             
             if (result instanceof String) {
-            	return new NewAndOldValue((String) result, null);
+                if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+                    return new NewAndOldValue(null, (String) result);
+                } else {
+                    return new NewAndOldValue((String) result, null);
+                }
             } else if (result instanceof NewAndOldValue) {
                 return (NewAndOldValue) result;
             } else if (result != null) {
