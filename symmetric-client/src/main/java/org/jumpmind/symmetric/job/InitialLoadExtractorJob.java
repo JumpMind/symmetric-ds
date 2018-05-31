@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.job;
 import static org.jumpmind.symmetric.job.JobDefaults.EVERY_10_SECONDS;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -41,7 +42,9 @@ public class InitialLoadExtractorJob extends AbstractJob {
 
     @Override
     public void doJob(boolean force) throws Exception {
-        engine.getFileSyncExtractorService().queueWork(force);
+        if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)) {
+            engine.getFileSyncExtractorService().queueWork(force);
+        }
         engine.getDataExtractorService().queueWork(force);
     }
 }
