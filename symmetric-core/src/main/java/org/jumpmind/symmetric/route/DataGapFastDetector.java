@@ -198,6 +198,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         } else if (lastBusyExpireRunTime != 0) {
             setLastBusyExpireRunTime(0);
         }
+        
+        List<DataGap> skippedDataGaps = new ArrayList<DataGap>();
 
         try {
             long ts = System.currentTimeMillis();
@@ -243,16 +245,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                             expireChecked++;
                         }
                         if (isAllDataRead || isGapEmpty) {
-                            if (log.isDebugEnabled()) {
-                                if (dataGap.getStartId() == dataGap.getEndId()) {
-                                    log.debug("Found a gap in data_id at {}.  Skipping it because " +
-                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId());
-                                } else {
-                                    log.debug("Found a gap in data_id from {} to {}.  Skipping it because " +
-                                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
-                                            dataGap.getStartId(), dataGap.getEndId());
-                                }
-                            }
+                            skippedDataGaps.add(dataGap);
                             gapsDeleted.add(dataGap);
                             gapsAll.remove(dataGap);
                         }
@@ -307,7 +300,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         } catch (RuntimeException ex) {
             processInfo.setStatus(Status.ERROR);
             throw ex;
-        }
+        } finally {
+            logSkippedDataGaps(skippedDataGaps);
+        }        
     }
 
     protected boolean addDataGap(DataGap dataGap) {
@@ -537,7 +532,46 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             throw ex;
         }
     }
-
+    
+    protected void logSkippedDataGaps(List<DataGap> skippedDataGaps) {
+        if (skippedDataGaps.isEmpty()) {
+            return;
+        }
+        
+        if (log.isDebugEnabled()) {            
+            for (DataGap dataGap : skippedDataGaps) {                
+                if (dataGap.getStartId() == dataGap.getEndId()) {
+                    log.debug("Expired data gap at data_id {} create_time {}.  Skipping it because " +
+                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), dataGap.getStartId(), dataGap.getCreateTime());
+                } else {
+                    log.debug("Expired data gap between data_id {} and {} create_time {}.  Skipping it because " +
+                            (supportsTransactionViews ? "there are no pending transactions" : "the gap expired"), 
+                            dataGap.getStartId(), dataGap.getEndId(), dataGap.getCreateTime());
+                }
+            }
+            return;
+        }             
+        
+        Date minDate = skippedDataGaps.get(0).getCreateTime();
+        Date maxDate = skippedDataGaps.get(0).getCreateTime();
+        long minDataId = skippedDataGaps.get(0).getStartId();
+        long maxDataId = skippedDataGaps.get(0).getEndId();
+        
+        for (DataGap dataGap : skippedDataGaps) {
+            if (dataGap.getCreateTime().before(minDate)) {
+                minDate = dataGap.getCreateTime();
+            }
+            if (dataGap.getCreateTime().after(maxDate)) {
+                maxDate = dataGap.getCreateTime();
+            }
+            minDataId = Math.min(minDataId, dataGap.getStartId());
+            maxDataId = Math.min(maxDataId, dataGap.getEndId());
+        }
+        
+        log.info("Expired {} data gap(s) between data_id {} and {} and between create_time {} and {}", 
+                skippedDataGaps.size(), minDataId, maxDataId, minDate, maxDate); 
+        
+    }
 
     public Long mapRow(Row row) {
         return row.getLong("data_id");
