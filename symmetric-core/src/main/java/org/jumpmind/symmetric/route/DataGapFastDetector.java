@@ -131,6 +131,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 queryDataIdMap();
                 processInfo.setStatus(Status.OK);
                 log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
+                isAllDataRead = false;
                 afterRouting();
                 reset();
                 log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
