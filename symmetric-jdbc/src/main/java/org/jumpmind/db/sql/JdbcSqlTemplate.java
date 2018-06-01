@@ -1087,5 +1087,9 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         StatementCreatorUtils.setParameterValue(ps, parameterPosition, SqlTypeValue.TYPE_UNKNOWN, argValue);
     }
 
+    @Override
+    public boolean isDataTruncationViolation(Throwable ex) {
+    		return false;
+    }
     
 }

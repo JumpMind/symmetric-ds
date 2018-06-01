@@ -45,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.platform.cassandra.CassandraPlatform;
 import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.LogSqlBuilder;
@@ -311,6 +312,12 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly) {
         log.info("Initializing connection to database");
         if (dataSource == null) {
+        		if (isLoadOnly) {
+        			String dbUrl = properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL);
+        			if (dbUrl != null && dbUrl.startsWith("cassandra://")) {
+        				return new CassandraPlatform(createSqlTemplateSettings(properties), dbUrl.substring(12));
+        			}
+        		}
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
             if (StringUtils.isNotBlank(jndiName)) {
                 try {

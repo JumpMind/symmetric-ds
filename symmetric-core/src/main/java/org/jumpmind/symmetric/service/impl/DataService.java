@@ -2232,7 +2232,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public List<Number> listDataIds(long batchId, String nodeId) {
-        return sqlTemplateDirty.query(getSql("selectEventDataIdsSql", " order by d.data_id asc"),
+        return sqlTemplateDirty.query(getSql("selectEventDataIdsSql", getDataOrderBy()),
                 new NumberMapper(), batchId, nodeId);
     }
 
@@ -2266,15 +2266,25 @@ public class DataService extends AbstractService implements IDataService {
     protected String getDataSelectByBatchSql(long batchId, long startDataId, String channelId) {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
-                getSql("selectEventDataByBatchIdSql", startAtDataIdSql, " order by d.data_id asc"),
+                getSql("selectEventDataByBatchIdSql", startAtDataIdSql, getDataOrderBy()),
                 engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
     }
 
     protected String getDataSelectSql(long batchId, long startDataId, String channelId) {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
-                getSql("selectEventDataToExtractSql", startAtDataIdSql, " order by d.data_id asc"),
+                getSql("selectEventDataToExtractSql", startAtDataIdSql, getDataOrderBy()),
                 engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
+    }
+
+    protected String getDataOrderBy() {
+        String orderBy = "";
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
+            orderBy = " order by d.create_time asc, d.data_id asc";
+        } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+            orderBy = " order by d.data_id asc";
+        }
+        return orderBy;
     }
 
     public long findMaxDataId() {

@@ -239,13 +239,32 @@ Some variables are provided to the script:
 .Variables
 |===
 
-|_COLUMN_NAME_|The variable name is the source column name in uppercase of the row being changed (replace COLUMN_NAME with your column)
+|_<COLUMN_NAME>_|The variable name is the source column name in uppercase of the row being changed (replace <COLUMN_NAME> with your column)
 |currentValue|The value of the current source column
 |oldValue|The old value of the source column for an updated row
-|sqlTemplate|a org.jumpmind.db.sql.ISqlTemplate object for querying or updating the database
-|channelId|a reference to the channel on which the transformation is happening
-|sourceNode|a org.jumpmind.symmetric.model.Node object that represents the node from where the data came
-|targetNode|a org.jumpmind.symmetric.model.Node object that represents the node where the data is being loaded.
+|sqlTemplate| org.jumpmind.db.sql.ISqlTemplate object for querying or updating the database
+|channelId| name of the channel on which the transformation is happening
+|sourceNode| org.jumpmind.symmetric.model.Node object that represents the node from where the data came
+|sourceNodeId|same as sourceNode.getNodeId()
+|sourceNodeGroupId|same as sourceNode.getNodeGroupId()
+|sourceNodeExternalId|same as sourceNode.getNodeExternalId()
+|targetNode| org.jumpmind.symmetric.model.Node object that represents the node where the data is being loaded.
+|targetNodeId|same as targetNode.getNodeId()
+|targetNodeGroupId|same as targetNode.getNodeGroupId()
+|targetNodeExternalId|same as targetNode.getNodeExternalId()
+|transformColumn| org.jumpmind.symmetric.io.data.transform.TransformColumn that is the transform configuration
+|includeOn| org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType, same as transformColumn.getIncludeOn(), tells whether column transform is configured for all, insert, update, or delete
+|sourceSchemaName | source schema name that the transform matched
+|sourceCatalogName | source catalog name that the transform matched
+|sourceTableName | source table name that the transform matched
+|transformedData | org.jumpmind.symmetric.io.data.transform.TransformedData, the model object representing the outputted transformed data
+|sourceDmlType| org.jumpmind.symmetric.io.data.DataEventType that is the source row change type, either insert, update, or delete
+|sourceDmlTypeString| same as sourceDmlType.toString(), returning insert, update, or delete
+|log | org.slf4j.Logger, write to the log file
+|context | org.jumpmind.symmetric.io.data.DataContext containing internal variables and also acts like a Map for sharing variables between transforms for the current sync session
+|bshContext | java.util.Map, static map of variables to share between transforms
+|engine | org.jumpmind.symmetric.ISymmetricEngine, access to engine functions and services
+
 
 |===
 

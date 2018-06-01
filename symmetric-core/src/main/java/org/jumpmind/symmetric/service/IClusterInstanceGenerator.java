@@ -18,27 +18,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.android;
+package org.jumpmind.symmetric.service;
 
-import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.IParameterService;
-import org.jumpmind.symmetric.service.impl.ClusterService;
+import org.jumpmind.extension.IExtensionPoint;
 
-public class AndroidClusterService extends ClusterService {
+public interface IClusterInstanceGenerator extends IExtensionPoint {
+
+    public String generateInstanceId();
     
-    public AndroidClusterService(IParameterService parameterService, ISymmetricDialect dialect, INodeService nodeService) {
-        super(parameterService, dialect, nodeService, null);
-    }
-    
-    @Override
-    protected void initInstanceId() {
-        // not relevant on Android.
-    }
-    
-    @Override
-    protected void checkSymDbOwnership() {
-        // not relevant on Android.
-    }
+    public boolean isValid(String instanceId);
 
 }

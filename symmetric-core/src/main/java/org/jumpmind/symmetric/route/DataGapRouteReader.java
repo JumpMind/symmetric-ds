@@ -301,7 +301,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }            
         }
         
-        if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
+            sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByCreateTime"));
+        } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
             sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
         }
 
