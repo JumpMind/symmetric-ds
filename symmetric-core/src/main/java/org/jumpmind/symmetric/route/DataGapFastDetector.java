@@ -124,6 +124,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 queryDataIdMap();
                 processInfo.setStatus(ProcessStatus.OK);
                 log.info("Querying data in gaps from database took {} ms", System.currentTimeMillis() - ts);
+                isAllDataRead = false;
                 afterRouting();
                 reset();
                 log.info("Full gap analysis is done after {} ms", System.currentTimeMillis() - ts);
@@ -543,6 +544,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         this.dataIds.addAll(dataIds);
     }
 
+    /**
+     * This method is called for each channel that is routed.  Once it is set for a routing pass it should remain set until the routing pass is done.
+     */
     public void setIsAllDataRead(boolean isAllDataRead) {
         this.isAllDataRead &= isAllDataRead;
     }
