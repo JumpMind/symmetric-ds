@@ -31,6 +31,11 @@ public class AcknowledgeServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
         putSql("selectDataIdSql",
                 "select data_id from $(data_event) b where batch_id = ? order by data_id   ");
+        
+        putSql("orderByDataId", " order by data_id asc");
+        
+        putSql("orderByCreateTime", " order by create_time asc, data_id asc ");
+
     }
 
 }

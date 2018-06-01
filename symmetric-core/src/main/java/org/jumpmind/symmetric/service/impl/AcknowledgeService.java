@@ -100,8 +100,14 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
                 boolean isNewError = false;
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
-                    List<Number> ids = sqlTemplateDirty.query(getSql("selectDataIdSql"),
-                            new NumberMapper(), outgoingBatch.getBatchId());
+                    String sql = getSql("selectDataIdSql");
+                    if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
+                        sql += getSql("orderByCreateTime");
+                    } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+                        sql += getSql("orderByDataId");
+                    }
+
+                    List<Number> ids = sqlTemplateDirty.query(sql, new NumberMapper(), outgoingBatch.getBatchId());
                     if (ids.size() >= batch.getErrorLine()) {
                         long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
                         if (outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId) {

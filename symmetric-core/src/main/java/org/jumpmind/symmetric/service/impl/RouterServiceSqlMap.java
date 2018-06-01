@@ -48,6 +48,8 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
         putSql("orderByDataId",        
                        "  order by d.data_id asc ");        
 
+        putSql("orderByCreateTime", " order by d.create_time asc, d.data_id asc ");
+
         putSql("selectDistinctDataIdFromDataEventSql",
                 ""
                         + "select distinct(data_id) from $(data_event) where data_id > ? order by data_id asc   ");
