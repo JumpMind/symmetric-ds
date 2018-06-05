@@ -88,7 +88,11 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected long peekAheadSizeInBytes = 0;
     
     protected boolean finishTransactionMode = false;
+
+    protected boolean isEachGapQueried;
     
+    protected boolean isOracleNoOrder;
+
     protected String lastTransactionId = null;
     
     protected static Map<String, Boolean> lastSelectUsedGreaterThanQueryByEngineName = new HashMap<String, Boolean>(); 
@@ -102,6 +106,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         this.percentOfHeapToUse = (double)parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD)/(double)100;
         this.takeTimeout = engine.getParameterService().getInt(
                 ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
+        this.isOracleNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
         if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
             /* there will not be a separate thread to read a blocked queue so make sure the queue is big enough that it can be filled */
             this.dataQueue = new LinkedBlockingQueue<Data>();
@@ -231,15 +236,28 @@ public class DataGapRouteReader implements IDataToRouteReader {
         if (!finishTransactionMode
                 || (lastTransactionId != null && finishTransactionMode && lastTransactionId
                         .equals(data.getTransactionId()))) {
-            while (!okToProcess && currentGap != null && dataId >= currentGap.getStartId()) {
-                if (dataId <= currentGap.getEndId()) {
+            if (isOracleNoOrder) {
+                if (isEachGapQueried) {
                     okToProcess = true;
                 } else {
-                    // past current gap. move to next gap
-                    if (dataGaps.size() > 0) {
-                        currentGap = dataGaps.remove(0);
+                    for (DataGap gap : dataGaps) {
+                        if (dataId >= gap.getStartId() && dataId <= gap.getEndId()) {
+                            okToProcess = true;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                while (!okToProcess && currentGap != null && dataId >= currentGap.getStartId()) {
+                    if (dataId <= currentGap.getEndId()) {
+                        okToProcess = true;
                     } else {
-                        currentGap = null;
+                        // past current gap. move to next gap
+                        if (dataGaps.size() > 0) {
+                            currentGap = dataGaps.remove(0);
+                        } else {
+                            currentGap = null;
+                        }
                     }
                 }
             }
@@ -276,6 +294,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             useGreaterThanDataId = true;
         }
 
+        isEachGapQueried = !useGreaterThanDataId && this.dataGaps.size() <= numberOfGapsToQualify;
         String channelId = context.getChannel().getChannelId();
 
         String sql = null;
@@ -301,7 +320,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }            
         }
         
-        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
+        if (isOracleNoOrder) {
             sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByCreateTime"));
         } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
             sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
@@ -340,7 +359,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }
         }
 
-        this.currentGap = dataGaps.remove(0);
+        if (!isOracleNoOrder) {
+            this.currentGap = dataGaps.remove(0);
+        }
 
         ISqlRowMapper<Data> dataMapper = new ISqlRowMapper<Data>() {
             public Data mapRow(Row row) {
