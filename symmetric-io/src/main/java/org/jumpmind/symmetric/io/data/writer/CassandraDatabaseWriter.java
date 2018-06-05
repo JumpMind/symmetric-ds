@@ -2,10 +2,16 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.math.BigDecimal;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -17,6 +23,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -30,6 +37,10 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
 	PreparedStatement pstmt;
 
+	SimpleDateFormat tsFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+	
 	public CassandraDatabaseWriter(IDatabasePlatform symmetricPlatform, 
 			IDatabasePlatform targetPlatform,String prefix, 
             IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings) {
@@ -50,16 +61,31 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 	
 	@Override
 	protected void prepare(String sql, CsvData data) {
-		if (isSymmetricTable(this.targetTable != null ? this.targetTable.getName() : "") && !data.getDataEventType().equals(DataEventType.SQL)) {
+		if (isSymmetricTable(this.targetTable != null ? this.targetTable.getName() : "") && !isUserSendSql(sql, data)) {
 			super.prepare(sql, data);
 		} else {
 			pstmt = session.prepare(sql);
 		}
 	}
 	
+	/*
+	 * Checks if a send sql event type was for the sym_node table.  If it is the send sql shoudl run against Cassandra tables otherwise it is an internal Symmetric
+	 * send sql.
+	 */
+	protected boolean isUserSendSql(String sql, CsvData data) {
+		return data.getDataEventType().equals(DataEventType.SQL) 
+				&& this.targetTable.getNameLowerCase().equals(this.getTablePrefix().toLowerCase() + "_node")
+				&& !sql.toLowerCase().contains("from " + this.getTablePrefix().toLowerCase() + "_node");
+	}
+	
 	@Override
-	public int prepareAndExecute(String sql) {
-		return session.execute(sql).wasApplied() ? 1 : 0;
+	public int prepareAndExecute(String sql, CsvData data) {
+		if (isUserSendSql(sql, data)) {
+			return session.execute(sql).wasApplied() ? 1 : 0;
+		}
+		else {
+			return super.prepareAndExecute(sql, data);
+		}
 	}
 
 	@Override
@@ -118,6 +144,26 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 				bstmt.setInt(i, Integer.parseInt(values[i]));
 			} else if (Types.VARCHAR == type) {
 				bstmt.setString(i, values[i]);
+			} else if (Types.JAVA_OBJECT == type) {
+				bstmt.setUUID(i, UUID.fromString(values[i]));
+			} else if (Types.TIMESTAMP == type) {
+				try {
+					bstmt.setTimestamp(i, tsFormat.parse(values[i]));
+				} catch (ParseException e) {
+					throw new RuntimeException("Unable to bind timestamp column " + columns[i].getName() + " with value " + values[i]);
+				}
+			} else if (Types.DATE == type) {
+				try {
+					bstmt.setDate(i, LocalDate.fromMillisSinceEpoch(dateFormat.parse(values[i]).getTime()));
+				} catch (ParseException e) {
+					throw new RuntimeException("Unable to bind date column " + columns[i].getName() + " with value " + values[i]);
+				}
+			} else if (Types.TIME == type) {
+				try 	{
+					bstmt.setTime(i, LocalTime.parse(values[i], timeFormat).toNanoOfDay());
+				} catch (DateTimeParseException e) {
+					throw new RuntimeException("Unable to bind time column " + columns[i].getName() + " with value " + values[i]);
+				}
 			} else if (Types.BOOLEAN == type) {
 				bstmt.setBool(i, Boolean.parseBoolean(values[i]));
 			} else if (Types.DECIMAL == type) {

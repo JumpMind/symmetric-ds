@@ -569,7 +569,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     if (log.isDebugEnabled()) {
                         log.debug("About to run: {}", sql);
                     }
-                    count += prepareAndExecute(sql);
+                    count += prepareAndExecute(sql, data);
                     if (log.isDebugEnabled()) {
                         log.debug("{} rows updated when running: {}", count, sql);
                     }
@@ -943,7 +943,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         return writerSettings;
     }
     
-    public int prepareAndExecute(String sql) {
+    public int prepareAndExecute(String sql, CsvData data) {
     		return getTransaction().prepareAndExecute(sql);
     	}
     

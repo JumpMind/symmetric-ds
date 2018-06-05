@@ -140,6 +140,7 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
 		 * VARINT(14), TIMEUUID(15), CUSTOM(0), UDT(48,
 		 * ProtocolVersion.V3), TUPLE(49, ProtocolVersion.V3),
 		 */
+		
 		if (dataType == DataType.Name.INT.name()) {
 			return Types.INTEGER;
 		} else if (dataType == DataType.Name.BIGINT.name()) {
@@ -162,9 +163,10 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
 			return Types.DATE;
 		} else if (dataType == DataType.Name.TIME.name()) {
 			return Types.TIME;
-		} else if (dataType == DataType.Name.VARCHAR.name() || dataType == DataType.Name.TEXT.name()
-				|| dataType == DataType.Name.UUID.name()) {
+		} else if (dataType == DataType.Name.VARCHAR.name() || dataType == DataType.Name.TEXT.name()) {
 			return Types.VARCHAR;
+		} else if (dataType == DataType.Name.UUID.name()) {
+			return Types.JAVA_OBJECT;
 		} else if (dataType == DataType.Name.LIST.name()) {
 			return Types.STRUCT;
 		} else if (dataType == DataType.Name.SET.name()) {
