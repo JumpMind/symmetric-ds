@@ -34,36 +34,25 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
         putSql("selectChannelsUsingStartDataId", "select distinct channel_id from $(data) where data_id >= ?");
 
         putSql("selectDataUsingGapsSql",
-                ""
-                        + "select $(selectDataUsingGapsSqlHint) d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                        "
-                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list   "
-                        + "  from $(data) d where d.channel_id=? $(dataRange)                                                ");
+            "select $(selectDataUsingGapsSqlHint) d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data, "
+            + " d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list "
+            + " from $(data) d where d.channel_id=? $(dataRange) ");
         
         putSql("selectDataUsingStartDataId",
-                ""
-                        + "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                                     "
-                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list   "
-                        + "  from $(data) d where d.channel_id=? and data_id >= ?                                                               ");
+            "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data, "
+            + " d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list "
+            + " from $(data) d where d.channel_id=? and data_id >= ? ");
         
-        putSql("orderByDataId",        
-                       "  order by d.data_id asc ");        
-
-        putSql("selectDistinctDataIdFromDataEventSql",
-                ""
-                        + "select distinct(data_id) from $(data_event) where data_id > ? order by data_id asc   ");
+        putSql("orderByDataId", " order by d.data_id asc ");
+        
+        putSql("orderByCreateTime", " order by d.create_time asc, d.data_id asc ");
 
         putSql("selectDistinctDataIdFromDataEventUsingGapsSql",
-                ""
-                        + "select distinct(data_id) from $(data_event) where data_id >=? and data_id <= ? order by data_id asc   ");
+            "select distinct(data_id) from $(data_event) where data_id >=? and data_id <= ? order by data_id asc ");
 
-        putSql("selectDataIdFromDataSql",
-                "select data_id from $(data) where $(dataRange) order by data_id asc");
+        putSql("selectUnroutedCountForChannelSql", "select count(*) from $(data) where channel_id=? and data_id >=? ");
 
-        putSql("selectUnroutedCountForChannelSql", ""
-                + "select count(*) from $(data) where channel_id=? and data_id >=?   ");
-
-        putSql("selectLastDataIdRoutedUsingDataGapSql", ""
-                + "select max(start_id) from $(data_gap)   ");
+        putSql("selectLastDataIdRoutedUsingDataGapSql", "select max(start_id) from $(data_gap) ");
 
     }
 

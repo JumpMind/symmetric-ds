@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
@@ -398,12 +399,12 @@ abstract public class AbstractJob implements Runnable, IJob {
     }
     
     public boolean isCronSchedule() {
-        String cronSchedule = parameterService.getString(jobDefinition.getCronParameter());
-        return !StringUtils.isEmpty(cronSchedule);
+        return !isPeriodicSchedule();
     }
     
     public boolean isPeriodicSchedule() {
-        return !isCronSchedule();
+        String schedule = getSchedule();
+        return NumberUtils.isDigits(schedule);
     }
     
     public String getSchedule() {
