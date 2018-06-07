@@ -232,8 +232,21 @@ public class DbFill {
         }
         log.info("ORDER (" + tables.size() + " tables): " + tableOrder.toString());
         buildForeignKeyReferences(tables);
-        buildDependentColumnValues(tables);        
+        buildDependentColumnValues(tables);    
+        
+        tables = removeSymTables(tables);
+        
         fillTables(tables, tableProperties);
+    }
+    
+    protected List<Table> removeSymTables(List<Table> tables) {
+    		List<Table> filteredTables = new ArrayList<Table>();
+    		for (Table table : tables) {
+    			if (!table.getNameLowerCase().startsWith("sym_")) {
+    				filteredTables.add(table);
+    			}
+    		}
+    		return filteredTables;
     }
     
     protected void buildForeignTables(List<Table> tables) {
@@ -784,7 +797,7 @@ public class DbFill {
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
-        		if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("JSON")) {
+        		if (column.getJdbcTypeName() != null && (column.getJdbcTypeName().equals("JSON") || column.getJdbcTypeName().equals("jsonb"))) {
         			objectValue = "{\"jumpmind\":\"symmetricds\"}";
         		}
         		else {

@@ -33,6 +33,13 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.UiConstants;
 
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.v7.data.Item;
 import com.vaadin.v7.data.Property;
 import com.vaadin.v7.data.Property.ValueChangeEvent;
@@ -40,18 +47,12 @@ import com.vaadin.v7.event.FieldEvents.TextChangeEvent;
 import com.vaadin.v7.event.FieldEvents.TextChangeListener;
 import com.vaadin.v7.event.ItemClickEvent;
 import com.vaadin.v7.event.ItemClickEvent.ItemClickListener;
-import com.vaadin.server.FontAwesome;
 import com.vaadin.v7.ui.AbstractSelect;
 import com.vaadin.v7.ui.AbstractTextField.TextChangeEventMode;
-import com.vaadin.ui.Alignment;
 import com.vaadin.v7.ui.CheckBox;
 import com.vaadin.v7.ui.ComboBox;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.v7.ui.Table;
 import com.vaadin.v7.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
 
 public class TableSelectionLayout extends VerticalLayout {
 
@@ -185,6 +186,25 @@ public class TableSelectionLayout extends VerticalLayout {
             }
         });
 
+        Button selectAllLink = new Button("Select All");
+        selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectAllLink.addClickListener((event) -> selectAll());
+
+        Button selectNoneLink = new Button("Select None");
+        selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectNoneLink.addClickListener((event) -> selectNone());
+        
+        HorizontalLayout selectAllFooter = new HorizontalLayout();
+
+        selectAllFooter.setWidth("100%");
+        selectAllFooter.setSpacing(true);
+        selectAllFooter.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+
+        selectAllFooter.addComponent(selectAllLink);
+        selectAllFooter.addComponent(selectNoneLink);
+        
+        this.addComponent(selectAllFooter);
+        
         refreshTableOfTables();
 
     }
