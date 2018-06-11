@@ -793,7 +793,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         for (int idx = 0; idx < getForeignKeyCount(); idx++) {
             ForeignKey fk = getForeignKey(idx);
 
-            if (this.equals(fk.getForeignTable())) {
+            if (this.getName().equals(fk.getForeignTableName())) {
                 return fk;
             }
         }
