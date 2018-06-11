@@ -87,8 +87,10 @@ public class ClusterService extends AbstractService implements IClusterService {
     
     private static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
 
+    private static boolean isUpgradedInstanceId;
+
     private String serverId = null;
-    private String instanceId = null;
+    private static String instanceId = null;
     
     private INodeService nodeService;
     
@@ -108,7 +110,14 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     @Override
     public void init() {
-        initInstanceId();
+        if (instanceId == null) {
+            synchronized (ClusterService.class) {
+                initInstanceId();
+            }
+        }
+        if (isUpgradedInstanceId) {
+            nodeService.deleteNodeHost(nodeService.findIdentityNodeId()); // This is cleanup mostly for an upgrade.
+        }
         checkSymDbOwnership();
         
         if (isClusteringEnabled()) {
@@ -131,6 +140,9 @@ public class ClusterService extends AbstractService implements IClusterService {
     }
     
     protected void initInstanceId() {
+        if (instanceId != null) {
+            return;
+        }
         File instanceIdFile = new File(AppUtils.getSymHome() + "/" + parameterService.getString(ParameterConstants.INSTANCE_ID_LOCATION));
         String instanceIdLocation = instanceIdFile.getAbsolutePath();
         
@@ -157,7 +169,7 @@ public class ClusterService extends AbstractService implements IClusterService {
                 instanceIdFile.getParentFile().mkdirs();
                 IOUtils.write(newInstanceId, new FileOutputStream(instanceIdLocation));
                 instanceId = newInstanceId;
-                nodeService.deleteNodeHost(nodeService.findIdentityNodeId()); // This is cleanup mostly for an upgrade.
+                isUpgradedInstanceId = true;
             } catch (Exception ex) {
                 throw new SymmetricException("Failed to save file '" + instanceIdLocation + "' Please correct and restart this node.", ex);
             }
