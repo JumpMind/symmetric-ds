@@ -49,7 +49,7 @@ Job Expression:: The payload of the job. For BSH jobs, this should be a beanshel
 .BSH Jobs
 BSH jobs are written in beanshell script (http://www.beanshell.org/).  The beanshell has the following variables available:
 * engine - An instances of the current ISymmetricEngine
-* sqlTempalte - An instance of ISqlTemplate which can be used to run SQL statements.
+* sqlTemplate - An instance of ISqlTemplate which can be used to run SQL statements.
 * log - An logger which can be used to write messages to the log.
 
 This is an example BSH job:
