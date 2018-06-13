@@ -214,7 +214,7 @@ public class JobManager extends AbstractService implements IJobManager {
     @Override
     public void saveJob(JobDefinition job) {
         Object[] args = { job.getDescription(), job.getJobType().toString(),  
-                job.getJobExpression(), job.isDefaultAutomaticStartup(), job.getDefaultSchedule(), 
+                job.getJobExpression(), job.isDefaultAutomaticStartup() ? 1 : 0, job.getDefaultSchedule(), 
                 job.getNodeGroupId(), job.getCreateBy(), job.getLastUpdateBy(), job.getJobName() };
 
         if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
