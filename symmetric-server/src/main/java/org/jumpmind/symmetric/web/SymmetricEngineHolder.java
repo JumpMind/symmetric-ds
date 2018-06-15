@@ -64,6 +64,7 @@ import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,6 +179,8 @@ public class SymmetricEngineHolder {
 
     public void start() {
         try {
+            SymmetricUtils.logNotices();
+
             if (staticEnginesMode) {
                 log.info("In static engine mode");
                 engines = staticEngines;
