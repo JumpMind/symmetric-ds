@@ -179,7 +179,7 @@ final public class SymmetricUtils {
         if (in != null) {
             notices += String.format(
                     "|" + StringUtils.rightPad(" Licensed under one or more agreements from JumpMind, Inc.", pad) + "|%n" +
-                    "|" + StringUtils.rightPad(" See docs/license.html", pad) + "|%n");
+                    "|" + StringUtils.rightPad(" See doc/license.html", pad) + "|%n");
         } else {
             notices += String.format(
                     "|" + StringUtils.rightPad(" Licensed under the GNU General Public License version 3.", pad) + "|%n" +
