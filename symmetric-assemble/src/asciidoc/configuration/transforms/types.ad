@@ -555,4 +555,7 @@ value will be used.  If no value is provided null will be used as a default repl
 
 This transformation checks to see if the source value is null and if so replaces it with the provided value.
 
+===== Deleted Columns Transform
+
+For an update, this transform returns a comma-separated list of columns names that were set to null and previously not null.
 
