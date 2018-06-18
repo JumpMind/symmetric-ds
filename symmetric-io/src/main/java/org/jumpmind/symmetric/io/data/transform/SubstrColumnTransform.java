@@ -26,8 +26,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class SubstrColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "substr";
 
@@ -44,9 +45,11 @@ public class SubstrColumnTransform implements ISingleValueColumnTransform, IBuil
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context,
-            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreColumnException,
-            IgnoreRowException {
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
+            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
+
         if (StringUtils.isNotBlank(newValue)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
@@ -54,24 +57,29 @@ public class SubstrColumnTransform implements ISingleValueColumnTransform, IBuil
                 if (tokens.length == 1) {
                     int index = Integer.parseInt(tokens[0]);
                     if (newValue.length() > index) {
-                        return newValue.substring(index);
+                        newValue = newValue.substring(index);
                     } else {
-                        return "";
+                        newValue = "";
                     }
                 } else if (tokens.length > 1) {
                     int beginIndex = Integer.parseInt(tokens[0]);
                     int endIndex = Integer.parseInt(tokens[1]);
                     if (newValue.length() > endIndex && endIndex > beginIndex) {
-                        return newValue.substring(beginIndex, endIndex);
+                        newValue = newValue.substring(beginIndex, endIndex);
                     } else if (newValue.length() > beginIndex) {
-                        return newValue.substring(beginIndex);
+                        newValue = newValue.substring(beginIndex);
                     } else {
-                        return "";
+                        newValue = "";
                     }
                 }
             }
         }
-        return newValue;
+        
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, newValue);
+        } else {
+            return new NewAndOldValue(newValue, null);
+        }
     }
 
     protected String[] prepend(String v, String[] array) {

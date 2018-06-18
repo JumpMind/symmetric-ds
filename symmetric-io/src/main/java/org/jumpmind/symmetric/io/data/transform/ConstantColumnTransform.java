@@ -25,8 +25,9 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class ConstantColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class ConstantColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "const";
 
@@ -43,10 +44,17 @@ public class ConstantColumnTransform implements ISingleValueColumnTransform, IBu
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context,
-            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreColumnException,
-            IgnoreRowException {
-        return column.getTransformExpression();
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
+            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
+
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, column.getTransformExpression());
+        } else {
+            return new NewAndOldValue(column.getTransformExpression(), null);
+        }
+
     }
 
 }

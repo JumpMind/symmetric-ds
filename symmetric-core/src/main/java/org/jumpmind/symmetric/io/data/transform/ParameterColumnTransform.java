@@ -25,9 +25,10 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.service.IParameterService;
 
-public class ParameterColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class ParameterColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "parameter";
     
@@ -49,15 +50,20 @@ public class ParameterColumnTransform implements ISingleValueColumnTransform, IB
         return true;
     }
 
-    public String transform(IDatabasePlatform platform,
+    public NewAndOldValue transform(IDatabasePlatform platform,
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         String paramName = column.getTransformExpression();
+        String value = null;
         if (paramName != null) {
-            return parameterService.getString(paramName);
+            value = parameterService.getString(paramName);
+        }
+        
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, value);
         } else {
-            return null;
+            return new NewAndOldValue(value, null);
         }
     }
 

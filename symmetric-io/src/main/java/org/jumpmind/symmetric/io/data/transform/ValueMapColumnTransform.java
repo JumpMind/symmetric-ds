@@ -26,10 +26,11 @@ import java.util.StringTokenizer;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ValueMapColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class ValueMapColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -74,10 +75,18 @@ public class ValueMapColumnTransform implements ISingleValueColumnTransform, IBu
 		return defaultValue;
 	}
 
-	public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
-			TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-			throws IgnoreColumnException, IgnoreRowException {
-		return getValue(newValue,column.getTransformExpression());
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
+            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
+
+        String value = getValue(newValue,column.getTransformExpression());
+
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, value);
+        } else {
+            return new NewAndOldValue(value, null);
+        }
 
 	}
 }

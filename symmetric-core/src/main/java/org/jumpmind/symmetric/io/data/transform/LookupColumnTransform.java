@@ -32,13 +32,14 @@ import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LookupColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -58,7 +59,8 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context,
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
         
@@ -105,7 +107,12 @@ public class LookupColumnTransform implements ISingleValueColumnTransform, IBuil
                     "Expected SQL expression for lookup transform, but no expression was found for target column {} on transform {}",
                     column.getTargetColumnName(), column.getTransformId());
         }
-        return lookupValue;
+        
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, lookupValue);
+        } else {
+            return new NewAndOldValue(lookupValue, null);
+        }
     }
     
     protected String doTokenReplacementOnSql(DataContext context, String sql) {

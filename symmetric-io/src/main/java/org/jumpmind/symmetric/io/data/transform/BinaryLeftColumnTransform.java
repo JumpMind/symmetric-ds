@@ -26,15 +26,15 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class BinaryLeftColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "bleft";
 
     public String getName() {
         return NAME;
     }
-    
     
     public boolean isExtractColumnTransform() {
         return true;
@@ -44,17 +44,24 @@ public class BinaryLeftColumnTransform implements ISingleValueColumnTransform, I
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context,
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
+
         if (StringUtils.isNotBlank(newValue)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
                 expression = expression.trim();
-                return bleft(newValue, Integer.parseInt(expression));
+                newValue = bleft(newValue, Integer.parseInt(expression));
             }
         }
-        return newValue;
+        
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, newValue);
+        } else {
+            return new NewAndOldValue(newValue, null);
+        }
     }
     
     public String bleft(String value, int maxBytes) {

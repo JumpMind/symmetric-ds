@@ -28,13 +28,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.transform.ISingleValueColumnTransform;
-import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
-import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
-import org.jumpmind.symmetric.io.data.transform.TransformColumn;
-import org.jumpmind.symmetric.io.data.transform.TransformedData;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class ClarionDateTimeColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class ClarionDateTimeColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public final static String NAME = "clarionDateTime";
 
@@ -52,16 +48,23 @@ public class ClarionDateTimeColumnTransform implements ISingleValueColumnTransfo
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
-            TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-            throws IgnoreColumnException, IgnoreRowException {
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
+            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
 
         String clarionTimeStr = null;
         String columnName = column.getTransformExpression();
         if (columnName != null && !StringUtils.isEmpty(columnName)) {
             clarionTimeStr = sourceValues.get(columnName);
         }
-        return convertClarionDate(newValue, clarionTimeStr);
+        String value = convertClarionDate(newValue, clarionTimeStr);
+        
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, value);
+        } else {
+            return new NewAndOldValue(value, null);
+        }
     }
 
     public String convertClarionDate(String clarionDate, String clarionTime) {
