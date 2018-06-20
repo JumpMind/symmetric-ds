@@ -28,8 +28,9 @@ import net.sourceforge.jeval.Evaluator;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class MathColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public final static String NAME = "math";
 
@@ -47,8 +48,10 @@ public class MathColumnTransform implements ISingleValueColumnTransform, IBuiltI
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context,
-            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue) {
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
+            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
 
         String transformExpression = column.getTransformExpression();
         try {
@@ -69,8 +72,12 @@ public class MathColumnTransform implements ISingleValueColumnTransform, IBuiltI
             if (dblResult == Math.floor(dblResult)) {
                 result = result.substring(0, result.length()-2);
             }
-            return result;
 
+            if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+                return new NewAndOldValue(null, result);
+            } else {
+                return new NewAndOldValue(result, null);
+            }
         } catch (EvaluationException e) {
             throw new RuntimeException("Unable to evaluate transform expression: " + transformExpression);
         }

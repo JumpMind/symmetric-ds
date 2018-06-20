@@ -33,7 +33,6 @@ import javax.servlet.ServletContext;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpVersion;
@@ -63,6 +62,7 @@ import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.web.HttpMethodFilter;
 import org.jumpmind.symmetric.web.ServletUtils;
 import org.jumpmind.symmetric.web.SymmetricEngineHolder;
@@ -243,7 +243,7 @@ public class SymmetricWebServer {
 
     public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
         
-        printAsciiArt();
+        SymmetricUtils.logNotices();
 
         TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
 
@@ -306,14 +306,6 @@ public class SymmetricWebServer {
         }
 
         return this;
-    }
-
-    protected void printAsciiArt() {
-        try {            
-            log.info("SymmetricWebServer START\r\n{}", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart")));
-        } catch (Exception ex) {
-            // ignored.
-        }
     }
 
     protected ServletContext getServletContext() {

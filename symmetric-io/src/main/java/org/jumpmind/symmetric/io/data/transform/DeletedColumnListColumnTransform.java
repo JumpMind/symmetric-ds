@@ -27,15 +27,14 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class ConstantColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
+public class DeletedColumnListColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
-    public static final String NAME = "const";
+    public final static String NAME = "deletedColumns";
 
     public String getName() {
         return NAME;
     }
-    
-    
+        
     public boolean isExtractColumnTransform() {
         return true;
     }
@@ -44,17 +43,26 @@ public class ConstantColumnTransform implements ISingleNewAndOldValueColumnTrans
         return true;
     }
 
-    public NewAndOldValue transform(IDatabasePlatform platform,
-            DataContext context,
-            TransformColumn column, TransformedData data, Map<String, String> sourceValues,
-            String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
+    public NewAndOldValue transform(IDatabasePlatform platform, DataContext context,
+            TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
+                    throws IgnoreColumnException, IgnoreRowException {
+        
+        StringBuilder deleteList = new StringBuilder();
 
-        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
-            return new NewAndOldValue(null, column.getTransformExpression());
-        } else {
-            return new NewAndOldValue(column.getTransformExpression(), null);
+        if (data.getSourceDmlType().equals(DataEventType.UPDATE)) {
+            Map<String, String> oldValues = data.getOldSourceValues();
+            
+            for (String name : sourceValues.keySet()) {
+                if (sourceValues.get(name) == null && oldValues.get(name) != null) {
+                    if (deleteList.length() > 0) {
+                        deleteList.append(",");
+                    }
+                    deleteList.append(name.toLowerCase());
+                }
+            }
         }
 
+        return new NewAndOldValue(deleteList.toString(), null);
     }
 
 }

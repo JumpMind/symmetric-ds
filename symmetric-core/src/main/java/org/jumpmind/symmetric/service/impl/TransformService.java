@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.io.data.transform.ColumnsToRowsValueColumnTransfor
 import org.jumpmind.symmetric.io.data.transform.ConstantColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.CopyIfChangedColumnTransform;
+import org.jumpmind.symmetric.io.data.transform.DeletedColumnListColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IdentityColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IsBlankTransform;
@@ -117,6 +118,7 @@ public class TransformService extends AbstractService implements ITransformServi
         addColumnTransform(IsEmptyTransform.NAME, new IsEmptyTransform());
         addColumnTransform(IsNullTransform.NAME, new IsNullTransform());
         addColumnTransform(IsBlankTransform.NAME, new IsBlankTransform());
+        addColumnTransform(DeletedColumnListColumnTransform.NAME, new DeletedColumnListColumnTransform());
         
         setSqlMap(new TransformServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));

@@ -26,15 +26,15 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 
-public class LeftColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
+public class LeftColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
     public static final String NAME = "left";
 
     public String getName() {
         return NAME;
-    }
-    
+    }    
     
     public boolean isExtractColumnTransform() {
         return true;
@@ -44,20 +44,29 @@ public class LeftColumnTransform implements ISingleValueColumnTransform, IBuiltI
         return true;
     }
 
-    public String transform(IDatabasePlatform platform, DataContext context,
+    public NewAndOldValue transform(IDatabasePlatform platform,
+            DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-        if (StringUtils.isNotBlank(newValue)) {
+
+        String value = data.getSourceDmlType().equals(DataEventType.DELETE) ? oldValue : newValue;
+        
+        if (StringUtils.isNotBlank(value)) {
             String expression = column.getTransformExpression();
             if (StringUtils.isNotBlank(expression)) {
                 expression = expression.trim();
                 int index = Integer.parseInt(expression);
-                if (newValue.length() > index) {
-                    return newValue.substring(0, index);
+                if (value.length() > index) {
+                    value = value.substring(0, index);
                 }
             }
         }
-        return newValue;
+        
+        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            return new NewAndOldValue(null, value);
+        } else {
+            return new NewAndOldValue(value, null);
+        }
     }
 
 }

@@ -23,6 +23,7 @@ package org.jumpmind.db.platform.h2;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
@@ -51,4 +52,14 @@ public class H2JdbcSqlTemplate extends JdbcSqlTemplate {
         return "call IDENTITY()";
     }
     
+    @Override
+    public ISqlTransaction startSqlTransaction(boolean autoCommit) {
+        return new H2JdbcSqlTransaction(this, autoCommit);
+    }
+
+    @Override
+    public ISqlTransaction startSqlTransaction() {
+        return new H2JdbcSqlTransaction(this);
+    }
+
 }

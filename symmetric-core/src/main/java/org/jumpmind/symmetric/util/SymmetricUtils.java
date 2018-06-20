@@ -24,22 +24,31 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final public class SymmetricUtils {
+
+    protected static final Logger log = LoggerFactory.getLogger(SymmetricUtils.class);
 
     protected static boolean isJava7 = true;
     
@@ -48,6 +57,8 @@ final public class SymmetricUtils {
     protected static Method fileMethod; 
     
     protected static Object optionArray;
+    
+    protected static boolean isNoticeLogged;
 
     private SymmetricUtils() {
     }
@@ -125,6 +136,59 @@ final public class SymmetricUtils {
                 properties.put(object, value);
             }                        
         }        
-    }        
+    }
+    
+    public static void logNotices() {
+        synchronized (SymmetricUtils.class) {
+            if (isNoticeLogged) {
+                return;
+            }
+            isNoticeLogged = true;
+        }
+
+        String notices = null;
+        try {            
+            notices = String.format("%n%s%n", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart")));
+        } catch (Exception ex) {
+            notices = String.format("SymmetricDS Start%n");
+        }
+
+        String buildTime = Long.toString(Version.getBuildTime());
+        String year = null;
+        if (buildTime.length() >= 4) {
+            year = buildTime.substring(0, 4);
+        } else {
+            year = new SimpleDateFormat("yyyy").format(new Date());
+        }
+
+        int pad = 65;
+        notices += String.format(
+                "+" + StringUtils.repeat("-",  pad) + "+%n" +
+                "|" + StringUtils.rightPad(" Copyright (C) 2007-" + year + " JumpMind, Inc.", pad) + "|%n" +
+                "|" + StringUtils.repeat(" ", pad) + "|%n");
+        
+        InputStream in = null;
+        try {
+            in = AppUtils.class.getResourceAsStream("/symmetric-console-default.properties");
+            if (in != null) {
+                in.close();
+            }
+        } catch (Exception e) {
+        }
+
+        if (in != null) {
+            notices += String.format(
+                    "|" + StringUtils.rightPad(" Licensed under one or more agreements from JumpMind, Inc.", pad) + "|%n" +
+                    "|" + StringUtils.rightPad(" See doc/license.html", pad) + "|%n");
+        } else {
+            notices += String.format(
+                    "|" + StringUtils.rightPad(" Licensed under the GNU General Public License version 3.", pad) + "|%n" +
+                    "|" + StringUtils.rightPad(" This software comes with ABSOLUTELY NO WARRANTY.", pad) + "|%n" +
+                    "|" + StringUtils.rightPad(" See http://www.gnu.org/licenses/gpl.html", pad) + "|%n");
+        }
+
+        notices += "+" + StringUtils.repeat("-",  pad) + "+";
+        log.info(notices);
+    }
 
 }

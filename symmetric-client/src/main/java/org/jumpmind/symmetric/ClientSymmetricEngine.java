@@ -79,6 +79,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.symmetric.util.SnapshotUtil;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
 import org.jumpmind.util.AppUtils;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -200,7 +201,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected void init() {
         try {
             LogSummaryAppenderUtils.registerLogSummaryAppender();
-
+            
+            if (getSecurityServiceType().equals(SecurityServiceType.CLIENT)) {
+                SymmetricUtils.logNotices();
+            }
             super.init();
 
             this.monitorService = new MonitorService(parameterService, symmetricDialect, nodeService, extensionService, 
