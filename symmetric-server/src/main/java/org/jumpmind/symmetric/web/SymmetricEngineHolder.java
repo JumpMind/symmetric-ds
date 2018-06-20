@@ -325,12 +325,12 @@ public class SymmetricEngineHolder {
             }
         }
         
-        String loadOnlyPassword = properties.getProperty(ClientSymmetricEngine.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+        String loadOnlyPassword = properties.getProperty(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         
         if (StringUtils.isNotBlank(loadOnlyPassword) && !loadOnlyPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
                 ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
-                properties.setProperty(ClientSymmetricEngine.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
+                properties.setProperty(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
                         SecurityConstants.PREFIX_ENC + service.encrypt(loadOnlyPassword));
             } catch (Exception ex) {
                 log.warn("Could not encrypt load only password", ex);

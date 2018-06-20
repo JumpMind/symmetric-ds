@@ -55,5 +55,6 @@ final public class DatabaseNamesConstants {
     public final static String RAIMA = "raima";
     public final static String TERADATA = "teradata";
     public final static String CASSANDRA = "cassandra";
+    public final static String KAFKA = "kafka";
 
 }

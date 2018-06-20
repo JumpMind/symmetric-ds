@@ -439,6 +439,14 @@ final public class ParameterConstants {
     
     public final static String MYSQL_TINYINT_DDL_TO_BOOLEAN = "mysql.tinyint.ddl.to.boolean";
     
+    public static final String LOAD_ONLY_PROPERTY_PREFIX = "target.";
+    
+    public final static String KAFKA_PRODUCER = "kafka.producer";
+    public final static String KAFKA_FORMAT = "kafka.format";
+    public final static String KAFKA_MESSAGE_BY = "kafka.message.by";
+    public final static String KAFKA_TOPIC_BY = "kafka.topic.by";
+    
+    		
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

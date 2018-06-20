@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.load;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResol
 import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
+import org.jumpmind.symmetric.io.data.writer.KafkaWriter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -80,7 +82,30 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
 
     			} catch (Exception e) {
     				log.warn(
-    						"Failed to create the cassandra database writer.  Check to see if all of the required jars have been added");
+    						"Failed to create the cassandra database writer.  Check to see if all of the required jars have been added", e);
+    				if (e instanceof RuntimeException) {
+    					throw (RuntimeException) e;
+    				} else {
+    					throw new RuntimeException(e);
+    				}
+    			}
+    		}
+    		if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("KafkaPlatform")) {
+    			try {
+    				if (filters == null) {
+    					filters = new ArrayList<IDatabaseWriterFilter>();
+    				}
+    				filters.add(new KafkaWriterFilter(this.parameterService));
+    				
+    				return new KafkaWriter(symmetricDialect.getPlatform(),
+    		        		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
+    		        		new DefaultTransformWriterConflictResolver(transformWriter), 
+    		        		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
+    		                        resolvedData));
+
+    			} catch (Exception e) {
+    				log.warn(
+    						"Failed to create the kafka writer.", e);
     				if (e instanceof RuntimeException) {
     					throw (RuntimeException) e;
     				} else {
