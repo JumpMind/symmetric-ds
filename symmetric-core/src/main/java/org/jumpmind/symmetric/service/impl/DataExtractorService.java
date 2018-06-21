@@ -66,6 +66,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -2496,20 +2497,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         overrideSelectSql = overrideSelectSql.trim().substring(5);
                     }
 
-                    if (StringUtils.isBlank(overrideSelectSql) || (overrideSelectSql != null && overrideSelectSql.equals("1=1"))) {
-                        ForeignKey fk = this.sourceTable.getSelfReferencingForeignKey();
-                        if (fk != null) {
-                            Reference[] refs = fk.getReferences();
-                            if (refs.length == 1) {
-                                this.isSelfReferencingFk = true;
-                                this.selfRefParentColumnName = refs[0].getLocalColumnName();
-                                this.selfRefChildColumnName = refs[0].getForeignColumnName();
-                                this.selfRefLevel = 0;
-                                log.info("Ordering rows for table {} using self-referencing foreign key {} -> {}", 
-                                        this.sourceTable.getName(), this.selfRefParentColumnName, this.selfRefChildColumnName);
-                            } else {
-                                log.warn("Unable to order rows for self-referencing foreign key because it contains multiple columns");
-                            }
+                    ForeignKey fk = this.sourceTable.getSelfReferencingForeignKey();
+                    if (fk != null) {
+                        Reference[] refs = fk.getReferences();
+                        if (refs.length == 1) {
+                            this.isSelfReferencingFk = true;
+                            this.selfRefParentColumnName = refs[0].getLocalColumnName();
+                            this.selfRefChildColumnName = refs[0].getForeignColumnName();
+                            this.selfRefLevel = 0;
+                            log.info("Ordering rows for table {} using self-referencing foreign key {} -> {}", 
+                                    this.sourceTable.getName(), this.selfRefParentColumnName, this.selfRefChildColumnName);
+                        } else {
+                            log.warn("Unable to order rows for self-referencing foreign key because it contains multiple columns");
                         }
                     }
 
@@ -2547,27 +2546,37 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter) {
 
+            String selectSql = overrideSelectSql;
             if (isSelfReferencingFk) {
+                if (selectSql == null) {
+                    selectSql = "";
+                } else if (StringUtils.isNotBlank(selectSql)) {
+                    selectSql += " and ";
+                }
+
                 if (selfRefLevel == 0) {
-                    overrideSelectSql = selfRefParentColumnName + " is null";
+                    selectSql += selfRefParentColumnName + " is null";
                 } else {
-                    String refSql= "select " + selfRefChildColumnName + " from " + this.sourceTable.getFullyQualifiedTableName() + 
+                    DatabaseInfo info = symmetricDialect.getPlatform().getDatabaseInfo();
+                    String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
+                            sourceTable.getName(), info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());                    
+                    String refSql= "select " + selfRefChildColumnName + " from " + tableName + 
                             " where " + selfRefParentColumnName;
-                    overrideSelectSql = selfRefParentColumnName + " in (";
+                    selectSql += selfRefParentColumnName + " in (";
 
                     for (int i = 1; i < selfRefLevel; i++) {
-                        overrideSelectSql += refSql + " in (";
+                        selectSql += refSql + " in (";
                     }
-                    overrideSelectSql += refSql + " is null)" + StringUtils.repeat(")", selfRefLevel - 1);
+                    selectSql += refSql + " is null)" + StringUtils.repeat(")", selfRefLevel - 1);
                 }
-                log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), overrideSelectSql);
+                log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
             
             String sql = symmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
                     triggerHistory,
                     configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
-                    overrideSelectSql);
+                    selectSql);
             for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
                 sql = filter.filterInitalLoadSql(sql, node, targetTable);
             }
