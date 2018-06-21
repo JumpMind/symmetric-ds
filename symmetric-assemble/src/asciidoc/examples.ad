@@ -3,6 +3,5 @@
 
 This chapter focuses on using examples for a variety of use cases with SymmetricDS.
 
-include::examples/kafka.ad[]
 include::examples/csv2db.ad[]
 

@@ -1,0 +1,130 @@
+
+=== Kafka
+
+Send changes from your relational database to Kafka in a variety of formats.  A Kafka node can be setup as a <<Load Only Node>> to receive changes from another node that is capturing changes.
+
+ifdef::pro[]
+Setup the Kafka node by using the <<Add Node>> wizard and selecting Kafka as the type.   The URL will be the connection point to Kafka.  User and password are not needed (or used).
+
+image::appendix/kafka-node-setup.png[]
+
+After hitting next you can setup advanced options for your Kafka node.
+
+image::appendix/kafka-advanced-settings.png[]
+endif::pro[]
+
+==== Output Message Format
+
+
+.Set the output message format with the following property
+----
+kafka.format
+----
+
+
+[horizontal]        
+JSON::  Json formatted output message 
+[source, json]
+----
+{
+  "table name": {
+    "eventType": "INSERT|UPDATE|DELETE",
+    "data": {
+      "column name": "value",....
+    }
+  }
+}    
+----
+XML::  Xml formatted output message
+[source, xml]
+----
+<row entity="table name" dml="INSERT|UPDATE|DELETE">
+	<data key="column name">value</data>
+	...
+</row>
+----
+AVRO::  Apache Avro output message (Avro Schema Below)
+[source, avro]
+----
+{
+  "type": "record",
+  "name": "cdc",
+  "fields": [
+    {
+      "name": "table",
+      "type": "string"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "data",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "column",
+          "type": "record",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "value",
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+----
+CSV::  CSV formatted output message
+[source, csv]
+----
+TABLE,table name,EVENT,INSERT|UPDATE|DELETE,column name,value, ...
+----
+
+==== Setting the Topic
+
+
+.Set the topic using the following property
+----
+kafka.topic.by
+----
+
+
+[horizontal]        
+CHANNEL::  This will send to a topic based on the channel of the batch that is being sent.
+TABLE:: This will send to a topic based on the table name of the change.
+
+==== Setting Messages By
+
+
+.Set following property to determine how messages will be sent.
+----
+kafka.message.by
+----
+
+
+[horizontal]        
+BATCH::  This will send one message for each batch containing all changes.
+ROW:: This will send one messsage for each change captured.
+
+==== Setting The Producer
+
+
+.Set following property to specify the producer of the messages.
+----
+kafka.producer
+----
+
+
+ifdef::pro[]
+Provide a value for the producer of the message.
+endif::pro[]

@@ -18,7 +18,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -69,7 +68,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             + "         \"type\":\"record\","
             + "         \"fields\":["
             + "            {\"name\":\"name\", \"type\":\"string\"},"
-            + "            {\"name\":\"value\", \"type\":\"string\"} ] }}}]}";
+            + "            {\"name\":\"value\", \"type\":[\"null\", \"string\"]} ] }}}]}";
 	
 	
 	
@@ -79,11 +78,11 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
 	public KafkaWriterFilter(IParameterService parameterService) {
 		log.info(AVRO_CDC_SCHEMA);
 		schema = parser.parse(AVRO_CDC_SCHEMA);
-		this.url = parameterService.getString(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_URL);
+		this.url = parameterService.getString(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + "db.url");
 		if (url == null) {
 			throw new RuntimeException(
 					"Kakfa not configured properly, verify you have set the endpoint to kafka with the following property : "
-							+ ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_URL);
+							+ ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + "db.url");
 		}
 		
 		this.producer = parameterService.getString(ParameterConstants.KAFKA_PRODUCER, "SymmetricDS");
@@ -121,9 +120,19 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
 				kafkaText.append("{\"").append(table.getName()).append("\": {")
 						.append("\"eventType\": \"" + data.getDataEventType() + "\",").append("\"data\": { ");
 				for (int i = 0; i < table.getColumnNames().length; i++) {
-					kafkaText.append("\"" + table.getColumnNames()[i] + "\": \"" + rowData[i]);
+					kafkaText.append("\"")
+					.append(table.getColumnNames()[i])
+					.append("\": ");
+					
+					if (rowData[i] != null) {
+					    kafkaText.append("\"");
+					}
+					kafkaText.append(rowData[i]);
+					if (rowData[i] != null) {
+					    kafkaText.append("\"");
+					}
 					if (i + 1 < table.getColumnNames().length) {
-						kafkaText.append("\",");
+						kafkaText.append(",");
 					}
 				}
 				kafkaText.append(" } } }");
