@@ -561,7 +561,6 @@ public class SnapshotUtil {
 	            runtimeProperties.setProperty("file.descriptor.open.count", mbeanServer.getAttribute(oName, "OpenFileDescriptorCount").toString());
 	            runtimeProperties.setProperty("file.descriptor.max.count", mbeanServer.getAttribute(oName, "MaxFileDescriptorCount").toString());
             } catch (Exception e) {
-            	log.warn("Unable to access MBean attributes for operating system", e);
             }
             
             runtimeProperties.store(fos, "runtime-stats.properties");
