@@ -236,6 +236,8 @@ public class DataService extends AbstractService implements IDataService {
         if (request.getCreateTime() == null) {
             request.setCreateTime(time);
         }
+        request.setCreateTime(new Date((request.getCreateTime().getTime() / 1000) * 1000));
+
         sqlTemplate.update(
                 getSql("insertTableReloadRequest"),
                 new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
