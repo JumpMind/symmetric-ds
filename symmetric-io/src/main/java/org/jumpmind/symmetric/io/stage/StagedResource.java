@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -159,13 +160,9 @@ public class StagedResource implements IStagedResource {
                         }
                     }
                 }
-                
-                if (!file.renameTo(newFile)) {
-                    String msg = String
-                            .format("Had trouble renaming file.  The current name is %s and the desired state was %s",
-                                    file.getAbsolutePath(), state);
-                    log.warn(msg);
-                    throw new IllegalStateException(msg);
+
+                 if (!file.renameTo(newFile)) {
+                    handleFailedRename(file, newFile);
                 } 
             }
         } 
@@ -173,6 +170,40 @@ public class StagedResource implements IStagedResource {
         refreshLastUpdateTime();
         this.state = state;
         this.file = buildFile(state);
+    }
+
+    protected void handleFailedRename(File oldFile, File newFile) {
+        
+        String msg = null;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+        
+        if (newFile.exists()) {
+            if (isSameFile(oldFile, newFile)) {
+                msg = String.format("Had trouble renaming file.  The destination file already exists, and is the same size - will proceed. " + 
+                        "Source file: (%s size: %s lastModified: %s) Target file: (%s size: %s lastModified: %s)" ,
+                        oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
+                        newFile, newFile.length(), dateFormat.format(newFile.lastModified()));                
+                FileUtils.deleteQuietly(oldFile);
+                log.info(msg);
+                return;
+            } else {
+                msg = String.format("Had trouble renaming file.  The destination file already exists, but is not the same size. " + 
+                                "Source file: (%s size: %s lastModified: %s) Target file: (%s size: %s lastModified: %s)" ,
+                                oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
+                                newFile, newFile.length(), dateFormat.format(newFile.lastModified()));                
+            }
+        } else {            
+            msg = String.format("Had trouble renaming file. The destination file does not appear to exist. " + 
+                    "Source file: (%s size: %s lastModified: %s) Target file: (%s)" ,
+                    oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
+                    newFile);              
+        }
+        log.warn(msg);
+        throw new IllegalStateException(msg);        
+    }
+
+    protected boolean isSameFile(File oldFile, File newFile) {
+        return (oldFile.length() == newFile.length());
     }
 
     public synchronized BufferedReader getReader() {
