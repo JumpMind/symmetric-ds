@@ -55,7 +55,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
 
     public DefaultDataLoaderFactory() {
     }
-    
+
     public DefaultDataLoaderFactory(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
@@ -64,62 +64,58 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
         return "default";
     }
 
-    public IDataWriter getDataWriter(final String sourceNodeId,
-            final ISymmetricDialect symmetricDialect,
-            TransformWriter transformWriter,
-            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
-            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-    		
-    		if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("CassandraPlatform")) {
-    			try {
-    				
-    				// TODO Evalute if ConflictResolver will work for Cassandra and if so remove duplicate code.
-    				return new CassandraDatabaseWriter(symmetricDialect.getPlatform(),
-    		        		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
-    		        		new DefaultTransformWriterConflictResolver(transformWriter), 
-    		        		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
-    		                        resolvedData));
+    public IDataWriter getDataWriter(final String sourceNodeId, final ISymmetricDialect symmetricDialect,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+            List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
+            List<ResolvedData> resolvedData) {
 
-    			} catch (Exception e) {
-    				log.warn(
-    						"Failed to create the cassandra database writer.  Check to see if all of the required jars have been added", e);
-    				if (e instanceof RuntimeException) {
-    					throw (RuntimeException) e;
-    				} else {
-    					throw new RuntimeException(e);
-    				}
-    			}
-    		}
-    		if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("KafkaPlatform")) {
-    			try {
-    				if (filters == null) {
-    					filters = new ArrayList<IDatabaseWriterFilter>();
-    				}
-    				filters.add(new KafkaWriterFilter(this.parameterService));
-    				
-    				return new KafkaWriter(symmetricDialect.getPlatform(),
-    		        		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
-    		        		new DefaultTransformWriterConflictResolver(transformWriter), 
-    		        		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
-    		                        resolvedData));
+        if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("CassandraPlatform")) {
+            try {
+                // TODO: Evalaute if ConflictResolver will work for Cassandra and if so remove duplicate code.
+                return new CassandraDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+                        symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
+                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
 
-    			} catch (Exception e) {
-    				log.warn(
-    						"Failed to create the kafka writer.", e);
-    				if (e instanceof RuntimeException) {
-    					throw (RuntimeException) e;
-    				} else {
-    					throw new RuntimeException(e);
-    				}
-    			}
-    		}
+            } catch (Exception e) {
+                log.warn(
+                        "Failed to create the cassandra database writer.  Check to see if all of the required jars have been added",
+                        e);
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("KafkaPlatform")) {
+            try {
+                if (filters == null) {
+                    filters = new ArrayList<IDatabaseWriterFilter>();
+                }
+                filters.add(new KafkaWriterFilter(this.parameterService));
+
+                return new KafkaWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+                        symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
+                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+
+            } catch (Exception e) {
+                log.warn("Failed to create the kafka writer.", e);
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
         DynamicDefaultDatabaseWriter writer = new DynamicDefaultDatabaseWriter(symmetricDialect.getPlatform(),
-        		symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
+                symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
                     protected void beforeResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
-                        	DynamicDefaultDatabaseWriter writer = transformWriter
+                            DynamicDefaultDatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
@@ -131,7 +127,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
                     @Override
                     protected void afterResolutionAttempt(Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                        	DynamicDefaultDatabaseWriter writer = transformWriter
+                            DynamicDefaultDatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
@@ -139,8 +135,8 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
                             }
                         }
                     }
-                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
-                        resolvedData));
+                }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+
         return writer;
     }
 
@@ -148,30 +144,30 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
         return true;
     }
 
-    protected DatabaseWriterSettings buildDatabaseWriterSettings(
-            List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
-            List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedDatas) {
+    protected DatabaseWriterSettings buildDatabaseWriterSettings(List<IDatabaseWriterFilter> filters,
+            List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
+            List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
-        settings.setCreateTableAlterCaseToMatchDatabaseDefault(parameterService
-                .is(ParameterConstants.DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE, true));
-        settings.setMaxRowsBeforeCommit(parameterService
-                .getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
-        settings.setCommitSleepInterval(parameterService
-                .getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
-        settings.setIgnoreMissingTables(parameterService
-                .is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
-        settings.setTreatDateTimeFieldsAsVarchar(parameterService
-                .is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
-        settings.setSaveCurrentValueOnError(parameterService.is(
-                ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
+        settings.setCreateTableAlterCaseToMatchDatabaseDefault(
+                parameterService.is(ParameterConstants.DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE, true));
+        settings.setMaxRowsBeforeCommit(
+                parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
+        settings.setCommitSleepInterval(
+                parameterService.getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
+        settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
+        settings.setTreatDateTimeFieldsAsVarchar(
+                parameterService.is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
+        settings.setSaveCurrentValueOnError(
+                parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
         settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
         settings.setLogConflictResolution(parameterService.is(ParameterConstants.LOG_CONFLICT_RESOLUTION));
-        settings.setTextColumnExpression(parameterService.getString(
-                ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
+        settings.setTextColumnExpression(
+                parameterService.getString(ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
         settings.setApplyChangesOnly(parameterService.is(ParameterConstants.DATA_LOADER_APPLY_CHANGES_ONLY, true));
-        settings.setUsePrimaryKeysFromSource(parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
+        settings.setUsePrimaryKeysFromSource(
+                parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
 
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
@@ -180,7 +176,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
             for (Conflict conflictSetting : conflictSettings) {
                 String qualifiedTableName = conflictSetting.toQualifiedTableName();
                 if (StringUtils.isNotBlank(qualifiedTableName)) {
-                    byTable.put(qualifiedTableName, conflictSetting); 
+                    byTable.put(qualifiedTableName, conflictSetting);
                 } else if (StringUtils.isNotBlank(conflictSetting.getTargetChannelId())) {
                     byChannel.put(conflictSetting.getTargetChannelId(), conflictSetting);
                 } else {
@@ -193,8 +189,7 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
         }
 
         if (multipleDefaultSettingsFound) {
-            log.warn(
-                    "There were multiple default conflict settings found.  Using '{}' as the default",
+            log.warn("There were multiple default conflict settings found.  Using '{}' as the default",
                     settings.getDefaultConflictSetting().getConflictId());
         }
         settings.setConflictSettingsByChannel(byChannel);
