@@ -283,7 +283,10 @@ public class SymmetricWebServer {
                     .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(true));
         }
         
+        webapp.getSessionHandler().getSessionCookieConfig().setName("JSESSIONID_" + (httpsPort > 0 && httpsEnabled ? httpsPort : "") + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));        
+        
         server.setHandler(webapp);
+
 
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
         if (remoteStatusEndpoint != null) {            
