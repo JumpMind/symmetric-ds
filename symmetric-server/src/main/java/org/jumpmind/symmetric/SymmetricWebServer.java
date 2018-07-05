@@ -294,7 +294,10 @@ public class SymmetricWebServer {
             container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
             container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
             ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
-            container.addEndpoint(websocketConfig);        
+            container.addEndpoint(websocketConfig);
+            if (allowSelfSignedCerts) {
+                System.setProperty("org.eclipse.jetty.websocket.jsr356.ssl-trust-all", "true");
+            }
         }
 
         server.start();

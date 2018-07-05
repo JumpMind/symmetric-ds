@@ -974,8 +974,13 @@ public class DataService extends AbstractService implements IDataService {
             sql = filter.filterPurgeSql(sql, targetNode, table);
         }
         
-        int rowCount = sqlTemplate.queryForInt(sql);
-        return rowCount;
+        try {            
+            int rowCount = sqlTemplate.queryForInt(sql);
+            return rowCount;
+        } catch (Exception ex) {
+            throw new SymmetricException("Failed to execute row count SQL while starting reload.  If this is a syntax error, check your input and check "
+                    +  engine.getTablePrefix() + "_table_reload_request. Statement attempted: \"" + sql + "\"", ex);
+        }
     }
 
     protected int getTransformMultiplier(Table table, TriggerRouter triggerRouter) {

@@ -115,7 +115,10 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             addColumn(new Column(name));
         }
         for (String name : keyNames) {
-            getColumnWithName(name).setPrimaryKey(true);
+            Column column = getColumnWithName(name);
+            if (column != null) {
+                column.setPrimaryKey(true);
+            }
         }
 
     }
