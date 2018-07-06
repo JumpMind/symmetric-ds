@@ -254,7 +254,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     routingContext.put(CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED, Boolean.TRUE);
                 }
                 
-                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)
+                        || routingContext.get(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED) != null) {
                     routingContext.put(CTX_KEY_FLUSH_JOBS_NEEDED, Boolean.TRUE);
                 }
             }
@@ -633,8 +634,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 IJobManager jobManager = engine.getJobManager();
                 if (jobManager != null) {
                     log.info("About to restart jobs because new configuration come through the data router");
-                    jobManager.stopJobs();
-                    jobManager.startJobs();
+                    jobManager.init();
+                    jobManager.startJobsAfterConfigChange();
                 }
             }
             

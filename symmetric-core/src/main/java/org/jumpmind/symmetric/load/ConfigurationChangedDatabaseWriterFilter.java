@@ -310,12 +310,13 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             context.remove(CTX_KEY_FLUSH_TRANSFORMS_NEEDED);
         }
 
-        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null) {
+        if (context.get(CTX_KEY_RESTART_JOBMANAGER_NEEDED) != null
+                || context.get(CTX_KEY_FILE_SYNC_ENABLED) != null) {
             IJobManager jobManager = engine.getJobManager();
             if (jobManager != null && jobManager.isStarted()) {
-                log.info("About to restart jobs because a new schedule came through the data loader");
-                jobManager.stopJobs();
-                jobManager.startJobs();
+                log.info("About to restart jobs because new configuration came through the data loader");
+                jobManager.init();
+                jobManager.startJobsAfterConfigChange();                     
             }
             context.remove(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
         }
@@ -353,6 +354,8 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             Table fileSnapshotTable = engine.getDatabasePlatform()
                     .getTableFromCache(TableConstants.getTableName(engine.getTablePrefix(), TableConstants.SYM_FILE_SNAPSHOT), false);
             engine.getTriggerRouterService().syncTriggers(fileSnapshotTable, false);
+            
+            
             context.remove(CTX_KEY_FILE_SYNC_ENABLED);
         }
     }
