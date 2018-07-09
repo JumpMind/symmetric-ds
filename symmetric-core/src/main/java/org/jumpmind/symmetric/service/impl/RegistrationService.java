@@ -250,7 +250,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
             foundNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
             foundNode.setDeploymentType(nodePriorToRegistration.getDeploymentType());
-            nodeService.save(foundNode);                        
+            nodeService.save(foundNode);
+            log.info("Completed registration of node " + foundNode.toString());
             
             /**
              * Only send automatic initial load once or if the client is really
