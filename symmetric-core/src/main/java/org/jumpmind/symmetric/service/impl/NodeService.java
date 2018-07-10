@@ -389,13 +389,14 @@ public class NodeService extends AbstractService implements INodeService {
         long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
             List<Node> list = targetNodesCache.get(eventAction.name());
+            
             if (list == null || (System.currentTimeMillis() - targetNodeLinkCacheTime.get(eventAction.toString())) >= cacheTimeoutInMs) {
                 list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
                         new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
                 targetNodesCache.put(eventAction.name(), list);
                 targetNodeLinkCacheTime.put(eventAction.toString(),System.currentTimeMillis());
             }
-            return list;
+            return new ArrayList<Node>(list);
         } else {
             return Collections.emptyList();
         }
