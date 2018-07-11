@@ -57,7 +57,7 @@ public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTra
             }
         }
         
-        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
             return new NewAndOldValue(null, newValue);
         } else {
             return new NewAndOldValue(newValue, null);

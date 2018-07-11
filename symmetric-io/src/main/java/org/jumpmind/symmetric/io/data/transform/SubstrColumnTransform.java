@@ -75,7 +75,7 @@ public class SubstrColumnTransform implements ISingleNewAndOldValueColumnTransfo
             }
         }
         
-        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
             return new NewAndOldValue(null, newValue);
         } else {
             return new NewAndOldValue(newValue, null);

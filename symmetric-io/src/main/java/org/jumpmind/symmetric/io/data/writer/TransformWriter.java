@@ -261,107 +261,102 @@ public class TransformWriter extends NestedDataWriter {
             Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
         try {
+
+            TargetDmlAction targetAction = null;
+            switch (data.getTargetDmlType()) {
+                case INSERT:
+                    targetAction = TargetDmlAction.INS_ROW;
+                    break;
+                case UPDATE:
+                    targetAction = transformation.evaluateTargetDmlAction(context, data);
+                    break;
+                case DELETE:
+                    targetAction = transformation.getDeleteAction();
+                    break;
+                default:
+                    persistData = true;
+            }
+            if (targetAction != null) {
+                // how to handle the update/delete action on target..
+                switch (targetAction) {
+                    case DEL_ROW:
+                        data.setTargetDmlType(DataEventType.DELETE);
+                        break;
+                    case UPDATE_COL:
+                    case UPD_ROW:
+                        data.setTargetDmlType(DataEventType.UPDATE);
+                        break;
+                    case INS_ROW:
+                        data.setTargetDmlType(DataEventType.INSERT);
+
+                        break;
+                    case NONE:
+                    default:
+                        break;
+                }
+            }
+
             DataEventType eventType = data.getSourceDmlType();
             for (TransformColumn transformColumn : transformation.getTransformColumns()) {
                 if (!transformColumn.isPk()) {
                     IncludeOnType includeOn = transformColumn.getIncludeOn();
-                    if (includeOn == IncludeOnType.ALL
-                            || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
+                    if (includeOn == IncludeOnType.ALL || (includeOn == IncludeOnType.INSERT && eventType == DataEventType.INSERT)
                             || (includeOn == IncludeOnType.UPDATE && eventType == DataEventType.UPDATE)
                             || (includeOn == IncludeOnType.DELETE && eventType == DataEventType.DELETE)) {
                         if (StringUtils.isBlank(transformColumn.getSourceColumnName())
                                 || sourceValues.containsKey(transformColumn.getSourceColumnName())) {
                             try {
-                                Object value = transformColumn(context, data, transformColumn,
-                                        sourceValues, oldSourceValues);
+                                Object value = transformColumn(context, data, transformColumn, sourceValues, oldSourceValues);
                                 if (value instanceof NewAndOldValue) {
-                                    data.put(transformColumn,
-                                            ((NewAndOldValue) value).getNewValue(),
+                                    data.put(transformColumn, ((NewAndOldValue) value).getNewValue(),
                                             oldSourceValues != null ? ((NewAndOldValue) value).getOldValue() : null, false);
                                 } else if (value == null || value instanceof String) {
                                     data.put(transformColumn, (String) value, null, false);
                                 } else if (value instanceof List) {
-                                    throw new IllegalStateException(String.format("Column transform failed %s.%s. Transforms that multiply rows must be marked as part of the primary key", 
-                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName()));                                    
-                                } else {                                    
-                                    throw new IllegalStateException(String.format("Column transform failed %s.%s. It returned an unexpected type of %s", 
-                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName(), 
-                                            value.getClass().getSimpleName()));
+                                    throw new IllegalStateException(String.format(
+                                            "Column transform failed %s.%s. Transforms that multiply rows must be marked as part of the primary key",
+                                            transformColumn.getTransformId(), transformColumn.getTargetColumnName()));
+                                } else {
+                                    throw new IllegalStateException(
+                                            String.format("Column transform failed %s.%s. It returned an unexpected type of %s",
+                                                    transformColumn.getTransformId(), transformColumn.getTargetColumnName(),
+                                                    value.getClass().getSimpleName()));
                                 }
                             } catch (IgnoreColumnException e) {
                                 // Do nothing. We are ignoring the column
                                 if (log.isDebugEnabled()) {
-                                    log.debug(
-                                            "A transform indicated we should ignore the target column {}",
+                                    log.debug("A transform indicated we should ignore the target column {}",
                                             transformColumn.getTargetColumnName());
                                 }
                             }
                         } else {
                             if (eventType != DataEventType.DELETE) {
-                                log.warn(
-                                        "Could not find a source column of {} for the transformation: {}",
-                                        transformColumn.getSourceColumnName(),
-                                        transformation.getTransformId());
+                                log.warn("Could not find a source column of {} for the transformation: {}",
+                                        transformColumn.getSourceColumnName(), transformation.getTransformId());
                             } else {
                                 log.debug(
                                         "Could not find a source column of {} for the transformation: {}.  This is probably because this was a DELETE event and no old data was captured.",
-                                        transformColumn.getSourceColumnName(),
-                                        transformation.getTransformId());
+                                        transformColumn.getSourceColumnName(), transformation.getTransformId());
                             }
                         }
                     }
                 }
             }
 
-            // perform a transformation if there are columns defined for
-            // transformation
-            if (data.getColumnNames().length > 0) {
-                TargetDmlAction targetAction = null;
-                switch (data.getTargetDmlType()) {
-                    case INSERT:
-                        targetAction = TargetDmlAction.INS_ROW;
-                        break;
-                    case UPDATE:
-                        targetAction = transformation.evaluateTargetDmlAction(context, data);
-                        break;
-                    case DELETE:
-                        targetAction = transformation.getDeleteAction();
-                        break;
-                    default:
-                        persistData = true;
+            if (targetAction != null && data.getColumnNames().length > 0 && targetAction != TargetDmlAction.NONE) {
+                persistData = true;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("The {} transformation is not configured to delete row.  Not sending the delete through.",
+                            transformation.getTransformId());
                 }
-                if (targetAction != null) {
-                    // how to handle the update/delete action on target..
-                    switch (targetAction) {
-                        case DEL_ROW:
-                            data.setTargetDmlType(DataEventType.DELETE);
-                            persistData = true;
-                            break;
-                        case UPDATE_COL:
-                        case UPD_ROW:
-                            data.setTargetDmlType(DataEventType.UPDATE);
-                            persistData = true;
-                            break;
-                        case INS_ROW:
-                            data.setTargetDmlType(DataEventType.INSERT);
-                            persistData = true;
-                            break;
-                        case NONE:
-                        default:
-                            if (log.isDebugEnabled()) {
-                                log.debug(
-                                   "The {} transformation is not configured to delete row.  Not sending the delete through.",
-                                   transformation.getTransformId());
-                            }
-                            break;
-                    }
-                }
+
             }
+
         } catch (IgnoreRowException ex) {
             // ignore this row
             if (log.isDebugEnabled()) {
-                log.debug(
-                        "Transform indicated that the target row should be ignored with a target key of: {}",
+                log.debug("Transform indicated that the target row should be ignored with a target key of: {}",
                         ArrayUtils.toString(data.getKeyValues()));
             }
         }

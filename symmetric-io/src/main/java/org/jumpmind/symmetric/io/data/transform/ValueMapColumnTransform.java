@@ -82,7 +82,7 @@ public class ValueMapColumnTransform implements ISingleNewAndOldValueColumnTrans
 
         String value = getValue(newValue,column.getTransformExpression());
 
-        if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);

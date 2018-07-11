@@ -73,7 +73,7 @@ public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform
                 result = result.substring(0, result.length()-2);
             }
 
-            if (data.getSourceDmlType().equals(DataEventType.DELETE)) {
+            if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
                 return new NewAndOldValue(null, result);
             } else {
                 return new NewAndOldValue(result, null);
