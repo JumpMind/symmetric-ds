@@ -741,14 +741,15 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
        }
         
-        boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
-        boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
-        if (useExtractJob && !streamToFile) {
-            throw new SymmetricException(String.format("Node '%s' is configured with confilcting parameters which may result in replication stopping and/or empty load batches. "
-                    + "One of these two parameters needs to be changed: %s=%s and %s=%s", 
-                    node.getNodeId(), ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED,
-                    streamToFile));            
-        }
+		boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
+		boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, true);
+		if (useExtractJob && !streamToFile) {
+			throw new SymmetricException(String.format(
+					"Node '%s' is configured with confilcting parameters which may result in replication stopping and/or empty load batches. "
+							+ "One of these two parameters needs to be changed: %s=%s and %s=%s",
+					node != null ? node.getNodeId() : "null", ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB,
+					useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
+		}
     }
 
     public String getEngineDescription(String msg) {
