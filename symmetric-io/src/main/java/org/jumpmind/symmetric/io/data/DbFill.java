@@ -800,6 +800,9 @@ public class DbFill {
         		if (column.getJdbcTypeName() != null && (column.getJdbcTypeName().equals("JSON") || column.getJdbcTypeName().equals("jsonb"))) {
         			objectValue = "{\"jumpmind\":\"symmetricds\"}";
         		}
+        		else if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
+                objectValue = randomUUID();
+            }
         		else {
 	            int size = 0;
 	            // Assume if the size is 0 there is no max size configured.
