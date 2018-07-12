@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -54,7 +55,8 @@ public class FileSyncExtractorService extends DataExtractorService {
     private IConfigurationService configurationService;
     private INodeCommunicationService nodeCommunicationService;
     private ITriggerRouterService triggerRouterService;
-
+    private IExtensionService extensionService;
+    
     public FileSyncExtractorService(ISymmetricEngine engine) {
         super(engine);
         this.fileSyncService = engine.getFileSyncService();
@@ -63,6 +65,7 @@ public class FileSyncExtractorService extends DataExtractorService {
         this.configurationService = engine.getConfigurationService();
         this.nodeCommunicationService = engine.getNodeCommunicationService();
         this.triggerRouterService = engine.getTriggerRouterService();
+        this.extensionService = engine.getExtensionService();
     }
     
     @Override
@@ -125,7 +128,7 @@ public class FileSyncExtractorService extends DataExtractorService {
                         .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        
                     
                 FileSyncZipDataWriter fileSyncWriter = new FileSyncZipDataWriter(maxBytesToSync, fileSyncService,
-                        nodeService, stagedResource) {
+                        nodeService, stagedResource, extensionService) {
                             @Override
                             public void close() {
                                 super.finish();

@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.util.Statistics;
@@ -69,13 +70,15 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected List<FileSnapshot> snapshotEvents;
     protected DataContext context;
     protected INodeService nodeService;
-
+    protected IExtensionService extensionService;
+    
     public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
-            INodeService nodeService, IStagedResource stagedResource) {
+            INodeService nodeService, IStagedResource stagedResource, IExtensionService extensionService) {
         this.maxBytesToSync = maxBytesToSync;
         this.fileSyncService = fileSyncService;
         this.stagedResource = stagedResource;
         this.nodeService = nodeService;
+        this.extensionService = extensionService;
     }
 
     public void open(DataContext context) {
@@ -290,7 +293,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
         if (isCClient(targetNodeId)) {
             return new BashFileSyncZipScript();
         } else {
-            return new BeanShellFileSyncZipScript();
+            return new BeanShellFileSyncZipScript(extensionService);
         }
     }
     

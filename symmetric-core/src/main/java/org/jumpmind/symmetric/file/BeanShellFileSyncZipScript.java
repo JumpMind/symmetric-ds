@@ -30,8 +30,15 @@ import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
+import org.jumpmind.symmetric.service.IExtensionService;
 
 public class BeanShellFileSyncZipScript extends FileSyncZipScript {
+    
+    protected IExtensionService extensionService;
+    
+    public BeanShellFileSyncZipScript(IExtensionService extensionService) {
+        this.extensionService = extensionService;
+    }
     
     @Override
     public String getScriptFileName(Batch batch) {
@@ -118,7 +125,15 @@ public class BeanShellFileSyncZipScript extends FileSyncZipScript {
                         }
                         command.append("    }\n");
                         command.append("  }\n");
-                    } 
+                    } else {
+                        if (triggerRouter.getConflictStrategyString() != null) {
+                            for (IFileConflictResolver resolver : extensionService.getExtensionPointList(IFileConflictResolver.class)) {
+                                if (triggerRouter.getConflictStrategyString().equals(resolver.getName())) {
+                                    command.append(resolver.getResolveCommand(snapshot));
+                                }
+                            }
+                        }
+                    }
                     
                     command.append("  if (processFile) {\n");
                     command.append("    if (sourceFile.isDirectory()) {\n");

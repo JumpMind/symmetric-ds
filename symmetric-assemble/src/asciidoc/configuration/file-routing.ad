@@ -86,6 +86,12 @@ Conflict Strategy:: The strategy to employ when a file has been modified at both
 
 |manual|If a conflict occurs the batch will be put in ER (error) status and require manual intervention to resolve the issue.
 
+ifdef::pro[]
+|newer_wins|If a conflict occurs, a comparison between last modified date of the file incoming and the file currently on disk will be compared and the newest will win.   This assumes the system clocks on each machine are in sync to perform an accurate comparison.
+
+|older_wins|If a conflict occurs, a comparison between last modified date of the file incoming and the file currently on disk will be compared and the oldest will win.   This assumes the system clocks on each machine are in sync to perform an accurate comparison.
+endif::pro[]
+
 |===
 
 ifdef::pro[]

@@ -39,6 +39,8 @@ public class FileTriggerRouter implements Serializable {
     
     private FileConflictStrategy conflictStrategy = FileConflictStrategy.SOURCE_WINS;
     
+    private String conflictStrategyString;
+    
     private Date createTime = new Date();
     
     private String lastUpdateBy;
@@ -123,6 +125,14 @@ public class FileTriggerRouter implements Serializable {
 
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public String getConflictStrategyString() {
+        return conflictStrategyString;
+    }
+
+    public void setConflictStrategyString(String conflictStrategyString) {
+        this.conflictStrategyString = conflictStrategyString;
     }
 
     @Override

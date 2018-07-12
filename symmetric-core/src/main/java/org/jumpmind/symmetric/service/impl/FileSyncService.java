@@ -393,7 +393,7 @@ INodeCommunicationExecutor {
                 new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                         fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
                                 fileTriggerRouter.getTargetBaseDir(),
-                                fileTriggerRouter.getConflictStrategy().name(),
+                                fileTriggerRouter.getConflictStrategyString(),
                                 fileTriggerRouter.getLastUpdateBy(), fileTriggerRouter.getLastUpdateTime(),
                                 fileTriggerRouter.getFileTrigger().getTriggerId(),
                                 fileTriggerRouter.getRouter().getRouterId() }, new int[] { Types.SMALLINT,
@@ -405,7 +405,7 @@ INodeCommunicationExecutor {
                     new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                             fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
                                     fileTriggerRouter.getTargetBaseDir(),
-                                    fileTriggerRouter.getConflictStrategy().name(),
+                                    fileTriggerRouter.getConflictStrategyString(),
                                     fileTriggerRouter.getCreateTime(), fileTriggerRouter.getLastUpdateBy(),
                                     fileTriggerRouter.getLastUpdateTime(),
                                     fileTriggerRouter.getFileTrigger().getTriggerId(),
@@ -588,7 +588,7 @@ INodeCommunicationExecutor {
                                     Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
                                     targetNode.getNodeId(), "filesync.zip");                            
                             dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
-                                    engine.getNodeService(), stagedResource);
+                                    engine.getNodeService(), stagedResource, engine.getExtensionService());
                         }
                         log.debug("Extracting batch {} for filesync.", currentBatch.getNodeBatchId());
 
@@ -1223,8 +1223,14 @@ INodeCommunicationExecutor {
             String triggerId = rs.getString("trigger_id");
             FileTrigger fileTrigger = getFileTrigger(triggerId);
             fileTriggerRouter.setFileTrigger(fileTrigger);
-            fileTriggerRouter.setConflictStrategy(FileConflictStrategy.valueOf(rs.getString(
+            try {
+                fileTriggerRouter.setConflictStrategy(FileConflictStrategy.valueOf(rs.getString(
                     "conflict_strategy").toUpperCase()));
+            }
+            catch (Exception e) {
+            }
+            fileTriggerRouter.setConflictStrategyString(rs.getString(
+                            "conflict_strategy").toUpperCase());
             fileTriggerRouter.setCreateTime(rs.getDateTime("create_time"));
             fileTriggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
             fileTriggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
