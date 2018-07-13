@@ -262,39 +262,7 @@ public class TransformWriter extends NestedDataWriter {
         boolean persistData = false;
         try {
 
-            TargetDmlAction targetAction = null;
-            switch (data.getTargetDmlType()) {
-                case INSERT:
-                    targetAction = TargetDmlAction.INS_ROW;
-                    break;
-                case UPDATE:
-                    targetAction = transformation.evaluateTargetDmlAction(context, data);
-                    break;
-                case DELETE:
-                    targetAction = transformation.getDeleteAction();
-                    break;
-                default:
-                    persistData = true;
-            }
-            if (targetAction != null) {
-                // how to handle the update/delete action on target..
-                switch (targetAction) {
-                    case DEL_ROW:
-                        data.setTargetDmlType(DataEventType.DELETE);
-                        break;
-                    case UPDATE_COL:
-                    case UPD_ROW:
-                        data.setTargetDmlType(DataEventType.UPDATE);
-                        break;
-                    case INS_ROW:
-                        data.setTargetDmlType(DataEventType.INSERT);
 
-                        break;
-                    case NONE:
-                    default:
-                        break;
-                }
-            }
 
             DataEventType eventType = data.getSourceDmlType();
             for (TransformColumn transformColumn : transformation.getTransformColumns()) {
@@ -343,6 +311,7 @@ public class TransformWriter extends NestedDataWriter {
                 }
             }
 
+            TargetDmlAction targetAction = data.getTargetAction();
             if (targetAction != null && data.getColumnNames().length > 0 && targetAction != TargetDmlAction.NONE) {
                 persistData = true;
             } else {
@@ -378,6 +347,37 @@ public class TransformWriter extends NestedDataWriter {
                     sourceKeyValues, oldSourceValues, sourceValues);
             datas.add(data);
             DataEventType eventType = data.getSourceDmlType();
+            
+            switch (data.getTargetDmlType()) {
+                case INSERT:
+                    data.setTargetAction(TargetDmlAction.INS_ROW);
+                    break;
+                case UPDATE:
+                    data.setTargetAction(transformation.evaluateTargetDmlAction(context, data));
+                    break;
+                case DELETE:
+                    data.setTargetAction(transformation.getDeleteAction());
+                    break;
+                default:
+                    data.setTargetAction(TargetDmlAction.OTHER);
+            }
+            // how to handle the update/delete action on target..
+            switch (data.getTargetAction()) {
+                case DEL_ROW:
+                    data.setTargetDmlType(DataEventType.DELETE);
+                    break;
+                case UPDATE_COL:
+                case UPD_ROW:
+                    data.setTargetDmlType(DataEventType.UPDATE);
+                    break;
+                case INS_ROW:
+                    data.setTargetDmlType(DataEventType.INSERT);
+                    break;
+                case NONE:
+                default:
+                    break;
+            }            
+            
             for (TransformColumn transformColumn : columns) {
                 IncludeOnType includeOn = transformColumn.getIncludeOn();
                 if (includeOn == IncludeOnType.ALL
