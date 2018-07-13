@@ -35,6 +35,8 @@ import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 public class TransformedData implements Cloneable {
 
     protected boolean generatedIdentityNeeded = false;
+    
+    protected TargetDmlAction targetAction = null;
 
     protected DataEventType targetDmlType;
 
@@ -266,6 +268,14 @@ public class TransformedData implements Cloneable {
     public Map<String, String> getSourceValues() {
 
         return sourceValues;
+    }
+    
+    public void setTargetAction(TargetDmlAction targetAction) {
+        this.targetAction = targetAction;
+    }
+    
+    public TargetDmlAction getTargetAction() {
+        return targetAction;
     }
 
     public boolean hasSameKeyValues(String[] otherKeyValues) {
