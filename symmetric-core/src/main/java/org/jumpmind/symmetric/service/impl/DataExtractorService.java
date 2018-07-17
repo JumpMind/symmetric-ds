@@ -1825,7 +1825,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
         Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
-        if (! trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
+        if (trigger != null && !trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_FILE_SNAPSHOT))) {
             return true;
         } else {            
