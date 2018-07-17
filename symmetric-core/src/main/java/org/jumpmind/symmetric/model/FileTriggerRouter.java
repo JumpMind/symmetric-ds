@@ -101,6 +101,7 @@ public class FileTriggerRouter implements Serializable {
 
     public void setConflictStrategy(FileConflictStrategy conflictStrategy) {
         this.conflictStrategy = conflictStrategy;
+        this.conflictStrategyString = conflictStrategy.name();
     }
 
     public Date getCreateTime() {
