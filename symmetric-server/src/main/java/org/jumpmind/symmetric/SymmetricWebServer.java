@@ -628,10 +628,12 @@ public class SymmetricWebServer {
         try {            
             Class<?> clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");
             return clazz;
+        } catch (ClassNotFoundException ex) {
+            // ServerEndpoint not found. This is an expected condition.
         } catch (Exception ex) {
             log.debug("Failed to load remote status endpoint.", ex);
-            return null;
         }
+        return null;
     }
 
 }
