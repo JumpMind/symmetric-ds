@@ -329,18 +329,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 try {
                     stmt = con.prepareStatement(sql);
                     jdbcSqlTemplate.setValues(stmt, args, types, jdbcSqlTemplate.getLobHandler().getDefaultHandler());
-                    
-                    long startTime = System.currentTimeMillis();
-                    boolean hasResults = stmt.execute();
-                    long endTime = System.currentTimeMillis();
-                    logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-                    
-                    if (hasResults) {
-                        rs = stmt.getResultSet();
-                        while (rs.next()) {
-                        }
-                    }
-                    return stmt.getUpdateCount();
+                    return executePreparedUpdate(stmt, sql, args, types);
                 } catch (SQLException e) {
                     throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
                 } finally {
@@ -468,14 +457,38 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     rowsUpdated = flush();
                 }
             } else {
-                long start = System.currentTimeMillis();
-                pstmt.execute();
-                long end = System.currentTimeMillis();
-                logSqlBuilder.logSql(log, psql, args, argTypes, (end-start));
-                rowsUpdated = pstmt.getUpdateCount();
+                rowsUpdated = executePreparedUpdate(pstmt, psql, args, argTypes);
             }
         } catch (SQLException ex) {
             throw jdbcSqlTemplate.translate(ex);
+        }
+        return rowsUpdated;
+    }
+    
+    protected int executePreparedUpdate(PreparedStatement preparedStatement, String sql, Object[] args, int[] argTypes) throws SQLException {
+        int rowsUpdated = 0;
+        long start = System.currentTimeMillis();
+        if (jdbcSqlTemplate.getSettings().isAllowUpdatesWithResults()) {
+            rowsUpdated = executeAllowingResults(preparedStatement);
+        } else {
+            rowsUpdated = preparedStatement.executeUpdate();
+        }
+        long end = System.currentTimeMillis();
+        logSqlBuilder.logSql(log, psql, args, argTypes, (end-start));
+        return rowsUpdated;
+    }
+
+    protected int executeAllowingResults(PreparedStatement preparedStatement) throws SQLException {
+        int rowsUpdated = 0;
+        boolean hasResultsFlag = preparedStatement.execute();
+        int currentUpdateCount = preparedStatement.getUpdateCount();
+
+        while (hasResultsFlag || currentUpdateCount != -1) {
+            if (currentUpdateCount != -1) {
+                rowsUpdated += currentUpdateCount;
+            }
+            hasResultsFlag = preparedStatement.getMoreResults();
+            currentUpdateCount = preparedStatement.getUpdateCount();
         }
         return rowsUpdated;
     }
