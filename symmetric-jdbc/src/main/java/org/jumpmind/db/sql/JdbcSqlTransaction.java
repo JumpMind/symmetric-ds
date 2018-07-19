@@ -474,7 +474,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             rowsUpdated = preparedStatement.executeUpdate();
         }
         long end = System.currentTimeMillis();
-        logSqlBuilder.logSql(log, psql, args, argTypes, (end-start));
+        logSqlBuilder.logSql(log, sql, args, argTypes, (end-start));
         return rowsUpdated;
     }
 
