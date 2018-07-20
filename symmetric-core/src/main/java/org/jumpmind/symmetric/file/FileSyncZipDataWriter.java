@@ -43,11 +43,13 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
 import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -71,14 +73,16 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected DataContext context;
     protected INodeService nodeService;
     protected IExtensionService extensionService;
+    protected IConfigurationService configurationService;
     
     public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
-            INodeService nodeService, IStagedResource stagedResource, IExtensionService extensionService) {
+            INodeService nodeService, IStagedResource stagedResource, IExtensionService extensionService, IConfigurationService configurationService) {
         this.maxBytesToSync = maxBytesToSync;
         this.fileSyncService = fileSyncService;
         this.stagedResource = stagedResource;
         this.nodeService = nodeService;
         this.extensionService = extensionService;
+        this.configurationService = configurationService;
     }
 
     public void open(DataContext context) {
@@ -107,13 +111,18 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
     public void write(CsvData data) {
         DataEventType eventType = data.getDataEventType();
+        
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE) {
-        		if (eventType == DataEventType.INSERT) {
-        			statistics.get(this.batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
-        		}
-        		else {
-        			statistics.get(this.batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
-        		}
+            if (filterInitialLoad(data)) {
+                return;
+            }
+            
+     		if (eventType == DataEventType.INSERT) {
+    			statistics.get(this.batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
+    		}
+    		else {
+    			statistics.get(this.batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
+    		}
             Map<String, String> columnData = data.toColumnNameValuePairs(
                     snapshotTable.getColumnNames(), CsvData.ROW_DATA);
             Map<String, String> oldColumnData = data.toColumnNameValuePairs(
@@ -305,5 +314,28 @@ public class FileSyncZipDataWriter implements IDataWriter {
         }
         return cclient;
     }
+    
+    protected boolean filterInitialLoad(CsvData data) {
+        Channel channel = configurationService.getChannel(batch.getChannelId());
+        if (channel.isReloadFlag()) {
+            List<FileTriggerRouter> fileTriggerRouters = fileSyncService
+                    .getFileTriggerRoutersForCurrentNode(false);
+            Map<String, String> columnData = data.toColumnNameValuePairs(
+                    snapshotTable.getColumnNames(), CsvData.ROW_DATA);
+            String triggerId = columnData.get("TRIGGER_ID");
+            String routerId = columnData.get("ROUTER_ID");
+            
+            for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
+                if (fileTriggerRouter.getTriggerId().equals(triggerId)
+                        && fileTriggerRouter.getRouterId().equals(routerId)) {
+                    if (! fileTriggerRouter.isEnabled() || !fileTriggerRouter.isInitialLoadEnabled()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }    
     
 }

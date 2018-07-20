@@ -128,7 +128,7 @@ public class FileSyncExtractorService extends DataExtractorService {
                         .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        
                     
                 FileSyncZipDataWriter fileSyncWriter = new FileSyncZipDataWriter(maxBytesToSync, fileSyncService,
-                        nodeService, stagedResource, extensionService) {
+                        nodeService, stagedResource, extensionService, configurationService) {
                             @Override
                             public void close() {
                                 super.finish();

@@ -588,7 +588,7 @@ INodeCommunicationExecutor {
                                     Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
                                     targetNode.getNodeId(), "filesync.zip");                            
                             dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
-                                    engine.getNodeService(), stagedResource, engine.getExtensionService());
+                                    engine.getNodeService(), stagedResource, engine.getExtensionService(), engine.getConfigurationService());
                         }
                         log.debug("Extracting batch {} for filesync.", currentBatch.getNodeBatchId());
 
