@@ -330,6 +330,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                         && fileTriggerRouter.getRouterId().equals(routerId)) {
                     if (! fileTriggerRouter.isEnabled() || !fileTriggerRouter.isInitialLoadEnabled()) {
                         return true;
+                    } else {
+                        return false;
                     }
                 }
             }
