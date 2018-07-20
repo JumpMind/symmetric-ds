@@ -437,8 +437,8 @@ public class DbCompare {
             
             TriggerRouter triggerRouter = getTriggerRouterFor(tables.getSourceTable());
             if (triggerRouter != null) {
-                catalog = triggerRouter.getTargetCatalog(catalog);
-                schema = triggerRouter.getTargetSchema(schema);
+                catalog = triggerRouter.getTargetCatalog(catalog, null);
+                schema = triggerRouter.getTargetSchema(schema, null);
             }
         } 
         

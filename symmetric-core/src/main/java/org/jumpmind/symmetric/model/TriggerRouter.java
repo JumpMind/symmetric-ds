@@ -157,17 +157,21 @@ public class TriggerRouter implements Serializable {
         }
     }
 
-    public String getTargetSchema(String defaultSchema) {
+    public String getTargetSchema(String defaultSchema, TriggerHistory triggerHistory) {
         if (router != null && !StringUtils.isBlank(router.getTargetSchemaName())) {
             return router.getTargetSchemaName();
+        } else if (router != null && router.isUseSourceCatalogSchema() && triggerHistory != null) {
+            return triggerHistory.getSourceSchemaName(); 
         } else {
             return defaultSchema;
         }
     }
 
-    public String getTargetCatalog(String defaultCatalog) {
+    public String getTargetCatalog(String defaultCatalog, TriggerHistory triggerHistory) {
         if (router != null && !StringUtils.isBlank(router.getTargetCatalogName())) {
             return router.getTargetCatalogName();
+        } else if (router != null && router.isUseSourceCatalogSchema() && triggerHistory != null) {
+            return triggerHistory.getSourceCatalogName(); 
         } else {
             return defaultCatalog;
         }
@@ -188,8 +192,8 @@ public class TriggerRouter implements Serializable {
     }   
 
     public String qualifiedTargetTableName(TriggerHistory triggerHistory) {
-        String catalog = getTargetCatalog(null);
-        String schema = getTargetSchema(null);
+        String catalog = getTargetCatalog(null, triggerHistory);
+        String schema = getTargetSchema(null, triggerHistory);
         String tableName = getTargetTable(triggerHistory);
         if (!StringUtils.isBlank(schema)) {
             tableName = schema + "." + tableName;
