@@ -22,15 +22,11 @@ package org.jumpmind.symmetric.db.oracle;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.IndexColumn;
-import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
@@ -38,7 +34,6 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -389,21 +384,6 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     public PermissionType[] getSymTablePermissions() {
         PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.EXECUTE};
         return permissions;
-    }
-    
-    @Override
-    protected Database readDatabaseFromXml(String resourceName) throws IOException {
-        Database database = super.readDatabaseFromXml(resourceName);
-        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
-            Table table = database.findTable(TableConstants.SYM_DATA);
-            if (table != null) {
-                NonUniqueIndex index = new NonUniqueIndex("idx_crt_tm_dt_d");
-                index.addColumn(new IndexColumn(table.findColumn("create_time")));
-                index.addColumn(new IndexColumn(table.findColumn("data_id")));
-                table.addIndex(index);
-            }
-        }
-        return database;
     }
 
 }
