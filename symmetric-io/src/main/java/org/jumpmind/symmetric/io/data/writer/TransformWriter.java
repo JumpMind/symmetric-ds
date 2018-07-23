@@ -166,12 +166,13 @@ public class TransformWriter extends NestedDataWriter {
             }
 
             for (TransformTable transformation : transformTables) {
-                if (eventType == DataEventType.INSERT && transformation.isUpdateFirst()) {
-                    eventType = DataEventType.UPDATE;
+                DataEventType localEventType = eventType;
+                if (localEventType == DataEventType.INSERT && transformation.isUpdateFirst()) {
+                    localEventType = DataEventType.UPDATE;
                 }
                 
                 List<TransformedData> dataThatHasBeenTransformed = 
-                        transform(eventType, context, transformation, sourceKeyValues, oldSourceValues, sourceValues);
+                        transform(localEventType, context, transformation, sourceKeyValues, oldSourceValues, sourceValues);
                 
                 for (TransformedData transformedData : dataThatHasBeenTransformed) {
                     Table transformedTable = transformedData.buildTargetTable();
