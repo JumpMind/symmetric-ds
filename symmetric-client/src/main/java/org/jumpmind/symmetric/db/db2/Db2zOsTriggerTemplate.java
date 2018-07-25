@@ -30,10 +30,11 @@ import org.jumpmind.util.FormatUtils;
 
 public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 
+    
     public Db2zOsTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null or $(tableAlias).\"$(columnName)\" = '' then $(oracleToClob)'' else '\"' || replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
         
         sqlTemplates.put("insertTriggerTemplate" ,
 "CREATE TRIGGER $(schemaName)$(triggerName)                                                                                                                                                             \n" +
