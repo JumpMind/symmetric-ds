@@ -1825,7 +1825,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
         Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
-        if (trigger != null && !trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
+        if (trigger == null || !trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_FILE_SNAPSHOT))) {
             return true;
         } else {            
@@ -2246,41 +2246,43 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Trigger trigger = triggerRouterService.getTriggerById(
                                 triggerHistory.getTriggerId(), false);
                         boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
-                        if (trigger != null || isFileParserRouter) {
-                            if (lastTriggerHistory == null || lastTriggerHistory
-                                    .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
-                                    lastRouterId == null || !lastRouterId.equals(routerId)) {
-                                
-                                this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                                            routerId, triggerHistory, false, !isFileParserRouter);
-                                
-                                this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                                        routerId, triggerHistory, true, false);
-                                
-                                if (trigger != null && trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
-                                    this.requiresLobSelectedFromSource = true;
-                                } else {
-                                    this.requiresLobSelectedFromSource = false;
-                                }
-                            }
-
-                            data.setNoBinaryOldData(requiresLobSelectedFromSource
-                                    || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL2000)
-                                    || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL2005)
-                                    || symmetricDialect.getName().equals(
-                                            DatabaseNamesConstants.MSSQL2008));
-                            
-                            outgoingBatch.incrementExtractRowCount();
-                            outgoingBatch.incrementExtractRowCount(data.getDataEventType());
-                        } else {
-                            log.error(
-                                    "Could not locate a trigger with the id of {} for {}.  It was recorded in the hist table with a hist id of {}",
+                        if (trigger == null && !isFileParserRouter) {
+                            log.warn(
+                                    "Could not locate a trigger with the id of {} for table {} (data id {} with trigger hist id {}). It's possible this trigger was deleted before the batch could be extracted.",
                                     new Object[] { triggerHistory.getTriggerId(),
                                             triggerHistory.getSourceTableName(),
+                                            data.getDataId(),
                                             triggerHistory.getTriggerHistoryId() });
                         }
+                        
+                        if (lastTriggerHistory == null || lastTriggerHistory
+                                .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
+                                lastRouterId == null || !lastRouterId.equals(routerId)) {
+                            
+                            this.sourceTable = columnsAccordingToTriggerHistory.lookup(
+                                        routerId, triggerHistory, false, !isFileParserRouter);
+                            
+                            this.targetTable = columnsAccordingToTriggerHistory.lookup(
+                                    routerId, triggerHistory, true, false);
+                            
+                            if (trigger != null && trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
+                                this.requiresLobSelectedFromSource = true;
+                            } else {
+                                this.requiresLobSelectedFromSource = false;
+                            }
+                        }
+
+                        data.setNoBinaryOldData(requiresLobSelectedFromSource
+                                || symmetricDialect.getName().equals(
+                                        DatabaseNamesConstants.MSSQL2000)
+                                || symmetricDialect.getName().equals(
+                                        DatabaseNamesConstants.MSSQL2005)
+                                || symmetricDialect.getName().equals(
+                                        DatabaseNamesConstants.MSSQL2008));
+                        
+                        outgoingBatch.incrementExtractRowCount();
+                        outgoingBatch.incrementExtractRowCount(data.getDataEventType());
+                            
                         if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {                          
 
                             boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false);

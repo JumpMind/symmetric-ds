@@ -31,6 +31,7 @@ public class SqlTemplateSettings {
     protected int overrideIsolationLevel = -1;
     protected int resultSetType = java.sql.ResultSet.TYPE_FORWARD_ONLY;
     protected LogSqlBuilder logSqlBuilder;
+    protected boolean allowUpdatesWithResults = false;
     
     public SqlTemplateSettings() {     
     }      
@@ -105,6 +106,14 @@ public class SqlTemplateSettings {
 
     public void setRightTrimCharValues(boolean rightTrimCharValues) { 
         this.rightTrimCharValues = rightTrimCharValues; 
+    }
+
+    public boolean isAllowUpdatesWithResults() {
+        return allowUpdatesWithResults;
+    }
+
+    public void setAllowUpdatesWithResults(boolean allowUpdatesWithResults) {
+        this.allowUpdatesWithResults = allowUpdatesWithResults;
     }
 
 }

@@ -103,7 +103,7 @@ public class IncomingBatch extends AbstractBatch {
 
     public void setNodeBatchId(String value) {
         if (value != null) {
-            int splitIndex = value.indexOf("-");
+            int splitIndex = value.lastIndexOf("-");
             if (splitIndex > 0) {
                 setNodeId(value.substring(0, splitIndex));
                 setBatchId(Long.parseLong(value.substring(splitIndex + 1)));
