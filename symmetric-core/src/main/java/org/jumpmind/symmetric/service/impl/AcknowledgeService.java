@@ -102,7 +102,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
                     String sql = getSql("selectDataIdSql");
                     if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
-                        sql += getSql("orderByCreateTime");
+                        sql = getSql("selectDataIdByCreateTimeSql");
                     } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
                         sql += getSql("orderByDataId");
                     }
