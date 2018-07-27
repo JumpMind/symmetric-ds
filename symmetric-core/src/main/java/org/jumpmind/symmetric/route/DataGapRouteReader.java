@@ -26,6 +26,7 @@ import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESH
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -92,6 +93,8 @@ public class DataGapRouteReader implements IDataToRouteReader {
     protected boolean isEachGapQueried;
     
     protected boolean isOracleNoOrder;
+    
+    protected boolean isSortInMemory;
 
     protected String lastTransactionId = null;
     
@@ -107,6 +110,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         this.takeTimeout = engine.getParameterService().getInt(
                 ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS, 330);
         this.isOracleNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
+        this.isSortInMemory = parameterService.is(ParameterConstants.ROUTING_DATA_READER_INTO_MEMORY_ENABLED, false);
         if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
             /* there will not be a separate thread to read a blocked queue so make sure the queue is big enough that it can be filled */
             this.dataQueue = new LinkedBlockingQueue<Data>();
@@ -320,10 +324,12 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }            
         }
         
-        if (isOracleNoOrder) {
-            sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByCreateTime"));
-        } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
-            sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
+        if (!isSortInMemory) {
+            if (isOracleNoOrder) {
+                sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByCreateTime"));
+            } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+                sql = String.format("%s %s", sql, engine.getRouterService().getSql("orderByDataId"));
+            }
         }
 
         ISqlTemplate sqlTemplate = engine.getSymmetricDialect().getPlatform().getSqlTemplate();
@@ -369,14 +375,27 @@ public class DataGapRouteReader implements IDataToRouteReader {
             }
         };
 
+        ISqlReadCursor<Data> cursor = null;
         try {
-            return sqlTemplate.queryForCursor(sql, dataMapper, args, types);
+            cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
         } catch (RuntimeException e) {
             log.info("Failed to execute query, but will try again,", e);
             AppUtils.sleep(1000);
-            return sqlTemplate.queryForCursor(sql, dataMapper, args, types);
+            cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);
+        }
+        
+        if (isSortInMemory) {
+            Comparator<Data> comparator = null;
+            if (isOracleNoOrder) {
+                comparator = DataMemoryCursor.SORT_BY_TIME;
+            } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+                comparator = DataMemoryCursor.SORT_BY_ID;
+            }
+
+            cursor = new DataMemoryCursor(cursor, context, comparator);
         }
 
+        return cursor;
     }
 
     protected String qualifyUsingDataGaps(List<DataGap> dataGaps, int numberOfGapsToQualify,
