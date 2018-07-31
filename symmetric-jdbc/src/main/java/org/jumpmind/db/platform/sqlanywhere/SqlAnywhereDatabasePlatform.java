@@ -109,7 +109,7 @@ public class SqlAnywhereDatabasePlatform extends AbstractJdbcDatabasePlatform {
            
         String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN SELECT 1 END"; 
         
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
         
         try {
             getSqlTemplate().update(triggerSql);

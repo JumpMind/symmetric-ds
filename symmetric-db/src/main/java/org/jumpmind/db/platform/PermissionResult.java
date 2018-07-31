@@ -35,13 +35,15 @@ public class PermissionResult {
 	
 	private PermissionType permissionType;
 	
-	private Status status;
+	private Status status = Status.FAIL;
 	
 	private Exception exception;
 	
 	private String solution;
 	
 	private PermissionCategory category;
+	
+	private String testDetails; // e.g. description or statment(s) used on the test
 	
 	private static Map<PermissionType, PermissionCategory> categories = new TreeMap<PermissionType, PermissionCategory>();
 	
@@ -55,19 +57,12 @@ public class PermissionResult {
 	    categories.put(PermissionType.CREATE_ROUTINE, PermissionCategory.ADDITIONAL);
 	    categories.put(PermissionType.EXECUTE, PermissionCategory.ADDITIONAL);
 	}
-		
-	public PermissionResult(PermissionType permissionType, Status status, Exception exception, String solution) {
-		this.setPermissionType(permissionType);
-		this.setStatus(status);
-		this.setException(exception);
-		this.setSolution(solution);
-		this.category = categories.get(permissionType);
-	}
 	
-	public PermissionResult(PermissionType permissionType, Status status) {
+	public PermissionResult(PermissionType permissionType, String testDetails) {
 		this.setPermissionType(permissionType);
 		this.setStatus(status);
 	    this.category = categories.get(permissionType);
+	    this.testDetails = testDetails;
 	}
 
 	public PermissionType getPermissionType() {
@@ -110,6 +105,15 @@ public class PermissionResult {
         this.category = category;
     }
 
+    public String getTestDetails() {
+        return testDetails;
+    }
+
+    public void setTestDetails(String testDetails) {
+        this.testDetails = testDetails;
+    }
+
+    @Override
     public String toString() {
 		return "Permission Type: " + permissionType + ", Status: " + status; 
 	}

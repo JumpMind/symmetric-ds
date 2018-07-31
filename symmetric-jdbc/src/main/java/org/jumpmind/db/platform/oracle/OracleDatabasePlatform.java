@@ -108,7 +108,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
            
        	String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";	
        	
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
        	
    		try {
    			getSqlTemplate().update(triggerSql);
@@ -128,7 +128,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
            
         String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";  
         
-        PermissionResult result = new PermissionResult(PermissionType.EXECUTE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.EXECUTE, executeSql);
         
         try {
             getSqlTemplate().update(executeSql);

@@ -206,7 +206,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
            
        	String triggerSql = "CREATE OR REPLACE FUNCTION TEST_TRIGGER() RETURNS trigger AS $$ BEGIN END $$ LANGUAGE plpgsql";
 
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
    		
    		try {
    			getSqlTemplate().update(triggerSql);
@@ -223,7 +223,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
    	public PermissionResult getDropSymTriggerPermission() {
        	String dropTriggerSql = "DROP FUNCTION TEST_TRIGGER()";
 
-       	PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, PermissionResult.Status.FAIL);
+       	PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
    		
    		try {
    			getSqlTemplate().update(dropTriggerSql);

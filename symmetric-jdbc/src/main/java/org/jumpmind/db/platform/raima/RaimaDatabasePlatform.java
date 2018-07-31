@@ -74,7 +74,7 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymTriggerPermission() {
         String createTriggerSql = "create trigger test_trigger after insert on " + PERMISSION_TEST_TABLE_NAME + " for each row begin atomic end";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, createTriggerSql);
 
         try {
             getSqlTemplate().update(createTriggerSql);
@@ -90,7 +90,7 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected PermissionResult getDropSymTriggerPermission() {
         String dropTriggerSql = "drop trigger test_trigger";
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
 
         try {
             getSqlTemplate().update(dropTriggerSql);

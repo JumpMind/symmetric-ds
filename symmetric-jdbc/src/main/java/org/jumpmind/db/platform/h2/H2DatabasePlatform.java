@@ -90,7 +90,7 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
        	String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
        			+ "FOR EACH ROW CALL " + delimiter + "org.jumpmind.db.platform.h2.H2TestTrigger" + delimiter;
        
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
    		
    		try {
    			getSqlTemplate().update(triggerSql);

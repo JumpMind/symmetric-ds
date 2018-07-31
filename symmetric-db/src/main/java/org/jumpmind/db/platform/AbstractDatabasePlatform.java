@@ -952,7 +952,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         if (drop) {
             results.add(dropPermission);
         }
+        
+        logFailedResults(results);
+        
         return results;
+    }
+
+    protected void logFailedResults(List<PermissionResult> results) {
+        for (PermissionResult result : results) {
+            if (Status.FAIL == result.getStatus()) {
+                log.info(String.format("Database permission check failed. Category: %s Permission Type: %s Details:\r\n%s", result.getCategory(), result.getPermissionType(),  
+                        result.getTestDetails()), result.getException());
+            }
+        }
     }
 
     protected Table getPermissionTableDefinition() {
@@ -965,8 +977,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected PermissionResult getCreateSymTablePermission(Database database) {
         Table table = getPermissionTableDefinition();
+        
+        String createSql = ddlBuilder.createTables(database, false);
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, createSql);
         getDropSymTablePermission();
 
         try {
@@ -984,7 +998,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected PermissionResult getDropSymTablePermission() {
         Table table = getPermissionTableDefinition();
 
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, "dropping table " + table.getName() + "...");
 
         try {
             if (getTableFromCache(table.getName(), true) != null) {
@@ -1014,7 +1028,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         Table table = new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);
         Table alterTable = new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn, alterColumn);
 
-        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, "altering table " + PERMISSION_TEST_TABLE_NAME + "...");
 
         try {
             database.removeAllTablesExcept();
@@ -1034,7 +1048,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected PermissionResult getDropSymTriggerPermission() {
         String dropTriggerSql = "DROP TRIGGER TEST_TRIGGER";
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
 
         try {
             getSqlTemplate().update(dropTriggerSql);
@@ -1048,22 +1062,26 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     protected PermissionResult getCreateSymTriggerPermission() {
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.UNIMPLEMENTED);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
 
     protected PermissionResult getExecuteSymPermission() {
-        PermissionResult result = new PermissionResult(PermissionType.EXECUTE, Status.NOT_APPLICABLE);
+        PermissionResult result = new PermissionResult(PermissionType.EXECUTE, "NOT_APPLICABLE");
+        result.setStatus(Status.NOT_APPLICABLE);
         return result;
     }
 
     protected PermissionResult getCreateSymRoutinePermission() {
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.NOT_APPLICABLE);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, "NOT_APPLICABLE");
+        result.setStatus(Status.NOT_APPLICABLE);
         return result;
     }
 
     protected PermissionResult getCreateSymFunctionPermission() {
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, Status.NOT_APPLICABLE);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, "NOT_APPLICABLE");
+        result.setStatus(Status.NOT_APPLICABLE);
         return result;
     }
 

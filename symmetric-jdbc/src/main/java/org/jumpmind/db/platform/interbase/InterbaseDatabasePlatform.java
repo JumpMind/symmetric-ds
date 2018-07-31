@@ -81,7 +81,8 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public PermissionResult getDropSymTriggerPermission() {     
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.UNIMPLEMENTED);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
     

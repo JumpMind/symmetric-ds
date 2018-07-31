@@ -109,7 +109,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " AFTER UPDATE AS SELECT 1 GO";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
 
         try {
             getSqlTemplate().update(triggerSql);
@@ -127,13 +127,14 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         String routineSql = "CREATE FUNCTION TEST_FUNC() RETURNS INTEGER BEGIN RETURN 1; END";
         String dropSql = "IF OBJECT_ID('TEST_FUNC') IS NOT NULL DROP FUNCTION TEST_FUNC";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, 
+                dropSql + "\r\n" + routineSql + "\r\n" + dropSql);
 
         try {
             getSqlTemplate().update(dropSql);
             getSqlTemplate().update(routineSql);
-            result.setStatus(Status.PASS);
             getSqlTemplate().update(dropSql);
+            result.setStatus(Status.PASS);
         } catch (SqlException e) {
             result.setException(e);
             if (result.getSolution() != null) {

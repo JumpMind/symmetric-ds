@@ -123,25 +123,29 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public PermissionResult getCreateSymTablePermission(Database database) {     
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.UNIMPLEMENTED);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
     
     @Override
     public PermissionResult getDropSymTablePermission() {     
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, Status.UNIMPLEMENTED);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
     
     @Override
     public PermissionResult getAlterSymTablePermission(Database database) {     
-        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, Status.UNIMPLEMENTED);
+        PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
     
     @Override
     public PermissionResult getDropSymTriggerPermission() {     
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.UNIMPLEMENTED);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
 }

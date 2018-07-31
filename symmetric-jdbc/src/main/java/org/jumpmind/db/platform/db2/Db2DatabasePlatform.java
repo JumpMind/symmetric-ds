@@ -91,7 +91,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
            
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " FOR EACH ROW BEGIN ATOMIC END"; 
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
         
         try {
             getSqlTemplate().update(triggerSql);

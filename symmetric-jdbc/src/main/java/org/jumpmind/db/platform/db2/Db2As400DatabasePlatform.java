@@ -53,7 +53,7 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
     protected PermissionResult getCreateSymTablePermission(Database database) {
         Table table = getPermissionTableDefinition();
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, "creating table " + table.getName() + "...");
         getDropSymTablePermission();
 
         try {

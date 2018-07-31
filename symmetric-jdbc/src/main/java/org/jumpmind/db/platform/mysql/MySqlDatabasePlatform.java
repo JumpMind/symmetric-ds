@@ -107,7 +107,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " FOR EACH ROW INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
 
         try {
             getSqlTemplate().update(triggerSql);
@@ -125,13 +125,14 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         String routineSql = "CREATE PROCEDURE TEST_PROC() BEGIN SELECT 1; END";
         String dropSql = "DROP PROCEDURE IF EXISTS TEST_PROC";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, 
+                dropSql + "\r\n" + routineSql + "\r\n" + dropSql);
 
         try {
             getSqlTemplate().update(dropSql);
             getSqlTemplate().update(routineSql);
-            result.setStatus(Status.PASS);
             getSqlTemplate().update(dropSql);
+            result.setStatus(Status.PASS);
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant CREATE ROUTINE Privilege");

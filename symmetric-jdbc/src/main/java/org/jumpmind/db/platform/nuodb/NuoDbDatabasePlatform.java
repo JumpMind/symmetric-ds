@@ -92,13 +92,14 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
         String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, 
+                dropTriggerSql + "\r\n" + triggerSql + "\r\n" + dropTriggerSql);
 
         try {
             getSqlTemplate().update(dropTriggerSql);
             getSqlTemplate().update(triggerSql);
-            result.setStatus(Status.PASS);
             getSqlTemplate().update(dropTriggerSql);
+            result.setStatus(Status.PASS);
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
@@ -112,13 +113,14 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         String routineSql = "CREATE PROCEDURE TEST_PROC() AS VAR myVar = 1; END_PROCEDURE";
         String dropSql = "DROP PROCEDURE IF EXISTS TEST_PROC";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, 
+                dropSql + "\r\n" + routineSql + "\r\n" + dropSql);
 
         try {
             getSqlTemplate().update(dropSql);
             getSqlTemplate().update(routineSql);
-            result.setStatus(Status.PASS);
             getSqlTemplate().update(dropSql);
+            result.setStatus(Status.PASS);
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant CREATE ROUTINE Privilege");
@@ -129,7 +131,7 @@ public class NuoDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected PermissionResult getDropSymTriggerPermission() {
         String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
-        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
 
         try {
             getSqlTemplate().update(dropTriggerSql);

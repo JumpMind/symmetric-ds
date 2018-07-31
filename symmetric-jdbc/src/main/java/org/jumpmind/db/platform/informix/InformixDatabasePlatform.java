@@ -105,7 +105,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER DELETE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " FOR EACH ROW(DELETE FROM " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " WHERE TEST_ID IS NULL)";
 
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
 
         try {
             getSqlTemplate().update(triggerSql);

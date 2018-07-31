@@ -111,7 +111,7 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
            
         String triggerSql = "create trigger TEST_TRIGGER on " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " for insert as begin select 1 end"; 
         
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
         
         try {
             getSqlTemplate().update(triggerSql);

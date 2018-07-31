@@ -82,7 +82,7 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
         
     	String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " AFTER UPDATE AS BEGIN END";	
 
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, Status.FAIL);
+       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
 		
 		try {
 			getSqlTemplate().update(triggerSql);
