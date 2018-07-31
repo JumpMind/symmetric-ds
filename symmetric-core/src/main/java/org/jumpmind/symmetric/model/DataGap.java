@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class DataGap implements Serializable, Comparable<DataGap> {
     
@@ -75,6 +76,15 @@ public class DataGap implements Serializable, Comparable<DataGap> {
 
     public boolean contains(DataGap gap) {
         return startId <= gap.startId && endId >= gap.endId;
+    }
+
+    public boolean containsAny(List<Long> dataIds) {
+        for (Long dataId : dataIds) {
+            if (dataId != null && startId >= dataId && endId <= dataId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean overlaps(DataGap gap) {

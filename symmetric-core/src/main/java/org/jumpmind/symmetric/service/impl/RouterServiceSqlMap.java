@@ -54,6 +54,8 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectLastDataIdRoutedUsingDataGapSql", "select max(start_id) from $(data_gap) ");
 
+        putSql("selectOracleNextValueSql", "select nextvalue from gv$_sequences where sequence_name = ?");
+
     }
 
 }

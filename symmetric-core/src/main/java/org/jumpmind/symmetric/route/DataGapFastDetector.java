@@ -31,14 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus;
@@ -178,7 +181,11 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         long gapTimoutInMs = parameterService.getLong(ParameterConstants.ROUTING_STALE_DATA_ID_GAP_TIME);
         final int dataIdIncrementBy = parameterService.getInt(ParameterConstants.DATA_ID_INCREMENT_BY);
 
-
+        boolean isOracleNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
+        List<Long> oracleNextValues = null;
+        if (isOracleNoOrder) {
+            oracleNextValues = getOracleNextValues();
+        }
 
         Date currentDate = new Date(routingStartTime);
         boolean isBusyExpire = false;
@@ -227,7 +234,10 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 } else if (!lastGap && (isAllDataRead || isBusyExpire)) {
                     Date createTime = dataGap.getCreateTime();
                     boolean isExpired = false;
-                    if (supportsTransactionViews) {
+                    if (isOracleNoOrder && oracleNextValues != null) {
+                        isExpired = createTime != null && routingStartTime - createTime.getTime() > gapTimoutInMs
+                                && !dataGap.containsAny(oracleNextValues);
+                    } else if (supportsTransactionViews) {
                         isExpired = createTime != null && (createTime.getTime() < earliestTransactionTime || earliestTransactionTime == 0);
                     } else {
                         isExpired = createTime != null && routingStartTime - createTime.getTime() > gapTimoutInMs;
@@ -566,6 +576,28 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         log.info("Expired {} data gap(s) between data_id {} and {} and between create_time {} and {}", 
                 skippedDataGaps.size(), minDataId, maxDataId, minDate, maxDate); 
         
+    }
+
+    private List<Long> getOracleNextValues() {
+        if (StringUtils.isBlank(parameterService.getString(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS))) {
+            ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
+            try {
+                return sqlTemplate.query(routerService.getSql("selectOracleNextValueSql"), new ISqlRowMapper<Long>() {
+                    @Override
+                    public Long mapRow(Row row) {
+                        return row.getLong("nextvalue");
+                    }
+                }, symmetricDialect.getSequenceName(SequenceIdentifier.DATA));
+            } catch (SqlException e) {
+                log.error("Before using " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER + 
+                        " parameter, you must 'grant select on gv$_sequences to " + 
+                        parameterService.getString("db.user") +
+                        "' or set the " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS +
+                        " parameter to a list of db URLs");
+                throw e;
+            }
+        }
+        return null;
     }
 
     public Long mapRow(Row row) {
