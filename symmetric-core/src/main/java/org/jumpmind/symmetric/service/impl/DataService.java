@@ -66,6 +66,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
+import org.jumpmind.symmetric.job.OracleNoOrderHeartbeat;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.model.Channel;
@@ -113,6 +114,9 @@ public class DataService extends AbstractService implements IDataService {
         this.dataMapper = new DataMapper();
         this.extensionService = extensionService;
         extensionService.addExtensionPoint(new PushHeartbeatListener(engine));
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER)) {
+            extensionService.addExtensionPoint(new OracleNoOrderHeartbeat(engine));
+        }
         setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
