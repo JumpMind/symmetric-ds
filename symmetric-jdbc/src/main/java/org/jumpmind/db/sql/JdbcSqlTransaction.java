@@ -482,13 +482,16 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         int rowsUpdated = 0;
         boolean hasResultsFlag = preparedStatement.execute();
         int currentUpdateCount = preparedStatement.getUpdateCount();
+        if (currentUpdateCount != -1) {
+            rowsUpdated = currentUpdateCount;
+        }
 
         while (hasResultsFlag || currentUpdateCount != -1) {
-            if (currentUpdateCount != -1) {
-                rowsUpdated += currentUpdateCount;
-            }
             hasResultsFlag = preparedStatement.getMoreResults();
             currentUpdateCount = preparedStatement.getUpdateCount();
+            if (currentUpdateCount != -1) {
+                rowsUpdated = currentUpdateCount;
+            }            
         }
         return rowsUpdated;
     }
