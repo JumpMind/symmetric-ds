@@ -104,6 +104,8 @@ import org.jumpmind.util.FormatUtils;
  * @see IRouterService
  */
 public class RouterService extends AbstractService implements IRouterService {
+    
+    final int MAX_LOGGING_LENGTH = 512;
 
     protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
     
@@ -235,7 +237,6 @@ public class RouterService extends AbstractService implements IRouterService {
         processInfo.setStatus(ProcessInfo.Status.PROCESSING);
 
         try {
-
             INodeService nodeService = engine.getNodeService();
             IDataService dataService = engine.getDataService();
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
@@ -464,7 +465,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
                 } else {
                     gapDetector.setIsAllDataRead(false);
-                    if (log.isDebugEnabled()) {
+                    if (log.isDebugEnabled() && !nodeChannel.isEnabled()) {
                         log.debug(
                                 "Not routing the {} channel.  It is either disabled or suspended.",
                                 nodeChannel.getChannelId());
@@ -906,7 +907,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                             + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
                                     new Object[] {  context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
                                             context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(),
-                                            context.getTransactions().toString(), context.getDataGaps().toString() });
+                                            StringUtils.abbreviate(context.getTransactions().toString(), MAX_LOGGING_LENGTH), 
+                                            StringUtils.abbreviate(context.getDataGaps().toString(), MAX_LOGGING_LENGTH) });
                             ts = System.currentTimeMillis();
                         }
 
