@@ -37,9 +37,12 @@ public class Wrapper {
         String configFile = null;
         String jarFile = Wrapper.class.getProtectionDomain().getCodeSource().getLocation().getFile();
 
-        if (args.length > 1) {
+        if (args.length == 2) {
             configFile = args[1];
             appDir = getParentDir(configFile);
+        } else if (args.length == 3) {
+            configFile = args[1];
+            appDir = args[2];
         } else {
             appDir = getParentDir(jarFile);
             configFile = findConfigFile(appDir + File.separator + "conf");
