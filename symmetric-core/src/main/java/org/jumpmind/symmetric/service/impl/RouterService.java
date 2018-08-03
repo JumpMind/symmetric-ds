@@ -942,14 +942,13 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
               
                         long routeTs = System.currentTimeMillis() - ts;
-                        if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
+                        if (true || routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
                             engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
-                                            + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
+                                            + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, dataGaps={}",
                                     new Object[] {  context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
-                                            context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(),
-                                            StringUtils.abbreviate(context.getTransactions().toString(), MAX_LOGGING_LENGTH), 
+                                            context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(), 
                                             StringUtils.abbreviate(context.getDataGaps().toString(), MAX_LOGGING_LENGTH)
                                             });
                             ts = System.currentTimeMillis();
