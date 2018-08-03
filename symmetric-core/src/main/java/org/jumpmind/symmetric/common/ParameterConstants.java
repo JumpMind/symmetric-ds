@@ -449,7 +449,8 @@ final public class ParameterConstants {
     public final static String KAFKA_FORMAT = "kafka.format";
     public final static String KAFKA_MESSAGE_BY = "kafka.message.by";
     public final static String KAFKA_TOPIC_BY = "kafka.topic.by";
-    
+    public final static String KAFKA_CONFLUENT_REGISTRY_URL = "kafka.confluent.registry.url";
+    public final static String KAFKA_AVRO_JAVA_PACKAGE = "kafka.avro.java.package";
     		
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
