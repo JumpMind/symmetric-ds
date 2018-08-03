@@ -108,6 +108,8 @@ import org.jumpmind.util.FormatUtils;
  * @see IRouterService
  */
 public class RouterService extends AbstractService implements IRouterService {
+    
+    final int MAX_LOGGING_LENGTH = 512;
 
     protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
     
@@ -940,14 +942,15 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
               
                         long routeTs = System.currentTimeMillis() - ts;
-                        if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
+                        if (true || routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
                             engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
-                                            + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, transactions={}, dataGaps={}",
+                                            + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, dataGaps={}",
                                     new Object[] {  context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
-                                            context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(),
-                                            context.getTransactions().toString(), context.getDataGaps().toString() });
+                                            context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(), 
+                                            StringUtils.abbreviate(context.getDataGaps().toString(), MAX_LOGGING_LENGTH)
+                                            });
                             ts = System.currentTimeMillis();
                         }
 
