@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.db2;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
@@ -169,6 +170,14 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
+    }
+
+    protected String toClobExpression(Table table) {
+        if (table.hasNTypeColumns()) {
+            return "nclob('')||";
+        } else {
+            return "clob('')||";
+        }
     }
 
 }
