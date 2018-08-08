@@ -128,3 +128,24 @@ kafka.producer
 ifdef::pro[]
 Provide a value for the producer of the message.
 endif::pro[]
+
+
+==== Using a Confluent AVRO Schema Registry
+
+====
+NOTE: The message format must be AVRO for this option to work.
+====
+
+.Set following property to a Confluent registry.
+----
+kafka.confluent.registry.url
+----
+
+.Set following property to the base java package that contains the java POJOs that implement the org.apache.avro.generic.IndexedRecord. 
+----
+kafka.avro.java.package
+----
+
+====
+NOTE: The jar file containing the AVRO generated POJO java beans must be placed in the /lib or /patches folder of SymmetricDS and then a restart is required.
+====
