@@ -1,8 +1,8 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 
@@ -18,10 +18,10 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
     }
     
     public final void write(CsvData data) {
-        if (context.get(IDataWriter.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(IDataWriter.CONTEXT_BULK_WRITER_TO_USE).equals("default")) {
+        if (context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("default")) {
             writeDefault(data);
         }else{
-            context.put(IDataWriter.CONTEXT_BULK_WRITER_TO_USE, "bulk");
+            context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "bulk");
             bulkWrite(data);
         }
     }

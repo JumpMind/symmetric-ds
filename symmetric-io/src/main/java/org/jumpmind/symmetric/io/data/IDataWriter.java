@@ -25,8 +25,6 @@ import org.jumpmind.db.model.Table;
 
 public interface IDataWriter extends IDataResource {
 
-    public static final String CONTEXT_BULK_WRITER_TO_USE = "bulkWriterToUse";
-    
     public void start(Batch batch);
 
     public boolean start(Table table);

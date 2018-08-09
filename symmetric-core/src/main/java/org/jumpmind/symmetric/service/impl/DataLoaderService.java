@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
@@ -1038,8 +1039,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 loadInfo.setStatus(ProcessStatus.OK);
                             }
                         } catch (Exception e) {
-                            if (ctx.get(IDataWriter.CONTEXT_BULK_FALLBACK_TO_DEFAULT) != null && ctx.get(IDataWriter.CONTEXT_BULK_FALLBACK_TO_DEFAULT).equals("bulk")) {
-                                ctx.put(IDataWriter.CONTEXT_BULK_FALLBACK_TO_DEFAULT, "default");
+                            if (ctx.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && ctx.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
+                                ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
                                 processor.process(ctx);
                             } else {

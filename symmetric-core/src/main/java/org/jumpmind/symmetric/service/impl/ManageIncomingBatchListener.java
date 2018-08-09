@@ -34,14 +34,13 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
-import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
@@ -192,7 +191,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 throw ex;
             }
 
-            if (context.get(IDataWriter.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(IDataWriter.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
+            if (context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
                 log.info("Bulk loading failed for this batch " + context.getBatch().getBatchId() + ", falling back to default loading.");
                 log.debug("Bulk loading error.", ex);
             } else {
