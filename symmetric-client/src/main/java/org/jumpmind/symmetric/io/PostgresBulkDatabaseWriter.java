@@ -32,6 +32,7 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -116,7 +117,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 case DELETE:
                 default:
                     endCopy();
-                    context.put(IDataWriter.CONTEXT_BULK_FALLBACK_TO_DEFAULT, "default");
+                    context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
                     super.write(data);
                     break;
             } 
