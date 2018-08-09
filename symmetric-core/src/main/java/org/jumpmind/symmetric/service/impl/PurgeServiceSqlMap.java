@@ -124,7 +124,22 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 "where batch_id between ? and ? " +
 "and create_time < ? " +
 "and batch_id not in (select batch_id from $(outgoing_batch) where batch_id between ? and ?)");
-        
+ 
+        putSql("minOutgoingBatchNotStatusSql",
+                "select min(batch_id) from $(outgoing_batch) where status != ?");
+
+        putSql("deleteDataEventByRangeSql", "delete from $(data_event) where batch_id between ? and ?");
+
+        putSql("deleteOutgoingBatchByRangeSql", "delete from $(outgoing_batch) where batch_id between ? and ?");
+
+        putSql("countOutgoingBatchNotStatusSql",
+                "select count(*) count from $(outgoing_batch) where status != ?");
+
+        putSql("selectDataEventMinNotStatusSql", "select min(data_id) from $(data_event) " +
+                "where batch_id in (select batch_id from $(outgoing_batch) where status != ?)");
+
+        putSql("deleteDataByRangeSql", "delete from $(data) where data_id between ? and ? and create_time < ?");
+
     }
 
 }

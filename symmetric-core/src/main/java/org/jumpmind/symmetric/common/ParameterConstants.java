@@ -284,7 +284,9 @@ final public class ParameterConstants {
     public final static String PURGE_MAX_NUMBER_OF_DATA_IDS = "job.purge.max.num.data.to.delete.in.tx";
     public final static String PURGE_MAX_NUMBER_OF_BATCH_IDS = "job.purge.max.num.batches.to.delete.in.tx";
     public final static String PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS = "job.purge.max.num.data.event.batches.to.delete.in.tx";
-
+    public final static String PURGE_FIRST_PASS = "job.purge.first.pass";
+    public final static String PURGE_FIRST_PASS_OUTSTANDING_BATCHES_THRESHOLD = "job.purge.first.pass.outstanding.batches.threshold";
+    
     public final static String JMX_LINE_FEED = "jmx.line.feed";
 
     public final static String IP_FILTERS = "ip.filters";
