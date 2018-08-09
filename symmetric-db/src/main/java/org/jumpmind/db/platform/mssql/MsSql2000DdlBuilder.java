@@ -265,23 +265,9 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         ddl.append("IDENTITY (1,1) ");
-    }
+	}
 
-    @Override
-    public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
-        String prefix = Table.getFullyQualifiedTablePrefix(table.getCatalog(), table.getSchema(), 
-                delimitedIdentifierModeOn? databaseInfo.getDelimiterToken() : "", databaseInfo.getCatalogSeparator(), 
-                        databaseInfo.getSchemaSeparator());
-        ddl.append(prefix);
-        ddl.append("sp_executesql N'DROP INDEX ");
-        printIdentifier(getIndexName(index), ddl);
-        ddl.append(" ON ");
-        ddl.append(getDelimitedIdentifier(table.getName()));
-        ddl.append("'");
-        printEndOfStatement(ddl);
-    }
-
-    @Override
+	@Override
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
