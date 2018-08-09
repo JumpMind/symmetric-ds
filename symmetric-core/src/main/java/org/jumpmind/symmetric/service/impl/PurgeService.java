@@ -53,7 +53,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 public class PurgeService extends AbstractService implements IPurgeService {
 
     enum MinMaxDeleteSql {
-        DATA, DATA_RANGE, DATA_EVENT, DATA_EVENT_RANGE, OUTGOING_BATCH, STRANDED_DATA, STRANDED_DATA_EVENT
+        DATA, DATA_RANGE, DATA_EVENT, DATA_EVENT_RANGE, OUTGOING_BATCH, OUTGOING_BATCH_RANGE, STRANDED_DATA, STRANDED_DATA_EVENT
     };
 
     private IClusterService clusterService;
@@ -171,6 +171,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         int maxNumOfDataEventsToPurgeInTx = parameterService
                 .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);        
         int dataEventsPurgedCount = 0;
+        int outgoingbatchPurgedCount = 0;
 
         if (parameterService.is(ParameterConstants.PURGE_FIRST_PASS)) {
             log.info("Getting first batch_id for outstanding batches");
@@ -183,13 +184,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
             }
             dataEventsPurgedCount = purgeByMinMax(rangeMinMax, minGapStartId, MinMaxDeleteSql.DATA_EVENT_RANGE,
                     time.getTime(), maxNumOfDataEventsToPurgeInTx);
+            outgoingbatchPurgedCount = purgeByMinMax(rangeMinMax, minGapStartId, MinMaxDeleteSql.OUTGOING_BATCH_RANGE,
+                    time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         }
 
         dataEventsPurgedCount += purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.DATA_EVENT,
                 time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(dataEventsPurgedCount);
 
-        int outgoingbatchPurgedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.OUTGOING_BATCH,
+        outgoingbatchPurgedCount += purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.OUTGOING_BATCH,
                 time.getTime(), maxNumOfBatchIdsToPurgeInTx);
         statisticManager.incrementPurgedBatchOutgoingRows(outgoingbatchPurgedCount);
         
@@ -352,8 +355,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     break;
                 case DATA_RANGE:
                     deleteSql = getSql("deleteDataByRangeSql");
-                    args = new Object[] { minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType };
+                    args = new Object[] { minId, maxId, cutoffTime };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
                     break;
                 case DATA_EVENT:
                     deleteSql = getSql("deleteDataEventSql");
@@ -373,6 +376,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                             maxId };
                     argTypes = new int[] {Types.VARCHAR, idSqlType, idSqlType, idSqlType, idSqlType};
 
+                    break;
+                case OUTGOING_BATCH_RANGE:
+                    deleteSql = getSql("deleteOutgoingBatchByRangeSql");
+                    args = new Object[] { minId, maxId };
+                    argTypes = new int[] { idSqlType, idSqlType };
                     break;
                 case STRANDED_DATA:
                     deleteSql = getSql("deleteStrandedData");
