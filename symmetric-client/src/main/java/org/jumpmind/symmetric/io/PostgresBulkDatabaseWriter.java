@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.postgresql.copy.CopyIn;
@@ -84,7 +85,6 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            useDefaultDataWriter=false;
             switch (dataEventType) {
                 case INSERT:
                 	startCopy();
@@ -116,7 +116,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 case DELETE:
                 default:
                     endCopy();
-                    useDefaultDataWriter=true;
+                    context.put(IDataWriter.CONTEXT_BULK_FALLBACK_TO_DEFAULT, "default");
                     super.write(data);
                     break;
             } 
