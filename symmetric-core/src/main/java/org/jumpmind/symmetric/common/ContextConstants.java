@@ -13,4 +13,7 @@ final public class ContextConstants {
 
     public static final String FILE_SYNC_FAST_SCAN_TRACK_TIME = "file.sync.fast.scan.track.time";
 
+    public static final String CONTEXT_BULK_WRITER_TO_USE = "bulkWriterToUse";
+    
+    
 }

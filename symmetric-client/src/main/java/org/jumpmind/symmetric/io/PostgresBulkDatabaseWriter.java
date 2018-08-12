@@ -32,12 +32,14 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.postgresql.copy.CopyIn;
@@ -84,7 +86,6 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            useDefaultDataWriter=false;
             switch (dataEventType) {
                 case INSERT:
                 	startCopy();
@@ -116,7 +117,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 case DELETE:
                 default:
                     endCopy();
-                    useDefaultDataWriter=true;
+                    context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
                     super.write(data);
                     break;
             } 

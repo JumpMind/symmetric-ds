@@ -34,5 +34,7 @@ public interface IDataWriter extends IDataResource {
     public void end(Table table);
 
     public void end(Batch batch, boolean inError);
+    
+    
 
 }

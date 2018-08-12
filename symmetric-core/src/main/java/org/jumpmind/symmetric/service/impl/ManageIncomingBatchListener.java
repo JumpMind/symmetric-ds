@@ -34,6 +34,7 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -190,129 +191,135 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 throw ex;
             }
 
-            /*
-             * Reread batch to make sure it wasn't set to IG or OK
-             */
-            engine.getIncomingBatchService().refreshIncomingBatch(currentBatch);
-
-            Batch batch = context.getBatch();
-            isNewErrorForCurrentBatch = batch.getLineCount() != currentBatch.getFailedLineNumber();
-
-            if (context.getWriter() != null
-                    && context.getReader().getStatistics().get(batch) != null
-                    && context.getWriter().getStatistics().get(batch) != null) {
-                this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
-                        context.getWriter().getStatistics().get(batch), false);
-                statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
-                        this.currentBatch.getLoadRowCount());
-                statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
-                        this.currentBatch.getByteCount());
-                statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
+            if (context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
+                log.info("Bulk loading failed for this batch " + context.getBatch().getBatchId() + ", falling back to default loading.");
+                log.debug("Bulk loading error.", ex);
             } else {
-                log.error("An error caused a batch to fail without attempting to load data for batch " + 
-                        (batch != null ? batch.getNodeBatchId() : "?"), ex);
-            }
-
-            enableSyncTriggers(context);
-
-            if (ex instanceof IOException || ex instanceof TransportException
-                    || ex instanceof IoException) {
-                log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
-                this.currentBatch.setSqlMessage(ex.getMessage());
-            } else {
-                log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
-
-                SQLException se = ExceptionUtils.unwrapSqlException(ex);
-                if (ex instanceof ConflictException) {
-                    String message = ex.getMessage();
-                    if (se != null && isNotBlank(se.getMessage())) {
-                        message = message + " " + se.getMessage();
-                    }
-                    this.currentBatch.setSqlMessage(message);
-                    this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
-                    this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
-                } else if (se != null) {
-                    String sqlState = se.getSQLState();
-                    if (sqlState != null && sqlState.length() > 10) {
-                        sqlState = sqlState.replace("JDBC-", "");
-                        if (sqlState.length() > 10) {
-                            sqlState = sqlState.substring(0, 10);
-                        }
-                    }
-                    this.currentBatch.setSqlState(sqlState);
-                    this.currentBatch.setSqlCode(se.getErrorCode());
-                    this.currentBatch.setSqlMessage(se.getMessage());
-                    if (sqlTemplate.isForeignKeyViolation(se)) {
-                        this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
-                        this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
-                    }
+            
+                /*
+                 * Reread batch to make sure it wasn't set to IG or OK
+                 */
+                engine.getIncomingBatchService().refreshIncomingBatch(currentBatch);
+    
+                Batch batch = context.getBatch();
+                isNewErrorForCurrentBatch = batch.getLineCount() != currentBatch.getFailedLineNumber();
+    
+                if (context.getWriter() != null
+                        && context.getReader().getStatistics().get(batch) != null
+                        && context.getWriter().getStatistics().get(batch) != null) {
+                    this.currentBatch.setValues(context.getReader().getStatistics().get(batch),
+                            context.getWriter().getStatistics().get(batch), false);
+                    statisticManager.incrementDataLoaded(this.currentBatch.getChannelId(),
+                            this.currentBatch.getLoadRowCount());
+                    statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
+                            this.currentBatch.getByteCount());
+                    statisticManager.incrementDataLoadedErrors(this.currentBatch.getChannelId(), 1);
                 } else {
-                    this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
+                    log.error("An error caused a batch to fail without attempting to load data for batch " + 
+                            (batch != null ? batch.getNodeBatchId() : "?"), ex);
                 }
-
-            }
-
-            ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
-
-            // If we were in the process of skipping or ignoring a batch
-            // then its status would have been OK. We should not
-            // set the status to ER.
-            if (this.currentBatch.getStatus() != Status.OK &&
-                    this.currentBatch.getStatus() != Status.IG) {
-
-                this.currentBatch.setStatus(IncomingBatch.Status.ER);
-                if (context.getTable() != null && context.getData() != null) {
-                    try {
-                        IncomingError error = new IncomingError();
-                        error.setBatchId(this.currentBatch.getBatchId());
-                        error.setNodeId(this.currentBatch.getNodeId());
-                        error.setTargetCatalogName(context.getTable().getCatalog());
-                        error.setTargetSchemaName(context.getTable().getSchema());
-                        error.setTargetTableName(context.getTable().getName());
-                        error.setColumnNames(Table.getCommaDeliminatedColumns(context
-                                .getTable().getColumns()));
-                        error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
-                                .getTable().getPrimaryKeyColumns()));
-                        error.setCsvData(context.getData());
-                        error.setCurData((String) context.get(DefaultDatabaseWriter.CUR_DATA));
-                        error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
-                        error.setEventType(context.getData().getDataEventType());
-                        error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
-                        error.setFailedRowNumber(this.currentBatch.getFailedRowNumber());
-                        if (ex instanceof ConflictException) {
-                            ConflictException conflictEx = (ConflictException) ex;
-                            Conflict conflict = conflictEx.getConflict();
-                            if (conflict != null) {
-                                error.setConflictId(conflict.getConflictId());
+    
+                enableSyncTriggers(context);
+    
+                if (ex instanceof IOException || ex instanceof TransportException
+                        || ex instanceof IoException) {
+                    log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
+                    this.currentBatch.setSqlMessage(ex.getMessage());
+                } else {
+                    log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
+    
+                    SQLException se = ExceptionUtils.unwrapSqlException(ex);
+                    if (ex instanceof ConflictException) {
+                        String message = ex.getMessage();
+                        if (se != null && isNotBlank(se.getMessage())) {
+                            message = message + " " + se.getMessage();
+                        }
+                        this.currentBatch.setSqlMessage(message);
+                        this.currentBatch.setSqlState(ErrorConstants.CONFLICT_STATE);
+                        this.currentBatch.setSqlCode(ErrorConstants.CONFLICT_CODE);
+                    } else if (se != null) {
+                        String sqlState = se.getSQLState();
+                        if (sqlState != null && sqlState.length() > 10) {
+                            sqlState = sqlState.replace("JDBC-", "");
+                            if (sqlState.length() > 10) {
+                                sqlState = sqlState.substring(0, 10);
                             }
                         }
-                        if (transaction != null) {
-                            dataLoaderService.insertIncomingError(transaction, error);
-                        } else {
-                            dataLoaderService.insertIncomingError(error);
+                        this.currentBatch.setSqlState(sqlState);
+                        this.currentBatch.setSqlCode(se.getErrorCode());
+                        this.currentBatch.setSqlMessage(se.getMessage());
+                        if (sqlTemplate.isForeignKeyViolation(se)) {
+                            this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
+                            this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
                         }
-                    } catch (UniqueKeyException e) {
-                        // ignore. we already inserted an error for this row
-                        if (transaction != null) {
-                            transaction.rollback();
+                    } else {
+                        this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
+                    }
+    
+                }
+    
+                ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
+    
+                // If we were in the process of skipping or ignoring a batch
+                // then its status would have been OK. We should not
+                // set the status to ER.
+                if (this.currentBatch.getStatus() != Status.OK &&
+                        this.currentBatch.getStatus() != Status.IG) {
+    
+                    this.currentBatch.setStatus(IncomingBatch.Status.ER);
+                    if (context.getTable() != null && context.getData() != null) {
+                        try {
+                            IncomingError error = new IncomingError();
+                            error.setBatchId(this.currentBatch.getBatchId());
+                            error.setNodeId(this.currentBatch.getNodeId());
+                            error.setTargetCatalogName(context.getTable().getCatalog());
+                            error.setTargetSchemaName(context.getTable().getSchema());
+                            error.setTargetTableName(context.getTable().getName());
+                            error.setColumnNames(Table.getCommaDeliminatedColumns(context
+                                    .getTable().getColumns()));
+                            error.setPrimaryKeyColumnNames(Table.getCommaDeliminatedColumns(context
+                                    .getTable().getPrimaryKeyColumns()));
+                            error.setCsvData(context.getData());
+                            error.setCurData((String) context.get(DefaultDatabaseWriter.CUR_DATA));
+                            error.setBinaryEncoding(context.getBatch().getBinaryEncoding());
+                            error.setEventType(context.getData().getDataEventType());
+                            error.setFailedLineNumber(this.currentBatch.getFailedLineNumber());
+                            error.setFailedRowNumber(this.currentBatch.getFailedRowNumber());
+                            if (ex instanceof ConflictException) {
+                                ConflictException conflictEx = (ConflictException) ex;
+                                Conflict conflict = conflictEx.getConflict();
+                                if (conflict != null) {
+                                    error.setConflictId(conflict.getConflictId());
+                                }
+                            }
+                            if (transaction != null) {
+                                dataLoaderService.insertIncomingError(transaction, error);
+                            } else {
+                                dataLoaderService.insertIncomingError(error);
+                            }
+                        } catch (UniqueKeyException e) {
+                            // ignore. we already inserted an error for this row
+                            if (transaction != null) {
+                                transaction.rollback();
+                            }
                         }
                     }
                 }
-            }
-
-            if (transaction != null) {
-                if (incomingBatchService.isRecordOkBatchesEnabled()
-                        || this.currentBatch.isRetry()) {
-                    incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);
+    
+                if (transaction != null) {
+                    if (incomingBatchService.isRecordOkBatchesEnabled()
+                            || this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(transaction, this.currentBatch);
+                    } else {
+                        incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
+                    }
                 } else {
-                    incomingBatchService.insertIncomingBatch(transaction, this.currentBatch);
-                }
-            } else {
-                if (incomingBatchService.isRecordOkBatchesEnabled()
-                        || this.currentBatch.isRetry()) {
-                    incomingBatchService.updateIncomingBatch(this.currentBatch);
-                } else {
-                    incomingBatchService.insertIncomingBatch(this.currentBatch);
+                    if (incomingBatchService.isRecordOkBatchesEnabled()
+                            || this.currentBatch.isRetry()) {
+                        incomingBatchService.updateIncomingBatch(this.currentBatch);
+                    } else {
+                        incomingBatchService.insertIncomingBatch(this.currentBatch);
+                    }
                 }
             }
         } catch (Throwable e) {

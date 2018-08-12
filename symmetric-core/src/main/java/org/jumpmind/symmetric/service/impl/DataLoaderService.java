@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
@@ -985,12 +986,34 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             batchStartsToArriveTimeInMs = System.currentTimeMillis();
         }
 
+        protected ProtocolDataReader buildDataReader(final Batch batchInStaging, final IStagedResource resource) {
+            return new ProtocolDataReader(BatchType.LOAD, batchInStaging.getTargetNodeId(), resource) {
+                @Override
+                public Table nextTable() {
+                    Table table = super.nextTable();
+                    if (table != null && listener.currentBatch != null) {
+                        listener.currentBatch.incrementTableCount(table.getNameLowerCase());
+                    }
+                    return table;
+                }        
+                
+                public Batch nextBatch() {
+                    Batch nextBatch = super.nextBatch();
+                    if (nextBatch != null) {
+                        nextBatch.setStatistics(batchInStaging.getStatistics());
+                    }
+                    return nextBatch;
+                }
+            };
+        }
+        
         public void end(final DataContext ctx, final Batch batchInStaging, final IStagedResource resource) {
             final long networkMillis = System.currentTimeMillis() - batchStartsToArriveTimeInMs;
 
             Callable<IncomingBatch> loadBatchFromStage = new Callable<IncomingBatch>() {
                 public IncomingBatch call() throws Exception {
                     IncomingBatch incomingBatch = null;
+                    DataProcessor processor = null;
                     if (!isError && resource != null && resource.exists()) {
                         try {
                             loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(transferInfo.getSourceNodeId(),
@@ -1001,25 +1024,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                             loadInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
                             
-                            ProtocolDataReader reader = new ProtocolDataReader(BatchType.LOAD, batchInStaging.getTargetNodeId(), resource) {
-                                @Override
-                                public Table nextTable() {
-                                    Table table = super.nextTable();
-                                    if (table != null && listener.currentBatch != null) {
-                                        listener.currentBatch.incrementTableCount(table.getNameLowerCase());
-                                    }
-                                    return table;
-                                }        
-                                
-                                public Batch nextBatch() {
-                                    Batch nextBatch = super.nextBatch();
-                                    if (nextBatch != null) {
-                                        nextBatch.setStatistics(batchInStaging.getStatistics());
-                                    }
-                                    return nextBatch;
-                                }
-                            };
-                            DataProcessor processor = new DataProcessor(reader, null, listener, "data load from stage") {
+                            ProtocolDataReader reader = buildDataReader(batchInStaging, resource);
+                            
+                            processor = new DataProcessor(reader, null, listener, "data load from stage") {
                                 @Override
                                 protected IDataWriter chooseDataWriter(Batch batch) {
                                     boolean isRetry = ((ManageIncomingBatchListener) listener).getCurrentBatch().isRetry();
@@ -1032,8 +1039,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 loadInfo.setStatus(ProcessStatus.OK);
                             }
                         } catch (Exception e) {
-                            isError = true;
-                            throw e;
+                            if (ctx.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && ctx.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
+                                ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
+                                processor.setDataReader(buildDataReader(batchInStaging, resource));
+                                processor.process(ctx);
+                            } else {
+                                isError = true;
+                                throw e;
+                            }
                         } finally {
                             incomingBatch = listener.currentBatch; 
                             if (incomingBatch != null) {
