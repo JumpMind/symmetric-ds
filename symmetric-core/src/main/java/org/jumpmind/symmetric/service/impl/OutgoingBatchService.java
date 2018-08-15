@@ -239,14 +239,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
                         outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
                         outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
-                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
+                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
+                        outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
                 new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC,
                         Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 

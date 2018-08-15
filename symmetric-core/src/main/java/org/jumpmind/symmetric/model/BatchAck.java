@@ -77,6 +77,8 @@ public class BatchAck  implements Serializable {
     private long missingDeleteCount;
     
     private long skipCount;
+    
+    private long transformLoadMillis;
 
     public BatchAck(long batchId) {
         this.batchId = batchId;
@@ -271,6 +273,14 @@ public class BatchAck  implements Serializable {
 
     public void setSkipCount(long skipCount) {
         this.skipCount = skipCount;
+    }
+    
+    public void setTransformLoadMillis(long transformLoadMillis) {
+        this.transformLoadMillis = transformLoadMillis;
+    }
+    
+    public long getTransformLoadMillis() {
+        return transformLoadMillis;
     }
     
     

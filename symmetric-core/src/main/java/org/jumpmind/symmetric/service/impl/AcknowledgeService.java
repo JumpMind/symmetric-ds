@@ -102,6 +102,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setLoadRowCount(batch.getLoadRowCount());
                 outgoingBatch.setLoadInsertRowCount(batch.getLoadInsertRowCount());
                 outgoingBatch.setLoadUpdateRowCount(batch.getLoadUpdateRowCount());
+                outgoingBatch.setTransformLoadMillis(batch.getTransformLoadMillis());
                 outgoingBatch.setLoadDeleteRowCount(batch.getLoadDeleteRowCount());
                 outgoingBatch.setFallbackInsertCount(batch.getFallbackInsertCount());
                 outgoingBatch.setFallbackUpdateCount(batch.getFallbackUpdateCount());
