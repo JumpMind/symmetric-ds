@@ -45,6 +45,10 @@ public class Statistics {
     public void set(String category, long value) {
         stats.put(category, value);
     }
+    
+    public boolean contains(String category) {
+        return stats.containsKey(category);
+    }
 
     public void increment(String category, long increment) {
         Long value = stats.get(category);
