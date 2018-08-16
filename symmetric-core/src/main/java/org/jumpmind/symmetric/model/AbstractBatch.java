@@ -411,7 +411,7 @@ public class AbstractBatch implements Serializable {
         this.status = status;
     }
 
-    public void setStatus(String status) {
+    public void setStatusFromString(String status) {
         try {
             this.status = Status.valueOf(status);
         } catch (IllegalArgumentException e) {
