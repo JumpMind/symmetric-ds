@@ -1087,7 +1087,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             if (channel != null && (includeDisabledChannels || channel.isEnabled())) {
                 OutgoingBatch batch = new OutgoingBatch();
                 batch.setNodeId(rs.getString("node_id"));
-                batch.setStatus(rs.getString("status"));
+                batch.setStatusFromString(rs.getString("status"));
                 batch.setBatchId(rs.getLong("batch_id"));
                 if (!statusOnly) {
                     batch.setChannelId(channelId);
