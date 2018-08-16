@@ -372,10 +372,11 @@ public class AndroidJobManager implements IJobManager {
     }
 
     @Override
-    public void startJobsAfterConfigChange() {
-        // No action on Android
+    public void restartJobs() {
+        this.stopJobs();
+        this.startJobs();
     }
-
+    
     @Override
     public void init() {
         // No action on Android        

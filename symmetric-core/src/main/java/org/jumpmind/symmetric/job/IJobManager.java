@@ -36,8 +36,6 @@ public interface IJobManager {
     
     public void stopJobs();
     
-    public void startJobsAfterConfigChange();
-    
     public void destroy();
     
     public List<IJob> getJobs();
@@ -51,5 +49,7 @@ public interface IJobManager {
     public boolean isStarted();
     
     public boolean isJobApplicableToNodeGroup(IJob job);
+    
+    public void restartJobs();
     
 }

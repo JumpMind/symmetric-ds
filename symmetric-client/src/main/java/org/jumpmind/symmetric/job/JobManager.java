@@ -72,13 +72,7 @@ public class JobManager extends AbstractService implements IJobManager {
     
     @Override
     public void init() {
-        if (this.jobs != null && !this.jobs.isEmpty()) {
-            for (IJob job : jobs) {
-                if (job.isStarted()) {                    
-                    job.stop();
-                }
-            }
-        }
+        this.stopJobs();
         List<JobDefinition> jobDefitions = loadJobs(engine);
         
         BuiltInJobs builtInJobs = new BuiltInJobs();
@@ -138,17 +132,7 @@ public class JobManager extends AbstractService implements IJobManager {
         return engine.getParameterService().getNodeGroupId().equals(nodeGroupId);
     }
 
-    @Override
-    public synchronized void startJobsAfterConfigChange() {
-        if (jobs != null) {
-            for (IJob job : jobs) {
-                if (isAutoStartConfigured(job) && !job.isStarted()) {
-                    job.start();
-                }
-            }
-        }
-    }
-    
+
     protected boolean isAutoStartConfigured(IJob job) {
         String autoStartValue = null;
         
@@ -210,6 +194,12 @@ public class JobManager extends AbstractService implements IJobManager {
         }
         return jobsSorted;
     }
+    
+    @Override
+    public void restartJobs() {
+        this.init();
+        this.startJobs();
+    }
 
     @Override
     public void saveJob(JobDefinition job) {
@@ -220,8 +210,7 @@ public class JobManager extends AbstractService implements IJobManager {
         if (sqlTemplate.update(getSql("updateJobSql"), args) <= 0) {
             sqlTemplate.update(getSql("insertJobSql"), args);
         } 
-        init();
-        startJobsAfterConfigChange();
+        restartJobs();
     }
     
     @Override
@@ -233,7 +222,6 @@ public class JobManager extends AbstractService implements IJobManager {
         }  else {            
             throw new SymmetricException("Failed to remove job " + name + ".  Note that BUILT_IN jobs cannot be removed.");
         }
-        init();
-        startJobsAfterConfigChange();        
+        restartJobs();        
     }
 }

@@ -315,8 +315,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             IJobManager jobManager = engine.getJobManager();
             if (jobManager != null && jobManager.isStarted()) {
                 log.info("About to restart jobs because new configuration came through the data loader");
-                jobManager.init();
-                jobManager.startJobsAfterConfigChange();                     
+                jobManager.restartJobs();                    
             }
             context.remove(CTX_KEY_RESTART_JOBMANAGER_NEEDED);
         }
