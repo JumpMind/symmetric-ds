@@ -27,6 +27,8 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.util.Statistics;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.*;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.*;
 
 public class IncomingBatch extends AbstractBatch {
 
@@ -56,11 +58,12 @@ public class IncomingBatch extends AbstractBatch {
             mergeInjectedBatchStatistics(readerStatistics);
         }
         if (writerStatistics != null) {
-            setFilterMillis(writerStatistics.get(DataWriterStatisticConstants.FILTERMILLIS));
-            setLoadMillis(writerStatistics.get(DataWriterStatisticConstants.LOADMILLIS));
-            setLoadRowCount(writerStatistics.get(DataWriterStatisticConstants.ROWCOUNT));
-            setFallbackInsertCount(writerStatistics.get(DataWriterStatisticConstants.FALLBACKINSERTCOUNT));
-            setFallbackUpdateCount(writerStatistics.get(DataWriterStatisticConstants.FALLBACKUPDATECOUNT));
+            setFilterMillis(writerStatistics.get(FILTERMILLIS));
+            setLoadMillis(writerStatistics.get(LOADMILLIS));
+            setLoadRowCount(writerStatistics.get(ROWCOUNT));
+            setTransformLoadMillis(writerStatistics.get(TRANSFORMMILLIS));
+            setFallbackInsertCount(writerStatistics.get(FALLBACKINSERTCOUNT));
+            setFallbackUpdateCount(writerStatistics.get(FALLBACKUPDATECOUNT));
             setMissingDeleteCount(writerStatistics.get(DataWriterStatisticConstants.MISSINGDELETECOUNT));
             setIgnoreCount(writerStatistics.get(DataWriterStatisticConstants.IGNORECOUNT));
             setIgnoreRowCount(writerStatistics.get(DataWriterStatisticConstants.IGNOREROWCOUNT));
@@ -78,29 +81,29 @@ public class IncomingBatch extends AbstractBatch {
     }
 
     public void mergeInjectedBatchStatistics(Statistics statistics) {
-        setLoadFlag(statistics.get(DataReaderStatistics.LOAD_FLAG) == 1);
-        setExtractCount(statistics.get(DataReaderStatistics.EXTRACT_COUNT));
-        setSentCount(statistics.get(DataReaderStatistics.SENT_COUNT));
-        setLoadCount(statistics.get(DataReaderStatistics.LOAD_COUNT));
-        setLoadId(statistics.get(DataReaderStatistics.LOAD_ID));
-        setCommonFlag(statistics.get(DataReaderStatistics.COMMON_FLAG) == 1);
-        setRouterMillis(statistics.get(DataReaderStatistics.ROUTER_MILLIS));
-        setExtractMillis(statistics.get(DataReaderStatistics.EXTRACT_MILLIS));
-        setTransformExtractMillis(statistics.get(DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS));
-        setTransformLoadMillis(statistics.get(DataReaderStatistics.TRANSFORM_LOAD_MILLIS));
-        setReloadRowCount(statistics.get(DataReaderStatistics.RELOAD_ROW_COUNT));
-        setOtherRowCount(statistics.get(DataReaderStatistics.OTHER_ROW_COUNT));
-        setDataRowCount(statistics.get(DataReaderStatistics.DATA_ROW_COUNT));
-        setDataInsertRowCount(statistics.get(DataReaderStatistics.DATA_INSERT_ROW_COUNT));
-        setDataUpdateRowCount(statistics.get(DataReaderStatistics.DATA_UPDATE_ROW_COUNT));
-        setDataDeleteRowCount(statistics.get(DataReaderStatistics.DATA_DELETE_ROW_COUNT));
-        setExtractRowCount(statistics.get(DataReaderStatistics.EXTRACT_ROW_COUNT));
-        setExtractInsertRowCount(statistics.get(DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT));
-        setExtractUpdateRowCount(statistics.get(DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT));
-        setExtractDeleteRowCount(statistics.get(DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT));
-        setFailedDataId(statistics.get(DataReaderStatistics.FAILED_DATA_ID));
-    }
-
+        if (statistics.contains(LOAD_FLAG)) setLoadFlag(statistics.get(LOAD_FLAG) == 1);
+        if (statistics.contains(EXTRACT_COUNT)) setExtractCount(statistics.get(DataReaderStatistics.EXTRACT_COUNT));
+        if (statistics.contains(SENT_COUNT)) setSentCount(statistics.get(DataReaderStatistics.SENT_COUNT));
+        if (statistics.contains(LOAD_COUNT)) setLoadCount(statistics.get(DataReaderStatistics.LOAD_COUNT));
+        if (statistics.contains(LOAD_ID)) setLoadId(statistics.get(DataReaderStatistics.LOAD_ID));
+        if (statistics.contains(COMMON_FLAG)) setCommonFlag(statistics.get(DataReaderStatistics.COMMON_FLAG) == 1);
+        if (statistics.contains(ROUTER_MILLIS)) setRouterMillis(statistics.get(DataReaderStatistics.ROUTER_MILLIS));
+        if (statistics.contains(EXTRACT_MILLIS)) setExtractMillis(statistics.get(DataReaderStatistics.EXTRACT_MILLIS));
+        if (statistics.contains(TRANSFORM_EXTRACT_MILLIS)) setTransformExtractMillis(statistics.get(DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS));
+        if (statistics.contains(TRANSFORM_LOAD_MILLIS)) setTransformLoadMillis(statistics.get(DataReaderStatistics.TRANSFORM_LOAD_MILLIS));
+        if (statistics.contains(RELOAD_ROW_COUNT)) setReloadRowCount(statistics.get(DataReaderStatistics.RELOAD_ROW_COUNT));
+        if (statistics.contains(OTHER_ROW_COUNT)) setOtherRowCount(statistics.get(DataReaderStatistics.OTHER_ROW_COUNT));
+        if (statistics.contains(DATA_ROW_COUNT)) setDataRowCount(statistics.get(DataReaderStatistics.DATA_ROW_COUNT));
+        if (statistics.contains(DATA_INSERT_ROW_COUNT)) setDataInsertRowCount(statistics.get(DataReaderStatistics.DATA_INSERT_ROW_COUNT));
+        if (statistics.contains(DATA_UPDATE_ROW_COUNT)) setDataUpdateRowCount(statistics.get(DataReaderStatistics.DATA_UPDATE_ROW_COUNT));
+        if (statistics.contains(DATA_DELETE_ROW_COUNT)) setDataDeleteRowCount(statistics.get(DataReaderStatistics.DATA_DELETE_ROW_COUNT));
+        if (statistics.contains(EXTRACT_ROW_COUNT)) setExtractRowCount(statistics.get(DataReaderStatistics.EXTRACT_ROW_COUNT));
+        if (statistics.contains(EXTRACT_INSERT_ROW_COUNT)) setExtractInsertRowCount(statistics.get(DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT));
+        if (statistics.contains(EXTRACT_UPDATE_ROW_COUNT)) setExtractUpdateRowCount(statistics.get(DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT));
+        if (statistics.contains(EXTRACT_DELETE_ROW_COUNT)) setExtractDeleteRowCount(statistics.get(DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT));
+        if (statistics.contains(FAILED_DATA_ID)) setFailedDataId(statistics.get(DataReaderStatistics.FAILED_DATA_ID));
+    }   
+        
     public void setNodeBatchId(String value) {
         if (value != null) {
             int splitIndex = value.lastIndexOf("-");

@@ -601,7 +601,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             }
             
             if (isNotBlank(remoteHost)) {
-                NodeHost nodeHost = new NodeHost(node.getNodeId(), engine.getClusterService().getInstanceId());
+                NodeHost nodeHost = new NodeHost(node.getNodeId(), null);
                 nodeHost.setHeartbeatTime(new Date());
                 nodeHost.setIpAddress(remoteAddress);
                 nodeHost.setHostName(remoteHost);
@@ -658,7 +658,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                         nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
                 
                 if (isNotBlank(remoteHost)) {
-                    NodeHost nodeHost = new NodeHost(node.getNodeId(), engine.getClusterService().getInstanceId());
+                    NodeHost nodeHost = new NodeHost(node.getNodeId(), null);
                     nodeHost.setHeartbeatTime(new Date());
                     nodeHost.setIpAddress(remoteAddress);
                     nodeHost.setHostName(remoteHost);

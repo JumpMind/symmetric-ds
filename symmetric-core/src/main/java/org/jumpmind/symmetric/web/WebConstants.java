@@ -89,6 +89,8 @@ public class WebConstants {
     
     public static final String ACK_LOAD_ROW_COUNT = "loadRowCount-";
     
+    public static final String TRANSFORM_TIME = "transformTime-";
+    
     public static final String ACK_LOAD_INSERT_ROW_COUNT = "loadInsertRowCount-";
     
     public static final String ACK_LOAD_UPDATE_ROW_COUNT = "loadUpdateRowCount-";

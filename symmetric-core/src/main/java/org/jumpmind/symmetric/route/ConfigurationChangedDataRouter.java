@@ -634,8 +634,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 IJobManager jobManager = engine.getJobManager();
                 if (jobManager != null) {
                     log.info("About to restart jobs because new configuration come through the data router");
-                    jobManager.init();
-                    jobManager.startJobsAfterConfigChange();
+                    jobManager.restartJobs();
                 }
             }
             

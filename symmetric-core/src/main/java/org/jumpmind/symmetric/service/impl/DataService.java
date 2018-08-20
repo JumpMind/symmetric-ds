@@ -921,34 +921,39 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
                                 triggerHistory.getSourceTableName(), false);  
                         
-                        processInfo.setCurrentTableName(table.getName());
-                        
-                        long rowCount = getDataCountForReload(table, targetNode, selectSql);        
-                        long transformMultiplier = getTransformMultiplier(table, triggerRouter);
-                        
-                        // calculate the number of batches needed for table.
-                        long numberOfBatches = 1;
-                        long lastBatchSize = channel.getMaxBatchSize();
-                        
-                        if (rowCount > 0) {
-                            numberOfBatches = (rowCount * transformMultiplier / channel.getMaxBatchSize()) + 1;
-                            lastBatchSize = rowCount % numberOfBatches;                            
-                        }
+                        if (table != null) {
+                            processInfo.setCurrentTableName(table.getName());
 
-                        long startBatchId = -1;
-                        long endBatchId = -1;
-                        for (int i = 0; i < numberOfBatches; i++) {
-                            long batchSize = i == numberOfBatches-1 ? lastBatchSize : channel.getMaxBatchSize();
-                            // needs to grab the start and end batch id
-                            endBatchId = insertReloadEvent(transaction, targetNode, triggerRouter,
-                                    triggerHistory, selectSql, true, loadId, createBy, Status.RQ, null, batchSize);
-                            if (startBatchId == -1) {
-                                startBatchId = endBatchId;
+                            long rowCount = getDataCountForReload(table, targetNode, selectSql);
+                            long transformMultiplier = getTransformMultiplier(table, triggerRouter);
+
+                            // calculate the number of batches needed for table.
+                            long numberOfBatches = 1;
+                            long lastBatchSize = channel.getMaxBatchSize();
+
+                            if (rowCount > 0) {
+                                numberOfBatches = (rowCount * transformMultiplier / channel.getMaxBatchSize()) + 1;
+                                lastBatchSize = rowCount % numberOfBatches;
                             }
+
+                            long startBatchId = -1;
+                            long endBatchId = -1;
+                            for (int i = 0; i < numberOfBatches; i++) {
+                                long batchSize = i == numberOfBatches - 1 ? lastBatchSize : channel.getMaxBatchSize();
+                                // needs to grab the start and end batch id
+                                endBatchId = insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory, selectSql, true,
+                                        loadId, createBy, Status.RQ, null, batchSize);
+                                if (startBatchId == -1) {
+                                    startBatchId = endBatchId;
+                                }
+                            }
+
+                            engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
+                                    triggerRouter, startBatchId, endBatchId);
+                        } else {
+                            log.warn("The table defined by trigger_hist row %d no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());
+                            
                         }
-                        
-                        engine.getDataExtractorService().requestExtractRequest(transaction,
-                                targetNode.getNodeId(), channel.getQueue(), triggerRouter, startBatchId, endBatchId);
                     } else {
                         insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
                                 selectSql, true, loadId, createBy, Status.NE, null, -1);
@@ -1768,6 +1773,7 @@ public class DataService extends AbstractService implements IDataService {
             log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
             TriggerHistory hist = data.getTriggerHistory();
             Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
             Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
     
             List<TableRow> tableRows = new ArrayList<TableRow>();

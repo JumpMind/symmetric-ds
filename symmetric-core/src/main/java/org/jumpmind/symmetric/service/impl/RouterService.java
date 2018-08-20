@@ -942,7 +942,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
               
                         long routeTs = System.currentTimeMillis() - ts;
-                        if (true || routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
+                        if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
                             engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                             log.info(
                                     "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "

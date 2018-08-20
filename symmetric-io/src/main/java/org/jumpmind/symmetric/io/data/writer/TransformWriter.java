@@ -130,7 +130,6 @@ public class TransformWriter extends NestedDataWriter {
                 start(context.getLastParsedTable());
             }
 
-            long ts = System.currentTimeMillis();
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.ROW_DATA);
             
@@ -174,10 +173,10 @@ public class TransformWriter extends NestedDataWriter {
                 List<TransformedData> dataThatHasBeenTransformed = 
                         transform(localEventType, context, transformation, sourceKeyValues, oldSourceValues, sourceValues);
                 
+                
                 for (TransformedData transformedData : dataThatHasBeenTransformed) {
                     Table transformedTable = transformedData.buildTargetTable();
                     CsvData csvData = transformedData.buildTargetCsvData();
-                    long transformTimeInMs = System.currentTimeMillis() - ts;
                     boolean processData = true;
                     if (lastTransformedTable == null || !lastTransformedTable.equals(transformedTable)) {
                         if (lastTransformedTable != null) {
@@ -193,11 +192,6 @@ public class TransformWriter extends NestedDataWriter {
                     if (processData || !csvData.requiresTable()) {
                         this.nestedWriter.write(csvData);
                     }
-                    Statistics stats = this.nestedWriter.getStatistics().get(batch);
-                    if (stats != null) {
-                        stats.increment(DataWriterStatisticConstants.TRANSFORMMILLIS, transformTimeInMs);
-                    }
-                    ts = System.currentTimeMillis();
                 }
             }
         } else {
@@ -215,6 +209,7 @@ public class TransformWriter extends NestedDataWriter {
     protected List<TransformedData> transform(DataEventType eventType, DataContext context,
             TransformTable transformation, Map<String, String> sourceKeyValues,
             Map<String, String> oldSourceValues, Map<String, String> sourceValues) {
+        long ts = System.currentTimeMillis();
         try {
             List<TransformedData> dataToTransform = create(context, eventType, transformation,
                     sourceKeyValues, oldSourceValues, sourceValues);
@@ -253,6 +248,13 @@ public class TransformWriter extends NestedDataWriter {
                         "unknown.  Transformation aborted during tranformation of key");
             }
             return new ArrayList<TransformedData>(0);
+        } finally {
+            long transformTimeInMs = System.currentTimeMillis() - ts;
+            Statistics stats = this.nestedWriter.getStatistics().get(batch);
+            if (stats != null) {
+                stats.increment(DataWriterStatisticConstants.TRANSFORMMILLIS, transformTimeInMs);
+            }
+            ts = System.currentTimeMillis();
         }
 
     }

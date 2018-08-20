@@ -1026,6 +1026,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
                             currentBatch.setDataUpdateRowCount(stats.get(DataWriterStatisticConstants.UPDATECOUNT));
                             currentBatch.setDataDeleteRowCount(stats.get(DataWriterStatisticConstants.DELETECOUNT));
+                            currentBatch.setTransformExtractMillis(transformTimeInMs);
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                             statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
@@ -1062,6 +1063,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (updateBatchStatistics) {
                 long dataEventCount = currentBatch.getDataRowCount();
                 long insertEventCount = currentBatch.getDataInsertRowCount();
+                
                 currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
 
                 // preserve in the case of a reload event
@@ -1082,6 +1084,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 if (byteCount > 0) {
                     currentBatch.setByteCount(byteCount);
+                }
+                
+                if (transformTimeInMs > 0) {
+                    currentBatch.setTransformExtractMillis(transformTimeInMs);
                 }
 
             }

@@ -239,14 +239,15 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
                         outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
                         outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
-                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
+                        outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
+                        outgoingBatch.getBatchId(), outgoingBatch.getNodeId() },
                 new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC,
                         Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
-                        Types.NUMERIC,
+                        Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
@@ -1086,7 +1087,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             if (channel != null && (includeDisabledChannels || channel.isEnabled())) {
                 OutgoingBatch batch = new OutgoingBatch();
                 batch.setNodeId(rs.getString("node_id"));
-                batch.setStatus(rs.getString("status"));
+                batch.setStatusFromString(rs.getString("status"));
                 batch.setBatchId(rs.getLong("batch_id"));
                 if (!statusOnly) {
                     batch.setChannelId(channelId);
