@@ -247,6 +247,25 @@ public class SnapshotUtil {
         			"show processlist");
         }
 
+        if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            try {
+                List<DataGap> gaps = engine.getRouterService().getDataGaps();
+                SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"));
+                fos.write("start_id,end_id,create_time,last_update_time\n".getBytes());
+                if (gaps != null) {
+                    for (DataGap gap : gaps) {
+                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\""
+                                + dformat.format(gap.getLastUpdateTime()) + "\"\n").getBytes());
+                    }
+                }
+            } catch (IOException e) {
+                log.warn("Failed to export data gap information", e);
+            } finally {
+                IOUtils.closeQuietly(fos);
+            }            
+        }
+
         fwriter = null;
         try {
             fwriter = new FileWriter(new File(tmpDir, "threads.txt"));
