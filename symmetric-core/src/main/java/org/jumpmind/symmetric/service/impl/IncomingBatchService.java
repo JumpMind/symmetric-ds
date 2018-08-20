@@ -490,7 +490,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
             batch.setBatchId(rs.getLong("batch_id"));
             batch.setNodeId(rs.getString("node_id"));
             batch.setChannelId(rs.getString("channel_id"));
-            batch.setStatus(rs.getString("status"));
+            batch.setStatusFromString(rs.getString("status"));
             batch.setRouterMillis(rs.getLong("router_millis"));
             batch.setNetworkMillis(rs.getLong("network_millis"));
             batch.setFilterMillis(rs.getLong("filter_millis"));
