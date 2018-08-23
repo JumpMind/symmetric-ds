@@ -1205,6 +1205,10 @@ public class RouterService extends AbstractService implements IRouterService {
         return extensionService.getExtensionPointMap(IDataRouter.class);
     }
 
+    public List<DataGap> getDataGaps() {
+        return gapDetector.getDataGaps();
+    }
+
     protected Table buildTableFromTriggerHistory(TriggerHistory triggerHistory) {
     	Table table = new Table(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName());
     	String[] columnNames = triggerHistory.getColumnNames().split(",");

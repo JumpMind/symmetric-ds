@@ -39,6 +39,7 @@ import bsh.EvalError;
 import bsh.Interpreter;
 import bsh.ParseException;
 import bsh.TargetError;
+import bsh.Variable;
 
 public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
 
@@ -153,6 +154,8 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
 
     protected void bind(Interpreter interpreter, DataContext context, Table table, CsvData data, Exception error)
             throws EvalError {
+        
+        resetInterpreter(interpreter);
 
         interpreter.set(LOG, log);
         interpreter.set(ENGINE, this.engine);
@@ -186,6 +189,12 @@ public class BshDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             }
         }
 
+    }
+
+    protected void resetInterpreter(Interpreter interpreter) throws EvalError {
+        for (Variable variable : interpreter.getNameSpace().getDeclaredVariables()) {
+            interpreter.unset(variable.getName());
+        }
     }
 
     protected void processError(LoadFilter currentFilter, Table table, Throwable ex) {
