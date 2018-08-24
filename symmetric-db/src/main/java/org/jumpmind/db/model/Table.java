@@ -22,12 +22,14 @@ package org.jumpmind.db.model;
 import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -1231,7 +1233,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             boolean setPrimaryKeys) {
         Table table = copy();
         table.orderColumns(orderedColumnNames);
-
+        
         if (setPrimaryKeys && columns != null) {
             for (Column column : table.columns) {
                 if (column != null) {
@@ -1249,6 +1251,20 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                         }
                     }
                 }
+            }
+            
+            if (table.getForeignKeys() != null && table.getForeignKeys().length > 0) {
+                List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
+                Set<String> columnsSet = new HashSet<String>(Arrays.asList(orderedColumnNames));
+                for (ForeignKey fk : table.getForeignKeys()) {
+                    for (Reference ref : fk.getReferences()) {
+                        if (ref != null && ref.getLocalColumn() != null && columnsSet.contains(ref.getLocalColumnName())) {
+                            foreignKeys.add(fk);
+                        }
+                    }
+                }
+                table.removeAllForeignKeys();
+                table.addForeignKeys(foreignKeys);
             }
         }
 
