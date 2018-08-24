@@ -1190,9 +1190,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     protected boolean isStagingFileLockRequired(OutgoingBatch batch) {
         return batch.isCommonFlag() 
-                && parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) 
-                && parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)
-                && parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB);
+                && parameterService.is(ParameterConstants.CLUSTER_STAGING_ENABLED);
     }    
 
     protected void triggerReExtraction(OutgoingBatch currentBatch) {
