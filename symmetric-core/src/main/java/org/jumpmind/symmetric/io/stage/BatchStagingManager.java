@@ -37,7 +37,8 @@ public class BatchStagingManager extends StagingManager {
     @Override
     public long clean(long ttlInMs) {
         try {
-            if (!engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
+            boolean clusterStagingEnabled = engine.getParameterService().is(ParameterConstants.CLUSTER_STAGING_ENABLED, false);
+            if (clusterStagingEnabled && !engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
                 log.debug("Could not get a lock to run stage management");
                 return 0;
             }
