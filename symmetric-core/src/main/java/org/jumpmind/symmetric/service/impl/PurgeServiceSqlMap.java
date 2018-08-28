@@ -61,6 +61,10 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 "update $(outgoing_batch) set status=? where node_id not                   " + 
 "  in (select node_id from $(node) where sync_enabled=?) and status != ?   " );
 
+        putSql("updateStrandedBatchesByChannel",
+"update $(outgoing_batch) set status=? where channel_id not " + 
+"in (select channel_id from $(channel)) and status != ?");
+
         putSql("deleteStrandedData" ,
 "delete from $(data) where                                       " + 
 "  data_id between ? and ? and                                   " + 
@@ -139,7 +143,11 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
                 "where batch_id in (select batch_id from $(outgoing_batch) where status != ?)");
 
         putSql("deleteDataByRangeSql", "delete from $(data) where data_id between ? and ? and create_time < ?");
+
+        putSql("selectOldChannelsForData", "select distinct channel_id from $(data) where channel_id not in (select channel_id from $(channel))");
         
+        putSql("deleteDataByChannel", "delete from $(data) where channel_id = ?");
+
     }
 
 }
