@@ -33,6 +33,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IPurgeListener;
@@ -130,7 +131,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeDataRows(retentionCutoff);
                     rowsPurged += purgeOutgoingBatch(retentionCutoff);
                     rowsPurged += purgeStranded(retentionCutoff);
-                    rowsPurged += purgeExtractRequests();                        
+                    rowsPurged += purgeExtractRequests();
+                    rowsPurged += purgeStrandedChannels();
                 }
             } finally {
                 if (!force) {
@@ -208,7 +210,32 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     OutgoingBatch.Status.OK.name(), updateStrandedBatchesCount);
             statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
         }
+
+        updateStrandedBatchesCount = sqlTemplate.update(getSql("updateStrandedBatchesByChannel"),
+                OutgoingBatch.Status.OK.name(), OutgoingBatch.Status.OK.name());
+        if (updateStrandedBatchesCount > 0) {
+            log.info("Set the status to {} for {} batches that no longer are associated with valid channels",
+                    OutgoingBatch.Status.OK.name(), updateStrandedBatchesCount);
+            statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
+        }
+
         return updateStrandedBatchesCount;
+    }
+
+    private long purgeStrandedChannels() {
+        int rowsPurged = 0;
+        log.info("Looking for old channels in data");
+        List<String> channels = sqlTemplateDirty.query(getSql("selectOldChannelsForData"), new StringMapper());
+        if (channels.size() > 0) {
+            log.info("Found {} old channels", channels.size());
+            for (String channelId : channels) {
+                log.info("Purging data for channel {}", channelId);
+                rowsPurged += sqlTemplate.update(getSql("deleteDataByChannel"), channelId);
+            }
+            statisticManager.incrementPurgedDataRows(rowsPurged);
+            log.info("Done purging {} rows", rowsPurged);
+        }
+        return rowsPurged;
     }
 
     private long purgeDataRows(final Calendar time) {
