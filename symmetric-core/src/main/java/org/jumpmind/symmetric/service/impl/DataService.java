@@ -678,7 +678,7 @@ public class DataService extends AbstractService implements IDataService {
                     loadId, createBy);
         }
 
-        if (reloadRequests == null || reloadRequests.size() == 0) {
+        if (isFullLoad) {
             String beforeSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_BEFORE_SQL
                     : ParameterConstants.INITIAL_LOAD_BEFORE_SQL);
             if (isNotBlank(beforeSql)) {
@@ -697,7 +697,7 @@ public class DataService extends AbstractService implements IDataService {
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId,
             Map<String, TableReloadRequest> reloadRequests, boolean isFullLoad, String channelId) {
 
-        if (reloadRequests == null || reloadRequests.size() == 0) {
+        if (isFullLoad) {
             String afterSql = parameterService.getString(reverse ? ParameterConstants.INITIAL_LOAD_REVERSE_AFTER_SQL
                             : ParameterConstants.INITIAL_LOAD_AFTER_SQL);
             if (isNotBlank(afterSql)) {
