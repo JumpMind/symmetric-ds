@@ -28,8 +28,6 @@ import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IContextService;
 
-import nl.cad.tpsparse.tps.NotATopSpeedFileException;
-
 public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 
 	public abstract List<String> parse(File file, int lineNumber, int tableId);
@@ -138,9 +136,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 					}
 				} catch (IOException ioe) {
 					log.error("Unable to load file", ioe);
-				} catch (NotATopSpeedFileException ntsf) {
-					log.error("The file " + fileName + " is not a valid TopSpeed file.", ntsf);
-				}
+				} 
 				
 			}
 		}
