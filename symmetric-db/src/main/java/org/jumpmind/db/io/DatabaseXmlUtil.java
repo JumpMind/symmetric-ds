@@ -520,10 +520,10 @@ public class DatabaseXmlUtil {
             for (ForeignKey fk : table.getForeignKeys()) {
                 output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml(fk.getName()) + "\" foreignTable=\""
                         + StringEscapeUtils.escapeXml(fk.getForeignTableName()) + "\" foreignTableCatalog=\""
-                        + StringEscapeUtils.escapeXml(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getOldCatalog()) 
+                        + StringEscapeUtils.escapeXml(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog()) 
                             ? "" : fk.getForeignTableCatalog()) + 
                         "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml(fk.getForeignTableSchema() == null || 
-                            fk.getForeignTableSchema().equals(table.getOldSchema()) ? "" : fk.getForeignTableSchema())  + "\">\n");
+                            fk.getForeignTableSchema().equals(table.getSchema()) ? "" : fk.getForeignTableSchema())  + "\">\n");
                         		
                 for (Reference ref : fk.getReferences()) {
                     output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml(ref.getLocalColumnName())
