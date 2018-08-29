@@ -46,6 +46,8 @@ public class OracleDmlStatement extends DmlStatement {
                 name.toUpperCase().contains(TypeMap.GEOMETRY) || 
                 name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("SYM_WKT2GEOM(?)").append(",");
+        } else if (column.getJdbcTypeName().startsWith("XMLTYPE")) {
+            sql.append("XMLTYPE(?)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
@@ -60,6 +62,9 @@ public class OracleDmlStatement extends DmlStatement {
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
                     .append("SYM_WKT2GEOM(?)");
+        } else if (column.getJdbcTypeName().startsWith("XMLTYPE")) {
+            sql.append(quote).append(column.getName()).append(quote).append(" = ")
+                    .append("XMLTYPE(?)");
         } else {
             super.appendColumnEquals(sql, column);
         }        
@@ -68,9 +73,9 @@ public class OracleDmlStatement extends DmlStatement {
     @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int typeCode = super.getTypeCode(column, isDateOverrideToTimestamp);
-        if (column.getJdbcTypeName().startsWith("XML")) {
-            typeCode = Types.VARCHAR;
-        } else if (typeCode == Types.LONGVARCHAR) {
+        if (typeCode == Types.LONGVARCHAR
+                || isGeometry(column)
+                || column.getJdbcTypeName().startsWith("XMLTYPE")) {
             typeCode = Types.CLOB;
         }
         return typeCode;
@@ -84,6 +89,17 @@ public class OracleDmlStatement extends DmlStatement {
         } else {
             super.appendColumnNameForSql(sql, column, select);
         }        
+    }
+    
+    protected boolean isGeometry(Column column) {
+        String name = column.getJdbcTypeName();
+        if (name != null && (
+                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
+                name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
