@@ -97,7 +97,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     Map<String, Map<String, String>> tableColumnCache = new HashMap<String, Map<String, String>>();
 
     public KafkaWriterFilter(IParameterService parameterService) {
-        log.info(AVRO_CDC_SCHEMA);
         schema = parser.parse(AVRO_CDC_SCHEMA);
         this.url = parameterService.getString(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + "db.url");
         if (url == null) {
@@ -371,7 +370,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     public void batchComplete(DataContext context) {
         if (!context.getBatch().getChannelId().equals("heartbeat") && !context.getBatch().getChannelId().equals("config")) {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
-            log.info("Processing batch " + batchFileName + " for Kafka");
             try {
                 if (confluentUrl == null && kafkaDataMap.size() > 0) {
                     StringBuffer kafkaText = new StringBuffer();

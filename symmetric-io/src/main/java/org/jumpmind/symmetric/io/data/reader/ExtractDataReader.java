@@ -224,6 +224,18 @@ public class ExtractDataReader implements IDataReader {
         StringBuilder sql = new StringBuilder("select ");
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
+        
+        if ("XMLTYPE".equalsIgnoreCase(lobColumn.getJdbcTypeName()) && 2009 == lobColumn.getJdbcTypeCode()) {
+            sql.append("extract(");
+            sql.append(quote);
+            sql.append(lobColumn.getName());
+            sql.append(quote);
+            sql.append(", '/').getClobVal()");
+        } else {
+            sql.append(quote);
+            sql.append(lobColumn.getName());
+            sql.append(quote);
+        }
         sql.append(quote);
         sql.append(lobColumn.getName());
         sql.append(quote);
