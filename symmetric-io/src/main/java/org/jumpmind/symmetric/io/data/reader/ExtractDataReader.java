@@ -236,9 +236,6 @@ public class ExtractDataReader implements IDataReader {
             sql.append(lobColumn.getName());
             sql.append(quote);
         }
-        sql.append(quote);
-        sql.append(lobColumn.getName());
-        sql.append(quote);
         sql.append(",");
         sql.delete(sql.length() - 1, sql.length());
         sql.append(" from ");
