@@ -43,7 +43,7 @@ public class CsvUtils {
 
     public static CsvReader getCsvReader(Reader reader) {
         CsvReader csvReader = new CsvReader(reader);
-        csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_DOUBLED);
+        csvReader.setEscapeMode(CsvReader.ESCAPE_MODE_BACKSLASH);
         csvReader.setSafetySwitch(false);
         csvReader.setCaptureRawRecord(false);
         return csvReader;
