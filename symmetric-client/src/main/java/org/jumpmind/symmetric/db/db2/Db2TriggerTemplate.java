@@ -38,8 +38,8 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
         datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || rtrim(char(year(timestamp_iso($(tableAlias).\"$(columnName)\"))))||'-'||substr(digits(month(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'.'||RIGHT(REPEAT('0',6)||rtrim(char(microsecond(timestamp_iso($(tableAlias).\"$(columnName)\")))),6) || '\"' end" ;
         timeColumnTemplate = null;
         dateColumnTemplate = null;
-        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar(32672)),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
-        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || hex(cast($(tableAlias).\"$(columnName)\" as varchar(16336) for bit data)) || '\"' end" ;
+        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when length($(tableAlias).\"$(columnName)\") > 32672 then '\b' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar(32672)),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        blobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when length($(tableAlias).\"$(columnName)\") > 16336 then hex('\b') else '\"' || hex(cast($(tableAlias).\"$(columnName)\" as varchar(16336) for bit data)) || '\"' end" ;
         wrappedBlobColumnTemplate = null;
         booleanColumnTemplate = null;
         triggerConcatCharacter = "||" ;
