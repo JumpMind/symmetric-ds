@@ -1258,7 +1258,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                 Set<String> columnsSet = new HashSet<String>(Arrays.asList(orderedColumnNames));
                 for (ForeignKey fk : table.getForeignKeys()) {
                     for (Reference ref : fk.getReferences()) {
-                        if (ref != null && ref.getLocalColumn() != null && columnsSet.contains(ref.getLocalColumnName())) {
+                        if (ref != null && ref.getLocalColumnName() != null && columnsSet.contains(ref.getLocalColumnName())) {
                             foreignKeys.add(fk);
                         }
                     }
