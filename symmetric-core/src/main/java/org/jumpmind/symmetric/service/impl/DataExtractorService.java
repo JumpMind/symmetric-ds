@@ -2029,7 +2029,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<Column> lobColumns = table.getLobColumns(platform);
             for (Column c : lobColumns) {
                 String value = colMap.get(c.getName());
-                if (value != null && value.equals("\b")) {
+                if (value != null && (value.equals("\b") || value.equals("08"))) {
                     return true;
                 }
             }
