@@ -1041,6 +1041,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         } catch (Exception e) {
                             if (ctx.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && ctx.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
                                 ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
+                                listener.currentBatch.setStatus(Status.OK);
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
                                 processor.process(ctx);
                             } else {

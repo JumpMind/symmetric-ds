@@ -25,6 +25,7 @@ public class SqlTemplateSettings {
     protected int fetchSize = 1000;
     protected int queryTimeout;
     protected int batchSize = 100;
+    protected int batchBulkLoaderSize = 25;
     protected boolean readStringsAsBytes;
     protected boolean treatBinaryAsLob;
     protected boolean rightTrimCharValues;
@@ -115,5 +116,15 @@ public class SqlTemplateSettings {
     public void setAllowUpdatesWithResults(boolean allowUpdatesWithResults) {
         this.allowUpdatesWithResults = allowUpdatesWithResults;
     }
+
+    public int getBatchBulkLoaderSize() {
+        return batchBulkLoaderSize;
+    }
+
+    public void setBatchBulkLoaderSize(int batchBulkLoaderSize) {
+        this.batchBulkLoaderSize = batchBulkLoaderSize;
+    }
+    
+    
 
 }

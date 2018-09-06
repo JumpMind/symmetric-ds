@@ -66,6 +66,8 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     
     protected List<ISqlTransactionListener> listeners = new ArrayList<ISqlTransactionListener>();
     
+    protected int batchSize = 100;
+    
     public JdbcSqlTransaction(JdbcSqlTemplate jdbcSqlTemplate) {
         this(jdbcSqlTemplate, false);
     }
@@ -74,6 +76,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         this.autoCommit = autoCommit;
         this.jdbcSqlTemplate = jdbcSqlTemplate;
         this.logSqlBuilder = jdbcSqlTemplate.logSqlBuilder;
+        this.batchSize = jdbcSqlTemplate.getSettings().getBatchSize();
         this.init();
     }
     
@@ -453,7 +456,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                 long end = System.currentTimeMillis();
                 logSqlBuilder.logSql(log, "addBatch()", psql, args, argTypes, (end-start));
                 
-                if (markers.size() >= jdbcSqlTemplate.getSettings().getBatchSize()) {
+                if (markers.size() >= this.batchSize) {
                     rowsUpdated = flush();
                 }
             } else {
@@ -463,6 +466,14 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             throw jdbcSqlTemplate.translate(ex);
         }
         return rowsUpdated;
+    }
+    
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+    
+    public int getBatchSize() {
+        return this.batchSize;
     }
     
     protected int executePreparedUpdate(PreparedStatement preparedStatement, String sql, Object[] args, int[] argTypes) throws SQLException {

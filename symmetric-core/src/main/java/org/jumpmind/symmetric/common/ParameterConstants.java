@@ -48,6 +48,8 @@ final public class ParameterConstants {
     public final static String AUTO_START_ENGINE = "auto.start.engine";
 
     public final static String JDBC_EXECUTE_BATCH_SIZE = "db.jdbc.execute.batch.size";
+    public final static String JDBC_EXECUTE_BULK_BATCH_SIZE = "db.jdbc.bulk.execute.batch.size";
+    public final static String JDBC_EXECUTE_BULK_BATCH_OVERRIDE = "db.jdbc.bulk.execute.batch.override";
     public final static String JDBC_READ_STRINGS_AS_BYTES = "db.read.strings.as.bytes";
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
 
