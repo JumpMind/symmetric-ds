@@ -106,7 +106,7 @@ public class Db2zOsTriggerTemplate extends Db2TriggerTemplate {
 "                                            INSERT into $(defaultSchema)$(prefixName)_data                                                                                                             \n"+
 "                                                (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)         \n"+
 "                                            VALUES('$(targetTableName)', 'R', $(triggerHistoryId),                                                                                                     \n"+
-"                                                $(oldKeys),                                                                                                                                            \n"+
+"                                                $(newKeys),                                                                                                                                            \n"+
 "                                                $(channelExpression),                                                                                                                                  \n"+
 "                                                $(txIdExpression),                                                                                                                                     \n"+
 "                                                $(sourceNodeExpression),                                                                                                                               \n"+
