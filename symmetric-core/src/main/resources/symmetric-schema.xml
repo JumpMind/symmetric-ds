@@ -254,20 +254,20 @@
         <column name="extract_count" type="INTEGER"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
         <column name="sent_count" type="INTEGER"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
         <column name="load_count" type="INTEGER"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
-        <column name="reload_row_count" type="INTEGER" required="true" default="0"  description="The number of reload rows that are part of this batch." />
-        <column name="other_row_count" type="INTEGER" required="true" default="0" description="The number of other rows types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
-        <column name="data_row_count" type="INTEGER" required="true" default="0"  description="The number of data rows from the databasethat are part of this batch." />
-        <column name="extract_row_count" type="INTEGER" required="true" default="0"  description="The number of data rows after extracting that are part of this batch." />
-		<column name="load_row_count" type="INTEGER" required="true" default="0"  description="The number of data rows loaded that are part of this batch." />		
-		<column name="data_insert_row_count" type="INTEGER" required="true" default="0" description="The number of insert rows from the database that are part of this batch." />
-        <column name="data_update_row_count" type="INTEGER" required="true" default="0" description="The number of update rows from the database that are part of this batch." />
-        <column name="data_delete_row_count" type="INTEGER" required="true" default="0" description="The number of delete rows from the database that are part of this batch." />
-		<column name="extract_insert_row_count" type="INTEGER" required="true" default="0" description="The number of insert rows after extracting that are part of this batch." />
-        <column name="extract_update_row_count" type="INTEGER" required="true" default="0" description="The number of update rows after extracting that are part of this batch." />
-        <column name="extract_delete_row_count" type="INTEGER" required="true" default="0" description="The number of delete rows after extracting that are part of this batch." />
-		<column name="load_insert_row_count" type="INTEGER" required="true" default="0" description="The number of insert rows loaded that are part of this batch." />
-        <column name="load_update_row_count" type="INTEGER" required="true" default="0" description="The number of update rows loaded that are part of this batch." />
-        <column name="load_delete_row_count" type="INTEGER" required="true" default="0" description="The number of delete rows loaded that are part of this batch." />
+        <column name="reload_row_count" type="INTEGER" required="true" default="0"  description="The number of reloads in the batch, which include rows from any extract transforms." />
+        <column name="other_row_count" type="INTEGER" required="true" default="0" description="The number of SQL, BSH, and DDL events in the batch, which include rows from any extract transforms." />
+        <column name="data_row_count" type="INTEGER" required="true" default="0"  description="The total number of rows in the batch, which include rows from any extract transforms." />
+        <column name="extract_row_count" type="INTEGER" required="true" default="0"  description="The total number of rows extracted from the capture log." />
+		<column name="load_row_count" type="INTEGER" required="true" default="0"  description="The total number of rows loaded into the database, which includes rows from any load transforms or filters." />		
+		<column name="data_insert_row_count" type="INTEGER" required="true" default="0" description="The number of inserts in the batch, which include rows from any extract transforms." />
+        <column name="data_update_row_count" type="INTEGER" required="true" default="0" description="The number of updates in the batch, which include rows from any extract transforms." />
+        <column name="data_delete_row_count" type="INTEGER" required="true" default="0" description="The number of deletes in the batch, which include rows from any extract transforms." />
+		<column name="extract_insert_row_count" type="INTEGER" required="true" default="0" description="The number of inserts extracted from the capture log." />
+        <column name="extract_update_row_count" type="INTEGER" required="true" default="0" description="The number of updates extracted from the capture log." />
+        <column name="extract_delete_row_count" type="INTEGER" required="true" default="0" description="The number of deletes extracted from the capture log." />
+		<column name="load_insert_row_count" type="INTEGER" required="true" default="0" description="The number of inserts loaded into the database, which includes rows from any load transforms or filters." />
+        <column name="load_update_row_count" type="INTEGER" required="true" default="0" description="The number of updates loaded into the database, which includes rows from any load transforms or filters." />
+        <column name="load_delete_row_count" type="INTEGER" required="true" default="0" description="The number of deletes loaded into the database, which includes rows from any load transforms or filters." />
 		<column name="network_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
         <column name="filter_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
 		<column name="load_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
@@ -634,20 +634,20 @@
         <column name="extract_count" type="INTEGER"  required="true" default="0"  description="The number of times this an attempt to extract this batch occurred." />
         <column name="sent_count" type="INTEGER"  required="true" default="0"  description="The number of times this batch was sent.  A batch can be sent multiple times if an ACK is not received." />
         <column name="load_count" type="INTEGER"  required="true" default="0"  description="The number of times an attempt to load this batch occurred." />
-        <column name="reload_row_count" type="INTEGER" required="true" default="0"  description="The number of reload rows that are part of this batch." />
-        <column name="other_row_count" type="INTEGER" required="true" default="0" description="The number of other rows types that are part of this batch.  This includes any events types that are not a reload, insert, update or delete event type." />
-        <column name="data_row_count" type="INTEGER" required="true" default="0"  description="The number of data rows from the databasethat are part of this batch." />
-        <column name="extract_row_count" type="INTEGER" required="true" default="0"  description="The number of data rows after extracting that are part of this batch." />
-		<column name="load_row_count" type="INTEGER" required="true" default="0"  description="The number of data rows loaded that are part of this batch." />		
-		<column name="data_insert_row_count" type="INTEGER" required="true" default="0" description="The number of insert rows from the database that are part of this batch." />
-        <column name="data_update_row_count" type="INTEGER" required="true" default="0" description="The number of update rows from the database that are part of this batch." />
-        <column name="data_delete_row_count" type="INTEGER" required="true" default="0" description="The number of delete rows from the database that are part of this batch." />
-		<column name="extract_insert_row_count" type="INTEGER" required="true" default="0" description="The number of insert rows after extracting that are part of this batch." />
-        <column name="extract_update_row_count" type="INTEGER" required="true" default="0" description="The number of update rows after extracting that are part of this batch." />
-        <column name="extract_delete_row_count" type="INTEGER" required="true" default="0" description="The number of delete rows after extracting that are part of this batch." />
-		<column name="load_insert_row_count" type="INTEGER" required="true" default="0" description="The number of insert rows loaded that are part of this batch." />
-        <column name="load_update_row_count" type="INTEGER" required="true" default="0" description="The number of update rows loaded that are part of this batch." />
-        <column name="load_delete_row_count" type="INTEGER" required="true" default="0" description="The number of delete rows loaded that are part of this batch." />
+        <column name="reload_row_count" type="INTEGER" required="true" default="0"  description="The number of reloads in the batch, which include rows from any extract transforms." />
+        <column name="other_row_count" type="INTEGER" required="true" default="0" description="The number of SQL, BSH, and DDL events in the batch, which include rows from any extract transforms." />
+        <column name="data_row_count" type="INTEGER" required="true" default="0"  description="The total number of rows in the batch, which include rows from any extract transforms." />
+        <column name="extract_row_count" type="INTEGER" required="true" default="0"  description="The total number of rows extracted from the capture log." />
+		<column name="load_row_count" type="INTEGER" required="true" default="0"  description="The total number of rows loaded into the database, which includes rows from any load transforms or filters." />		
+		<column name="data_insert_row_count" type="INTEGER" required="true" default="0" description="The number of inserts in the batch, which include rows from any extract transforms." />
+        <column name="data_update_row_count" type="INTEGER" required="true" default="0" description="The number of updates in the batch, which include rows from any extract transforms." />
+        <column name="data_delete_row_count" type="INTEGER" required="true" default="0" description="The number of deletes in the batch, which include rows from any extract transforms." />
+		<column name="extract_insert_row_count" type="INTEGER" required="true" default="0" description="The number of inserts extracted from the capture log." />
+        <column name="extract_update_row_count" type="INTEGER" required="true" default="0" description="The number of updates extracted from the capture log." />
+        <column name="extract_delete_row_count" type="INTEGER" required="true" default="0" description="The number of deletes extracted from the capture log." />
+		<column name="load_insert_row_count" type="INTEGER" required="true" default="0" description="The number of inserts loaded into the database, which includes rows from any load transforms or filters." />
+        <column name="load_update_row_count" type="INTEGER" required="true" default="0" description="The number of updates loaded into the database, which includes rows from any load transforms or filters." />
+        <column name="load_delete_row_count" type="INTEGER" required="true" default="0" description="The number of deletes loaded into the database, which includes rows from any load transforms or filters." />
 		<column name="network_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent transfering this batch across the network." />
         <column name="filter_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent in filters processing data." />
 		<column name="load_millis" type="INTEGER" required="true" default="0" description="The number of milliseconds spent loading the data into the target database." />
