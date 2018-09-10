@@ -2159,6 +2159,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     sourceNode.getNodeId(), outgoingBatch.getNodeId(), outgoingBatch.isCommonFlag());
             this.targetNode = targetNode;
             this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(sourceNode, targetNode);
+            this.outgoingBatch.resetExtractRowStats();
         }
 
         public Batch getBatch() {
@@ -2420,6 +2421,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             List<SelectFromTableEvent> initialLoadEvents = new ArrayList<DataExtractorService.SelectFromTableEvent>(
                     1);
             initialLoadEvents.add(event);
+            this.outgoingBatch.resetExtractRowStats();
             this.init(batch, initialLoadEvents);
         }
 
