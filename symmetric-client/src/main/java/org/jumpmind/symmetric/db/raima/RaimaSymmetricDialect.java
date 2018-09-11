@@ -73,7 +73,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
                 .getSqlTemplate()
                 .queryForInt(
                         "select count(*) from sys_trigger where name = ? and tabname = ?"
-                                + checkSchemaSql, new Object[] { triggerName, tableName }) > 0;
+                                + checkSchemaSql, new Object[] { triggerName, tableName.toUpperCase() }) > 0;
     }
 
     @Override
