@@ -188,6 +188,13 @@ public class AbstractBatch implements Serializable {
         }
     }
 
+    public void resetExtractRowStats() {
+        this.extractRowCount = 0;
+        this.extractInsertRowCount = 0;
+        this.extractUpdateRowCount = 0;
+        this.extractDeleteRowCount = 0;
+    }
+
     public long getBatchId() {
         return batchId;
     }
