@@ -903,7 +903,7 @@ public class DataService extends AbstractService implements IDataService {
                         && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                     
                     String selectSql = selectSqlOverride;
-                    if (!StringUtils.isEmpty(selectSql)) {
+                    if (StringUtils.isEmpty(selectSql)) {
                         
                         if (reloadRequests != null) {
                             TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
