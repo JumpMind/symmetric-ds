@@ -65,7 +65,6 @@ import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
-import org.jumpmind.symmetric.load.KafkaWriterFilter;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
