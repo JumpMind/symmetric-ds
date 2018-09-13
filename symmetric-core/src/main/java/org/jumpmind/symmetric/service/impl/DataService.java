@@ -496,7 +496,7 @@ public class DataService extends AbstractService implements IDataService {
                                 transaction, mapReloadRequests);
 
                         insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                                triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo);
+                                triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo, null);
                         
                         insertSqlEventsAfterReload(targetNode, nodeIdRecord, loadId, createBy,
                                 transactional, transaction, reverse, 
@@ -888,7 +888,8 @@ public class DataService extends AbstractService implements IDataService {
     private void insertLoadBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
-            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
+            ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo,
+            String selectSqlOverride) {
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
         
         for (TriggerHistory triggerHistory : triggerHistories) {
@@ -901,15 +902,18 @@ public class DataService extends AbstractService implements IDataService {
                 if (triggerRouter.getInitialLoadOrder() >= 0
                         && engine.getGroupletService().isTargetEnabled(triggerRouter, targetNode)) {
                     
-                    String selectSql = null;
-                    if (reloadRequests != null) {
-                        TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
-                        selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
-                    }
-                    if (StringUtils.isBlank(selectSql)) {
-                        selectSql = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) 
+                    String selectSql = selectSqlOverride;
+                    if (StringUtils.isEmpty(selectSql)) {
+                        
+                        if (reloadRequests != null) {
+                            TableReloadRequest reloadRequest = reloadRequests.get(triggerRouter.getTriggerId() + triggerRouter.getRouterId());
+                            selectSql = reloadRequest != null ? reloadRequest.getReloadSelect() : null;
+                        }
+                        if (StringUtils.isBlank(selectSql)) {
+                            selectSql = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) 
                                     ? Constants.ALWAYS_TRUE_CONDITION
-                                    : triggerRouter.getInitialLoadSelect();
+                                            : triggerRouter.getInitialLoadSelect();
+                        }
                     }
                     
                     if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
@@ -1033,9 +1037,13 @@ public class DataService extends AbstractService implements IDataService {
                 Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>();
                 triggerRoutersByHistoryId.put(fileSyncSnapshotHistory.getTriggerHistoryId(), triggerRouters);
                 
-                if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {            
+                if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {      
+                    
+                    final String FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS = 
+                            String.format("1=(select initial_load_enabled from %s tr where t.trigger_id = tr.trigger_id AND t.router_id = tr.router_id)",
+                                    TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
                     insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories, 
-                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo);
+                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo, FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS);
                 } else {                    
                     List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
                     for (Channel channel : channels) {

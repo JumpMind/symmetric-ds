@@ -85,7 +85,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 String qualifiedName = sourceTable.getFullyQualifiedTableName();
                 if (writerSettings.isIgnoreMissingTables()) {                    
                     if (!missingTables.contains(qualifiedName)) {
-                        log.warn("Did not find the {} table in the target database", qualifiedName);
+                        log.info("Did not find the {} table in the target database. This might have been part of a sql "
+                                + "command (truncate) but will work if the fully qualified name was in the sql provided", qualifiedName);
                         missingTables.add(qualifiedName);
                     }
                 } else {
@@ -94,7 +95,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
             
             needsBinaryConversion = false;
-            if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+            if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX) && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
                     if (column.isOfBinaryType()) {
                         needsBinaryConversion = true;
@@ -104,13 +105,15 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
             databaseTable = getPlatform(table).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
                     sourceTable.getName(), false);
-            String[] csvNames = targetTable.getColumnNames();
-            String[] columnNames = databaseTable.getColumnNames();
-            needsColumnsReordered = false;
-            for (int i = 0; i < csvNames.length; i++) {
-                if (! csvNames[i].equals(columnNames[i])) {
-                    needsColumnsReordered = true;
-                    break;
+            if (targetTable != null) {
+                String[] csvNames = targetTable.getColumnNames();
+                String[] columnNames = databaseTable.getColumnNames();
+                needsColumnsReordered = false;
+                for (int i = 0; i < csvNames.length; i++) {
+                    if (! csvNames[i].equals(columnNames[i])) {
+                        needsColumnsReordered = true;
+                        break;
+                    }
                 }
             }
         	//TODO: Did this because start is getting called multiple times
