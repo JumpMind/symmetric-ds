@@ -329,6 +329,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             log.info("About to syncTriggers because new configuration came through the data loader");
             engine.getTriggerRouterService().syncTriggers();
             context.remove(CTX_KEY_RESYNC_NEEDED);
+            engine.getRegistrationService().setAllowClientRegistration(true);
         }
         
         if (context.get(CTX_KEY_RESYNC_TABLE_NEEDED) != null
