@@ -539,7 +539,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         OutgoingBatches batches = loadPendingBatches(extractInfo, targetNode, queue, transport);
 
-        if (batches.containsBatches()) {
+        if (batches != null && batches.containsBatches()) {
 
             ChannelMap channelMap = transport.getSuspendIgnoreChannelLists(configurationService, queue,
                     targetNode);
@@ -567,17 +567,24 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         Callable<OutgoingBatches> getOutgoingBatches = () -> {                            
             OutgoingBatches batches = null;
             if (queue != null) {
-                NodeGroupLinkAction defaultAction = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
-                        targetNode.getNodeGroupId(), false).getDataEventAction();
-                ProcessType processType = extractInfo.getKey().getProcessType();
-                NodeGroupLinkAction action = null;
-                
-                if (processType.equals(ProcessType.PUSH_JOB_EXTRACT)) {
-                    action = NodeGroupLinkAction.P;
-                } else if (processType.equals(ProcessType.PULL_HANDLER_EXTRACT)) {
-                    action = NodeGroupLinkAction.W;
+                NodeGroupLink link = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
+                        targetNode.getNodeGroupId(), false);
+                if (link != null) {
+                    NodeGroupLinkAction defaultAction = configurationService.getNodeGroupLinkFor(nodeService.findIdentity().getNodeGroupId(),
+                            targetNode.getNodeGroupId(), false).getDataEventAction();
+                    ProcessType processType = extractInfo.getKey().getProcessType();
+                    NodeGroupLinkAction action = null;
+                    
+                    if (processType.equals(ProcessType.PUSH_JOB_EXTRACT)) {
+                        action = NodeGroupLinkAction.P;
+                    } else if (processType.equals(ProcessType.PULL_HANDLER_EXTRACT)) {
+                        action = NodeGroupLinkAction.W;
+                    }
+                    batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, action, defaultAction, false);
+                } else {
+                    log.error("Group link not found for " + nodeService.findIdentity().getNodeGroupId() +
+                            " to " + targetNode.getNodeGroupId() + ".  Check that configuration matches on both nodes.");
                 }
-                batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), queue, action, defaultAction, false);
             } else {
                 batches = outgoingBatchService.getOutgoingBatches(targetNode.getNodeId(), false);
             }
