@@ -202,24 +202,38 @@ public class PurgeService extends AbstractService implements IPurgeService {
     }
 
     private long purgeStrandedBatches() {
-        int updateStrandedBatchesCount = sqlTemplate.update(getSql("updateStrandedBatches"),
-                OutgoingBatch.Status.OK.name(), 1, OutgoingBatch.Status.OK.name());
-        if (updateStrandedBatchesCount > 0) {
-            log.info(
-                    "Set the status to {} for {} batches that no longer are associated with valid nodes",
-                    OutgoingBatch.Status.OK.name(), updateStrandedBatchesCount);
-            statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
+        int totalRowsPurged = 0;
+        log.info("Looking for old nodes in batches");
+        List<String> nodes = sqlTemplateDirty.query(getSql("selectNodesWithStrandedBatches"), 
+                new StringMapper(), 1, OutgoingBatch.Status.OK.name());
+        if (nodes.size() > 0) {
+            log.info("Found {} old nodes in batches", nodes.size());
+            for (String nodeId : nodes) {
+                int rowsPurged = sqlTemplate.update(getSql("updateStrandedBatches"),
+                        OutgoingBatch.Status.OK.name(), nodeId, OutgoingBatch.Status.OK.name());
+                log.info("Set the status to {} for {} batches associated with node ID {}",
+                        OutgoingBatch.Status.OK.name(), rowsPurged, nodeId);
+                totalRowsPurged += rowsPurged;
+                statisticManager.incrementPurgedBatchOutgoingRows(rowsPurged);
+            }
         }
 
-        updateStrandedBatchesCount = sqlTemplate.update(getSql("updateStrandedBatchesByChannel"),
-                OutgoingBatch.Status.OK.name(), OutgoingBatch.Status.OK.name());
-        if (updateStrandedBatchesCount > 0) {
-            log.info("Set the status to {} for {} batches that no longer are associated with valid channels",
-                    OutgoingBatch.Status.OK.name(), updateStrandedBatchesCount);
-            statisticManager.incrementPurgedBatchOutgoingRows(updateStrandedBatchesCount);
+        log.info("Looking for old channels in batches");
+        List<String> channels = sqlTemplateDirty.query(getSql("selectChannelsWithStrandedBatches"), 
+                new StringMapper(), OutgoingBatch.Status.OK.name());
+        if (channels.size() > 0) {
+            log.info("Found {} old channels in batches", channels.size());
+            for (String channelId : channels) {
+                int rowsPurged = sqlTemplate.update(getSql("updateStrandedBatchesByChannel"),
+                        OutgoingBatch.Status.OK.name(), channelId, OutgoingBatch.Status.OK.name());
+                log.info("Set the status to {} for {} batches associated with channel ID {}",
+                        OutgoingBatch.Status.OK.name(), rowsPurged, channelId);
+                totalRowsPurged += rowsPurged;
+                statisticManager.incrementPurgedBatchOutgoingRows(rowsPurged);
+            }
         }
-
-        return updateStrandedBatchesCount;
+        
+        return totalRowsPurged;
     }
 
     private long purgeStrandedChannels() {
