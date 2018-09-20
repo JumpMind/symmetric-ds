@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,9 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -69,6 +70,19 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
 
     private String schemaPackage;
 
+    private String[] parseDatePatterns = new String[] {
+            "yyyy/MM/dd HH:mm:ss.SSSSSS",
+            "yyyy-MM-dd HH:mm:ss",
+            "ddMMMyyyy:HH:mm:ss.SSS Z",
+            "ddMMMyyyy:HH:mm:ss.SSS",
+            "yyyy-MM-dd HH:mm:ss.SSS",
+            "ddMMMyyyy:HH:mm:ss.SSSSSS",
+            "yyyy-MM-dd",
+            "yyyy-MM-dd'T'HH:mmZZZZ",
+            "yyyy-MM-dd'T'HH:mm:ssZZZZ",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ"
+    };
+    
     private List<String> schemaPackageClassNames = new ArrayList<String>();
 
     public final static String KAFKA_FORMAT_XML = "XML";
@@ -126,6 +140,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
+        
         if (table.getNameLowerCase().startsWith("sym_")) {
             return true;
         } else {
@@ -197,8 +212,19 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                             for (int i = 0; i < table.getColumnNames().length; i++) {
                                 String colName = getColumnName(table.getName(), table.getColumnNames()[i], pojo);
                                 if (colName != null) {
-                                    if (CharSequence.class.equals(PropertyUtils.getPropertyType(pojo, colName))) {
+                                    Class propertyTypeClass = PropertyUtils.getPropertyType(pojo, colName);
+                                    if (CharSequence.class.equals(propertyTypeClass)) {
                                         PropertyUtils.setSimpleProperty(pojo, colName, rowData[i]);
+                                    }
+                                    else if (Long.class.equals(propertyTypeClass)) {
+                                        Date date = null;
+                                        try {
+                                            date = DateUtils.parseDate(rowData[i], parseDatePatterns);
+                                        }
+                                        catch (Exception e) {
+                                            log.debug(rowData[i] + " was not a recognized date format so treating it as a long.");
+                                        }
+                                        BeanUtils.setProperty(pojo, colName, date != null ? date.getTime() : rowData[i]);
                                     }
                                     else {
                                         BeanUtils.setProperty(pojo, colName, rowData[i]);
