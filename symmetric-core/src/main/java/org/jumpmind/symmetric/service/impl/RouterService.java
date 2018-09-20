@@ -502,9 +502,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
-                } else {
+                } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
-                    if (log.isDebugEnabled() && !nodeChannel.isEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Not routing the {} channel.  It is either disabled or suspended.", nodeChannel.getChannelId());                            
                     }
                 }
