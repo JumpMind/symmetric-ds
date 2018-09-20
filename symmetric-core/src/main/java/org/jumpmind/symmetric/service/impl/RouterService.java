@@ -634,9 +634,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                     String incomingTableName = triggerRouter2.getTrigger().getFullyQualifiedSourceTableName();
                                     String targetNodeGroupId = triggerRouter2.getRouter().getNodeGroupLink()
                                             .getTargetNodeGroupId();
-                                    if (incomingTableName
-                                            .equals(outgoingTableName)
-                                            && targetNodeGroupId.equals(nodeGroupId)) {
+                                    if (incomingTableName.equals(outgoingTableName) && targetNodeGroupId.equals(nodeGroupId) 
+                                            && !"default".equals(triggerRouter2.getRouter().getRouterType())) {
                                         producesCommonBatches = false;
                                         break;
                                     }
