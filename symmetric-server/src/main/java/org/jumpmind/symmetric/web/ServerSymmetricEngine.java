@@ -84,17 +84,17 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService, customInterceptors));
         this.uriHandlers.add(new PullUriHandler(parameterService, nodeService,
                 configurationService, dataExtractorService, registrationService, statisticManager, outgoingBatchService,
-                add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+                add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new PushUriHandler(parameterService, dataLoaderService,
-                statisticManager, nodeService, add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+                statisticManager, nodeService, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new PushStatusUriHandler(parameterService, nodeCommunicationService, 
-                add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+                add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new RegistrationUriHandler(parameterService, registrationService,
                 add(customInterceptors, concurrencyInterceptor)));
         this.uriHandlers.add(new ConfigurationUriHandler(parameterService, dataExtractorService,
-                add(customInterceptors, concurrencyInterceptor, authInterceptor)));
-        this.uriHandlers.add(new FileSyncPullUriHandler(this, add(customInterceptors, concurrencyInterceptor, authInterceptor)));
-        this.uriHandlers.add(new FileSyncPushUriHandler(this, add(customInterceptors, concurrencyInterceptor, authInterceptor)));
+                add(customInterceptors, authInterceptor, concurrencyInterceptor)));
+        this.uriHandlers.add(new FileSyncPullUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
+        this.uriHandlers.add(new FileSyncPushUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new CopyNodeUriHandler(this, add(customInterceptors, authInterceptor)));
         if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {
             this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService, customInterceptors));
