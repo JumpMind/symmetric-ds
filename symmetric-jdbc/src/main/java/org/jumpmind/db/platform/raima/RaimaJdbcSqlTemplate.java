@@ -47,5 +47,10 @@ public class RaimaJdbcSqlTemplate extends JdbcSqlTemplate {
             return super.verifyArgType(arg, argType);
         }
     }
+    
+    @Override
+    public String getSelectLastInsertIdSql(String sequenceName) {
+        return "select last_insert_id()";
+    }
 
 }
