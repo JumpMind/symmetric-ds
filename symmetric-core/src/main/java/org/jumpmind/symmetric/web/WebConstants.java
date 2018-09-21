@@ -60,6 +60,8 @@ public class WebConstants {
     public static final int SC_SERVICE_BUSY = 670;
     
     public static final int SC_NO_CONTENT = 204;
+    
+    public static final int SC_OK = 200;
 
     public static final String ACK_BATCH_NAME = "batch-";
 

@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.jumpmind.exception.HttpException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
@@ -99,7 +100,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
             connection = this.openConnectionCheckRedirects(connection);
         }
         
-        switch (connection.getResponseCode()) {
+        int code = connection.getResponseCode();
+        switch (code) {
         case WebConstants.REGISTRATION_NOT_OPEN:
             throw new RegistrationNotOpenException();
         case WebConstants.REGISTRATION_REQUIRED:
@@ -110,13 +112,17 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new ConnectionRejectedException();
         case WebConstants.SC_SERVICE_UNAVAILABLE:
             throw new ServiceUnavailableException();
+        // TODO: In 3.10, let's switch from 403 to 659
         case WebConstants.SC_FORBIDDEN:
+        case 403:
             throw new AuthenticationException();
         case WebConstants.SC_NO_CONTENT:
             throw new NoContentException();
-        default:
+        case WebConstants.SC_OK:
             is = HttpTransportManager.getInputStreamFrom(connection);
             return is;
+        default:
+            throw new HttpException(code, "Received an unexpected response code of " + code + " from the server");
         }
     }
 
