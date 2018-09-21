@@ -502,9 +502,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
-                } else {
+                } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
-                    if (log.isDebugEnabled() && !nodeChannel.isEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Not routing the {} channel.  It is either disabled or suspended.", nodeChannel.getChannelId());                            
                     }
                 }
@@ -634,9 +634,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                     String incomingTableName = triggerRouter2.getTrigger().getFullyQualifiedSourceTableName();
                                     String targetNodeGroupId = triggerRouter2.getRouter().getNodeGroupLink()
                                             .getTargetNodeGroupId();
-                                    if (incomingTableName
-                                            .equals(outgoingTableName)
-                                            && targetNodeGroupId.equals(nodeGroupId)) {
+                                    if (incomingTableName.equals(outgoingTableName) && targetNodeGroupId.equals(nodeGroupId) 
+                                            && !"default".equals(triggerRouter2.getRouter().getRouterType())) {
                                         producesCommonBatches = false;
                                         break;
                                     }

@@ -57,6 +57,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -649,6 +650,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (AuthenticationException) ex;
         } else if (ex instanceof SyncDisabledException) {
             throw (SyncDisabledException) ex;
+        } else if (ex instanceof HttpException) {
+            throw (HttpException) ex;
         } else if (ex instanceof IOException) {
             throw (IOException) ex;
         } else if (ex instanceof InvalidRetryException) {

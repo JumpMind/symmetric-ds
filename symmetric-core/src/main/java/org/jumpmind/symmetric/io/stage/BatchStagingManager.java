@@ -36,11 +36,16 @@ public class BatchStagingManager extends StagingManager {
 
     @Override
     public long clean(long ttlInMs) {
+        boolean isLockAcquired = false;
         try {
             boolean clusterStagingEnabled = engine.getParameterService().is(ParameterConstants.CLUSTER_STAGING_ENABLED, false);
-            if (clusterStagingEnabled && !engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
-                log.debug("Could not get a lock to run stage management");
-                return 0;
+            if (clusterStagingEnabled) {
+                if (engine.getClusterService().lock(ClusterConstants.STAGE_MANAGEMENT)) {
+                    isLockAcquired = true;
+                } else {
+                    log.debug("Could not get a lock to run stage management");
+                    return 0;
+                }
             }
         } catch (Exception e) {
             // during setup or un-install, it's possible sym_lock table isn't available yet
@@ -56,9 +61,11 @@ public class BatchStagingManager extends StagingManager {
                 }
             }
         } finally {
-            try {
-                engine.getClusterService().unlock(ClusterConstants.STAGE_MANAGEMENT);
-            } catch (Exception e) {
+            if (isLockAcquired) {
+                try {
+                    engine.getClusterService().unlock(ClusterConstants.STAGE_MANAGEMENT);
+                } catch (Exception e) {
+                }
             }
         }
     }
