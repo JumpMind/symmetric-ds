@@ -69,7 +69,7 @@ public class AuthenticationInterceptor implements IInterceptor {
             ServletUtils.sendError(resp, WebConstants.SYNC_DISABLED);
             return false;
         } else {
-            log.debug("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
+            log.warn("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
             ServletUtils.sendError(resp, HttpServletResponse.SC_FORBIDDEN);
             return false;
         }
