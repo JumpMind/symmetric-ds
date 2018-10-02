@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.jumpmind.symmetric.common.Constants;
 
 /**
  * A container for {@link OutgoingBatch}s.
@@ -122,7 +123,7 @@ public class OutgoingBatches implements Serializable {
     public void removeNonLoadBatches() {
         for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
             OutgoingBatch b = iterator.next();
-            if (!b.isLoadFlag()) {
+            if (!b.isLoadFlag() && !b.getChannelId().contentEquals(Constants.CHANNEL_CONFIG)) {
                 iterator.remove();
             }
         }
