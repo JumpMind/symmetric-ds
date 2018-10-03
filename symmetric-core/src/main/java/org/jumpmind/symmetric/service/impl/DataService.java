@@ -555,7 +555,7 @@ public class DataService extends AbstractService implements IDataService {
                         close(transaction);
                     }
 
-                    if (!reverse) {
+                    if (!reverse && isFullLoad) {
                         /*
                          * Remove all incoming events for the node that we are
                          * starting a reload for
