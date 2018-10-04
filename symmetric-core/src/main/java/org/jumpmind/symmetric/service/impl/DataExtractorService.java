@@ -1713,7 +1713,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected String replaceVariables(Node sourceNode, Node targetNode, String str) {
-        str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeGroupId(), str);
+        str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), str);
         str = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), str);
         str = FormatUtils.replace("sourceNodeGroupId", sourceNode.getNodeGroupId(), str);
         str = FormatUtils.replace("targetNodeId", targetNode.getNodeGroupId(), str);
