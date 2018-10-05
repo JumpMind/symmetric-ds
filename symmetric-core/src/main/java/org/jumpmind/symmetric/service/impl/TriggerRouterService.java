@@ -2204,7 +2204,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRoutersByHistoryId;
     }
 
-    protected List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
+    public List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
+        return Database.sortByForeignKeys(getTablesFor(histories), null, null, null);
+    }
+
+    public List<Table> getTablesFor(List<TriggerHistory> histories) {
         List<Table> tables = new ArrayList<Table>(histories.size());
         for (TriggerHistory triggerHistory : histories) {
             Table table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
@@ -2214,7 +2218,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables.add(table);
             }
         }
-        return Database.sortByForeignKeys(tables, null, tablePrefix, null, null);
+        return tables;
     }
 
     protected void awaitTermination(ExecutorService executor, List<Future<?>> futures) {

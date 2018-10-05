@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -224,7 +223,7 @@ public class DbFill {
             }
         }
         log.info("TABLES " + tables.size());
-        tables = Database.sortByForeignKeys(tables, getAllDbTables(), null, null, null);
+        tables = Database.sortByForeignKeys(tables, getAllDbTables(), null, null);
         
         StringBuffer tableOrder = new StringBuffer();
         for(Table t : tables) {

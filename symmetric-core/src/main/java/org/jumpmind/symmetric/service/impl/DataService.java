@@ -41,6 +41,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
@@ -443,6 +444,7 @@ public class DataService extends AbstractService implements IDataService {
                                     triggerHistories = channelTriggerHistories;
                                 }
                             }
+                            Database.logMissingDependentTableNames(triggerRouterService.getTablesFor(triggerHistories));
                         } else {
                             for (TableReloadRequest reloadRequest : reloadRequests) {
                                 triggerHistories.addAll(engine.getTriggerRouterService()
