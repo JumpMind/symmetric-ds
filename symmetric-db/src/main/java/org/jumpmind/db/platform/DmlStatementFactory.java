@@ -27,6 +27,7 @@ import org.jumpmind.db.platform.mssql.MsSqlDmlStatement;
 import org.jumpmind.db.platform.mysql.MySqlDmlStatement;
 import org.jumpmind.db.platform.oracle.OracleDmlStatement;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDmlStatement;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDmlStatement95;
 import org.jumpmind.db.platform.redshift.RedshiftDmlStatement;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDmlStatement;
 import org.jumpmind.db.platform.sqlite.SqliteDmlStatement;
@@ -68,6 +69,10 @@ final public class DmlStatementFactory {
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.POSTGRESQL.equals(databaseName)) {
             return new PostgreSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
+                    columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
+        } else if (DatabaseNamesConstants.POSTGRESQL95.equals(databaseName)) {
+            return new PostgreSqlDmlStatement95(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.REDSHIFT.equals(databaseName)) {

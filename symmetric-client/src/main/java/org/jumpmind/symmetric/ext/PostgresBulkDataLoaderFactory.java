@@ -65,6 +65,7 @@ public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return DatabaseNamesConstants.POSTGRESQL.equals(platform.getName()) || 
+        		DatabaseNamesConstants.POSTGRESQL95.equals(platform.getName()) ||
         		DatabaseNamesConstants.GREENPLUM.equals(platform.getName());
     }
 

@@ -45,6 +45,7 @@ final public class DatabaseNamesConstants {
     public final static String DB2ZOS = "db2zos";
     public final static String DB2AS400 = "db2as400";
     public final static String POSTGRESQL = "postgres";
+    public final static String POSTGRESQL95 = "postgres95";
     public final static String ASE = "ase";
     public final static String SQLANYWHERE = "sqlanywhere";
     public final static String MARIADB = "mariadb";

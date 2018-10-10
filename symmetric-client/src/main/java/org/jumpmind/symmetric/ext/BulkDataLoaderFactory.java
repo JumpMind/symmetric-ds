@@ -52,6 +52,7 @@ public class BulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngi
             return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (DatabaseNamesConstants.POSTGRESQL.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
+        		|| DatabaseNamesConstants.POSTGRESQL95.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
                 || DatabaseNamesConstants.GREENPLUM.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
             return new PostgresBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);

@@ -53,6 +53,7 @@ import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSql95DatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.platform.raima.RaimaDatabasePlatform;
 import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
@@ -105,6 +106,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL95, PostgreSql95DatabasePlatform.class);
         addPlatform(platforms, "Adaptive Server Enterprise", AseDatabasePlatform.class);
         addPlatform(platforms, "Adaptive Server Anywhere", SqlAnywhereDatabasePlatform.class);
         addPlatform(platforms, "SQL Anywhere", SqlAnywhereDatabasePlatform.class);
@@ -237,6 +239,9 @@ public class JdbcDatabasePlatformFactory {
                     nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
                 } else if (isRedshiftDatabase(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.REDSHIFT;
+				} else if (metaData.getDatabaseMajorVersion() > 9
+						|| (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() >= 5)) {
+					nameVersion[0] = DatabaseNamesConstants.POSTGRESQL95;
                 }
             }
 
