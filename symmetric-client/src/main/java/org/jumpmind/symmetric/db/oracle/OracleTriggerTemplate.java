@@ -84,14 +84,13 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "            $(custom_before_insert_text) \n" +
 "            if $(syncOnInsertCondition) and $(syncOnIncomingBatchCondition) then         \n" +
 "                insert into $(defaultSchema)$(prefixName)_data                           \n" +
-"                  (table_name, event_type, trigger_hist_id, row_data, channel_id,        \n" +
+"                  (table_name, event_type, trigger_hist_id, pk_data, channel_id,        \n" +
 "                  transaction_id, source_node_id, external_data, create_time)            \n" +
 "                  values(                                                                \n" +
 "                  '$(targetTableName)',                                                  \n" +
 "                  'R',                                                                   \n" +
 "                  $(triggerHistoryId),                                                   \n" +
 "                  $(newKeys),                                                            \n" +
-"                  $(oracleToClob)$(columns),                                             \n" +
 "                  $(channelExpression),                                                  \n" +
 "                  $(txIdExpression),                                                     \n" +
 "                  $(prefixName)_pkg.disable_node_id,                                     \n" +
