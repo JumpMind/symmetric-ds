@@ -60,6 +60,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
@@ -75,6 +76,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -1049,6 +1051,15 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
                                 processor.process(ctx);
                             } else {
+                                if (e instanceof ParseException || e instanceof ProtocolException) {
+                                    log.info("The batch {} may be corrupt in staging, so removing it.", batchInStaging.getNodeBatchId());
+                                    resource.delete();
+                                    incomingBatch = listener.currentBatch;
+                                    incomingBatch.setStatus(Status.ER);
+                                    incomingBatch.setSqlCode(ErrorConstants.PROTOCOL_VIOLATION_CODE);
+                                    incomingBatch.setSqlState(ErrorConstants.PROTOCOL_VIOLATION_STATE);
+                                    incomingBatchService.updateIncomingBatch(incomingBatch);
+                                }
                                 isError = true;
                                 throw e;
                             }

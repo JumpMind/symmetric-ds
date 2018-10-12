@@ -129,6 +129,10 @@ public class SimpleStagingDataWriter {
                             getArgLine(nodeLine), targetNodeId, false);
                     processInfo.incrementBatchCount();
                     String location = batch.getStagedLocation();
+                    if (resource != null) {
+                        resource.close();
+                        resource.setState(State.DONE);
+                    }
                     resource = stagingManager.create(category, location, batch.getBatchId());
                     writer = resource.getWriter(memoryThresholdInBytes);
                     writeLine(nodeLine);
@@ -163,6 +167,10 @@ public class SimpleStagingDataWriter {
                             getArgLine(nodeLine), targetNodeId, false);
                     processInfo.incrementBatchCount();
                     String location = batch.getStagedLocation();
+                    if (resource != null) {
+                        resource.close();
+                        resource.setState(State.DONE);
+                    }
                     resource = stagingManager.find(category, location, batch.getBatchId());
                     if (resource == null || resource.getState() == State.CREATE) {
                         if (resource != null) {
@@ -170,6 +178,13 @@ public class SimpleStagingDataWriter {
                         }
                         resource = null;
                         writer = null;
+                    }
+
+                    if (log.isDebugEnabled()) {
+                        debugLine(nodeLine);
+                        debugLine(binaryLine);
+                        debugLine(channelLine);
+                        debugLine(line);
                     }
 
                     if (listeners != null) {
@@ -239,7 +254,12 @@ public class SimpleStagingDataWriter {
                     ts = System.currentTimeMillis();
                 }
             }
-            
+
+            if (resource != null) {
+                resource.close();
+                resource.setState(State.DONE);
+            }
+
             processInfo.setStatus(ProcessStatus.OK);
         } catch (IOException ex) {
             if (resource != null) {
@@ -296,6 +316,12 @@ public class SimpleStagingDataWriter {
                     stats.set(column, stat);
                 }
             }
+        }
+    }
+
+    protected void debugLine(String line) {
+        if (line != null) {
+            log.debug("Received: {}", line);
         }
     }
 

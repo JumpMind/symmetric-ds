@@ -29,11 +29,12 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.stage.IStagedResource;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
@@ -141,6 +142,20 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
                         if (channel != null && !channel.isReloadFlag()) {
                             engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                        }
+                    }
+                    if (outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE
+                            && ErrorConstants.PROTOCOL_VIOLATION_STATE.equals(outgoingBatch.getSqlState())) {
+                        if (outgoingBatch.isLoadFlag()) {
+                            log.info("The batch {} may be corrupt in staging. Not removing the batch because it was a load batch, but you may need to clear the batch from staging manually.",
+                                    outgoingBatch.getNodeBatchId());
+                        } else {
+                            IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
+                                    outgoingBatch.getStagedLocation(), outgoingBatch.getBatchId());
+                            if (resource != null) {
+                                log.info("The batch {} may be corrupt in staging, so removing it.", outgoingBatch.getNodeBatchId());
+                                resource.delete();
+                            }
                         }
                     }
                 } else if (status == Status.RS) {
