@@ -152,7 +152,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.startsWith("BFILE")) {
             return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("INTERVAL")) {
-            return Types.VARCHAR;            
+            return Types.VARCHAR;    
+        } else if (typeName != null && typeName.startsWith("ROWID")) {
+            return Types.VARCHAR;   
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
