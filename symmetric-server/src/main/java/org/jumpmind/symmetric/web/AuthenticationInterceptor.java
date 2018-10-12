@@ -70,7 +70,7 @@ public class AuthenticationInterceptor implements IInterceptor {
             return false;
         } else {
             log.warn("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
-            ServletUtils.sendError(resp, HttpServletResponse.SC_FORBIDDEN);
+            ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN);
             return false;
         }
     }
