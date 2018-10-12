@@ -41,6 +41,8 @@ public class AndroidTypedPropertiesFactory implements ITypedPropertiesFactory {
             // change the default settings to make sense for android
             properties.setProperty(ParameterConstants.STREAM_TO_FILE_ENABLED,
                     Boolean.FALSE.toString());
+            properties.setProperty(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB,
+                    Boolean.FALSE.toString());
             properties.put(ParameterConstants.REGISTRATION_URL, syncUrl);
             properties.put(ParameterConstants.EXTERNAL_ID, externalId);
             properties.put(ParameterConstants.NODE_GROUP_ID, nodeGroupId);

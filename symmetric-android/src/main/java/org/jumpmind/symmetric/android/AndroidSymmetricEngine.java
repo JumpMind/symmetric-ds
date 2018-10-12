@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -83,6 +82,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         this.databaseHelper = databaseHelper;
         this.androidContext = androidContext;
         init();
+        this.symmetricDialect.setTargetPlatform(this.symmetricDialect.getPlatform());
     }
 
     @Override
