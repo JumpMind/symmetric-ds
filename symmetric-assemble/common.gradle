@@ -234,7 +234,9 @@ subprojects { subproject ->
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
         provided "com.datastax.cassandra:cassandra-driver-core:3.1.4"
-        provided "nl.cad:tps-parse:1.0.15-SNAPSHOT"
+        provided ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
+        	exclude group: 'commons-lang', module: 'commons-lang'
+        }
         provided "org.apache.kafka:kafka-clients:1.1.0"
         provided "org.apache.avro:avro:1.8.2"
 		provided "io.confluent:kafka-avro-serializer:3.2.1"
