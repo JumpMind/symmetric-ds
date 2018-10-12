@@ -112,9 +112,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new ConnectionRejectedException();
         case WebConstants.SC_SERVICE_UNAVAILABLE:
             throw new ServiceUnavailableException();
-        // TODO: In 3.10, let's switch from 403 to 659
         case WebConstants.SC_FORBIDDEN:
-        case 403:
             throw new AuthenticationException();
         case WebConstants.SC_NO_CONTENT:
             throw new NoContentException();

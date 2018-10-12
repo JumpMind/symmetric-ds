@@ -290,8 +290,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new ConnectionRejectedException();
         } else if (WebConstants.SC_SERVICE_UNAVAILABLE == code) {
             throw new ServiceUnavailableException();
-        } else if (WebConstants.SC_FORBIDDEN == code || code == 403) {
-            // TODO: In 3.10, let's switch from 403 to 659
+        } else if (WebConstants.SC_FORBIDDEN == code) {
             throw new AuthenticationException();
         } else if (WebConstants.SYNC_DISABLED == code) {
             throw new SyncDisabledException();

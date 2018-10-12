@@ -31,4 +31,7 @@ final public class ErrorConstants {
     public static final String FK_VIOLATION_STATE = "FK";
     public static final int FK_VIOLATION_CODE = -900;
 
+    public static final String PROTOCOL_VIOLATION_STATE = "PROTOCOL";
+    public static final int PROTOCOL_VIOLATION_CODE = -888;
+
 }

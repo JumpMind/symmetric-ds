@@ -154,7 +154,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         } else if (typeName != null && typeName.startsWith("INTERVAL")) {
             return Types.VARCHAR;    
         } else if (typeName != null && typeName.startsWith("ROWID")) {
-            return Types.VARCHAR;   
+            return Types.VARCHAR;            
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
@@ -235,7 +235,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 defaultValue = defaultValue.substring(2, defaultValue.length()-2);
             }
             column.setDefaultValue(unescape(defaultValue, "'", "''"));
-        }
+        } 
         return column;
     }
 
