@@ -33,6 +33,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -190,11 +191,13 @@ public class ExtractDataReader implements IDataReader {
                     args[i] = columnDataMap.get(pkColumns[i].getName());
                 }
 
+                String sql = buildSelect(table, lobColumns, pkColumns);
+                Row row = sqlTemplate.queryForRow(sql, args);
+
                 for (Column lobColumn : lobColumns) {
-                    String sql = buildSelect(table, lobColumn, pkColumns);
                     String valueForCsv = null;
                     if (platform.isBlob(lobColumn.getMappedTypeCode())) {
-                        byte[] binaryData = sqlTemplate.queryForBlob(sql, lobColumn.getJdbcTypeCode(),lobColumn.getJdbcTypeName(), args);
+                        byte[] binaryData = row.getBytes(lobColumn.getName());
                         if (binaryData != null) {
                             if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
                                 valueForCsv = new String(Base64.encodeBase64(binaryData));
@@ -206,12 +209,11 @@ public class ExtractDataReader implements IDataReader {
                             binaryData = null;
                         }
                     } else {
-                        valueForCsv = sqlTemplate.queryForClob(sql, lobColumn.getJdbcTypeCode(),lobColumn.getJdbcTypeName(), args);
+                        valueForCsv = row.getString(lobColumn.getName());
                     }
 
                     int index = ArrayUtils.indexOf(columnNames, lobColumn.getName());
                     rowData[index] = valueForCsv;
-
                 }
 
                 data.putParsedData(CsvData.ROW_DATA, rowData);
@@ -220,32 +222,27 @@ public class ExtractDataReader implements IDataReader {
         return data;
     }
 
-    protected String buildSelect(Table table, Column lobColumn, Column[] pkColumns) {
+    protected String buildSelect(Table table, List<Column> lobColumns, Column[] pkColumns) {
         StringBuilder sql = new StringBuilder("select ");
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
-        
-        if ("XMLTYPE".equalsIgnoreCase(lobColumn.getJdbcTypeName()) && 2009 == lobColumn.getJdbcTypeCode()) {
-            sql.append("extract(");
-            sql.append(quote);
-            sql.append(lobColumn.getName());
-            sql.append(quote);
-            sql.append(", '/').getClobVal()");
-        } else {
-            sql.append(quote);
-            sql.append(lobColumn.getName());
-            sql.append(quote);
+
+        for (Column lobColumn : lobColumns) {
+            if ("XMLTYPE".equalsIgnoreCase(lobColumn.getJdbcTypeName()) && 2009 == lobColumn.getJdbcTypeCode()) {
+                sql.append("extract(").append(quote).append(lobColumn.getName()).append(quote);
+                sql.append(", '/').getClobVal()");
+            } else {
+                sql.append(quote).append(lobColumn.getName()).append(quote);
+            }
+            sql.append(",");
         }
-        sql.append(",");
+
         sql.delete(sql.length() - 1, sql.length());
         sql.append(" from ");
-        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), 
-                dbInfo.getSchemaSeparator()));
+        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
         sql.append(" where ");
         for (Column col : pkColumns) {
-            sql.append(quote);
-            sql.append(col.getName());
-            sql.append(quote);
+            sql.append(quote).append(col.getName()).append(quote);
             sql.append("=? and ");
         }
         sql.delete(sql.length() - 5, sql.length());
