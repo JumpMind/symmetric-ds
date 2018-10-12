@@ -2570,7 +2570,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
                 if (selfRefLevel == 0) {
-                    selectSql += selfRefParentColumnName + " is null";
+                    selectSql += selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + " ";
                 } else {
                     DatabaseInfo info = symmetricDialect.getPlatform().getDatabaseInfo();
                     String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
@@ -2582,7 +2582,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     for (int i = 1; i < selfRefLevel; i++) {
                         selectSql += refSql + " in (";
                     }
-                    selectSql += refSql + " is null)" + StringUtils.repeat(")", selfRefLevel - 1);
+                    selectSql += refSql + " is null or " + selfRefChildColumnName + " = " + selfRefParentColumnName + " ) and " + 
+                            selfRefParentColumnName + " != " + selfRefChildColumnName + StringUtils.repeat(")", selfRefLevel - 1);
                 }
                 log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
