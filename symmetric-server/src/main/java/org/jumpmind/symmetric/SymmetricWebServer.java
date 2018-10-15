@@ -266,6 +266,11 @@ public class SymmetricWebServer {
         webapp = new WebAppContext();
         webapp.setParentLoaderPriority(true);
         webapp.setConfigurationDiscovered(true);
+        
+        if (System.getProperty("symmetric.server.web.home") != null) {
+            webHome = System.getProperty("symmetric.server.web.home");
+        }
+        
         webapp.setContextPath(webHome);
         webapp.setWar(webAppDir);
         webapp.setResourceBase(webAppDir);
