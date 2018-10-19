@@ -186,6 +186,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_INCOMING));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_USER));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_USER_HIST));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
         tables.add(getTableName(tablePrefix, SYM_EXTENSION));
         tables.add(getTableName(tablePrefix, SYM_MONITOR));
