@@ -23,11 +23,12 @@ On MySQL 5.0, the SymmetricDS user needs the SUPER privilege in order to create 
 grant super on *.* to symmetric;
 ----
 
-On MySQL 5.1, the SymmetricDS user needs the TRIGGER and CREATE ROUTINE privileges in order to create triggers and functions.
+On MySQL 5.1, the SymmetricDS user needs the TRIGGER, PROCESS, and CREATE ROUTINE privileges in order to create triggers and functions.
 
 ----
 grant trigger on *.* to symmetric;
 grant create routine on *.* to symmetric;
+grant process on *.* to symmetric;
 ----
 
 MySQL allows '0000-00-00 00:00:00' to be entered as a value for datetime and timestamp columns.
