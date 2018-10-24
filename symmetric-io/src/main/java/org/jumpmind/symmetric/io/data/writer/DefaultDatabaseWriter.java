@@ -74,6 +74,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected DmlStatement currentDmlStatement;
     
     protected Object[] currentDmlValues;
+    
+    protected LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
 
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
@@ -688,7 +690,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         
         if (logLastDmlDetails && this.currentDmlStatement != null) {
             failureMessage.append("Failed sql was: ");
-            failureMessage.append(this.currentDmlStatement.getSql());
+            String dynamicSQL = logSqlBuilder.buildDynamicSqlForLog(this.currentDmlStatement.getSql(), currentDmlValues, this.currentDmlStatement.getTypes());
+            failureMessage.append(dynamicSQL);
+            if (!dynamicSQL.equals(this.currentDmlStatement.getSql())) {                
+                failureMessage.append("\n");
+                failureMessage.append("Failed raw sql was: ");
+                failureMessage.append(this.currentDmlStatement.getSql());
+            }
             failureMessage.append("\n");
         }
         

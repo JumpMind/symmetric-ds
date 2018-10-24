@@ -1047,7 +1047,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
                                 listener.currentBatch.setStatus(Status.OK);
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
-                                processor.process(ctx);
+                                try {
+                                    listener.getBatchesProcessed().remove(listener.currentBatch);
+                                    processor.process(ctx);
+                                } catch (Exception retryException) {
+                                    isError = true;
+                                    incomingBatch = listener.currentBatch;
+                                    incomingBatch.setStatus(Status.ER);
+                                    incomingBatchService.updateIncomingBatch(incomingBatch);
+                                    throw e;
+                                }
                             } else {
                                 isError = true;
                                 throw e;

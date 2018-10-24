@@ -90,7 +90,7 @@ public class Database implements Serializable, Cloneable {
      *         foreign key for table B then table B will precede table A in the
      *         list.
      */
-    public static List<Table> sortByForeignKeys(List<Table> tables, Map<String, Table> allTables, String tablePrefix,
+    public static List<Table> sortByForeignKeys(List<Table> tables, Map<String, Table> allTables,
             Map<Integer, Set<Table>> dependencyMap, Map<Table, Set<String>> missingDependencyMap) {
         
         if (allTables == null) {
@@ -120,7 +120,7 @@ public class Database implements Serializable, Cloneable {
             if (t != null) {
                 depth.setValue(1);
                 parentPosition.setValue(-1);
-                resolveForeginKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap, 
+                resolveForeignKeyOrder(t, allTables, resolved, temporary, finalList, null, missingDependencyMap, 
                         dependencyMap, depth, position, resolvedPosition, parentPosition);
             }
         }
@@ -128,8 +128,45 @@ public class Database implements Serializable, Cloneable {
         Collections.reverse(finalList);
         return finalList;
     }
+
+    public static void logMissingDependentTableNames(List<Table> tables) {
+        Map<String, List<String>> missingTablesByChildTable = findMissingDependentTableNames(tables);
+        for (String childTableName : missingTablesByChildTable.keySet()) {
+            List<String> missingTables = missingTablesByChildTable.get(childTableName);
+            StringBuilder dependentTables = new StringBuilder();
+            for (String missingTableName : missingTables) {
+                if (dependentTables.length() > 0) {
+                    dependentTables.append(", ");
+                }
+                dependentTables.append(missingTableName);
+            }
+            log.info("Unable to resolve foreign keys for table " + childTableName + " because the following dependent tables were not included [" + dependentTables.toString() + "].");
+        }
+    }
     
-    public static void resolveForeginKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, 
+    public static Map<String, List<String>> findMissingDependentTableNames(List<Table> tables) {
+        Map<String, List<String>> missingTablesByChildTable = new HashMap<String, List<String>>();
+        Map<String, Table> allTables = new HashMap<String, Table>();
+        for (Table t : tables) {
+            allTables.put(t.getName(), t);
+        }
+
+        for (Table table : tables) {
+            List<String> missingTables = missingTablesByChildTable.get(table.getName());
+            for (ForeignKey fk : table.getForeignKeys()) {
+                if (allTables.get(fk.getForeignTableName()) == null) {
+                    if (missingTables == null) {
+                        missingTables = new ArrayList<String>();
+                        missingTablesByChildTable.put(table.getName(), missingTables);
+                    }
+                    missingTables.add(fk.getForeignTableName());
+                }
+            }
+        }
+        return missingTablesByChildTable;
+    }
+
+    public static void resolveForeignKeyOrder(Table t, Map<String, Table> allTables, Set<Table> resolved, Set<Table> temporary, 
             List<Table> finalList, Table parentTable, Map<Table, Set<String>> missingDependencyMap,
             Map<Integer, Set<Table>> dependencyMap, MutableInt depth, MutableInt position, 
             Map<Table, Integer> resolvedPosition, MutableInt parentPosition) {
@@ -138,26 +175,19 @@ public class Database implements Serializable, Cloneable {
             parentPosition.setValue(resolvedPosition.get(t));
             return; 
         }
-        
-        if (temporary.contains(t)) {log.info("Possible circular dependent: " + t.getName()); return; }
+
         if (!temporary.contains(t) && !resolved.contains(t)) {
             Set<Integer> parentTablesChannels = new HashSet<Integer>();
             if (t == null) {
                 if (parentTable != null) {
-                    StringBuilder dependentTables = new StringBuilder();
                     for (ForeignKey fk : parentTable.getForeignKeys()) {
-                        if (dependentTables.length() > 0) {
-                            dependentTables.append(", ");
-                        }
-                        dependentTables.append(fk.getForeignTableName());
-                        if (missingDependencyMap.get(parentTable) == null) {
-                            missingDependencyMap.put(parentTable, new HashSet<String>());
-                        }
                         if (allTables.get(fk.getForeignTableName()) == null) {
+                            if (missingDependencyMap.get(parentTable) == null) {
+                                missingDependencyMap.put(parentTable, new HashSet<String>());
+                            }
                             missingDependencyMap.get(parentTable).add(fk.getForeignTableName());
                         }
                     }
-                    log.info("Unable to resolve foreign keys for table " + parentTable.getName() + " because the following dependent tables were not included [" + dependentTables.toString() + "].");
                 }
             } else {
                 temporary.add(t);
@@ -166,7 +196,7 @@ public class Database implements Serializable, Cloneable {
                     Table fkTable = allTables.get(fk.getForeignTableName());
                     if (fkTable != t) {
                         depth.increment(); 
-                        resolveForeginKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
+                        resolveForeignKeyOrder(fkTable, allTables, resolved, temporary, finalList, t, missingDependencyMap, 
                                 dependencyMap, depth, position, resolvedPosition, parentPosition);
                         Integer resolvedParentTableChannel = resolvedPosition.get(fkTable);
                         if (resolvedParentTableChannel != null) {
@@ -260,14 +290,14 @@ public class Database implements Serializable, Cloneable {
             for (Table table : tables) {
                 list.add(table);
             }
-            list = sortByForeignKeys(list, null, null, null, null);
+            list = sortByForeignKeys(list, null, null, null);
             tables = list.toArray(new Table[list.size()]);
         }
         return tables;
     }
 
     public static List<Table> sortByForeignKeys(List<Table> tables) {
-        return sortByForeignKeys(tables, null, null, null, null);
+        return sortByForeignKeys(tables, null, null, null);
     }
     
     /**

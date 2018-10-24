@@ -208,4 +208,7 @@ public interface ITriggerRouterService {
     public Collection<Trigger> findMatchingTriggers(List<Trigger> triggers, String catalog, String schema,
             String table);
 
+    public List<Table> getTablesFor(List<TriggerHistory> histories);
+    
+    public List<Table> getSortedTablesFor(List<TriggerHistory> histories);
 }

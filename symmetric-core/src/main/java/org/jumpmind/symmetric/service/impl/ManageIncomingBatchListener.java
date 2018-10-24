@@ -192,7 +192,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
             }
 
             if (context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE) != null && context.get(ContextConstants.CONTEXT_BULK_WRITER_TO_USE).equals("bulk")) {
-                log.info("Bulk loading failed for this batch " + context.getBatch().getBatchId() + ", falling back to default loading.");
+                log.info("Bulk loading failed for this batch " + context.getBatch().getBatchId() + ", falling back to default loading. (" + ex + ")");
                 log.debug("Bulk loading error.", ex);
             } else {
             
