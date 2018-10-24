@@ -186,7 +186,7 @@ subprojects { subproject ->
         jdomVersion = '2.0.5'
         junitVersion = '4.11'
         log4jVersion = '1.2.17'
-        slf4jVersion = '1.7.21'
+        slf4jVersion = '1.7.6'
         mockitoVersion = '1.9.5'
         powerMockVersion = '1.5.3'
         mysqlVersion = '5.1.45'
