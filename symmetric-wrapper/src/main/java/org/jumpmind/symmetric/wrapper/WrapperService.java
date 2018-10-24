@@ -375,7 +375,7 @@ public abstract class WrapperService {
             pid = Integer.parseInt(reader.readLine());
             reader.close();
         } catch (FileNotFoundException e) {
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return pid;
