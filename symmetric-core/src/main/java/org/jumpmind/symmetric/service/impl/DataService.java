@@ -38,6 +38,7 @@ import java.util.Set;
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -464,7 +465,7 @@ public class DataService extends AbstractService implements IDataService {
                                     createBy, transactional, transaction);
                             }
                         }
-                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests);
+                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests, triggerRouters);
                         
                         String symNodeSecurityReloadChannel = null;
                         int totalTableCount = 0;
@@ -585,17 +586,35 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests) {
+    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters) {
         if (reloadRequests == null) {
             return null;
         }
         Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap();
-        for (TableReloadRequest item : reloadRequests) {
-            reloadMap.put(item.getIdentifier(), item);
+        for (TableReloadRequest reloadRequest : reloadRequests) {
+            validate(reloadRequest, triggerRouters);
+            reloadMap.put(reloadRequest.getIdentifier(), reloadRequest);
         }
         return reloadMap;
     }
     
+    protected void validate(TableReloadRequest reloadRequest, List<TriggerRouter> triggerRouters) {
+        boolean validMatch = false;
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            if (ObjectUtils.equals(triggerRouter.getTriggerId(), reloadRequest.getTriggerId())
+                    && ObjectUtils.equals(triggerRouter.getRouterId(), reloadRequest.getRouterId())) {
+                validMatch = true;
+                break;
+            }
+        }
+        
+        if (!validMatch) {
+            throw new SymmetricException("Table reload request submitted which does not have a valid trigger/router "
+                    + "combination in sym_trigger_router. Request trigger id: '" + reloadRequest.getTriggerId() + "' router id: '" 
+                    + reloadRequest.getRouterId() + "' create time: " + reloadRequest.getCreateTime());
+        }
+    }
+
     private void callReloadListeners(boolean before, Node targetNode, boolean transactional,
             ISqlTransaction transaction, long loadId) {
         for (IReloadListener listener : extensionService.getExtensionPointList(IReloadListener.class)) {

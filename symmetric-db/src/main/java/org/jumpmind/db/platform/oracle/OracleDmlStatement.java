@@ -22,6 +22,7 @@ package org.jumpmind.db.platform.oracle;
 
 import java.sql.Types;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -42,7 +43,7 @@ public class OracleDmlStatement extends DmlStatement {
             sql.append("TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')")
                     .append(",");
         } else if (isGeometry(column)) {
-            sql.append("SYM_WKT2GEOM(?)").append(",");
+            sql.append("SYM_WKT2GEOM(?,").append(buildSRIDSelect(column)).append(")").append(",");
         } else if (column.getJdbcTypeName().startsWith("XMLTYPE")) {
             sql.append("XMLTYPE(?)").append(",");
         } else {
@@ -57,7 +58,7 @@ public class OracleDmlStatement extends DmlStatement {
                     .append(" = TO_TIMESTAMP_TZ(?, 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM')");
         } else if (isGeometry(column)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
-                    .append("SYM_WKT2GEOM(?)");
+                    .append("SYM_WKT2GEOM(?,").append(buildSRIDSelect(column)).append(")");
         } else if (column.getJdbcTypeName().startsWith("XMLTYPE")) {
             sql.append(quote).append(column.getName()).append(quote).append(" = ")
                     .append("XMLTYPE(?)");
@@ -97,4 +98,14 @@ public class OracleDmlStatement extends DmlStatement {
             return false;
         }
     }
+    
+    protected String buildSRIDSelect(Column column) {
+        if (!StringUtils.isEmpty(schemaName)) {
+            return String.format("(select SRID from all_sdo_geom_metadata where owner = '%s' and table_name = '%s' and column_name = '%s')", 
+                    schemaName.toUpperCase(), tableName.toUpperCase(), column.getName().toUpperCase());
+        } else {
+            return String.format("(select SRID from user_sdo_geom_metadata where table_name = '%s' and column_name = '%s')", 
+                    tableName.toUpperCase(), column.getName().toUpperCase());
+        }
+    }    
 }
