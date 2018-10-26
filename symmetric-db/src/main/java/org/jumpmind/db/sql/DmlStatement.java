@@ -53,6 +53,12 @@ public class DmlStatement {
     public enum DmlType {
         INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, WHERE, SELECT, SELECT_ALL, UNKNOWN
     };
+    
+    protected String catalogName;
+    
+    protected String schemaName;
+    
+    protected String tableName;
 
     protected DmlType dmlType;
 
@@ -99,7 +105,10 @@ public class DmlStatement {
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression, 
             boolean namedParameters) {
-    
+        
+        this.catalogName = catalogName;
+        this.schemaName = schemaName;
+        this.tableName = tableName;
         this.namedParameters = namedParameters;
         this.databaseInfo = databaseInfo;
         this.columns = columns;
