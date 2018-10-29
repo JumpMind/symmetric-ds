@@ -1511,8 +1511,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
         for (Trigger trigger : triggersForCurrentNode) {
-            if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(),
-                    ignoreCase)) {
+            if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
+                    (!trigger.isSourceTableNameWildCarded() || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
                 log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
                 updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories);
                 log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
