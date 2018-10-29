@@ -113,13 +113,8 @@
     <table name="data_gap" description="Used only when routing.data.reader.type is set to 'gap.'  Table that tracks gaps in the data table so that they may be processed efficiently, if data shows up.  Gaps can show up in the data table if a database transaction is rolled back.">
         <column name="start_id" type="BIGINT" required="true" primaryKey="true"  description="The first missing data_id from the data table where a gap is detected.  This could be the last data_id inserted plus one." />
         <column name="end_id" type="BIGINT" required="true" primaryKey="true"  description="The last missing data_id from the data table where a gap is detected.  If the start_id is the last data_id inserted plus one, then this field is filled in with a -1." />
-        <column name="status" type="CHAR" size="2"  description="GP, SK, or FL.  GP means there is a detected gap.  FL means that the gap has been filled.  SK means that the gap has been skipped either because the gap expired or because no database transaction was detected which means that no data will be committed to fill in the gap." />
         <column name="create_time" type="TIMESTAMP" required="true"  description="Timestamp when this entry was created." />
         <column name="last_update_hostname" type="VARCHAR" size="255"  description="The host who last updated this entry." />
-        <column name="last_update_time" type="TIMESTAMP" required="true"  description="Timestamp when a user last updated this entry." />
-        <index name="idx_dg_status">
-            <index-column name="status"/>
-        </index>
      </table>
 
     <table name="extension" description="Dynamic extensions stored in the database that plug-in to the running engine and receive callbacks according to their interface.">
@@ -371,8 +366,6 @@
         <column name="node_id" type="VARCHAR" size="50" required="true" primaryKey="true" description="A unique identifier for a node." />
         <column name="node_group_id" type="VARCHAR" size="50" required="true" description="The node group that this node belongs to, such as 'store'." />
         <column name="external_id" type="VARCHAR" size="255" required="true" description="A domain-specific identifier for context within the local system. For example, the retail store number. "/>
-        <column name="heartbeat_time" type="TIMESTAMP"  description="Deprecated.  Use node_host.heartbeat_time instead." />
-        <column name="timezone_offset" type="VARCHAR" size="6"  description="Deprecated.  Use node_host.timezone_offset instead." />        
         <column name="sync_enabled" type="BOOLEANINT" size="1" default="0" description="Indicates whether this node should be sent synchronization. Disabled nodes are ignored by the triggers, so no entries are made in data_event for the node."/>
         <column name="sync_url" type="VARCHAR" size="255" description="The URL to contact the node for synchronization." />
         <column name="schema_version" type="VARCHAR" size="50" description="The version of the database schema this node manages. Useful for specifying synchronization by version. "/>

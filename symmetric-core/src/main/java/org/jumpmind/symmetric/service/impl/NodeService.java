@@ -283,15 +283,15 @@ public class NodeService extends AbstractService implements INodeService {
                     getSql("insertNodeSql"),
                     new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
                             node.getDatabaseVersion(), node.getSchemaVersion(),
-                            node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
-                            node.isSyncEnabled() ? 1 : 0, AppUtils.getTimezoneOffset(),
+                            node.getSymmetricVersion(), node.getSyncUrl(),
+                            node.isSyncEnabled() ? 1 : 0,
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
                             node.getCreatedAtNodeId(), node.getDeploymentType(), 
                             node.getDeploymentSubType(), node.getConfigVersion(), 
                             node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                            Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
 
             flushNodeGroupCache();
@@ -304,14 +304,14 @@ public class NodeService extends AbstractService implements INodeService {
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
                         node.getDatabaseVersion(), node.getSchemaVersion(),
-                        node.getSymmetricVersion(), node.getSyncUrl(), new Date(),
-                        node.isSyncEnabled() ? 1 : 0,  AppUtils.getTimezoneOffset(),
+                        node.getSymmetricVersion(), node.getSyncUrl(),
+                        node.isSyncEnabled() ? 1 : 0,
                         node.getBatchToSendCount(), node.getBatchInErrorCount(),
                         node.getCreatedAtNodeId(), node.getDeploymentType(), node.getDeploymentSubType(),
                         node.getConfigVersion(), node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
-                        Types.INTEGER, Types.VARCHAR, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
 
         return updated;

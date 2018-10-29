@@ -103,7 +103,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
 
     static final String isRegistrationClosedSql = "select count(*) from sym_node_security where registration_enabled=0 and node_id=?";
 
-    static final String makeHeartbeatOld = "update sym_node set heartbeat_time={ts '2000-01-01 01:01:01.000'} where node_id=?";
+    static final String makeHeartbeatOld = "update sym_node_host set heartbeat_time={ts '2000-01-01 01:01:01.000'} where node_id=?";
 
     static final String deleteNode = "delete from sym_node where node_id=?";
 

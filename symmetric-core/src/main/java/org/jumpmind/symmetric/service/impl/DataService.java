@@ -2074,23 +2074,23 @@ public class DataService extends AbstractService implements IDataService {
         return data;
     }
 
-    public long countDataGapsByStatus(DataGap.Status status) {
-        return sqlTemplate.queryForLong(getSql("countDataGapsByStatusSql"), new Object[] { status.name() });
+    public long countDataGaps() {
+        return sqlTemplate.queryForLong(getSql("countDataGapsSql"));
     }
     
-    public List<DataGap> findDataGapsByStatus(DataGap.Status status) {
-        return sqlTemplate.query(getSql("findDataGapsByStatusSql"), new ISqlRowMapper<DataGap>() {
+    public List<DataGap> findDataGapsUnchecked() {
+        return sqlTemplate.query(getSql("findDataGapsSql"), new ISqlRowMapper<DataGap>() {
             public DataGap mapRow(Row rs) {
                 return new DataGap(rs.getLong("start_id"), rs.getLong("end_id"), rs
                         .getDateTime("create_time"));
             }
-        }, status.name());
+        });
     }
 
     public List<DataGap> findDataGaps() {
         final long maxDataToSelect = parameterService
                 .getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE);
-        List<DataGap> gaps = findDataGapsByStatus(DataGap.Status.GP);
+        List<DataGap> gaps = findDataGapsUnchecked();
         boolean lastGapExists = false;
         long lastGapStartId = 0;
         for (DataGap dataGap : gaps) {
@@ -2146,9 +2146,9 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataGap(ISqlTransaction transaction, DataGap gap) {
         log.debug("Inserting data gap: {}", gap);
         transaction.prepareAndExecute(getSql("insertDataGapSql"),
-                new Object[] { DataGap.Status.GP.name(), AppUtils.getHostName(), gap.getStartId(), gap.getEndId(),
-                    gap.getLastUpdateTime(), gap.getCreateTime() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP });
+                new Object[] { AppUtils.getHostName(), gap.getStartId(), gap.getEndId(),
+                    gap.getCreateTime() }, new int[] {
+                        Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
     }
     
     @Override

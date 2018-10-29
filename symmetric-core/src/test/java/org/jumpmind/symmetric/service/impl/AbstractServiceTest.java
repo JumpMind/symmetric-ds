@@ -269,7 +269,7 @@ public abstract class AbstractServiceTest {
         getSqlTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
         long startId = getSqlTemplate().queryForLong("select max(start_id) from sym_data_gap");
         getSqlTemplate()
-                .update("update sym_data_gap set status='OK' where start_id != ?", startId);        
+                .update("delete from sym_data_gap where start_id != ?", startId);        
         checkForOpenResources();
     }
     

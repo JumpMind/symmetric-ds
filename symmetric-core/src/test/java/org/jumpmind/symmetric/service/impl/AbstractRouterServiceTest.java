@@ -831,7 +831,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
 
             long startId = getSqlTemplate().queryForLong("select max(start_id) from sym_data_gap");
 
-            getSqlTemplate().update("update sym_data_gap set status='OK'");
+            getSqlTemplate().update("delete from sym_data_gap");
             getDataService().insertDataGap(new DataGap(startId, startId + 10));
             getDataService().insertDataGap(
                     new DataGap(startId + 11, startId + 11 + getParameterService().getLong(ParameterConstants.ROUTING_LARGEST_GAP_SIZE)));

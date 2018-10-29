@@ -128,9 +128,9 @@ public interface IDataService {
      */
     public int countDataInRange(long firstDataId, long secondDataId);
     
-    public long countDataGapsByStatus(DataGap.Status status);
+    public long countDataGaps();
 
-    public List<DataGap> findDataGapsByStatus(DataGap.Status status);
+    public List<DataGap> findDataGapsUnchecked();
     
     public List<DataGap> findDataGaps();
 

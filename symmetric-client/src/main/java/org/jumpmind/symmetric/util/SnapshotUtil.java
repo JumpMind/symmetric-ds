@@ -252,11 +252,10 @@ public class SnapshotUtil {
                 List<DataGap> gaps = engine.getRouterService().getDataGaps();
                 SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                 fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"));
-                fos.write("start_id,end_id,create_time,last_update_time\n".getBytes());
+                fos.write("start_id,end_id,create_time\n".getBytes());
                 if (gaps != null) {
                     for (DataGap gap : gaps) {
-                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\""
-                                + dformat.format(gap.getLastUpdateTime()) + "\"\n").getBytes());
+                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\"" + "\"\n").getBytes());
                     }
                 }
             } catch (IOException e) {
@@ -551,7 +550,7 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("batch.incoming.errors.count",
                     Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
 
-            List<DataGap> gaps = engine.getDataService().findDataGapsByStatus(DataGap.Status.GP);
+            List<DataGap> gaps = engine.getDataService().findDataGapsUnchecked();
             runtimeProperties.setProperty("data.gap.count", Long.toString(gaps.size()));
             if (gaps.size() > 0) {
                 runtimeProperties.setProperty("data.gap.start.id", Long.toString(gaps.get(0).getStartId()));
