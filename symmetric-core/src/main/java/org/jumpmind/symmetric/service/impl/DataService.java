@@ -465,7 +465,7 @@ public class DataService extends AbstractService implements IDataService {
                                     createBy, transactional, transaction);
                             }
                         }
-                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests, triggerRouters);
+                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests, triggerRouters, isFullLoad);
                         
                         String symNodeSecurityReloadChannel = null;
                         int totalTableCount = 0;
@@ -586,13 +586,15 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters) {
+    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters, boolean isFullLoad) {
         if (reloadRequests == null) {
             return null;
         }
         Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap();
         for (TableReloadRequest reloadRequest : reloadRequests) {
-            validate(reloadRequest, triggerRouters);
+            if (!isFullLoad) {
+                validate(reloadRequest, triggerRouters);
+            }
             reloadMap.put(reloadRequest.getIdentifier(), reloadRequest);
         }
         return reloadMap;
