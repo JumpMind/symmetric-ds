@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
@@ -118,8 +119,15 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         DmlStatement stmt = databaseWriter.getPlatform().createDmlStatement(DmlType.FROM, targetTable
                 , writer.getWriterSettings().getTextColumnExpression());
         String sql = stmt.getColumnsSql(new Column[] { targetTable.getColumnWithName(columnName) });
-        Long existingVersion = databaseWriter.getTransaction()
-                .queryForObject(sql, Long.class, objectValues);
+        Long existingVersion = null;
+        
+        try {            
+            existingVersion = databaseWriter.getTransaction().queryForObject(sql, Long.class, objectValues);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to execute conflict resolution SQL: \"" + 
+                    sql  + "\" values: " + Arrays.toString(objectValues), ex); 
+        }
+        
         if (existingVersion == null) {
             return true;
         } else {

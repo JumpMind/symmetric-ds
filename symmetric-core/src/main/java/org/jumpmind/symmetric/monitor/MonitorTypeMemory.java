@@ -61,7 +61,7 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
         MonitorEvent event = new MonitorEvent();
         long usage = 0;
         if (tenuredPool != null) {
-            usage = (long) (tenuredPool.getUsage().getUsed() / tenuredPool.getUsage().getMax());
+            usage = (long) ((double)tenuredPool.getUsage().getUsed() / (double)tenuredPool.getUsage().getMax() * 100);
         }
         event.setValue(usage);
         return event;

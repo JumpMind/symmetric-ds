@@ -191,20 +191,20 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
         if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
-            String sql = "  CREATE OR REPLACE                                                                                                         "
-                    + "    FUNCTION $(functionName)(                            "
-                    + "        clob_in IN CLOB)                                 "
-                    + "      RETURN SDO_GEOMETRY                                "
-                    + "    AS                                                   "
-                    + "      v_out SDO_GEOMETRY := NULL;                        "
-                    + "    BEGIN                                                "
-                    + "      IF clob_in IS NOT NULL THEN                        "
-                    + "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN          "
-                    + "          v_out := SDO_GEOMETRY(clob_in);                "
-                    + "        END IF;                                          "
-                    + "      END IF;                                            "
-                    + "      RETURN v_out;                                      "
-                    + "    END $(functionName);                                 ";
+            String sql = "  CREATE OR REPLACE FUNCTION $(functionName) (  \r\n"
+                    + "        clob_in IN CLOB,                           \r\n"
+                    + "        srid_in IN INTEGER)                        \r\n"
+                    + "      RETURN SDO_GEOMETRY                          \r\n"
+                    + "    AS                                             \r\n"
+                    + "      v_out SDO_GEOMETRY := NULL;                  \r\n"
+                    + "    BEGIN                                          \r\n"
+                    + "      IF clob_in IS NOT NULL THEN                  \r\n"
+                    + "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN    \r\n"
+                    + "          v_out := SDO_GEOMETRY(clob_in, srid_in); \r\n"
+                    + "        END IF;                                    \r\n"
+                    + "      END IF;                                      \r\n"
+                    + "      RETURN v_out;                                \r\n"
+                    + "    END $(functionName);                           \r\n";
             install(sql, wkt2geom);
         }
 

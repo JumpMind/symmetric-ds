@@ -38,7 +38,9 @@ artifacts {
 }
     
 configurations.archives.with {    
-    artifacts.remove artifacts.find { it.archiveTask.is war }
+
+    
+    artifacts.remove artifacts.find { it.type == 'war' }
 }
 
 dependencies {
