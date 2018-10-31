@@ -1211,7 +1211,7 @@ public class DataService extends AbstractService implements IDataService {
                 loadId, createBy);
     }
 
-    protected void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
+    public void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history,
             String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
             String createBy) {
         Trigger trigger = engine.getTriggerRouterService().getTriggerById(history.getTriggerId(),
@@ -1303,15 +1303,19 @@ public class DataService extends AbstractService implements IDataService {
 
     public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
             TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy) {
-
         Trigger trigger = engine.getTriggerRouterService().getTriggerById(
                 triggerHistory.getTriggerId(), false);
         String reloadChannelId = getReloadChannelIdForTrigger(trigger, engine
                 .getConfigurationService().getChannels(false));
+        insertCreateEvent(transaction, targetNode, triggerHistory, isLoad ? reloadChannelId
+                : Constants.CHANNEL_CONFIG, routerId, isLoad, loadId, createBy);
+    }
+    
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
+            TriggerHistory triggerHistory, String channelId, String routerId, boolean isLoad, long loadId, String createBy) {
 
         Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.CREATE,
-                null, null, triggerHistory, isLoad ? reloadChannelId
-                        : Constants.CHANNEL_CONFIG, null, null);
+                null, null, triggerHistory, channelId, null, null);
         data.setNodeList(targetNode.getNodeId());
         try {
             if (isLoad) {
