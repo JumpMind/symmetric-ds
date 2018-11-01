@@ -298,6 +298,10 @@ public class Trigger implements Serializable {
         return sourceTableName;
     }
 
+    public boolean isSourceWildCarded() {
+        return isSourceTableNameWildCarded() || isSourceCatalogNameWildCarded() || isSourceSchemaNameWildCarded();
+    }
+    
     public boolean isSourceTableNameWildCarded() {
         return sourceTableName != null && (sourceTableName.contains(FormatUtils.WILDCARD) || sourceTableName.contains(","));
     }
