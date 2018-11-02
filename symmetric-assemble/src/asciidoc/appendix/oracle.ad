@@ -13,7 +13,7 @@ GRANT CREATE ANY TRIGGER TO SYMMETRIC;
 GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;
 
 ==== Known Limitations
-* The LONG data type is not supported. LONG columns cannot be accessed from triggers
+* The LONG data type is not supported with change capture, since LONG columns cannot be accessed from triggers.  The data in LONG columns can still be kept in sync by enabling the use_stream_lobs feature in <<TRIGGER>>.
 * The global precision of numeric columns is controlled by the oracle.template.precision parameter.  It defaults to a precision of 30,10
 * With the default settings a database row cannot exceed 4k.  If the error `'ORA-01489: result of string concatenation is too long'` occurs 
 then set `use_capture_lobs` to 1 in the <<TRIGGER>> table and `contains_big_lobs` to 1 on the assigned <<CHANNEL>>.  Triggers will need to be synchronized. By enabling 
