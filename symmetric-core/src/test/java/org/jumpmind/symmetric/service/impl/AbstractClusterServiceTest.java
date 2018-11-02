@@ -20,11 +20,10 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import junit.framework.Assert;
-
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.service.ClusterConstants;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

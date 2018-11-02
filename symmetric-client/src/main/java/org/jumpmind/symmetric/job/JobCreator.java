@@ -49,6 +49,7 @@ public class JobCreator {
         return job;
     }
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected AbstractJob instantiateJavaJob(JobDefinition jobDefinition, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         String className = jobDefinition.getJobExpression();
         

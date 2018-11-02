@@ -124,7 +124,7 @@ public class TransportManagerFactory {
             try {
                 Class<?> clazz = ClassUtils.getClass(className);
                 HttpTransportManager httpTransportManager = null;
-                for (Constructor c : clazz.getConstructors()) {
+                for (Constructor<?> c : clazz.getConstructors()) {
                     if (c.getParameterTypes().length == 1 
                             && c.getParameterTypes()[0].isAssignableFrom(ISymmetricEngine.class)) {
                         httpTransportManager = (HttpTransportManager) c.newInstance(symmetricEngine);
