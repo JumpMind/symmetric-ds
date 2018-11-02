@@ -2603,6 +2603,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
             final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
+            log.debug(sql);
             
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
