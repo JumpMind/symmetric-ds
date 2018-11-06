@@ -265,7 +265,12 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     }
 
     final private java.util.Date getDate(String value, String[] pattern) {
-        return FormatUtils.parseDate(value, pattern);
+        int fractionIndex = value.lastIndexOf(".");
+        if (fractionIndex > 0 && value.substring(fractionIndex, value.length()).length() > 3) {
+            return Timestamp.valueOf(value);
+        } else {
+            return FormatUtils.parseDate(value, pattern);
+        }
     }
     
     public Object[] toArray(String[] keys) {

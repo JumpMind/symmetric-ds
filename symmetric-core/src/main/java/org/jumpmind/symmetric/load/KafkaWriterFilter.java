@@ -231,7 +231,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                                     }
                                 }
                             }
-                            sendKafkaMessage(pojo, kafkaDataKey);
+                            sendKafkaMessageByObject(pojo, kafkaDataKey);
                         } else {
                             throw new RuntimeException("Unable to find a POJO to load for AVRO based message onto Kafka for table : " + tableName);
                         }
@@ -396,19 +396,23 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     public void batchComplete(DataContext context) {
         if (!context.getBatch().getChannelId().equals("heartbeat") && !context.getBatch().getChannelId().equals("config")) {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
+            
+            KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
             try {
                 if (confluentUrl == null && kafkaDataMap.size() > 0) {
                     StringBuffer kafkaText = new StringBuffer();
+                    
+                    
                     for (Map.Entry<String, List<String>> entry : kafkaDataMap.entrySet()) {
                         for (String row : entry.getValue()) {
                             if (messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
-                                sendKafkaMessage(row, entry.getKey());
+                                sendKafkaMessage(producer, row, entry.getKey());
                             } else {
                                 kafkaText.append(row);
                             }
                         }
                         if (messageBy.equals(KAFKA_MESSAGE_BY_BATCH)) {
-                            sendKafkaMessage(kafkaText.toString(), entry.getKey());
+                            sendKafkaMessage(producer, kafkaText.toString(), entry.getKey());
                         }
                     }
                     kafkaDataMap = new HashMap<String, List<String>>();
@@ -417,6 +421,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 log.warn("Unable to write batch to Kafka " + batchFileName, e);
                 e.printStackTrace();
             } finally {
+                producer.close();
                 context.put(KAFKA_TEXT_CACHE, new HashMap<String, List<String>>());
                 tableNameCache.clear();
                 tableColumnCache = new HashMap<String, Map<String, String>>();
@@ -430,15 +435,12 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     public void batchRolledback(DataContext context) {
     }
 
-    public void sendKafkaMessage(String kafkaText, String topic) {
-        KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
+    public void sendKafkaMessage(KafkaProducer<String, String> producer, String kafkaText, String topic) {
         producer.send(new ProducerRecord<String, String>(topic, kafkaText));
         log.debug("Data to be sent to Kafka-" + kafkaText);
-
-        producer.close();
     }
 
-    public void sendKafkaMessage(Object bean, String topic) {
+    public void sendKafkaMessageByObject(Object bean, String topic) {
         KafkaProducer<String, Object> producer = new KafkaProducer<String, Object>(configs);
         producer.send(new ProducerRecord<String, Object>(topic, bean));
         producer.close();

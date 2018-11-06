@@ -34,7 +34,7 @@ public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
     @Override
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
-        LoadStatus loadStatus = super.insert(data);
+        LoadStatus loadStatus = super.update(data, applyChangesOnly, useConflictDetection);
         if (loadStatus == LoadStatus.CONFLICT) {
             loadStatus = LoadStatus.SUCCESS;
         }

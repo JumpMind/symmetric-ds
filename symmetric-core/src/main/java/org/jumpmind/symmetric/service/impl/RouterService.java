@@ -1106,6 +1106,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.setLastLoadId(loadId);
                     }
                     batch.setLoadId(loadId);
+                    context.setNeedsCommitted(true);
                 } else {
                     context.setLastLoadId(-1);
                 }

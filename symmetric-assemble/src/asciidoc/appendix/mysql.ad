@@ -31,6 +31,15 @@ grant create routine on *.* to symmetric;
 grant process on *.* to symmetric;
 ----
 
+Starting in MySQL 5.7.6, the "PROCESS" privilege is also required for the MySQL user that is modifying the application tables.
+This is required to look up the transaction id. Internally, the trigger will submit this query during an insert/update/delete:
+
+select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();
+
+----
+grant process on *.* to db_user;
+----
+
 MySQL allows '0000-00-00 00:00:00' to be entered as a value for datetime and timestamp columns.
 JDBC cannot deal with a date value with a year of 0. In order to work around this SymmetricDS can be configured to treat date and time 
 columns as varchar columns for data capture and data load. To enable this feature set the db.treat.date.time.as.varchar.enabled property to true.
