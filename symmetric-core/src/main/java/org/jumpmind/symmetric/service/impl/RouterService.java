@@ -589,12 +589,14 @@ public class RouterService extends AbstractService implements IRouterService {
             if (producesCommonBatches && triggerRouters != null) {
                 List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId())) {
+                    if (triggerRouter.getTrigger().getChannelId().equals(channelId)) {
                         testableTriggerRouters.add(triggerRouter);
                     } else {
                         /*
-                         * Add any trigger router that is in another channel, but is
-                         * for a table that is in the current channel
+                         * This trigger is not on this channel. If there is
+                         * another trigger on this channel for the same table
+                         * AND this trigger is syncing to this node, then
+                         * consider it to check on common batch mode
                          */
                         String anotherChannelTableName = triggerRouter.getTrigger()
                                 .getFullyQualifiedSourceTableName();
@@ -603,14 +605,14 @@ public class RouterService extends AbstractService implements IRouterService {
                                     .getTrigger()
                                     .getFullyQualifiedSourceTableName();
                             String currentChannelId = triggerRouter2.getTrigger().getChannelId();
-                            if (anotherChannelTableName
-                                    .equals(currentTableName) && currentChannelId.equals(channelId)) {
+                            if (anotherChannelTableName.equals(currentTableName) && currentChannelId.equals(channelId)
+                                    && triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId()
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getSourceNodeGroupId())) {
                                 testableTriggerRouters.add(triggerRouter);
                             }
                         }
                     }
                 }         
-                
                 for (TriggerRouter triggerRouter : testableTriggerRouters) {
                     boolean isDefaultRouter = "default".equals(triggerRouter.getRouter().getRouterType());
                     /*
