@@ -5,6 +5,8 @@ SymmetricDS is a database and file synchronization solution that is platform-ind
 
 SymmetricDS is sponsored by http://www.jumpmind.com.  JumpMind also provides support and a professional version that features a web-based user interface that simplifies configuration and management.
 
+You can find articles on SymmetricDS at http://www.jumpmind.com/blog and https://medium.com/data-weekly.
+
 Open source downloads here:
 
 <a href="https://sourceforge.net/projects/symmetricds/files/latest/download" rel="nofollow"><img alt="Download SymmetricDS" src="https://a.fsdn.com/con/app/sf-download-button"></a>
