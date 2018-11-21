@@ -27,6 +27,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
@@ -365,6 +366,21 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         } else {
             return super.massageForLob(sql, channel);
         }
+    }
+
+    @Override
+    public boolean isInitialLoadTwoPassLob(Table table) {
+        return parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
+                && table.containsLobColumns(this.platform);
+    }
+
+    @Override
+    public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
+        String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+        if (isFirstPass) {
+            return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000";
+        }
+        return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";
     }
 
     @Override

@@ -224,6 +224,10 @@ public interface ISymmetricDialect {
     public String massageDataExtractionSql(String sql, Channel channel);
 
     public String massageForLob(String sql, Channel channel);
+    
+    public boolean isInitialLoadTwoPassLob(Table table);
+    
+    public String getInitialLoadTwoPassLobSql(String sql, Table table, boolean isFirstPass);
 
     /*
      * Indicates that the dialect relies on SQL that is to be inserted into the database for use

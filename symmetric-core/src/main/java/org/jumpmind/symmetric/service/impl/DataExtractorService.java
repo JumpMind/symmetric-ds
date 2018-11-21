@@ -2421,6 +2421,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private String selfRefChildColumnName;
         
         boolean isFirstRow;
+        
+        boolean isLobFirstPass;
 
         public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
                 SelectFromTableEvent event) {
@@ -2527,6 +2529,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
+                    if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+                        this.isLobFirstPass = true;
+                    }
+
                     this.startNewCursor(history, triggerRouter);
                 }
             }
@@ -2539,6 +2545,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         this.selfRefLevel++;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                         this.isFirstRow = true;
+                    } else if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
+                        this.isLobFirstPass = false;
+                        this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                     } else {
                         this.currentInitialLoadEvent = null;
                     }
@@ -2587,12 +2596,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
+
+            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getChannelId());
+            
+            if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+                channel = new Channel();
+                channel.setContainsBigLob(!this.isLobFirstPass);
+                selectSql = symmetricDialect.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
+                log.info("Querying {} pass LOB for table {}: {}", (this.isLobFirstPass ? "first" : "second"), sourceTable.getName(), selectSql);
+            }
             
             String sql = symmetricDialect.createInitialLoadSqlFor(
-                    this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
-                    triggerHistory,
-                    configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
-                    selectSql);
+                    this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable, triggerHistory, channel, selectSql);
+
             for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
                 sql = filter.filterInitalLoadSql(sql, node, targetTable);
             }
