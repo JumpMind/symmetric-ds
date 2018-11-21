@@ -21,7 +21,7 @@
 
 @echo off
 
-pushd %~dp0..
+pushd "%~dp0.."
 for /f "delims=" %%i in ('echo %CD%') do set SYM_HOME=%%i
 popd
 
