@@ -178,40 +178,32 @@ abstract public class AbstractTriggerTemplate {
                     if (i > 0) {
                         columnList.append(",");
                     }
-                    boolean isLob = symmetricDialect.getPlatform()
-                            .isLob(column.getMappedTypeCode());
-                    if (!(isLob && triggerRouter.getTrigger().isUseStreamLobs())) {
-
-                        String columnExpression = null;
-                        if (useTriggerTemplateForColumnTemplatesDuringInitialLoad()) {
-                            ColumnString columnString = fillOutColumnTemplate(tableAlias,
-                                    tableAlias, "", table, column, DataEventType.INSERT, false, channel,
-                                    triggerRouter.getTrigger());
-                            columnExpression = columnString.columnString;
-                            if (isNotBlank(textColumnExpression)
-                                    && TypeMap.isTextType(column.getMappedTypeCode())) {
-                                columnExpression = textColumnExpression.replace("$(columnName)",
-                                        columnExpression);
-                            }
-                        } else {
-                            columnExpression = SymmetricUtils.quote(symmetricDialect,
-                                    column.getName());
-
-                            if (dateTimeAsString
-                                    && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
-                                columnExpression = castDatetimeColumnToString(column.getName());
-                            } else if (isNotBlank(textColumnExpression)
-                                    && TypeMap.isTextType(column.getMappedTypeCode())) {
-                                columnExpression = textColumnExpression.replace("$(columnName)",
-                                        columnExpression);
-                            }
+                    String columnExpression = null;
+                    if (useTriggerTemplateForColumnTemplatesDuringInitialLoad()) {
+                        ColumnString columnString = fillOutColumnTemplate(tableAlias,
+                                tableAlias, "", table, column, DataEventType.INSERT, false, channel,
+                                triggerRouter.getTrigger());
+                        columnExpression = columnString.columnString;
+                        if (isNotBlank(textColumnExpression)
+                                && TypeMap.isTextType(column.getMappedTypeCode())) {
+                            columnExpression = textColumnExpression.replace("$(columnName)",
+                                    columnExpression);
                         }
-                        
-                        columnList.append(columnExpression).append(" as ").append("x__").append(i);
-                        
                     } else {
-                        columnList.append(" ").append(emptyColumnTemplate).append(" as ").append("x__").append(i);
+                        columnExpression = SymmetricUtils.quote(symmetricDialect,
+                                column.getName());
+
+                        if (dateTimeAsString
+                                && TypeMap.isDateTimeType(column.getMappedTypeCode())) {
+                            columnExpression = castDatetimeColumnToString(column.getName());
+                        } else if (isNotBlank(textColumnExpression)
+                                && TypeMap.isTextType(column.getMappedTypeCode())) {
+                            columnExpression = textColumnExpression.replace("$(columnName)",
+                                    columnExpression);
+                        }
                     }
+                    
+                    columnList.append(columnExpression).append(" as ").append("x__").append(i);                        
                 }
             }
             sql = FormatUtils.replace("columns", columnList.toString(), sql);
