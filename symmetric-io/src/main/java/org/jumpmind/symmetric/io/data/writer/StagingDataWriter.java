@@ -116,10 +116,6 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
             int size = data.length();
             for (int i = 0; i < size; i = i + 1024) {
                 int end = i + 1024;
-//                try {
-//                    Thread.sleep(5);
-//                } catch (InterruptedException ex) {
-//                }
                 writer.append(data, i, end < size ? end : size);
             }
         } catch (IOException ex) {
