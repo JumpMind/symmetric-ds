@@ -2652,7 +2652,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public boolean requiresLobsSelectedFromSource(CsvData data) {
-            if (this.currentInitialLoadEvent != null
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_COLUMN_TEMPLATES_ENABLED)
+                    && this.currentInitialLoadEvent != null
                     && this.currentInitialLoadEvent.getTriggerRouter() != null) {
                 if (this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs()
                         || (data != null && hasLobsThatNeedExtract(sourceTable, data))) {
