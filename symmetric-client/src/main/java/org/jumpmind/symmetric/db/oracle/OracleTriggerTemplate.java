@@ -45,7 +45,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         clobColumnTemplate = "decode(dbms_lob.getlength(to_clob($(tableAlias).\"$(columnName)\")), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
         blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||$(prefixName)_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
         booleanColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
-        xmlColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\".getclobval()), null, to_clob(''), '\"'||replace(replace($(tableAlias).\"$(columnName)\".getclobval(),'\\','\\\\'),'\"','\\\"')||'\"')" ;
+        xmlColumnTemplate = "decode(dbms_lob.getlength(extract($(tableAlias).\"$(columnName)\", '/').getclobval()), null, to_clob(''), '\"'||replace(replace(extract($(tableAlias).\"$(columnName)\", '/').getclobval(),'\\','\\\\'),'\"','\\\"')||'\"')" ;
         triggerConcatCharacter = "||" ;
         newTriggerValue = ":new" ;
         oldTriggerValue = ":old" ;
