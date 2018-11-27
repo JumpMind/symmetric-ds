@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.interbase;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Column;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
@@ -204,4 +205,8 @@ public class InterbaseTriggerTemplate extends AbstractTriggerTemplate {
         return false;
     }
 
+    @Override
+    protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
+        return false;
+    }
 }

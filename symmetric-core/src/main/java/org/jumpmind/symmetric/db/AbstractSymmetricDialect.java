@@ -230,6 +230,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 .trim();
     }
     
+    public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory) {
+        return triggerTemplate.getColumnPositionUsingTemplate(originalTable, triggerHistory);
+    }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
         return createPurgeSqlFor(node, triggerRouter, triggerHistory, null);

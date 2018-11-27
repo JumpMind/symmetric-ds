@@ -108,6 +108,8 @@ public interface ISymmetricDialect {
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel, String overrideSelectSql);
+    
+    public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory);
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory);
     

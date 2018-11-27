@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.db.db2;
 
+import org.jumpmind.db.model.Column;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
@@ -124,6 +125,11 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
     }
     
     public boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad() {
+        return false;
+    }
+    
+    @Override
+    protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
         return false;
     }
 

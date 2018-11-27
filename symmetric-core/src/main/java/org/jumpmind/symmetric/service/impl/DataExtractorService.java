@@ -2619,6 +2619,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
             final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
+            final boolean[] isColumnPositionUsingTemplate = symmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
             log.debug(sql);
             
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
@@ -2627,13 +2628,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
                     } else if (objectValuesWillNeedEscaped) {
-                        String[] rowData = platform.getStringValues(
+                        csvRow = platform.getCsvStringValue(
                                 symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
-                                row, false, true);
-                        csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
+                                row, isColumnPositionUsingTemplate);
                     } else {
                         csvRow = row.csvValue();
-
                     }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {
