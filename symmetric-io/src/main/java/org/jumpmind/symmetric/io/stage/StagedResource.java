@@ -78,15 +78,19 @@ public class StagedResource implements IStagedResource {
         this.path = path;
         this.stagingManager = stagingManager;
         lastUpdateTime = System.currentTimeMillis();   
+
+        File doneFile = buildFile(State.DONE); 
         
-        if (buildFile(State.DONE).exists()){
-            this.state = State.DONE;
-        } else {
-            this.state = State.CREATE;       
-        }
-        this.file = buildFile(state);
-        if (file.exists()) {
+        if (doneFile.exists()) { // Only call exists once for done files. This can be expensive on some SAN type devices.
+            this.state = State.DONE; 
+            this.file = doneFile;
             lastUpdateTime = file.lastModified();
+        } else {
+            this.state = State.CREATE;
+            this.file = buildFile(state);
+            if (file.exists()) {
+                lastUpdateTime = file.lastModified();
+            }
         }
     }    
     
@@ -176,6 +180,15 @@ public class StagedResource implements IStagedResource {
         
         String msg = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+        
+        int tries = 5;
+        
+        while (!newFile.exists() && tries-- > 0) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+            }
+        }
         
         if (newFile.exists()) {
             if (isSameFile(oldFile, newFile)) {
@@ -294,7 +307,7 @@ public class StagedResource implements IStagedResource {
         try {            
             if (outputStream == null) {
                 if (file != null && file.exists()) {
-                    log.warn("We had to delete {} because it already existed",
+                    log.warn("getOutputStream had to delete {} because it already existed",
                             file.getAbsolutePath());
                     file.delete();
                 }
@@ -330,7 +343,8 @@ public class StagedResource implements IStagedResource {
     public BufferedWriter getWriter(long threshold) {
         if (writer == null) {
             if (file != null && file.exists()) {
-                log.warn("We had to delete {} because it already existed", file.getAbsolutePath());
+                log.warn("getWriter had to delete {} because it already existed.", 
+                        file.getAbsolutePath(), new RuntimeException("Stack Trace"));
                 file.delete();
             } else if (this.memoryBuffer != null) {
                 log.warn("We had to delete the memory buffer for {} because it already existed", getPath());
@@ -379,8 +393,7 @@ public class StagedResource implements IStagedResource {
         }
 
         if (deleted) {
-            stagingManager.resourcePaths.remove(path);
-            stagingManager.inUse.remove(path);
+            stagingManager.removeResourcePath(path);
             if (log.isDebugEnabled() && path.contains("outgoing")) {
                 log.debug("Deleted staging resource {}", path);
             }

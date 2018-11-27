@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -189,7 +190,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private IClusterService clusterService;
 
-    private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
+    private Map<String, BatchLock> locks = new ConcurrentHashMap<String, BatchLock>();
     
     private CustomizableThreadFactory threadPoolFactory;
 
@@ -986,7 +987,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } catch (InterruptedException e) {
             throw new org.jumpmind.exception.InterruptedException(e);
         }
-        
+        log.debug("Acquired {}", lock);
         return lock;
     }
 
@@ -1011,7 +1012,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     log.warn("Lock {} in place for {} > about to BREAK the lock.",  fileLock.getLockFile(), DurationFormatUtils.formatDurationWords(lockAge, true, true));
                     fileLock.breakLock();
                 } else {
-                    if ((iterations % 10) == 0) {
+                    if ((iterations % 10) == 0 && iterations > 0) {
                         log.info("Lock {} in place for {}, waiting...",  fileLock.getLockFile(),  DurationFormatUtils.formatDurationWords(lockAge, true, true));    
                     } else {                        
                         log.debug("Lock {} in place for {}, waiting...",  fileLock.getLockFile(),  DurationFormatUtils.formatDurationWords(lockAge, true, true));
@@ -1041,9 +1042,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     locks.remove(lock.semaphoreKey);
                 }
                 lock.release();
+                log.debug("Released memory {}", lock);
             }
             if (lock.fileLock != null) {
                 lock.fileLock.releaseLock();
+                log.debug("Released file {}", lock);
             }
         }
     }
@@ -2383,6 +2386,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private Semaphore inMemoryLock = new Semaphore(1);
         StagingFileLock fileLock;
         int referenceCount = 0;
+        
+        @Override
+        public String toString() {
+            return  semaphoreKey + " " + super.toString();
+        }
     }
 
 
