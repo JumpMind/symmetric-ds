@@ -28,9 +28,9 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -225,7 +225,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
                             dataMetaData.getData().getTableName(),
                             additionalErrorMessage,
                             ArrayUtils.toString(columnNames), ArrayUtils.toString(values));
-            throw new SymmetricException(message);
+            throw new ProtocolException(message);
         }
     }
 

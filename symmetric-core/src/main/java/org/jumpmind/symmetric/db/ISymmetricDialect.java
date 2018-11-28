@@ -223,9 +223,9 @@ public interface ISymmetricDialect {
      */
     public boolean canGapsOccurInCapturedDataIds();
 
-    public String massageDataExtractionSql(String sql, Channel channel);
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob);
 
-    public String massageForLob(String sql, Channel channel);
+    public String massageForLob(String sql, boolean isContainsBigLob);
     
     public boolean isInitialLoadTwoPassLob(Table table);
     

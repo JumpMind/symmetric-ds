@@ -962,7 +962,7 @@ abstract public class AbstractTriggerTemplate {
                 symmetricDialect.getMasterCollation(), formattedColumnText);
 
         if (isLob) {
-            formattedColumnText = symmetricDialect.massageForLob(formattedColumnText, channel);
+            formattedColumnText = symmetricDialect.massageForLob(formattedColumnText, channel != null ? channel.isContainsBigLob() : true);
         }
 
         formattedColumnText = FormatUtils.replace("origTableAlias", origTableAlias,

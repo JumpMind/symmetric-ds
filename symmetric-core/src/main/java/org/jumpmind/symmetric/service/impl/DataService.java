@@ -2304,9 +2304,14 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
+        return selectDataFor(batch.getBatchId(), batch.getTargetNodeId(), engine.getConfigurationService()
+                .getNodeChannel(batch.getChannelId(), false).getChannel().isContainsBigLob());
+    }
+
+    public ISqlReadCursor<Data> selectDataFor(Long batchId, String targetNodeId, boolean isContainsBigLob) {
         return sqlTemplateDirty.queryForCursor(
-                getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()), dataMapper,
-                new Object[] { batch.getBatchId(), batch.getTargetNodeId() },
+                getDataSelectSql(batchId, -1l, isContainsBigLob),
+                dataMapper, new Object[] { batchId, targetNodeId },
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
@@ -2319,14 +2324,18 @@ public class DataService extends AbstractService implements IDataService {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
                 getSql("selectEventDataByBatchIdSql", startAtDataIdSql, getDataOrderBy()),
-                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
+                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel().isContainsBigLob());
     }
 
     protected String getDataSelectSql(long batchId, long startDataId, String channelId) {
+        return getDataSelectSql(batchId, startDataId,
+                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel().isContainsBigLob());
+    }
+
+    protected String getDataSelectSql(long batchId, long startDataId, boolean isContainsBigLob) {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
-                getSql("selectEventDataToExtractSql", startAtDataIdSql, getDataOrderBy()),
-                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
+                getSql("selectEventDataToExtractSql", startAtDataIdSql, getDataOrderBy()), isContainsBigLob);
     }
 
     protected String getDataOrderBy() {

@@ -179,6 +179,8 @@ public interface IDataService {
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
     
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
+    
+    public ISqlReadCursor<Data> selectDataFor(Long batchId, String targetNodeId, boolean isContainsBigLob);
 
     public Map<String, Date> getLastDataCaptureByChannel();
 }

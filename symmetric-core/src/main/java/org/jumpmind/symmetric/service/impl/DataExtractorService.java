@@ -791,6 +791,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                                     + currentBatch.getChannelId() + "' channel needs to be turned on.",
                                             e.getCause() != null ? e.getCause() : e);
                                 }
+                                if (e.getCause() instanceof RuntimeException) {
+                                    throw (RuntimeException) e.getCause();
+                                }
                                 throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
                             } else if (!(e instanceof RuntimeException)) {
                                 throw new RuntimeException(e);
@@ -1024,7 +1027,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.resetStats();
 
                         IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo);
-                        new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
+                        try {
+                            new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
+                        } catch (ProtocolException e) {
+                            if (!configurationService.getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob()) {
+                                log.warn(e.getMessage());
+                                log.info("Re-attempting extraction with contains_big_lobs enabled for channel " + currentBatch.getChannelId());
+                                currentBatch.resetStats();
+                                dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo, true);
+                                new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
+                            } else {
+                                throw e;
+                            }
+                        }
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
                         if (stats != null) {
@@ -1211,6 +1226,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo) {
         return new ExtractDataReader(symmetricDialect.getPlatform(), 
                 new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo));
+    }
+
+    protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo,
+            boolean containsBigLob) {
+        return new ExtractDataReader(symmetricDialect.getPlatform(), 
+                new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo, containsBigLob));
     }
 
     protected Statistics getExtractStats(IDataWriter writer) {
@@ -2156,9 +2177,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private ProcessInfo processInfo;
         
         private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
+        
+        private boolean containsBigLob;
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
-                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
+                Node sourceNode, Node targetNode, ProcessInfo processInfo, boolean containsBigLob) {
             this.processInfo = processInfo;
             this.outgoingBatch = outgoingBatch;
             this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),
@@ -2167,6 +2190,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.targetNode = targetNode;
             this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(sourceNode, targetNode);
             this.outgoingBatch.resetExtractRowStats();
+            this.containsBigLob = containsBigLob;
+        }
+
+        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
+                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
+            this(outgoingBatch, sourceNode, targetNode, processInfo,
+                    configurationService.getNodeChannel(outgoingBatch.getChannelId(), false).getChannel().isContainsBigLob());
         }
 
         public Batch getBatch() {
@@ -2183,7 +2213,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public CsvData next() {
             if (this.cursor == null) {
-                this.cursor = dataService.selectDataFor(batch);
+                this.cursor = dataService.selectDataFor(batch.getBatchId(), batch.getTargetNodeId(), containsBigLob);
             }
 
             Data data = null;
@@ -2294,6 +2324,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         
                         outgoingBatch.incrementExtractRowCount();
                         outgoingBatch.incrementExtractRowCount(data.getDataEventType());
+                        
+                        if (!data.getDataEventType().equals(DataEventType.DELETE)) {
+                            int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
+                            int commaCount = StringUtils.countMatches(data.getRowData(), ",");
+                            if (commaCount < expectedCommaCount) {
+                                String message = "The extracted row for table %s had %d columns but expected %d.  ";
+                                if (containsBigLob) {
+                                    message += "Corrupted row for data ID " + data.getDataId() + ": " + data.getRowData();
+                                } else {
+                                    message += "If this happens often, it might be better to isolate the table with sym_channel.contains_big_lobs enabled.";
+                                }
+                                throw new ProtocolException(message, data.getTableName(), commaCount + 1, expectedCommaCount);
+                            }
+                        }
                             
                         if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {                          
 

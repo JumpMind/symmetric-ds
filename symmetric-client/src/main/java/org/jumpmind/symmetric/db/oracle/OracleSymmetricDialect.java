@@ -349,22 +349,22 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    public String massageDataExtractionSql(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             sql = StringUtils.replace(sql, "d.row_data", "dbms_lob.substr(d.row_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
         }
-        sql = super.massageDataExtractionSql(sql, channel);
+        sql = super.massageDataExtractionSql(sql, isContainsBigLob);
         return sql;
     }
 
     @Override
-    public String massageForLob(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageForLob(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             return String.format("dbms_lob.substr(%s, 4000, 1)", sql);
         } else {
-            return super.massageForLob(sql, channel);
+            return super.massageForLob(sql, isContainsBigLob);
         }
     }
 

@@ -425,7 +425,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             select = select.replace("d.pk_data", "''");
         }
         return engine.getSymmetricDialect().massageDataExtractionSql(
-                select, channel);
+                select, channel.isContainsBigLob());
     }
 
     protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount,

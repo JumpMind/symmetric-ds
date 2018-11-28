@@ -30,7 +30,6 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -158,8 +157,8 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
     }
     
     @Override
-    public String massageDataExtractionSql(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             String[] sizes = parameterService.getString(ParameterConstants.FIREBIRD_EXTRACT_VARCHAR_ROW_OLD_PK_DATA, "20000,20000,1000").split(",");
             sql = StringUtils.replace(sql, "d.row_data", "cast(d.row_data as varchar(" + sizes[0] + "))");
             sql = StringUtils.replace(sql, "d.old_data", "cast(d.old_data as varchar(" + sizes[1] + "))");

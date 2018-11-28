@@ -836,7 +836,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return true;
     }
 
-    public String massageDataExtractionSql(String sql, Channel channel) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
         String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
         if (isNotBlank(textColumnExpression)) {
             sql = sql.replace("d.old_data", textColumnExpression.replace("$(columnName)", "d.old_data"));
@@ -854,7 +854,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return driverVersion;
     }
 
-    public String massageForLob(String sql, Channel channel) {
+    public String massageForLob(String sql, boolean isContainsBigLob) {
         return sql;
     }
 
