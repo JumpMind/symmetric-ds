@@ -44,7 +44,7 @@ public class StagingManager implements IStagingManager {
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
-    private File directory;
+    protected File directory;
 
     private Map<String, String> resourcePathsCache = new ConcurrentHashMap<String, String>();
     protected Map<String, IStagedResource> inUse = new ConcurrentHashMap<String, IStagedResource>();
@@ -114,7 +114,7 @@ public class StagingManager implements IStagingManager {
                 try {
                     String stagingPath = StagedResource.toPath(directory, 
                             new File((entry.getParent().toString() + "/" + entry.getFileName().toString())));
-                    IStagedResource resource = new StagedResource(directory, stagingPath, this);                    
+                    IStagedResource resource = createStagedResource(stagingPath);  
                     if (stagingPath != null) {
                         if (shouldCleanPath(resource, ttlInMs, context)) {
                             if (resource.getFile() != null) {
@@ -158,7 +158,7 @@ public class StagingManager implements IStagingManager {
      */
     public IStagedResource create(Object... path) {
         String filePath = buildFilePath(path);
-        IStagedResource resource = new StagedResource(directory, filePath, this);
+        IStagedResource resource = createStagedResource(filePath);
         if (resource.exists()) {
             resource.delete();
         }
@@ -166,6 +166,10 @@ public class StagingManager implements IStagingManager {
         this.resourcePathsCache.put(filePath, filePath);
         return resource;
     }
+    
+    protected IStagedResource createStagedResource(String filePath) {
+        return new StagedResource(directory, filePath, this);       
+    }    
 
     protected String buildFilePath(Object... path) {
         StringBuilder buffer = new StringBuilder();
@@ -188,7 +192,7 @@ public class StagingManager implements IStagingManager {
             boolean foundResourcePath = resourcePathsCache.containsKey(path);
             if (!foundResourcePath && clusterEnabled) {
                 synchronized (this) {
-                    StagedResource staged = new StagedResource(directory, path, this);
+                    IStagedResource staged = createStagedResource(path);
                     if (staged.exists() && staged.getState() == State.DONE) {
                         resourcePathsCache.put(path, path);
                         resource = staged;
@@ -196,7 +200,7 @@ public class StagingManager implements IStagingManager {
                     }
                 }
             } else if (foundResourcePath) {
-                resource = new StagedResource(directory, path, this);         
+                resource = createStagedResource(path);           
             }
         }
         return resource;
