@@ -49,6 +49,7 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.load.DefaultReloadGenerator;
 import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
@@ -501,7 +502,13 @@ public class RouterService extends AbstractService implements IRouterService {
                 engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
-                    dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
+                    int count = routeDataForChannel(processInfo, nodeChannel, sourceNode, false);
+                    if (count >= 0) {
+                        dataCount += count;
+                    } else {
+                        log.info("Re-attempting routing with contains_big_lobs enabled for channel " + nodeChannel.getChannelId());
+                        dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, true);
+                    }
                 } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled()) {
@@ -691,7 +698,7 @@ public class RouterService extends AbstractService implements IRouterService {
         return onlyDefaultRoutersAssigned;
     }
 
-    protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode) {
+    protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode, boolean isOverrideContainsBigLob) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         int dataCount = -1;
@@ -707,6 +714,7 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setProduceCommonBatches(producesCommonBatches);
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
+            context.setOverrideContainsBigLob(isOverrideContainsBigLob);
 
             dataCount = selectDataAndRoute(processInfo, context);
             return dataCount;
@@ -731,6 +739,8 @@ public class RouterService extends AbstractService implements IRouterService {
                 context.rollback();
             }
             return 0;
+        } catch (ProtocolException ex) {
+            return -1;
         } catch (Throwable ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -1024,6 +1034,12 @@ public class RouterService extends AbstractService implements IRouterService {
                         } catch (DelayRoutingException ex) {
                             throw ex;
                         } catch (RuntimeException ex) {
+                            if (ex instanceof ProtocolException && !context.getChannel().getChannel().isContainsBigLob() 
+                                    && !context.isOverrideContainsBigLob()) {
+                                log.warn(ex.getMessage() + "  If this happens often, it might be better to isolate the table with sym_channel.contains_big_lobs enabled.");
+                                throw ex;
+                            }
+
                             StringBuilder failureMessage = new StringBuilder(
                                     "Failed to route data: ");
                             failureMessage.append(data.getDataId());

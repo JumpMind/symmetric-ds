@@ -2326,8 +2326,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         outgoingBatch.incrementExtractRowCount(data.getDataEventType());
                         
                         if (!data.getDataEventType().equals(DataEventType.DELETE)) {
-                            int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
-                            int commaCount = StringUtils.countMatches(data.getRowData(), ",");
+                            int expectedCommaCount = triggerHistory.getParsedColumnNames().length;
+                            int commaCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
                             if (commaCount < expectedCommaCount) {
                                 String message = "The extracted row for table %s had %d columns but expected %d.  ";
                                 if (containsBigLob) {
@@ -2335,7 +2335,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 } else {
                                     message += "If this happens often, it might be better to isolate the table with sym_channel.contains_big_lobs enabled.";
                                 }
-                                throw new ProtocolException(message, data.getTableName(), commaCount + 1, expectedCommaCount);
+                                throw new ProtocolException(message, data.getTableName(), commaCount, expectedCommaCount);
                             }
                         }
                             
