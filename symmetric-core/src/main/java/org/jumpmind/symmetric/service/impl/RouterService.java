@@ -463,7 +463,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
                     dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode);
-                } else {
+                } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled() && !nodeChannel.isEnabled()) {
                         log.debug(
@@ -728,6 +728,8 @@ public class RouterService extends AbstractService implements IRouterService {
                             engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
                     }
+                } else {
+                    gapDetector.setIsAllDataRead(false);
                 }
             } catch (Exception e) {
                 if (context != null) {
