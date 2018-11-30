@@ -544,6 +544,12 @@ public class DbExport {
                         target.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
                         write(cleanupSQL(target.createTables(getDatabase(table), addDropTable)));
                     } else if (format == Format.XML) {
+                        if (noIndices) {
+                            table.removeAllIndices();
+                        }
+                        if (noForeignKeys) {
+                            table.removeAllForeignKeys();
+                        }
                         DatabaseXmlUtil.write(table, writer);
                     }
                 }
