@@ -433,6 +433,8 @@ final public class ParameterConstants {
     public final static String STAGING_MANAGER_CLASS = "staging.manager.class";
     
     public final static String STAGING_DIR = "staging.dir";
+    
+    public final static String STAGING_LOW_SPACE_THRESHOLD_MEGABYTES = "staging.low.space.threshold.megabytes";
 
     public final static String STATISTIC_MANAGER_CLASS = "statistic.manager.class";
 

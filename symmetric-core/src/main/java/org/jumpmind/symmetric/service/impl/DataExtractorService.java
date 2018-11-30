@@ -112,6 +112,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingFileLock;
+import org.jumpmind.symmetric.io.stage.StagingLowFreeSpace;
 import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
@@ -837,6 +838,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
                             if (e.getCause() instanceof InterruptedException) {
                                 log.info("Extract of batch {} was interrupted", currentBatch);
+                            } else if (e instanceof StagingLowFreeSpace) {
+                                log.error("Extract is disabled because disk is almost full: {}", e.getMessage());
                             } else {
                                 log.error("Failed to extract batch {}", currentBatch, e);
                             }
@@ -2028,8 +2031,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                }                
-                throw ex;
+                }
+                if (ex instanceof StagingLowFreeSpace) {
+                    log.error("Extract load is disabled because disk is almost full: {}", ex.getMessage());
+                } else {
+                    throw ex;
+                }
             }
         }
     }

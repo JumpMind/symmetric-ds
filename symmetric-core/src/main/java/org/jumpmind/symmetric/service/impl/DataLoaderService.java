@@ -95,6 +95,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.SimpleStagingDataWriter;
+import org.jumpmind.symmetric.io.stage.StagingLowFreeSpace;
 import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.load.DynamicDatabaseWriterFilter;
@@ -658,6 +659,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (IOException) ex;
         } else if (ex instanceof InvalidRetryException) {
             throw (InvalidRetryException) ex;
+        } else if (ex instanceof StagingLowFreeSpace) {
+            log.error("Loading is disabled because disk is almost full: {}", ex.getMessage());
         } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
             log.error("Failed to process batch", ex);
         } else {
