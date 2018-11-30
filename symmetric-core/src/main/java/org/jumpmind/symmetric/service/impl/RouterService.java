@@ -777,6 +777,8 @@ public class RouterService extends AbstractService implements IRouterService {
                             engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
                     }
+                } else {
+                    gapDetector.setIsAllDataRead(false);
                 }
             } catch (Exception e) {
                 if (context != null) {
