@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.model;
 
+import java.util.Date;
+
 public class TableReloadRequestKey {
 
     protected String targetNodeId;
@@ -27,7 +29,8 @@ public class TableReloadRequestKey {
     protected String triggerId;
     protected String routerId;
     protected String receivedFromNodeId;
-
+    protected Date createTime;
+    
     public TableReloadRequestKey(String targetNodeId, String sourceNodeId, String triggerId,
             String routerId, String receivedFromNodeId) {
         this.targetNodeId = targetNodeId;
@@ -37,6 +40,15 @@ public class TableReloadRequestKey {
         this.receivedFromNodeId = receivedFromNodeId;
     }
 
+    public TableReloadRequestKey(String targetNodeId, String sourceNodeId, String triggerId,
+            String routerId, Date createTime) {
+        this.targetNodeId = targetNodeId;
+        this.sourceNodeId = sourceNodeId;
+        this.triggerId = triggerId;
+        this.routerId = routerId;
+        this.createTime = createTime;
+    }
+    
     public String getRouterId() {
         return routerId;
     }
@@ -60,5 +72,9 @@ public class TableReloadRequestKey {
     public String getReceivedFromNodeId() {
 		return receivedFromNodeId;
 	}
+    
+    public Date getCreateTime() {
+        return createTime;
+    }
 
 }

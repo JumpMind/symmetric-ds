@@ -65,6 +65,12 @@ public interface IStatisticManager {
     
     public void incrementDataLoaded(String channelId, long count);
 
+    public void incrementDataLoadedOutgoingErrors(String channelId, long count);
+
+    public void incrementDataBytesLoadedOutgoing(String channelId, long count);
+    
+    public void incrementDataLoadedOutgoing(String channelId, long count);
+
     public void incrementDataBytesSent(String channelId, long count);
     
     public void incrementDataSent(String channelId, long count);

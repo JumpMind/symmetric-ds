@@ -314,6 +314,33 @@ public class StatisticManager implements IStatisticManager {
             channelStatsLock.release();
         }
     }
+    
+    public void incrementDataLoadedOutgoing(String channelId, long count) {
+        channelStatsLock.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataLoadedOutgoing(count);
+        } finally {
+            channelStatsLock.release();
+        }
+    }
+
+    public void incrementDataBytesLoadedOutgoing(String channelId, long count) {
+        channelStatsLock.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataBytesLoadedOutgoing(count);
+        } finally {
+            channelStatsLock.release();
+        }
+    }
+
+    public void incrementDataLoadedOutgoingErrors(String channelId, long count) {
+        channelStatsLock.acquireUninterruptibly();
+        try {
+            getChannelStats(channelId).incrementDataLoadedOutgoingErrors(count);
+        } finally {
+            channelStatsLock.release();
+        }
+    }
 
     public void incrementRestart() {
         hostStatsLock.acquireUninterruptibly();

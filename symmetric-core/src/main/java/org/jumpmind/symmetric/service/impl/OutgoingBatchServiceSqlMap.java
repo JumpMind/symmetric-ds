@@ -198,11 +198,12 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
               + "group by b.load_id, b.node_id, b.status, b.channel_id, b.create_by                                                                              "
               + "order by b.load_id desc                                                                                                                         ");
 
-        putSql("getActiveLoadsSql", 
-                  "select r.load_id "
+        putSql("getActiveLoadCountsSql", 
+                  "select r.load_id, count(ob.batch_id) as loaded_batch_count, sum(ob.data_row_count) as loaded_row_count, "
+                + "sum(ob.byte_count) as loaded_byte_count "
                 + "from $(table_reload_request) r "
                 + "join $(outgoing_batch) ob on ob.load_id = r.load_id " 
-                + "where ob.status != 'OK' and ob.status != 'IG' and r.source_node_id = ? "
+                + "where r.completed = 0 and ob.status = 'OK' and ob.reload_row_count > 0 "
                 + "group by r.load_id");
         
         putSql("getLoadSummaryUnprocessedSql", 

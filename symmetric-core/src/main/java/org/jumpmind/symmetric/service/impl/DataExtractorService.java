@@ -773,7 +773,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 currentBatch.setLoadCount(currentBatch.getLoadCount() + 1);
                                 changeBatchStatus(Status.LD, currentBatch, mode);                                
                             }
-                            
+         
+                            if (currentBatch.getLoadId() > 0) {
+                                long transferMillis = transferInfo.getEndTime() == null ? new Date().getTime() - transferInfo.getStartTime().getTime()
+                                        : transferInfo.getEndTime().getTime() - transferInfo.getStartTime().getTime();
+                                updateExtractRequestTransferred(currentBatch, transferMillis);
+                            }
                             transferInfo.setCurrentTableName(currentBatch.getSummary());                            
                             transferInfo.setStatus(ProcessStatus.OK);
                             
@@ -1316,6 +1321,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
+                processInfo.setCurrentLoadId(currentBatch.getLoadId());
+                processInfo.setTotalDataCount(currentBatch.getDataRowCount());
+                
+                if (currentBatch.getLoadId() > 0) {
+                    processInfo.setCurrentTableName(currentBatch.getSummary());
+                }
+                
                 if (mode == ExtractMode.FOR_SYM_CLIENT && writer != null) {                   
                     if (!isRetry && parameterService.is(ParameterConstants.OUTGOING_BATCH_COPY_TO_INCOMING_STAGING) &&
                             !parameterService.is(ParameterConstants.NODE_OFFLINE, false)) {
@@ -1333,6 +1345,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         currentBatch.getBatchId());
                                 try {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
+                                    processInfo.setCurrentDataCount(currentBatch.getDataRowCount());
                                     if(log.isDebugEnabled()) {
                                     	log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
                                     }
@@ -1532,6 +1545,70 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return index;
     }
 
+    
+    @Override
+    public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId) {
+        return sqlTemplate.query(getSql("selectIncompleteTablesForExtractByLoadId"), new ExtractRequestMapper(), loadId);
+    }
+    
+    @Override
+    public List<ExtractRequest> getCompletedTablesForExtractByLoadId(long loadId) {
+        return sqlTemplate.query(getSql("selectCompletedTablesForExtractByLoadId"), new ExtractRequestMapper(), loadId);
+    }
+    
+    @Override
+    public void updateExtractRequestLoadTime(Date loadTime, OutgoingBatch outgoingBatch) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            
+            dataService.updateTableReloadRequestsLoadedCounts(transaction, outgoingBatch.getLoadId(), 1, 
+                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0);
+            
+            
+            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), outgoingBatch.getDataRowCount(), 
+                    outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
+                    outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
+
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
+    
+    @Override
+    public void updateExtractRequestTransferred(OutgoingBatch batch, long transferMillis) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            transaction.prepareAndExecute(getSql("updateExtractRequestTransferred"), batch.getBatchId(), batch.getDataRowCount(), transferMillis,
+                batch.getBatchId(), batch.getBatchId(), batch.getNodeId(), batch.getLoadId(), batch.getBatchId());
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
+    
     protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
             throws IOException {
         String bufferString = new String(buffer);
@@ -1819,13 +1896,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
-            TriggerRouter triggerRouter, long startBatchId, long endBatchId) {
+            TriggerRouter triggerRouter, long startBatchId, long endBatchId, long loadId, String table, long rows) {
         long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
                 new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId,
                         endBatchId, triggerRouter.getTrigger().getTriggerId(),
-                        triggerRouter.getRouter().getRouterId() }, new int[] { Types.BIGINT, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR });
+                        triggerRouter.getRouter().getRouterId(), loadId, table, rows }, new int[] { Types.BIGINT, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT });
     }
 
     protected void updateExtractRequestStatus(ISqlTransaction transaction, long extractId,
@@ -2059,6 +2136,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setTriggerRouter(triggerRouterService.findTriggerRouterById(
                     row.getString("trigger_id"), row.getString("router_id"), false));
             request.setQueue(row.getString("queue"));
+            request.setLoadId(row.getLong("load_id"));
+            request.setTableName(row.getString("table_name"));
+            request.setRows(row.getLong("total_rows"));
+            request.setTransferredRows(row.getLong("transferred_rows"));
+            request.setLastTransferredBatchId(row.getLong("last_transferred_batch_id"));
+            request.setLoadedRows(row.getLong("loaded_rows"));
+            request.setLastLoadedBatchId(row.getLong("last_loaded_batch_id"));
+            request.setTransferredMillis(row.getLong("transferred_millis"));
+            request.setLoadedMillis(row.getLong("loaded_millis"));
             return request;
         }
     }

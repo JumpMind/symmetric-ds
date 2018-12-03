@@ -42,6 +42,15 @@ public class ExtractRequest implements Serializable {
     private Date lastUpdateTime;
     private Date createTime;
     private String queue;
+    private long loadId;
+    private String tableName;
+    private long rows;
+    private long transferredRows;
+    private long loadedRows;
+    private long lastTransferredBatchId;
+    private long lastLoadedBatchId;
+    private long transferredMillis;
+    private long loadedMillis;
     
     public long getRequestId() {
         return requestId;
@@ -131,4 +140,77 @@ public class ExtractRequest implements Serializable {
         this.routerId = routerId;
     }
 
+    public long getLoadId() {
+        return loadId;
+    }
+
+    public void setLoadId(long loadId) {
+        this.loadId = loadId;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public long getRows() {
+        return rows;
+    }
+
+    public void setRows(long rows) {
+        this.rows = rows;
+    }
+
+    public long getTransferredRows() {
+        return transferredRows;
+    }
+
+    public void setTransferredRows(long transferredRows) {
+        this.transferredRows = transferredRows;
+    }
+
+    public long getLoadedRows() {
+        return loadedRows;
+    }
+
+    public void setLoadedRows(long loadedRows) {
+        this.loadedRows = loadedRows;
+    }
+
+    public long getLastTransferredBatchId() {
+        return lastTransferredBatchId;
+    }
+
+    public void setLastTransferredBatchId(long lastTransferredBatchId) {
+        this.lastTransferredBatchId = lastTransferredBatchId;
+    }
+
+    public long getLastLoadedBatchId() {
+        return lastLoadedBatchId;
+    }
+
+    public void setLastLoadedBatchId(long lastLoadedBatchId) {
+        this.lastLoadedBatchId = lastLoadedBatchId;
+    }
+
+    public long getTransferredMillis() {
+        return transferredMillis;
+    }
+
+    public void setTransferredMillis(long transferredMillis) {
+        this.transferredMillis = transferredMillis;
+    }
+
+    public long getLoadedMillis() {
+        return loadedMillis;
+    }
+
+    public void setLoadedMillis(long loadedMillis) {
+        this.loadedMillis = loadedMillis;
+    }
+
+    
 }

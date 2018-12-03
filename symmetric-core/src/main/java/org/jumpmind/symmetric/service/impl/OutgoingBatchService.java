@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import static org.jumpmind.symmetric.common.TableConstants.SYM_NODE_HOST;
 import static org.jumpmind.symmetric.common.TableConstants.getTableName;
 
+import java.io.Serializable;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +31,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -675,18 +675,20 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(true, true), args);
     }
 
-    public Set<Long> getActiveLoads(String sourceNodeId) {
-        Set<Long> loads = new HashSet<Long>();
+    public Map<String, LoadCounts> getActiveLoadCounts() {
+        return sqlTemplateDirty.queryForMap(getSql("getActiveLoadCountsSql"), new ISqlRowMapper<LoadCounts>() {
 
-        List<Long> inProcess = sqlTemplateDirty.query(getSql("getActiveLoadsSql"), new ISqlRowMapper<Long>() {
             @Override
-            public Long mapRow(Row rs) {
-                return rs.getLong("load_id");
+            public LoadCounts mapRow(Row rs) {
+                LoadCounts lc = new LoadCounts();
+                lc.setLoadedBatchCount(rs.getInt("loaded_batch_count"));
+                lc.setLoadedByteCount(rs.getLong("loaded_byte_count"));
+                lc.setLoadedRowCount(rs.getLong("loaded_row_count"));
+                
+                return lc;
             }
-        }, sourceNodeId);
-        loads.addAll(inProcess);
-
-        return loads;
+            
+        }, "load_id");
     }
 
     public List<LoadSummary> getQueuedLoads(String sourceNodeId) {
@@ -699,7 +701,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     private class LoadSummaryMapper implements ISqlRowMapper<LoadSummary> {
         public LoadSummary mapRow(Row rs) {
-            LoadSummary summary = new LoadSummary();
+            LoadSummary summary = new LoadSummary();         
             // summary.setLoadId(rs.getLong("load_id"));
             summary.setNodeId(rs.getString("node_id"));
             summary.setCreateBy(rs.getString("last_update_by"));
@@ -1148,4 +1150,32 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
     }
 
+    
+    public class LoadCounts implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private long loadedRowCount;
+        private int loadedBatchCount;
+        private long loadedByteCount;
+        
+        public long getLoadedRowCount() {
+            return loadedRowCount;
+        }
+        public void setLoadedRowCount(long loadedRowCount) {
+            this.loadedRowCount = loadedRowCount;
+        }
+        public int getLoadedBatchCount() {
+            return loadedBatchCount;
+        }
+        public void setLoadedBatchCount(int loadedBatchCount) {
+            this.loadedBatchCount = loadedBatchCount;
+        }
+        public long getLoadedByteCount() {
+            return loadedByteCount;
+        }
+        public void setLoadedByteCount(long loadedByteCount) {
+            this.loadedByteCount = loadedByteCount;
+        }
+        
+        
+    }
 }
