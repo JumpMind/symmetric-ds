@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -205,7 +206,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     private IExtensionService extensionService;
 
-    private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
+    private Map<String, BatchLock> locks = new ConcurrentHashMap<String, BatchLock>();
     
     private CustomizableThreadFactory threadPoolFactory;
 
@@ -1134,6 +1135,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new org.jumpmind.exception.InterruptedException(e);
         }
         
+        log.debug("Acquired {}", lock);
         return lock;
     }
 
