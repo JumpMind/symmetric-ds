@@ -71,7 +71,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
 		if (values.get("COLUMN_DEFAULT") != null) {
 			column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
 		}
-		if (values.get("NUMERIC_SCALE") != null) {
+		if (values.get("NUMERIC_SCALE") != null && values.get("DECIMAL_DIGITS") == null) {
 			int scale = (Integer) values.get("NUMERIC_SCALE");
 			column.setScale(scale);
 			column.findPlatformColumn(platform.getName()).setDecimalDigits(
