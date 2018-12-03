@@ -309,15 +309,14 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
         
         if (useGreaterThanDataId) {            
-            sql = getSql("selectDataUsingStartDataId", context.getChannel().getChannel());
+            sql = getSql("selectDataUsingStartDataId");
             if (!lastSelectUsedGreaterThanQuery) {
                 log.info("Switching to select from the data table where data_id >= start gap because there were {} gaps found "
                         + "which was more than the configured threshold of {}", dataGaps.size(), maxGapsBeforeGreaterThanQuery);
                 lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.TRUE);
             }
         } else {
-            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify,
-                    getSql("selectDataUsingGapsSql", context.getChannel().getChannel()));            
+            sql = qualifyUsingDataGaps(dataGaps, numberOfGapsToQualify, getSql("selectDataUsingGapsSql"));            
             if (lastSelectUsedGreaterThanQuery) {
                 log.info("Switching to select from the data table where data_id between gaps");
                 lastSelectUsedGreaterThanQueryByEngineName.put(parameterService.getEngineName(), Boolean.FALSE);
@@ -413,8 +412,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
         return FormatUtils.replace("dataRange", gapClause.toString(), sql);
     }
 
-    protected String getSql(String sqlName, Channel channel) {
+    protected String getSql(String sqlName) {
         String select = engine.getRouterService().getSql(sqlName);
+        Channel channel = context.getChannel().getChannel();
         if (!channel.isUseOldDataToRoute() || context.isOnlyDefaultRoutersAssigned()) {
             select = select.replace("d.old_data", "''");
         }
@@ -425,7 +425,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             select = select.replace("d.pk_data", "''");
         }
         return engine.getSymmetricDialect().massageDataExtractionSql(
-                select, channel);
+                select, context.isOverrideContainsBigLob() || channel.isContainsBigLob());
     }
 
     protected boolean fillPeekAheadQueue(List<Data> peekAheadQueue, int peekAheadCount,

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.firebird;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.firebird.FirebirdDialect1DatabasePlatform;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -186,4 +187,8 @@ public class FirebirdTriggerTemplate extends AbstractTriggerTemplate {
         return false;
     }
 
+    @Override
+    protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
+        return false;
+    }
 }

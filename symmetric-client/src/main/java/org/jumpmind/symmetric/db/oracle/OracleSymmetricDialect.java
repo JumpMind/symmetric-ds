@@ -27,6 +27,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
@@ -191,20 +192,20 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
         if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
-            String sql = "  CREATE OR REPLACE                                                                                                         "
-                    + "    FUNCTION $(functionName)(                            "
-                    + "        clob_in IN CLOB)                                 "
-                    + "      RETURN SDO_GEOMETRY                                "
-                    + "    AS                                                   "
-                    + "      v_out SDO_GEOMETRY := NULL;                        "
-                    + "    BEGIN                                                "
-                    + "      IF clob_in IS NOT NULL THEN                        "
-                    + "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN          "
-                    + "          v_out := SDO_GEOMETRY(clob_in);                "
-                    + "        END IF;                                          "
-                    + "      END IF;                                            "
-                    + "      RETURN v_out;                                      "
-                    + "    END $(functionName);                                 ";
+            String sql = "  CREATE OR REPLACE FUNCTION $(functionName) (  \r\n"
+                    + "        clob_in IN CLOB,                           \r\n"
+                    + "        srid_in IN INTEGER)                        \r\n"
+                    + "      RETURN SDO_GEOMETRY                          \r\n"
+                    + "    AS                                             \r\n"
+                    + "      v_out SDO_GEOMETRY := NULL;                  \r\n"
+                    + "    BEGIN                                          \r\n"
+                    + "      IF clob_in IS NOT NULL THEN                  \r\n"
+                    + "        IF DBMS_LOB.GETLENGTH(clob_in) > 0 THEN    \r\n"
+                    + "          v_out := SDO_GEOMETRY(clob_in, srid_in); \r\n"
+                    + "        END IF;                                    \r\n"
+                    + "      END IF;                                      \r\n"
+                    + "      RETURN v_out;                                \r\n"
+                    + "    END $(functionName);                           \r\n";
             install(sql, wkt2geom);
         }
 
@@ -348,23 +349,38 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
     }
 
     @Override
-    public String massageDataExtractionSql(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             sql = StringUtils.replace(sql, "d.row_data", "dbms_lob.substr(d.row_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
         }
-        sql = super.massageDataExtractionSql(sql, channel);
+        sql = super.massageDataExtractionSql(sql, isContainsBigLob);
         return sql;
     }
 
     @Override
-    public String massageForLob(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageForLob(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             return String.format("dbms_lob.substr(%s, 4000, 1)", sql);
         } else {
-            return super.massageForLob(sql, channel);
+            return super.massageForLob(sql, isContainsBigLob);
         }
+    }
+
+    @Override
+    public boolean isInitialLoadTwoPassLob(Table table) {
+        return parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
+                && table.containsLobColumns(this.platform);
+    }
+
+    @Override
+    public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
+        String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+        if (isFirstPass) {
+            return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000";
+        }
+        return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";
     }
 
     @Override

@@ -48,17 +48,24 @@ public class StagingManager implements IStagingManager {
     protected Map<String, IStagedResource> inUse;
     
     boolean clusterEnabled;
+    
+    long lowFreeSpaceThresholdMegabytes;
 
-    public StagingManager(String directory, boolean clusterEnabled) {
+    public StagingManager(String directory, boolean clusterEnabled, long lowFreeSpaceThresholdMegabytes) {
         log.info("The staging directory was initialized at the following location: " + directory);
         this.directory = new File(directory);
         this.directory.mkdirs();
         this.resourcePaths = Collections.synchronizedSet(new TreeSet<String>());
         this.inUse = new ConcurrentHashMap<String, IStagedResource>();
         this.clusterEnabled = clusterEnabled;
+        this.lowFreeSpaceThresholdMegabytes = lowFreeSpaceThresholdMegabytes;
         refreshResourceList();
     }
 
+    public StagingManager(String directory, boolean clusterEnabled) {
+        this(directory, clusterEnabled, 0);
+    }
+    
     public Set<String> getResourceReferences() {
         synchronized (resourcePaths) {
             return new TreeSet<String>(resourcePaths);
@@ -152,6 +159,19 @@ public class StagingManager implements IStagingManager {
      * Create a handle that can be written to
      */
     public IStagedResource create(Object... path) {
+        if (lowFreeSpaceThresholdMegabytes > 0) {
+            long freeSpace = 0;
+            if (path.length == 0) {
+                freeSpace = directory.getFreeSpace() / 1000000;
+            } else {
+                freeSpace = new File(directory, (String) path[0]).getFreeSpace() / 1000000;
+            }
+            if (freeSpace <= lowFreeSpaceThresholdMegabytes) {
+                throw new StagingLowFreeSpace(String.format("Free disk space of %d MB is below threshold of %d MB", 
+                        freeSpace, lowFreeSpaceThresholdMegabytes));    
+            }
+        }
+
         String filePath = buildFilePath(path);
         IStagedResource resource = createStagedResource(filePath);
         if (resource.exists()) {

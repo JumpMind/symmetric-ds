@@ -38,6 +38,7 @@ import java.util.Set;
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -658,7 +659,7 @@ public class DataService extends AbstractService implements IDataService {
                                     createBy, transactional, transaction);
                             }
                         }
-                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests);
+                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests, triggerRouters, isFullLoad);
                         
                         String symNodeSecurityReloadChannel = null;
                         int totalTableCount = 0;
@@ -784,17 +785,37 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests) {
+    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters, boolean isFullLoad) {
         if (reloadRequests == null) {
             return null;
         }
         Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap();
-        for (TableReloadRequest item : reloadRequests) {
-            reloadMap.put(item.getIdentifier(), item);
+        for (TableReloadRequest reloadRequest : reloadRequests) {
+            if (!isFullLoad) {
+                validate(reloadRequest, triggerRouters);
+            }
+            reloadMap.put(reloadRequest.getIdentifier(), reloadRequest);
         }
         return reloadMap;
     }
     
+    protected void validate(TableReloadRequest reloadRequest, List<TriggerRouter> triggerRouters) {
+        boolean validMatch = false;
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            if (ObjectUtils.equals(triggerRouter.getTriggerId(), reloadRequest.getTriggerId())
+                    && ObjectUtils.equals(triggerRouter.getRouterId(), reloadRequest.getRouterId())) {
+                validMatch = true;
+                break;
+            }
+        }
+        
+        if (!validMatch) {
+            throw new SymmetricException("Table reload request submitted which does not have a valid trigger/router "
+                    + "combination in sym_trigger_router. Request trigger id: '" + reloadRequest.getTriggerId() + "' router id: '" 
+                    + reloadRequest.getRouterId() + "' create time: " + reloadRequest.getCreateTime());
+        }
+    }
+
     private void callReloadListeners(boolean before, Node targetNode, boolean transactional,
             ISqlTransaction transaction, long loadId) {
         for (IReloadListener listener : extensionService.getExtensionPointList(IReloadListener.class)) {
@@ -2517,9 +2538,14 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
+        return selectDataFor(batch.getBatchId(), batch.getTargetNodeId(), engine.getConfigurationService()
+                .getNodeChannel(batch.getChannelId(), false).getChannel().isContainsBigLob());
+    }
+
+    public ISqlReadCursor<Data> selectDataFor(Long batchId, String targetNodeId, boolean isContainsBigLob) {
         return sqlTemplateDirty.queryForCursor(
-                getDataSelectSql(batch.getBatchId(), -1l, batch.getChannelId()), dataMapper,
-                new Object[] { batch.getBatchId(), batch.getTargetNodeId() },
+                getDataSelectSql(batchId, -1l, isContainsBigLob),
+                dataMapper, new Object[] { batchId, targetNodeId },
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
@@ -2532,14 +2558,18 @@ public class DataService extends AbstractService implements IDataService {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
                 getSql("selectEventDataByBatchIdSql", startAtDataIdSql, getDataOrderBy()),
-                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
+                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel().isContainsBigLob());
     }
 
     protected String getDataSelectSql(long batchId, long startDataId, String channelId) {
+        return getDataSelectSql(batchId, startDataId,
+                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel().isContainsBigLob());
+    }
+
+    protected String getDataSelectSql(long batchId, long startDataId, boolean isContainsBigLob) {
         String startAtDataIdSql = startDataId >= 0l ? " and d.data_id >= ? " : "";
         return symmetricDialect.massageDataExtractionSql(
-                getSql("selectEventDataToExtractSql", startAtDataIdSql, getDataOrderBy()),
-                engine.getConfigurationService().getNodeChannel(channelId, false).getChannel());
+                getSql("selectEventDataToExtractSql", startAtDataIdSql, getDataOrderBy()), isContainsBigLob);
     }
 
     protected String getDataOrderBy() {

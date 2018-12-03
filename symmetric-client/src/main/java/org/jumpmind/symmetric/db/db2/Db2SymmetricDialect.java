@@ -26,7 +26,6 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -68,7 +67,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    public String massageDataExtractionSql(String sql, Channel channel) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
         /*
          * Remove tranaction_id from the sql because DB2 doesn't support
          * transactions. In fact, DB2 iSeries does return results because the
@@ -79,7 +78,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
         if (!this.getParameterService().is(ParameterConstants.DB2_CAPTURE_TRANSACTION_ID, false)) {
             sql = sql.replace("d.transaction_id, ", "");
         }
-        return super.massageDataExtractionSql(sql, channel);
+        return super.massageDataExtractionSql(sql, isContainsBigLob);
     }
 
     protected String getSystemSchemaName() {

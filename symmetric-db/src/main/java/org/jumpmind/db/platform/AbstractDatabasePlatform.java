@@ -521,6 +521,44 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         return values;
     }
 
+    public String getCsvStringValue(BinaryEncoding encoding, Column[] metaData, Row row, boolean[] isColumnPositionUsingTemplate) {
+        StringBuilder concatenatedRow = new StringBuilder();
+        Set<String> names = row.keySet();
+        int i = 0;
+        for (String name : names) {
+            Column column = metaData[i];
+            int type = column.getJdbcTypeCode();
+            if (i > 0) {
+                concatenatedRow.append(",");
+            }
+            if (row.get(name) != null) {
+                if (isColumnPositionUsingTemplate[i]) {
+                    concatenatedRow.append(row.getString(name));
+                } else if (column.isOfNumericType()) {
+                    concatenatedRow.append(row.getString(name));
+                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
+                    concatenatedRow.append("\"").append(getDateTimeStringValue(name, type, row, false)).append("\"");
+                } else if (type == Types.BOOLEAN || type == Types.BIT) {
+                    concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
+                } else if (column.isOfBinaryType()) {
+                    byte[] bytes = row.getBytes(name);
+                    if (encoding == BinaryEncoding.NONE) {
+                        concatenatedRow.append(row.getString(name));
+                    } else if (encoding == BinaryEncoding.BASE64) {
+                        concatenatedRow.append(new String(Base64.encodeBase64(bytes)));
+                    } else if (encoding == BinaryEncoding.HEX) {
+                        concatenatedRow.append(new String(Hex.encodeHex(bytes)));
+                    }
+                } else {
+                    concatenatedRow.append("\"").append(row.getString(name).replace("\\", "\\\\").replace("\"", "\\\"")).append("\"");
+                }
+            }
+
+            i++;
+        }
+        return concatenatedRow.toString();
+    }
+
     protected String getDateTimeStringValue(String name, int type, Row row, boolean useVariableDates) {
         Object dateObj = row.get(name);
         if (dateObj instanceof String) {

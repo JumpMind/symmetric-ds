@@ -134,6 +134,8 @@ public interface IDatabasePlatform {
             Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn);
 
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates, boolean indexByPosition);
+    
+    public String getCsvStringValue(BinaryEncoding encoding, Column[] metaData, Row row, boolean[] needEscaped);
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
 

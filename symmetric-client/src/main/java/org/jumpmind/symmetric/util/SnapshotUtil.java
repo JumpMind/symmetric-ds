@@ -83,6 +83,7 @@ import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.impl.UpdateService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.ZipBuilder;
 import org.slf4j.Logger;
@@ -265,25 +266,8 @@ public class SnapshotUtil {
             }            
         }
 
-        fwriter = null;
-        try {
-            fwriter = new FileWriter(new File(tmpDir, "threads.txt"));
-            ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-            long[] threadIds = threadBean.getAllThreadIds();
-            for (long l : threadIds) {
-                ThreadInfo info = threadBean.getThreadInfo(l, 100);
-                if (info != null) {
-                    String threadName = info.getThreadName();
-                    fwriter.append(StringUtils.rightPad(threadName, THREAD_INDENT_SPACE));
-                    fwriter.append(AppUtils.formatStackTrace(info.getStackTrace(), THREAD_INDENT_SPACE, false));
-                    fwriter.append("\n");
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Failed to export thread information", e);
-        } finally {
-            IOUtils.closeQuietly(fwriter);
-        }
+        createThreadsFile(tmpDir.getPath(), false);
+        createThreadsFile(tmpDir.getPath(), true);
 
         fos = null;
         try {
@@ -673,10 +657,10 @@ public class SnapshotUtil {
         }
         return null;
     }
-    
-    public static File createThreadsFile() {
+
+    public static File createThreadsFile(String parent, boolean isFiltered) {
         FileWriter fwriter = null;
-        File file = new File("threads.txt");
+        File file = new File(parent, isFiltered ? "threads-filtered.txt" : "threads.txt");
         try {
             fwriter = new FileWriter(file);
             ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
@@ -685,12 +669,28 @@ public class SnapshotUtil {
                 ThreadInfo info = threadBean.getThreadInfo(l, 100);
                 if (info != null) {
                     String threadName = info.getThreadName();
-                    fwriter.append(StringUtils.rightPad(threadName, THREAD_INDENT_SPACE));
-                    fwriter.append(AppUtils.formatStackTrace(info.getStackTrace(), THREAD_INDENT_SPACE, false));
-                    fwriter.append("\n");
+
+                    boolean skip = isFiltered;
+                    if (isFiltered) {
+                        for (StackTraceElement element : info.getStackTrace()) {
+                            String name = element.getClassName();
+                            if (name.startsWith("com.jumpmind.") || name.startsWith("org.jumpmind.")) {
+                                skip = false;
+                            }
+                            if (name.equals(SnapshotUtil.class.getName()) || name.startsWith(UpdateService.class.getName())) {
+                                skip = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!skip) {
+                        fwriter.append(StringUtils.rightPad(threadName, THREAD_INDENT_SPACE));
+                        fwriter.append(AppUtils.formatStackTrace(info.getStackTrace(), THREAD_INDENT_SPACE, false));
+                        fwriter.append("\n");
+                    }
                 }
             }
-            
         } catch (Exception e) {
             log.warn("Failed to export thread information", e);
         } finally {

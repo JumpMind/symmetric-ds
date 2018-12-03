@@ -65,6 +65,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
     private boolean onlyDefaultRoutersAssigned = false;
+    private boolean overrideContainsBigLob = false;
     private long lastLoadId = -1;
     private long startDataId;   
     private long endDataId;
@@ -285,6 +286,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public List<Long> getDataIds() {
         return dataIds;
+    }
+
+    public boolean isOverrideContainsBigLob() {
+        return overrideContainsBigLob;
+    }
+
+    public void setOverrideContainsBigLob(boolean overrideContainsBigLob) {
+        this.overrideContainsBigLob = overrideContainsBigLob;
     }
     
 }

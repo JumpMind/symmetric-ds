@@ -25,12 +25,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -99,7 +97,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] columns = dataMetaData.getTriggerHistory().getParsedColumnNames();
         Map<String, String> map = new LinkedCaseInsensitiveMap<String>(columns.length * 2);
         if (rowData != null) {
-            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
+            testColumnNamesMatchValues(dataMetaData, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
                 String columnName = columns[i];
                 columnName = prefix != null ? prefix + columnName : columnName;
@@ -115,7 +113,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
         String[] rowData = dataMetaData.getData().toParsedPkData();
         Map<String, String> map = new LinkedCaseInsensitiveMap<String>(columns.length);
         if (rowData != null) {
-            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columns, rowData);
+            testColumnNamesMatchValues(dataMetaData, columns, rowData);
             for (int i = 0; i < columns.length; i++) {
                 String columnName = columns[i].toUpperCase();
                 map.put(columnName, rowData[i]);
@@ -198,7 +196,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
                     rowData);
-            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columnNames, objects);
+            testColumnNamesMatchValues(dataMetaData, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
                 String colName = upperCase ? columnNames[i].toUpperCase() : columnNames[i];
                 data.put(prefix != null ? (prefix + colName) : colName, objects[i]);
@@ -209,23 +207,12 @@ public abstract class AbstractDataRouter implements IDataRouter {
         }
     }
 
-    protected void testColumnNamesMatchValues(DataMetaData dataMetaData, ISymmetricDialect symmetricDialect, String[] columnNames, Object[] values) {
+    protected void testColumnNamesMatchValues(DataMetaData dataMetaData, String[] columnNames, Object[] values) {
         if (columnNames.length != values.length) {
-            String additionalErrorMessage = "";
-            if (symmetricDialect != null &&
-                    symmetricDialect.getPlatform().getName().equals(DatabaseNamesConstants.ORACLE)) {
-                boolean isContainsBigLobs = dataMetaData.getNodeChannel().isContainsBigLob();
-                additionalErrorMessage += String.format("\nOne possible cause of this issue is when channel.contains_big_lobs=0 and the captured row_data size exceeds 4k, captured data will be truncated at 4k. channel.contains_big_lobs is currently set to %s.", isContainsBigLobs ? "1" : "0");
-            }
             String message = String.format(
-                    "The number of recorded column names (%d) did not match the number of captured data values (%d).  The data_id %d failed for an %s on %s. %s\ncolumn_names:\n%s\nvalues:\n%s",
-                    columnNames.length, values.length,
-                            dataMetaData.getData().getDataId(),
-                            dataMetaData.getData().getDataEventType().name(),
-                            dataMetaData.getData().getTableName(),
-                            additionalErrorMessage,
-                            ArrayUtils.toString(columnNames), ArrayUtils.toString(values));
-            throw new SymmetricException(message);
+                    "The router row for table %s had %d columns but expected %d.",
+                    dataMetaData.getData().getTableName(), values.length, columnNames.length);
+            throw new ProtocolException(message);
         }
     }
 
@@ -238,7 +225,7 @@ public abstract class AbstractDataRouter implements IDataRouter {
             Object[] objects = symmetricDialect.getPlatform().getObjectValues(
                     symmetricDialect.getBinaryEncoding(), dataMetaData.getTable(), columnNames,
                     rowData);
-            testColumnNamesMatchValues(dataMetaData, symmetricDialect, columnNames, objects);
+            testColumnNamesMatchValues(dataMetaData, columnNames, objects);
             for (int i = 0; i < columnNames.length; i++) {
                 data.put(columnNames[i].toUpperCase(), objects[i]);
             }

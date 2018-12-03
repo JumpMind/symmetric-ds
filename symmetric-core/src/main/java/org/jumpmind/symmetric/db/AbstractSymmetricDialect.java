@@ -230,6 +230,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 .trim();
     }
     
+    public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory) {
+        return triggerTemplate.getColumnPositionUsingTemplate(originalTable, triggerHistory);
+    }
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory) {
         return createPurgeSqlFor(node, triggerRouter, triggerHistory, null);
@@ -833,7 +836,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return true;
     }
 
-    public String massageDataExtractionSql(String sql, Channel channel) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
         String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
         if (isNotBlank(textColumnExpression)) {
             sql = sql.replace("d.old_data", textColumnExpression.replace("$(columnName)", "d.old_data"));
@@ -851,8 +854,47 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return driverVersion;
     }
 
-    public String massageForLob(String sql, Channel channel) {
+    public String massageForLob(String sql, boolean isContainsBigLob) {
         return sql;
+    }
+
+    public boolean isInitialLoadTwoPassLob(Table table) {
+        return false;
+    }
+    
+    public String getInitialLoadTwoPassLobSql(String sql, Table table, boolean isFirstPass) {
+        List<Column> columns = table.getLobColumns(this.platform);
+        boolean isFirstColumn = true;
+        
+        if (columns.size() > 0) {
+            sql = sql == null ? "" : sql;
+            if (!sql.equals("")) {
+                sql += " and ";
+            }           
+            sql += "(";
+        }
+        
+        for (Column column : table.getLobColumns(this.platform)) {
+            if (isFirstColumn) {
+                isFirstColumn = false;
+            } else {
+                if (isFirstPass) {
+                    sql += " and ";
+                } else {
+                    sql += " or ";
+                }
+            }
+            sql += getInitialLoadTwoPassLobLengthSql(column, isFirstPass);
+        }
+        
+        if (columns.size() > 0) {
+            sql += ")";
+        }
+        return sql;
+    }
+
+    public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
+        return null;
     }
 
     public boolean escapesTemplatesForDatabaseInserts() {

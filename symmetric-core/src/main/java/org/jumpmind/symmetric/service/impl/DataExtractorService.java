@@ -112,6 +112,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingFileLock;
+import org.jumpmind.symmetric.io.stage.StagingLowFreeSpace;
 import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
@@ -796,6 +797,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                                     + currentBatch.getChannelId() + "' channel needs to be turned on.",
                                             e.getCause() != null ? e.getCause() : e);
                                 }
+                                if (e.getCause() instanceof RuntimeException) {
+                                    throw (RuntimeException) e.getCause();
+                                }
                                 throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
                             } else if (!(e instanceof RuntimeException)) {
                                 throw new RuntimeException(e);
@@ -839,6 +843,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
                             if (e.getCause() instanceof InterruptedException) {
                                 log.info("Extract of batch {} was interrupted", currentBatch);
+                            } else if (e instanceof StagingLowFreeSpace) {
+                                log.error("Extract is disabled because disk is almost full: {}", e.getMessage());
                             } else {
                                 log.error("Failed to extract batch {}", currentBatch, e);
                             }
@@ -1029,7 +1035,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         currentBatch.resetStats();
 
                         IDataReader dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo);
-                        new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
+                        try {
+                            new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
+                        } catch (ProtocolException e) {
+                            if (!configurationService.getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob()) {
+                                log.warn(e.getMessage());
+                                log.info("Re-attempting extraction with contains_big_lobs enabled for channel " + currentBatch.getChannelId());
+                                currentBatch.resetStats();
+                                dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo, true);
+                                new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
+                            } else {
+                                throw e;
+                            }
+                        }
                         extractTimeInMs = System.currentTimeMillis() - ts;
                         Statistics stats = getExtractStats(writer);
                         if (stats != null) {
@@ -1216,6 +1234,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo) {
         return new ExtractDataReader(symmetricDialect.getPlatform(), 
                 new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo));
+    }
+
+    protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo,
+            boolean containsBigLob) {
+        return new ExtractDataReader(symmetricDialect.getPlatform(), 
+                new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo, containsBigLob));
     }
 
     protected Statistics getExtractStats(IDataWriter writer) {
@@ -2084,8 +2108,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         resource.delete();
                     }
                     outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-                }                
-                throw ex;
+                }
+                if (ex instanceof StagingLowFreeSpace) {
+                    log.error("Extract load is disabled because disk is almost full: {}", ex.getMessage());
+                } else {
+                    throw ex;
+                }
             }
         }
     }
@@ -2242,9 +2270,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private ProcessInfo processInfo;
         
         private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
+        
+        private boolean containsBigLob;
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
-                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
+                Node sourceNode, Node targetNode, ProcessInfo processInfo, boolean containsBigLob) {
             this.processInfo = processInfo;
             this.outgoingBatch = outgoingBatch;
             this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),
@@ -2253,6 +2283,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.targetNode = targetNode;
             this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(sourceNode, targetNode);
             this.outgoingBatch.resetExtractRowStats();
+            this.containsBigLob = containsBigLob;
+        }
+
+        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
+                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
+            this(outgoingBatch, sourceNode, targetNode, processInfo,
+                    configurationService.getNodeChannel(outgoingBatch.getChannelId(), false).getChannel().isContainsBigLob());
         }
 
         public Batch getBatch() {
@@ -2269,7 +2306,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         public CsvData next() {
             if (this.cursor == null) {
-                this.cursor = dataService.selectDataFor(batch);
+                this.cursor = dataService.selectDataFor(batch.getBatchId(), batch.getTargetNodeId(), containsBigLob);
             }
 
             Data data = null;
@@ -2380,6 +2417,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         
                         outgoingBatch.incrementExtractRowCount();
                         outgoingBatch.incrementExtractRowCount(data.getDataEventType());
+                        
+                        if (!data.getDataEventType().equals(DataEventType.DELETE)) {
+                            int expectedCommaCount = triggerHistory.getParsedColumnNames().length;
+                            int commaCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
+                            if (commaCount < expectedCommaCount) {
+                                String message = "The extracted row for table %s had %d columns but expected %d.  ";
+                                if (containsBigLob) {
+                                    message += "Corrupted row for data ID " + data.getDataId() + ": " + data.getRowData();
+                                } else {
+                                    message += "If this happens often, it might be better to isolate the table with sym_channel.contains_big_lobs enabled.";
+                                }
+                                throw new ProtocolException(message, data.getTableName(), commaCount, expectedCommaCount);
+                            }
+                        }
                             
                         if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {                          
 
@@ -2507,6 +2558,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private String selfRefChildColumnName;
         
         boolean isFirstRow;
+        
+        boolean isLobFirstPass;
 
         public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
                 SelectFromTableEvent event) {
@@ -2613,6 +2666,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
+                    if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+                        this.isLobFirstPass = true;
+                    }
+
                     this.startNewCursor(history, triggerRouter);
                 }
             }
@@ -2625,6 +2682,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         this.selfRefLevel++;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                         this.isFirstRow = true;
+                    } else if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
+                        this.isLobFirstPass = false;
+                        this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                     } else {
                         this.currentInitialLoadEvent = null;
                     }
@@ -2673,12 +2733,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
+
+            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getChannelId());
+            
+            if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+                channel = new Channel();
+                channel.setContainsBigLob(!this.isLobFirstPass);
+                selectSql = symmetricDialect.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
+                log.info("Querying {} pass LOB for table {}: {}", (this.isLobFirstPass ? "first" : "second"), sourceTable.getName(), selectSql);
+            }
             
             String sql = symmetricDialect.createInitialLoadSqlFor(
-                    this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable,
-                    triggerHistory,
-                    configurationService.getChannel(triggerRouter.getTrigger().getChannelId()),
-                    selectSql);
+                    this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable, triggerHistory, channel, selectSql);
+
             for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
                 sql = filter.filterInitalLoadSql(sql, node, targetTable);
             }
@@ -2689,6 +2756,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
             final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
+            final boolean[] isColumnPositionUsingTemplate = symmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
             log.debug(sql);
             
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
@@ -2697,13 +2765,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
                     } else if (objectValuesWillNeedEscaped) {
-                        String[] rowData = platform.getStringValues(
+                        csvRow = platform.getCsvStringValue(
                                 symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
-                                row, false, true);
-                        csvRow = CsvUtils.escapeCsvData(rowData, '\0', '"');
+                                row, isColumnPositionUsingTemplate);
                     } else {
                         csvRow = row.csvValue();
-
                     }
                     int commaCount = StringUtils.countMatches(csvRow, ",");
                     if (expectedCommaCount <= commaCount) {
@@ -2723,7 +2789,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
 
         public boolean requiresLobsSelectedFromSource(CsvData data) {
-            if (this.currentInitialLoadEvent != null
+            if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_COLUMN_TEMPLATES_ENABLED)
+                    && this.currentInitialLoadEvent != null
                     && this.currentInitialLoadEvent.getTriggerRouter() != null) {
                 if (this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs()
                         || (data != null && hasLobsThatNeedExtract(sourceTable, data))) {

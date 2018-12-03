@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
@@ -311,23 +312,38 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     }
 
     @Override
-    public String massageDataExtractionSql(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             sql = StringUtils.replace(sql, "d.row_data", "dbms_lob.substr(d.row_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.old_data", "dbms_lob.substr(d.old_data, 4000, 1 )");
             sql = StringUtils.replace(sql, "d.pk_data", "dbms_lob.substr(d.pk_data, 4000, 1 )");
         }
-        sql = super.massageDataExtractionSql(sql, channel);
+        sql = super.massageDataExtractionSql(sql, isContainsBigLob);
         return sql;
     }
 
     @Override
-    public String massageForLob(String sql, Channel channel) {
-        if (channel != null && !channel.isContainsBigLob()) {
+    public String massageForLob(String sql, boolean isContainsBigLob) {
+        if (!isContainsBigLob) {
             return String.format("dbms_lob.substr(%s, 4000, 1)", sql);
         } else {
-            return super.massageForLob(sql, channel);
+            return super.massageForLob(sql, isContainsBigLob);
         }
+    }
+
+    @Override
+    public boolean isInitialLoadTwoPassLob(Table table) {
+        return parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
+                && table.containsLobColumns(this.platform);
+    }
+
+    @Override
+    public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
+        String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+        if (isFirstPass) {
+            return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000";
+        }
+        return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";
     }
 
     @Override

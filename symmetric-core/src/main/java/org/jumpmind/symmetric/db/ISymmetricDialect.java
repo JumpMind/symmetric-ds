@@ -108,6 +108,8 @@ public interface ISymmetricDialect {
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
     public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel, String overrideSelectSql);
+    
+    public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory);
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory);
     
@@ -221,9 +223,13 @@ public interface ISymmetricDialect {
      */
     public boolean canGapsOccurInCapturedDataIds();
 
-    public String massageDataExtractionSql(String sql, Channel channel);
+    public String massageDataExtractionSql(String sql, boolean isContainsBigLob);
 
-    public String massageForLob(String sql, Channel channel);
+    public String massageForLob(String sql, boolean isContainsBigLob);
+    
+    public boolean isInitialLoadTwoPassLob(Table table);
+    
+    public String getInitialLoadTwoPassLobSql(String sql, Table table, boolean isFirstPass);
 
     /*
      * Indicates that the dialect relies on SQL that is to be inserted into the database for use

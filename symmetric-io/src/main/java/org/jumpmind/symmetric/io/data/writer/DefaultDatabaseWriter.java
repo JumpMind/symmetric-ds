@@ -700,7 +700,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             failureMessage.append("\n");
         }
         
-        if (logLastDmlDetails && this.currentDmlValues != null) {
+        if (logLastDmlDetails && this.currentDmlValues != null && this.currentDmlStatement != null) {
             failureMessage.append("Failed sql parameters: ");
             failureMessage.append(StringUtils.abbreviate("[" + dmlValuesToString(currentDmlValues, this.currentDmlStatement.getTypes()) + "]", 
                     CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));

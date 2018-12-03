@@ -146,6 +146,10 @@ INodeCommunicationExecutor {
                     try {
                         log.debug("Tracking changes for file sync");
                         Node local = engine.getNodeService().findIdentity();
+                        if (local == null) {
+                            log.warn("Not running file sync trackChanges because the local node is not available yet.  It may not be registered yet.");
+                            return;
+                        }
                         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                                 new ProcessInfoKey(local.getNodeId(), null, ProcessType.FILE_SYNC_TRACKER));
                         boolean useCrc = engine.getParameterService().is(ParameterConstants.FILE_SYNC_USE_CRC);
