@@ -2418,7 +2418,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         outgoingBatch.incrementExtractRowCount();
                         outgoingBatch.incrementExtractRowCount(data.getDataEventType());
                         
-                        if (!data.getDataEventType().equals(DataEventType.DELETE)) {
+                        if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE)) {
                             int expectedCommaCount = triggerHistory.getParsedColumnNames().length;
                             int commaCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
                             if (commaCount < expectedCommaCount) {
