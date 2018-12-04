@@ -57,7 +57,7 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
 "  sum(data_extracted_errors) as data_extracted_errors, sum(data_sent) as data_sent,      " + 
 "  sum(data_bytes_sent) as data_bytes_sent, sum(data_sent_errors) as data_sent_errors,    " + 
 "  sum(data_loaded) as data_loaded, sum(data_bytes_loaded) as data_bytes_loaded,          " + 
-"  sum(data_loaded_errors) as data_loaded_errors                                          " + 
+"  sum(data_loaded_errors) as data_loaded_errors,                                          " + 
 "  sum(data_loaded_outgoing) as data_loaded_outgoing,                                     " + 
 "  sum(data_bytes_loaded_outgoing) as data_bytes_loaded_outgoing,                         " + 
 "  sum(data_loaded_outgoing_errors) as data_loaded_outgoing_errors                        " + 
