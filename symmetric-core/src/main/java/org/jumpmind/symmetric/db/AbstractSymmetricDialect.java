@@ -865,9 +865,15 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public String getInitialLoadTwoPassLobSql(String sql, Table table, boolean isFirstPass) {
         List<Column> columns = table.getLobColumns(this.platform);
         boolean isFirstColumn = true;
+        sql = sql == null ? "" : sql;
+        String orderBySql = "";
+        int index = sql.toUpperCase().indexOf("ORDER BY");
+        if (index != -1) {
+            orderBySql = " " + sql.substring(index);
+            sql = sql.substring(0, index);
+        }
         
         if (columns.size() > 0) {
-            sql = sql == null ? "" : sql;
             if (!sql.equals("")) {
                 sql += " and ";
             }           
@@ -890,6 +896,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         if (columns.size() > 0) {
             sql += ")";
         }
+        sql += orderBySql;
         return sql;
     }
 
