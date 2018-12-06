@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -140,5 +141,11 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         
         return result;
     }
-    
+
+    @Override
+    public long getEstimatedRowCount(Table table) {
+        return getSqlTemplateDirty().queryForLong("select num_rows from all_tables where table_name = ? and owner = ?",
+                table.getName(), table.getSchema());
+    }
+
 }

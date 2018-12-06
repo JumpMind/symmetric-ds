@@ -995,28 +995,34 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
-    protected int getDataCountForReload(Table table, Node targetNode, String selectSql) {
-        DatabaseInfo dbInfo = platform.getDatabaseInfo();
-        String quote = dbInfo.getDelimiterToken();
-        String catalogSeparator = dbInfo.getCatalogSeparator();
-        String schemaSeparator = dbInfo.getSchemaSeparator();
-                                          
-        String sql = String.format("select count(*) from %s t where %s", table
-                .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
-        sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
-        sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
-        sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
-        for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
-            sql = filter.filterPurgeSql(sql, targetNode, table);
+    protected long getDataCountForReload(Table table, Node targetNode, String selectSql) {
+        long rowCount = 0;
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_ESTIMATED_COUNTS) &&
+                (selectSql == null || StringUtils.isBlank(selectSql) || selectSql.replace(" ", "").equals("1=1"))) {
+            rowCount = platform.getEstimatedRowCount(table);
+        } else {
+            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+            String quote = dbInfo.getDelimiterToken();
+            String catalogSeparator = dbInfo.getCatalogSeparator();
+            String schemaSeparator = dbInfo.getSchemaSeparator();
+                                              
+            String sql = String.format("select count(*) from %s t where %s", table
+                    .getQualifiedTableName(quote, catalogSeparator, schemaSeparator), selectSql);
+            sql = FormatUtils.replace("groupId", targetNode.getNodeGroupId(), sql);
+            sql = FormatUtils.replace("externalId", targetNode.getExternalId(), sql);
+            sql = FormatUtils.replace("nodeId", targetNode.getNodeId(), sql);
+            for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
+                sql = filter.filterPurgeSql(sql, targetNode, table);
+            }
+            
+            try {            
+                rowCount = sqlTemplate.queryForLong(sql);
+            } catch (Exception ex) {
+                throw new SymmetricException("Failed to execute row count SQL while starting reload.  If this is a syntax error, check your input and check "
+                        +  engine.getTablePrefix() + "_table_reload_request. Statement attempted: \"" + sql + "\"", ex);
+            }
         }
-        
-        try {            
-            int rowCount = sqlTemplate.queryForInt(sql);
-            return rowCount;
-        } catch (Exception ex) {
-            throw new SymmetricException("Failed to execute row count SQL while starting reload.  If this is a syntax error, check your input and check "
-                    +  engine.getTablePrefix() + "_table_reload_request. Statement attempted: \"" + sql + "\"", ex);
-        }
+        return rowCount;
     }
 
     protected int getTransformMultiplier(Table table, TriggerRouter triggerRouter) {
