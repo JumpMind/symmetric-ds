@@ -159,6 +159,14 @@ public class StagingManager implements IStagingManager {
      * Create a handle that can be written to
      */
     public IStagedResource create(Object... path) {
+        String filePath = buildFilePath(path);
+        IStagedResource resource = createStagedResource(filePath);
+        if (resource.exists()) {
+            resource.delete();
+        } else {
+            resource.getFile().getParentFile().mkdirs();
+        }
+        
         if (lowFreeSpaceThresholdMegabytes > 0) {
             long freeSpace = 0;
             if (path.length == 0) {
@@ -172,11 +180,6 @@ public class StagingManager implements IStagingManager {
             }
         }
 
-        String filePath = buildFilePath(path);
-        IStagedResource resource = createStagedResource(filePath);
-        if (resource.exists()) {
-            resource.delete();
-        }
         this.inUse.put(filePath, resource);
         this.resourcePaths.add(filePath);
         return resource;
