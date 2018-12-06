@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.RouterStats;
@@ -59,8 +60,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
         IRegistrationService registrationService = engine.getRegistrationService();
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
-        
-    	BatchAckResult result = new BatchAckResult(batch);
+        BatchAckResult result = new BatchAckResult(batch);
     	
         for (IAcknowledgeEventListener listener : engine.getExtensionService().getExtensionPointList(IAcknowledgeEventListener.class)) {
             listener.onAcknowledgeEvent(batch);
@@ -74,6 +74,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
             OutgoingBatch outgoingBatch = outgoingBatchService
                     .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
             Status status = batch.isResend() ? Status.RS : batch.isOk() ? Status.OK : Status.ER;
+            Status oldStatus = null;
             if (outgoingBatch != null) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
@@ -84,7 +85,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 } else {
                     // clearing the error flag in case the user set the batch
                     // status to OK
-                    Status oldStatus = outgoingBatch.getStatus();
+                    oldStatus = outgoingBatch.getStatus();
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
                     log.info("Batch {} for {} was set to {}.  Updating the status to OK",
@@ -137,6 +138,9 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     if (routerStats != null) {
                         log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
                     }
+                    if (isNewError) {
+                        engine.getStatisticManager().incrementDataLoadedOutgoingErrors(outgoingBatch.getChannelId(), 1);
+                    }
                     if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
                             && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
                         Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
@@ -164,6 +168,13 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
                 if (status == Status.OK) {
+                    if (!Status.OK.equals(oldStatus)) {
+                        if (outgoingBatch.getLoadId() > 0) {
+                            engine.getDataExtractorService().updateExtractRequestLoadTime(new Date(), outgoingBatch);
+                        }
+                        engine.getStatisticManager().incrementDataLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getLoadRowCount());
+                        engine.getStatisticManager().incrementDataBytesLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());
+                    }
                     Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
                     if (channel != null && channel.isFileSyncFlag()){
                         /* Acknowledge the file_sync in case the file needs deleted. */

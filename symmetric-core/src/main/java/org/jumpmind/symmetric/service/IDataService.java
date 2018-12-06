@@ -51,8 +51,18 @@ public interface IDataService {
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
+    public TableReloadRequest getTableReloadRequest(int loadId);
+    
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
         
+    public List<TableReloadRequest> getTableReloadRequestsByLoadId();
+    
+    public void updateTableReloadRequestsCounts(long loadId, int batchCount, long rowsCount);
+    
+    public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transcation, long loadId, int batchCount, long rowsCount);
+    
+    public void updateTableReloadRequestsCancelled(long loadId);
+    
     public String reloadNode(String nodeId, boolean reverseLoad, String createBy);
     
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);

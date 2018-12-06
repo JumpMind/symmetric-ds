@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.writer.StructureDataWriter.PayloadType;
+import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchWithPayload;
@@ -64,10 +65,18 @@ public interface IDataExtractorService {
     
     public RemoteNodeStatuses queueWork(boolean force);
     
-    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId);
+    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId, long loadId, String tableName, long rows);
     
     public void resetExtractRequest(OutgoingBatch batch);
     
     public void removeBatchFromStaging(OutgoingBatch batch);
+    
+    public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId);
+    
+    public List<ExtractRequest> getCompletedTablesForExtractByLoadId(long loadId);
+    
+    public void updateExtractRequestLoadTime(Date loadTime, OutgoingBatch batch);
+    
+    public void updateExtractRequestTransferred(OutgoingBatch batch, long transferMillis);
     
 }

@@ -25,16 +25,16 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.LoadSummary;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.OutgoingLoadSummary;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
+import org.jumpmind.symmetric.service.impl.OutgoingBatchService.LoadCounts;
 import org.jumpmind.symmetric.service.impl.OutgoingBatchService.LoadStatusSummary;
 
 /**
@@ -121,7 +121,7 @@ public interface IOutgoingBatchService {
     
     public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly);
 
-    public Set<Long> getActiveLoads(String sourceNodeId);
+    public Map<String, LoadCounts> getActiveLoadCounts();
     
     public List<LoadSummary> getQueuedLoads(String sourceNodeId);
     

@@ -29,7 +29,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
     public DataServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
-        putSql("selectTableReloadRequest", "select reload_select, before_custom_sql, reload_time, create_time, last_update_by, last_update_time from $(table_reload_request) where source_node_id=? and target_node_id=? and trigger_id=? and router_id=?");
+        putSql("selectTableReloadRequest", "select load_id, reload_select, before_custom_sql, reload_time, create_time, last_update_by, last_update_time from $(table_reload_request) where source_node_id=? and target_node_id=? and trigger_id=? and router_id=? and create_time=?");
         
         putSql("insertTableReloadRequest", "insert into $(table_reload_request) (reload_select, before_custom_sql, create_time, last_update_by, last_update_time, source_node_id, target_node_id, trigger_id, router_id, create_table, delete_first, channel_id) values (?,?,?,?,?,?,?,?,?,?,?,?)");
 
@@ -41,11 +41,47 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " reload_time, channel_id, create_time, last_update_by, "
                 + " last_update_time, trigger_id, router_id "
                 + " from $(table_reload_request) "
-                + " where source_node_id=? and processed = 0 "
+                + " where source_node_id=? and processed = 0 and cancelled = 0 "
                 + " order by create_time, target_node_id");
         
-        putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set load_id = ?, last_update_time = ?, processed = 1 where target_node_id = ? and source_node_id = ? and trigger_id = ? and router_id = ? and create_time = ?");
-
+        putSql("selectTableReloadRequests", "select source_node_id, target_node_id, load_id, "
+                + " batch_count, batch_loaded_count, table_count, row_count, row_loaded_count, "
+                + " create_table, delete_first, reload_select, channel_id, "
+                + " before_custom_sql, processed, completed, cancelled, "
+                + " reload_time, channel_id, create_time, last_update_by, "
+                + " last_update_time, trigger_id, router_id, error_flag, sql_state, sql_code, sql_message"
+                + " from $(table_reload_request) "
+                + " order by load_id desc, processed, completed, last_update_time desc");
+        
+        putSql("selectTableReloadRequestsByLoadId", "select source_node_id, target_node_id, load_id, "
+                + " batch_count, batch_loaded_count, table_count, row_count, row_loaded_count, "
+                + " create_table, delete_first, reload_select, channel_id, "
+                + " before_custom_sql, processed, completed, cancelled, "
+                + " reload_time, channel_id, create_time, last_update_by, "
+                + " last_update_time, trigger_id, router_id, error_flag, sql_state, sql_code, sql_message"
+                + " from $(table_reload_request) "
+                + " where load_id = ? "
+                + " order by processed, completed, last_update_time desc");
+        
+        putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, batch_count = ?, processed = 1 where load_id = ?");
+        
+        putSql("updateTableReloadRequestLoadId", "update $(table_reload_request) set load_id = ?, table_count = ?, last_update_time = ? where target_node_id = ? and source_node_id = ? and trigger_id = ? and router_id = ? and create_time = ?");
+        
+        putSql("updateTableReloadRequestCounts", "update $(table_reload_request) set batch_count = ?, row_count = ? where load_id = ?");
+       
+        putSql("updateTableReloadRequestLoadedCounts", "update $(table_reload_request) set "
+                + " completed = (case when batch_loaded_count + 1 >= batch_count then 1 else 0 end), "
+                + " batch_loaded_count = batch_loaded_count + ?, row_loaded_count = row_loaded_count + ?, last_update_time = ?  "
+                + " where load_id = ?");
+        
+        putSql("updateTableReloadRequestCounts", "update $(table_reload_request) set "
+                + " batch_count = batch_count + ?, row_count = row_count + ?, last_update_time = ? "
+                + " where load_id = ?");
+        
+        putSql("updateTableReloadRequestCancelled", "update $(table_reload_request) set "
+                + " cancelled = 1, completed = 1, last_update_time = ? "
+                + " where load_id = ?");
+        
         // Note that the order by data_id is done appended in code
         putSql("selectEventDataToExtractSql",
                 ""

@@ -172,6 +172,8 @@ public class MockStatisticManager implements IStatisticManager {
 
     public void removeRouterStatsByBatch(Long batchId) {
     }
+    
+    
 
     @Override
     public void addJobStats(String targetNodeId, int targetNodeCount, String jobName, long startTime, long endTime, long processedCount) {
@@ -183,6 +185,24 @@ public class MockStatisticManager implements IStatisticManager {
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void incrementDataLoadedOutgoingErrors(String channelId, long count) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void incrementDataBytesLoadedOutgoing(String channelId, long count) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void incrementDataLoadedOutgoing(String channelId, long count) {
+        // TODO Auto-generated method stub
+        
     }
     
 }

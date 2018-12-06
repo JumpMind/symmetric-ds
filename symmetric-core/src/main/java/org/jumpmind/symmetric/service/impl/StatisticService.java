@@ -59,11 +59,13 @@ public class StatisticService extends AbstractService implements IStatisticServi
                         stats.getDataExtracted(), stats.getDataBytesExtracted(),
                         stats.getDataExtractedErrors(), stats.getDataSent(),
                         stats.getDataBytesSent(), stats.getDataSentErrors(), stats.getDataLoaded(),
-                        stats.getDataBytesLoaded(), stats.getDataLoadedErrors() }, new int[] {
+                        stats.getDataBytesLoaded(), stats.getDataLoadedErrors(),
+                        stats.getDataLoadedOutgoing(), stats.getDataBytesLoadedOutgoing(), 
+                        stats.getDataLoadedOutgoingErrors()}, new int[] {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP,
                         Types.TIMESTAMP, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
                         Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT,
-                        Types.BIGINT, Types.BIGINT, Types.BIGINT });
+                        Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT, Types.BIGINT });
     }
     
     public void save(JobStats stats) {
@@ -172,6 +174,9 @@ public class StatisticService extends AbstractService implements IStatisticServi
             stats.setDataLoaded(rs.getLong("data_loaded"));
             stats.setDataBytesLoaded(rs.getLong("data_bytes_loaded"));
             stats.setDataLoadedErrors(rs.getLong("data_loaded_errors"));
+            stats.setDataLoadedOutgoing(rs.getLong("data_loaded_outgoing"));
+            stats.setDataLoadedOutgoingErrors(rs.getLong("data_loaded_outgoing_errors"));
+            stats.setDataBytesLoadedOutgoing(rs.getLong("data_bytes_loaded_outgoing"));
             return stats;
         }
     }

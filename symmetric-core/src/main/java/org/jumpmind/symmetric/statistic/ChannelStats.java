@@ -37,6 +37,9 @@ public class ChannelStats extends AbstractNodeHostStats {
     private long dataLoaded;
     private long dataBytesLoaded;
     private long dataLoadedErrors;
+    private long dataLoadedOutgoing;
+    private long dataBytesLoadedOutgoing;
+    private long dataLoadedOutgoingErrors;
     
     public ChannelStats() {}
     
@@ -59,6 +62,9 @@ public class ChannelStats extends AbstractNodeHostStats {
         dataLoaded += stats.getDataLoaded();
         dataBytesLoaded += stats.getDataBytesLoaded();
         dataLoadedErrors += stats.getDataLoadedErrors();
+        dataLoadedOutgoing += stats.getDataLoadedOutgoing();
+        dataBytesLoadedOutgoing += stats.getDataBytesLoadedOutgoing();
+        dataLoadedOutgoingErrors += stats.getDataLoadedOutgoingErrors();
     }
 
     public String getChannelId() {
@@ -213,6 +219,40 @@ public class ChannelStats extends AbstractNodeHostStats {
         this.dataSent += count;
     }
 
+    public long getDataLoadedOutgoing() {
+        return dataLoadedOutgoing;
+    }
+
+    public void setDataLoadedOutgoing(long dataLoadedOutgoing) {
+        this.dataLoadedOutgoing = dataLoadedOutgoing;
+    }
+
+    public void incrementDataLoadedOutgoing(long dataLoadedOutgoing) {
+        this.dataLoadedOutgoing += dataLoadedOutgoing;
+    }
     
+    public long getDataBytesLoadedOutgoing() {
+        return dataBytesLoadedOutgoing;
+    }
+
+    public void setDataBytesLoadedOutgoing(long dataBytesLoadedOutgoing) {
+        this.dataBytesLoadedOutgoing = dataBytesLoadedOutgoing;
+    }
+    
+    public void incrementDataBytesLoadedOutgoing(long dataBytesLoadedOutgoing) {
+        this.dataBytesLoadedOutgoing += dataBytesLoadedOutgoing;
+    }
+
+    public long getDataLoadedOutgoingErrors() {
+        return dataLoadedOutgoingErrors;
+    }
+
+    public void setDataLoadedOutgoingErrors(long dataLoadedOutgoingErrors) {
+        this.dataLoadedOutgoingErrors = dataLoadedOutgoingErrors;
+    }
+
+    public void incrementDataLoadedOutgoingErrors(long dataLoadedOutgoingErrors) {
+        this.dataLoadedOutgoingErrors += dataLoadedOutgoingErrors;
+    }
 
 }
