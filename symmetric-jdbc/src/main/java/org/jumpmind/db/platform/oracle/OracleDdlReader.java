@@ -427,47 +427,53 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT * FROM ALL_TRIGGERS "
-				+ "WHERE TABLE_NAME=? and OWNER=?";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setSchemaName(row.getString("OWNER"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(Boolean.valueOf(row.getString("STATUS")));
-				trigger.setSource("create ");
-				String triggerType = row.getString("TRIGGERING_EVENT");
-				if (triggerType.equals("DELETE")
-						|| triggerType.equals("INSERT")
-						|| triggerType.equals("UPDATE")) {
-					trigger.setTriggerType(TriggerType.valueOf(triggerType));
-				}
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-		
-		for (final Trigger trigger : triggers) {
-			String name = trigger.getName();
-			String sourceSql = "select TEXT from all_source "
-							 + "where NAME=? order by LINE ";
-			sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
-				public Trigger mapRow(Row row) {
-					trigger.setSource(trigger.getSource()+"\n"+row.getString("TEXT"));;
-					return trigger;
-				}
-			}, name);
-		}
-		
-		return triggers;
-	}
+        log.debug("Reading triggers for: {}", tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        
+        String sql = "SELECT TRIGGER_NAME, OWNER, TABLE_NAME, STATUS, TRIGGERING_EVENT FROM ALL_TRIGGERS WHERE TABLE_NAME=? and OWNER=?";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setSchemaName(row.getString("OWNER"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(Boolean.valueOf(row.getString("STATUS")));
+                trigger.setSource("create ");
+                String triggerType = row.getString("TRIGGERING_EVENT");
+                if (triggerType.equals("DELETE")
+                        || triggerType.equals("INSERT")
+                        || triggerType.equals("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                }
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+        
+        for (final Trigger trigger : triggers) {
+            String name = trigger.getName();
+            String sourceSql = "select TEXT from all_source where  NAME=? order by LINE";
+            
+            final StringBuilder buff = new StringBuilder();
+            buff.append(trigger.getSource());
+            sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
+                public Trigger mapRow(Row row) {
+                    String line = row.getString("TEXT");
+                    if (!line.endsWith("\n")) {
+                        buff.append("\n");
+                    }
+                    buff.append("\n");
+                    buff.append(line);
+                    return trigger;
+                }
+            },  name);
+            trigger.setSource(buff.toString());
+        }
+        
+        return triggers;
+    }
 }
