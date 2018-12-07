@@ -27,5 +27,7 @@ import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter.LoadStatus;
 public interface IDatabaseWriterConflictResolver extends IExtensionPoint {
 
     public void needsResolved(AbstractDatabaseWriter writer, CsvData data, LoadStatus loadStatus);
+    
+    public boolean isIgnoreRow(AbstractDatabaseWriter writer, CsvData data);
 
 }

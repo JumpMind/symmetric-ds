@@ -277,4 +277,18 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
         }
     }
 
+    
+   @Override
+    public boolean isIgnoreRow(AbstractDatabaseWriter writer, CsvData data) {
+       DatabaseWriterSettings writerSettings = writer.getWriterSettings();
+       Statistics statistics = writer.getStatistics().get(writer.getBatch());
+       long statementCount = statistics.get(DataWriterStatisticConstants.ROWCOUNT);
+       ResolvedData resolvedData = writerSettings.getResolvedData(statementCount);
+
+       if (resolvedData != null) {
+           return resolvedData.isIgnoreRow();
+       }
+       return false;
+    } 
+
 }

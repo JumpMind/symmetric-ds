@@ -230,18 +230,22 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     rollback();
                     throw ex;
                 } catch (RuntimeException ex) {
-                    if (filterError(data, ex)) {
-                        if (!(ex instanceof SqlException)) {
-                            /*
-                             * SQL exceptions should have already been logged
-                             */
-                            logFailureDetails(ex, data, false);
-                        }
-                        throw ex;
+                    if (conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
+                        statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
                     } else {
-                        uncommittedCount++;
-                        statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
-                        checkForEarlyCommit();
+                        if (filterError(data, ex)) {
+                            if (!(ex instanceof SqlException)) {
+                                /*
+                                 * SQL exceptions should have already been logged
+                                 */
+                                logFailureDetails(ex, data, false);
+                            }
+                            throw ex;
+                        } else {
+                            uncommittedCount++;
+                            statistics.get(batch).increment(DataWriterStatisticConstants.IGNORECOUNT);
+                            checkForEarlyCommit();
+                        }
                     }
                 }
             } else {
