@@ -61,7 +61,7 @@ public interface IDataService {
     
     public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transcation, long loadId, int batchCount, long rowsCount);
     
-    public void updateTableReloadRequestsCancelled(long loadId);
+    public int updateTableReloadRequestsCancelled(long loadId);
     
     public String reloadNode(String nodeId, boolean reverseLoad, String createBy);
     

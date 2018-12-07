@@ -79,4 +79,6 @@ public interface IDataExtractorService {
     
     public void updateExtractRequestTransferred(OutgoingBatch batch, long transferMillis);
     
+    public int cancelExtractRequests(long loadId);
+    
 }

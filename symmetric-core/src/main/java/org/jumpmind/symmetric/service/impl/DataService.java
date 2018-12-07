@@ -425,16 +425,18 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
-    public void updateTableReloadRequestsCancelled(long loadId) {
+    public int updateTableReloadRequestsCancelled(long loadId) {
         ISqlTransaction transaction = null;
+        int count = 0;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            transaction.prepareAndExecute(getSql("updateTableReloadRequestCancelled"),
+            count = transaction.prepareAndExecute(getSql("updateTableReloadRequestCancelled"),
                     new Object[] { 
                             new Date(), loadId
                             },
                     new int[] { Types.TIMESTAMP,Types.NUMERIC});
             transaction.commit();
+            return count;
         } catch (Error ex) {
             if (transaction != null) {
                 transaction.rollback();
