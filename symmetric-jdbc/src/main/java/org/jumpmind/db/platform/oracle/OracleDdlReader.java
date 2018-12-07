@@ -34,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -336,30 +338,29 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
         StringBuilder query = new StringBuilder();
 
-        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM USER_INDEXES a, USER_IND_COLUMNS b WHERE ");
-        query.append("a.TABLE_NAME=? AND a.GENERATED=? AND a.TABLE_TYPE=? AND a.TABLE_NAME=b.TABLE_NAME AND a.INDEX_NAME=b.INDEX_NAME AND ");
-        query.append("a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM USER_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE=? AND c.TABLE_NAME=a.TABLE_NAME");
+        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a "); 
+        query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME ");
+        query.append("WHERE ");
+        query.append("a.TABLE_NAME = ? "); 
+        query.append("AND a.GENERATED='N' "); 
+        query.append("AND a.TABLE_TYPE='TABLE' "); 
         if (metaData.getSchemaPattern() != null) {
-            query.append(" AND c.OWNER LIKE ?) AND a.TABLE_OWNER LIKE ?");
-        } else {
-            query.append(")");
+            query.append("AND a.TABLE_OWNER = ?");
         }
-
+        
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         PreparedStatement stmt = null;
 
         try {
+            Set<String> pkIndecies = readPkIndecies(connection, metaData.getSchemaPattern(), tableName);
+            
             stmt = connection.prepareStatement(query.toString());
             stmt.setString(
                     1,
                     getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
                             .toUpperCase());
-            stmt.setString(2, "N");
-            stmt.setString(3, "TABLE");
-            stmt.setString(4, "P");
             if (metaData.getSchemaPattern() != null) {
-                stmt.setString(5, metaData.getSchemaPattern().toUpperCase());
-                stmt.setString(6, metaData.getSchemaPattern().toUpperCase());
+                stmt.setString(2, metaData.getSchemaPattern().toUpperCase());
             }
 
             ResultSet rs = stmt.executeQuery();
@@ -367,6 +368,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
             while (rs.next()) {
                 String name = rs.getString(1);
+                if (pkIndecies.contains(name)) { // Filter PK indexes from these results.
+                    continue;
+                }
                 String type = rs.getString(2);
                 // Only read in normal oracle indexes
                 if (type.startsWith("NORMAL")) {
@@ -475,4 +479,42 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         
         return triggers;
     }
+    
+    protected Set<String> readPkIndecies(Connection connection, String schema, String tableName) throws SQLException {
+        String QUERY = "SELECT INDEX_NAME FROM ALL_CONSTRAINTS c WHERE c.TABLE_NAME = ? AND CONSTRAINT_TYPE = 'P'";
+        if (schema != null) {
+            QUERY += " AND c.OWNER = ?";
+        }
+        ResultSet rs = null;
+        PreparedStatement stmt = null;
+        Set<String> values = new LinkedHashSet<String>();
+        try {            
+            stmt = connection.prepareStatement(QUERY);
+            stmt.setString(
+                    1,
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
+                            .toUpperCase());
+            if (schema != null) {
+                stmt.setString(2, schema.toUpperCase());
+            }
+            
+            rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                String pkIndexName = rs.getString(1);
+                values.add(pkIndexName);
+            }
+            
+            
+        } finally {
+            if (rs != null) {                
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            
+        }
+        return values;
+    }    
 }
