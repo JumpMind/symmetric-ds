@@ -420,10 +420,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         String statisticManagerClassName = parameterService.getString(ParameterConstants.STATISTIC_MANAGER_CLASS);
         if (statisticManagerClassName != null) {
             try {
-                Constructor<?> cons = Class.forName(statisticManagerClassName).getConstructor(IParameterService.class, 
-                        INodeService.class, IConfigurationService.class, IStatisticService.class, IClusterService.class);
-                return (IStatisticManager) cons.newInstance(parameterService, nodeService,
-                        configurationService, statisticService, clusterService);
+                Constructor<?> cons = Class.forName(statisticManagerClassName).getConstructor(ISymmetricEngine.class);
+                return (IStatisticManager) cons.newInstance(this);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
