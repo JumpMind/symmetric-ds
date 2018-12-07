@@ -1142,4 +1142,16 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         }
         return supportsTransactions;
     }
+    
+    public long getEstimatedRowCount(Table table) {
+        DatabaseInfo dbInfo = getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
+        
+        String sql = String.format("select count(*) from %s", table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
+        
+        return getSqlTemplateDirty().queryForLong(sql);
+    }
+
 }

@@ -139,7 +139,7 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         putSql("deleteOutgoingBatchByRangeSql", "delete from $(outgoing_batch) where batch_id between ? and ?");
 
         putSql("countOutgoingBatchNotStatusSql",
-                "select count(*) count from $(outgoing_batch) where status != ?");
+                "select count(*) from $(outgoing_batch) where status != ?");
 
         putSql("selectDataEventMinNotStatusSql", "select min(data_id) from $(data_event) " +
                 "where batch_id in (select batch_id from $(outgoing_batch) where status != ?)");

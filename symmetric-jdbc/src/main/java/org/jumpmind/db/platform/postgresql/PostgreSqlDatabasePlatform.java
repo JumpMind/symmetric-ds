@@ -30,6 +30,7 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -234,5 +235,12 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
    		
    		return result;
     }    
-    
+
+    @Override
+    public long getEstimatedRowCount(Table table) {        
+        return getSqlTemplateDirty().queryForLong("select c.reltuples from pg_catalog.pg_class c inner join pg_catalog.pg_namespace n " +
+                "on n.oid = c.relnamespace where c.relname = ? and n.nspname = ?",
+                table.getName(), table.getSchema());
+    }
+
 }

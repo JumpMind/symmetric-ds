@@ -15,6 +15,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
@@ -334,6 +335,7 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     @Override
     public boolean isInitialLoadTwoPassLob(Table table) {
         return parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
+                && !TableConstants.getTables(parameterService.getTablePrefix()).contains(table.getNameLowerCase())
                 && table.containsLobColumns(this.platform);
     }
 
