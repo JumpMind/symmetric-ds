@@ -456,7 +456,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         
         for (final Trigger trigger : triggers) {
             String name = trigger.getName();
-            String sourceSql = "select TEXT from all_source where  NAME=? order by LINE";
+            String sourceSql = "select TEXT from all_source where OWNER=? AND NAME=? order by LINE";
             
             final StringBuilder buff = new StringBuilder();
             buff.append(trigger.getSource());
@@ -466,11 +466,10 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     if (!line.endsWith("\n")) {
                         buff.append("\n");
                     }
-                    buff.append("\n");
                     buff.append(line);
                     return trigger;
                 }
-            },  name);
+            }, schema, name);
             trigger.setSource(buff.toString());
         }
         
