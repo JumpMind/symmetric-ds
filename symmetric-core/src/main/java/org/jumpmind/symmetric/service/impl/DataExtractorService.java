@@ -1633,6 +1633,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
+    @Override
+    public int cancelExtractRequests(long loadId) {
+        return sqlTemplate.update(getSql("cancelExtractRequests"), ExtractStatus.OK.name(), loadId);
+    }
+
     protected boolean writeBatchStats(BufferedWriter writer, char[] buffer, int bufferSize, String prevBuffer, OutgoingBatch batch)
             throws IOException {
         String bufferString = new String(buffer);
@@ -2088,8 +2093,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
 
             } catch (CancellationException ex) {
-                log.info("Cancelled extract request {}. Starting at batch {}.  Ending at batch {}",
-                        new Object[] { request.getRequestId(), request.getStartBatchId(),
+                log.info("Interrupted extract request {} for table {} batches {} through {}",
+                        new Object[] { request.getRequestId(), request.getTableName(), request.getStartBatchId(),
                         request.getEndBatchId() });
                 processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             } catch (RuntimeException ex) {
