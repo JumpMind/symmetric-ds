@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.OracleBulkDatabaseWriter;
@@ -35,15 +34,12 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
     private ISymmetricEngine engine;
-    private NativeJdbcExtractor jdbcExtractor;
 
     public OracleBulkDataLoaderFactory(ISymmetricEngine engine) {
-        this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
         this.engine = engine;
         this.parameterService = engine.getParameterService();
     }
@@ -56,9 +52,7 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        int maxRowsBeforeFlush = parameterService.getInt("oracle.bulk.load.max.rows.before.flush", 1000);
-        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-        		engine.getTablePrefix(), jdbcExtractor, maxRowsBeforeFlush, 
+        return new OracleBulkDatabaseWriter(engine,
         		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }
 
