@@ -60,6 +60,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected int maxRowsBeforeFlush;
     
+    protected String sqlLoader;
+    
     protected String dbUser;
     
     protected String dbPassword;
@@ -70,6 +72,11 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         super(engine.getSymmetricDialect().getPlatform(), engine.getSymmetricDialect().getTargetPlatform(), engine.getTablePrefix(), settings);
         stagingManager = engine.getStagingManager();
         maxRowsBeforeFlush = engine.getParameterService().getInt("oracle.bulk.load.max.rows.before.flush", 100000);
+        sqlLoader = engine.getParameterService().getString("oracle.bulk.load.oracle.home", System.getenv("ORACLE_HOME"));
+        if (sqlLoader == null) {
+    		sqlLoader = "";
+        }
+        sqlLoader += File.separator + "sqlldr"; 
         dbUser = engine.getParameterService().getString(BasicDataSourcePropertyConstants.DB_POOL_USER);
 		if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
 			dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
@@ -214,10 +221,12 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             try {
             	// TODO: add options for direct=true rows=10000
-            	ProcessBuilder pb = new ProcessBuilder("sqlldr " + dbUser + "/" + dbPassword +
-            			" control=\"" + stagedInputFile.getFile().getPath() + "\"" +
+            	String path = stagedInputFile.getFile().getParent();
+            	ProcessBuilder pb = new ProcessBuilder("\"" + sqlLoader + "\" \"" + dbUser + "\"/\"" + dbPassword +
+            			"\" control=\"" + stagedInputFile.getFile().getPath() + "\"" +
             			" silent=header");
             	pb.redirectErrorStream(true);
+            	pb.directory(new File(path));
             	Process process = null;
                 try {
                 	process = pb.start();
@@ -228,8 +237,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 } catch (IOException e) {
                 	throw new RuntimeException(e);
                 }
-                
-                String path = stagedInputFile.getFile().getParent();
+
                 stagedInputFile.delete();
                 new File(path.replace(".create", ".bad")).delete();
                 new File(path.replace(".create", ".log")).delete();
