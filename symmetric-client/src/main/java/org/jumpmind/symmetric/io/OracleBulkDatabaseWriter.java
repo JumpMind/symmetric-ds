@@ -29,6 +29,7 @@ import java.sql.Types;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
@@ -76,7 +77,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         if (sqlLoader == null) {
     		sqlLoader = "";
         }
-        sqlLoader += File.separator + "sqlldr"; 
+        sqlLoader += File.separator + "bin" + File.separator + "sqlldr"; 
         dbUser = engine.getParameterService().getString(BasicDataSourcePropertyConstants.DB_POOL_USER);
 		if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
 			dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
@@ -222,11 +223,14 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             try {
             	// TODO: add options for direct=true rows=10000
             	String path = stagedInputFile.getFile().getParent();
-            	ProcessBuilder pb = new ProcessBuilder("\"" + sqlLoader + "\" \"" + dbUser + "\"/\"" + dbPassword +
-            			"\" control=\"" + stagedInputFile.getFile().getPath() + "\"" +
-            			" silent=header");
-            	pb.redirectErrorStream(true);
+            	String[] cmd = { sqlLoader, dbUser + "/" + dbPassword,
+            			"control=" + stagedInputFile.getFile().getPath(), "silent=header" };
+            	if (logger.isDebugEnabled()) {
+            		logger.debug("Running: {} ", ArrayUtils.toString(cmd));
+            	}
+            	ProcessBuilder pb = new ProcessBuilder(cmd);
             	pb.directory(new File(path));
+            	pb.redirectErrorStream(true);
             	Process process = null;
                 try {
                 	process = pb.start();
