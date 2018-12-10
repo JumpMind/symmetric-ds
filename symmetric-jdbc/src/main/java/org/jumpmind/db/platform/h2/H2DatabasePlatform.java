@@ -103,4 +103,9 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
    		return result;
     }
     
+    @Override
+    public boolean supportsMultiThreadedTransactions() {
+        return false;
+    }
+    
 }

@@ -112,6 +112,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     protected Boolean supportsTransactions;
     
+    protected Boolean supportsMultiThreadedTransactions;
+    
     public AbstractDatabasePlatform(SqlTemplateSettings settings) {
         this.settings = settings;
     }
@@ -1141,6 +1143,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             }
         }
         return supportsTransactions;
+    }
+    
+    @Override
+    public boolean supportsMultiThreadedTransactions() {
+        return true;
     }
     
     public long getEstimatedRowCount(Table table) {

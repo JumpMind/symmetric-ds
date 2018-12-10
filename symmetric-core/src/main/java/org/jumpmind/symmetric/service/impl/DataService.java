@@ -375,53 +375,61 @@ public class DataService extends AbstractService implements IDataService {
             
     }
     
-    public void updateTableReloadRequestsCounts(long loadId, int batchCount, long rowsCount) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            transaction.prepareAndExecute(getSql("updateTableReloadRequestCounts"),
-                    new Object[] { batchCount, rowsCount, new Date(), loadId },
-                    new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC});
-            transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
+    public void updateTableReloadRequestsCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount) {
+        String sql = getSql("updateTableReloadRequestCounts");
+        Object[] args = new Object[] {batchCount, rowsCount, new Date(), loadId};
+        int[] types = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC};
+        
+        if (transaction == null) {
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                transaction.prepareAndExecute(sql, args, types);
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                close(transaction);
             }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
+        } else {
+            transaction.prepareAndExecute(sql, args, types);
         }
     }
     
-    public void updateTableReloadRequestsLoadAndTableCounts(long loadId, int tableCount, TableReloadRequest request) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            transaction.prepareAndExecute(getSql("updateTableReloadRequestLoadId"),
-                    new Object[] { 
-                            loadId, tableCount, new Date(), request.getTargetNodeId(), request.getSourceNodeId(), 
-                            request.getTriggerId(), request.getRouterId(), request.getCreateTime()
-                            },
-                    new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP});
-            transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
+    public void updateTableReloadRequestsLoadAndTableCounts(ISqlTransaction transaction, long loadId, int tableCount, TableReloadRequest request) {
+        Object[] args = new Object[] { loadId, tableCount, new Date(), request.getTargetNodeId(), request.getSourceNodeId(), 
+                            request.getTriggerId(), request.getRouterId(), request.getCreateTime() };   
+        String sql = getSql("updateTableReloadRequestLoadId");
+        int[] types = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP};
+        
+        if (transaction == null) {
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                transaction.prepareAndExecute(sql, args, types);
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                close(transaction);
             }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
+        } else {
+            transaction.prepareAndExecute(sql, args, types);
         }
     }
     
@@ -677,7 +685,9 @@ public class DataService extends AbstractService implements IDataService {
                         
                         if (reloadRequests != null && reloadRequests.size() > 0) {
                             for (TableReloadRequest request : reloadRequests) {
-                                updateTableReloadRequestsLoadAndTableCounts(loadId, totalTableCount, request);
+                                updateTableReloadRequestsLoadAndTableCounts(
+                                        platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                                loadId, totalTableCount, request);
                             }
                         }
                            
@@ -1197,7 +1207,8 @@ public class DataService extends AbstractService implements IDataService {
                                 }
                             }
                             
-                            updateTableReloadRequestsCounts(loadId, new Long(numberOfBatches).intValue(), rowCount);
+                            updateTableReloadRequestsCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                    loadId, new Long(numberOfBatches).intValue(), rowCount);
                             totalBatchCount += numberOfBatches;
                             
                             engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
