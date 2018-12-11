@@ -31,10 +31,15 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.DbTestUtils;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.properties.EnvironmentSpecificProperties;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
+import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,9 +50,10 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 import oracle.sql.TIMESTAMPLTZ;
 import oracle.sql.TIMESTAMPTZ;
 
-
 public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
 
+	protected static IStagingManager stagingManager;
+	
     @BeforeClass
     public static void setup() throws Exception {
         if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT)
@@ -56,6 +62,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(
                     platform.readDatabaseFromXml("/testOracleBulkWriter.xml", true), true, false);
+            stagingManager = new StagingManager("tmp",false);
         }
     }
 
@@ -66,8 +73,11 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Override
     protected long writeData(TableCsvData... datas) {
-        return writeData(new OracleBulkDatabaseWriter(platform, platform, "sym_", "sym",
-                new CommonsDbcpNativeJdbcExtractor(), 1000, null), datas);
+    	EnvironmentSpecificProperties prop = DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT);
+        return writeData(new OracleBulkDatabaseWriter(platform, platform, stagingManager, "sym_",
+        		1000, false, null, prop.get(BasicDataSourcePropertyConstants.DB_POOL_USER),
+        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD), 
+        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, null), datas);
     }
 
     @Override
@@ -123,7 +133,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Connection connection = datasource.getConnection();
             Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
 
-            final String[] EXPECTED_TIMESTAMPTZ = {"2007-01-02 03:20:10.0 America/New_York","2007-01-02 03:20:10.0 US/Eastern"};
+            final String[] EXPECTED_TIMESTAMPTZ = {"2007-01-02 03:20:10.0 -5:00","2007-01-02 03:20:10.0 -4:00"};
 
             checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
             checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
@@ -171,44 +181,6 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     }
     
     @Test
-    public void testInsertTimestampTZ_timestampWithTimeZoneNull() throws Exception {
-        if (platform != null && platform instanceof OracleDatabasePlatform) {
-            
-            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
-            
-            platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-            
-            List<CsvData> datas = new ArrayList<CsvData>();
-            
-            String id = getNextId();
-            
-            String[] values = { id, "string2", "string not null2", "char2",
-                    "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
-                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10. -08:00", 
-                    "", 
-                    " ", 
-                    null };
-            CsvData data = new CsvData(DataEventType.INSERT, values);
-            datas.add(data);
-            
-            long count = writeData(new TableCsvData(platform.getTableFromCache(
-                    "test_bulkload_table_1", false), datas));
-            
-            Map<String, Object> rowData = queryForRow(id);
-            DataSource datasource = (DataSource)platform.getDataSource();
-            Connection connection = datasource.getConnection();
-            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
-            
-            checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, "2007-01-02 03:20:10.0 -8:00");
-            Assert.assertNull(rowData.get("TIMESTAMPTZ3_VALUE"));
-            Assert.assertNull(rowData.get("TIMESTAMPTZ6_VALUE"));
-            Assert.assertNull(rowData.get("TIMESTAMPTZ9_VALUE"));
-            
-            Assert.assertEquals(count, countRows("test_bulkload_table_1"));
-        }
-    }
-    
-    @Test
     public void testInsertTimestampTZ_timestampWithLocalTimeZone() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
             
@@ -235,7 +207,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Connection connection = datasource.getConnection();
             Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
             
-            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, new String[]{"2007-01-02 03:20:10.123456789 America/New_York","2007-01-02 03:20:10.123456789 US/Eastern"});
+            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, new String[]{"2007-01-02 06:20:10.123456789 America/New_York","2007-01-02 06:20:10.123456789 US/Eastern"});
             
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }

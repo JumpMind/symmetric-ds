@@ -24,7 +24,10 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.OracleBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -34,6 +37,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
+import org.jumpmind.symmetric.service.IParameterService;
 
 public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
@@ -52,7 +56,27 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        return new OracleBulkDatabaseWriter(engine,
+    	
+    	IParameterService parmService = engine.getParameterService();
+    	String dbUrl = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL);
+        String dbUser = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_USER);
+		if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
+			dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
+		}
+
+		String dbPassword = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+		if (dbPassword != null && dbPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
+			dbPassword = engine.getSecurityService().decrypt(dbPassword.substring(SecurityConstants.PREFIX_ENC.length()));
+		}
+
+		String sqlLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD);
+		int commitSize = parmService.getInt(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_COMMIT_SIZE, 1000);
+        boolean useDirectPath = parmService.is(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_DIRECT_PATH);
+        String ezConnectString = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT);
+
+        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+        		engine.getStagingManager(), engine.getTablePrefix(), commitSize, useDirectPath, sqlLoaderCommand,
+        		dbUser, dbPassword, dbUrl, ezConnectString, 
         		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }
 
