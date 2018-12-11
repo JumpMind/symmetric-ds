@@ -232,7 +232,11 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_USE_HINTS = "oracle.use.hints";
     public final static String DBDIALECT_ORACLE_SEQUENCE_NOORDER = "oracle.sequence.noorder";
     public final static String DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS = "oracle.sequence.noorder.nextvalue.db.urls";
-
+    public final static String DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD = "oracle.bulk.load.sqlldr.cmd";
+    public final static String DBDIALECT_ORACLE_BULK_LOAD_COMMIT_SIZE = "oracle.bulk.load.commit.size";
+    public final static String DBDIALECT_ORACLE_BULK_LOAD_DIRECT_PATH = "oracle.bulk.load.direct.path";
+    public final static String DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT = "oracle.bulk.load.ezconnect";
+    
     public final static String DBDIALECT_TIBERO_USE_TRANSACTION_VIEW = "tibero.use.transaction.view";
     public final static String DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC = "tibero.template.precision";
     public final static String DBDIALECT_TIBERO_USE_HINTS = "tibero.use.hints";
