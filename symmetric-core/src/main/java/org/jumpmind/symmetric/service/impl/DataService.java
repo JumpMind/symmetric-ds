@@ -1567,6 +1567,9 @@ public class DataService extends AbstractService implements IDataService {
         if (data != null) {
         	insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNodeId,
                     Constants.UNKNOWN_ROUTER_ID, isLoad, loadId, createBy, Status.NE, channelId, -1);
+        } else {
+            throw new SymmetricException(String.format("Unable to issue an update for %s_node_security. " + 
+                    " Check the %s_trigger_hist for %s_node_security.", tablePrefix, tablePrefix,  tablePrefix ));
         }
     }
 
