@@ -28,18 +28,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.sql.Types;
+import java.util.ArrayList;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
@@ -57,17 +56,19 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected IStagingManager stagingManager;
 
-    protected IStagedResource stagedInputFile;
+    protected IStagedResource dataResource;
+    
+    protected IStagedResource controlResource;
 
     protected Table table = null;
 
     protected boolean hasBinaryType;
-
-    protected int commitSize;
     
-    protected boolean useDirectPath;
+    protected boolean useIncomingStageFile;
     
     protected String sqlLoaderCommand;
+    
+    protected ArrayList<String> sqlLoaderOptions;
     
     protected String dbUser;
     
@@ -77,35 +78,39 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
     protected String ezConnectString;
     
+    protected boolean isStagingClearText;
+    
     protected int rows = 0;
 
-    public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-			IDatabasePlatform targetPlatform, IStagingManager stagingManager, String tablePrefix, 
-            int commitSize, boolean useDirectPath, 
-            String sqlLoaderCommand, String dbUser, String dbPassword, String dbUrl, String ezConnectString,  
-            DatabaseWriterSettings settings) {
-        super(symmetricPlatform, targetPlatform, tablePrefix, settings);
-        this.stagingManager = stagingManager;
-        this.commitSize = commitSize;
-        this.useDirectPath = useDirectPath;
-        this.sqlLoaderCommand = sqlLoaderCommand;
-        this.dbUser = dbUser;
+	public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
+			IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
+			String dbUser, String dbPassword, String dbUrl, String ezConnectString, boolean isStagingClearText,
+			DatabaseWriterSettings settings) {
+		super(symmetricPlatform, targetPlatform, tablePrefix, settings);
+		this.stagingManager = stagingManager;
+		this.sqlLoaderCommand = sqlLoaderCommand;
+		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
 		this.dbUrl = dbUrl;
 		this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getEzConnectString(dbUrl));
+		this.isStagingClearText = isStagingClearText;
 
-        if (StringUtils.isBlank(this.sqlLoaderCommand)) {
-            String oracleHome = System.getenv("ORACLE_HOME");
-            if (StringUtils.isNotBlank(oracleHome)) {
-            	this.sqlLoaderCommand = oracleHome + File.separator + "bin" + File.separator + "sqlldr";
-            } else {
-            	this.sqlLoaderCommand = "sqlldr";
-            }
-        }
-        // TODO: options for readsize and bindsize?
-        // TODO: separate control file from data file for higher readsize?
-        // TODO: specify type and size for columns if CHAR(255) default is too small
-    }
+		this.sqlLoaderOptions = new ArrayList<String>();
+		if (StringUtils.isNotBlank(sqlLoaderOptions)) {
+			for (String option : sqlLoaderOptions.split(" ")) {
+				this.sqlLoaderOptions.add(option);
+			}
+		}
+
+		if (StringUtils.isBlank(this.sqlLoaderCommand)) {
+			String oracleHome = System.getenv("ORACLE_HOME");
+			if (StringUtils.isNotBlank(oracleHome)) {
+				this.sqlLoaderCommand = oracleHome + File.separator + "bin" + File.separator + "sqlldr";
+			} else {
+				this.sqlLoaderCommand = "sqlldr";
+			}
+		}
+	}
 
     public boolean start(Table table) {
         this.table = table;
@@ -119,8 +124,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            if (stagedInputFile == null) {
-                createStagingFile(table);
+            if (dataResource == null) {
+                createStagingFile();
             }
             return true;
         } else {
@@ -128,22 +133,50 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
     }
 
-    protected void createStagingFile(Table table) {
-        stagedInputFile = stagingManager.create("bulkloaddir", getBatch().getBatchId());
+    protected void createStagingFile() {
+    	long batchId = getBatch().getBatchId();
+        controlResource = stagingManager.create("bulkloaddir", StringUtils.leftPad(batchId + "-ctl", 14, "0"));
+        String infile = null;
+        useIncomingStageFile = false;
+        
+        if (isStagingClearText && !hasBinaryType) {
+        	dataResource = stagingManager.find(Constants.STAGING_CATEGORY_INCOMING, batch.getStagedLocation(), batchId);
+        	if (dataResource != null) {
+        		useIncomingStageFile = true;
+        		infile = dataResource.getFile().getAbsolutePath();
+        	}
+        }
+        if (!useIncomingStageFile) {
+    		dataResource = stagingManager.create("bulkloaddir", batchId);
+    		infile = dataResource.getFile().getName();        	
+        }
+
         try {
-            OutputStream out = stagedInputFile.getOutputStream();
-            out.write(("LOAD DATA\nINFILE *\nINSERT INTO TABLE " + table.getName() + "\n").getBytes());
+            OutputStream out = controlResource.getOutputStream();
+            out.write(("LOAD DATA\nINFILE '" + infile + "'\nAPPEND INTO TABLE " + targetTable.getName() + "\n").getBytes());
+            
+            if (useIncomingStageFile) {
+            	out.write("WHEN (01:06 = 'insert')\n".getBytes());
+            }
             out.write("FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'\nTRAILING NULLCOLS\n".getBytes());
             
             StringBuilder columns = new StringBuilder("(");
             int index = 0;
-            for (Column column : table.getColumns()) {
+            if (useIncomingStageFile) {
+            	columns.append("EVENT FILLER");
+            	index++;
+            }
+            for (Column column : targetTable.getColumns()) {
                 if (index++ > 0) {
                 	columns.append(", ");
                 }
                 columns.append(column.getName());
-                int type = column.getJdbcTypeCode();
-                if (type == Types.TIMESTAMP || type == Types.DATE) {
+                int type = column.getMappedTypeCode();
+                if (type == Types.CLOB || type == Types.NCLOB) {
+                	columns.append(" CLOB");
+                } else if (column.isOfTextType() && column.getSizeAsInt() > 0) {
+                	columns.append(" CHAR(" + column.getSize() + ")");
+                } else if (type == Types.TIMESTAMP || type == Types.DATE) {
                 	columns.append(" TIMESTAMP 'YYYY-MM-DD HH24:MI:SS.FF9'");
                 } else if (column.isTimestampWithTimezone()) {
                 	String scale = column.getScale() > 0 ? "(" + column.getScale() + ")" : "";
@@ -154,9 +187,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
             }
             columns.append(")\n");
-
             out.write(columns.toString().getBytes());
-            out.write("BEGINDATA\n".getBytes());
+            controlResource.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -172,6 +204,11 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void bulkWrite(CsvData data) {
+    	if (useIncomingStageFile) {
+    		rows++;
+    		// TODO: throw an exception that causes reading of incoming stage file to be skipped
+    		return;
+    	}
         DataEventType dataEventType = data.getDataEventType();
 
         switch (dataEventType) {
@@ -213,7 +250,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"');
                     byteData = formattedData.getBytes();
                 }
-                stagedInputFile.getOutputStream().write(byteData);
+                dataResource.getOutputStream().write(byteData);
                 rows++;
             } catch (Exception ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
@@ -235,23 +272,21 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void flush() {
         if (rows > 0) {
-            stagedInputFile.close();
+            dataResource.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             try {
-            	File absFile = stagedInputFile.getFile().getAbsoluteFile();
-            	String path = absFile.getParent();
-            	String[] cmd = { sqlLoaderCommand, dbUser + "/" + dbPassword + ezConnectString,
-            			"control=" + stagedInputFile.getFile().getName(), "silent=header",
-            			"direct=" + (useDirectPath ? "true" : "false") };
-            	if (!useDirectPath) {
-            		cmd = (String[]) ArrayUtils.add(cmd, "rows=" + commitSize);
-            	}
+            	File parentDir = controlResource.getFile().getParentFile();
+            	ArrayList<String> cmd = new ArrayList<String>();
+            	cmd.add(sqlLoaderCommand);
+            	cmd.add(dbUser + "/" + dbPassword + ezConnectString);
+            	cmd.add("control=" + controlResource.getFile().getName());
+            	cmd.addAll(sqlLoaderOptions);
             	if (logger.isDebugEnabled()) {
-            		logger.debug("Working dir: {} ", path);
-            		logger.debug("Running: {} ", ArrayUtils.toString(cmd));
+            		logger.debug("Working dir: {} ", parentDir.getAbsolutePath());
+            		logger.debug("Running: {} ", cmd.toString());
             	}
             	ProcessBuilder pb = new ProcessBuilder(cmd);
-            	pb.directory(new File(path));
+            	pb.directory(parentDir);
             	pb.redirectErrorStream(true);
             	Process process = null;
                 try {
@@ -267,21 +302,29 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     reader.close();
 
                     int rc = process.waitFor();
-                    if (rc != 0) {
+                    if (rc == 2) {
+                    	if (!useIncomingStageFile) {
+                    		throw new RuntimeException("All or some rows were rejected.");
+                    	}
+                    } else if (rc != 0) {
                     	throw new RuntimeException("Process builder returned " + rc);
                     }
                 } catch (IOException e) {
                 	throw new RuntimeException(e);
                 }
 
-                stagedInputFile.delete();
+                if (!useIncomingStageFile) {
+                	dataResource.delete();
+                }
+                File absFile = controlResource.getFile().getAbsoluteFile();
                 new File(absFile.getPath().replace(".create", ".bad")).delete();
                 new File(absFile.getPath().replace(".create", ".log")).delete();
+                controlResource.delete();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-                stagedInputFile = null;
+                dataResource = null;
                 rows = 0;
             }
         }
