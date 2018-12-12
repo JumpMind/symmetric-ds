@@ -65,7 +65,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         
         putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, batch_count = ?, processed = 1 where load_id = ?");
         
-        putSql("updateTableReloadRequestLoadId", "update $(table_reload_request) set load_id = ?, table_count = ?, last_update_time = ? where target_node_id = ? and source_node_id = ? and trigger_id = ? and router_id = ? and create_time = ?");
+        putSql("updateTableReloadRequestLoadId", "update $(table_reload_request) set load_id = ?, table_count = ?, last_update_time = ?, batch_count = 0, row_count = 0 where target_node_id = ? and source_node_id = ? and trigger_id = ? and router_id = ? and create_time = ?");
         
         putSql("updateTableReloadRequestLoadedCounts", "update $(table_reload_request) set "
                 + " completed = (case when batch_loaded_count + 1 >= batch_count then 1 else 0 end), "
