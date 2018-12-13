@@ -76,7 +76,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
         		null, "silent=(header,discards) direct=false readsize=4096000 bindsize=4096000 rows=1000 discardmax=1 errors=0",
         		prop.get(BasicDataSourcePropertyConstants.DB_POOL_USER),
         		prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD), 
-        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, false, null), datas);
+        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, null), datas);
     }
 
     @Override

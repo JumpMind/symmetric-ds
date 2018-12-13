@@ -28,7 +28,6 @@ import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.OracleBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -73,12 +72,10 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 		String sqlLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD);
 		String sqlLoaderOptions = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_OPTIONS);
         String ezConnectString = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT);
-        boolean isStagingClearText = !parmService.is(ServerConstants.STREAM_TO_FILE_ENCRYPT_ENABLED, false) &&
-        		!parmService.is(ServerConstants.STREAM_TO_FILE_COMPRESSION_ENABLED, false);
 
         return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
         		engine.getStagingManager(), engine.getTablePrefix(), sqlLoaderCommand, sqlLoaderOptions,
-        		dbUser, dbPassword, dbUrl, ezConnectString, isStagingClearText,
+        		dbUser, dbPassword, dbUrl, ezConnectString,
         		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }
 

@@ -21,11 +21,9 @@
 package org.jumpmind.symmetric.io;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.sql.Types;
 import java.util.ArrayList;
 
@@ -37,11 +35,7 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
@@ -52,71 +46,63 @@ import org.slf4j.LoggerFactory;
 
 public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
-	protected final static String BLOB_START = "<symblob>";
-	
-	protected final static String BLOB_END = "</symblob>";
-	
-	protected final static String END_OF_LINE = "<symeol/>";
+    protected final static String FIELD_TERMINATOR = "|}";
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final static String LINE_TERMINATOR = "|>";
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected IStagingManager stagingManager;
 
     protected IStagedResource dataResource;
-    
+
     protected IStagedResource controlResource;
 
     protected Table table = null;
 
     protected boolean hasBinaryType;
-    
-    protected boolean useIncomingStageFile;
-    
+
     protected String sqlLoaderCommand;
-    
+
     protected ArrayList<String> sqlLoaderOptions;
-    
+
     protected String dbUser;
-    
+
     protected String dbPassword;
-    
+
     protected String dbUrl;
-    
+
     protected String ezConnectString;
-    
-    protected boolean isStagingClearText;
-    
+
     protected int rows = 0;
 
-	public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
-			IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
-			String dbUser, String dbPassword, String dbUrl, String ezConnectString, boolean isStagingClearText,
-			DatabaseWriterSettings settings) {
-		super(symmetricPlatform, targetPlatform, tablePrefix, settings);
-		this.stagingManager = stagingManager;
-		this.sqlLoaderCommand = sqlLoaderCommand;
-		this.dbUser = dbUser;
-		this.dbPassword = dbPassword;
-		this.dbUrl = dbUrl;
-		this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getEzConnectString(dbUrl));
-		this.isStagingClearText = isStagingClearText;
+    public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
+            IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
+            String dbUser, String dbPassword, String dbUrl, String ezConnectString, DatabaseWriterSettings settings) {
+        super(symmetricPlatform, targetPlatform, tablePrefix, settings);
+        this.stagingManager = stagingManager;
+        this.sqlLoaderCommand = sqlLoaderCommand;
+        this.dbUser = dbUser;
+        this.dbPassword = dbPassword;
+        this.dbUrl = dbUrl;
+        this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getEzConnectString(dbUrl));
 
-		this.sqlLoaderOptions = new ArrayList<String>();
-		if (StringUtils.isNotBlank(sqlLoaderOptions)) {
-			for (String option : sqlLoaderOptions.split(" ")) {
-				this.sqlLoaderOptions.add(option);
-			}
-		}
+        this.sqlLoaderOptions = new ArrayList<String>();
+        if (StringUtils.isNotBlank(sqlLoaderOptions)) {
+            for (String option : sqlLoaderOptions.split(" ")) {
+                this.sqlLoaderOptions.add(option);
+            }
+        }
 
-		if (StringUtils.isBlank(this.sqlLoaderCommand)) {
-			String oracleHome = System.getenv("ORACLE_HOME");
-			if (StringUtils.isNotBlank(oracleHome)) {
-				this.sqlLoaderCommand = oracleHome + File.separator + "bin" + File.separator + "sqlldr";
-			} else {
-				this.sqlLoaderCommand = "sqlldr";
-			}
-		}
-	}
+        if (StringUtils.isBlank(this.sqlLoaderCommand)) {
+            String oracleHome = System.getenv("ORACLE_HOME");
+            if (StringUtils.isNotBlank(oracleHome)) {
+                this.sqlLoaderCommand = oracleHome + File.separator + "bin" + File.separator + "sqlldr";
+            } else {
+                this.sqlLoaderCommand = "sqlldr";
+            }
+        }
+    }
 
     public boolean start(Table table) {
         this.table = table;
@@ -132,10 +118,6 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
             if (dataResource == null) {
                 createStagingFile();
-                if (useIncomingStageFile) {
-                	rows = 1;
-                	return false;
-                }
             }
             return true;
         } else {
@@ -144,63 +126,39 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void createStagingFile() {
-    	long batchId = getBatch().getBatchId();
-    	String baseName = StringUtils.leftPad(batchId + "-ctl", 14, "0");
-        controlResource = stagingManager.create("bulkloaddir", baseName);
-        String infile = null;
-        useIncomingStageFile = false;
-        
-        if (isStagingClearText && !hasBinaryType) {
-        	dataResource = stagingManager.find(Constants.STAGING_CATEGORY_INCOMING, batch.getStagedLocation(), batchId);
-        	if (dataResource != null) {
-        		useIncomingStageFile = true;
-        		infile = dataResource.getFile().getAbsolutePath();
-        	}
-        }
-        if (!useIncomingStageFile) {
-    		dataResource = stagingManager.create("bulkloaddir", batchId);
-    		infile = dataResource.getFile().getName();        	
-        }
+        long batchId = getBatch().getBatchId();
+        controlResource = stagingManager.create("bulkloaddir", StringUtils.leftPad(batchId + "-ctl", 14, "0"));
+        dataResource = stagingManager.create("bulkloaddir", batchId);
 
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
-            out.write(("INFILE '" + infile + "'").getBytes());
-        	if (hasBinaryType) {
-        		out.write((" \"str '" + END_OF_LINE + "'\"").getBytes());	
-        	}
-            out.write(("\nBADFILE '" + baseName + ".bad'\n").getBytes());
+            out.write(("INFILE '" + dataResource.getFile().getName() + "' \"str '" + LINE_TERMINATOR + "'\"\n")
+                    .getBytes());
             out.write(("APPEND INTO TABLE " + targetTable.getName() + "\n").getBytes());
-            
-            if (useIncomingStageFile) {
-            	out.write("WHEN (01:06 = 'insert')\n".getBytes());
-            }
-            out.write("FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'\nTRAILING NULLCOLS\n".getBytes());
-            
+
+            out.write(("FIELDS TERMINATED BY '" + FIELD_TERMINATOR + "'\n").getBytes());
+            out.write("TRAILING NULLCOLS\n".getBytes());
+
             StringBuilder columns = new StringBuilder("(");
             int index = 0;
-            if (useIncomingStageFile) {
-            	columns.append("EVENT FILLER");
-            	index++;
-            }
             for (Column column : targetTable.getColumns()) {
                 if (index++ > 0) {
-                	columns.append(", ");
+                    columns.append(", ");
                 }
                 columns.append(column.getName());
                 int type = column.getMappedTypeCode();
                 if (type == Types.CLOB || type == Types.NCLOB) {
-                	columns.append(" CLOB");
+                    columns.append(" CLOB");
                 } else if (column.isOfTextType() && column.getSizeAsInt() > 0) {
-                	columns.append(" CHAR(" + column.getSize() + ")");
+                    columns.append(" CHAR(" + column.getSize() + ")");
                 } else if (type == Types.TIMESTAMP || type == Types.DATE) {
-                	columns.append(" TIMESTAMP 'YYYY-MM-DD HH24:MI:SS.FF9'");
+                    columns.append(" TIMESTAMP 'YYYY-MM-DD HH24:MI:SS.FF9'");
                 } else if (column.isTimestampWithTimezone()) {
-                	String scale = column.getScale() > 0 ? "(" + column.getScale() + ")" : "";
-                	String local = column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ ? "LOCAL " : "";
-                	columns.append(" TIMESTAMP" + scale + " WITH " + local + "TIME ZONE 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM'");
-                } else if (column.isOfBinaryType()) {
-                	columns.append(" ENCLOSED BY '" + BLOB_START + "' AND '" + BLOB_END + "'");
+                    String scale = column.getScale() > 0 ? "(" + column.getScale() + ")" : "";
+                    String local = column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ ? "LOCAL " : "";
+                    columns.append(
+                            " TIMESTAMP" + scale + " WITH " + local + "TIME ZONE 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM'");
                 }
             }
             columns.append(")\n");
@@ -210,7 +168,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
     public void end(Table table) {
         try {
@@ -218,17 +176,6 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         } finally {
             super.end(table);
         }
-    }
-    
-    @Override
-    public void end(Batch batch, boolean inError) {
-    	try {
-	    	if (!inError) {
-	    		flush();
-	    	}
-    	} finally {
-    		super.end(batch, inError);
-    	}
     }
 
     protected void bulkWrite(CsvData data) {
@@ -238,42 +185,28 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         case INSERT:
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             try {
+                OutputStream out = dataResource.getOutputStream();
                 String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                byte[] byteData = null;
-                if (hasBinaryType) {
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
-                    writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
-                    writer.setRecordDelimiter('\n');
-                    writer.setTextQualifier('"');
-                    writer.setUseTextQualifier(true);
-                    writer.setForceQualifier(false);
-                    Column[] columns = targetTable.getColumns();
-                    for (int i = 0; i < columns.length; i++) {
-                        if (columns[i].isOfBinaryType() && parsedData[i] != null) {
-                            if (i > 0) {
-                                out.write(',');
-                            }
-                            out.write(BLOB_START.getBytes());
-                            if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                                out.write(Hex.decodeHex(parsedData[i].toCharArray()));
-                            } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                Column[] columns = targetTable.getColumns();
+
+                for (int i = 0; i < parsedData.length; i++) {
+                    if (parsedData[i] != null) {
+                        if (hasBinaryType && columns[i].isOfBinaryType()) {
+                            if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
                                 out.write(Base64.decodeBase64(parsedData[i].getBytes()));
+                            } else if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+                                out.write(Hex.decodeHex(parsedData[i].toCharArray()));
                             }
-                            out.write(BLOB_END.getBytes());
                         } else {
-                            writer.write(parsedData[i], true);
-                            writer.flush();
+                            out.write(parsedData[i].getBytes());
                         }
                     }
-                    writer.write(END_OF_LINE);
-                    writer.close();
-                    byteData = out.toByteArray();
-                } else {
-                    String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"');
-                    byteData = formattedData.getBytes();
+                    if (i + 1 < parsedData.length) {
+                        out.write(FIELD_TERMINATOR.getBytes());
+                    }
                 }
-                dataResource.getOutputStream().write(byteData);
+
+                out.write(LINE_TERMINATOR.getBytes());
                 rows++;
             } catch (Exception ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
@@ -295,53 +228,47 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void flush() {
         if (rows > 0) {
-        	if (!useIncomingStageFile) { 
-        		dataResource.close();
-        	}
+            dataResource.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             try {
-            	File parentDir = controlResource.getFile().getParentFile();
-            	ArrayList<String> cmd = new ArrayList<String>();
-            	cmd.add(sqlLoaderCommand);
-            	cmd.add(dbUser + "/" + dbPassword + ezConnectString);
-            	cmd.add("control=" + controlResource.getFile().getName());
-            	cmd.addAll(sqlLoaderOptions);
-            	if (logger.isDebugEnabled()) {
-            		logger.debug("Working dir: {} ", parentDir.getAbsolutePath());
-            		logger.debug("Running: {} ", cmd.toString());
-            	}
-            	ProcessBuilder pb = new ProcessBuilder(cmd);
-            	pb.directory(parentDir);
-            	pb.redirectErrorStream(true);
-            	Process process = pb.start();
+                File parentDir = controlResource.getFile().getParentFile();
+                ArrayList<String> cmd = new ArrayList<String>();
+                cmd.add(sqlLoaderCommand);
+                cmd.add(dbUser + "/" + dbPassword + ezConnectString);
+                cmd.add("control=" + controlResource.getFile().getName());
+                cmd.addAll(sqlLoaderOptions);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Working dir: {} ", parentDir.getAbsolutePath());
+                    logger.debug("Running: {} ", cmd.toString());
+                }
+                ProcessBuilder pb = new ProcessBuilder(cmd);
+                pb.directory(parentDir);
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line = null;
                 while ((line = reader.readLine()) != null) {
-                	if (!line.equals("")) {
-                		logger.info("SQL*Loader: {}", line);
-                	}
+                    if (!line.equals("")) {
+                        logger.info("SQL*Loader: {}", line);
+                    }
                 }
 
                 int rc = process.waitFor();
                 if (rc == 2) {
-                	if (!useIncomingStageFile) {
-                		throw new RuntimeException("All or some rows were rejected.");
-                	}
+                    throw new RuntimeException("All or some rows were rejected.");
                 } else if (rc != 0) {
-                	throw new RuntimeException("Process builder returned " + rc);
+                    throw new RuntimeException("Process builder returned " + rc);
                 }
 
-                if (!useIncomingStageFile) {
-                	dataResource.delete();
-                }
+                dataResource.delete();
                 File absFile = controlResource.getFile().getAbsoluteFile();
                 new File(absFile.getPath().replace(".create", ".bad")).delete();
                 new File(absFile.getPath().replace(".create", ".log")).delete();
                 controlResource.delete();
             } catch (Exception e) {
-            	if (e instanceof RuntimeException) {
-            		throw (RuntimeException) e;
-            	}
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
                 throw new RuntimeException(e);
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -352,38 +279,39 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected String getEzConnectString(String dbUrl) {
-    	String ezConnect = null;
-		int index = dbUrl.indexOf("@//");
-		if (index != -1) {
-			ezConnect = dbUrl.substring(index);
-		} else {
-			index = dbUrl.toUpperCase().indexOf("HOST=");
-			if (index != -1) {
-				String database = StringUtils.defaultIfBlank(getTnsVariable(dbUrl, "SERVICE_NAME"),
-						getTnsVariable(dbUrl, "SID"));
-				ezConnect = "@//" + getTnsVariable(dbUrl, "HOST") + ":" + getTnsVariable(dbUrl, "PORT") + "/" + database;
-			} else {
-				index = dbUrl.indexOf("@");
-				if (index != -1) {
-					ezConnect = dbUrl.substring(index).replace("@", "@//");
-					index = ezConnect.lastIndexOf(":");
-					if (index != -1) {
-						ezConnect = ezConnect.substring(0, index) + "/" + ezConnect.substring(index + 1);
-					}				
-				}
-			}
-		}
-		return ezConnect;
+        String ezConnect = null;
+        int index = dbUrl.indexOf("@//");
+        if (index != -1) {
+            ezConnect = dbUrl.substring(index);
+        } else {
+            index = dbUrl.toUpperCase().indexOf("HOST=");
+            if (index != -1) {
+                String database = StringUtils.defaultIfBlank(getTnsVariable(dbUrl, "SERVICE_NAME"),
+                        getTnsVariable(dbUrl, "SID"));
+                ezConnect = "@//" + getTnsVariable(dbUrl, "HOST") + ":" + getTnsVariable(dbUrl, "PORT") + "/"
+                        + database;
+            } else {
+                index = dbUrl.indexOf("@");
+                if (index != -1) {
+                    ezConnect = dbUrl.substring(index).replace("@", "@//");
+                    index = ezConnect.lastIndexOf(":");
+                    if (index != -1) {
+                        ezConnect = ezConnect.substring(0, index) + "/" + ezConnect.substring(index + 1);
+                    }
+                }
+            }
+        }
+        return ezConnect;
     }
 
     protected String getTnsVariable(String dbUrl, String name) {
-    	String value = "";
-    	int startIndex = dbUrl.toUpperCase().indexOf(name + "=");
-    	if (startIndex != -1) {
-    		int endIndex = dbUrl.indexOf(")", startIndex);
-    		value = dbUrl.substring(startIndex + name.length() + 1, endIndex);
-    	}
-    	return value;
+        String value = "";
+        int startIndex = dbUrl.toUpperCase().indexOf(name + "=");
+        if (startIndex != -1) {
+            int endIndex = dbUrl.indexOf(")", startIndex);
+            value = dbUrl.substring(startIndex + name.length() + 1, endIndex);
+        }
+        return value;
     }
 
 }
