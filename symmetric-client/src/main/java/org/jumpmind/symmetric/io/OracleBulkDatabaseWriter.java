@@ -52,6 +52,12 @@ import org.slf4j.LoggerFactory;
 
 public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
+	protected final static String BLOB_START = "<symblob>";
+	
+	protected final static String BLOB_END = "</symblob>";
+	
+	protected final static String END_OF_LINE = "<symeol/>";
+
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected IStagingManager stagingManager;
@@ -159,8 +165,11 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
-            out.write(("INFILE '" + infile + "'\n").getBytes());
-            out.write(("BADFILE '" + baseName + ".bad'\n").getBytes());
+            out.write(("INFILE '" + infile + "'").getBytes());
+        	if (hasBinaryType) {
+        		out.write((" \"str '" + END_OF_LINE + "'\"").getBytes());	
+        	}
+            out.write(("\nBADFILE '" + baseName + ".bad'\n").getBytes());
             out.write(("APPEND INTO TABLE " + targetTable.getName() + "\n").getBytes());
             
             if (useIncomingStageFile) {
@@ -191,8 +200,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 	String local = column.getMappedTypeCode() == ColumnTypes.ORACLE_TIMESTAMPLTZ ? "LOCAL " : "";
                 	columns.append(" TIMESTAMP" + scale + " WITH " + local + "TIME ZONE 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM'");
                 } else if (column.isOfBinaryType()) {
-                	// TODO: use byte sequence instead?
-                	columns.append(" ENCLOSED BY '<sym_blob>' AND '</sym_blob>'");
+                	columns.append(" ENCLOSED BY '" + BLOB_START + "' AND '" + BLOB_END + "'");
                 }
             }
             columns.append(")\n");
@@ -246,19 +254,19 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                             if (i > 0) {
                                 out.write(',');
                             }
-                            out.write("<sym_blob>".getBytes());
+                            out.write(BLOB_START.getBytes());
                             if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
                                 out.write(Hex.decodeHex(parsedData[i].toCharArray()));
                             } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
                                 out.write(Base64.decodeBase64(parsedData[i].getBytes()));
                             }
-                            out.write("</sym_blob>".getBytes());
+                            out.write(BLOB_END.getBytes());
                         } else {
                             writer.write(parsedData[i], true);
                             writer.flush();
                         }
                     }
-                    writer.endRecord();
+                    writer.write(END_OF_LINE);
                     writer.close();
                     byteData = out.toByteArray();
                 } else {
@@ -317,11 +325,9 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 int rc = process.waitFor();
                 if (rc == 2) {
                 	if (!useIncomingStageFile) {
-                		System.exit(1);
                 		throw new RuntimeException("All or some rows were rejected.");
                 	}
                 } else if (rc != 0) {
-                	System.exit(1);
                 	throw new RuntimeException("Process builder returned " + rc);
                 }
 
