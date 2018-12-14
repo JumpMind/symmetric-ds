@@ -1182,10 +1182,6 @@ public class DataService extends AbstractService implements IDataService {
                             processInfo.setCurrentTableName(table.getName());
 
                             long rowCount = getDataCountForReload(table, targetNode, selectSql);
-                            try {
-                                Thread.sleep(1000);
-                            }
-                            catch (Exception e) {}
                             long transformMultiplier = getTransformMultiplier(table, triggerRouter);
                             
                             // calculate the number of batches needed for table.
