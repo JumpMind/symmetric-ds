@@ -116,7 +116,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            if (dataResource == null) {
+            if (dataResource == null && !isFallBackToDefault()) {
                 createStagingFile();
             }
             return true;
@@ -227,6 +227,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void flush() {
+        boolean inError = false;
         if (rows > 0) {
             dataResource.close();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -259,22 +260,38 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 } else if (rc != 0) {
                     throw new RuntimeException("Process builder returned " + rc);
                 }
-
-                dataResource.delete();
-                File absFile = controlResource.getFile().getAbsoluteFile();
-                new File(absFile.getPath().replace(".create", ".bad")).delete();
-                new File(absFile.getPath().replace(".create", ".log")).delete();
-                controlResource.delete();
             } catch (Exception e) {
+                inError = true;
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
                 }
                 throw new RuntimeException(e);
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-                dataResource = null;
+                cleanup(inError);
                 rows = 0;
             }
+        } else {
+            cleanup(inError);
+        }
+    }
+
+    protected void cleanup(boolean inError) {
+        if (dataResource != null) {
+            dataResource.delete();
+            dataResource = null;
+        }
+        if (controlResource != null) {
+            if (!inError) {
+                File absFile = controlResource.getFile().getAbsoluteFile();
+                try {
+                    new File(absFile.getPath().replace(".create", ".bad")).delete();
+                    new File(absFile.getPath().replace(".create", ".log")).delete();
+                } catch (Exception e) {
+                }
+                controlResource.delete();
+            }
+            controlResource = null;
         }
     }
 
