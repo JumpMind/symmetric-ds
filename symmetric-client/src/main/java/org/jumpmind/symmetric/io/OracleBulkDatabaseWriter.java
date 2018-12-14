@@ -93,7 +93,10 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 this.sqlLoaderOptions.add(option);
             }
         }
-
+        init();
+    }
+    
+    protected void init() {
         if (StringUtils.isBlank(this.sqlLoaderCommand)) {
             String oracleHome = System.getenv("ORACLE_HOME");
             if (StringUtils.isNotBlank(oracleHome)) {
@@ -133,11 +136,12 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
-            out.write(("INFILE '" + dataResource.getFile().getName() + "' \"str '" + LINE_TERMINATOR + "'\"\n")
-                    .getBytes());
+            out.write(getInfileControl().getBytes());
             out.write(("APPEND INTO TABLE " + targetTable.getName() + "\n").getBytes());
 
             out.write(("FIELDS TERMINATED BY '" + FIELD_TERMINATOR + "'\n").getBytes());
+            out.write(getLineTerminatedByControl().getBytes());
+            
             out.write("TRAILING NULLCOLS\n".getBytes());
 
             StringBuilder columns = new StringBuilder("(");
@@ -167,6 +171,14 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected String getInfileControl() {
+        return "INFILE '" + dataResource.getFile().getName() + "' \"str '" + LINE_TERMINATOR + "'\"\n";
+    }
+
+    protected String getLineTerminatedByControl() {
+        return "";
     }
 
     @Override
@@ -235,7 +247,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 File parentDir = controlResource.getFile().getParentFile();
                 ArrayList<String> cmd = new ArrayList<String>();
                 cmd.add(sqlLoaderCommand);
-                cmd.add(dbUser + "/" + dbPassword + ezConnectString);
+                cmd.add("userid=" + dbUser + "/" + dbPassword + ezConnectString);
                 cmd.add("control=" + controlResource.getFile().getName());
                 cmd.addAll(sqlLoaderOptions);
                 if (logger.isDebugEnabled()) {
@@ -250,7 +262,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (!line.equals("")) {
-                        logger.info("SQL*Loader: {}", line);
+                        logger.info("{}: {}", getLoaderName(), line);
                     }
                 }
 
@@ -329,6 +341,10 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             value = dbUrl.substring(startIndex + name.length() + 1, endIndex);
         }
         return value;
+    }
+    
+    protected String getLoaderName() {
+        return "SQL*Loader";
     }
 
 }

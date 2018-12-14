@@ -239,7 +239,10 @@ final public class ParameterConstants {
     public final static String DBDIALECT_TIBERO_USE_TRANSACTION_VIEW = "tibero.use.transaction.view";
     public final static String DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC = "tibero.template.precision";
     public final static String DBDIALECT_TIBERO_USE_HINTS = "tibero.use.hints";
-
+    public final static String DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_CMD = "tibero.bulk.load.tbloader.cmd";
+    public final static String DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_OPTIONS = "tibero.bulk.load.tbloader.options";
+    public final static String DBDIALECT_TIBERO_BULK_LOAD_EZCONNECT = "tibero.bulk.load.ezconnect";
+    
     public final static String DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS = "oracle.transaction.view.clock.sync.threshold.ms";
 
     public final static String DATA_ID_INCREMENT_BY = "data.id.increment.by";

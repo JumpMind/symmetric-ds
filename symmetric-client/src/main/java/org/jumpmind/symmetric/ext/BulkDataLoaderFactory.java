@@ -51,6 +51,9 @@ public class BulkDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngi
         } else if (DatabaseNamesConstants.ORACLE.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
             return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (DatabaseNamesConstants.TIBERO.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+            return new TiberoBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
+                    filters, errorHandlers, conflictSettings, resolvedData);
         } else if (DatabaseNamesConstants.POSTGRESQL.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
         		|| DatabaseNamesConstants.POSTGRESQL95.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
                 || DatabaseNamesConstants.GREENPLUM.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
