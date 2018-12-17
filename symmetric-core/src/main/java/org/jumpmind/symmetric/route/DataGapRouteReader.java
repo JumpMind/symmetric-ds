@@ -504,7 +504,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
         return dataQueue;
     }
 
-    class EOD extends Data {
+    static class EOD extends Data {
         private static final long serialVersionUID = 1L;
     }
 

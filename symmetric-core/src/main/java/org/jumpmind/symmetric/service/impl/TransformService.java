@@ -449,7 +449,7 @@ public class TransformService extends AbstractService implements ITransformServi
         }
     }
 
-    class TransformColumnMapper implements ISqlRowMapper<TransformColumn> {
+    static class TransformColumnMapper implements ISqlRowMapper<TransformColumn> {
         public TransformColumn mapRow(Row rs) {
             TransformColumn col = new TransformColumn();
             col.setTransformId(rs.getString("transform_id"));

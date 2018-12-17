@@ -117,7 +117,7 @@ public class OfflinePullService extends AbstractService implements IOfflinePullS
         }
     }
 
-    public class FileIncomingFilter implements FilenameFilter {
+    public static class FileIncomingFilter implements FilenameFilter {
         String endFilter;
 
         public FileIncomingFilter(String fileExtension) {

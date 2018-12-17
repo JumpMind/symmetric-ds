@@ -289,7 +289,7 @@ public class FtpDataWriter implements IDataWriter {
         }
     }
 
-    class FileInfo {
+    static class FileInfo {
         File outputFile;
         BufferedWriter outputFileWriter;
     }

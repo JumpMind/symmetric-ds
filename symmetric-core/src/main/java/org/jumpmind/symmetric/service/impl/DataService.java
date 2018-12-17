@@ -2403,7 +2403,7 @@ public class DataService extends AbstractService implements IDataService {
         return fixed;
     }
     
-    class TableRow {
+    static class TableRow {
         Table table;
         Row row;
         String whereSql;
@@ -2558,7 +2558,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
-    public class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+    public static class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
         private Map<String, Date> captureMap;
         
         public LastCaptureByChannelMapper(Map<String, Date> map) {

@@ -565,7 +565,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
         }
     }
 
-    class NodeBatchRange {
+    static class NodeBatchRange {
         private String nodeId;
 
         private long minBatchId;

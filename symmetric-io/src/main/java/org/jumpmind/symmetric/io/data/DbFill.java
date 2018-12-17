@@ -1220,7 +1220,7 @@ public class DbFill {
         return textColumnExpression;
     }
 
-    class ForeignKeyReference {
+    static class ForeignKeyReference {
         ForeignKey fk;
         Reference ref;
         

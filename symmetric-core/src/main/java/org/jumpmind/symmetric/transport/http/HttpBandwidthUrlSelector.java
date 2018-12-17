@@ -185,7 +185,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
         this.defaultMaxSampleDuration = defaultMaxSampleDuration;
     }
 
-    class SyncUrl {
+    static class SyncUrl {
         String url;
         int order;
         double kbps;
@@ -198,7 +198,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
 
     }
 
-    class ListOrderSorter implements Comparator<SyncUrl> {
+    static class ListOrderSorter implements Comparator<SyncUrl> {
         public int compare(SyncUrl o1, SyncUrl o2) {
             int thisVal = o1.order;
             int anotherVal = o2.order;
@@ -206,7 +206,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
         }
     }
 
-    class BestBandwidthSorter implements Comparator<SyncUrl> {
+    static class BestBandwidthSorter implements Comparator<SyncUrl> {
         public int compare(SyncUrl o1, SyncUrl o2) {
             double thisVal = o1.kbps;
             double anotherVal = o2.kbps;

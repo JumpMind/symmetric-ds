@@ -419,7 +419,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         activeNotificationCache = null;
     }
 
-    class MonitorRowMapper implements ISqlRowMapper<Monitor> {
+    static class MonitorRowMapper implements ISqlRowMapper<Monitor> {
         public Monitor mapRow(Row row) {
             Monitor m = new Monitor();
             m.setMonitorId(row.getString("monitor_id"));
@@ -439,7 +439,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
     }
     
-    class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {        
+    static class MonitorEventRowMapper implements ISqlRowMapper<MonitorEvent> {
         public MonitorEvent mapRow(Row row) {
             MonitorEvent m = new MonitorEvent();
             m.setMonitorId(row.getString("monitor_id"));
@@ -459,7 +459,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         }
     }
     
-    class NotificationRowMapper implements ISqlRowMapper<Notification> {
+    static class NotificationRowMapper implements ISqlRowMapper<Notification> {
         public Notification mapRow(Row row) {
             Notification n = new Notification();
             n.setNotificationId(row.getString("notification_id"));

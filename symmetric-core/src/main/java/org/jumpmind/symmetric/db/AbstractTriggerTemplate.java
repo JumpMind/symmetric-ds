@@ -1105,7 +1105,7 @@ abstract public class AbstractTriggerTemplate {
         this.imageColumnTemplate = imageColumnTemplate;
     }
 
-    protected class ColumnString {
+    protected static class ColumnString {
 
         String columnString;
         boolean isBlobClob = false;

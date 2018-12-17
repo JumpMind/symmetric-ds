@@ -266,7 +266,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         return map;
     }
 
-    class CachedRange {
+    static class CachedRange {
         long currentValue;
         long endValue;
         
@@ -314,7 +314,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         abstract public T execute(ISqlTransaction transaction);
     }
 
-    class SequenceRowMapper implements ISqlRowMapper<Sequence> {
+    static class SequenceRowMapper implements ISqlRowMapper<Sequence> {
         public Sequence mapRow(Row rs) {
             Sequence sequence = new Sequence();
             sequence.setCreateTime(rs.getDateTime("create_time"));
