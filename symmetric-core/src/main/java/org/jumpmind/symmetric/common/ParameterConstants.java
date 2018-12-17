@@ -241,7 +241,7 @@ final public class ParameterConstants {
     public final static String DBDIALECT_TIBERO_USE_HINTS = "tibero.use.hints";
     public final static String DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_CMD = "tibero.bulk.load.tbloader.cmd";
     public final static String DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_OPTIONS = "tibero.bulk.load.tbloader.options";
-    public final static String DBDIALECT_TIBERO_BULK_LOAD_EZCONNECT = "tibero.bulk.load.ezconnect";
+    public final static String DBDIALECT_TIBERO_BULK_LOAD_DBNAME = "tibero.bulk.load.dbname";
     
     public final static String DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS = "oracle.transaction.view.clock.sync.threshold.ms";
 

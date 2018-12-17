@@ -29,7 +29,7 @@ import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.OracleBulkDatabaseWriter;
+import org.jumpmind.symmetric.io.TiberoBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -71,11 +71,11 @@ public class TiberoBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
         String tbLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_CMD);
         String tbLoaderOptions = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_TBLOADER_OPTIONS);
-        String ezConnectString = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_EZCONNECT);
+        String dbName = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_DBNAME);
 
-        return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+        return new TiberoBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 engine.getStagingManager(), engine.getTablePrefix(), tbLoaderCommand, tbLoaderOptions,
-                dbUser, dbPassword, dbUrl, ezConnectString,
+                dbUser, dbPassword, dbUrl, dbName,
                 buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }
 

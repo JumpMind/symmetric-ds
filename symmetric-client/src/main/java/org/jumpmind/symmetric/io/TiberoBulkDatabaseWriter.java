@@ -26,28 +26,26 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-
     public TiberoBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String tbLoaderCommand, String tbLoaderOptions,
-            String dbUser, String dbPassword, String dbUrl, String ezConnectString, DatabaseWriterSettings settings) {
+            String dbUser, String dbPassword, String dbUrl, String dbName, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, stagingManager, tablePrefix, tbLoaderCommand, tbLoaderOptions,
-                dbUser, dbPassword, dbUrl, ezConnectString, settings);
+                dbUser, dbPassword, dbUrl, dbName, settings);
+        logger = LoggerFactory.getLogger(getClass());
     }
 
     @Override
     protected void init() {
         if (StringUtils.isBlank(this.sqlLoaderCommand)) {
-            String oracleHome = System.getenv("TB_HOME");
-            if (StringUtils.isNotBlank(oracleHome)) {
-                this.sqlLoaderCommand = oracleHome + File.separator + "bin" + File.separator + "tbldr";
+            String tiberoHome = System.getenv("TB_HOME");
+            if (StringUtils.isNotBlank(tiberoHome)) {
+                this.sqlLoaderCommand = tiberoHome + File.separator + "client" + File.separator + "bin" + File.separator + "tbloader";
             } else {
-                this.sqlLoaderCommand = "tbldr";
+                this.sqlLoaderCommand = "tbloader";
             }
         }
     }
@@ -59,11 +57,22 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
 
     @Override
     protected String getLineTerminatedByControl() {
-        return "LINES TERMINATED BY '" + LINE_TERMINATOR + "'";
+        return "LINES TERMINATED BY '" + LINE_TERMINATOR + "'\n";
     }
 
+    @Override
     protected String getLoaderName() {
         return "TBLoader";
     }
 
+    @Override
+    protected String getConnectString(String dbUrl) {
+        String connectStr = "";
+        int index = dbUrl.lastIndexOf(":");
+        if (index != -1) {
+            connectStr = "@" + dbUrl.substring(index + 1);
+        }
+        return connectStr;
+    }
+    
 }

@@ -50,7 +50,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected final static String LINE_TERMINATOR = "|>";
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected Logger logger;
 
     protected IStagingManager stagingManager;
 
@@ -80,12 +80,13 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
             String dbUser, String dbPassword, String dbUrl, String ezConnectString, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
+        logger = LoggerFactory.getLogger(getClass());
         this.stagingManager = stagingManager;
         this.sqlLoaderCommand = sqlLoaderCommand;
         this.dbUser = dbUser;
         this.dbPassword = dbPassword;
         this.dbUrl = dbUrl;
-        this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getEzConnectString(dbUrl));
+        this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getConnectString(dbUrl));
 
         this.sqlLoaderOptions = new ArrayList<String>();
         if (StringUtils.isNotBlank(sqlLoaderOptions)) {
@@ -307,7 +308,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
     }
 
-    protected String getEzConnectString(String dbUrl) {
+    protected String getConnectString(String dbUrl) {
         String ezConnect = null;
         int index = dbUrl.indexOf("@//");
         if (index != -1) {
