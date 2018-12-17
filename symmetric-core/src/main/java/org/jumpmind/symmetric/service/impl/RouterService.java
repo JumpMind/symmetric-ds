@@ -607,7 +607,9 @@ public class RouterService extends AbstractService implements IRouterService {
                             String currentChannelId = triggerRouter2.getTrigger().getChannelId();
                             if (anotherChannelTableName.equals(currentTableName) && currentChannelId.equals(channelId)
                                     && triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId()
-                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getSourceNodeGroupId())) {
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getSourceNodeGroupId()) &&
+                                            triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getTargetNodeGroupId())) {
                                 testableTriggerRouters.add(triggerRouter);
                             }
                         }
