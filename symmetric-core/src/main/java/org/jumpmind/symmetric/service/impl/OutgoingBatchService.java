@@ -726,7 +726,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return mapper.getResults();
     }
 
-    private class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
+    private static class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
         Map<String, Map<String, LoadStatusSummary>> results = new TreeMap<String, Map<String, LoadStatusSummary>>(Collections.reverseOrder());
         String tablePrefix;
 
