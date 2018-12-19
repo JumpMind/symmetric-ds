@@ -30,4 +30,5 @@ public interface IDatabaseWriterConflictResolver extends IExtensionPoint {
     
     public boolean isIgnoreRow(AbstractDatabaseWriter writer, CsvData data);
 
+    public void attemptToResolve(ResolvedData resolvedData, CsvData data, AbstractDatabaseWriter writer, Conflict conflict);
 }

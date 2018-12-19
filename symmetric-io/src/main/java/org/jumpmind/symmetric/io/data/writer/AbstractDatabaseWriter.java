@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,10 +231,20 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     rollback();
                     throw ex;
                 } catch (RuntimeException ex) {
+                    DatabaseWriterSettings writerSettings = getWriterSettings();
+                    Statistics batchStatistics = getStatistics().get(getBatch());
+                    long statementCount = batchStatistics.get(DataWriterStatisticConstants.ROWCOUNT);
+                    long lineNumber = batchStatistics.get(DataWriterStatisticConstants.LINENUMBER);
+                    ResolvedData resolvedData = getWriterSettings().getResolvedData(statementCount);
+
                     if (conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                         statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
+                    } else if (conflictResolver != null && resolvedData != null) {
+                        Conflict conflict = new Conflict();
+                        conflict.setPingBack(PingBack.REMAINING_ROWS);
+                        conflictResolver.attemptToResolve(resolvedData, data, this, conflict);
                     } else {
-                        if (filterError(data, ex)) {
+                       if (filterError(data, ex)) {
                             if (!(ex instanceof SqlException)) {
                                 /*
                                  * SQL exceptions should have already been logged
