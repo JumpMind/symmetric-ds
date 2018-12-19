@@ -138,7 +138,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
             out.write(getInfileControl().getBytes());
-            out.write(("APPEND INTO TABLE " + targetTable.getName() + "\n").getBytes());
+            out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes());
 
             out.write(("FIELDS TERMINATED BY '" + FIELD_TERMINATOR + "'\n").getBytes());
             out.write(getLineTerminatedByControl().getBytes());
