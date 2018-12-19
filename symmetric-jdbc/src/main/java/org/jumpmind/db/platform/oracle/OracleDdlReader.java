@@ -481,7 +481,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     }
     
     protected Set<String> readPkIndecies(Connection connection, String schema, String tableName) throws SQLException {
-        String QUERY = "SELECT INDEX_NAME FROM ALL_CONSTRAINTS c WHERE c.TABLE_NAME = ? AND CONSTRAINT_TYPE = 'P'";
+        String QUERY = "SELECT CONSTRAINT_NAME FROM ALL_CONSTRAINTS c WHERE c.TABLE_NAME = ? AND CONSTRAINT_TYPE = 'P'";
         if (schema != null) {
             QUERY += " AND c.OWNER = ?";
         }
