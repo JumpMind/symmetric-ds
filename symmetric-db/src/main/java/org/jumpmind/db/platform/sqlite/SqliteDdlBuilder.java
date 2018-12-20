@@ -204,33 +204,4 @@ public class SqliteDdlBuilder extends AbstractDdlBuilder {
         ddl.append(getFullyQualifiedTableNameShorten(tempTable));
         printEndOfStatement(ddl);
     }
-
-    @Override
-    protected void processTableStructureChanges(Database currentModel, Database desiredModel, Collection<TableChange> changes, StringBuilder ddl) {
-        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = changeIt.next();
-
-            if (change instanceof AddColumnChange) {
-                AddColumnChange addColumnChange = (AddColumnChange) change;
-                processChange(currentModel, desiredModel, addColumnChange, ddl);
-                changeIt.remove();
-            }
-        }
-
-        super.processTableStructureChanges(currentModel, desiredModel, changes, ddl);
-    }
-
-    /*
-     * Processes the addition of a column to a table.
-     */
-    protected void processChange(Database currentModel, Database desiredModel,
-                                 AddColumnChange change, StringBuilder ddl) {
-        ddl.append("ALTER TABLE ");
-        ddl.append(getFullyQualifiedTableNameShorten(change.getChangedTable()));
-        printIndent(ddl);
-        ddl.append("ADD ");
-        writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
-        printEndOfStatement(ddl);
-        change.apply(currentModel, delimitedIdentifierModeOn);
-    }
 }
