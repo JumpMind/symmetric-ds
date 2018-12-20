@@ -2671,7 +2671,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+                    if (this.routingContext.getChannel().isReloadFlag() && symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
                         this.isLobFirstPass = true;
                     }
 
@@ -2741,7 +2741,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getChannelId());
             
-            if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+            if (channel.isReloadFlag() && symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
                 channel = new Channel();
                 channel.setContainsBigLob(!this.isLobFirstPass);
                 selectSql = symmetricDialect.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
