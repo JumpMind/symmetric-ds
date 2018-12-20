@@ -517,11 +517,17 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("dataHasChangedCondition", symmetricDialect
                 .preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),
                 ddl);
+        Trigger clonedTrigger = new Trigger();
+        clonedTrigger.setUseCaptureLobs(true);
+        ddl = FormatUtils.replace("dataHasChangedConditionClobAlways", symmetricDialect
+                .preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(clonedTrigger)),
+                ddl);
         ddl = FormatUtils.replace("sourceNodeExpression",
                 symmetricDialect.getSourceNodeExpression(), ddl);
 
         ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long",
                 ddl);
+        ddl = FormatUtils.replace("oracleLobTypeClobAlways", "clob", ddl);
 
         String syncTriggersExpression = symmetricDialect.getSyncTriggersExpression();
         ddl = FormatUtils.replace("syncOnIncomingBatchCondition",
@@ -533,6 +539,18 @@ abstract public class AbstractTriggerTemplate {
         ColumnString columnString = buildColumnsString(ORIG_TABLE_ALIAS, newTriggerValue,
                 newColumnPrefix, table, orderedColumns, dml, false, channel, trigger);
         ddl = FormatUtils.replace("columns", columnString.toString(), ddl);
+        
+        Channel clonedChannel = new Channel();
+        clonedChannel.setContainsBigLob(true);
+        ColumnString columnClobAlways = buildColumnsString(ORIG_TABLE_ALIAS, newTriggerValue,
+                newColumnPrefix, table, orderedColumns, dml, false, clonedChannel, trigger);
+        String columnClobAlwaysString = FormatUtils.replace("oracleToClob", toClobExpression(table), columnClobAlways.toString());
+        ddl = FormatUtils.replace("columnsClobAlways", columnClobAlwaysString, ddl);
+        ColumnString oldColumnsClobAlways = buildColumnsString(ORIG_TABLE_ALIAS,
+                oldTriggerValue, oldColumnPrefix, table, orderedColumns, dml, true, clonedChannel, trigger);
+        String oldColumnsClobAlwaysString = FormatUtils.replace("oracleToClob", toClobExpression(table), oldColumnsClobAlways.toString());
+        ddl = FormatUtils.replace("oldColumnsClobAlways",
+                trigger.isUseCaptureOldData() ? oldColumnsClobAlwaysString : "null", ddl);
 
         ddl = replaceDefaultSchemaAndCatalog(ddl);
 
@@ -610,6 +628,8 @@ abstract public class AbstractTriggerTemplate {
 
         ddl = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? toClobExpression(table) : "", ddl);
+
+        ddl = FormatUtils.replace("oracleToClobAlways", toClobExpression(table), ddl);
 
         switch (dml) {
             case DELETE:
