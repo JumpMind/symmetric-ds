@@ -40,6 +40,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -53,6 +54,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected static final String PREFIX_TRIGGER = "TRG";
 
     protected static final String PREFIX_SEQUENCE = "SEQ";
+    
+    protected static final String ROWID_TYPE = "ROWID";
 
     public OracleDdlBuilder() {
         super(DatabaseNamesConstants.ORACLE);
@@ -530,5 +533,17 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
+    
+    
+    @Override
+    protected String getSqlType(Column column) {
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
+        if (platformColumn != null && platformColumn.getType() != null 
+                && platformColumn.getType().equals(ROWID_TYPE)) {
+            return ROWID_TYPE;
+        } else {
+            return super.getSqlType(column);
+        }
+    }    
 
 }

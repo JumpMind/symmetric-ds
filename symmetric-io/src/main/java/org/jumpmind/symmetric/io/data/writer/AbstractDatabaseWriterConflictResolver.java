@@ -227,7 +227,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
         }
     }
 
-    protected void attemptToResolve(ResolvedData resolvedData, CsvData data, AbstractDatabaseWriter writer, Conflict conflict) {
+    public void attemptToResolve(ResolvedData resolvedData, CsvData data, AbstractDatabaseWriter writer, Conflict conflict) {
         if (resolvedData != null) {
             if (!resolvedData.isIgnoreRow()) {
                 data.putCsvData(CsvData.ROW_DATA, resolvedData.getResolvedData());
