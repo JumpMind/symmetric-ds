@@ -36,7 +36,6 @@ import org.jumpmind.symmetric.model.BatchAckResult;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
-import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.statistic.RouterStats;
@@ -175,6 +174,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         engine.getStatisticManager().incrementDataLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getLoadRowCount());
                         engine.getStatisticManager().incrementDataBytesLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());
                     }
+                    purgeLoadBatchesFromStaging(outgoingBatch);
                     Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
                     if (channel != null && channel.isFileSyncFlag()){
                         /* Acknowledge the file_sync in case the file needs deleted. */
@@ -189,6 +189,20 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
             }
         }
         return result;
+    }
+
+    protected void purgeLoadBatchesFromStaging(OutgoingBatch outgoingBatch) {
+        long threshold = parameterService.getLong(ParameterConstants.INITIAL_LOAD_PURGE_STAGE_IMMEDIATE_THRESHOLD_ROWS);
+        if (threshold >= 0 && outgoingBatch.isLoadFlag() && !outgoingBatch.isCommonFlag()) {
+            long count = engine.getDataService().getTableReloadRequestRowCount(outgoingBatch.getLoadId());
+            if (count > threshold) {
+                IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
+                        outgoingBatch.getStagedLocation(), outgoingBatch.getBatchId());
+                if (resource != null) {
+                    resource.delete();
+                }
+            }
+        }
     }
 
 	public List<BatchAckResult> ack(List<BatchAck> batches) {

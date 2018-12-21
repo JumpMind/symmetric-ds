@@ -56,7 +56,9 @@ public interface IDataService {
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
         
     public List<TableReloadRequest> getTableReloadRequestsByLoadId();
-    
+
+    public long getTableReloadRequestRowCount(long loadId);
+
     public void updateTableReloadRequestsCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount);
     
     public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transcation, long loadId, int batchCount, long rowsCount);

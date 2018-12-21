@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.route;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +43,6 @@ import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.TableReloadRequestKey;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -54,9 +52,6 @@ import org.jumpmind.symmetric.service.ITriggerRouterService;
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
 
     public static final String ROUTER_TYPE = "configurationChanged";
-
-    final String CTX_KEY_TABLE_RELOAD_NEEDED = "Reload.Table."
-            + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
             + ConfigurationChangedDataRouter.class.getSimpleName() + hashCode();
@@ -117,7 +112,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         this.engine = engine;
     }
 
-    @SuppressWarnings("unchecked")
     public Set<String> routeToNodes(SimpleRouterContext routingContext, DataMetaData dataMetaData,
             Set<Node> possibleTargetNodes, boolean initialLoad, boolean initialLoadSelectUsed,
             TriggerRouter triggerRouter) {
@@ -163,31 +157,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         dataMetaData, possibleTargetNodes, initialLoad);
             } else if (tableMatches(dataMetaData, TableConstants.SYM_TABLE_RELOAD_REQUEST)) {
                 String sourceNodeId = columnValues.get("SOURCE_NODE_ID");
-                String reloadEnabled = columnValues.get("RELOAD_ENABLED");
-                if (me.getNodeId().equals(sourceNodeId)) {
-                    if ("1".equals(reloadEnabled)) {
-                        List<TableReloadRequestKey> list = (List<TableReloadRequestKey>) routingContext
-                                .get(CTX_KEY_TABLE_RELOAD_NEEDED);
-                        if (list == null) {
-                            list = new ArrayList<TableReloadRequestKey>();
-                            routingContext.put(CTX_KEY_TABLE_RELOAD_NEEDED, list);
-                        }
-
-                        String targetNodeId = columnValues.get("TARGET_NODE_ID");
-                        String routerId = columnValues.get("ROUTER_ID");
-                        String triggerId = columnValues.get("TRIGGER_ID");
-
-                        list.add(new TableReloadRequestKey(targetNodeId, sourceNodeId, triggerId,
-                                routerId, dataMetaData.getData().getSourceNodeId()));
-                    }
-                } else {
-                    for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                        if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
-                                .getDeploymentType())
-                                && !nodeThatMayBeRoutedTo.requires13Compatiblity()
-                                && nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId)) {
-                            nodeIds.add(sourceNodeId);
-                        }
+                String targetNodeId = columnValues.get("TARGET_NODE_ID");
+                for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
+                    if (!Constants.DEPLOYMENT_TYPE_REST.equals(nodeThatMayBeRoutedTo
+                            .getDeploymentType())
+                            && !nodeThatMayBeRoutedTo.requires13Compatiblity()
+                            && (nodeThatMayBeRoutedTo.getNodeId().equals(sourceNodeId) || 
+                                    nodeThatMayBeRoutedTo.getNodeId().equals(targetNodeId))) {
+                        nodeIds.add(nodeThatMayBeRoutedTo.getNodeId());
                     }
                 }
             } else {

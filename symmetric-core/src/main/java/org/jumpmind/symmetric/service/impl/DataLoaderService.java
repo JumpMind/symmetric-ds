@@ -41,8 +41,10 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -328,6 +330,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
                 
                 updateBatchToSendCount(remote, transport);
+                purgeLoadBatchesFromStaging(list);
                 
             } catch (RuntimeException e) {
                 transferInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
@@ -407,6 +410,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 transportManager.writeAcknowledgement(out, sourceNode, batchList, local,
                         security != null ? security.getNodePassword() : null);                
                 transferInfo.setStatus(ProcessInfo.ProcessStatus.OK);
+                purgeLoadBatchesFromStaging(batchList);
             } catch (Exception e) {
                 transferInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 if (e instanceof RuntimeException) {
@@ -447,6 +451,35 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     processInfo.getLastStatusChangeTime().getTime(), 
                     okDataCount);
         } 
+    }
+
+    protected void purgeLoadBatchesFromStaging(List<IncomingBatch> batchList) {
+        long threshold = parameterService.getLong(ParameterConstants.INITIAL_LOAD_PURGE_STAGE_IMMEDIATE_THRESHOLD_ROWS);
+        if (threshold >= 0 && batchList != null && batchList.size() > 0) {
+            Set<Long> loadIds = new HashSet<Long>();
+            for (IncomingBatch batch : batchList) {
+                if (batch.isLoadFlag() && !batch.isCommonFlag()) {
+                    loadIds.add(batch.getLoadId());
+                }
+            }
+            if (loadIds.size() > 0) {
+                long count = 0;
+                for (long loadId : loadIds) {
+                    count += engine.getDataService().getTableReloadRequestRowCount(loadId);
+                }
+                if (count > threshold) {
+                    for (IncomingBatch batch : batchList) {
+                        if (batch.isLoadFlag() && !batch.isCommonFlag()) {
+                            IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_INCOMING,
+                                    batch.getStagedLocation(), batch.getBatchId());
+                            if (resource != null) {
+                                resource.delete();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public List<IncomingBatch> loadDataFromOfflineTransport(Node remote, RemoteNodeStatus status, IIncomingTransport transport) throws IOException {

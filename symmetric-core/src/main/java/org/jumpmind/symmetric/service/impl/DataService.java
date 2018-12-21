@@ -367,7 +367,11 @@ public class DataService extends AbstractService implements IDataService {
         }
         return collapsedRequests;
     }
-    
+
+    public long getTableReloadRequestRowCount(long loadId) {
+        return sqlTemplateDirty.queryForLong(getSql("countTableReloadRequestRowsByLoadId"), loadId);
+    }
+
     public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount) {
             transaction.prepareAndExecute(getSql("updateTableReloadRequestLoadedCounts"),
                     new Object[] { batchCount, rowsCount, new Date(), loadId },
@@ -744,12 +748,10 @@ public class DataService extends AbstractService implements IDataService {
                         engine.getStatisticManager().incrementNodesLoaded(1);
 
                         if (reloadRequests != null && reloadRequests.size() > 0) {
-                            for (TableReloadRequest request : reloadRequests) {
-                                int rowsAffected = transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), new Date(), batchCount, loadId); 
-                                if (rowsAffected == 0) {
-                                    throw new SymmetricException(String.format("Failed to update a table_reload_request as processed for loadId '%s' ", 
-                                            loadId));
-                                }
+                            int rowsAffected = transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), new Date(), batchCount, loadId); 
+                            if (rowsAffected == 0) {
+                                throw new SymmetricException(String.format("Failed to update a table_reload_request as processed for loadId '%s' ", 
+                                        loadId));
                             }
                             log.info("Table reload request(s) for load id " + loadId + " have been processed.");
                         }
