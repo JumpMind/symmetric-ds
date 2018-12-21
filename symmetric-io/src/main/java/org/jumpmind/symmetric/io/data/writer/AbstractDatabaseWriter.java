@@ -112,21 +112,20 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
             throw new NullPointerException("Cannot load a null table");
         }
         this.lastData = null;
-        this.sourceTable = table;	
+        this.sourceTable = table;
         try {
-        		this.targetTable = lookupTableAtTarget(this.sourceTable);
-        }
-        catch (SqlException sqle) {
-        		log.warn("Unable to read target table." ,sqle.getMessage());
+            this.targetTable = lookupTableAtTarget(this.sourceTable);
+        } catch (SqlException sqle) {
+            log.warn("Unable to read target table.", sqle.getMessage());
         }
         if (this.targetTable == null && this instanceof DynamicDefaultDatabaseWriter) {
-    			if (((DynamicDefaultDatabaseWriter)this).isLoadOnly()) {
-    				this.targetTable = table;
-    			}
-    		}
-    
+            if (((DynamicDefaultDatabaseWriter) this).isLoadOnly()) {
+                this.targetTable = table;
+            }
+        }
+
         this.sourceTable.copyColumnTypesFrom(this.targetTable);
-        if (this.targetTable==null && hasFilterThatHandlesMissingTable(table)) {
+        if (this.targetTable == null && hasFilterThatHandlesMissingTable(table)) {
             this.targetTable = table;
         }
 
@@ -231,10 +230,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     rollback();
                     throw ex;
                 } catch (RuntimeException ex) {
-                    DatabaseWriterSettings writerSettings = getWriterSettings();
                     Statistics batchStatistics = getStatistics().get(getBatch());
                     long statementCount = batchStatistics.get(DataWriterStatisticConstants.ROWCOUNT);
-                    long lineNumber = batchStatistics.get(DataWriterStatisticConstants.LINENUMBER);
                     ResolvedData resolvedData = getWriterSettings().getResolvedData(statementCount);
 
                     if (conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
@@ -580,6 +577,5 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     public DatabaseWriterSettings getWriterSettings() {
         return writerSettings;
     }
-    
 
 }
