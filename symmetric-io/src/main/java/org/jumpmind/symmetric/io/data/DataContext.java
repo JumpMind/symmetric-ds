@@ -26,7 +26,6 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
-import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.NestedDataWriter;
 import org.jumpmind.util.Context;
 
@@ -48,11 +47,11 @@ public class DataContext extends Context {
     
     protected Table lastParsedTable = null;
 
-    public DataContext(Batch batch) {
-        this.batch = batch;
+    public DataContext() {
     }
 
-    public DataContext() {
+    public DataContext(Batch batch) {
+        this.batch = batch;
     }
 
     public DataContext(IDataReader reader) {
@@ -135,12 +134,12 @@ public class DataContext extends Context {
     public ISqlTransaction findSymmetricTransaction(String tablePrefix) {
         ISqlTransaction transaction = null;
         if (writer instanceof NestedDataWriter) {
-            DefaultDatabaseWriter dbWriter = ((NestedDataWriter)writer).getNestedWriterOfType(DefaultDatabaseWriter.class);
+            DefaultDatabaseWriter dbWriter = ((NestedDataWriter) writer).getNestedWriterOfType(DefaultDatabaseWriter.class);
             if (dbWriter != null) {
                 transaction = dbWriter.getTransaction(tablePrefix);
             }
         } else if (writer instanceof DefaultDatabaseWriter) {
-        		transaction = ((DefaultDatabaseWriter) writer).getTransaction(tablePrefix);
+            transaction = ((DefaultDatabaseWriter) writer).getTransaction(tablePrefix);
         }
         return transaction;
     }
