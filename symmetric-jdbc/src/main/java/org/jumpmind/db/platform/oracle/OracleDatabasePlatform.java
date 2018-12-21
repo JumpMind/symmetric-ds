@@ -144,7 +144,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public long getEstimatedRowCount(Table table) {
-        return getSqlTemplateDirty().queryForLong("select num_rows from all_tables where table_name = ? and owner = ?",
+        return getSqlTemplateDirty().queryForLong("select nvl(num_rows, -1) from all_tables where table_name = ? and owner = ?",
                 table.getName(), table.getSchema());
     }
 

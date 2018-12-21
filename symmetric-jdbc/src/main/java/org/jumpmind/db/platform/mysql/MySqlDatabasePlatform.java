@@ -160,7 +160,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public long getEstimatedRowCount(Table table) {        
-        return getSqlTemplateDirty().queryForLong("select table_rows from information_schema.tables where table_name = ? and table_schema = ?",
+        return getSqlTemplateDirty().queryForLong("select ifnull(table_rows,-1) from information_schema.tables where table_name = ? and table_schema = ?",
                 table.getName(), table.getCatalog());
     }
 

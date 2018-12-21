@@ -1234,11 +1234,13 @@ public class DataService extends AbstractService implements IDataService {
     }
     
     protected long getDataCountForReload(Table table, Node targetNode, String selectSql) {
-        long rowCount = 0;
+        long rowCount = -1;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_ESTIMATED_COUNTS) &&
                 (selectSql == null || StringUtils.isBlank(selectSql) || selectSql.replace(" ", "").equals("1=1"))) {
             rowCount = platform.getEstimatedRowCount(table);
-        } else {
+        } 
+        
+        if (rowCount < 0) {
             DatabaseInfo dbInfo = platform.getDatabaseInfo();
             String quote = dbInfo.getDelimiterToken();
             String catalogSeparator = dbInfo.getCatalogSeparator();
