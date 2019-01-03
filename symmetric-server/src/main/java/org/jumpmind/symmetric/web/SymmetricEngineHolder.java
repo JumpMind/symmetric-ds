@@ -82,6 +82,8 @@ public class SymmetricEngineHolder {
 
     private Set<EngineStarter> enginesStarting = new TreeSet<SymmetricEngineHolder.EngineStarter>();
 
+    private Set<String> enginesStartingNames = new TreeSet<String>();
+
     private Map<String, List<String>> enginesFailed = new HashMap<String, List<String>>();
     
     private boolean staticEnginesMode = false;
@@ -152,6 +154,10 @@ public class SymmetricEngineHolder {
         return enginesStarting.size();
     }
     
+    public Set<String> getEnginesStartingNames() {
+        return enginesStartingNames;
+    }
+
     public Map<String, List<String>> getFailedEngines() {
         return enginesFailed;
     }
@@ -595,6 +601,7 @@ public class SymmetricEngineHolder {
         @Override
         public void run() {
             engine = create(propertiesFile); 
+            enginesStartingNames.add(engine.getEngineName());
             if (engine != null && autoStart &&
                     engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
                 boolean started = engine.start();
@@ -607,6 +614,7 @@ public class SymmetricEngineHolder {
                 }
             }
             enginesStarting.remove(this);
+            enginesStartingNames.remove(engine.getEngineName());
         }
         
         public ISymmetricEngine getEngine() {
