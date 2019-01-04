@@ -1,12 +1,17 @@
 package org.jumpmind.db.platform.kafka;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.TableRow;
 
 public class KafkaDdlReader implements IDdlReader {
 	protected KafkaPlatform platform;
@@ -59,5 +64,20 @@ public class KafkaDdlReader implements IDdlReader {
 	public Trigger getTriggerFor(Table table, String name) {
 		return null;
 	}
+
+    @Override
+    public Collection<ForeignKey> getExportedKeys(Table table) {
+        return null;
+    }
+    
+    @Override
+    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited) {
+        return null;
+    }
+    
+    @Override
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+        return null;
+    }
 
 }

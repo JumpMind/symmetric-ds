@@ -54,7 +54,9 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         super(dataSource, settings, lobHandler, databaseInfo);
         this.nativeJdbcExtractor = nativeJdbcExtractor;
         primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
+        uniqueKeyViolationNameRegex = new String[] {"unique index '(.*)'"};
         foreignKeyViolationCodes = new int[] {546};
+        foreignKeyChildExistsViolationCodes = new int[] {547};
         Connection c = null;
         try {
             c = dataSource.getConnection();

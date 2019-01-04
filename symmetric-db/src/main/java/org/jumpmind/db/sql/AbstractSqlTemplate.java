@@ -303,4 +303,13 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         }
     }
 
+    @Override
+    public String getUniqueKeyViolationIndexName(Throwable ex) {
+        return null;
+    }
+
+    @Override
+    public boolean isForeignKeyChildExistsViolation(Throwable ex) {
+        return false;
+    }
 }

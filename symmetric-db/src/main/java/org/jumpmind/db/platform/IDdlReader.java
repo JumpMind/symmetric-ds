@@ -21,11 +21,16 @@
 package org.jumpmind.db.platform;
 
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.TableRow;
 
 public interface IDdlReader {
 
@@ -47,4 +52,10 @@ public interface IDdlReader {
 
 	public Trigger getTriggerFor(Table table, String name);
     
+	public Collection<ForeignKey> getExportedKeys(Table table);
+	
+	public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited);
+	
+	public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited);
+	
 }

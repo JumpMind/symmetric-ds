@@ -33,7 +33,9 @@ public class OracleJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);        
         primaryKeyViolationCodes = new int[] {1};
+        uniqueKeyViolationNameRegex = new String[] { "unique constraint \\(.*\\.(.*)\\) violated" };
         foreignKeyViolationCodes = new int[] {2291};
+        foreignKeyChildExistsViolationCodes = new int[] {2292};
     }
     
     @Override

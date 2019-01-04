@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -206,16 +207,17 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.INSERTCOUNT), count);
                 if (count > 0) {
-                        return LoadStatus.SUCCESS;
+                    return LoadStatus.SUCCESS;
                 } else {
                     context.put(CUR_DATA,getCurData(getTransaction()));
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
                 if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    if (!getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                    if (!getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() || isUniqueIndexViolation(ex, targetTable)) {
                         context.put(CONFLICT_ERROR, ex);
                         context.put(CUR_DATA,getCurData(getTransaction()));
+                        context.setLastError(ex);
                         return LoadStatus.CONFLICT;
                     } else {
                         log.info("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
@@ -231,6 +233,16 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
+    }
+    
+    private boolean isUniqueIndexViolation(Throwable ex, Table targetTable) {
+        String violatedIndexName = getPlatform().getSqlTemplate().getUniqueKeyViolationIndexName(ex);
+        for (IIndex index : targetTable.getIndices()) {
+            if (index.isUnique() && (index.getName().equals(violatedIndexName))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -327,15 +339,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.DELETECOUNT), count);
                 if (count > 0) {
-                        return LoadStatus.SUCCESS;
+                    return LoadStatus.SUCCESS;
                 } else {
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
                     return LoadStatus.CONFLICT;
                 }
             } catch (RuntimeException ex) {
-                if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)
-                        && !getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                if (getPlatform().getSqlTemplate().isForeignKeyChildExistsViolation(ex)) {
                     context.put(CUR_DATA,null); // since a delete conflicted, there's no row to delete, so no cur data.
+                    context.setLastError(ex);
                     return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
@@ -486,8 +498,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
                 try {
                     long count = execute(data, values);
-                    statistics.get(batch)
-                            .increment(DataWriterStatisticConstants.UPDATECOUNT, count);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT, count);
                     statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.UPDATECOUNT), count);
                     if (count > 0) {
                         return LoadStatus.SUCCESS;
@@ -496,9 +507,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         return LoadStatus.CONFLICT;
                     }
                 } catch (SqlException ex) {
-                    if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)
-                            && !getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                    if ((getPlatform().getSqlTemplate().isUniqueKeyViolation(ex) || getPlatform().getSqlTemplate().isForeignKeyChildExistsViolation(ex))) {
                         context.put(CUR_DATA,getCurData(getTransaction()));
+                        context.setLastError(ex);
                         return LoadStatus.CONFLICT;
                     } else {
                         throw ex;
@@ -524,10 +535,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
-        		// Placeholder to ensure target platform and transaction is returned.  SYM_* tables are not created through this process.
-        		String tempNonSymTable = "NON_SYM_TABLE";
-        		
-        		getTransaction(tempNonSymTable).commit();
+    		// Placeholder to ensure target platform and transaction is returned.  SYM_* tables are not created through this process.
+    		String tempNonSymTable = "NON_SYM_TABLE";
+    		
+    		getTransaction(tempNonSymTable).commit();
 
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
@@ -726,23 +737,23 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
     
     protected void logDataTruncation(CsvData data, StringBuilder failureMessage) {
-    		String[] rowData = data.getParsedData(CsvData.ROW_DATA);
-    		int rowIndex = 0;
-    		for (Column col : targetTable.getColumns()) {
-    			if (col.getJdbcTypeCode() == Types.VARCHAR) { // CHAR
-    				if (rowData[rowIndex].length() > Integer.parseInt(col.getSize())) {
-    					failureMessage.append("Failed truncation column: ");
-    					failureMessage.append(col.getName());
-    					failureMessage.append(" with size of: ");
-    					failureMessage.append(Integer.parseInt(col.getSize()));
-    					failureMessage.append(" failed to load data: ");
-    					failureMessage.append(rowData[rowIndex]);
-    					failureMessage.append("\n");
-    				}
-    			}
-    			
-    			rowIndex++;
-    		}
+        String[] rowData = data.getParsedData(CsvData.ROW_DATA);
+        int rowIndex = 0;
+        for (Column col : targetTable.getColumns()) {
+            if (col.getJdbcTypeCode() == Types.VARCHAR) { // CHAR
+                if (rowData[rowIndex].length() > Integer.parseInt(col.getSize())) {
+                    failureMessage.append("Failed truncation column: ");
+                    failureMessage.append(col.getName());
+                    failureMessage.append(" with size of: ");
+                    failureMessage.append(Integer.parseInt(col.getSize()));
+                    failureMessage.append(" failed to load data: ");
+                    failureMessage.append(rowData[rowIndex]);
+                    failureMessage.append("\n");
+                }
+            }
+
+            rowIndex++;
+        }
     }
     
     protected String dmlValuesToString(Object[] dmlValues, int[] types) {
@@ -886,11 +897,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     protected void prepare() {
-    		getTransaction().prepare(this.currentDmlStatement.getSql());
+        getTransaction().prepare(this.currentDmlStatement.getSql());
     }
     
     protected void prepare(String sql, CsvData data) {
-    		getTransaction().prepare(sql);
+        getTransaction().prepare(sql);
     }
     
     protected int execute(CsvData data, String[] values) {
@@ -952,8 +963,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
     
     public int prepareAndExecute(String sql, CsvData data) {
-    		return getTransaction().prepareAndExecute(sql);
-    	}
+        return getTransaction().prepareAndExecute(sql);
+    }
     
     protected String getCurData(ISqlTransaction transaction) {
         String curVal = null;

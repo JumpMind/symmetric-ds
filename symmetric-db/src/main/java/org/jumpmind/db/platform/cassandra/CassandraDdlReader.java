@@ -1,13 +1,18 @@
 package org.jumpmind.db.platform.cassandra;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.TableRow;
 
 public class CassandraDdlReader implements IDdlReader {
 	protected CassandraPlatform platform;
@@ -18,7 +23,6 @@ public class CassandraDdlReader implements IDdlReader {
 	
 	@Override
 	public Database readTables(String catalog, String schema, String[] tableTypes) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -31,44 +35,52 @@ public class CassandraDdlReader implements IDdlReader {
 
 	@Override
 	public List<String> getTableTypes() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> getCatalogNames() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> getSchemaNames(String catalog) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> getTableNames(String catalog, String schema, String[] tableTypes) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<String> getColumnNames(String catalog, String schema, String tableName) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List<Trigger> getTriggers(String catalog, String schema, String tableName) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Trigger getTriggerFor(Table table, String name) {
-		// TODO Auto-generated method stub
 		return null;
 	}
+
+    @Override
+    public Collection<ForeignKey> getExportedKeys(Table table) {
+        return null;
+    }
+
+    @Override
+    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited) {
+        return null;
+    }
+    
+    @Override
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+        return null;
+    }
 
 }

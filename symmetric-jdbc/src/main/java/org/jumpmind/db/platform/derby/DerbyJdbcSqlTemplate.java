@@ -32,8 +32,11 @@ public class DerbyJdbcSqlTemplate extends JdbcSqlTemplate {
     public DerbyJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        primaryKeyViolationSqlStates = new String[] {"23505"};        
+        primaryKeyViolationSqlStates = new String[] {"23505"};
+        uniqueKeyViolationNameRegex = new String[] {"unique index identified by '(.*)' defined"};
         foreignKeyViolationSqlStates = new String[] {"23503"};
+        foreignKeyChildExistsViolationMessageParts = new String[] {"delete on table .* caused a violation of foreign key constraint .*",
+                "update on table .* caused a violation of foreign key constraint .*"};
     }
     
     @Override

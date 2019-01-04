@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.db2;
 
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -34,6 +36,7 @@ public class Db2JdbcSqlTemplate extends JdbcSqlTemplate {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationCodes = new int[] {-803};
         foreignKeyViolationCodes = new int[] {-530};
+        foreignKeyChildExistsViolationCodes = new int[] {-531, -532};
     }
     
 
@@ -50,6 +53,18 @@ public class Db2JdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     protected boolean allowsNullForIdentityColumn() {
         return false;
+    }
+
+    @Override
+    public String getUniqueKeyViolationIndexName(Throwable ex) {
+        String indexName = null;
+        SQLException sqlEx = findSQLException(ex);
+        if (sqlEx != null && sqlEx.getMessage().contains("SQLSTATE=23505, SQLERRMC=2;")) {
+            // when SQLERRMC is 1, it seems to mean PK, while 2 means unique index
+            // we don't know which unique key was violated, so we assume any/all of them
+            indexName = "%";
+        }
+        return indexName;
     }
 
 }

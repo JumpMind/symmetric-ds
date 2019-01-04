@@ -46,6 +46,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -81,12 +83,20 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     protected String[] primaryKeyViolationSqlStates;
 
     protected String[] primaryKeyViolationMessageParts;
+    
+    protected String[] uniqueKeyViolationNameRegex;
 
     protected int[] foreignKeyViolationCodes;
 
     protected String[] foreignKeyViolationSqlStates;
 
     protected String[] foreignKeyViolationMessageParts;
+
+    protected int[] foreignKeyChildExistsViolationCodes;
+
+    protected String[] foreignKeyChildExistsViolationSqlStates;
+
+    protected String[] foreignKeyChildExistsViolationMessageParts;
 
     protected int isolationLevel;
 
@@ -968,6 +978,53 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         return foreignKeyViolation;
     }
 
+    public boolean isForeignKeyChildExistsViolation(Throwable ex) {
+        boolean foreignKeyChildExistsViolation = false;
+        if (foreignKeyChildExistsViolationCodes != null || foreignKeyChildExistsViolationSqlStates != null || foreignKeyChildExistsViolationMessageParts != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (foreignKeyChildExistsViolationCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int foreignKeyChildExistsViolationCode : foreignKeyChildExistsViolationCodes) {
+                        if (foreignKeyChildExistsViolationCode == errorCode) {
+                            foreignKeyChildExistsViolation = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (foreignKeyChildExistsViolationSqlStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String foreignKeyChildExistsViolationSqlState : foreignKeyChildExistsViolationSqlStates) {
+                            if (foreignKeyChildExistsViolationSqlState != null
+                                    && foreignKeyChildExistsViolationSqlState.equals(sqlState)) {
+                                foreignKeyChildExistsViolation = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (foreignKeyChildExistsViolationMessageParts != null) {
+                    String sqlMessage = sqlEx.getMessage();
+                    if (sqlMessage != null) {
+                        sqlMessage = sqlMessage.toLowerCase();
+                        for (String foreignKeyChildExistsViolationMessagePart : foreignKeyChildExistsViolationMessageParts) {
+                            if (foreignKeyChildExistsViolationMessagePart != null && (sqlMessage.contains(foreignKeyChildExistsViolationMessagePart.toLowerCase())
+                                    || (foreignKeyChildExistsViolationMessagePart.contains("*") && sqlMessage.matches(foreignKeyChildExistsViolationMessagePart)))) {
+                                foreignKeyChildExistsViolation = true;
+                                break;
+                            }
+                        }
+                    }
+                }                
+            }
+        }
+
+        return foreignKeyChildExistsViolation;
+    }
+
     protected SQLException findSQLException(Throwable ex) {
         if (ex instanceof SQLException) {
             return (SQLException) ex;
@@ -1091,5 +1148,24 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public boolean isDataTruncationViolation(Throwable ex) {
     		return false;
     }
-    
+
+    @Override
+    public String getUniqueKeyViolationIndexName(Throwable ex) {
+        String indexName = null;
+        if (uniqueKeyViolationNameRegex != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                for (String regex : uniqueKeyViolationNameRegex) {
+                    Pattern pattern = Pattern.compile(regex);
+                    Matcher matcher = pattern.matcher(sqlEx.getMessage());
+                    if (matcher.find()) {
+                        indexName = matcher.group(1);
+                        break;
+                    }
+                }
+            }
+        }
+        return indexName;
+    }
+
 }

@@ -41,20 +41,16 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
+import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -1990,12 +1986,7 @@ public class DataService extends AbstractService implements IDataService {
                 log.info("Could not find table " + table.getFullyQualifiedTableName());
             }
             tableRows.add(new TableRow(localTable, row, null, null, null));
-            List<TableRow> foreignTableRows;
-            try {
-                foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>());
 
             if (foreignTableRows.isEmpty()) {
                 log.info("Could not determine foreign table rows to fix foreign key violation for "
@@ -2065,12 +2056,7 @@ public class DataService extends AbstractService implements IDataService {
             Row row = new Row(dataMap.size());
             row.putAll(dataMap);
             tableRows.add(new TableRow(table, row, null, null, null));
-            List<TableRow> foreignTableRows;
-            try {
-                foreignTableRows = getForeignTableRows(tableRows, new HashSet<TableRow>());
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
+            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>());
             
             if (foreignTableRows.isEmpty()) {
                 log.info("Could not determine foreign table rows to fix foreign key violation for "
@@ -2104,90 +2090,6 @@ public class DataService extends AbstractService implements IDataService {
         catch (Exception e) {
             log.error("Unknown exception while processing foreign key for node id: " + nodeId + " data id " + dataId, e);
         }
-    }
-
-    protected List<TableRow> getForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) throws CloneNotSupportedException {
-        List<TableRow> fkDepList = new ArrayList<TableRow>();
-        for (TableRow tableRow : tableRows) {
-            if (!visited.contains(tableRow)) {
-                visited.add(tableRow);
-                for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
-                    Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
-                    if (table == null) {
-                        table = fk.getForeignTable();
-                        if (table == null) {
-                            table = platform.getTableFromCache(tableRow.getTable().getCatalog(), tableRow.getTable().getSchema(),
-                                    fk.getForeignTableName(), false);
-                        }
-                    }
-                    if (table != null) {
-                        Table foreignTable = (Table) table.clone();
-                        for (Column column : foreignTable.getColumns()) {
-                            column.setPrimaryKey(false);
-                        }
-                        Row whereRow = new Row(fk.getReferenceCount());
-                        String referenceColumnName = null;
-                        boolean[] nullValues = new boolean[fk.getReferenceCount()];
-                        int index = 0;
-                        for (Reference ref : fk.getReferences()) {
-                            Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
-                            Object value = tableRow.getRow().get(ref.getLocalColumnName());
-                            nullValues[index++] = value == null;
-                            referenceColumnName = ref.getLocalColumnName();
-                            whereRow.put(foreignColumn.getName(), value);
-                            foreignColumn.setPrimaryKey(true);
-                        }
-
-                        boolean allNullValues = true;
-                        for (boolean b : nullValues) {
-                            if (!b) {
-                                allNullValues = false;
-                                break;
-                            }
-                        }
-
-                        if (!allNullValues) {
-                            DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
-                                    foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
-                                    foreignTable.getColumns(), nullValues, null);
-                            String whereSql = whereSt.buildDynamicSql(symmetricDialect.getBinaryEncoding(), whereRow, false, true,
-                                    foreignTable.getPrimaryKeyColumns()).substring(6);
-                            String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
-                            if (delimiter != null && delimiter.length() > 0) {
-                                whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
-                            }
-
-                            Row foreignRow = new Row(foreignTable.getColumnCount());
-                            if (foreignTable.getForeignKeyCount() > 0) {
-                                DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
-                                Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
-                                Map<String, Object> values = sqlTemplate.queryForMap(selectSt.getSql(), keys);
-                                if (values == null) {
-                                    log.warn(
-                                            "Unable to reload rows for missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",
-                                            table.getName(), selectSt.getSql(), keys);
-                                } else {
-                                    foreignRow.putAll(values);
-                                }
-                            }
-
-                            TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
-                            fkDepList.add(foreignTableRow);
-                            log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
-                        } else {
-                            log.debug("The foreign table reference was null for {}", foreignTable.getName());
-                        }
-                    } else {
-                        log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
-                    }
-                    if (fkDepList.size() > 0) {
-                        fkDepList.addAll(getForeignTableRows(fkDepList, visited));
-                    }
-                }
-            }
-        }
-
-        return fkDepList;
     }
 
     /**
@@ -2657,89 +2559,6 @@ public class DataService extends AbstractService implements IDataService {
             }
         }
         return fixed;
-    }
-    
-    class TableRow {
-        Table table;
-        Row row;
-        String whereSql;
-        String referenceColumnName;
-        String fkName;
-        String fkColumnValues = null;
-        
-        public TableRow(Table table, Row row, String whereSql, String referenceColumnName, String fkName) {
-            this.table = table;
-            this.row = row;
-            this.whereSql = whereSql;
-            this.referenceColumnName = referenceColumnName;
-            this.fkName = fkName;
-        }
-        
-        protected String getFkColumnValues() {
-            if (fkColumnValues == null) {
-                StringBuilder builder = new StringBuilder();
-                ForeignKey[] keys = table.getForeignKeys();
-                for (ForeignKey foreignKey : keys) {
-                    if (foreignKey.getName().equals(fkName)) {
-                        Reference[] refs = foreignKey.getReferences();
-                        for (Reference ref : refs) {
-                            Object value = row.get(ref.getLocalColumnName());
-                            if (value != null) {
-                                builder.append("\"").append(value).append("\",");
-                            } else {
-                                builder.append("null,");
-                            }
-                        }
-                    }
-                }
-                fkColumnValues = builder.toString();
-            }
-            return fkColumnValues;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((table == null) ? 0 : table.hashCode());
-            result = prime * result + ((whereSql == null) ? 0 : whereSql.hashCode());
-            result = prime * result + ((getFkColumnValues() == null) ? 0 : getFkColumnValues().hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof TableRow) {
-                TableRow tr = (TableRow) o;
-                return tr.table.equals(table) && tr.whereSql.equals(whereSql) 
-                        && tr.getFkColumnValues().equals(getFkColumnValues().toString());
-            }
-            return false;
-        }
-        
-        @Override
-        public String toString() {
-            return table.getFullyQualifiedTableName() + ":" + whereSql + ":" + getFkColumnValues();
-        }
-                
-        public Table getTable() {
-            return table;
-        }
-        
-        public Row getRow() {
-            return row;
-        }
-        
-        public String getWhereSql() {
-            return whereSql;
-        }
-        public String getReferenceColumnName() {
-            return referenceColumnName;
-        }
-        public String getFkName() {
-            return fkName;
-        }
-                        
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {

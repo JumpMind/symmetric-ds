@@ -33,7 +33,9 @@ public class MySqlJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationCodes = new int[] {1062};
+        uniqueKeyViolationNameRegex = new String[] { "Duplicate entry .* for key '(.*)'" };
         foreignKeyViolationCodes = new int[] {1452};
+        foreignKeyChildExistsViolationCodes = new int[] {1451};
     }
     
     @Override
