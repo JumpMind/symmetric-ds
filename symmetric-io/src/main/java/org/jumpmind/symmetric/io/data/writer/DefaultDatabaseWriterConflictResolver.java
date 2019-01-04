@@ -22,19 +22,34 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +59,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     protected static final Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
 
     protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
-    		DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter)writer;
+        DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter)writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         String columnName = conflict.getDetectExpression();
         Table targetTable = writer.getTargetTable();
@@ -136,6 +151,210 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             Long loadingVersion = Long.valueOf(newData.get(columnName));
             return loadingVersion > existingVersion;
         }
+    }
+    
+    @Override
+    protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable e) {
+        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
+        IDatabasePlatform platform = databaseWriter.getPlatform();
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+        Table targetTable = writer.getTargetTable();
+        boolean isPrimaryKeyViolation = false;
+        
+        if (e != null && sqlTemplate.isUniqueKeyViolation(e)) {
+            String violatedIndexName = sqlTemplate.getUniqueKeyViolationIndexName(e);
+
+            if (violatedIndexName != null) {
+                log.info("Unique violation from index {} on table {} during {} with batch {}.  Attempting to correct.", violatedIndexName, targetTable.getName(), 
+                        data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+
+                // Use the violated unique index name to find the columns involved so we can run a delete statement
+                boolean foundUniqueIndex = false;
+                int count = 0;
+                for (IIndex index : targetTable.getIndices()) {
+                    if (index.isUnique() && (index.getName().equals(violatedIndexName) || violatedIndexName.contentEquals("%"))) {
+                        foundUniqueIndex = true;
+                        count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
+                    }
+                }
+
+                if (foundUniqueIndex) {
+                    return count != 0;
+                } else {
+                    // Couldn't find the unique index on the table, so the violation is the internal primary key index
+                    isPrimaryKeyViolation = true;
+                }
+            } else {
+                // Couldn't find the unique index name from the exception, so the violation is the internal primary key index
+                isPrimaryKeyViolation = true;
+            }
+        }
+        
+        if (isPrimaryKeyViolation && data.getDataEventType().equals(DataEventType.UPDATE)) {
+            // Primary key is preventing our update, so we delete the blocking row
+            Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+            List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
+            List<String> whereValues = new ArrayList<String>();
+            
+            for (Column column : whereColumns) {
+                whereValues.add(values.get(column.getName()));
+            }            
+            return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues) != 0;
+        }
+        return false;
+    }
+ 
+    protected int deleteUniqueConstraintRow(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
+            IIndex uniqueIndex, CsvData data) {
+        Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+        List<Column> whereColumns = new ArrayList<Column>();
+        List<String> whereValues = new ArrayList<String>();
+
+        for (IndexColumn indexColumn : uniqueIndex.getColumns()) {
+            whereColumns.add(targetTable.getColumnWithName(indexColumn.getName()));
+            whereValues.add(values.get(indexColumn.getName()));
+        }
+        
+        return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues);
+    }
+
+    protected int deleteRow(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
+            List<Column> whereColumns, List<String> whereValues) {
+        Object[] objectValues = platform.getObjectValues(databaseWriter.getBatch().getBinaryEncoding(),
+                whereValues.toArray(new String[0]), whereColumns.toArray(new Column[0]));
+        DmlStatement fromStmt = platform.createDmlStatement(DmlType.FROM, targetTable.getCatalog(), targetTable.getSchema(),
+                targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), null,
+                databaseWriter.getWriterSettings().getTextColumnExpression());
+        String sql = "DELETE " + fromStmt.getSql();
+        int count = 0;
+        try {
+            count = prepareAndExecute(platform, databaseWriter, sql, objectValues);
+            if (count == 0) {
+                log.error("Failed to find and delete the blocking row by unique constraint: " + sql + " " + 
+                        ArrayUtils.toString(objectValues));
+            }
+        } catch (SqlException ex) {
+            if (sqlTemplate.isForeignKeyChildExistsViolation(ex)) {
+                log.info("Child exists foreign key violation while correcting unique constraint violation.  Attempting further corrections.");
+                // Failed to delete the row because another row is referencing it                        
+                DmlStatement selectStmt = platform.createDmlStatement(DmlType.SELECT, targetTable.getCatalog(), targetTable.getSchema(),
+                        targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), null,
+                        databaseWriter.getWriterSettings().getTextColumnExpression());
+                // Query the row that we need to delete because it is blocking us                
+                Row uniqueRow = queryForRow(platform, databaseWriter, selectStmt.getSql(), objectValues);
+                CsvData uniqueData = new CsvData(DataEventType.INSERT, uniqueRow.toStringArray(targetTable.getColumnNames()));
+                if (deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, targetTable, uniqueData)) {
+                    count = prepareAndExecute(platform, databaseWriter, sql, objectValues);
+                }
+            } else {
+                throw ex;
+            }
+        }
+        return count;
+    }
+
+    @Override
+    protected boolean checkForForeignKeyChildExistsViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable e) {
+        DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
+        IDatabasePlatform platform = databaseWriter.getPlatform();
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+
+        if (e != null && sqlTemplate.isForeignKeyChildExistsViolation(e)) {
+            Table targetTable = writer.getTargetTable();
+            log.info("Child exists foreign key violation on table {} during {} with batch {}.  Attempting to correct.", 
+                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+            
+            return deleteForeignKeyChildren(platform, sqlTemplate, databaseWriter, writer.getTargetTable(), data);
+        }
+        return false;
+    }    
+
+    protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable, CsvData data) {        
+        Map<String, String> values = null;
+        if (data.getDataEventType().equals(DataEventType.UPDATE)) {
+            values = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+        } else {
+            values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+        }
+        
+        List<TableRow> tableRows = new ArrayList<TableRow>();
+        tableRows.add(new TableRow(targetTable, values, null, null, null));
+        List<TableRow> foreignTableRows = doInTransaction(platform, databaseWriter, new ITransactionCallback<List<TableRow>>() {
+            public List<TableRow> execute(ISqlTransaction transaction) {
+                return platform.getDdlReader().getExportedForeignTableRows(transaction, tableRows, new HashSet<TableRow>());
+            }
+        });
+        
+        if (foreignTableRows.isEmpty()) {
+            log.info("Could not determine foreign table rows to fix foreign key violation for table '{}'", targetTable.getFullyQualifiedTableName());
+            return false;
+        }
+        
+        Collections.reverse(foreignTableRows);
+        Set<TableRow> visited = new HashSet<TableRow>();
+        
+        for (TableRow foreignTableRow : foreignTableRows) {
+            if (visited.add(foreignTableRow)) {
+                Table foreignTable = foreignTableRow.getTable();
+            
+                log.info("Remove foreign row "
+                        + "catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
+                        + "to correct table '{}' for column '{}'",
+                        foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                        targetTable.getName(), foreignTableRow.getReferenceColumnName());
+                
+                DatabaseInfo info = platform.getDatabaseInfo();
+                String tableName = Table.getFullyQualifiedTableName(foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(), 
+                        info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());
+                String sql = "DELETE FROM " + tableName + " WHERE " + foreignTableRow.getWhereSql();
+                prepareAndExecute(platform, databaseWriter, sql);
+            }
+        }
+        return true;
+    }
+
+    protected int prepareAndExecute(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, String sql, Object... values) {
+        return doInTransaction(platform, databaseWriter, new ITransactionCallback<Integer>() {
+            public Integer execute(ISqlTransaction transaction) {
+                return transaction.prepareAndExecute(sql, values);
+            }
+        });
+    }
+    
+    protected Row queryForRow(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, String sql, Object... values) {
+        return doInTransaction(platform, databaseWriter, new ITransactionCallback<Row>() {
+            public Row execute(ISqlTransaction transaction) {
+                return transaction.queryForRow(sql, values);
+            }
+        });
+    }
+
+    private ISqlTransaction getTransaction(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter) {
+        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+            return platform.getSqlTemplate().startSqlTransaction(true);
+        } else {
+            return databaseWriter.getTransaction();
+        }
+    }
+    
+    private void doneWithTransaction(IDatabasePlatform platform, ISqlTransaction transaction) {
+        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+            transaction.close();
+        }
+    }
+
+    private <T> T doInTransaction(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, ITransactionCallback<T> callback) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = getTransaction(platform, databaseWriter);
+            return callback.execute(transaction);
+        } finally {
+            doneWithTransaction(platform, transaction);
+        }
+    }
+    
+    private interface ITransactionCallback<T> {
+        public T execute(ISqlTransaction transaction);
     }
 
 }

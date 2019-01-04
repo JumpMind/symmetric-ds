@@ -41,9 +41,10 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
         this.requiresAutoCommitFalseToSetFetchSize = true;
         primaryKeyViolationSqlStates = new String[] { "23000", "23505" };
         primaryKeyViolationMessageParts = new String[] {"duplicate key value violates", "duplicar valor da chave viola a restrição de unicidade"};
-        
+        uniqueKeyViolationNameRegex = new String[] { "violates unique constraint \"(.*)\"" };
         foreignKeyViolationMessageParts = new String[] {"violates foreign key constraint"};
         foreignKeyViolationSqlStates = new String[] { "23503" };
+        foreignKeyChildExistsViolationMessageParts = new String[] { "is still referenced from table" };
     }
 
     @Override
@@ -77,4 +78,5 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     		}
         return dataTruncationViolation;
     }
+
 }

@@ -148,4 +148,8 @@ public abstract class AbstractJavaDriverSqlTemplate extends AbstractSqlTemplate 
 		return 0;
 	}
 
+    @Override
+    public boolean isForeignKeyChildExistsViolation(Throwable ex) {
+        return false;
+    }
 }

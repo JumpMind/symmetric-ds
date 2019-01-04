@@ -92,20 +92,28 @@ abstract public class AbstractWriterTest {
     }
 
     protected void writeData(CsvData data, String[] expectedValues) {
-        writeData(data, expectedValues, TEST_COLUMNS);
+        writeData(data, expectedValues, getTestColumns());
     }
     
     protected String getTestTable() {
         return TEST_TABLE;
     }
     
+    protected String[] getTestKeys() {
+        return TEST_KEYS;
+    }
+    
+    protected String[] getTestColumns() {
+        return TEST_COLUMNS;
+    }
+
     protected void writeData(CsvData... data) {
-        Table table = buildSourceTable(TEST_TABLE, TEST_KEYS, TEST_COLUMNS);
+        Table table = buildSourceTable(getTestTable(), getTestKeys(), getTestColumns());
         writeData(new TableCsvData(table, data));        
     }
 
     protected void writeData(CsvData data, String[] expectedValues, String[] columnNames) {
-        writeData(data, expectedValues, getTestTable(), TEST_KEYS, columnNames);
+        writeData(data, expectedValues, getTestTable(), getTestKeys(), columnNames);
     }
 
     protected void writeData(CsvData data, String[] expectedValues, String tableName,
@@ -212,8 +220,8 @@ abstract public class AbstractWriterTest {
     }
 
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
-        String sql = "select " + getSelect(TEST_COLUMNS) + " from " + getTestTable() + " where "
-                + getWhere(TEST_KEYS);
+        String sql = "select " + getSelect(getTestColumns()) + " from " + getTestTable() + " where "
+                + getWhere(getTestKeys());
         Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, new Long(testTableId));
 
         if (expectedValues != null) {
@@ -222,7 +230,7 @@ abstract public class AbstractWriterTest {
             expectedValues[3] = translateExpectedCharString(expectedValues[3], 50, false);
             expectedValues[4] = translateExpectedCharString(expectedValues[4], 50, true);
         }
-        assertEquals(TEST_COLUMNS, expectedValues, results);
+        assertEquals(getTestColumns(), expectedValues, results);
     }
 
     protected String getSelect(String[] columns) {

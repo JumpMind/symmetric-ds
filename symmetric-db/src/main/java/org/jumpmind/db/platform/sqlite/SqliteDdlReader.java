@@ -21,9 +21,11 @@
 package org.jumpmind.db.platform.sqlite;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -41,10 +43,12 @@ import org.jumpmind.db.model.UniqueIndex;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.RowMapper;
+import org.jumpmind.db.util.TableRow;
 
 public class SqliteDdlReader implements IDdlReader {
 
@@ -268,4 +272,20 @@ public class SqliteDdlReader implements IDdlReader {
 
         return triggers;
     }
+
+    @Override
+    public Collection<ForeignKey> getExportedKeys(Table table) {
+        return null;
+    }
+    
+    @Override
+    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited) {
+        return null;
+    }
+    
+    @Override
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+        return null;
+    }
+
 }

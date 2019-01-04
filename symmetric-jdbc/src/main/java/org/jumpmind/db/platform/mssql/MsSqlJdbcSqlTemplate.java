@@ -36,7 +36,13 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     public MsSqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, DatabaseInfo databaseInfo) {
         super(dataSource, settings, null, databaseInfo);
         primaryKeyViolationCodes = new int[] {2627, 2601};
+        uniqueKeyViolationNameRegex = new String[] { "with unique index '(.*)'" };
         foreignKeyViolationCodes = new int[] {547};
+        foreignKeyChildExistsViolationMessageParts = new String[] { 
+                "DELETE statement conflicted with the SAME TABLE REFERENCE constraint",
+                "DELETE statement conflicted with the REFERENCE constraint",
+                "UPDATE statement conflicted with the SAME TABLE REFERENCE constraint",
+                "UPDATE statement conflicted with the REFERENCE constraint" };
     }
     
     @Override

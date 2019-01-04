@@ -51,7 +51,27 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 } else {
                     switch (conflict.getResolveType()) {
                         case FALLBACK:
-                            performFallbackToUpdate(writer, data, conflict, true);
+                            if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                                // unique index violation, we remove blocking rows, and try again
+                                try {
+                                    performFallbackToInsert(writer, data, conflict, true);
+                                } catch (ConflictException e) {
+                                    // standard fallback to update when insert gets primary key violation
+                                    performFallbackToUpdate(writer, data, conflict, true);
+                                }
+                            } else {
+                                try {
+                                    // standard fallback to update when insert gets primary key violation
+                                    performFallbackToUpdate(writer, data, conflict, true);
+                                } catch (ConflictException e) {
+                                    if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                                        // unique index violation, we remove blocking rows, and try again
+                                        performFallbackToUpdate(writer, data, conflict, true);
+                                    } else {
+                                        throw e;
+                                    }
+                                }
+                            }
                             break;
                         case NEWER_WINS:
                             if ((conflict.getDetectType() == DetectConflict.USE_TIMESTAMP && isTimestampNewer(conflict, writer, data))
@@ -82,12 +102,25 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                     switch (conflict.getResolveType()) {
                         case FALLBACK:
                             if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
-                                CsvData withoutOldData = data.copyWithoutOldData();
-                                try {
-                                    // we already tried to update using the pk
-                                    performFallbackToInsert(writer, withoutOldData, conflict, true);
-                                } catch (ConflictException ex) {
-                                    performFallbackToUpdate(writer, withoutOldData, conflict, true);
+                                if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                                    // unique index violation, we remove blocking rows, and try again
+                                    performFallbackToUpdate(writer, data, conflict, true);
+                                } else if (checkForForeignKeyChildExistsViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                                    // foreign key child exists violation, we remove blocking rows, and try again
+                                    performFallbackToUpdate(writer, data, conflict, true);                                
+                                } else {
+                                    CsvData withoutOldData = data.copyWithoutOldData();
+                                    try {
+                                        // standard fallback to insert when update gets zero rows
+                                        performFallbackToInsert(writer, withoutOldData, conflict, true);
+                                    } catch (ConflictException e) {
+                                        if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                                            // unique index violation, we remove blocking rows, and try again
+                                            performFallbackToInsert(writer, withoutOldData, conflict, true);
+                                        } else {
+                                            throw e;
+                                        }
+                                    }
                                 }
                             } else {
                                 try {
@@ -127,9 +160,16 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 switch (conflict.getResolveType()) {
                     case FALLBACK:
                         LoadStatus status = LoadStatus.CONFLICT;
-                        if (conflict.getDetectType() != DetectConflict.USE_PK_DATA) {
+
+                        if (conflict.getDetectType() == DetectConflict.USE_PK_DATA) {
+                            if (checkForForeignKeyChildExistsViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                                // foreign key child exists violation, we remove blocking rows, and try again
+                                status = writer.delete(data, false);
+                            }
+                        } else {
                             status = writer.delete(data, false);
                         }
+
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
                         }
@@ -277,8 +317,11 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
         }
     }
 
+    abstract protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData csvData, Conflict conflict, Throwable ex);
     
-   @Override
+    abstract protected boolean checkForForeignKeyChildExistsViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable ex);
+
+    @Override
     public boolean isIgnoreRow(AbstractDatabaseWriter writer, CsvData data) {
        DatabaseWriterSettings writerSettings = writer.getWriterSettings();
        Statistics statistics = writer.getStatistics().get(writer.getBatch());

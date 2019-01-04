@@ -37,7 +37,9 @@ public class FirebirdJdbcSqlTemplate extends JdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
         primaryKeyViolationCodes = new int [] {335544665, 335544349};
+        uniqueKeyViolationNameRegex = new String[] { "unique index \"(.*)\"" };
         foreignKeyViolationCodes = new int[] {335544466};
+        foreignKeyChildExistsViolationMessageParts = new String[] { "Foreign key references are present for the record" };
     }
     
     @Override

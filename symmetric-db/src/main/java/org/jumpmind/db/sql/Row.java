@@ -280,4 +280,13 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         }
         return values;
     }
+    
+    public String[] toStringArray(String[] keys) {
+        String[] values = new String[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            values[i] = getString(keys[i]);
+        }
+        return values;
+    }
+
 }

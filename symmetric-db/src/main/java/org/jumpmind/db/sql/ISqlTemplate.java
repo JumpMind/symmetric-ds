@@ -108,9 +108,13 @@ public interface ISqlTemplate {
     
     public boolean isUniqueKeyViolation(Throwable ex);
     
+    public String getUniqueKeyViolationIndexName(Throwable ex);
+    
     public boolean isDataTruncationViolation(Throwable ex);
     
     public boolean isForeignKeyViolation(Throwable ex);
+    
+    public boolean isForeignKeyChildExistsViolation(Throwable ex);
 
     public ISqlTransaction startSqlTransaction();
     

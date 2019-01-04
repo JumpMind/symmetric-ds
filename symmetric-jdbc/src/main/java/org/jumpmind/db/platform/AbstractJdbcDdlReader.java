@@ -55,10 +55,17 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.UniqueIndex;
+import org.jumpmind.db.sql.DmlStatement;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.IConnectionHandler;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.mapper.RowMapper;
+import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.db.util.TableRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1098,6 +1105,77 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     /*
+     * Retrieves the foreign keys that reference the indicated table.
+     * 
+     * @param metaData The database meta data
+     * 
+     * @param tableName The name of the table from which to retrieve FK
+     * information
+     * 
+     * @return The foreign keys
+     */
+    protected Collection<ForeignKey> readExportedKeys(Connection connection,
+            DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
+        Map<String, ForeignKey> fks = new LinkedHashMap<String, ForeignKey>();
+        if (getPlatformInfo().isForeignKeysSupported()) {
+            ResultSet fkData = null;
+    
+            try {
+                fkData = metaData.getExportedKeys(getTableNamePatternForConstraints(tableName));
+    
+                while (fkData.next()) {
+                    Map<String, Object> values = readMetaData(fkData, getColumnsForFK());
+                    String fkTableName = (String)values.get(getName("PKTABLE_NAME"));
+                    if (isBlank(fkTableName) || fkTableName.equalsIgnoreCase(tableName)) {
+                        readExportedKey(metaData, values, fks);
+                    }
+                }
+            } finally {
+                close(fkData);
+            }
+        }
+        return fks.values();
+    }
+
+    /*
+     * Reads the next exported foreign key spec from the result set.
+     * 
+     * @param metaData The database meta data
+     * 
+     * @param values The foreign key meta data as defined by {@link
+     * #getColumnsForFK()}
+     * 
+     * @param knownFks The already read foreign keys for the current table
+     */
+    protected void readExportedKey(DatabaseMetaDataWrapper metaData, Map<String, Object> values,
+            Map<String, ForeignKey> knownFks) throws SQLException {
+        String fkName = (String) values.get(getName("FK_NAME"));
+        ForeignKey fk = (ForeignKey) knownFks.get(fkName);
+
+        if (fk == null) {
+            fk = new ForeignKey(fkName);
+            fk.setForeignTableName((String) values.get(getName("FKTABLE_NAME")));
+            try {
+                fk.setForeignTableCatalog((String) values.get(getName("FKTABLE_CAT")));
+            } catch (Exception e) { }
+            try {
+                fk.setForeignTableSchema((String) values.get(getName("FKTABLE_SCHEM")));
+            } catch (Exception e) { }
+            
+            knownFks.put(fkName, fk);
+        }
+
+        Reference ref = new Reference();
+
+        ref.setForeignColumnName((String) values.get(getName("FKCOLUMN_NAME")));
+        ref.setLocalColumnName((String) values.get(getName("PKCOLUMN_NAME")));
+        if (values.containsKey(getName("KEY_SEQ"))) {
+            ref.setSequenceValue(((Short) values.get(getName("KEY_SEQ"))).intValue());
+        }
+        fk.addReference(ref);
+    }
+
+    /*
      * Determines the indices for the indicated table.
      * 
      * @param metaData The database meta data
@@ -1506,6 +1584,202 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     		}
     	}
     	return trigger;
+    }
+
+    @Override
+    public Collection<ForeignKey> getExportedKeys(Table table) {
+        try {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+            return sqlTemplate.execute(new IConnectionCallback<Collection<ForeignKey>>() {
+                public Collection<ForeignKey> execute(Connection connection) throws SQLException {
+                    connection.getMetaData().getExportedKeys(table.getCatalog(), table.getSchema(), table.getName());
+                    connection.getMetaData().getImportedKeys(table.getCatalog(), table.getSchema(), table.getName());
+                    DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
+                    metaData.setMetaData(connection.getMetaData());
+                    metaData.setCatalog(table.getCatalog());
+                    metaData.setSchemaPattern(table.getSchema());
+                    metaData.setTableTypes(null);
+                    return readExportedKeys(connection, metaData, table.getName());
+                }
+            });
+        } catch (SqlException e) {
+            if (e.getMessage() != null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
+                return null;
+            } else {
+                log.error("Failed to get metadata for {}", table.getFullyQualifiedTableName());
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited) {
+        List<TableRow> fkDepList = new ArrayList<TableRow>();
+        for (TableRow tableRow : tableRows) {
+            if (!visited.contains(tableRow)) {
+                visited.add(tableRow);
+                Collection<ForeignKey> exportedKeys = platform.getDdlReader().getExportedKeys(tableRow.getTable());
+                if (exportedKeys != null) {
+                    for (ForeignKey fk : exportedKeys) {
+                        Table foreignTable = lookupForeignTable(platform, fk, tableRow, false);
+                        if (foreignTable != null) {
+                            // Get the column names used by the foreign table and the values to bind to them from the primary table 
+                            Row selectRow = new Row(fk.getReferenceCount());
+                            String referenceColumnName = null;
+                            boolean[] nullValues = new boolean[fk.getReferenceCount()];
+                            List<Column> fkColumns = new ArrayList<Column>();
+                            int index = 0;
+                            for (Reference ref : fk.getReferences()) {
+                                Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
+                                referenceColumnName = ref.getLocalColumnName();
+                                Object value = tableRow.getRow().get(referenceColumnName);
+                                nullValues[index++] = value == null;
+                                selectRow.put(foreignColumn.getName(), value);
+                                fkColumns.add(foreignColumn);
+                            }
+    
+                            if (!isAllNullValues(nullValues)) {
+                                // Query rows in foreign table that reference the row in the primary table
+                                Column[] keyColumns = fkColumns.toArray(new Column[0]);
+                                DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable.getCatalog(),
+                                        foreignTable.getSchema(), foreignTable.getName(), keyColumns,
+                                        foreignTable.getColumns(), nullValues, null);
+                                Object[] selectValues = selectRow.toArray(selectRow.keySet().toArray(new String[0]));
+                                List<Row> rows = transaction.query(selectSt.getSql(), new RowMapper(), selectValues, selectSt.getTypes());
+
+                                if (rows != null) {
+                                    for (Row row : rows) {
+                                        // Return a TableRow with a where statement that can access this foreign table row by its primary key
+                                        DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
+                                                foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
+                                                foreignTable.getColumns(), nullValues, null);
+                                        String whereSql = whereSt.buildDynamicSql(BinaryEncoding.NONE, row, false, true, 
+                                                foreignTable.getPrimaryKeyColumns()).substring(6);
+                                        String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                                        if (delimiter != null && delimiter.length() > 0) {
+                                            whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+                                        }
+
+                                        TableRow foreignTableRow = new TableRow(foreignTable, row, whereSql, referenceColumnName, fk.getName());
+                                        fkDepList.add(foreignTableRow);
+                                        log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
+                                    }
+                                }
+                            } else {
+                                log.debug("The foreign table reference was null for {}", foreignTable.getName());
+                            }
+                        } else {
+                            log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
+                        }
+                        if (fkDepList.size() > 0) {
+                            fkDepList.addAll(getExportedForeignTableRows(transaction, fkDepList, visited));
+                        }
+                    }
+                }
+            }
+        }
+
+        return fkDepList;
+    }
+
+    @Override
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+        List<TableRow> fkDepList = new ArrayList<TableRow>();
+        for (TableRow tableRow : tableRows) {
+            if (!visited.contains(tableRow)) {
+                visited.add(tableRow);
+                    for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
+                        Table foreignTable = lookupForeignTable(platform, fk, tableRow, true);
+                        if (foreignTable != null) {
+                            Row whereRow = new Row(fk.getReferenceCount());
+                            String referenceColumnName = null;
+                            boolean[] nullValues = new boolean[fk.getReferenceCount()];
+                            int index = 0;
+                            for (Reference ref : fk.getReferences()) {
+                                Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
+                                referenceColumnName = ref.getLocalColumnName();
+                                Object value = tableRow.getRow().get(referenceColumnName);
+                                nullValues[index++] = value == null;
+                                whereRow.put(foreignColumn.getName(), value);
+                                foreignColumn.setPrimaryKey(true);
+                            }
+    
+                            if (!isAllNullValues(nullValues)) {
+                                DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
+                                        foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
+                                        foreignTable.getColumns(), nullValues, null);
+                                String whereSql = whereSt.buildDynamicSql(BinaryEncoding.NONE, whereRow, false, true,
+                                        foreignTable.getPrimaryKeyColumns()).substring(6);
+                                String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
+                                if (delimiter != null && delimiter.length() > 0) {
+                                    whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
+                                }
+
+                                if (foreignTable.getForeignKeyCount() > 0) {
+                                    DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
+                                    Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
+                                    Map<String, Object> values = platform.getSqlTemplate().queryForMap(selectSt.getSql(), keys);
+                                    if (values == null) {
+                                        log.warn(
+                                                "Unable to reload rows for missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",
+                                                foreignTable.getName(), selectSt.getSql(), keys);
+                                    } else {
+                                        Row foreignRow = new Row(foreignTable.getColumnCount());
+                                        foreignRow.putAll(values);
+                                        TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
+                                        fkDepList.add(foreignTableRow);
+                                        log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
+                                    }
+                                }
+                            } else {
+                                log.debug("The foreign table reference was null for {}", foreignTable.getName());
+                            }
+                        } else {
+                            log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
+                        }
+                        if (fkDepList.size() > 0) {
+                            fkDepList.addAll(getImportedForeignTableRows(fkDepList, visited));
+                        }
+                    }
+                }
+        }
+
+        return fkDepList;
+    }
+
+    private Table lookupForeignTable(IDatabasePlatform platform, ForeignKey fk, TableRow tableRow, boolean clearPrimaryKeys) {
+        Table foreignTable = null;
+        Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
+        if (table == null) {
+            table = fk.getForeignTable();
+            if (table == null) {
+                table = platform.getTableFromCache(tableRow.getTable().getCatalog(), tableRow.getTable().getSchema(), fk.getForeignTableName(), false);
+            }
+        }
+        if (table != null) {
+            try {
+                foreignTable = (Table) table.clone();
+                if (clearPrimaryKeys) {
+                    for (Column column : foreignTable.getColumns()) {
+                        column.setPrimaryKey(false);
+                    }
+                }
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return foreignTable;
+    }
+    
+    private boolean isAllNullValues(boolean[] nullValues) {
+        boolean allNullValues = true;
+        for (boolean b : nullValues) {
+            if (!b) {
+                allNullValues = false;
+                break;
+            }
+        }
+        return allNullValues;
     }
 
 }
