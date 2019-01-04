@@ -30,7 +30,7 @@
         <param name="MaxFileSize" value="20MB" />
         <param name="MaxBackupIndex" value="3" />
         <param name="Append" value="true" />
-        <layout class="org.jumpmind.symmetric.web.SymPatternLayout">
+        <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
         </layout>
     </appender>
@@ -38,13 +38,13 @@
     <appender name="CONSOLE_ERR" class="org.apache.log4j.ConsoleAppender">
         <param name="Threshold" value="WARN"/> 
         <param name="Target" value="System.err" />
-        <layout class="org.jumpmind.symmetric.web.SymPatternLayout">
+        <layout class="org.apache.log4j.PatternLayout">
               <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m (%l)%n" />
         </layout>
     </appender>
     <appender name="CONSOLE_OUT" class="org.apache.log4j.ConsoleAppender">
         <param name="Threshold" value="ALL"/>           
-        <layout class="org.jumpmind.symmetric.web.SymPatternLayout">
+        <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
         </layout>
        <filter class="org.apache.log4j.varia.LevelRangeFilter">
