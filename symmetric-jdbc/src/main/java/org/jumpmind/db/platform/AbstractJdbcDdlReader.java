@@ -1715,6 +1715,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                     whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
                                 }
 
+                                Row foreignRow = new Row(foreignTable.getColumnCount());
                                 if (foreignTable.getForeignKeyCount() > 0) {
                                     DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
                                     Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
@@ -1724,13 +1725,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                                 "Unable to reload rows for missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",
                                                 foreignTable.getName(), selectSt.getSql(), keys);
                                     } else {
-                                        Row foreignRow = new Row(foreignTable.getColumnCount());
                                         foreignRow.putAll(values);
-                                        TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
-                                        fkDepList.add(foreignTableRow);
-                                        log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
                                     }
                                 }
+
+                                TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
+                                fkDepList.add(foreignTableRow);
+                                log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
                             } else {
                                 log.debug("The foreign table reference was null for {}", foreignTable.getName());
                             }

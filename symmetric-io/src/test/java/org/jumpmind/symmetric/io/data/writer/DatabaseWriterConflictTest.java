@@ -24,9 +24,12 @@ import java.util.Map;
 
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
+import org.jumpmind.db.platform.voltdb.VoltDbDatabasePlatform;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -67,8 +70,11 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         // Ignore SQLite because it doesn't enforce FKs, and its unique constraint error message doesn't tell you the index name
         // TODO: Sybase ASE has metadata problem in the DDL reader for exported keys
         // TODO: Informix has metadata problem in the DDL reader for exported keys
+        // TODO: Untested on Volt, Greenplum, Redshift
         shouldTest = !(platform instanceof SqliteDatabasePlatform || platform instanceof SqlAnywhereDatabasePlatform ||
-                platform instanceof AseDatabasePlatform || platform instanceof InformixDatabasePlatform);
+                platform instanceof AseDatabasePlatform || platform instanceof InformixDatabasePlatform ||
+                platform instanceof VoltDbDatabasePlatform || platform instanceof GreenplumPlatform ||
+                platform instanceof RedshiftDatabasePlatform);
     }
 
     @Test
