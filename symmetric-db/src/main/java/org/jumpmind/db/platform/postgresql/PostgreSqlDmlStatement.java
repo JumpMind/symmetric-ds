@@ -125,6 +125,8 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
+        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
+        	sql.append("cast(? as tsvector)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
@@ -148,6 +150,8 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
             sql.append(quote).append(column.getName()).append(quote)
             .append(" = ST_GEOMFROMTEXT(?)");
+        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
+            sql.append(quote).append(column.getName()).append(quote).append(" = cast(? as tsvector)");
         } else {
             super.appendColumnEquals(sql, column);
         }
