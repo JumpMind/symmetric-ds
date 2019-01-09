@@ -138,6 +138,10 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         foreignKeys.clear();
     }
 
+    public void removeAllIndexes() {
+        indices.clear();
+    }
+
     /**
      * Returns the catalog of this table as read from the database.
      * 

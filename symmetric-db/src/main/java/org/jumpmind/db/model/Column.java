@@ -478,23 +478,23 @@ public class Column implements Cloneable, Serializable {
                 switch (mappedTypeCode) {
                     case Types.TINYINT:
                     case Types.SMALLINT:
-                        return new Short(defaultValue);
+                        return new Short(getCleanDefaultValue());
                     case Types.INTEGER:
                         try {
-                            return new Integer(defaultValue);
+                            return new Integer(getCleanDefaultValue());
                         } catch (NumberFormatException e) {
-                            return new Long(defaultValue);
+                            return new Long(getCleanDefaultValue());
                         }
                     case Types.BIGINT:
-                        return new Long(defaultValue);
+                        return new Long(getCleanDefaultValue());
                     case Types.DECIMAL:
                     case Types.NUMERIC:
-                        return new BigDecimal(defaultValue);
+                        return new BigDecimal(getCleanDefaultValue());
                     case Types.REAL:
-                        return new Float(defaultValue);
+                        return new Float(getCleanDefaultValue());
                     case Types.DOUBLE:
                     case Types.FLOAT:
-                        return new Double(defaultValue);
+                        return new Double(getCleanDefaultValue());
                     case Types.DATE:
                         return Date.valueOf(defaultValue);
                     case Types.TIME:
@@ -518,6 +518,10 @@ public class Column implements Cloneable, Serializable {
         }
         return defaultValue;
     }    
+
+    private String getCleanDefaultValue() {
+    	return defaultValue.replace("'", "");
+    }
     
     public void removePlatformColumn(String databaseName) {
         if (platformColumns != null) {

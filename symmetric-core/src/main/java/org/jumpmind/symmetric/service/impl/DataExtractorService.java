@@ -2441,6 +2441,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                             boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false);
                             boolean excludeForeignKeys = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_FOREIGN_KEYS, false);
+                            boolean excludeIndexes = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_INDEXES, false);
                             
                             /*
                              * Force a reread of table so new columns are picked up.  A create
@@ -2474,6 +2475,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
                             if (excludeForeignKeys) {
                             	copyTargetTable.removeAllForeignKeys();
+                            }
+                            if (excludeIndexes) {
+                                copyTargetTable.removeAllIndexes();
                             }
                             
                             if (parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_PK_IF_SOURCE_WITHOUT_PK, false)

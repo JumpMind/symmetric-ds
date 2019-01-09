@@ -281,7 +281,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             args.add(schema);
         }
         
-    	return platform.getSqlTemplate().queryWithHandler(sql.toString(), new StringMapper(), 
+    	return platform.getSqlTemplateDirty().queryWithHandler(sql.toString(), new StringMapper(), 
     	        new ChangeCatalogConnectionHandler(catalog) ,args.toArray(new Object[args.size()]));
     }
     
@@ -289,8 +289,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
 	public List<Trigger> getTriggers(final String catalog, final String schema,
 			final String tableName) throws SqlException {
 		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
+		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
 		
 		String sql = "select "
 						+ "TRIG.name, "

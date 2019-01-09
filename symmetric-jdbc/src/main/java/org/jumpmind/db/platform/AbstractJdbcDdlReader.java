@@ -475,7 +475,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * @return The database model
      */
     public Database readTables(final String catalog, final String schema, final String[] tableTypes) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         return postprocessModelFromDatabase(sqlTemplate
                 .execute(new IConnectionCallback<Database>() {
                     public Database execute(Connection connection) throws SQLException {
@@ -565,7 +565,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     public Table readTable(final String catalog, final String schema, final String table) {
         try {
             log.debug("reading table: " + table);
-            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             return postprocessTableFromDatabase(sqlTemplate.execute(new IConnectionCallback<Table>() {
                 public Table execute(Connection connection) throws SQLException {
                     DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
@@ -1438,7 +1438,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
     
     public List<String> getTableTypes() {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> types = new ArrayList<String>();
@@ -1458,7 +1458,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     public List<String> getCatalogNames() {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> catalogs = new ArrayList<String>();
@@ -1481,7 +1481,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     public List<String> getSchemaNames(final String catalog) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> schemas = new ArrayList<String>();
@@ -1525,7 +1525,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
-    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         List<String> list = sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> list = new ArrayList<String>();
@@ -1550,7 +1550,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
     
     public List<String> getColumnNames(final String catalog, final String schema, final String tableName) {
-        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         return sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> list = new ArrayList<String>();
@@ -1589,7 +1589,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     @Override
     public Collection<ForeignKey> getExportedKeys(Table table) {
         try {
-            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             return sqlTemplate.execute(new IConnectionCallback<Collection<ForeignKey>>() {
                 public Collection<ForeignKey> execute(Connection connection) throws SQLException {
                     connection.getMetaData().getExportedKeys(table.getCatalog(), table.getSchema(), table.getName());
@@ -1715,22 +1715,23 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                     whereSql = whereSql.substring(0, whereSql.length() - delimiter.length());
                                 }
 
+                                Row foreignRow = new Row(foreignTable.getColumnCount());
                                 if (foreignTable.getForeignKeyCount() > 0) {
                                     DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
                                     Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
-                                    Map<String, Object> values = platform.getSqlTemplate().queryForMap(selectSt.getSql(), keys);
+                                    Map<String, Object> values = platform.getSqlTemplateDirty().queryForMap(selectSt.getSql(), keys);
                                     if (values == null) {
                                         log.warn(
                                                 "Unable to reload rows for missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",
                                                 foreignTable.getName(), selectSt.getSql(), keys);
                                     } else {
-                                        Row foreignRow = new Row(foreignTable.getColumnCount());
                                         foreignRow.putAll(values);
-                                        TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
-                                        fkDepList.add(foreignTableRow);
-                                        log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
                                     }
                                 }
+
+                                TableRow foreignTableRow = new TableRow(foreignTable, foreignRow, whereSql, referenceColumnName, fk.getName());
+                                fkDepList.add(foreignTableRow);
+                                log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
                             } else {
                                 log.debug("The foreign table reference was null for {}", foreignTable.getName());
                             }
