@@ -119,7 +119,7 @@ INodeCommunicationExecutor {
     }
 
     public boolean refreshFromDatabase() {
-        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxTriggerLastUpdateTime"), Date.class);
+        Date date1 = sqlTemplate.queryForObject(getSql("selectMaxFileTriggerLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
         Date date3 = sqlTemplate.queryForObject(getSql("selectMaxFileTriggerRouterLastUpdateTime"), Date.class);
         Date date = maxDate(date1, date2, date3);
