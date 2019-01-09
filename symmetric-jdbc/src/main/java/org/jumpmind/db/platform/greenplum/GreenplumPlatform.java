@@ -31,7 +31,7 @@ import org.jumpmind.db.sql.SymmetricLobHandler;
 public class GreenplumPlatform extends PostgreSqlDatabasePlatform {
 
     /* PostgreSql can be either PostgreSql or Greenplum.  Metadata queries to determine which one */
-    public static final String SQL_GET_GREENPLUM_NAME = "select gpname from gp_id";
+    public static final String SQL_GET_GREENPLUM_COUNT = "select count(*) from information_schema.tables where table_name = 'gp_id'";
     public static final String SQL_GET_GREENPLUM_VERSION = "select productversion from gp_version_at_initdb";    
     
     public GreenplumPlatform(DataSource dataSource, SqlTemplateSettings settings) {
