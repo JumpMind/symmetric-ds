@@ -270,14 +270,25 @@ public class DataService extends AbstractService implements IDataService {
     
     
     @Override
-    public TableReloadRequest getTableReloadRequest(int loadId) {
+    public TableReloadRequest getTableReloadRequest(long loadId) {
         List<TableReloadRequest> requests = sqlTemplate.query(getSql("selectTableReloadRequestsByLoadId"), 
                 new TableReloadRequestMapper(), loadId);
         
         List<TableReloadRequest> collapsedRequests = collapseTableReloadRequestsByLoadId(requests);
         return collapsedRequests == null || collapsedRequests.size() == 0 ? null : collapsedRequests.get(0);
     }
-    
+
+    @Override
+    public TableReloadRequest getTableReloadRequest(long loadId, String triggerId, String routerId) {
+        List<TableReloadRequest> requests = sqlTemplate.query(getSql("selectTableReloadRequestsByLoadIdTriggerRouter"), 
+                new TableReloadRequestMapper(), loadId, triggerId, routerId);
+        if (requests == null || requests.size() == 0) {
+            requests = sqlTemplate.query(getSql("selectTableReloadRequestsByLoadIdTriggerRouter"), 
+                    new TableReloadRequestMapper(), loadId, ParameterConstants.ALL, ParameterConstants.ALL);
+        }
+        return requests == null || requests.size() == 0 ? null : requests.get(0);
+    }
+
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId) {
         return sqlTemplate.query(getSql("selectTableReloadRequestToProcess"),
                 new ISqlRowMapper<TableReloadRequest>() {
@@ -1545,6 +1556,7 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplate.queryForInt(getSql("countDataInRangeSql"), firstDataId, secondDataId);
     }
 
+    @Override
     public void insertCreateEvent(final Node targetNode, TriggerHistory triggerHistory, String routerId,
             boolean isLoad, long loadId, String createBy) {
         ISqlTransaction transaction = null;
@@ -1568,7 +1580,30 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
+    @Override
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, String createBy) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            Trigger trigger = engine.getTriggerRouterService().getTriggerById(triggerHistory.getTriggerId(), false);
+            insertCreateEvent(transaction, targetNode, triggerHistory, trigger.getChannelId(), routerId, false, -1, createBy);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            close(transaction);
+        }
+    }
+
+    protected void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
             TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy) {
         Trigger trigger = engine.getTriggerRouterService().getTriggerById(
                 triggerHistory.getTriggerId(), false);
@@ -1578,6 +1613,7 @@ public class DataService extends AbstractService implements IDataService {
                 : Constants.CHANNEL_CONFIG, routerId, isLoad, loadId, createBy);
     }
     
+    @Override
     public void insertCreateEvent(ISqlTransaction transaction, Node targetNode,
             TriggerHistory triggerHistory, String channelId, String routerId, boolean isLoad, long loadId, String createBy) {
 

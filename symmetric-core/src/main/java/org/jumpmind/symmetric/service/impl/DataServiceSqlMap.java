@@ -62,7 +62,17 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " from $(table_reload_request) "
                 + " where load_id = ? "
                 + " order by processed, completed, last_update_time desc");
-        
+
+        putSql("selectTableReloadRequestsByLoadIdTriggerRouter", "select source_node_id, target_node_id, load_id, "
+                + " batch_count, batch_loaded_count, table_count, row_count, row_loaded_count, "
+                + " create_table, delete_first, reload_select, channel_id, "
+                + " before_custom_sql, processed, completed, cancelled, "
+                + " reload_time, channel_id, create_time, last_update_by, "
+                + " last_update_time, trigger_id, router_id, error_flag, sql_state, sql_code, sql_message"
+                + " from $(table_reload_request) "
+                + " where load_id = ? and trigger_id = ? and router_id = ?"
+                + " order by processed, completed, last_update_time desc");
+
         putSql("countTableReloadRequestRowsByLoadId", "select sum(row_count) from $(table_reload_request) where load_id = ?");
 
         putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, batch_count = ?, processed = 1 where load_id = ?");

@@ -51,7 +51,9 @@ public interface IDataService {
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
-    public TableReloadRequest getTableReloadRequest(int loadId);
+    public TableReloadRequest getTableReloadRequest(long loadId);
+    
+    public TableReloadRequest getTableReloadRequest(long loadId, String triggerId, String routerId);
     
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
         
@@ -135,6 +137,8 @@ public interface IDataService {
     public void insertScriptEvent(ISqlTransaction transaction, String channelId,
             Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, String createBy);
+    
     public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy);
     
     public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, String routerId, boolean isLoad, long loadId, String createBy);
