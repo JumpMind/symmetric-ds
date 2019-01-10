@@ -1588,7 +1588,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             transaction = sqlTemplate.startSqlTransaction();
             
             dataService.updateTableReloadRequestsLoadedCounts(transaction, outgoingBatch.getLoadId(), 1, 
-                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0);
+                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getReloadRowCount() : 0);
             
             
             transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), outgoingBatch.getDataRowCount(), 

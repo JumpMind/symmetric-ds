@@ -339,7 +339,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         StringBuilder query = new StringBuilder();
 
         query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a "); 
-        query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME ");
+        query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME AND a.TABLE_OWNER = b.TABLE_OWNER ");
         query.append("WHERE ");
         query.append("a.TABLE_NAME = ? "); 
         query.append("AND a.GENERATED='N' "); 
