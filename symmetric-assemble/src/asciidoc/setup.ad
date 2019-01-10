@@ -25,9 +25,6 @@ endif::pro[]
 include::setup/engine-properties.ad[]
 
 ifndef::pro[]
-=== Master Node Setup
-
-include::setup/master-node-setup.ad[]
 
 === Adding Nodes
 
