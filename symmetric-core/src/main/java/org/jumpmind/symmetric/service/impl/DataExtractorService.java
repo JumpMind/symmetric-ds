@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -846,6 +847,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 log.info("Extract of batch {} was interrupted", currentBatch);
                             } else if (e instanceof StagingLowFreeSpace) {
                                 log.error("Extract is disabled because disk is almost full: {}", e.getMessage());
+                            } else if (e.getCause() instanceof ZipException) {
+                                log.info("The batch {} appears corrupt in staging, so removing it. ({})", currentBatch.getNodeBatchId(), e.getMessage());
+                                IStagedResource extractedBatch = getStagedResource(currentBatch);
+                                if (extractedBatch != null) {
+                                    extractedBatch.delete();
+                                }
                             } else {
                                 log.error("Failed to extract batch {}", currentBatch, e);
                             }
