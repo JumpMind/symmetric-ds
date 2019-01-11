@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipException;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -1096,17 +1097,20 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     throw e;
                                 }
                             } else {
-                                if (e instanceof ParseException || e instanceof ProtocolException) {
-                                    log.info("The batch {} may be corrupt in staging, so removing it.", batchInStaging.getNodeBatchId());
+                                isError = true;
+                                if (e instanceof ParseException || e instanceof ProtocolException || e.getCause() instanceof ZipException) {
+                                    log.warn("The batch {} may be corrupt in staging, so removing it.", batchInStaging.getNodeBatchId());
                                     resource.delete();
                                     incomingBatch = listener.currentBatch;
-                                    incomingBatch.setStatus(Status.ER);
-                                    incomingBatch.setSqlCode(ErrorConstants.PROTOCOL_VIOLATION_CODE);
-                                    incomingBatch.setSqlState(ErrorConstants.PROTOCOL_VIOLATION_STATE);
-                                    incomingBatchService.updateIncomingBatch(incomingBatch);
+                                    if (incomingBatch != null) {
+                                        incomingBatch.setStatus(Status.ER);
+                                        incomingBatch.setSqlCode(ErrorConstants.PROTOCOL_VIOLATION_CODE);
+                                        incomingBatch.setSqlState(ErrorConstants.PROTOCOL_VIOLATION_STATE);
+                                        incomingBatchService.updateIncomingBatch(incomingBatch);
+                                    }
+                                } else {
+                                    throw e;
                                 }
-                                isError = true;
-                                throw e;
                             }
                         } finally {
                             incomingBatch = listener.currentBatch; 

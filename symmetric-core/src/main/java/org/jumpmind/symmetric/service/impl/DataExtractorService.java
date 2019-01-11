@@ -848,7 +848,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             } else if (e instanceof StagingLowFreeSpace) {
                                 log.error("Extract is disabled because disk is almost full: {}", e.getMessage());
                             } else if (e.getCause() instanceof ZipException) {
-                                log.info("The batch {} appears corrupt in staging, so removing it. ({})", currentBatch.getNodeBatchId(), e.getMessage());
+                                log.warn("The batch {} appears corrupt in staging, so removing it. ({})", currentBatch.getNodeBatchId(), e.getMessage());
                                 IStagedResource extractedBatch = getStagedResource(currentBatch);
                                 if (extractedBatch != null) {
                                     extractedBatch.delete();
