@@ -31,13 +31,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -45,6 +46,10 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.util.BasicDataSourceFactory;
+import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.SecurityServiceFactory;
 
 /*
  * Reads a database model from a MySql database.
@@ -150,8 +155,34 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
         
         if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
             ISqlTemplate template = platform.getSqlTemplate();
+            // Version 8 populates TABLE_CAT, all others populate TABLE_SCHEMA
+            // But historically, the metaData.getCatalog() was used to provide the value for the query
+            
+            // Query for version 5.5, 5.6, and 5.7
             String unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
-                    + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?", metaData.getCatalog(), (String) values.get("TABLE_NAME"), column.getName());
+                    + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
+                    //metaData.getCatalog(),
+                    //(String) values.get("TABLE_CAT"),
+                    (String) values.get("TABLE_SCHEMA"),
+                    (String) values.get("TABLE_NAME"), column.getName());
+            if(unParsedEnums == null) {
+            	// Query for version 8.0
+            	unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
+                        + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
+                        //metaData.getCatalog(),
+                        (String) values.get("TABLE_CAT"),
+                        //(String) values.get("TABLE_SCHEMA"),
+                        (String) values.get("TABLE_NAME"), column.getName());
+            	if(unParsedEnums == null) {
+            		// Query originally used
+            		unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
+                            + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
+                            metaData.getCatalog(),
+                            //(String) values.get("TABLE_CAT"),
+                            //(String) values.get("TABLE_SCHEMA"),
+                            (String) values.get("TABLE_NAME"), column.getName());
+            	}
+            }
             if (unParsedEnums != null) {
                 unParsedEnums = unParsedEnums.trim();
                 if (unParsedEnums.startsWith("(")) {
@@ -295,4 +326,30 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     	
     	return triggers;
     }
+    
+    public static void main(String[] args) throws SQLException {
+//    	mariadb.db.driver=org.mariadb.jdbc.Driver
+//		mariadb.db.user=root
+//		mariadb.db.password=admin
+//		mariadb.root.db.url=jdbc:mysql://localhost/SymmetricRoot?tinyInt1isBit=false
+//		mariadb.server.db.url=jdbc:mysql://localhost/SymmetricRoot?tinyInt1isBit=false
+//		mariadb.client.db.url=jdbc:mysql://localhost/SymmetricClient?tinyInt1isBit=false
+    	TypedProperties properties = new TypedProperties();
+    	properties.put("db.driver", "org.mariadb.jdbc.Driver");
+//    	properties.put("db.driver", "com.mysql.jdbc.Driver");
+    	properties.put("db.user", "root");
+    	properties.put("db.password", "my-secret-pw");
+    	properties.put("db.url", "jdbc:mysql://localhost:3306/phil?tinyInt1isBit=false");
+    	Connection connection = null;
+    	MySqlDdlReader reader = new MySqlDdlReader(
+    			new MySqlDatabasePlatform(BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
+    					new SqlTemplateSettings()));
+    	Database database = reader.getDatabase(connection);
+    	Table[] tables = database.getTables();
+    	Table table = tables[0];
+    	MySqlDdlBuilder ddlBuilder = new MySqlDdlBuilder();
+    	String ddl = ddlBuilder.createTable(table);
+        System.out.println(ddl);
+    }
+
 }
