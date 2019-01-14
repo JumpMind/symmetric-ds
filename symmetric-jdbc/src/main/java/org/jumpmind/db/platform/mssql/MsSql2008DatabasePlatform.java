@@ -22,6 +22,8 @@ package org.jumpmind.db.platform.mssql;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -46,5 +48,15 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
     @Override
     public String getName() {
         return DatabaseNamesConstants.MSSQL2008;
-    } 
+    }
+    
+    @Override
+    public long getEstimatedRowCount(Table table) {
+        String catalog = StringUtils.isNotBlank(table.getCatalog()) ? table.getCatalog() + "." : "";
+        return getSqlTemplateDirty().queryForLong("select sum(p.rows) from " + catalog + "sys.tables t inner join " +
+                catalog + "sys.partitions p on t.object_id = p.object_id and p.index_id IN (0, 1) " +
+                "where t.name = ? and schema_name(t.schema_id) = ?",
+                table.getName(), table.getSchema());
+    }
+
 }

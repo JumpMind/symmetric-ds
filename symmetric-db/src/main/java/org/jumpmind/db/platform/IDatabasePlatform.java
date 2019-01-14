@@ -190,4 +190,7 @@ public interface IDatabasePlatform {
     public boolean isUseMultiThreadSyncTriggers();
     
     public boolean supportsTransactions();
+    
+    public long getEstimatedRowCount(Table table);
+    
 }
