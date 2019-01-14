@@ -1228,7 +1228,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     if (lock != null) {
                         log.info("Sync triggers was locked by the cluster service.  The locking server id was: {}.  The lock time was: {}", lock.getLockingServerId(), lock.getLockTime());
                     } else {
-                        log.info("Sync triggers was locked by something but lock details were found");
+                        log.info("Sync triggers was locked by the cluster service but lock details were not found. Perhaps the lock was released in the meantime.");
                     }
                 }
             }
