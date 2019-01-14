@@ -38,6 +38,7 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -335,22 +336,26 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
             sqlType = "DATETIME(" + column.getScale() + ")";
         }
         if("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
-        	if(column.getEnumValues() != null && column.getEnumValues().length > 0) {
-	        	// Redo the enum, specifying the values returned from the database in the enumValues field
-	        	// instead of the size of the column
-	        	StringBuilder tmpSqlType = new StringBuilder();
-	        	tmpSqlType.append(column.getJdbcTypeName());
-	        	tmpSqlType.append("(");
-	        	boolean appendComma = false;
-	        	for(String s : column.getEnumValues()) {
-	        		if(appendComma) {
-	        			tmpSqlType.append(",");
-	        		}
-	        		tmpSqlType.append("'").append(s).append("'");
-	        		appendComma = true;
+        	PlatformColumn pc = column.getPlatformColumns().get(DatabaseNamesConstants.MYSQL);
+        	if(pc != null) {
+	        	String[] enumValues = pc.getEnumValues();
+	        	if(enumValues != null && enumValues.length > 0) {
+		        	// Redo the enum, specifying the values returned from the database in the enumValues field
+		        	// instead of the size of the column
+		        	StringBuilder tmpSqlType = new StringBuilder();
+		        	tmpSqlType.append(column.getJdbcTypeName());
+		        	tmpSqlType.append("(");
+		        	boolean appendComma = false;
+		        	for(String s : enumValues) {
+		        		if(appendComma) {
+		        			tmpSqlType.append(",");
+		        		}
+		        		tmpSqlType.append("'").append(s).append("'");
+		        		appendComma = true;
+		        	}
+					tmpSqlType.append(")");
+					sqlType = tmpSqlType.toString();
 	        	}
-				tmpSqlType.append(")");
-				sqlType = tmpSqlType.toString();
         	}
         }
         return sqlType;
@@ -363,7 +368,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     	s[1]="b";
     	s[2]="c";
     	Column col = new Column("enumcol", true, 12, 3, 0);
-    	col.setEnumValues(s);
+//    	col.setEnumValues(s);
+    	col.getPlatformColumns().get("mysql").setEnumValues(s);
     	col.setJdbcTypeName("ENUM");
         Table currentTable = new Table("enumtest", col);
         String ddl = ddlBuilder.createTable(currentTable);

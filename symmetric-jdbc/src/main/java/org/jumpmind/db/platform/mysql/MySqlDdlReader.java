@@ -42,6 +42,8 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.nuodb.NuoDbDdlBuilder;
+import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
@@ -205,7 +207,8 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                     parsedEnums[i] = parsedEnum;
                 }
                 
-                column.setEnumValues(parsedEnums);
+//                column.setEnumValues(parsedEnums);
+                column.getPlatformColumns().get(platform.getName()).setEnumValues(parsedEnums);
             }
         }
         return column;
@@ -350,6 +353,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     	MySqlDdlBuilder ddlBuilder = new MySqlDdlBuilder();
     	String ddl = ddlBuilder.createTable(table);
         System.out.println(ddl);
+        OracleDdlBuilder oDdlBuilder = new OracleDdlBuilder();
+        System.out.println(oDdlBuilder.createTable(table));
+        System.out.println(new NuoDbDdlBuilder().createTable(table));
     }
 
 }

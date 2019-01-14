@@ -36,6 +36,8 @@ public class PlatformColumn implements Serializable, Cloneable {
     
     private String defaultValue;
     
+    private String[] enumValues;
+    
     public PlatformColumn(String name, String type, int size, int decimalDigits, String defaultValue) {
         this.name = name;
         this.type = type;
@@ -86,6 +88,18 @@ public class PlatformColumn implements Serializable, Cloneable {
     public int getDecimalDigits() {
         return decimalDigits;
     }    
+    
+    public void setEnumValues(String[] enumValues) {
+        this.enumValues = enumValues;
+    }
+    
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+    
+    public boolean isEnum() {
+        return enumValues != null && enumValues.length > 0;
+    }
         
     @Override
     public Object clone() throws CloneNotSupportedException {

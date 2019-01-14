@@ -19,6 +19,7 @@
 package org.jumpmind.db.platform.nuodb;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,19 +32,28 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
+import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlTemplateSettings;
+import org.jumpmind.db.util.BasicDataSourceFactory;
+import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.security.SecurityServiceFactory;
 
 /*
  * Reads a database model from a MySql database.
@@ -131,12 +141,14 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         }
         
         if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
+        	column.setMappedTypeCode(Types.VARCHAR);
+        	column.setMappedType(JDBCType.VARCHAR.name());
             ISqlTemplate template = platform.getSqlTemplate();
             String unParsedEnums = template.queryForString("SELECT SUBSTRING(ENUMERATION, 2, LENGTH(ENUMERATION)-2) FROM SYSTEM.FIELDS"
-                    + " WHERE SCHEMA=? AND TABLENAME=? AND FIELD=?", metaData.getCatalog(), (String) values.get("TABLENAME"), column.getName());
+                    + " WHERE SCHEMA=? AND TABLENAME=? AND FIELD=?", (String) values.get("SCHEMA"), (String) values.get("TABLENAME"), column.getName());
             if (unParsedEnums != null) {                
-                String[] parsedEnums = unParsedEnums.split("^");
-                column.setEnumValues(parsedEnums);
+                String[] parsedEnums = unParsedEnums.split("\\^");
+                column.getPlatformColumns().get(platform.getName()).setEnumValues(parsedEnums);
             }
         }
         return column;
@@ -248,4 +260,56 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         }
     }
 
+    public static void main2(String[] args) throws SQLException {
+//    	nuodb.db.driver=com.nuodb.jdbc.Driver
+//		nuodb.db.user=root
+//		nuodb.db.password=admin
+//		nuodb.root.db.url=jdbc:com.nuodb://dbdev2.loc/SymmetricRoot?schema=SymmetricRoot
+//		nuodb.server.db.url=jdbc:com.nuodb://dbdev2.loc/SymmetricRoot?schema=SymmetricRoot
+//		nuodb.client.db.url=jdbc:com.nuodb://dbdev2.loc/SymmetricClient?schema=SymmetricClient
+    	
+    	TypedProperties properties = new TypedProperties();
+    	properties.put("db.driver", "com.nuodb.jdbc.Driver");
+    	properties.put("db.user", "root");
+    	properties.put("db.password", "admin");
+    	properties.put("db.url", "jdbc:com.nuodb://dbdev2.loc/SymmetricRoot?schema=SymmetricRoot");
+    	Connection connection = null;
+    	NuoDbDdlReader reader = new NuoDbDdlReader(
+    			new NuoDbDatabasePlatform(BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
+    					new SqlTemplateSettings()));
+    	Database database = reader.getDatabase(connection);
+    	Table[] tables = database.getTables();
+    	Table table = null;
+    	NuoDbDdlBuilder ddlBuilder = new NuoDbDdlBuilder();
+    	for(Table t : tables) {
+    		if("enumcols".equalsIgnoreCase(t.getName())) {
+    			table = t;
+    		}
+    	}
+    	String ddl = ddlBuilder.createTable(table);
+        System.out.println(ddl);
+        System.out.println(new OracleDdlBuilder().createTable(table));
+        System.out.println(new MySqlDdlBuilder().createTable(table));
+    }
+    
+    public static void main(String[] args) {
+    	Table table = new Table("enumcols");
+		table.addColumn(new Column("enumcol", false));
+		Column column = table.getColumnWithName("enumcol");
+		column.setTypeCode(Types.VARCHAR);
+		column.setJdbcTypeCode(Types.SMALLINT);
+		column.setSizeAndScale(2, 0);
+		column.setRequired(true);
+		column.setJdbcTypeName("enum");
+		PlatformColumn fc = new PlatformColumn();
+		fc.setType("enum");
+		fc.setSize(2);
+		fc.setName(DatabaseNamesConstants.NUODB);
+		fc.setEnumValues(new String[] {"a","b","c","d"});
+		column.addPlatformColumn(fc);
+		
+		System.out.println(new NuoDbDdlBuilder().createTable(table));
+		System.out.println(new OracleDdlBuilder().createTable(table));
+        System.out.println(new MySqlDdlBuilder().createTable(table));
+    }
 }

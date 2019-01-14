@@ -34,6 +34,7 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -293,6 +294,36 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     }
 
     protected void writeColumnNullableStmt(StringBuilder ddl) {
+    }
+    
+    @Override
+    protected String getSqlType(Column column) {
+    	String sqlType = super.getSqlType(column);
+    	
+    	if("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
+        	PlatformColumn pc = column.getPlatformColumns().get(DatabaseNamesConstants.NUODB);
+        	if(pc != null) {
+	        	String[] enumValues = pc.getEnumValues();
+	        	if(enumValues != null && enumValues.length > 0) {
+		        	// Redo the enum, specifying the values returned from the database in the enumValues field
+		        	// instead of the size of the column
+		        	StringBuilder tmpSqlType = new StringBuilder();
+		        	tmpSqlType.append(column.getJdbcTypeName());
+		        	tmpSqlType.append("(");
+		        	boolean appendComma = false;
+		        	for(String s : enumValues) {
+		        		if(appendComma) {
+		        			tmpSqlType.append(",");
+		        		}
+		        		tmpSqlType.append("'").append(s).append("'");
+		        		appendComma = true;
+		        	}
+					tmpSqlType.append(")");
+					sqlType = tmpSqlType.toString();
+	        	}
+        	}
+        }
+        return sqlType;
     }
 
 }

@@ -763,8 +763,8 @@ public class DbFill {
     private Object generateRandomValueForColumn(Column column) {
         Object objectValue = null;
         int type = column.getMappedTypeCode();
-        if (column.isEnum()) {
-            objectValue = column.getEnumValues()[new Random().nextInt(column.getEnumValues().length)];
+        if (column.getPlatformColumns().get(platform.getName()) != null && column.getPlatformColumns().get(platform.getName()).isEnum()) {
+            objectValue = column.getPlatformColumns().get(platform.getName()).getEnumValues()[new Random().nextInt(column.getPlatformColumns().get(platform.getName()).getEnumValues().length)];
         } else if (column.isTimestampWithTimezone()) {
             objectValue = String.format("%s %s",
                     FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()),
