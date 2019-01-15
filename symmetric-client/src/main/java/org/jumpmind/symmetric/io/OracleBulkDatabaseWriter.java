@@ -351,10 +351,10 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void buildBulkDataType(int typeCode) {
         String typeName = getTypeName(typeCode);
-        if (getPlatform("-1").getSqlTemplate().queryForInt(
+        if (getPlatform().getSqlTemplate().queryForInt(
                 "select count(*) from user_types where type_name=?", typeName) == 0) {
             final String DDL = "create or replace type %s is table of %s";
-            getPlatform("-1").getSqlTemplate().update(
+            getPlatform().getSqlTemplate().update(
                     String.format(DDL, getTypeName(typeCode), getMappedType(typeCode)));
         }
     }
@@ -449,7 +449,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void buildBulkInsertProcedure(Table table) {
         String procedureName = buildProcedureName("i", table);
-        if (getPlatform("-1").getSqlTemplate().queryForInt(
+        if (getPlatform().getSqlTemplate().queryForInt(
                 "select count(*) from user_procedures where object_name=?", procedureName) == 0) {
             List<Column> columns = getBulkLoadableColumns(table);
             // needed for error codes
