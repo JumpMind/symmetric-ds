@@ -1263,7 +1263,7 @@ public class DataService extends AbstractService implements IDataService {
             }
             
             try {            
-                rowCount = sqlTemplate.queryForLong(sql);
+                rowCount = sqlTemplateDirty.queryForLong(sql);
             } catch (Exception ex) {
                 throw new SymmetricException("Failed to execute row count SQL while starting reload.  If this is a syntax error, check your input and check "
                         +  engine.getTablePrefix() + "_table_reload_request. Statement attempted: \"" + sql + "\"", ex);
