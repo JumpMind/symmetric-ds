@@ -964,7 +964,7 @@ public class RestService {
         IDataExtractorService dataExtractorService = engine.getDataExtractorService();
         IStatisticManager statisticManager = engine.getStatisticManager();
         INodeService nodeService = engine.getNodeService();
-        org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId);
+        org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId, true);
 
         if (securityVerified(nodeId, engine, securityToken)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(

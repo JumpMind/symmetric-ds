@@ -1853,7 +1853,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public void sendScript(String nodeId, String script, boolean isLoad) {
-        Node targetNode = engine.getNodeService().findNode(nodeId);
+        Node targetNode = engine.getNodeService().findNode(nodeId, true);
         TriggerHistory history = engine.getTriggerRouterService()
                 .findTriggerHistoryForGenericSync();
         Data data = new Data(history.getSourceTableName(), DataEventType.BSH,
@@ -1870,7 +1870,7 @@ public class DataService extends AbstractService implements IDataService {
     public boolean sendSchema(String nodeId, String catalogName, String schemaName,
             String tableName, boolean isLoad) {
         Node sourceNode = engine.getNodeService().findIdentity();
-        Node targetNode = engine.getNodeService().findNode(nodeId);
+        Node targetNode = engine.getNodeService().findNode(nodeId, true);
         if (targetNode == null) {
             log.error("Could not send schema to the node {}.  The target node does not exist", nodeId);
             return false;
@@ -1902,7 +1902,7 @@ public class DataService extends AbstractService implements IDataService {
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName,
             String sql) {
         Node sourceNode = engine.getNodeService().findIdentity();
-        Node targetNode = engine.getNodeService().findNode(nodeId);
+        Node targetNode = engine.getNodeService().findNode(nodeId, true);
         if (targetNode == null) {
             return "Unknown node " + nodeId;
         }
