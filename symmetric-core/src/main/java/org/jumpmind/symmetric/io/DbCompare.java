@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io;
 import java.io.Closeable;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -330,6 +331,20 @@ public class DbCompare {
         List<String> filteredTablesNames = filterTables(tableNames);
         
         if (!CollectionUtils.isEmpty(targetTableNames) && filteredTablesNames.size() != targetTableNames.size()) {
+        	StringBuilder sb = new StringBuilder("Source and target table lists do not match.");
+        	sb.append(System.lineSeparator()).append("SourceTable:TargetTable").append(System.lineSeparator());
+        	Iterator<String> ftn = filteredTablesNames.iterator();
+        	Iterator<String> ttn = targetTableNames.iterator();
+        	while(true) {
+        		if(ftn.hasNext() || ttn.hasNext()) {
+        			String filteredTableName = ftn.hasNext() ? ftn.next() : "<undefined>";
+        			String targetTableName = ttn.hasNext() ? ttn.next() : "<undefined>";
+        			sb.append(filteredTableName+":"+targetTableName).append(System.lineSeparator());
+        		} else {
+        			break;
+        		}
+        	}
+        	log.error(sb.toString());
             throw new SymmetricException("Source table names must be the same length as the list of target "
                     + "table names.  Check your arguments. source table names = " 
                     + filteredTablesNames + " target table names = " + targetTableNames); 
@@ -537,17 +552,7 @@ public class DbCompare {
     protected List<String> filterTables(List<String> tables) {        
         List<String> filteredTables = new ArrayList<String>(tables.size());
 
-        if (!CollectionUtils.isEmpty(config.getSourceTableNames())) {
-            for (String includedTableName : config.getSourceTableNames()) {                
-                for (String tableName : tables) {
-                    if (compareTableNames(tableName, includedTableName)) {
-                        filteredTables.add(tableName);
-                    }
-                }
-            }
-        } else {
-            filteredTables.addAll(tables);
-        }
+        filteredTables.addAll(tables);
 
         if (!CollectionUtils.isEmpty(config.getExcludedTableNames())) {
             List<String> excludedTables = new ArrayList<String>(filteredTables);
