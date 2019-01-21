@@ -358,7 +358,7 @@ public class RouterService extends AbstractService implements IRouterService {
             Map<String, ExtractRequest> extractRequests = null;
             
             for (TableReloadRequest load : loadsToProcess) {
-                Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId());
+                Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
                 if (!useExtractJob || streamToFile) {
                     if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
@@ -396,7 +396,7 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             
             for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
-                Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0]);
+                Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0], true);
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
                 List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
                 if (triggerRouters == null) {

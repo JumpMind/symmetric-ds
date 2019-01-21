@@ -634,7 +634,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (Constants.UNROUTED_NODE_ID.equals(nodeId)) {
             targetNode = new Node(nodeId, parameterService.getNodeGroupId());
         } else {
-            targetNode = nodeService.findNode(nodeId);
+            targetNode = nodeService.findNode(nodeId, true);
         }
         if (targetNode != null) {
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
@@ -1447,7 +1447,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith(CsvConstants.BATCH)) {
-                        if (nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                        if (nodeService.findNode(batch.getNodeId(), true).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
                             writer.write(getBatchStatsColumns());
                             writer.newLine();
                             writer.write(getBatchStats(batch));
@@ -1482,7 +1482,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 boolean batchStatsWritten = false;
                 String prevBuffer = "";
                 while ((numCharsRead = reader.read(buffer)) != -1) {
-                    if (!batchStatsWritten && nodeService.findNode(batch.getNodeId()).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
+                    if (!batchStatsWritten && nodeService.findNode(batch.getNodeId(), true).isVersionGreaterThanOrEqualTo(3, 9, 0)) {
                         batchStatsWritten = writeBatchStats(writer, buffer, numCharsRead, prevBuffer, batch);
                         prevBuffer = new String(buffer);
                     } else {
@@ -1702,7 +1702,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         for (long batchId = startBatchId; batchId <= endBatchId; batchId++) {
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
             if (batch != null) {
-                Node targetNode = nodeService.findNode(nodeId);
+                Node targetNode = nodeService.findNode(nodeId, true);
                 if (targetNode == null && Constants.UNROUTED_NODE_ID.equals(nodeId)) {
                     targetNode = new Node();
                     targetNode.setNodeId("-1");
@@ -1732,7 +1732,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 startBatchTime, endBatchTime, channelIds);
         List<OutgoingBatch> list = batches.getBatches();
         for (OutgoingBatch outgoingBatch : list) {
-            Node targetNode = nodeService.findNode(nodeId);
+            Node targetNode = nodeService.findNode(nodeId, true);
             if (targetNode == null && Constants.UNROUTED_NODE_ID.equals(nodeId)) {
                 targetNode = new Node();
                 targetNode.setNodeId("-1");
@@ -2018,7 +2018,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 continue;
             }                
             Node identity = nodeService.findIdentity();
-            Node targetNode = nodeService.findNode(nodeCommunication.getNodeId());
+            Node targetNode = nodeService.findNode(nodeCommunication.getNodeId(), true);
             log.info(
                     "Extracting batches for request {}. Starting at batch {}.  Ending at batch {}",
                     new Object[] { request.getRequestId(), request.getStartBatchId(),
@@ -2669,7 +2669,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.selectFromTableEventsToSend = new ArrayList<SelectFromTableEvent>(
                     initialLoadEvents);
             this.batch = batch;
-            this.node = nodeService.findNode(batch.getTargetNodeId());
+            this.node = nodeService.findNode(batch.getTargetNodeId(), true);
             if (node == null) {
                 throw new SymmetricException("Could not find a node represented by %s",
                         this.batch.getTargetNodeId());
