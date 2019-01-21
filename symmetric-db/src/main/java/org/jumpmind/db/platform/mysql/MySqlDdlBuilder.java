@@ -358,6 +358,10 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
 	        	}
         	}
         }
+        if("TINYBLOB".equalsIgnoreCase(column.getJdbcTypeName())) {
+        	// For some reason, MySql driver returns BINARY type for TINYBLOB instead of BLOB type
+        	sqlType = "TINYBLOB";
+        }
         return sqlType;
     }
     
