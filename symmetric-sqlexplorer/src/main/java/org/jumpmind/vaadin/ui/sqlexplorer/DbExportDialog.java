@@ -116,18 +116,18 @@ public class DbExportDialog extends ResizableWindow {
 
     private IDatabasePlatform databasePlatform;
 
-    public DbExportDialog(IDatabasePlatform databasePlatform, QueryPanel queryPanel) {
-        this(databasePlatform, new HashSet<Table>(), queryPanel);
+    public DbExportDialog(IDatabasePlatform databasePlatform, QueryPanel queryPanel, String excludeTablesRegex) {
+        this(databasePlatform, new HashSet<Table>(), queryPanel, excludeTablesRegex);
     }
 
     public DbExportDialog(IDatabasePlatform databasePlatform, Set<Table> selectedTableSet,
-            QueryPanel queryPanel) {
+            QueryPanel queryPanel, String excludeTablesRegex) {
         super("Database Export");
 
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
 
-        tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet) {
+        tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet, excludeTablesRegex) {
             private static final long serialVersionUID = 1L;
 
             @Override

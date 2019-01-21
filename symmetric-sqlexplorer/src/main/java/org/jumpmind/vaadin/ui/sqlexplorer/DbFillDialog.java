@@ -94,12 +94,12 @@ public class DbFillDialog extends ResizableWindow {
 
     private IDatabasePlatform databasePlatform;
 
-    public DbFillDialog(IDatabasePlatform databasePlatform, QueryPanel queryPanel) {
-        this(databasePlatform, new HashSet<Table>(0), queryPanel);
+    public DbFillDialog(IDatabasePlatform databasePlatform, QueryPanel queryPanel, String excludeTablesRegex) {
+        this(databasePlatform, new HashSet<Table>(0), queryPanel, excludeTablesRegex);
     }
 
     public DbFillDialog(IDatabasePlatform databasePlatform, Set<Table> selectedTableSet,
-            QueryPanel queryPanel) {
+            QueryPanel queryPanel, String excludeTablesRegex) {
         super("Database Fill");
         setModal(true);
         setHeight(500, Unit.PIXELS);
@@ -108,7 +108,7 @@ public class DbFillDialog extends ResizableWindow {
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
 
-        tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet) {
+        tableSelectionLayout = new TableSelectionLayout(databasePlatform, selectedTableSet, excludeTablesRegex) {
             private static final long serialVersionUID = 1L;
 
             protected void selectionChanged() {

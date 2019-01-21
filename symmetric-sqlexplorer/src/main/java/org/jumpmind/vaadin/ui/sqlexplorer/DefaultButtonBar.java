@@ -166,7 +166,8 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
 
             @Override
             public void menuSelected(MenuItem selectedItem) {
-                new DbExportDialog(db.getPlatform(), queryPanel).showAtSize(0.6);
+                String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                new DbExportDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
             }
         });
         
@@ -176,7 +177,8 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
 
             @Override
             public void menuSelected(MenuItem selectedItem) {
-                new DbFillDialog(db.getPlatform(), queryPanel).showAtSize(0.6);
+                String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                new DbFillDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
             }
         });
 
