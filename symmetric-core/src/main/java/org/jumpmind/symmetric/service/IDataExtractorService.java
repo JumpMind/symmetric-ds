@@ -65,7 +65,8 @@ public interface IDataExtractorService {
     
     public RemoteNodeStatuses queueWork(boolean force);
     
-    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId, long loadId, String tableName, long rows);
+    public ExtractRequest requestExtractRequest(ISqlTransaction transaction, String nodeId, String channelId, TriggerRouter triggerRouter, long startBatchId, long endBatchId,
+            long loadId, String tableName, long rows, long parentId);
     
     public void resetExtractRequest(OutgoingBatch batch);
     
@@ -81,4 +82,6 @@ public interface IDataExtractorService {
     
     public int cancelExtractRequests(long loadId);
     
+    public void releaseMissedExtractRequests();
+
 }

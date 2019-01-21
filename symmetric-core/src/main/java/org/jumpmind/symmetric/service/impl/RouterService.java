@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
+import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -354,6 +355,8 @@ public class RouterService extends AbstractService implements IRouterService {
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
+            Map<String, ExtractRequest> extractRequests = null;
+            
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId());
                 if (!useExtractJob || streamToFile) {
@@ -367,7 +370,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class)
                                 .getActiveTriggerHistories(targetNode);
 
-                        engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters);
+                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters, extractRequests);
                     } else {
                         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
 
@@ -402,12 +405,11 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
                 List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
                 
-                engine.getDataService().insertReloadEvents(
-                        targetNode,
-                        false, entry.getValue(), processInfo, activeHistories, triggerRouters);
+                extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories, triggerRouters, extractRequests);
             }
         }
     }
+    
     public boolean isValidLoadTarget(String targetNodeId) {
         boolean result = false;
         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(targetNodeId);

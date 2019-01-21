@@ -149,6 +149,7 @@
        	<column name="last_loaded_batch_id" type="BIGINT" required="false" description="The last batch id that was successfully loaded on the target" />
        	<column name="total_rows" type="BIGINT" required="false" description="The rows in this table to be extracted" />
        	<column name="loaded_time" type="TIMESTAMP"  description="Timestamp when this table was loaded." />
+        <column name="parent_request_id" type="BIGINT" required="true" default="0" description="Parent request_id that will actually handle the extract for this request." />
         <column name="last_update_time" type="TIMESTAMP"  description="Timestamp when a process last updated this entry." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
     </table>

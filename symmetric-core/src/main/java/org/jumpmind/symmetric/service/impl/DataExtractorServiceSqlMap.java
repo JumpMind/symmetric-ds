@@ -31,12 +31,23 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
         super(platform, replacementTokens);
         
         // @formatter:off
-        putSql("selectNodeIdsForExtractSql", "select node_id, queue from $(extract_request) where status=? group by node_id, queue");
+        putSql("selectNodeIdsForExtractSql", "select node_id, queue from $(extract_request) where status=? and parent_request_id=0 group by node_id, queue");
         
-        putSql("selectExtractRequestForNodeSql", "select * from $(extract_request) where node_id=? and queue=? and status=? order by request_id");
+        putSql("selectExtractRequestForNodeSql", "select * from $(extract_request) where node_id=? and queue=? and status=? and parent_request_id=0 order by request_id");
         
-        putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, load_id, table_name, total_rows, last_update_time, create_time) "
-                + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
+        putSql("selectExtractChildRequestForNodeSql", "select c.* from $(extract_request) c " +
+                "inner join $(extract_request) p on p.request_id = c.parent_request_id where p.node_id=? and p.queue=? and p.status=? and p.parent_request_id=0");
+
+        putSql("countExtractChildRequestMissed",
+                "select count(*) from $(extract_request) where status = ? and parent_request_id > 0 " 
+                + "and parent_request_id in (select request_id from sym_extract_request where parent_request_id = 0 and status = ?)");
+
+        putSql("releaseExtractChildRequestMissed",
+                "update sym_extract_request set parent_request_id = 0 where status = ? and parent_request_id > 0 " 
+                + "and parent_request_id in (select request_id from sym_extract_request where parent_request_id = 0 and status = ?)");
+        
+        putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, load_id, table_name, total_rows, parent_request_id, last_update_time, create_time) "
+                + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
         
         putSql("updateExtractRequestStatus", "update $(extract_request) set status=?, last_update_time=current_timestamp where request_id=?");
         
@@ -47,7 +58,8 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
         putSql("updateExtractRequestTransferred", "update $(extract_request) set last_transferred_batch_id=?, transferred_rows = transferred_rows + ?, transferred_millis = ?"
                 + " where start_batch_id <= ? and end_batch_id >= ? and node_id=? and load_id=? and (last_transferred_batch_id is null or last_transferred_batch_id < ?)");
         
-        putSql("resetExtractRequestStatus", "update $(extract_request) set status=?, last_update_time= current_timestamp where start_batch_id <= ? and end_batch_id >= ? and node_id=?");
+        putSql("resetExtractRequestStatus", "update $(extract_request) set status=?, parent_request_id=0, last_update_time= current_timestamp"
+                + " where start_batch_id <= ? and end_batch_id >= ? and node_id=?");
         
         putSql("cancelExtractRequests", "update $(extract_request) set status=?, last_update_time=current_timestamp where load_id = ?");
 

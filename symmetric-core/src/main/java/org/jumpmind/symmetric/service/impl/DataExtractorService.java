@@ -1900,12 +1900,30 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    public List<ExtractRequest> getExtractRequestsForNode(NodeCommunication nodeCommunication) {
+    protected List<ExtractRequest> getExtractRequestsForNode(NodeCommunication nodeCommunication) {
         return sqlTemplate.query(getSql("selectExtractRequestForNodeSql"),
-                new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getQueue()
-                , ExtractRequest.ExtractStatus.NE.name());
+                new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
+                ExtractRequest.ExtractStatus.NE.name());
     }
-    
+
+    protected Map<Long, List<ExtractRequest>> getExtractChildRequestsForNode(NodeCommunication nodeCommunication, List<ExtractRequest> parentRequests) {
+        Map<Long, List<ExtractRequest>> requests = new HashMap<Long, List<ExtractRequest>>();
+        
+        List<ExtractRequest> childRequests = sqlTemplate.query(getSql("selectExtractChildRequestForNodeSql"),
+                new ExtractRequestMapper(), nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
+                ExtractRequest.ExtractStatus.NE.name());
+
+        for (ExtractRequest childRequest: childRequests) {
+            List<ExtractRequest> childList = requests.get(childRequest.getParentRequestId());
+            if (childList == null) {
+                childList = new ArrayList<ExtractRequest>();
+                requests.put(childRequest.getParentRequestId(), childList);
+            }
+            childList.add(childRequest);
+        }
+        return requests;
+    }
+
     @Override
     public void resetExtractRequest(OutgoingBatch batch) {
         ISqlTransaction transaction = null;
@@ -1932,20 +1950,33 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
 
-    public void requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
-            TriggerRouter triggerRouter, long startBatchId, long endBatchId, long loadId, String table, long rows) {
+    public ExtractRequest requestExtractRequest(ISqlTransaction transaction, String nodeId, String queue,
+            TriggerRouter triggerRouter, long startBatchId, long endBatchId, long loadId, String table, long rows, long parentRequestId) {
         long requestId = sequenceService.nextVal(transaction, Constants.SEQUENCE_EXTRACT_REQ);
         transaction.prepareAndExecute(getSql("insertExtractRequestSql"),
                 new Object[] { requestId, nodeId, queue, ExtractStatus.NE.name(), startBatchId,
                         endBatchId, triggerRouter.getTrigger().getTriggerId(),
-                        triggerRouter.getRouter().getRouterId(), loadId, table, rows }, new int[] { Types.BIGINT, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT });
+                        triggerRouter.getRouter().getRouterId(), loadId, table, rows, parentRequestId }, new int[] { Types.BIGINT, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, 
+                        Types.BIGINT, Types.BIGINT });
+        ExtractRequest request = new ExtractRequest();
+        request.setRequestId(requestId);
+        request.setNodeId(nodeId);
+        request.setQueue(queue);
+        request.setStatus(ExtractStatus.NE);
+        request.setStartBatchId(startBatchId);
+        request.setEndBatchId(endBatchId);
+        request.setRouterId(triggerRouter.getRouterId());
+        request.setLoadId(loadId);
+        request.setTableName(table);
+        request.setRows(rows);
+        request.setParentRequestId(parentRequestId);
+        return request;
     }
 
     protected void updateExtractRequestStatus(ISqlTransaction transaction, long extractId,
             ExtractStatus status) {
-        transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(),
-                extractId);
+        transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(), extractId);
     }
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
@@ -1969,7 +2000,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         
         List<ExtractRequest> requests = getExtractRequestsForNode(nodeCommunication);
+        Map<Long, List<ExtractRequest>> allChildRequests = null;
         long ts = System.currentTimeMillis();
+        
+        if (requests.size() > 0) {
+            allChildRequests = getExtractChildRequestsForNode(nodeCommunication, requests);
+        }
+
         /*
          * Process extract requests until it has taken longer than 30 seconds, and then
          * allow the process to return so progress status can be seen.
@@ -1993,6 +2030,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     .getNodeId(), nodeCommunication.getQueue(), nodeCommunication.getNodeId(),
                     getProcessType()));
             processInfo.setTotalBatchCount(batches.size());
+            List<ExtractRequest> childRequests = allChildRequests.get(request.getRequestId());
+            
             try {
                 boolean areBatchesOk = true;
 
@@ -2023,7 +2062,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                     
                     MultiBatchStagingWriter multiBatchStagingWriter = 
-                            buildMultiBatchStagingWriter(request, identity, targetNode, batches, processInfo, channel);
+                            buildMultiBatchStagingWriter(request, childRequests, identity, targetNode, batches, processInfo, channel);
                     
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT, new ClusterLockRefreshListener(clusterService));
@@ -2064,25 +2103,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
-                    updateExtractRequestStatus(transaction, request.getRequestId(),
-                            ExtractStatus.OK);
-
-                    if (!areBatchesOk) {
-                        for (OutgoingBatch outgoingBatch : batches) {
-                            if (!parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED, false)) {
-                                outgoingBatch.setStatus(Status.NE);
-                                outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
-                            } else if (outgoingBatch.getStatus() == Status.RQ) {
-                                log.info("Batch {} was empty after extract in background and will be ignored.",
-                                        new Object[] { outgoingBatch.getNodeBatchId() });
-                                outgoingBatch.setStatus(Status.IG);
-                                outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
-
-                            }
+                    updateExtractRequestStatus(transaction, request.getRequestId(), ExtractStatus.OK);
+                    if (childRequests != null) {
+                        for (ExtractRequest childRequest : childRequests) {
+                            updateExtractRequestStatus(transaction, childRequest.getRequestId(), ExtractStatus.OK);
                         }
-                    } else {
-                        log.info("Batches already had an OK status for request {}, batches {} to {}.  Not updating the status to NE",
-                                new Object[] { request.getRequestId(), request.getStartBatchId(), request.getEndBatchId() });
                     }
                     transaction.commit();
                     log.info("Done extracting {} batches for request {}", (request.getEndBatchId() - request.getStartBatchId()) + 1, request.getRequestId());
@@ -2099,6 +2124,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 } finally {
                     close(transaction);
                 }
+
+                releaseMissedExtractRequests();
                 processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
 
             } catch (CancellationException ex) {
@@ -2129,6 +2156,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     throw ex;
                 }
             }
+        }
+    }
+
+    public void releaseMissedExtractRequests() {
+        int missingCount = sqlTemplateDirty.queryForInt(getSql("countExtractChildRequestMissed"), Status.NE.name(), Status.OK.name());
+        if (missingCount > 0) {
+            log.info("Releasing {} child extract requests that missed processing by parent node", missingCount);
+            sqlTemplate.update(getSql("releaseExtractChildRequestMissed"), Status.NE.name(), Status.OK.name());
         }
     }
     
@@ -2171,9 +2206,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         return nodeCommunication.getCommunicationType() != CommunicationType.FILE_XTRCT;
     }    
 
-    protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, Node sourceNode, Node targetNode, List<OutgoingBatch> batches,
-            ProcessInfo processInfo, Channel channel) {
-        MultiBatchStagingWriter multiBatchStatingWriter = new MultiBatchStagingWriter(this, request, sourceNode.getNodeId(), stagingManager,
+    protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, List<ExtractRequest> childRequests, Node sourceNode,
+            Node targetNode, List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel) {
+        MultiBatchStagingWriter multiBatchStatingWriter = new MultiBatchStagingWriter(this, request, childRequests, sourceNode.getNodeId(), stagingManager,
                 batches, channel.getMaxBatchSize(), processInfo);
         return multiBatchStatingWriter;
     }
@@ -2222,6 +2257,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setLastLoadedBatchId(row.getLong("last_loaded_batch_id"));
             request.setTransferredMillis(row.getLong("transferred_millis"));
             request.setLoadedMillis(row.getLong("loaded_millis"));
+            request.setParentRequestId(row.getLong("parent_request_id"));
             return request;
         }
     }
