@@ -99,6 +99,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_EXPORT_SYM_TABLES = "export-sym-tables";
 
     private static final String CMD_OPEN_REGISTRATION = "open-registration";
+    
+    private static final String CMD_REMOVE_NODE = "remove-node";
 
     private static final String CMD_SYNC_TRIGGERS = "sync-triggers";
     
@@ -178,6 +180,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             PrintWriter pw = new PrintWriter(System.out);
             printHelpLine(pw, CMD_LIST_ENGINES);
             printHelpLine(pw, CMD_OPEN_REGISTRATION);
+            printHelpLine(pw, CMD_REMOVE_NODE);
             printHelpLine(pw, CMD_RELOAD_NODE);
             printHelpLine(pw, CMD_RELOAD_TABLE);
             printHelpLine(pw, CMD_EXPORT_BATCH);
@@ -240,12 +243,15 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             if (cmd.equals(CMD_RELOAD_NODE)) {
                 addOption(options, "r", OPTION_REVERSE, false);
             }
+            if (cmd.equals(CMD_REMOVE_NODE)) {
+            	addOption(options, "n", OPTION_NODE, true);
+            }
 
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
                 format.printOptions(writer, WIDTH, options, PAD, PAD);
             }
-
+            
             if (!ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd)) {
                 format.printWrapped(writer, WIDTH, "\nEngine options:");
                 options = new Options();
@@ -305,6 +311,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else if (cmd.equals(CMD_OPEN_REGISTRATION)) {
             openRegistration(line, args);
             return true;
+        } else if(cmd.equals(CMD_REMOVE_NODE)) {
+        	removeNode(line, args);
+        	return true;
         } else if (cmd.equals(CMD_RELOAD_NODE)) {
             reloadNode(line, args);
             return true;
@@ -467,6 +476,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         System.out.println(String.format(
                 "Opened registration for node group of '%s' external ID of '%s'", nodeGroupId,
                 externalId));
+    }
+    
+    private void removeNode(CommandLine line, List<String> args) {
+    	String node = line.getOptionValue(OPTION_NODE);
+    	getSymmetricEngine().removeAndCleanupNode(node);
+    	System.out.println(String.format("Removed node '%s' from engine '%s'", node, getSymmetricEngine().getEngineName()));
     }
 
     private void reloadNode(CommandLine line, List<String> args) {
