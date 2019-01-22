@@ -155,7 +155,11 @@ public class TableReloadRequest {
     }
 
     public boolean isFullLoadRequest() {
-        return ParameterConstants.ALL.equals(getTriggerId()) && ParameterConstants.ALL.equals(getRouterId());
+        return ParameterConstants.ALL.equals(getTriggerId()) && ParameterConstants.ALL.equals(getRouterId()) && getChannelId() == null;
+    }
+    
+    public boolean isChannelRequest() {
+        return getChannelId() != null;
     }
 
     public String getIdentifier() {
