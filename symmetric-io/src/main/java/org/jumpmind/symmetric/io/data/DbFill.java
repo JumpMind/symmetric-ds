@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -44,6 +45,8 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
@@ -52,6 +55,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.db.util.TableRow;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -120,7 +124,7 @@ public class DbFill {
     
     // Foreign keys by their local column name [Table name.column name -> ForeignKeyReference].
     // Used to look up the current row value of foreign keys for an insert.
-    private Map<String, ForeignKeyReference> foreignKeyReferences = new TreeMap<String, ForeignKeyReference>();
+    private Map<String, List<ForeignKeyReference>> foreignKeyReferences = new TreeMap<String, List<ForeignKeyReference>>();
 
     // For each table, the ordered list of tables it depends on (for inserts cascading)
     private Map<Table, List<Table>> foreignTables = new HashMap<Table, List<Table>>();
@@ -137,6 +141,10 @@ public class DbFill {
     
     // For cascading-select, to ensure composite keys contain proper values for all columns in the key
     private Map<Table, HashSet<ForeignKey>> compositeForeignKeys = new HashMap<Table, HashSet<ForeignKey>>();
+    
+    // Minimum column size for all columns with foreign key references
+    // For example, if pid varchar(10) references id varchar(5), then both id and pid will return min column size as 5 
+    private Map<String, Integer> minColumnSizes = new HashMap<String, Integer>();
     
     // -1 for no limit
     private static final int RANDOM_SELECT_SIZE = 100;
@@ -158,7 +166,7 @@ public class DbFill {
     }
 
     public void fillTables(String[] tableNames, Map<String,int[]> tableProperties) {
-        List<Table> tables = new ArrayList<Table>();
+        List<Table> tablesToFill = new ArrayList<Table>();
         if (verbose) {
             log.info("Looking up table definitions from database");
         }
@@ -187,7 +195,7 @@ public class DbFill {
                             }
                         }
                     }
-                    tables.add(table);
+                    tablesToFill.add(table);
                 }
             }
         } else {
@@ -195,7 +203,7 @@ public class DbFill {
                 Table table = platform.readTableFromDatabase(getCatalogToUse(), getSchemaToUse(),
                         tableName);
                 if (table != null) {
-                    tables.add(table);
+                    tablesToFill.add(table);
                 } else if (!ignoreMissingTables) {
                     throw new RuntimeException("Cannot find table " + tableName + " in catalog "
                             + getCatalogToUse() + " and schema " + getSchemaToUse());
@@ -204,15 +212,11 @@ public class DbFill {
         }
 
         if (cascading || cascadingSelect) {
-            if (verbose) {
-                log.info("Resolving foreign key references");
-            }
-            buildForeignTables(tables);
+            log.info("Resolving foreign key references");
+            buildForeignTables(tablesToFill);
         } else {
-            if (verbose) {
-                log.info("Checking for foreign key constraints");
-            }
-            List<Table> missingTables = getForeignKeyTables(tables, new HashSet<Table>());
+            log.info("Checking for foreign key constraints");
+            List<Table> missingTables = getForeignKeyTables(tablesToFill, new HashSet<Table>());
             if (missingTables.size() > 0) {
                 List<String> missingTableNames = new ArrayList<String>();
                 for (Table missingTable : missingTables) {
@@ -222,20 +226,23 @@ public class DbFill {
                         missingTableNames);
             }
         }
-        log.info("TABLES " + tables.size());
-        tables = Database.sortByForeignKeys(tables, getAllDbTables(), null, null);
-        
-        StringBuffer tableOrder = new StringBuffer();
-        for(Table t : tables) {
-            tableOrder.append(t.getName()).append(", ");
+        log.info("TABLES TO FILL (" + tablesToFill.size() + "): " + toString(tablesToFill));
+        List<Table> orderedTables = Database.sortByForeignKeys(tablesToFill, getAllDbTables(), null, null);
+        orderedTables = removeSymTables(orderedTables);
+
+        List<Table> dependencyTables = new ArrayList<Table>();
+        for (Table table : orderedTables) {
+            if (!tablesToFill.contains(table)) {
+                dependencyTables.add(table);
+            }
         }
-        log.info("ORDER (" + tables.size() + " tables): " + tableOrder.toString());
-        buildForeignKeyReferences(tables);
-        buildDependentColumnValues(tables);    
-        
-        tables = removeSymTables(tables);
-        
-        fillTables(tables, tableProperties);
+
+        log.info("DEPENDENCIES (" + dependencyTables.size() + " tables): " + toString(dependencyTables));
+        buildForeignKeyReferences(orderedTables);
+        buildDependentColumnValues(orderedTables);
+        buildMinColumnSizes(orderedTables);
+
+        fillTables(tablesToFill, orderedTables, tableProperties);
     }
     
     protected List<Table> removeSymTables(List<Table> tables) {
@@ -247,7 +254,21 @@ public class DbFill {
     		}
     		return filteredTables;
     }
-    
+
+    protected String toString(List<Table> tables) {
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (Table table : tables) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(table.getName());
+        }
+        return sb.toString();
+    }
+
     protected void buildForeignTables(List<Table> tables) {
         for (Table table : tables) {
             ArrayList<Table> tableList = new ArrayList<Table>();
@@ -265,7 +286,12 @@ public class DbFill {
             for (ForeignKey fk : table.getForeignKeys()) {
                 for (Reference ref : fk.getReferences()) {
                     String key = table.getQualifiedTableName() + "." + ref.getLocalColumnName();
-                    foreignKeyReferences.put(key,new ForeignKeyReference(fk, ref));
+                    List<ForeignKeyReference> fkrs = foreignKeyReferences.get(key);
+                    if (fkrs == null) {
+                        fkrs = new ArrayList<ForeignKeyReference>();
+                        foreignKeyReferences.put(key, fkrs);
+                    }
+                    fkrs.add(new ForeignKeyReference(fk, ref));
                 }
                 if (fk.getReferences().length > 1) {
                     if (compositeForeignKeys.get(table) == null) {
@@ -297,12 +323,12 @@ public class DbFill {
                     List<Object> commonValue = new ArrayList<Object>();
                     StringBuilder sb = null;
                     for (ForeignKeyReference fkr : references) {
-                        String key = table.getQualifiedColumnName(fkr.getReference().getForeignColumn());
+                        String key = table.getFullyQualifiedTableName() + "." + fkr.getReference().getForeignColumnName();
                         commonDependencyValues.put(key, commonValue);
                         commonDependencyTables.add(getDbTable(fkr.getForeignKey().getForeignTableName()));
                         if (verbose) {
                             sb = (sb == null) ? new StringBuilder() : sb.append(", ");
-                            sb.append(key);
+                            sb.append(fkr.getReference().getLocalColumnName() + " -> " + fkr.getForeignKey().getForeignTableName() + "." + fkr.getReference().getForeignColumnName());
                         }
                     }
                     if (verbose) {
@@ -313,6 +339,53 @@ public class DbFill {
         }
     }
 
+    protected void buildMinColumnSizes(List<Table> tables) {
+        for (Table table : tables) {
+            Set<String> columnNames = new HashSet<String>();
+            for (ForeignKey fk : table.getForeignKeys()) {                
+                for (Reference ref : fk.getReferences()) {
+                    columnNames.add(ref.getLocalColumnName());
+                }
+            }
+            for (String columnName : columnNames) {
+                Column column = table.findColumn(columnName);
+                buildMinColumnSize(table, column, new HashSet<String>(), null);
+            }
+        }
+    }
+
+    /**
+     * For the table and column passed in, traverse all the foreign key references to find the smallest
+     * size defined for the column.
+     *  
+     */
+    protected int buildMinColumnSize(Table table, Column column, Set<String> relatedTableColumns, Integer minSize) {
+        if (relatedTableColumns.add(table.getQualifiedTableName() + "." + column.getName())) {
+            Integer size = column.getSizeAsInt();
+            if (minSize != null && minSize < size) {
+                size = minSize;
+            }
+
+            for (ForeignKey fk : table.getForeignKeys()) {
+                for (Reference ref : fk.getReferences()) {
+                    if (ref.getLocalColumnName().equals(column.getName())) {
+                        Table foreignTable = getDbTable(fk.getForeignTableName());
+                        Column foreignColumn = foreignTable.findColumn(ref.getForeignColumnName());
+                        size = buildMinColumnSize(foreignTable, foreignColumn, relatedTableColumns, size);
+                    }
+                }
+            }
+    
+            if (minSize == null) {
+                for (String relatedTableColumn : relatedTableColumns) {
+                    minColumnSizes.put(relatedTableColumn, size);
+                }
+            }
+            minSize = size;
+        }
+        return minSize;
+    }
+    
     /**
      * Identify the tables not included in the given list that the initial tables have FK relationships to.
      *
@@ -369,9 +442,19 @@ public class DbFill {
      * @param tableProperties Map indicating IUD weights for each table name provided
      *          in the properties file.
      */
-    private void fillTables(List<Table> tables, Map<String,int[]> tableProperties) {
-        ISqlTransaction tran = platform.getSqlTemplate().startSqlTransaction();        
+    private void fillTables(List<Table> tablesToFill, List<Table> orderedTables, Map<String,int[]> tableProperties) {       
+        if (truncate) {
+            ListIterator<Table> iterator = tablesToFill.listIterator(tablesToFill.size());
+            while (iterator.hasPrevious()) {
+                Table table = iterator.previous();
+                truncateTable(table);
+            }
+        }
+
+        ISqlTransaction tran = platform.getSqlTemplate().startSqlTransaction();
         int rowsInTransaction = 0;
+        int rowsTotal = 0;
+
         for (int x = 0; x < repeat; x++) {
             int numRowsToGenerate = inputLength;
             int numRowsToCommit = maxRowsCommit;
@@ -381,115 +464,88 @@ public class DbFill {
                 numRowsToCommit = getRand().nextInt(maxRowsCommit);
                 numRowsToCommit = numRowsToCommit > 0 ? numRowsToCommit : 1;
             }
+            
             for (int i = 0; i < numRowsToGenerate; i++) {
-                ArrayList<Table> tablesToProcess = new ArrayList<Table>(tables);
-                while (tablesToProcess.size() > 0) {
-                    Table tableToProcess = tablesToProcess.get(0);
+
+                for (Table table : orderedTables) {
                     int dmlType = INSERT;
-                    if (tableProperties != null && tableProperties.containsKey(tableToProcess.getName())) {
-                        dmlType = randomIUD(tableProperties.get(tableToProcess.getName()));
+                    if (tableProperties != null && tableProperties.containsKey(table.getName())) {
+                        dmlType = randomIUD(tableProperties.get(table.getName()));
                     } else if (dmlWeight != null) {
                         dmlType = randomIUD(dmlWeight);
                     }
 
-                    List<Table> groupTables = new ArrayList<Table>();
-                    if (cascading && dmlType == INSERT) {
-                        List<Table> foreignTablesList = foreignTables.get(tableToProcess);
-                        if (foreignTablesList != null) {
-                            groupTables.addAll(foreignTablesList);
+                    if (cascadingSelect && dmlType == INSERT && !tablesToFill.contains(table)) {
+                        if (currentRowValues.get(table.getName()) == null) {
+                            selectRandomRecord(tran, table);
                         }
-                        if (groupTables.size() > 0) {
-                            log.info("Cascade insert " + tableToProcess.getName() + ": " + toStringTables(groupTables));
-                        }
-                    } else if (cascadingSelect && dmlType == INSERT) {
-                        List<Table> foreignList = foreignTables.get(tableToProcess);
-                        for (Table foreignTable : foreignList) {
-                            if (tables.contains(foreignTable)) {
-                                groupTables.add(foreignTable);
-                            } else {
-                                selectRandomRecord(tran, foreignTable);
-                            }
-                        }
-                    }                    
-                    groupTables.add(tableToProcess);
-                    
-                    if (truncate) {
-                    	for (Table table : groupTables) {
-                    		truncateTable(tran, table);
-                    	}
+                        continue;
                     }
                     
-                    for (Table table : groupTables) {
-                        switch (dmlType) {
-                        case INSERT:
-                            if (verbose) {
-                                log.info("Inserting into table " + table.getName());
-                            }
-                            insertRandomRecord(tran, table);
-                            break;
-                        case UPDATE:
-                            if (verbose) {
-                                log.info("Updating record in table " + table.getName());
-                            }
-                            updateRandomRecord(tran, table);
-                            break;
-                        case DELETE:
-                            if (verbose) {
-                                log.info("Deleting record in table " + table.getName());
-                            }
-                            deleteRandomRecord(tran, table);
-                            break;
+                    switch (dmlType) {
+                    case INSERT:
+                        if (verbose) {
+                            log.info("Inserting into table " + table.getName());
                         }
+                        insertRandomRecord(tran, table);
+                        break;
+                    case UPDATE:
+                        if (verbose) {
+                            log.info("Updating record in table " + table.getName());
+                        }
+                        updateRandomRecord(tran, table);
+                        break;
+                    case DELETE:
+                        if (verbose) {
+                            log.info("Deleting record in table " + table.getName());
+                        }
+                        deleteRandomRecord(tran, table);
+                        selectRandomRecord(tran, table);
+                        break;
+                    }
 
-                        if (++rowsInTransaction >= numRowsToCommit) {
-                            if (commitDelay > 0) {
-                                AppUtils.sleep(commitDelay);
-                            }
-                            if (percentRollback > 0 && getRand().nextInt(100) <= percentRollback) {
-                                if (verbose) {
-                                    log.info("Rollback " + rowsInTransaction + " rows");
-                                }
-                                tran.rollback();
-                            } else {
-                                if (verbose) {
-                                    log.info("Commit " + rowsInTransaction + " rows");
-                                }
-                                tran.commit();
-                            }
-                            rowsInTransaction = 0;
-                            AppUtils.sleep(interval);
+                    if (++rowsInTransaction >= numRowsToCommit) {
+                        if (commitDelay > 0) {
+                            AppUtils.sleep(commitDelay);
                         }
+                        if (percentRollback > 0 && getRand().nextInt(100) <= percentRollback) {
+                            log.info("Rollback " + rowsInTransaction + " rows");
+                            tran.rollback();
+                        } else {
+                            rowsTotal += rowsInTransaction;
+                            log.info("Commit " + rowsInTransaction + " rows, total " + rowsTotal + " rows");
+                            tran.commit();
+                        }
+                        rowsInTransaction = 0;
+                        AppUtils.sleep(interval);
                     }
-                    tablesToProcess.removeAll(groupTables);
-                }                
-                clearDependentColumnValues(tables);
-            }
-            if (rowsInTransaction > 0) {
-                if (commitDelay > 0) {
-                    AppUtils.sleep(commitDelay);
                 }
-                if (verbose) {
-                    log.info("Commit " + rowsInTransaction + " rows");
-                }
-                tran.commit();                
+                
             }
+            
+            clearDependentColumnValues();
+            currentRowValues.clear();
         }
+        
+        if (rowsInTransaction > 0) {
+            if (commitDelay > 0) {
+                AppUtils.sleep(commitDelay);
+            }
+            log.info("Commit " + rowsInTransaction + " rows, total " + rowsTotal + " rows");
+            tran.commit();                
+        }
+
     }
 
-    private void truncateTable(ISqlTransaction tran, Table table) {
+    private void truncateTable(Table table) {
     	if (verbose) {
     		log.info("Truncating table " + table.getFullyQualifiedTableName());
     	}
-    	tran.execute("truncate table " + table.getFullyQualifiedTableName());
-    }
-    private String toStringTables(List<Table> tables) {
-        StringBuilder sb = new StringBuilder("[");
-        for (Table table : tables) {
-            sb.append(", ");
-            sb.append(table.getName());
-        }
-        sb.append("]");
-        return sb.toString();
+    	String options = "";
+    	if (platform.getName().startsWith(DatabaseNamesConstants.POSTGRESQL)) {
+    	    options = " cascade";    
+    	}
+    	platform.getSqlTemplate().update("truncate table " + table.getFullyQualifiedTableName() + options);
     }
 
     /**
@@ -518,8 +574,6 @@ public class DbFill {
     /**
      * Select a random row from the table in the connected database. Return null if there are no rows.
      *
-     * TODO: Cache rows.
-     *
      * @param sqlTemplate
      * @param table The table to select a row from.
      * @return A random row from the table. Null if there are no rows.
@@ -530,14 +584,22 @@ public class DbFill {
         String sql = platform.createDmlStatement(DmlType.SELECT_ALL, table.getCatalog(), table.getSchema(), table.getName(),
                 table.getPrimaryKeyColumns(), table.getColumns(), null, textColumnExpression).getSql();
         if (verbose) {
-            log.info("Selecting row from " + table.getName());
+            log.info("Selecting from " + table.getName());
         }
         List<Row> rows = queryForRows(tran, sql, null, null);
         if (rows.size() != 0) {
             int rowNum = getRand().nextInt(rows.size());
             row = rows.get(rowNum);
+            if (verbose) {
+                log.info("Row from " + table.getName() + ": " + row.toString());
+            }
         } else {
-            log.warn("Unable to find a row in table " + table.getName());
+            if (cascading) {
+                insertRandomRecord(tran, table);
+                return selectRandomRow(tran, table);
+            } else {
+                log.warn("Unable to find a row in table " + table.getName());
+            }
         }
         return row;
     }
@@ -553,7 +615,7 @@ public class DbFill {
                 sb = (sb == null) ? new StringBuilder() : sb.append(", ");
                 sb.append(keyColumns[i].getName()).append("=").append(values[i]);
             }
-            log.info("Selecting row from {} where {}", table.getName(), sb.toString());
+            log.info("Selecting from {} where {}", table.getName(), sb.toString());
         }
 
         List<Row> rows = queryForRows(tran, stmt.getSql(), values, stmt.getTypes());
@@ -602,6 +664,9 @@ public class DbFill {
         return rows;
     }
     
+    /**
+     * TODO: Add updates to primary key, avoid updates to foreign keys
+     */
     private void updateRandomRecord(ISqlTransaction tran, Table table) {
     	DmlStatement updStatement = createUpdateDmlStatement(table); 
     	Row row = createRandomUpdateValues(tran, updStatement, table);
@@ -612,21 +677,23 @@ public class DbFill {
                 values[i++] = row.get(column.getName());
             }
         }
-        for (Column column : table.getPrimaryKeyColumns()) {
-            values[i++] = row.get(column.getName());
-        }
+        
+        if (i > 0) {
+            for (Column column : table.getPrimaryKeyColumns()) {
+                values[i++] = row.get(column.getName());
+            }
 
-        try {
-            tran.prepareAndExecute(updStatement.getSql(), values);
-        } catch (SqlException ex) {
-            log.info("Failed to update {}: {}", table.getName(), ex.getMessage());
-            if (continueOnError) {
+            try {
+                tran.prepareAndExecute(updStatement.getSql(), values);
+            } catch (SqlException ex) {
+                log.info("Failed to update {}: {}", table.getName(), ex.getMessage());
                 if (debug) {
                     logRow(row);
-                    log.info("", ex);
+                    log.info("Failed SQL: " + updStatement.getSql(), ex);
                 }
-            } else {
-                throw ex;
+                if (!continueOnError) {
+                    throw ex;
+                }
             }
         }
     }
@@ -639,17 +706,31 @@ public class DbFill {
      */
     private void insertRandomRecord(ISqlTransaction tran, Table table) {
     	DmlStatement insertStatement = createInsertDmlStatement(table); 
-    	Row row = createRandomInsertValues(insertStatement, table);
+    	Row row = null;
         try {
-            tran.prepareAndExecute(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
-                    row.toArray(table.getPrimaryKeyColumnNames())));
-        } catch (SqlException ex) {
-            log.info("Failed to insert into {}: {}", table.getName(), ex.getMessage());
-            if (continueOnError) {
+            int count = 0;
+            for (int i = 0; i < 100 && count == 0; i++) {
+                row = createRandomInsertValues(insertStatement, table);
+                count = tran.prepareAndExecute(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
+                        row.toArray(table.getPrimaryKeyColumnNames())));
+            }
+            if (count == 0 && cascading) {
+                log.info("Failed to insert non-conflicting row into {}: {}", table.getName());
                 if (debug) {
                     logRow(row);
-                    log.info("", ex);
+                    log.info("Failed SQL: " + insertStatement.getSql());
                 }
+                if (continueOnError) {
+                    selectRandomRecord(tran, table);
+                }
+            }
+        } catch (SqlException ex) {
+            log.info("Failed to insert into {}: {}", table.getName(), ex.getMessage());
+            if (debug) {
+                logRow(row);
+                log.info("Failed SQL: " + insertStatement.getSql(), ex);
+            }
+            if (continueOnError) {
                 selectRandomRecord(tran, table);
             } else {
                 throw ex;
@@ -678,7 +759,7 @@ public class DbFill {
     /**
      * Delete a random row in the given table or delete all rows matching selectColumns
      * in the given table.
-     *
+     * 
      * @param table Table to delete from.
      * @param selectColumns If provided, the rows that match this criteria are deleted.
      */
@@ -690,15 +771,51 @@ public class DbFill {
             tran.prepareAndExecute(deleteStatement.getSql(), row.toArray(table.getPrimaryKeyColumnNames()));
         } catch (SqlException ex) {
             log.info("Failed to delete from {}: {}", table.getName(), ex.getMessage());
-            if (continueOnError) {
-                if (debug) {
-                    logRow(row);
-                    log.info("", ex);
+            if (debug) {
+                logRow(row);
+                log.info("Failed SQL: " + deleteStatement.getSql(), ex);
+            }
+
+            if (platform.getSqlTemplate().isForeignKeyChildExistsViolation(ex)) {
+                try {
+                    deleteForeignKeyChildren(tran, table, row);
+                } catch (SqlException e) {
+                    if (!continueOnError) {
+                        throw e;
+                    }
                 }
-            } else {
+            } else if (!continueOnError) {
                 throw ex;
             }
         }
+    }
+    
+    private void deleteForeignKeyChildren(ISqlTransaction tran, Table table, Row row) {
+        List<TableRow> tableRows = new ArrayList<TableRow>();
+        tableRows.add(new TableRow(table, row, null, null, null));
+        tableRows = platform.getDdlReader().getExportedForeignTableRows(tran, tableRows, new HashSet<TableRow>());
+        if (!tableRows.isEmpty()) {
+            Collections.reverse(tableRows);
+            Set<TableRow> visited = new HashSet<TableRow>();
+            
+            for (TableRow foreignTableRow : tableRows) {
+                if (visited.add(foreignTableRow)) {
+                    Table foreignTable = foreignTableRow.getTable();
+                
+                    log.info("Remove foreign row "
+                            + "catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
+                            + "to correct table '{}' for column '{}'",
+                            foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                            table.getName(), foreignTableRow.getReferenceColumnName());
+                    
+                    DatabaseInfo info = platform.getDatabaseInfo();
+                    String tableName = Table.getFullyQualifiedTableName(foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(), 
+                            info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());
+                    String sql = "DELETE FROM " + tableName + " WHERE " + foreignTableRow.getWhereSql();
+                    tran.prepareAndExecute(sql);
+                }
+            }
+        }        
     }
 
     private void selectRandomRecord(ISqlTransaction tran, Table table) {
@@ -726,7 +843,7 @@ public class DbFill {
     private Map<Column, Object> getDependentColumnValues(Table table) {
         Map<Column, Object> columnValues = new HashMap<Column, Object>();
         for (Column column : table.getColumns()) {
-            String key = table.getName() + "." + column.getName();
+            String key = table.getQualifiedColumnName(column);
             List<Object> commonValue = commonDependencyValues.get(key);
             if (commonValue != null && commonValue.size() != 0) {
                 columnValues.put(column, commonValue.get(0));
@@ -737,12 +854,10 @@ public class DbFill {
 
     private void saveDependentColumnValues(Table table, Row row) {
         for (String columnName : row.keySet()) {
-            String key = table.getName() + "." + columnName;
+            String key = table.getFullyQualifiedTableName() + "." + columnName;
             List<Object> commonValue = commonDependencyValues.get(key);
             if (commonValue != null) {
-                for (int i = 0; i < commonValue.size(); i++) {
-                    commonValue.remove(i);
-                }
+                commonValue.clear();
                 Object value = row.get(columnName);
                 commonValue.add(value);
                 if (verbose) {
@@ -752,15 +867,13 @@ public class DbFill {
         }
     }
 
-    private void clearDependentColumnValues(List<Table> tables) {
+    private void clearDependentColumnValues() {
         for (List<Object> commonValue : commonDependencyValues.values()) {
-            for (int i = 0; i < commonValue.size(); i++) {
-                commonValue.remove(i);
-            }            
+            commonValue.clear();
         }
     }
 
-    private Object generateRandomValueForColumn(Column column) {
+    private Object generateRandomValueForColumn(Table table, Column column) {
         Object objectValue = null;
         int type = column.getMappedTypeCode();
         if (column.getPlatformColumns().get(platform.getName()) != null && column.getPlatformColumns().get(platform.getName()).isEnum()) {
@@ -796,23 +909,31 @@ public class DbFill {
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
-        		if (column.getJdbcTypeName() != null && (column.getJdbcTypeName().equals("JSON") || column.getJdbcTypeName().equals("jsonb"))) {
-        			objectValue = "{\"jumpmind\":\"symmetricds\"}";
-        		}
-        		else if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
+            if (column.getJdbcTypeName() != null
+                    && (column.getJdbcTypeName().equals("JSON") || column.getJdbcTypeName().equals("jsonb"))) {
+                objectValue = "{\"jumpmind\":\"symmetricds\"}";
+            } else if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomUUID();
+            } else {
+                int size = 0;
+                // Assume if the size is 0 there is no max size configured.
+                if (column.getSizeAsInt() != 0) {
+                    Integer minSize = minColumnSizes.get(table.getQualifiedColumnName(column));
+                    if (minSize != null) {
+                        // use smallest size of related foreign key columns
+                        size = minSize;
+                    } else {
+                        size = column.getSizeAsInt() > 32768 ? 32768 : column.getSizeAsInt();   
+                    }
+                } else {
+                    // No max length so default to 32k
+                    size = 32768;
+                }
+                if (!column.isPrimaryKey()) {
+                    size = getRand().nextInt(size);
+                }
+                objectValue = randomString(size);
             }
-        		else {
-	            int size = 0;
-	            // Assume if the size is 0 there is no max size configured.
-	            if (column.getSizeAsInt() != 0) {
-	                size = column.getSizeAsInt()>50?50:column.getSizeAsInt();
-	            } else {
-	                // No max length so default to 50
-	                size = 50;
-	            }
-	            objectValue = randomString(size);
-        		}
         } else if (type == Types.OTHER) {
             if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomUUID();
@@ -855,7 +976,7 @@ public class DbFill {
     }
 
     private byte[] randomBytes() {
-        int length = 10;
+        int length = getRand().nextInt(32768);
         byte array[] = new byte[length];
         for (int i = 0; i < length; i++) {
             array[i] = (byte) getRand().nextInt(256);
@@ -967,66 +1088,64 @@ public class DbFill {
                 table.getPrimaryKeyColumns(), table.getNonPrimaryKeyColumns(), null, textColumnExpression);
     }
 
-    private Row createRandomInsertValues(DmlStatement updStatement, Table table) {
-        Column[] columns = updStatement.getMetaData();
+    private Row createRandomInsertValues(DmlStatement insertStatement, Table table) {
+        Column[] columns = insertStatement.getMetaData();
         Row row = new Row(columns.length);
-        for (int i = 0; i < columns.length; i++) {
+        for (Column column : columns) {
             Object value = null;
 
-            ForeignKeyReference fkr = foreignKeyReferences.get(table.getQualifiedColumnName(columns[i]));
-            if (fkr != null) {
-                //Object curVal = row.get(columns[i].getName());
-                
-                //if (curVal == null) {
-                    Map<String, Object> foreignRowValues = currentRowValues.get(fkr.getForeignKey().getForeignTableName());
-                    if (foreignRowValues != null) {
-                        value = foreignRowValues.get(fkr.getReference().getForeignColumnName());
+            List<ForeignKeyReference> fkrs = foreignKeyReferences.get(table.getQualifiedColumnName(column));
+            if (fkrs != null) {
+                for (ForeignKeyReference fkr : fkrs) {
+                    if (fkr != null && !table.getName().equals(fkr.getForeignKey().getForeignTableName())) {
+                        Map<String, Object> foreignRowValues = currentRowValues.get(fkr.getForeignKey().getForeignTableName());
+                        if (foreignRowValues != null) {
+                            value = foreignRowValues.get(fkr.getReference().getForeignColumnName());
+                            break;
+                        }
                     }
-                    if (value == null) {
-                        //value = generateRandomValueForColumn(columns[i]);
-                    }
-               // } else {
-                   // value = curVal;
-                  // currentRowValues.get(fkr.getForeignKey().getForeignTableName()).put(fkr.getReference().getForeignColumnName(), curVal);
-               // }
-            } else {
-                value = generateRandomValueForColumn(columns[i]);
+                }
             }
-            row.put(columns[i].getName(), value);
+            
+            if (value == null) {
+                value = generateRandomValueForColumn(table, column);
+            }
+            row.put(column.getName(), value);
+        }
+
+        Map<Column, Object> dependentValues = getDependentColumnValues(table);
+        if (dependentValues != null) {
+            for (Map.Entry<Column, Object> entry : dependentValues.entrySet()) {
+                row.put(entry.getKey().getName(), entry.getValue());
+            }
         }
         
-        /*
         Set<ForeignKey> listCompositeForeignKeys = compositeForeignKeys.get(table);
-        
-        // Check for composite keys
-        if (listCompositeForeignKeys != null && listCompositeForeignKeys.size() > 0) {
-            if (listCompositeForeignKeys.size() > 1) {
-                // could be complicated as we have multiple composite keys on table 
-                
-                // Map<local column, list foreign table name>
-                Map<String, List<Reference>> columnToForeignTableMap = new HashMap<String,List<Reference>>();
-                Iterator i = listCompositeForeignKeys.iterator();
-                while (i.hasNext()) {
-                    ForeignKey fk = (ForeignKey) i.next();
-                    for (Reference ref : fk.getReferences()) {
-                        if (columnToForeignTableMap.get(fk.))
-                            
+        if (listCompositeForeignKeys != null) {
+            for (ForeignKey fk : listCompositeForeignKeys) {
+                if (!table.getName().equals(fk.getForeignTableName())) {
+                    Map<String, Object> foreignRowValues = currentRowValues.get(fk.getForeignTableName());
+                    if (foreignRowValues != null) {
+                        for (Reference ref : fk.getReferences()) {
+                            row.put(ref.getLocalColumnName(), foreignRowValues.get(ref.getForeignColumnName()));
+                        }
                     }
-                    
                 }
-                
             }
-            // Single composite key on table just ensure composite local columns match foreign table
-            else {
-                ForeignKey fk = listCompositeForeignKeys.iterator().next();
-                Map<String, Object> foreignRowValues = currentRowValues.get(fk.getForeignTableName());
-                
+        }
+
+        // for a self-referencing foreign key, the row will just refer to itself to satisfy
+        for (ForeignKey fk : table.getForeignKeys()) {
+            if (table.getName().equals(fk.getForeignTableName())) {                
                 for (Reference ref : fk.getReferences()) {
-                    row.put(ref.getLocalColumnName(), foreignRowValues.get(ref.getForeignColumnName()));
+                    row.put(ref.getLocalColumnName(), row.get(ref.getForeignColumnName()));
                 }
             }
-        }*/
+        }
         
+        if (verbose) {
+            log.info("Generated row for " + table.getName() + " " + row.toString());
+        }
         currentRowValues.put(table.getName(), row);
         return row;
     }
@@ -1043,33 +1162,11 @@ public class DbFill {
         List<String> localFkRefColumns = getLocalFkRefColumns(table);
         for (int i = 0; i < columns.length; i++) {
             if (!(columns[i].isPrimaryKey() || localFkRefColumns.contains(columns[i].getName()))) {
-                row.put(columns[i].getName(), generateRandomValueForColumn(columns[i]));
+                row.put(columns[i].getName(), generateRandomValueForColumn(table, columns[i]));
             }
         }
+        currentRowValues.put(table.getName(), row);
         return row;
-    }
-		        
-    protected String getTypeValue(String type, String value) {
-        if (type.equalsIgnoreCase("CHAR")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("VARCHAR")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("LONGVARCHAR")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("DATE")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("TIME")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("TIMESTAMP")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("CLOB")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("BLOB")) {
-            value = "'" + value + "'";
-        } else if (type.equalsIgnoreCase("ARRAY")) {
-            value = "[" + value + "]";
-        }
-        return value;
     }
 
     private void logRow(Row row) {
