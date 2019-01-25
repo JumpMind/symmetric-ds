@@ -59,6 +59,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+import org.jumpmind.db.model.CatalogSchema;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -135,16 +136,16 @@ public class SnapshotUtil {
             log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
         }
 
-        TreeSet<Table> tables = new TreeSet<Table>();
         FileOutputStream fos = null;
         try {
+            HashMap<CatalogSchema, List<Table>> catalogSchemas = new HashMap<CatalogSchema, List<Table>>();
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
             for (TriggerHistory triggerHistory : triggerHistories) {
                 Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
                         triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
                 if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
-                    tables.add(table);
+                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
                 }
             }
 
@@ -153,15 +154,35 @@ public class SnapshotUtil {
                 Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), false);
                 if (table != null) {
-                    tables.add(table);
+                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
                 }
             }
 
-            fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
-            DbExport export = new DbExport(engine.getDatabasePlatform());
-            export.setFormat(Format.XML);
-            export.setNoData(true);
-            export.exportTables(fos, tables.toArray(new Table[tables.size()]));
+            for (CatalogSchema catalogSchema : catalogSchemas.keySet()) {
+                DbExport export = new DbExport(engine.getDatabasePlatform());
+                boolean isDefaultCatalog = StringUtils.equalsIgnoreCase(catalogSchema.getCatalog(), engine.getDatabasePlatform().getDefaultCatalog());
+                boolean isDefaultSchema = StringUtils.equalsIgnoreCase(catalogSchema.getSchema(), engine.getDatabasePlatform().getDefaultSchema());
+
+                if (isDefaultCatalog && isDefaultSchema) {
+                    fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
+                } else {
+                    String extra = "";
+                    if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
+                        extra += catalogSchema.getCatalog() + "-";
+                        export.setCatalog(catalogSchema.getCatalog());
+                    }
+                    if (!isDefaultSchema && catalogSchema.getSchema() != null) {
+                        extra += catalogSchema.getSchema();
+                        export.setSchema(catalogSchema.getSchema());
+                    }
+                    fos = new FileOutputStream(new File(tmpDir, "table-definitions-" + extra + ".xml"));
+                }
+             
+                List<Table> tables = catalogSchemas.get(catalogSchema);
+                export.setFormat(Format.XML);
+                export.setNoData(true);
+                export.exportTables(fos, tables.toArray(new Table[tables.size()]));
+            }
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
@@ -697,6 +718,15 @@ public class SnapshotUtil {
             IOUtils.closeQuietly(fwriter);
         }
         return file;
+    }
+
+    private static void addTableToMap(HashMap<CatalogSchema, List<Table>> catalogSchemas, CatalogSchema catalogSchema, Table table) {
+        List<Table> tables = catalogSchemas.get(catalogSchema);
+        if (tables == null) {
+            tables = new ArrayList<Table>();
+            catalogSchemas.put(catalogSchema, tables);
+        }
+        tables.add(table);
     }
 
     static class SortedProperties extends Properties {
