@@ -121,7 +121,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
         String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
-        if(defaultValue != null && defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")) {
+        if(defaultValueStr != null && defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")) {
             ddl.append(defaultValueStr);
         } else {
             super.printDefaultValue(defaultValue, typeCode, ddl);
