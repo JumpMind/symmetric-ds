@@ -390,8 +390,17 @@ public class DataService extends AbstractService implements IDataService {
                     boolean isFullLoad = reloadRequests == null 
                             || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
                     
+                    boolean isChannelLoad = false;
+                    String channelId = null;
+                    if (reloadRequests != null 
+                            && (reloadRequests.size() == 1 && reloadRequests.get(0).isChannelRequest())) {
+                        isChannelLoad=true;
+                        channelId = reloadRequests.get(0).getChannelId();
+                    }
+
                     if (!reverse) {
-                        log.info("Queueing up " + (isFullLoad ? "an initial" : "a") + " load to node " + targetNode.getNodeId());
+                        log.info("Queueing up " + (isFullLoad ? "an initial" : "a") + " load to node " + targetNode.getNodeId() 
+                            + (isChannelLoad ? " for channel " + channelId : ""));
                     } else {
                         log.info("Queueing up a reverse " + (isFullLoad ? "initial" : "") + " load to node " + targetNode.getNodeId());
                     }
@@ -430,10 +439,10 @@ public class DataService extends AbstractService implements IDataService {
 
                         List<TriggerHistory> triggerHistories = new ArrayList<TriggerHistory>();
 
-                        if (isFullLoad) {
+                        if (isFullLoad || isChannelLoad) {
                             triggerHistories.addAll(activeHistories);
                             if (reloadRequests != null && reloadRequests.size() == 1) {
-                                String channelId = reloadRequests.get(0).getChannelId();
+                                
                                 if (channelId != null) {
                                     List<TriggerHistory> channelTriggerHistories = new ArrayList<TriggerHistory>();
     
@@ -465,7 +474,7 @@ public class DataService extends AbstractService implements IDataService {
                                     createBy, transactional, transaction);
                             }
                         }
-                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests, triggerRouters, isFullLoad);
+                        Map<String, TableReloadRequest> mapReloadRequests = convertReloadListToMap(reloadRequests, triggerRouters, isFullLoad, isChannelLoad);
                         
                         String symNodeSecurityReloadChannel = null;
                         int totalTableCount = 0;
@@ -586,13 +595,13 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters, boolean isFullLoad) {
+    protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters, boolean isFullLoad, boolean isChannelLoad) {
         if (reloadRequests == null) {
             return null;
         }
         Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap();
         for (TableReloadRequest reloadRequest : reloadRequests) {
-            if (!isFullLoad) {
+            if (!isFullLoad && !isChannelLoad) {
                 validate(reloadRequest, triggerRouters);
             }
             reloadMap.put(reloadRequest.getIdentifier(), reloadRequest);
