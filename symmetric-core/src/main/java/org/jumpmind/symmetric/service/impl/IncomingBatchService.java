@@ -226,7 +226,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                     batch.setLoadRowCount(existingBatch.getLoadRowCount());
 
                     existingBatch.setSkipCount(existingBatch.getSkipCount() + 1);
-                    log.info("Skipping batch {}", batch.getNodeBatchId());
+                    log.info("Skipping batch {} that was already loaded", batch.getNodeBatchId());
                 }
                 updateIncomingBatch(existingBatch);
             }
