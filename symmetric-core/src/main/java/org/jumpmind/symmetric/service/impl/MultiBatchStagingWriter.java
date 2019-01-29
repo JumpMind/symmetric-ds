@@ -197,9 +197,9 @@ public class MultiBatchStagingWriter implements IDataWriter {
         }
         if (System.currentTimeMillis() - ts > 60000) {
             this.dataExtractorService.log.info(
-                    "Request {} has been processing for {} seconds.  BATCHES={}, ROWS={}, BYTES={}, RANGE={}-{}, CURRENT={}",
-                    request.getRequestId(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size(), rowCount, byteCount,
-                    request.getStartBatchId(), request.getEndBatchId(), batch.getBatchId());
+                    "Extracting table {} request {} for {} seconds, {} batches, {} rows, and {} bytes.  Current batch {} of batches {} through {}.",
+                    request.getTableName(), request.getRequestId(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size(), rowCount, byteCount,
+                    batch.getBatchId(), request.getStartBatchId(), request.getEndBatchId());
             ts = System.currentTimeMillis();
         }
     }

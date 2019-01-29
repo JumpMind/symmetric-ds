@@ -1595,8 +1595,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             transaction = sqlTemplate.startSqlTransaction();
             
             dataService.updateTableReloadRequestsLoadedCounts(transaction, outgoingBatch.getLoadId(), 1, 
-                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getReloadRowCount() : 0);
-            
+                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0);            
             
             transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), outgoingBatch.getDataRowCount(), 
                     outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
@@ -2019,10 +2018,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }                
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId(), true);
-            log.info(
-                    "Extracting batches for request {}. Starting at batch {}.  Ending at batch {}",
-                    new Object[] { request.getRequestId(), request.getStartBatchId(),
-                            request.getEndBatchId() });
+            log.info("Begin extracting table {} request {} batches {} through {}.",
+                    new Object[] { request.getTableName(), request.getRequestId(), request.getStartBatchId(), request.getEndBatchId() });
             List<OutgoingBatch> batches = outgoingBatchService.getOutgoingBatchRange(
                     request.getStartBatchId(), request.getEndBatchId()).getBatches();
 
@@ -2076,8 +2073,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                     checkSendDeferredConstraints(request, targetNode, firstBatch);
                 } else {
-                    log.info("Batches already had an OK status for request {}, batches {} to {}.  Not extracting", new Object[] { request.getRequestId(), request.getStartBatchId(),
-                            request.getEndBatchId() });
+                    log.info("Batches already had an OK status for table {} request {} batches {} through {}.  Not extracting", 
+                            new Object[] { request.getTableName(), request.getRequestId(), request.getStartBatchId(), request.getEndBatchId() });
                 }
 
                 /*
@@ -2110,7 +2107,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
                     transaction.commit();
-                    log.info("Done extracting {} batches for request {}", (request.getEndBatchId() - request.getStartBatchId()) + 1, request.getRequestId());
+                    log.info("Done extracting table {} request {} batches {} through {}", 
+                            request.getTableName(), request.getRequestId(), request.getStartBatchId(), request.getEndBatchId());
                 } catch (Error ex) {
                     if (transaction != null) {
                         transaction.rollback();
@@ -2129,15 +2127,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
 
             } catch (CancellationException ex) {
-                log.info("Interrupted extract request {} for table {} batches {} through {}",
-                        new Object[] { request.getRequestId(), request.getTableName(), request.getStartBatchId(),
-                        request.getEndBatchId() });
+                log.info("Interrupted extract for table {} request {} batches {} through {}",
+                        new Object[] { request.getTableName(), request.getRequestId(), request.getStartBatchId(), request.getEndBatchId() });
                 processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
             } catch (RuntimeException ex) {
-                log.warn(
-                        "Failed to extract batches for request {}. Starting at batch {}.  Ending at batch {}",
-                        new Object[] { request.getRequestId(), request.getStartBatchId(),
-                                request.getEndBatchId() });
+                log.warn("Failed to extract batches for table {} request {} batches {} through {}",
+                        new Object[] { request.getTableName(), request.getRequestId(), request.getStartBatchId(), request.getEndBatchId() });
                 processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                 List<OutgoingBatch> checkBatches = outgoingBatchService.getOutgoingBatchRange(
                         request.getStartBatchId(), request.getEndBatchId()).getBatches();

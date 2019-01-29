@@ -47,6 +47,8 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
 
     protected Set<String> whiteList = new HashSet<String>();
 
+    protected Map<String, Long> transportErrorTimeByNode = new HashMap<String, Long>();
+    
     public ConcurrentConnectionManager(IParameterService parameterService,
             IStatisticManager statisticManager) {
         this.parameterService = parameterService;
@@ -138,11 +140,15 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
                 reservations.put(reservationId, new Reservation(reservationId,
                         reservationRequest == ReservationType.SOFT ? System.currentTimeMillis()
                                 + timeout : Long.MAX_VALUE, reservationRequest));
+                transportErrorTimeByNode.remove(nodeId);
                 return true;
             } else {
-                log.warn(
-                        "Node '{}' Channel '{}' requested a {} connection, but was rejected because it already has one",
-                        nodeId, channelId, poolId);
+                String message = "Node '{}' Channel '{}' requested a {} connection, but was rejected because it already has one";
+                if (shouldLogTransportError(nodeId)) {
+                    log.warn(message, nodeId, channelId, poolId);
+                } else {
+                    log.info(message, nodeId, channelId, poolId);
+                }
                 return false;
             }
         } else {
@@ -269,6 +275,16 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
     
     public Map<String, Map<String, NodeConnectionStatistics>> getNodeConnectionStatisticsByPoolByNodeId() {
         return this.nodeConnectionStatistics;
+    }
+
+    protected boolean shouldLogTransportError(String nodeId) {
+        long maxErrorMillis = parameterService.getLong(ParameterConstants.TRANSPORT_MAX_ERROR_MILLIS, 300000);
+        Long errorTime = transportErrorTimeByNode.get(nodeId);
+        if (errorTime == null) {
+            errorTime = System.currentTimeMillis();
+            transportErrorTimeByNode.put(nodeId, errorTime);
+        }
+        return System.currentTimeMillis() - errorTime >= maxErrorMillis;
     }
 
     public class NodeConnectionStatistics {
