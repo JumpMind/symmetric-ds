@@ -254,7 +254,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "end;\n");
 
         sqlTemplates.put("initialLoadSqlTemplate" ,
-"select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)");
+"select $(oracleQueryHint) $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)");
     }
 
     protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
