@@ -41,7 +41,7 @@ public class Channel implements Serializable {
 
     private int maxBatchToSend = 100;
     
-    private int maxDataToRoute = 10000;
+    private int maxDataToRoute = 500000;
     
     private BigDecimal maxKBytesPerSecond = BigDecimal.ZERO;
 
