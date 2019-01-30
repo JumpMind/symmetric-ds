@@ -657,10 +657,13 @@ public class RouterService extends AbstractService implements IRouterService {
             }
     
             if (!producesCommonBatches.equals(commonBatchesLastKnownState.get(channelId))) {
-                if (producesCommonBatches) {
-                    log.info("The '{}' channel is in common batch mode", channelId);
+                String message = "The '{}' channel is " + (producesCommonBatches ? "" : "NOT ") + "in common batch mode";
+                if (channelId.equals(Constants.CHANNEL_CONFIG) || channelId.equals(Constants.CHANNEL_HEARTBEAT) ||
+                        channelId.equals(Constants.CHANNEL_FILESYNC) || channelId.equals(Constants.CHANNEL_MONITOR) ||
+                        channelId.equals(Constants.CHANNEL_FILESYNC_RELOAD) || channelId.equals(Constants.CHANNEL_RELOAD)) {
+                    log.debug(message, channelId);
                 } else {
-                    log.info("The '{}' channel is NOT in common batch mode", channelId);
+                    log.info(message, channelId);
                 }
                 commonBatchesLastKnownState.put(channelId, producesCommonBatches);
             }
