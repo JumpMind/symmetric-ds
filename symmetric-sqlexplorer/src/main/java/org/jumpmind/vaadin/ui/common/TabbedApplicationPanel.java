@@ -68,8 +68,8 @@ public class TabbedApplicationPanel extends TabSheet {
         component.setSizeFull();
         this.mainTab = addTab(component, caption, icon, 0);
     }
-
-    public void addCloseableTab(String caption, Resource icon, Component component) {
+    
+    public void addCloseableTab(String caption, Resource icon, Component component, boolean setSizeFull) {
         Iterator<Component> i = iterator();
         while (i.hasNext()) {
             Component c = i.next();
@@ -79,10 +79,16 @@ public class TabbedApplicationPanel extends TabSheet {
             }
         } 
         
-        component.setSizeFull();
+        if (setSizeFull) {
+            component.setSizeFull();
+        }
         Tab tab = addTab(component, caption, icon, mainTab == null ? 0 : 1);
         tab.setClosable(true);
         setSelectedTab(tab);
+    }
+
+    public void addCloseableTab(String caption, Resource icon, Component component) {
+        addCloseableTab(caption, icon, component, true);
     }
 
 }
