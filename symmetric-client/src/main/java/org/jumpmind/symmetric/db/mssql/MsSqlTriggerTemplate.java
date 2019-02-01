@@ -64,7 +64,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         blobColumnTemplate =   "case when $(origTableAlias).\"$(columnName)\" is null then '' else '\"' + replace(replace(" + defaultCatalog + "dbo.$(prefixName)_base64_encode(CONVERT(VARBINARY(max), $(origTableAlias).\"$(columnName)\")),'\\','\\\\'),'\"','\\\"') + '\"' end" ;
         binaryColumnTemplate = blobColumnTemplate;
         booleanColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when $(tableAlias).\"$(columnName)\" = 1 then '\"1\"' else '\"0\"' end" ;
-        dateTimeWithTimeZoneColumnTemplate = " convert(varchar, $(tableAlias).\"$(columnName)\", 127)";
+        dateTimeWithTimeZoneColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else ('\"' + convert(varchar, $(tableAlias).\"$(columnName)\", 127) + '\"') end";
         triggerConcatCharacter = "+" ;
         newTriggerValue = "inserted" ;
         oldTriggerValue = "deleted" ;
