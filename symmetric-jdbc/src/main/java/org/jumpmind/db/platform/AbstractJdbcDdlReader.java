@@ -1113,7 +1113,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         if(values.get(getName("UPDATE_RULE")) != null && values.get(getName("UPDATE_RULE")) instanceof Short) {
             fk.setOnUpdateAction(ForeignKey.getForeignKeyAction((Short) values.get(getName("UPDATE_RULE"))));
         } else {
-            fk.setOnUpdateAction(ForeignKeyAction.UNDEFINED);
+            fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
         }
     }
     
@@ -1121,7 +1121,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         if(values.get(getName("DELETE_RULE")) != null && values.get(getName("DELETE_RULE")) instanceof Short) {
             fk.setOnDeleteAction(ForeignKey.getForeignKeyAction((Short) values.get(getName("DELETE_RULE"))));
         } else {
-            fk.setOnDeleteAction(ForeignKeyAction.UNDEFINED);
+            fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
         }
     }
 
