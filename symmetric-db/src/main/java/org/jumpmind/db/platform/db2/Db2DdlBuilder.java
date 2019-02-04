@@ -33,9 +33,11 @@ import org.jumpmind.db.alter.RemovePrimaryKeyChange;
 import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -296,5 +298,13 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         ddl.append("CALL SYSPROC.ADMIN_CMD('REORG TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append("')");
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // DB2 only supports RESTRICT and NO ACTION for ON UPDATE
+        if(key.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) || key.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)) {
+            super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
+        }
     }
 }

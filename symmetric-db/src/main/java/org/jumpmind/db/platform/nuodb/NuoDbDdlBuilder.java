@@ -205,6 +205,7 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(")");
+            writeCascadeAttributesForForeignKey(key, ddl);
             printEndOfStatement(ddl);
         }
     }
@@ -293,6 +294,12 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     }
 
     protected void writeColumnNullableStmt(StringBuilder ddl) {
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
+        // NuoDB does not support cascade actions
+        return;
     }
 
 }

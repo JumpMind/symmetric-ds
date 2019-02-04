@@ -22,10 +22,12 @@ package org.jumpmind.db.model;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
+import java.sql.DatabaseMetaData;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.commons.collections.set.ListOrderedSet;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -33,6 +35,26 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * Represents a database foreign key.
  */
 public class ForeignKey implements Cloneable, Serializable {
+	
+    public enum ForeignKeyAction {
+        UNDEFINED("UNDEFINED"),
+        CASCADE("CASCADE"),
+        NOACTION("NO ACTION"),
+        SETNULL("SET NULL"),
+        SETDEFAULT("SET DEFAULT"),
+        RESTRICT("RESTRICT");
+        
+        private String foreignKeyActionName;
+        
+        private ForeignKeyAction(String foreignKeyActionName) {
+            this.foreignKeyActionName = foreignKeyActionName;
+        }
+        
+        public String getForeignKeyActionName() {
+            return foreignKeyActionName;
+        }
+    }
+
 
     private static final long serialVersionUID = 1L;
 
@@ -54,6 +76,10 @@ public class ForeignKey implements Cloneable, Serializable {
     private String foreignTableCatalog;
     
     private String foreignTableSchema;
+    
+    private ForeignKeyAction onDeleteAction = ForeignKeyAction.UNDEFINED;
+    
+    private ForeignKeyAction onUpdateAction = ForeignKeyAction.UNDEFINED;
     
     /**
      * Creates a new foreign key object that has no name.
@@ -299,6 +325,8 @@ public class ForeignKey implements Cloneable, Serializable {
         result.references = new ListOrderedSet();
         result.foreignTableCatalog = foreignTableCatalog;
         result.foreignTableSchema = foreignTableSchema;
+        result.onDeleteAction = getOnDeleteAction();
+        result.onUpdateAction = getOnUpdateAction();
         
         for (Iterator<?> it = references.iterator(); it.hasNext();) {
             result.references.add(((Reference) it.next()).clone());
@@ -324,6 +352,8 @@ public class ForeignKey implements Cloneable, Serializable {
                 builder.append(name, otherFk.name);
             }
             builder.append(foreignTableName, otherFk.foreignTableName);
+            builder.append(getOnDeleteAction(), otherFk.getOnDeleteAction());
+            builder.append(getOnUpdateAction(), otherFk.getOnUpdateAction());
             
             builder.append(references.size(), otherFk.references.size());
             for (int i = 0; i < references.size() && i < otherFk.references.size(); i++) {
@@ -337,7 +367,7 @@ public class ForeignKey implements Cloneable, Serializable {
         }
     }
 
-    /**
+	/**
      * Compares this foreign key to the given one while ignoring the case of
      * identifiers.
      * 
@@ -352,6 +382,12 @@ public class ForeignKey implements Cloneable, Serializable {
 
         if ((!checkName || name.equalsIgnoreCase(otherFk.name))
                 && foreignTableName.equalsIgnoreCase(otherFk.foreignTableName)) {
+            if(! otherFk.getOnDeleteAction().equals(getOnDeleteAction())) {
+                return false;
+            }
+            if(! otherFk.getOnUpdateAction().equals(getOnUpdateAction())) {
+                return false;
+            }
             HashSet<Reference> otherRefs = new HashSet<Reference>();
 
             otherRefs.addAll(otherFk.references);
@@ -392,6 +428,8 @@ public class ForeignKey implements Cloneable, Serializable {
         if (isNotBlank(name)) {
             builder.append(name);
         }
+        builder.append(getOnDeleteAction());
+        builder.append(getOnUpdateAction());
         return builder.toHashCode();
     }
 
@@ -410,6 +448,12 @@ public class ForeignKey implements Cloneable, Serializable {
         result.append("foreign table=");
         result.append(getForeignTableName());
         result.append("; ");
+        if(! getOnDeleteAction().equals(ForeignKeyAction.UNDEFINED)) {
+            result.append("ON DELETE " + getOnDeleteAction().getForeignKeyActionName()).append("; ");
+        }
+        if(! getOnUpdateAction().equals(ForeignKeyAction.UNDEFINED)) {
+            result.append("ON UPDATE " + getOnUpdateAction().getForeignKeyActionName()).append(";");
+        }
         result.append(getReferenceCount());
         result.append(" references]");
 
@@ -424,7 +468,7 @@ public class ForeignKey implements Cloneable, Serializable {
     public String toVerboseString() {
         StringBuffer result = new StringBuffer();
 
-        result.append("ForeignK ky [");
+        result.append("Foreign key [");
         if ((getName() != null) && (getName().length() > 0)) {
             result.append("name=");
             result.append(getName());
@@ -432,6 +476,13 @@ public class ForeignKey implements Cloneable, Serializable {
         }
         result.append("foreign table=");
         result.append(getForeignTableName());
+        result.append(";");
+        if(! getOnDeleteAction().equals(ForeignKeyAction.UNDEFINED)) {
+            result.append(" ON DELETE " + getOnDeleteAction().getForeignKeyActionName());
+        }
+        if(! getOnUpdateAction().equals(ForeignKeyAction.UNDEFINED)) {
+            result.append(" ON UPDATE " + getOnUpdateAction().getForeignKeyActionName());
+        }
         result.append("] references:");
         for (int idx = 0; idx < getReferenceCount(); idx++) {
             result.append(" ");
@@ -457,6 +508,46 @@ public class ForeignKey implements Cloneable, Serializable {
 		this.foreignTableSchema = foreignTableSchema;
 	}
     
+    public ForeignKeyAction getOnDeleteAction() {
+		return onDeleteAction;
+	}
+
+	public void setOnDeleteAction(ForeignKeyAction onDeleteAction) {
+		this.onDeleteAction = onDeleteAction;
+	}
+
+	public ForeignKeyAction getOnUpdateAction() {
+		return onUpdateAction;
+	}
+
+	public void setOnUpdateAction(ForeignKeyAction onUpdateAction) {
+		this.onUpdateAction = onUpdateAction;
+	}
+	
+    public static ForeignKeyAction getForeignKeyAction(short importedKeyAction) {
+        switch(importedKeyAction) {
+        case DatabaseMetaData.importedKeyCascade:
+            return ForeignKeyAction.CASCADE;
+        case DatabaseMetaData.importedKeyNoAction:
+            return ForeignKeyAction.NOACTION;
+        case DatabaseMetaData.importedKeyRestrict:
+            return ForeignKeyAction.RESTRICT;
+        case DatabaseMetaData.importedKeySetDefault:
+            return ForeignKeyAction.SETDEFAULT;
+        case DatabaseMetaData.importedKeySetNull:
+            return ForeignKeyAction.SETNULL;
+        default:
+            return ForeignKeyAction.UNDEFINED;
+        }
+    }
     
-   
+    public static ForeignKeyAction getForeignKeyActionByForeignKeyActionName(String foreignKeyActionName) throws IllegalArgumentException {
+        for(ForeignKeyAction action : ForeignKeyAction.values()) {
+            if(StringUtils.equals(foreignKeyActionName, action.getForeignKeyActionName())) {
+                return action;
+            }
+        }
+        throw new IllegalArgumentException("Unknown ForeignKeyAction: " + foreignKeyActionName);
+    }
+
 }
