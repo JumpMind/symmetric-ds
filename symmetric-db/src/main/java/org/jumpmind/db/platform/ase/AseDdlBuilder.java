@@ -577,4 +577,10 @@ public class AseDdlBuilder extends AbstractDdlBuilder {
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
     }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
+        // Sybase does not support cascade actions
+        return;
+    }
 }

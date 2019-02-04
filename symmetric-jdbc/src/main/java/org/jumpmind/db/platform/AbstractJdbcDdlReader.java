@@ -46,6 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
@@ -262,6 +263,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         result.add(new MetaDataColumnDescriptor(getName("FKTABLE_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("PKCOLUMN_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("FKCOLUMN_NAME"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("UPDATE_RULE"), Types.TINYINT));
+        result.add(new MetaDataColumnDescriptor(getName("DELETE_RULE"), Types.TINYINT));
         return result;
     }
 
@@ -1090,6 +1093,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             try {
         			fk.setForeignTableSchema((String) values.get(getName("PKTABLE_SCHEM")));
 	        	} catch (Exception e) { }
+            readForeignKeyUpdateRule(values, fk);
+            readForeignKeyDeleteRule(values, fk);
 	        
 	        knownFks.put(fkName, fk);
         }
@@ -1102,6 +1107,22 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             ref.setSequenceValue(((Short) values.get(getName("KEY_SEQ"))).intValue());
         }
         fk.addReference(ref);
+    }
+    
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        if(values.get(getName("UPDATE_RULE")) != null && values.get(getName("UPDATE_RULE")) instanceof Short) {
+            fk.setOnUpdateAction(ForeignKey.getForeignKeyAction((Short) values.get(getName("UPDATE_RULE"))));
+        } else {
+            fk.setOnUpdateAction(ForeignKeyAction.UNDEFINED);
+        }
+    }
+    
+    protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
+        if(values.get(getName("DELETE_RULE")) != null && values.get(getName("DELETE_RULE")) instanceof Short) {
+            fk.setOnDeleteAction(ForeignKey.getForeignKeyAction((Short) values.get(getName("DELETE_RULE"))));
+        } else {
+            fk.setOnDeleteAction(ForeignKeyAction.UNDEFINED);
+        }
     }
 
     /*

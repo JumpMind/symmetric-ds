@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
@@ -153,5 +154,11 @@ public class VoltDbDdlBuilder extends AbstractDdlBuilder {
             currentIndex.addColumn(currentColumn);
         }
     }    
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
+        // VoltDB does not support cascade actions
+        return;
+    }
 
 }
