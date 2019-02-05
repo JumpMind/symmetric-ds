@@ -23,6 +23,7 @@ package org.jumpmind.db.platform.redshift;
 import java.sql.Types;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -65,6 +66,12 @@ public class RedshiftDdlBuilder extends AbstractDdlBuilder {
     }
 
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
+        // Redshift does not support cascade actions
+        return;
     }
 
 }
