@@ -671,6 +671,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     protected void logOrRethrow(Throwable ex) throws IOException {
+        // Throwing exception will mean acks are not sent, so only certain exceptions should be thrown
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
@@ -689,8 +690,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (SyncDisabledException) ex;
         } else if (ex instanceof HttpException) {
             throw (HttpException) ex;
-        } else if (ex instanceof IOException) {
-            throw (IOException) ex;
         } else if (ex instanceof InvalidRetryException) {
             throw (InvalidRetryException) ex;
         } else if (ex instanceof StagingLowFreeSpace) {
