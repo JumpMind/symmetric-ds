@@ -2464,7 +2464,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         if(! (
-                key.getOnDeleteAction().equals(ForeignKeyAction.UNDEFINED) ||
                 key.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) ||
                 key.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)
              )
@@ -2477,7 +2476,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         if(! (
-                key.getOnUpdateAction().equals(ForeignKeyAction.UNDEFINED) ||
                 key.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) ||
                 key.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)
              )

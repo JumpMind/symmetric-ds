@@ -572,8 +572,7 @@ public class DatabaseXmlUtil {
     public static String writeForeignKeyOnUpdateClause(ForeignKey fk) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         StringBuilder sb = new StringBuilder();
-        if(! (fk.getOnUpdateAction().equals(ForeignKeyAction.UNDEFINED) ||
-              fk.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) ||
+        if(! (fk.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) ||
               fk.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)
              ))
         {
@@ -586,8 +585,7 @@ public class DatabaseXmlUtil {
     public static String writeForeignKeyOnDeleteClause(ForeignKey fk) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         StringBuilder sb = new StringBuilder();
-        if(! (fk.getOnDeleteAction().equals(ForeignKeyAction.UNDEFINED) ||
-                fk.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) ||
+        if(! (fk.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) ||
                 fk.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)
                ))
         {
