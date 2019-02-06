@@ -52,7 +52,7 @@ public class HsqlDbDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.CLOB, "LONGVARCHAR", Types.LONGVARCHAR);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "LONGVARBINARY", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
-        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OBJECT");
+        databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "OTHER");
         databaseInfo.addNativeTypeMapping(Types.NULL, "LONGVARBINARY", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.REF, "LONGVARBINARY", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "LONGVARBINARY", Types.LONGVARBINARY);
