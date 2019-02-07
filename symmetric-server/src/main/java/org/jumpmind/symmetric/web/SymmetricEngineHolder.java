@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +52,6 @@ import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractCommandLauncher;
-import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricAdmin;
 import org.jumpmind.symmetric.SymmetricException;
@@ -74,17 +74,17 @@ public class SymmetricEngineHolder {
 
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static Map<String, ServerSymmetricEngine> staticEngines = new HashMap<String, ServerSymmetricEngine>();
+    private static Map<String, ServerSymmetricEngine> staticEngines = Collections.synchronizedMap(new HashMap<String, ServerSymmetricEngine>());
 
-    private static Set<EngineStarter> staticEnginesStarting = new HashSet<SymmetricEngineHolder.EngineStarter>();
+    private static Set<EngineStarter> staticEnginesStarting = Collections.synchronizedSet(new HashSet<SymmetricEngineHolder.EngineStarter>());
 
-    private Map<String, ServerSymmetricEngine> engines = new HashMap<String, ServerSymmetricEngine>();
+    private Map<String, ServerSymmetricEngine> engines = Collections.synchronizedMap(new HashMap<String, ServerSymmetricEngine>());
 
-    private Set<EngineStarter> enginesStarting = new TreeSet<SymmetricEngineHolder.EngineStarter>();
+    private Set<EngineStarter> enginesStarting = Collections.synchronizedSortedSet(new TreeSet<SymmetricEngineHolder.EngineStarter>());
 
-    private Set<String> enginesStartingNames = new TreeSet<String>();
+    private Set<String> enginesStartingNames = Collections.synchronizedSortedSet(new TreeSet<String>());
 
-    private Map<String, List<String>> enginesFailed = new HashMap<String, List<String>>();
+    private Map<String, List<String>> enginesFailed = Collections.synchronizedMap(new HashMap<String, List<String>>());
     
     private boolean staticEnginesMode = false;
 
