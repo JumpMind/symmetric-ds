@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;
@@ -72,7 +73,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     
     public void onStart(final FileAlterationObserver observer) {
         long lastModified = observer.getDirectory().lastModified();
-        if (fromDate ==  null || ((fromDate != null && lastModified > fromDate.getTime()) && lastModified <= toDate.getTime())) {
+        if (fromDate ==  null || ((fromDate != null && lastModified >= fromDate.getTime()) && lastModified <= toDate.getTime())) {
             modifiedDirs.put(".", new DirectorySnapshot(fileTriggerRouter));
         }
     }
@@ -152,10 +153,12 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
             modifiedDir.add(fileSnapshot);
         } else {
             long lastModified = fileSnapshot.getFileModifiedTime();
-            if ((fromDate != null && lastModified > fromDate.getTime()) && lastModified <= toDate.getTime()) {
+            if ((fromDate != null && lastModified >= fromDate.getTime()) && lastModified <= toDate.getTime()) {
                 if (isDir) {
                     // This is a directory that had a file add/delete, so we'll need to look for deletes later
-                    modifiedDirs.put(fileSnapshot.getRelativeDir() + "/" + fileSnapshot.getFileName(), 
+                    // Let's not save the beginning ./ in the front of the directory location, it doesn't match the value in the database.
+                    String relativeDir = StringUtils.removeStart(fileSnapshot.getRelativeDir() + "/" + fileSnapshot.getFileName(), "./");
+                    modifiedDirs.put(relativeDir, 
                             new DirectorySnapshot(fileTriggerRouter));
                 } else {
                     snapshot.add(fileSnapshot);
