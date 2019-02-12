@@ -37,7 +37,9 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -465,35 +467,44 @@ public class SnapshotUtil {
             }
 
             StringBuilder output = new StringBuilder();
-            printDirectoryContents(home, output);
+            Comparator<File> fileComparator = new Comparator<File>() {
+                @Override
+                public int compare(File o1, File o2) {
+                    return o1.getPath().compareToIgnoreCase(o2.getPath());
+                }
+            };
+            printDirectoryContents(home, output, fileComparator);
             FileUtils.write(new File(tmpDir, "directory-listing.txt"), output);
         } catch (Exception ex) {
             log.warn("Failed to output the direcetory listing", ex);
         }
     }
 
-    protected static void printDirectoryContents(File dir, StringBuilder output) throws IOException {
+    protected static void printDirectoryContents(File dir, StringBuilder output, Comparator<File> fileComparator) throws IOException {
         output.append("\n");
         output.append(dir.getCanonicalPath());
         output.append("\n");
 
         File[] files = dir.listFiles();
-        for (File file : files) {
-            output.append("  ");
-            output.append(file.canRead() ? "r" : "-");
-            output.append(file.canWrite() ? "w" : "-");
-            output.append(file.canExecute() ? "x" : "-");
-            output.append(StringUtils.leftPad(file.length() + "", 11));
-            output.append(" ");
-            output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
-            output.append(" ");
-            output.append(file.getName());
-            output.append("\n");
-        }
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                printDirectoryContents(file, output);
+        if (files != null) {
+            Arrays.parallelSort(files, fileComparator);
+            for (File file : files) {
+                output.append("  ");
+                output.append(file.canRead() ? "r" : "-");
+                output.append(file.canWrite() ? "w" : "-");
+                output.append(file.canExecute() ? "x" : "-");
+                output.append(StringUtils.leftPad(file.length() + "", 11));
+                output.append(" ");
+                output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
+                output.append(" ");
+                output.append(file.getName());
+                output.append("\n");
+            }
+    
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    printDirectoryContents(file, output, fileComparator);
+                }
             }
         }
 
