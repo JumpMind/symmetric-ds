@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
@@ -58,13 +59,11 @@ public interface IDataService {
     
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
         
-    public List<TableReloadRequest> getTableReloadRequestsByLoadId();
-
-    public long getTableReloadRequestRowCount(long loadId);
-
-    public void updateTableReloadRequestsCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount);
+    public List<TableReloadStatus> getTableReloadStatus();
     
-    public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transcation, long loadId, int batchCount, long rowsCount);
+    public long getTableReloadStatusRowCount(long loadId);
+
+    public void updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount, long rowsCount);
     
     public int updateTableReloadRequestsCancelled(long loadId);
     

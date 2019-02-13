@@ -466,7 +466,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (loadIds.size() > 0) {
                 long count = 0;
                 for (long loadId : loadIds) {
-                    count += engine.getDataService().getTableReloadRequestRowCount(loadId);
+                    count += engine.getDataService().getTableReloadStatusRowCount(loadId);
                 }
                 if (count > threshold) {
                     for (IncomingBatch batch : batchList) {

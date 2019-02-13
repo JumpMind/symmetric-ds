@@ -83,6 +83,7 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerReBuildReason;
@@ -318,7 +319,12 @@ public class DataService extends AbstractService implements IDataService {
                 new TableReloadRequestMapper());
     }
     
-    public List<TableReloadRequest> getTableReloadRequestsByLoadId() {
+    public List<TableReloadStatus> getTableReloadStatus() {
+        return sqlTemplateDirty.query(getSql("selectTableReloadStatus"),
+                new TableReloadStatusMapper());
+    }
+    
+    public List<TableReloadRequest> getTableReloadStatusByLoadId() {
         return collapseTableReloadRequestsByLoadId(getTableReloadRequests());
     }
 
@@ -343,31 +349,15 @@ public class DataService extends AbstractService implements IDataService {
                 summary.setLastUpdateTime(request.getLastUpdateTime());
                 summary.setLastUpdateBy(request.getLastUpdateBy());
                 summary.setProcessed(request.isProcessed());
-                summary.setCompleted(request.isCompleted());
                 summary.setLoadId(request.getLoadId());
-                summary.setLoadedBatchCount(request.getLoadedBatchCount());
-                summary.setLoadedRowCount(request.getLoadedRowCount());
                 summary.setProcessed(request.isProcessed());
-                summary.setCompleted(request.isCompleted());
                 summary.setChannelId(request.getChannelId());
-                summary.setCancelled(request.isCancelled());
-                
+              
                 if (request.isFullLoadRequest()) {
                     summary.setTriggerId(request.getTriggerId());
                     summary.setRouterId(request.getRouterId());
                 }
             }
-
-            summary.setBatchCount(summary.getBatchCount() + request.getBatchCount());
-            summary.setTableCount(summary.getTableCount() + request.getTableCount());
-            summary.setRowCount((summary.getRowCount() == null ? 0 : summary.getRowCount())  + (request.getRowCount() == null ? 0 : request.getRowCount()));
-            
-            if (request.isErrorFlag()) {
-                summary.setSqlCode(request.getSqlCode());
-                summary.setSqlState(request.getSqlState());
-                summary.setSqlMessage(request.getSqlMessage());
-            }
-            
             previousLoadId = request.getLoadId();
         }
         if (summary != null) {
@@ -375,22 +365,25 @@ public class DataService extends AbstractService implements IDataService {
         }
         return collapsedRequests;
     }
-
-    public long getTableReloadRequestRowCount(long loadId) {
-        return sqlTemplateDirty.queryForLong(getSql("countTableReloadRequestRowsByLoadId"), loadId);
+    
+    public long getTableReloadStatusRowCount(long loadId) {
+        return sqlTemplateDirty.queryForLong(getSql("countTableReloadStatusRowsByLoadId"), loadId);
     }
 
-    public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount) {
-            transaction.prepareAndExecute(getSql("updateTableReloadRequestLoadedCounts"),
-                    new Object[] { batchCount, rowsCount, new Date(), loadId },
-                    new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC});
+    public void updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount, long rowsCount) {
+            transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
+                    new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount, rowsCount, new Date(), new Date(), loadId },
+                    new int[] { Types.NUMERIC, Types.NUMERIC,Types.NUMERIC, Types.NUMERIC,Types.NUMERIC, 
+                            Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP, Types.NUMERIC});
             
     }
     
-    public void updateTableReloadRequestsCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount) {
-        String sql = getSql("updateTableReloadRequestCounts");
-        Object[] args = new Object[] {batchCount, rowsCount, new Date(), loadId};
-        int[] types = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC};
+    public void updateTableReloadStatusDataCounts(ISqlTransaction transaction, long loadId, long startBatchId, long endBatchId, 
+            long dataBatchCount, long rowsCount) {
+        
+        String sql = getSql("updateTableReloadStatusDataCounts");
+        Object[] args = new Object[] {startBatchId, endBatchId, dataBatchCount, rowsCount, new Date(), loadId};
+        int[] types = new int[] { Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC};
         
         if (transaction == null) {
             try {
@@ -415,12 +408,104 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
-    public void updateTableReloadRequestsLoadAndTableCounts(ISqlTransaction transaction, long loadId, int tableCount, TableReloadRequest request) {
-        Object[] args = new Object[] { loadId, tableCount, new Date(), request.getTargetNodeId(), request.getSourceNodeId(), 
+    public void updateTableReloadRequestsLoadId(ISqlTransaction transaction, long loadId, int tableCount, TableReloadRequest request) {
+        Object[] args = new Object[] { loadId, new Date(), request.getTargetNodeId(), request.getSourceNodeId(), 
                             request.getTriggerId(), request.getRouterId(), request.getCreateTime() };   
         String sql = getSql("updateTableReloadRequestLoadId");
-        int[] types = new int[] { Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+        int[] types = new int[] { Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP};
+        
+        if (transaction == null) {
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                transaction.prepareAndExecute(sql, args, types);
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                close(transaction);
+            }
+        } else {
+            transaction.prepareAndExecute(sql, args, types);
+        }
+    }
+    
+    public void updateTableReloadStatusTableCount(ISqlTransaction transaction, long loadId, int tableCount) {
+        Object[] args = new Object[] { tableCount, new Date(), loadId };   
+        String sql = getSql("updateTableReloadStatusTableCount");
+        int[] types = new int[] { Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC};
+        
+        if (transaction == null) {
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                transaction.prepareAndExecute(sql, args, types);
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                close(transaction);
+            }
+        } else {
+            transaction.prepareAndExecute(sql, args, types);
+        }
+    }
+    
+    public void createTableReloadStatus(ISqlTransaction transaction, long loadId, String sourceNodeId, String targetNodeId) {
+        Date now = new Date();
+        Object[] argsDelete = new Object[] { loadId };   
+        String sqlDelete = getSql("deleteTableReloadStatus");
+        int[] typesDelete = new int[] { Types.NUMERIC };
+        
+        
+        Object[] args = new Object[] { loadId, targetNodeId, sourceNodeId, now, now };   
+        String sql = getSql("insertTableReloadStatus");
+        int[] types = new int[] { Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.TIMESTAMP };
+        
+        if (transaction == null) {
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                transaction.prepareAndExecute(sqlDelete, argsDelete, typesDelete);
+                transaction.prepareAndExecute(sql, args, types);
+                transaction.commit();
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                close(transaction);
+            }
+        } else {
+            transaction.prepareAndExecute(sqlDelete, argsDelete, typesDelete);
+            transaction.prepareAndExecute(sql, args, types);
+        }
+    }
+    
+    public void updateTableReloadStatusSetupCount(ISqlTransaction transaction, long loadId, int setupBatchCount) {
+        Object[] args = new Object[] { setupBatchCount, new Date(), loadId };   
+        String sql = getSql("updateTableReloadStatusSetupCount");
+        int[] types = new int[] { Types.NUMERIC, Types.TIMESTAMP, Types.NUMERIC };
         
         if (transaction == null) {
             try {
@@ -451,6 +536,11 @@ public class DataService extends AbstractService implements IDataService {
         try {
             transaction = sqlTemplate.startSqlTransaction();
             count = transaction.prepareAndExecute(getSql("updateTableReloadRequestCancelled"),
+                    new Object[] { 
+                            new Date(), loadId
+                            },
+                    new int[] { Types.TIMESTAMP,Types.NUMERIC});
+            transaction.prepareAndExecute(getSql("updateTableReloadStatsCancelled"),
                     new Object[] { 
                             new Date(), loadId
                             },
@@ -492,19 +582,44 @@ public class DataService extends AbstractService implements IDataService {
             request.setCreateTime(rs.getDateTime("create_time"));
             request.setLastUpdateBy(rs.getString("last_update_by"));
             request.setLastUpdateTime(rs.getDateTime("last_update_time"));
-            request.setBatchCount(rs.getInt("batch_count"));
-            request.setRowCount(rs.getLong("row_count"));
-            request.setTableCount(rs.getInt("table_count"));
-            request.setErrorFlag(rs.getBoolean("error_flag"));
-            request.setSqlCode(rs.getInt("sql_code"));
-            request.setSqlState(rs.getString("sql_state"));
-            request.setSqlMessage(rs.getString("sql_message"));
             request.setLoadId(rs.getInt("load_id"));
-            request.setLoadedBatchCount(rs.getInt("batch_loaded_count"));
-            request.setLoadedRowCount(rs.getLong("row_loaded_count"));
-            request.setCompleted(rs.getBoolean("completed"));
             request.setProcessed(rs.getBoolean("processed"));
+            
+            return request;
+        }
+    }
+    
+    protected class TableReloadStatusMapper implements ISqlRowMapper<TableReloadStatus> {
+
+        @Override
+        public TableReloadStatus mapRow(Row rs) {
+            TableReloadStatus request = new TableReloadStatus();
+            
+            request.setLoadId(rs.getInt("load_id"));
+            request.setSourceNodeId(rs.getString("source_node_id"));
+            request.setTargetNodeId(rs.getString("target_node_id"));
+            request.setCompleted(rs.getBoolean("completed"));
             request.setCancelled(rs.getBoolean("cancelled"));
+            request.setStartDataBatchId(rs.getLong("start_data_batch_id"));
+            request.setEndDataBatchId(rs.getLong("end_data_batch_id"));
+            request.setSetupBatchCount(rs.getInt("setup_batch_count"));
+            request.setDataBatchCount(rs.getInt("data_batch_count"));
+            request.setFinalizeBatchCount(rs.getInt("finalize_batch_count"));
+            request.setSetupBatchLoaded(rs.getInt("setup_batch_loaded"));
+            request.setDataBatchLoaded(rs.getInt("data_batch_loaded"));
+            request.setFinalizeBatchLoaded(rs.getInt("finalize_batch_loaded"));
+            request.setTableCount(rs.getInt("table_count"));
+            request.setRowsLoaded(rs.getLong("rows_loaded"));
+            request.setRowsCount(rs.getLong("rows_count"));
+            request.setErrorFlag(rs.getBoolean("error_flag"));
+            request.setSqlState(rs.getString("sql_state"));
+            request.setSqlCode(rs.getInt("sql_code"));
+            request.setSqlMessage(rs.getString("sql_message"));
+            request.setStartTime(rs.getDateTime("start_time"));
+            request.setEndTime(rs.getDateTime("end_time"));
+            
+            request.setLastUpdateTime(rs.getDateTime("last_update_time"));
+            request.setLastUpdatedBy(rs.getString("last_update_by"));
             
             return request;
         }
@@ -644,6 +759,11 @@ public class DataService extends AbstractService implements IDataService {
                         
                         processInfo.setCurrentLoadId(loadId);
                         
+                        if (reloadRequests != null && reloadRequests.size() > 0) {
+                            createTableReloadStatus(platform.supportsMultiThreadedTransactions() ? null : transaction,
+                                    loadId, reloadRequests.get(0).getSourceNodeId(), reloadRequests.get(0).getTargetNodeId()); 
+                        }
+                        
                         String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
                                 : nodeSecurity.getInitialLoadCreateBy();
 
@@ -702,43 +822,52 @@ public class DataService extends AbstractService implements IDataService {
                         
                         if (reloadRequests != null && reloadRequests.size() > 0) {
                             for (TableReloadRequest request : reloadRequests) {
-                                updateTableReloadRequestsLoadAndTableCounts(
+                                updateTableReloadRequestsLoadId(
                                         platform.supportsMultiThreadedTransactions() ? null : transaction, 
                                                 loadId, totalTableCount, request);
+                                
+                                updateTableReloadStatusTableCount(
+                                        platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                                loadId, totalTableCount);
                             }
                         }
                            
-                        int batchCount = 0;
+                        int setupBatchCount = 0;
+                        int finalizeBatchCount = 0;
                         
-                        batchCount += insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
+                        setupBatchCount += insertSqlEventsPriorToReload(targetNode, nodeIdRecord, loadId, createBy,
                             transactional, transaction, reverse, 
                             triggerHistories, triggerRoutersByHistoryId, 
                             mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
                         
-                        batchCount += insertCreateBatchesForReload(targetNode, loadId, createBy,
+                        setupBatchCount += insertCreateBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
                                 transaction, mapReloadRequests);
 
-                        batchCount += insertDeleteBatchesForReload(targetNode, loadId, createBy,
+                        setupBatchCount += insertDeleteBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
                                 transaction, mapReloadRequests);
 
-                        batchCount += insertSQLBatchesForReload(targetNode, loadId, createBy,
+                        setupBatchCount += insertSQLBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
                                 transaction, mapReloadRequests);
 
-                        extractRequests = insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
-                                triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo, null, extractRequests);
-                        batchCount += getBatchCountFor(extractRequests);
+                        if (reloadRequests != null && reloadRequests.size() > 0) {
+                            updateTableReloadStatusSetupCount(platform.supportsMultiThreadedTransactions() ? null : transaction, loadId, setupBatchCount);
+                        }
                         
-                        batchCount += insertSqlEventsAfterReload(targetNode, nodeIdRecord, loadId, createBy,
+                        extractRequests = insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories,
+                                triggerRoutersByHistoryId, transactional, transaction, mapReloadRequests, processInfo, null, extractRequests, isFullLoad);
+                        
+                        finalizeBatchCount += insertSqlEventsAfterReload(targetNode, nodeIdRecord, loadId, createBy,
                                 transactional, transaction, reverse, 
                                 triggerHistories, triggerRoutersByHistoryId, 
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
-                        batchCount += insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                        finalizeBatchCount += insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
                                 transaction, mapReloadRequests, isFullLoad, processInfo);
                                 
+                        
                         if (isFullLoad) {
 
                             callReloadListeners(false, targetNode, transactional, transaction, loadId);
@@ -754,13 +883,16 @@ public class DataService extends AbstractService implements IDataService {
                         if (isFullLoad && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
                         	insertNodeSecurityUpdate(transaction, nodeIdRecord,
                                     targetNode.getNodeId(), true, loadId, createBy, symNodeSecurityReloadChannel);
-                        	    batchCount++;
+                        	    finalizeBatchCount++;
                         }
 
                         engine.getStatisticManager().incrementNodesLoaded(1);
 
                         if (reloadRequests != null && reloadRequests.size() > 0) {
-                            int rowsAffected = transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), new Date(), batchCount, loadId); 
+                            
+                            transaction.prepareAndExecute(getSql("updateTableReloadStatusFinalizeCount"), finalizeBatchCount, new Date(), loadId); 
+                            
+                            int rowsAffected = transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), new Date(), loadId); 
                             if (rowsAffected == 0) {
                                 throw new SymmetricException(String.format("Failed to update a table_reload_request as processed for loadId '%s' ", 
                                         loadId));
@@ -1163,7 +1295,7 @@ public class DataService extends AbstractService implements IDataService {
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
             ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo,
-            String selectSqlOverride, Map<String, ExtractRequest> extractRequests) {
+            String selectSqlOverride, Map<String, ExtractRequest> extractRequests, boolean isFullLoad) {
 
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
         Map<String, ExtractRequest> requests = new HashMap<String, ExtractRequest>();
@@ -1171,6 +1303,8 @@ public class DataService extends AbstractService implements IDataService {
             requests.putAll(extractRequests);
         }
 
+        long firstBatchId = 0;
+        
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
@@ -1247,8 +1381,10 @@ public class DataService extends AbstractService implements IDataService {
                                 }
                             }
 
-                            updateTableReloadRequestsCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
-                                    loadId, new Long(numberOfBatches).intValue(), rowCount);
+                            firstBatchId = firstBatchId > 0 ? firstBatchId : startBatchId;
+                            
+                            updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                        loadId, firstBatchId, endBatchId, numberOfBatches, rowCount);
                             
                             ExtractRequest request = engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
                                     triggerRouter, startBatchId, endBatchId, loadId, table.getName(), rowCount, parentRequestId);
@@ -1356,7 +1492,7 @@ public class DataService extends AbstractService implements IDataService {
                             String.format("1=(select initial_load_enabled from %s tr where t.trigger_id = tr.trigger_id AND t.router_id = tr.router_id)",
                                     TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_TRIGGER_ROUTER));
                     totalBatchCount += getBatchCountFor(insertLoadBatchesForReload(targetNode, loadId, createBy, triggerHistories, 
-                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo, FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS, null));
+                            triggerRoutersByHistoryId, transactional, transaction, null, processInfo, FILTER_ENABLED_FILE_SYNC_TRIGGER_ROUTERS, null, isFullLoad));
                 } else {                    
                     List<Channel> channels = engine.getConfigurationService().getFileSyncChannels();
                     for (Channel channel : channels) {
@@ -2722,5 +2858,4 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    
 }
