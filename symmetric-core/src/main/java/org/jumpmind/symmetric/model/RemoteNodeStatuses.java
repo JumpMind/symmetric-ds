@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.jumpmind.exception.InterruptedException;
-import org.jumpmind.util.AppUtils;
 
 public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
 
