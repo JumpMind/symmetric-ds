@@ -147,10 +147,21 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         OutputStream os = conn.getOutputStream();
         try {
             writeMessage(os, data);
+            checkForConnectionUpgrade(conn);
+
+            InputStream is = conn.getInputStream();
+            byte[] bytes = new byte[32];
+            while (is.read(bytes) != -1) {
+                log.debug("Read keep-alive");
+            }
+            IOUtils.closeQuietly(is);
             return conn.getResponseCode();
         } finally {
             IOUtils.closeQuietly(os);
         }
+    }
+
+    protected void checkForConnectionUpgrade(HttpURLConnection conn) {
     }
 
     public static HttpURLConnection openConnection(URL url, String username, String password)

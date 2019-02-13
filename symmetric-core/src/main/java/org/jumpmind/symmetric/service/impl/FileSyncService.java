@@ -212,10 +212,14 @@ INodeCommunicationExecutor {
     protected void trackChangesFastScan(ProcessInfo processInfo, boolean useCrc) {
         long ctxTime = engine.getContextService().getLong(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME);
         Date ctxDate = new Date(ctxTime);
+        // Remove milliseconds - not all operating systems support milliseconds in the file modification time
+        ctxDate.setTime((ctxDate.getTime()/1000)*1000);
         if (ctxTime == 0) {
             ctxDate = null;
         }
         Date currentDate = new Date();
+        // Remove milliseconds - not all operating systems support milliseconds in the file modification time
+        currentDate.setTime((currentDate.getTime()/1000)*1000);
 
         int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
 

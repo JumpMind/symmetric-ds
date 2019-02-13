@@ -41,6 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
@@ -275,6 +276,10 @@ public class DatabaseXmlUtil {
                                     fk.setForeignTableCatalog(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("foreignTableSchema")) {
                                     fk.setForeignTableSchema(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("foreignOnUpdateAction")) {
+                                    fk.setOnUpdateAction(ForeignKey.getForeignKeyActionByForeignKeyActionName(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("foreignOnDeleteAction")) {
+                                    fk.setOnDeleteAction(ForeignKey.getForeignKeyActionByForeignKeyActionName(attributeValue));
                                 }
                             }
                             table.addForeignKey(fk);
@@ -523,7 +528,13 @@ public class DatabaseXmlUtil {
                         + StringEscapeUtils.escapeXml(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog()) 
                             ? "" : fk.getForeignTableCatalog()) + 
                         "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml(fk.getForeignTableSchema() == null || 
-                            fk.getForeignTableSchema().equals(table.getSchema()) ? "" : fk.getForeignTableSchema())  + "\">\n");
+                            fk.getForeignTableSchema().equals(table.getSchema()) ? "" : fk.getForeignTableSchema())  + "\""
+                        +
+                        writeForeignKeyOnUpdateClause(fk)
+                        +
+                        writeForeignKeyOnDeleteClause(fk)
+                        +
+                        ">\n");
                         		
                 for (Reference ref : fk.getReferences()) {
                     output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml(ref.getLocalColumnName())
@@ -556,5 +567,31 @@ public class DatabaseXmlUtil {
         } catch (IOException e) {
             throw new IoException(e);
         }
+    }
+    
+    public static String writeForeignKeyOnUpdateClause(ForeignKey fk) {
+        // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
+        StringBuilder sb = new StringBuilder();
+        if(! (fk.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) ||
+              fk.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)
+             ))
+        {
+            sb.append(" foreignOnUpdateAction=\"" +
+                StringEscapeUtils.escapeXml(fk.getOnUpdateAction().getForeignKeyActionName()) + "\"");
+        }
+        return sb.toString();
+    }
+    
+    public static String writeForeignKeyOnDeleteClause(ForeignKey fk) {
+        // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
+        StringBuilder sb = new StringBuilder();
+        if(! (fk.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) ||
+                fk.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)
+               ))
+        {
+            sb.append(" foreignOnDeleteAction=\"" +
+                StringEscapeUtils.escapeXml(fk.getOnDeleteAction().getForeignKeyActionName()) + "\"");
+        }
+        return sb.toString();
     }
 }

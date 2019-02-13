@@ -74,7 +74,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
             Status status = batch.isResend() ? Status.RS : batch.isOk() ? Status.OK : Status.ER;
             Status oldStatus = null;
-            if (outgoingBatch != null) {
+            if (outgoingBatch != null && outgoingBatch.getStatus() != Status.RQ) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
                 if (outgoingBatch.getStatus() != Status.OK && 
@@ -87,6 +87,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     oldStatus = outgoingBatch.getStatus();
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
+                    status = Status.OK;
                     log.info("Batch {} for node {} was set to {}.  Updating the status to OK.",
                             new Object[] { batch.getBatchId(), batch.getNodeId(), oldStatus.name() });
                 }
@@ -182,7 +183,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                     engine.getStatisticManager().removeRouterStatsByBatch(batch.getBatchId());
                 }
-            } else {
+            } else if (outgoingBatch == null) {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
                         status.name()});
                 result.setOk(false);

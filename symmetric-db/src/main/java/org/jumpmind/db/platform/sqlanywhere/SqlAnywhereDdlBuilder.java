@@ -43,6 +43,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -494,5 +495,27 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
      */
     protected String createUniqueIdentifier() {
         return new UID().toString().replace(':', '_').replace('-', '_');
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // SQLAnywhere does not support ON UPDATE NO ACTION, but NOACTION is just like RESTRICT
+        ForeignKeyAction original = key.getOnUpdateAction();
+        if(key.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)) {
+            key.setOnUpdateAction(ForeignKeyAction.RESTRICT);
+        }
+        super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
+        key.setOnUpdateAction(original);
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Firebird does not support ON DELETE NO ACTION, but NOACTION is just like RESTRICT
+        ForeignKeyAction original = key.getOnDeleteAction();
+        if(key.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)) {
+            key.setOnDeleteAction(ForeignKeyAction.RESTRICT);
+        }
+        super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        key.setOnDeleteAction(original);
     }
 }

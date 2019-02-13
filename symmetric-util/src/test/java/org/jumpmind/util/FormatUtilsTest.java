@@ -70,5 +70,6 @@ public class FormatUtilsTest {
         assertFalse(FormatUtils.isWildCardMatch("B_A", "*A*B"));
         assertTrue(FormatUtils.isWildCardMatch("A_B", "*A*B"));        
         assertFalse(FormatUtils.isWildCardMatch("TEST_NO_MATCH", "TEST_*,!TEST_NO_MATCH"));
+        assertTrue(FormatUtils.isWildCardMatch("A_B", "A*B"));
     }
 }

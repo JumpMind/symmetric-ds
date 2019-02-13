@@ -29,6 +29,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -122,9 +123,25 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
             writeForeignReferences(key, ddl);
-            ddl.append(") CONSTRAINT ");
+            ddl.append(")");
+            writeCascadeAttributesForForeignKey(key, ddl);
+            ddl.append(" CONSTRAINT ");
             printIdentifier(getForeignKeyName(table, key), ddl);
             printEndOfStatement(ddl);
+        }
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // Informix does not support ON UPDATE
+        return;
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Informix only supports ON DELETE CASCADE
+        if(key.getOnDeleteAction().equals(ForeignKeyAction.CASCADE)) {
+            super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }
 

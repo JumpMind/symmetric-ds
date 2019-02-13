@@ -87,17 +87,17 @@ public class MultiBatchStagingWriter implements IDataWriter {
     protected ProcessInfo processInfo;
 
     protected long startTime, ts, rowCount, byteCount;
-
-    protected boolean cancelled = false;
     
     protected List<ExtractRequest> childRequests;
     
     protected Map<Long, OutgoingBatch> childBatches;
     
     protected long memoryThresholdInBytes;
+    
+    protected boolean isRestarted;
 
     public MultiBatchStagingWriter(DataExtractorService dataExtractorService, ExtractRequest request, List<ExtractRequest> childRequests, String sourceNodeId,
-            IStagingManager stagingManager, List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo) {
+            IStagingManager stagingManager, List<OutgoingBatch> batches, long maxBatchSize, ProcessInfo processInfo, boolean isRestarted) {
         this.dataExtractorService = dataExtractorService;
         this.request = request;
         this.sourceNodeId = sourceNodeId;
@@ -110,6 +110,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.childRequests = childRequests;
         this.memoryThresholdInBytes = this.dataExtractorService.parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
         this.childBatches = new HashMap<Long, OutgoingBatch>();
+        this.isRestarted = isRestarted;
     }
 
     @Override
@@ -117,7 +118,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.context = context;
         this.nextBatch();
         this.currentDataWriter = buildWriter();
-        this.currentDataWriter.open(context);
+        this.currentDataWriter.open(context);        
     }
 
     protected IDataWriter buildWriter() {
@@ -127,18 +128,14 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     @Override
     public void close() {
-        while (!cancelled && batches.size() > 0 && table != null) {
+        while (!inError && batches.size() > 0 && table != null) {
             startNewBatch();
             end(this.table);
             end(this.batch, false);
-        }
-        if (table == null && batch != null) {
             log.debug("Batch {} is empty", new Object[] { batch.getNodeBatchId() });
-            
-            this.currentDataWriter.end(batch, false);
-            Statistics stats = this.closeCurrentDataWriter();
+            Statistics stats = closeCurrentDataWriter();
             checkSend(stats);
-        } 
+        }
         closeCurrentDataWriter();
     }
 
@@ -150,7 +147,14 @@ public class MultiBatchStagingWriter implements IDataWriter {
             this.outgoingBatch.setExtractMillis(System.currentTimeMillis() - batch.getStartTime().getTime());
             this.currentDataWriter.close();
             this.currentDataWriter = null;
-            checkSend(stats);
+            if (inError) {
+                IStagedResource resource = this.dataExtractorService.getStagedResource(outgoingBatch);
+                if (resource != null) {
+                    resource.delete();
+                }
+            } else {
+                checkSend(stats);
+            }
         }
         return stats;
     }
@@ -196,34 +200,33 @@ public class MultiBatchStagingWriter implements IDataWriter {
             startNewBatch();
         }
         if (System.currentTimeMillis() - ts > 60000) {
+            long currentRowCount = rowCount + this.currentDataWriter.getStatistics().get(batch).get(DataWriterStatisticConstants.ROWCOUNT);
+            long currentByteCount = byteCount + this.currentDataWriter.getStatistics().get(batch).get(DataWriterStatisticConstants.BYTECOUNT);
             this.dataExtractorService.log.info(
-                    "Extracting table {} request {} for {} seconds, {} batches, {} rows, and {} bytes.  Current batch {} of batches {} through {}.",
-                    request.getTableName(), request.getRequestId(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size(), rowCount, byteCount,
-                    batch.getBatchId(), request.getStartBatchId(), request.getEndBatchId());
+                    "Extract request {} for table {} extracting for {} seconds, {} batches, {} rows, and {} bytes.  Current batch is {} in range {}-{}.",
+                    request.getRequestId(), request.getTableName(), (System.currentTimeMillis() - startTime) / 1000, finishedBatches.size() + 1,
+                    currentRowCount, currentByteCount, batch.getBatchId(), request.getStartBatchId(), request.getEndBatchId());
             ts = System.currentTimeMillis();
         }
     }
 
     public void checkSend(Statistics stats) {
-        if (this.outgoingBatch.getStatus() != Status.OK) {            
-            IStagedResource resource = this.dataExtractorService.getStagedResource(outgoingBatch);
-            if (resource != null) {
-                resource.setState(State.DONE);
-            }
-            OutgoingBatch batchFromDatabase = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(),
-                    outgoingBatch.getNodeId());
-
-            if (batchFromDatabase.getIgnoreCount() == 0) {
-                this.outgoingBatch.setStatus(Status.NE);
-            } else {
-                cancelled = true;
-                throw new CancellationException();
-            }
-            
-            checkSendChildRequests(batchFromDatabase, resource, stats);
+        IStagedResource resource = this.dataExtractorService.getStagedResource(outgoingBatch);
+        if (resource != null) {
+            resource.setState(State.DONE);
         }
+        OutgoingBatch batchFromDatabase = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(outgoingBatch.getBatchId(),
+                outgoingBatch.getNodeId());
 
-        this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
+        if (!batchFromDatabase.getStatus().equals(Status.OK) && !batchFromDatabase.getStatus().equals(Status.IG)) {
+            this.outgoingBatch.setStatus(Status.NE);
+            checkSendChildRequests(batchFromDatabase, resource, stats);
+            this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
+        } else {
+            // The user canceled a batch before it tried to load, so they probably canceled all batches.
+            log.info("User cancelled batches, so cancelling extract request");
+            throw new CancellationException();
+        }
     }
     
     protected void checkSendChildRequests(OutgoingBatch parentBatch, IStagedResource parentResource, Statistics stats) {
@@ -261,11 +264,13 @@ public class MultiBatchStagingWriter implements IDataWriter {
                 OutgoingBatch childBatch = this.dataExtractorService.outgoingBatchService.findOutgoingBatch(childBatchId, childRequest.getNodeId());
                 childBatch.setExtractStartTime(startExtractTime);
                 childBatch.setExtractMillis(System.currentTimeMillis() - startExtractTime.getTime());
-                childBatch.setDataRowCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
-                childBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
-                childBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                if (stats != null) {
+                    childBatch.setDataRowCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                    childBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
+                    childBatch.setByteCount(stats.get(DataWriterStatisticConstants.BYTECOUNT));
+                }
 
-                if (childBatch.getIgnoreCount() == 0) {
+                if (!childBatch.getStatus().equals(Status.OK) && !childBatch.getStatus().equals(Status.IG)) {
                     childBatch.setStatus(Status.NE);
                     this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(childBatch);
                 }

@@ -58,6 +58,7 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.ModelException;
@@ -2398,6 +2399,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 				ddl.append(" (");
 				writeForeignReferences(key, ddl);
 				ddl.append(")");
+				writeCascadeAttributesForForeignKey(key, ddl);
 			}
 		}
 	}
@@ -2449,7 +2451,37 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(")");
+            writeCascadeAttributesForForeignKey(key, ddl);
             printEndOfStatement(ddl);
+        }
+    }
+    
+    protected void writeCascadeAttributesForForeignKey(ForeignKey key, StringBuilder ddl) {
+        writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        writeCascadeAttributesForForeignKeyUpdate(key, ddl);
+    }
+    
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
+        if(! (
+                key.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) ||
+                key.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)
+             )
+           )
+        {
+            ddl.append(" ON DELETE " + key.getOnDeleteAction().getForeignKeyActionName());
+        }
+    }
+    
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
+        if(! (
+                key.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) ||
+                key.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)
+             )
+           )
+        {
+            ddl.append(" ON UPDATE " + key.getOnUpdateAction().getForeignKeyActionName());
         }
     }
 
