@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -694,7 +695,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (InvalidRetryException) ex;
         } else if (ex instanceof StagingLowFreeSpace) {
             log.error("Loading is disabled because disk is almost full: {}", ex.getMessage());
-        } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
+        } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException) && !(ex instanceof CancellationException)) {
             log.error("Failed to process batch", ex);
         } else {
             log.debug("Failed to process batch", ex);

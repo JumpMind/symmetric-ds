@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -221,7 +222,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
     
                 enableSyncTriggers(context);
     
-                if (ex instanceof IOException || ex instanceof TransportException
+                if (ex instanceof CancellationException) {
+                    log.info("Cancelling batch " + this.currentBatch.getNodeBatchId());
+                } else if (ex instanceof IOException || ex instanceof TransportException
                         || ex instanceof IoException) {
                     log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
                     this.currentBatch.setSqlMessage(ex.getMessage());

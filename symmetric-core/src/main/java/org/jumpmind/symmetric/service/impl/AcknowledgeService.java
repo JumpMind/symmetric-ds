@@ -87,6 +87,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     oldStatus = outgoingBatch.getStatus();
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
+                    status = Status.OK;
                     log.info("Batch {} for node {} was set to {}.  Updating the status to OK.",
                             new Object[] { batch.getBatchId(), batch.getNodeId(), oldStatus.name() });
                 }
