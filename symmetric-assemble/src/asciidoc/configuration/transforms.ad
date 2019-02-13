@@ -129,7 +129,7 @@ insert into SYM_TRANSFORM_TABLE (
 	last_update_by, last_update_time, create_time
 ) values (
 	'itemSellingPriceTransform', 'store', 'corp', 'EXTRACT', 'ITEM_SELLING_PRICE',
-	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED', 1,
+	'ITEM_SELLING_PRICE', 'UPDATE_COL', 'DEL_ROW', 1, 'IMPLIED', 1,
 	'Documentation', current_timestamp, current_timestamp
 );
 ----
