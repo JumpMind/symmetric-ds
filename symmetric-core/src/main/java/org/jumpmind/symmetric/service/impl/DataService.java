@@ -324,7 +324,12 @@ public class DataService extends AbstractService implements IDataService {
                 new TableReloadStatusMapper());
     }
     
-    public List<TableReloadRequest> getTableReloadStatusByLoadId() {
+    public TableReloadStatus getTableReloadStatusByLoadId(long loadId) {
+        return sqlTemplateDirty.queryForObject(getSql("selectTableReloadStatusByLoadId"),
+                new TableReloadStatusMapper(), loadId);
+    }
+    
+    public List<TableReloadRequest> getTableReloadRequestByLoadId() {
         return collapseTableReloadRequestsByLoadId(getTableReloadRequests());
     }
 
