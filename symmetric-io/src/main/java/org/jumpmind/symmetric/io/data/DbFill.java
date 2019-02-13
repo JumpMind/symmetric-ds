@@ -711,8 +711,12 @@ public class DbFill {
             int count = 0;
             for (int i = 0; i < 100 && count == 0; i++) {
                 row = createRandomInsertValues(insertStatement, table);
-                count = tran.prepareAndExecute(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
+                try {
+                    count = tran.prepareAndExecute(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
                         row.toArray(table.getPrimaryKeyColumnNames())));
+                } catch(SqlException e) {
+                    count = 0;
+                }
             }
             if (count == 0 && cascading) {
                 log.info("Failed to insert non-conflicting row into {}: {}", table.getName());
