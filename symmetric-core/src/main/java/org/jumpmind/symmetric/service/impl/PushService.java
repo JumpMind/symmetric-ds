@@ -177,6 +177,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                     cumulativeReloadBatchesProcessed = status.getReloadBatchesProcessed();
                     cumulativeDataProcessed = status.getDataProcessed();
                     cumulativeBatchesProcessed = status.getBatchesProcessed();
+                    status.resetTableSummary();
                 } while (((immediatePushIfDataFound && lastBatchesProcessed > 0) || lastReloadBatchesProcessed > 0) && !status.failed());
             } finally {
                 startTimesOfNodesBeingPushedTo.remove(node.getNodeId());

@@ -197,7 +197,6 @@ public class RemoteNodeStatus implements Serializable {
         if (tableCounts != null && !tableCounts.isEmpty()) {
             StringBuilder buff = new StringBuilder();
             for (String table : tableCounts.keySet()) {
-                Integer count = tableCounts.get(table);
                 buff.append(table).append(", ");
             }
             
@@ -243,6 +242,9 @@ public class RemoteNodeStatus implements Serializable {
         }
     }
     
-    
+    public void resetTableSummary() {
+        tableCounts.clear();
+        tableSummary.clear();
+    }
 
 }
