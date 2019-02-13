@@ -2152,7 +2152,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 // back out statistics from table reload request
                 if (batchLoadedCount > 0 || rowLoadedCount > 0) {
-                    dataService.updateTableReloadRequestsLoadedCounts(transaction, extractRequest.getLoadId(), (int) batchLoadedCount * -1, rowLoadedCount * -1);
+                    dataService.updateTableReloadStatusDataLoaded(transaction, extractRequest.getLoadId(), extractRequest.getStartBatchId(), (int) batchLoadedCount * -1, rowLoadedCount * -1);
                 }
                 
                 // set status of batches back to requested
