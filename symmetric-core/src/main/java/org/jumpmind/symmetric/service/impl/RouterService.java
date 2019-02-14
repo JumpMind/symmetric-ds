@@ -57,6 +57,7 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
+import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -354,8 +355,10 @@ public class RouterService extends AbstractService implements IRouterService {
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
+            Map<String, ExtractRequest> extractRequests = null;
+            
             for (TableReloadRequest load : loadsToProcess) {
-                Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId());
+                Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
                 if (!useExtractJob || streamToFile) {
                     if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
@@ -367,7 +370,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class)
                                 .getActiveTriggerHistories(targetNode);
 
-                        engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters);
+                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters, extractRequests);
                     } else {
                         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
 
@@ -393,7 +396,7 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             
             for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
-                Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0]);
+                Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0], true);
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
                 List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
                 if (triggerRouters == null) {
@@ -402,12 +405,11 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
                 List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
                 
-                engine.getDataService().insertReloadEvents(
-                        targetNode,
-                        false, entry.getValue(), processInfo, activeHistories, triggerRouters);
+                extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories, triggerRouters, extractRequests);
             }
         }
     }
+    
     public boolean isValidLoadTarget(String targetNodeId) {
         boolean result = false;
         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(targetNodeId);
@@ -655,10 +657,13 @@ public class RouterService extends AbstractService implements IRouterService {
             }
     
             if (!producesCommonBatches.equals(commonBatchesLastKnownState.get(channelId))) {
-                if (producesCommonBatches) {
-                    log.info("The '{}' channel is in common batch mode", channelId);
+                String message = "The '{}' channel is " + (producesCommonBatches ? "" : "NOT ") + "in common batch mode";
+                if (channelId.equals(Constants.CHANNEL_CONFIG) || channelId.equals(Constants.CHANNEL_HEARTBEAT) ||
+                        channelId.equals(Constants.CHANNEL_FILESYNC) || channelId.equals(Constants.CHANNEL_MONITOR) ||
+                        channelId.equals(Constants.CHANNEL_FILESYNC_RELOAD) || channelId.equals(Constants.CHANNEL_RELOAD)) {
+                    log.debug(message, channelId);
                 } else {
-                    log.info("The '{}' channel is NOT in common batch mode", channelId);
+                    log.info(message, channelId);
                 }
                 commonBatchesLastKnownState.put(channelId, producesCommonBatches);
             }

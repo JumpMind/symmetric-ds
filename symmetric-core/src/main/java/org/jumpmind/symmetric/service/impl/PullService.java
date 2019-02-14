@@ -169,6 +169,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                  */
                 cumulativeDataProcessed = status.getDataProcessed();
                 cumulativeBatchesProcessed = status.getBatchesProcessed();
+                status.resetTableSummary();
             } while ((immediatePullIfDataFound || nodeService.isDataLoadStarted()) && !status.failed()
                     && lastBatchesProcessed > 0);           
         } else {

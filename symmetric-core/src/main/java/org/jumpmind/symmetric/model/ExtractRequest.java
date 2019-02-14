@@ -51,6 +51,7 @@ public class ExtractRequest implements Serializable {
     private long lastLoadedBatchId;
     private long transferredMillis;
     private long loadedMillis;
+    private long parentRequestId;
     
     public long getRequestId() {
         return requestId;
@@ -212,5 +213,12 @@ public class ExtractRequest implements Serializable {
         this.loadedMillis = loadedMillis;
     }
 
+    public long getParentRequestId() {
+        return parentRequestId;
+    }
+
+    public void setParentRequestId(long parentRequestId) {
+        this.parentRequestId = parentRequestId;
+    }
     
 }

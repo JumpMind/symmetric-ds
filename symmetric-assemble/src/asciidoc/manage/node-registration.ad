@@ -16,6 +16,10 @@ Reject::  Reject the request by removing it.  The node can still make additional
 Reopen::  Open registration for a node that is already registered, which forces the node to use the `registration.url` and pull configuration again.  The `auto.reload` and `auto.reload.reverse` parameters do not apply to reopen.  If the `reopen.use.same.password` parameter is false, a new node password is generated.
 Unregister::  Remove the node from any further data synchronization by removing registration, deleting any incoming batches, and marking any outgoing batches with status OK.
 
+You can remove a node from the command line with the following command:
+
+`bin/symadmin remove-node --engine <engine name> -n <node id>`
+
 endif::pro[]
 
 A node is considered unregistered if it does not have an <<NODE_IDENTITY>> row.  When a node is unregistered, 

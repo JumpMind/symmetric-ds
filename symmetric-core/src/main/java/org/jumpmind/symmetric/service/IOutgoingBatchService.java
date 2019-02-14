@@ -79,6 +79,8 @@ public interface IOutgoingBatchService {
 
     public void updateOutgoingBatch(OutgoingBatch batch);
     
+    public void updateOutgoingBatchStatus(ISqlTransaction transaction, Status status, String nodeId, long startBatchId, long endBatchId);
+
     public void updateCommonBatchExtractStatistics(OutgoingBatch batch);
     
     public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);

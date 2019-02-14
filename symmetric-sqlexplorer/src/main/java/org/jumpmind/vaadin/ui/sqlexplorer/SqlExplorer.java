@@ -567,7 +567,8 @@ public class SqlExplorer extends HorizontalSplitPanel {
             public void handle(Set<DbTreeNode> nodes) {
                 if (nodes.size() > 0) {
                     IDb db = dbTree.getDbForNode(nodes.iterator().next());
-                    new DbExportDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db)).showAtSize(0.6);
+                    String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                    new DbExportDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db), excludeTablesRegex).showAtSize(0.6);
                 }
             }
         }, DbTree.NODE_TYPE_TABLE, DbTree.NODE_TYPE_TRIGGER);
@@ -579,7 +580,8 @@ public class SqlExplorer extends HorizontalSplitPanel {
             public void handle(Set<DbTreeNode> nodes) {
                 if (nodes.size() > 0) {
                     IDb db = dbTree.getDbForNode(nodes.iterator().next());
-                    new DbFillDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db)).showAtSize(0.6);
+                    String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                    new DbFillDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db), excludeTablesRegex).showAtSize(0.6);
                 }
 
             }

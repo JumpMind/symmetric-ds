@@ -66,6 +66,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
     private static final String OPTION_COMMIT_DELAY = "commit-delay";
     
     private static final String OPTION_ROLLBACK = "rollback";
+    
+    private static final String OPTION_TRUNCATE = "truncate";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -111,6 +113,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_COMMIT, true);
         addOption(options, null, OPTION_COMMIT_DELAY, true);
         addOption(options, null, OPTION_ROLLBACK, true);
+        addOption(options, null, OPTION_TRUNCATE, false);
     }
 
     @Override
@@ -181,6 +184,10 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_ROLLBACK)) {
             dbFill.setPercentRollback(Integer.parseInt(line.getOptionValue(OPTION_ROLLBACK)));
         }
+        if (line.hasOption(OPTION_TRUNCATE)) {
+            dbFill.setTruncate(true);
+        }
+
         // Ignore the Symmetric config tables.
         getSymmetricEngine();
         IParameterService parameterService = engine.getParameterService();

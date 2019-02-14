@@ -34,6 +34,7 @@ import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.EnvironmentSpecificProperties;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -73,7 +74,8 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     protected long writeData(TableCsvData... datas) {
     	EnvironmentSpecificProperties prop = DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT);
         return writeData(new OracleBulkDatabaseWriter(platform, platform, stagingManager, "sym_",
-        		null, "silent=(header,discards) direct=false readsize=4096000 bindsize=4096000 rows=1000 discardmax=1 errors=0",
+        		prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD),
+        		"silent=(header,discards) direct=false readsize=4096000 bindsize=4096000 rows=1000 discardmax=1 errors=0",
         		prop.get(BasicDataSourcePropertyConstants.DB_POOL_USER),
         		prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD), 
         		prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, null), datas);

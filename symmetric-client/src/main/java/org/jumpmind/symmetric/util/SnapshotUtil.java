@@ -37,7 +37,9 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -59,6 +61,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+import org.jumpmind.db.model.CatalogSchema;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -135,16 +138,16 @@ public class SnapshotUtil {
             log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
         }
 
-        TreeSet<Table> tables = new TreeSet<Table>();
         FileOutputStream fos = null;
         try {
+            HashMap<CatalogSchema, List<Table>> catalogSchemas = new HashMap<CatalogSchema, List<Table>>();
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
             for (TriggerHistory triggerHistory : triggerHistories) {
                 Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
                         triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
                 if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
-                    tables.add(table);
+                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
                 }
             }
 
@@ -153,15 +156,35 @@ public class SnapshotUtil {
                 Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                         trigger.getSourceTableName(), false);
                 if (table != null) {
-                    tables.add(table);
+                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
                 }
             }
 
-            fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
-            DbExport export = new DbExport(engine.getDatabasePlatform());
-            export.setFormat(Format.XML);
-            export.setNoData(true);
-            export.exportTables(fos, tables.toArray(new Table[tables.size()]));
+            for (CatalogSchema catalogSchema : catalogSchemas.keySet()) {
+                DbExport export = new DbExport(engine.getDatabasePlatform());
+                boolean isDefaultCatalog = StringUtils.equalsIgnoreCase(catalogSchema.getCatalog(), engine.getDatabasePlatform().getDefaultCatalog());
+                boolean isDefaultSchema = StringUtils.equalsIgnoreCase(catalogSchema.getSchema(), engine.getDatabasePlatform().getDefaultSchema());
+
+                if (isDefaultCatalog && isDefaultSchema) {
+                    fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
+                } else {
+                    String extra = "";
+                    if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
+                        extra += catalogSchema.getCatalog() + "-";
+                        export.setCatalog(catalogSchema.getCatalog());
+                    }
+                    if (!isDefaultSchema && catalogSchema.getSchema() != null) {
+                        extra += catalogSchema.getSchema();
+                        export.setSchema(catalogSchema.getSchema());
+                    }
+                    fos = new FileOutputStream(new File(tmpDir, "table-definitions-" + extra + ".xml"));
+                }
+             
+                List<Table> tables = catalogSchemas.get(catalogSchema);
+                export.setFormat(Format.XML);
+                export.setNoData(true);
+                export.exportTables(fos, tables.toArray(new Table[tables.size()]));
+            }
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
@@ -444,35 +467,44 @@ public class SnapshotUtil {
             }
 
             StringBuilder output = new StringBuilder();
-            printDirectoryContents(home, output);
+            Comparator<File> fileComparator = new Comparator<File>() {
+                @Override
+                public int compare(File o1, File o2) {
+                    return o1.getPath().compareToIgnoreCase(o2.getPath());
+                }
+            };
+            printDirectoryContents(home, output, fileComparator);
             FileUtils.write(new File(tmpDir, "directory-listing.txt"), output);
         } catch (Exception ex) {
             log.warn("Failed to output the direcetory listing", ex);
         }
     }
 
-    protected static void printDirectoryContents(File dir, StringBuilder output) throws IOException {
+    protected static void printDirectoryContents(File dir, StringBuilder output, Comparator<File> fileComparator) throws IOException {
         output.append("\n");
         output.append(dir.getCanonicalPath());
         output.append("\n");
 
         File[] files = dir.listFiles();
-        for (File file : files) {
-            output.append("  ");
-            output.append(file.canRead() ? "r" : "-");
-            output.append(file.canWrite() ? "w" : "-");
-            output.append(file.canExecute() ? "x" : "-");
-            output.append(StringUtils.leftPad(file.length() + "", 11));
-            output.append(" ");
-            output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
-            output.append(" ");
-            output.append(file.getName());
-            output.append("\n");
-        }
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                printDirectoryContents(file, output);
+        if (files != null) {
+            Arrays.parallelSort(files, fileComparator);
+            for (File file : files) {
+                output.append("  ");
+                output.append(file.canRead() ? "r" : "-");
+                output.append(file.canWrite() ? "w" : "-");
+                output.append(file.canExecute() ? "x" : "-");
+                output.append(StringUtils.leftPad(file.length() + "", 11));
+                output.append(" ");
+                output.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(file.lastModified())));
+                output.append(" ");
+                output.append(file.getName());
+                output.append("\n");
+            }
+    
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    printDirectoryContents(file, output, fileComparator);
+                }
             }
         }
 
@@ -697,6 +729,15 @@ public class SnapshotUtil {
             IOUtils.closeQuietly(fwriter);
         }
         return file;
+    }
+
+    private static void addTableToMap(HashMap<CatalogSchema, List<Table>> catalogSchemas, CatalogSchema catalogSchema, Table table) {
+        List<Table> tables = catalogSchemas.get(catalogSchema);
+        if (tables == null) {
+            tables = new ArrayList<Table>();
+            catalogSchemas.put(catalogSchema, tables);
+        }
+        tables.add(table);
     }
 
     static class SortedProperties extends Properties {

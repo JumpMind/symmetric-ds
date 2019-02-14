@@ -105,7 +105,7 @@ public class NodeService extends AbstractService implements INodeService {
     @Override
     public String getExternalId(String nodeId) {
         String externalId = null;
-        Node node = findNode(nodeId);
+        Node node = findNode(nodeId, true);
         if (node != null) {
             externalId = node.getExternalId();
         }
@@ -799,7 +799,7 @@ public class NodeService extends AbstractService implements INodeService {
                 }
                 long cutOffTimeMillis = clientNodeCurrentTime.getTime() - offlineNodeDetectionMillis;
                 if (time == null || time.getTime() < cutOffTimeMillis) {
-                    offlineNodeList.add(findNode(nodeId));
+                    offlineNodeList.add(findNode(nodeId, true));
                 }
             }
         }

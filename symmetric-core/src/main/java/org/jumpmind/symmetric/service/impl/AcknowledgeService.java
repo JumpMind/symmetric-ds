@@ -74,20 +74,21 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
             Status status = batch.isResend() ? Status.RS : batch.isOk() ? Status.OK : Status.ER;
             Status oldStatus = null;
-            if (outgoingBatch != null) {
+            if (outgoingBatch != null && outgoingBatch.getStatus() != Status.RQ) {
                 // Allow an outside system/user to indicate that a batch
                 // is OK.
                 if (outgoingBatch.getStatus() != Status.OK && 
                         outgoingBatch.getStatus() != Status.IG) {
                     outgoingBatch.setStatus(status);
                     outgoingBatch.setErrorFlag(!batch.isOk());
-                } else {
+                } else if (outgoingBatch.getStatus() != Status.OK) {
                     // clearing the error flag in case the user set the batch
                     // status to OK
                     oldStatus = outgoingBatch.getStatus();
                     outgoingBatch.setStatus(Status.OK);
                     outgoingBatch.setErrorFlag(false);
-                    log.info("Batch {} for {} was set to {}.  Updating the status to OK",
+                    status = Status.OK;
+                    log.info("Batch {} for node {} was set to {}.  Updating the status to OK.",
                             new Object[] { batch.getBatchId(), batch.getNodeId(), oldStatus.name() });
                 }
                 if (batch.isIgnored()) {
@@ -182,7 +183,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     }
                     engine.getStatisticManager().removeRouterStatsByBatch(batch.getBatchId());
                 }
-            } else {
+            } else if (outgoingBatch == null) {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
                         status.name()});
                 result.setOk(false);
@@ -194,7 +195,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     protected void purgeLoadBatchesFromStaging(OutgoingBatch outgoingBatch) {
         long threshold = parameterService.getLong(ParameterConstants.INITIAL_LOAD_PURGE_STAGE_IMMEDIATE_THRESHOLD_ROWS);
         if (threshold >= 0 && outgoingBatch.isLoadFlag() && !outgoingBatch.isCommonFlag()) {
-            long count = engine.getDataService().getTableReloadRequestRowCount(outgoingBatch.getLoadId());
+            long count = engine.getDataService().getTableReloadStatusRowCount(outgoingBatch.getLoadId());
             if (count > threshold) {
                 IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
                         outgoingBatch.getStagedLocation(), outgoingBatch.getBatchId());

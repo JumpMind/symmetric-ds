@@ -165,15 +165,14 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             String violatedIndexName = sqlTemplate.getUniqueKeyViolationIndexName(e);
 
             if (violatedIndexName != null) {
-                log.info("Unique violation from index {} on table {} during {} with batch {}.  Attempting to correct.", violatedIndexName, targetTable.getName(), 
-                        data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-
                 // Use the violated unique index name to find the columns involved so we can run a delete statement
                 boolean foundUniqueIndex = false;
                 int count = 0;
                 for (IIndex index : targetTable.getIndices()) {
                     if (index.isUnique() && (index.getName().equals(violatedIndexName) || violatedIndexName.contentEquals("%"))) {
                         foundUniqueIndex = true;
+                        log.info("Unique violation from index {} on table {} during {} with batch {}.  Attempting to correct.", violatedIndexName, targetTable.getName(), 
+                                data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
                         count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
                     }
                 }

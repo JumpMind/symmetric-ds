@@ -145,7 +145,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             snapshotEvents.add(snapshot);
         } else if (eventType == DataEventType.RELOAD) {
             String targetNodeId = context.getBatch().getTargetNodeId();
-            Node targetNode = nodeService.findNode(targetNodeId);
+            Node targetNode = nodeService.findNode(targetNodeId, true);
             List<FileTriggerRouter> fileTriggerRouters = fileSyncService
                     .getFileTriggerRoutersForCurrentNode(false);
             for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {

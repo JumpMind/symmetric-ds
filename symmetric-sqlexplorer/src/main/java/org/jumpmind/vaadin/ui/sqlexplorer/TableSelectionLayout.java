@@ -75,18 +75,20 @@ public class TableSelectionLayout extends VerticalLayout {
     
     private List<String> excludedTables;
 
+    private String excludeTablesRegex;
+    
     public TableSelectionLayout(IDatabasePlatform databasePlatform,
-            Set<org.jumpmind.db.model.Table> selectedSet) {
-        this("Please select from the following tables", databasePlatform, selectedSet, null);
+            Set<org.jumpmind.db.model.Table> selectedSet, String excludeTablesRegex) {
+        this("Please select from the following tables", databasePlatform, selectedSet, null, excludeTablesRegex);
     }
     
     public TableSelectionLayout(String titleKey, IDatabasePlatform databasePlatform,
             Set<org.jumpmind.db.model.Table> selectedSet) {
-    	this(titleKey, databasePlatform, selectedSet, null);
+    	this(titleKey, databasePlatform, selectedSet, null, null);
     }
 
     public TableSelectionLayout(String titleKey, IDatabasePlatform databasePlatform,
-            Set<org.jumpmind.db.model.Table> selectedSet, List<String> excludedTables) {
+            Set<org.jumpmind.db.model.Table> selectedSet, List<String> excludedTables, String excludeTablesRegex) {
         super();
         this.setSizeFull();
         this.setMargin(true);
@@ -95,6 +97,7 @@ public class TableSelectionLayout extends VerticalLayout {
         this.selectedTablesSet = selectedSet;
         this.databasePlatform = databasePlatform;
         this.excludedTables = excludedTables;
+        this.excludeTablesRegex = excludeTablesRegex;
 
         createTableSelectionLayout(titleKey);
     }
@@ -324,8 +327,18 @@ public class TableSelectionLayout extends VerticalLayout {
     }
 
     public List<String> getTables() {
-        return databasePlatform.getDdlReader().getTableNames((String) catalogSelect.getValue(),
+        List<String> tableNames = databasePlatform.getDdlReader().getTableNames((String) catalogSelect.getValue(),
                 (String) schemaSelect.getValue(), new String[] { "TABLE" });
+        Iterator<String> iter = tableNames.iterator();
+        while (iter.hasNext()) {
+            String tableName = iter.next();
+            if (tableName.matches(excludeTablesRegex)
+                    || tableName.toUpperCase().matches(excludeTablesRegex)
+                    || tableName.toLowerCase().matches(excludeTablesRegex)) {
+                iter.remove();
+            }
+        }
+        return tableNames;
     }
     
     public List<String> getExcludedTables() {

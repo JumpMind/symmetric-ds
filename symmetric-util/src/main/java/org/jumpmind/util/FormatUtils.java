@@ -196,10 +196,13 @@ public final class FormatUtils {
             String card = cards[i];
             
             boolean foundToken = false;
-            if (i == 0 && !pattern.startsWith("*") && pattern.endsWith("*")) {
+            
+            if (! pattern.contains("*")) {
+                foundToken = text.equals(card);
+            } else if (i == 0 && !pattern.startsWith("*") && pattern.endsWith("*")) {
                 foundToken = text.startsWith(card);
             } else if (i == 0 && !pattern.startsWith("*")) {
-                foundToken = text.equals(card);
+                foundToken = text.startsWith(card);
             } else {
                 foundToken = text.indexOf(card) != -1;
             }
@@ -215,7 +218,7 @@ public final class FormatUtils {
 
         return match;
     }
-
+    
     /**
      * Word wrap a string where the line size for the first line is different
      * than the lines sizes for the other lines.

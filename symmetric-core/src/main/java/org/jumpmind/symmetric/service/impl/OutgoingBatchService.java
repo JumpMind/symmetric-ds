@@ -251,6 +251,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
+    public void updateOutgoingBatchStatus(ISqlTransaction transaction, Status status, String nodeId, long startBatchId, long endBatchId) {
+        transaction.prepareAndExecute(getSql("updateOutgoingBatchStatusSql"),
+                new Object[] { status.name(), new Date(), clusterService.getServerId(), nodeId, startBatchId, endBatchId },
+                new int[] { Types.CHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, 
+                        symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() });
+    }
+
     public void insertOutgoingBatch(final OutgoingBatch outgoingBatch) {
         ISqlTransaction transaction = null;
         try {

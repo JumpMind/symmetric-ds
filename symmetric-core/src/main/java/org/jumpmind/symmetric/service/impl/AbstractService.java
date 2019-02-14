@@ -251,16 +251,15 @@ abstract public class AbstractService implements IService {
         
         Exception exception = null;
         int statusCode = -1;
-        int numberOfStatusSendRetries = parameterService
-                .getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
+        int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
+
         for (int i = 0; i < numberOfStatusSendRetries && statusCode != HttpURLConnection.HTTP_OK; i++) {
             try {
                 statusCode = transportManager.sendAcknowledgement(remote, list, local,
                         localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
-            } catch (IOException ex) {
-                exception = ex;
-            } catch (RuntimeException ex) {
-                exception = ex;
+                exception = null;
+            } catch (Exception e) {
+                exception = e;
             }
             if (statusCode != HttpURLConnection.HTTP_OK) {
                 String message = String.format("Ack was not sent successfully on try number %s of %s.", i+1, numberOfStatusSendRetries);
@@ -268,20 +267,15 @@ abstract public class AbstractService implements IService {
                     message += String.format(" statusCode=%s", statusCode);
                 }
                 if (exception != null) {
-                    log.warn(message, exception);
+                    log.info(message + ": " + exception.getClass().getName() + ": " + exception.getMessage());
                 } else {
-                    log.warn(message);   
+                    log.info(message);
                 }
                 
                 if (i < numberOfStatusSendRetries - 1) {
-                    AppUtils.sleep(parameterService
-                            .getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
-                } else if (exception instanceof RuntimeException) {
-                    throw (RuntimeException) exception;
-                } else if (exception instanceof IOException) {
-                    throw (IOException) exception;
+                    AppUtils.sleep(parameterService.getLong(ParameterConstants.DATA_LOADER_TIME_BETWEEN_ACK_RETRIES));
                 } else {
-                    throw new IOException("Ack was not sent successfully. statusCode=" + statusCode);
+                    log.warn("Ack was not sent successfully.");
                 }
             }
         }

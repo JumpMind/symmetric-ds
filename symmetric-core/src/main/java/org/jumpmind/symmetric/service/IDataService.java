@@ -35,10 +35,12 @@ import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
+import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadRequestKey;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 
@@ -57,13 +59,13 @@ public interface IDataService {
     
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
         
-    public List<TableReloadRequest> getTableReloadRequestsByLoadId();
-
-    public long getTableReloadRequestRowCount(long loadId);
-
-    public void updateTableReloadRequestsCounts(ISqlTransaction transaction, long loadId, int batchCount, long rowsCount);
+    public List<TableReloadStatus> getTableReloadStatus();
     
-    public void updateTableReloadRequestsLoadedCounts(ISqlTransaction transcation, long loadId, int batchCount, long rowsCount);
+    public TableReloadStatus getTableReloadStatusByLoadId(long loadId);
+    
+    public long getTableReloadStatusRowCount(long loadId);
+
+    public void updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount, long rowsCount);
     
     public int updateTableReloadRequestsCancelled(long loadId);
     
@@ -95,7 +97,8 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
     
-    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
+    public Map<String, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
+            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<String, ExtractRequest> extractRequests);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     

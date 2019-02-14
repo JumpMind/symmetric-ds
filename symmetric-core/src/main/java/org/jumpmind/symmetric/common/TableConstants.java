@@ -80,6 +80,7 @@ public class TableConstants {
     public static final String SYM_NOTIFICATION = "notification";
     public static final String SYM_CONTEXT = "context";
     public static final String SYM_JOB = "job";
+    public static final String SYM_TABLE_RELOAD_STATUS = "table_reload_status";
 
     private static List<String> tablesWithPrefix;
 
@@ -194,6 +195,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_NOTIFICATION));
         tables.add(getTableName(tablePrefix, SYM_CONTEXT));
         tables.add(getTableName(tablePrefix, SYM_JOB));
+        tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_STATUS));
         
         return tables;
     }
@@ -209,6 +211,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_NODE_IDENTITY));
         tables.add(getTableName(tablePrefix, SYM_NODE_CHANNEL_CTL));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
+        tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_STATUS));
         return tables;
     }
 

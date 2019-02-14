@@ -39,9 +39,11 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -116,6 +118,16 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             newValue = newValue.substring(1, newValue.length()-1);
         }
         return newValue;
+    }
+    
+    @Override
+    protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
+        String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
+        if(defaultValueStr != null && defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")) {
+            ddl.append(defaultValueStr);
+        } else {
+            super.printDefaultValue(defaultValue, typeCode, ddl);
+        }
     }
 
     @Override
@@ -544,6 +556,20 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         } else {
             return super.getSqlType(column);
         }
-    }    
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // Oracle does not support ON UPDATE
+        return;
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Oracle only supports CASCADE and SET NULL
+        if(key.getOnDeleteAction().equals(ForeignKeyAction.CASCADE) || key.getOnDeleteAction().equals(ForeignKeyAction.SETNULL)) {
+            super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        }
+    }
 
 }

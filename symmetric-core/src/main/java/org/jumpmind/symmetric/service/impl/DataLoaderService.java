@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -466,7 +467,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             if (loadIds.size() > 0) {
                 long count = 0;
                 for (long loadId : loadIds) {
-                    count += engine.getDataService().getTableReloadRequestRowCount(loadId);
+                    count += engine.getDataService().getTableReloadStatusRowCount(loadId);
                 }
                 if (count > threshold) {
                     for (IncomingBatch batch : batchList) {
@@ -671,6 +672,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     }
 
     protected void logOrRethrow(Throwable ex) throws IOException {
+        // Throwing exception will mean acks are not sent, so only certain exceptions should be thrown
         if (ex instanceof RegistrationRequiredException) {
             throw (RegistrationRequiredException) ex;
         } else if (ex instanceof ConnectException) {
@@ -689,13 +691,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             throw (SyncDisabledException) ex;
         } else if (ex instanceof HttpException) {
             throw (HttpException) ex;
-        } else if (ex instanceof IOException) {
-            throw (IOException) ex;
         } else if (ex instanceof InvalidRetryException) {
             throw (InvalidRetryException) ex;
         } else if (ex instanceof StagingLowFreeSpace) {
             log.error("Loading is disabled because disk is almost full: {}", ex.getMessage());
-        } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException)) {
+        } else if (!(ex instanceof ConflictException) && !(ex instanceof SqlException) && !(ex instanceof CancellationException)) {
             log.error("Failed to process batch", ex);
         } else {
             log.debug("Failed to process batch", ex);

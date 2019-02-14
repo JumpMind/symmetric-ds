@@ -100,7 +100,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         updatedDefaultChannels.put(Constants.CHANNEL_HEARTBEAT, 
                 new Channel(Constants.CHANNEL_HEARTBEAT, 2, 100, 100, true, 0, false));
         updatedDefaultChannels.put(Constants.CHANNEL_DEFAULT,
-                new Channel(Constants.CHANNEL_DEFAULT, 99999, 1000, 100, true, 0, false));
+                new Channel(Constants.CHANNEL_DEFAULT, 500000, 1000, 100, true, 0, false));
         updatedDefaultChannels.put(Constants.CHANNEL_DYNAMIC, 
                 new Channel(Constants.CHANNEL_DYNAMIC, 99999, 1000, 100, true, 0, false));
         

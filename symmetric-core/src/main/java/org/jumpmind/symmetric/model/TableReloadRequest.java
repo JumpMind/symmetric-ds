@@ -39,19 +39,8 @@ public class TableReloadRequest {
     protected Date createTime = new Date();
     protected Date lastUpdateTime = new Date();
     protected String lastUpdateBy;
-    protected int batchCount;
-    protected int loadedBatchCount;
-    protected Long rowCount;
-    protected Long loadedRowCount;
-    protected int tableCount;
-    protected boolean errorFlag;
-    protected String sqlState;
-    protected int sqlCode;
-    protected String sqlMessage;
     protected int loadId;
     protected boolean processed;
-    protected boolean completed;
-    protected boolean cancelled;
     
     public TableReloadRequest(TableReloadRequestKey key) {
         this.targetNodeId = key.getTargetNodeId();
@@ -175,63 +164,7 @@ public class TableReloadRequest {
     public String getIdentifier() {
         return getTriggerId() + getRouterId();
     }
-
-    public int getBatchCount() {
-        return batchCount;
-    }
-
-    public void setBatchCount(int batchCount) {
-        this.batchCount = batchCount;
-    }
-
-    public Long getRowCount() {
-        return rowCount == null ? 0 : rowCount;
-    }
-
-    public void setRowCount(Long rowCount) {
-        this.rowCount = rowCount;
-    }
-
-    public int getTableCount() {
-        return tableCount;
-    }
-
-    public void setTableCount(int tableCount) {
-        this.tableCount = tableCount;
-    }
-
-    public boolean isErrorFlag() {
-        return errorFlag;
-    }
-
-    public void setErrorFlag(boolean errorFlag) {
-        this.errorFlag = errorFlag;
-    }
-
-    public String getSqlState() {
-        return sqlState;
-    }
-
-    public void setSqlState(String sqlState) {
-        this.sqlState = sqlState;
-    }
-
-    public int getSqlCode() {
-        return sqlCode;
-    }
-
-    public void setSqlCode(int sqlCode) {
-        this.sqlCode = sqlCode;
-    }
-
-    public String getSqlMessage() {
-        return sqlMessage;
-    }
-
-    public void setSqlMessage(String sqlMessage) {
-        this.sqlMessage = sqlMessage;
-    }
-
+    
     public int getLoadId() {
         return loadId;
     }
@@ -246,38 +179,6 @@ public class TableReloadRequest {
 
     public void setProcessed(boolean processed) {
         this.processed = processed;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
-    }
-
-    public int getLoadedBatchCount() {
-        return loadedBatchCount;
-    }
-
-    public void setLoadedBatchCount(int loadedBatchCount) {
-        this.loadedBatchCount = loadedBatchCount;
-    }
-
-    public Long getLoadedRowCount() {
-        return loadedRowCount == null ? 0 : loadedRowCount ;
-    }
-
-    public void setLoadedRowCount(Long loadedRowCount) {
-        this.loadedRowCount = loadedRowCount;
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
     }
 
     public TableReloadRequestKey getTableReloadRequestKey() {

@@ -43,7 +43,8 @@ They are as follows:
 - *--repeat <arg>* : Number of times to repeat the count of rows.
 - *--rollback <arg>* : Percent chance (0-100) to perform a rollback.
 - *--schema <arg>* : Look for tables in schema.
-- *--select* : Select foreign key dependent data to satisfy constrains.
+- *--select* : Select foreign key dependent data to satisfy constraints.
+- *--truncate* : Truncate the tables before filling them.
 - *-v, --verbose* : Use verbose format for console output.
 - *--weights <arg>*  : By default, an insert is performed for each count ('1, 0, 0').  To randomly select between an insert, update or delete on each table, weight can be applied so inserts an occur more than deletes.  To make sure inserts happen twice as much as updates, and deletes are never performed use '2,1,0'.
 
