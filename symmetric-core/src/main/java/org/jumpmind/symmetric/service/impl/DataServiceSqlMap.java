@@ -129,7 +129,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " rows_loaded = rows_loaded + ?, last_update_time = ?, "
                 + " completed = case when finalize_batch_loaded = finalize_batch_count then 1 else 0 end, "
                 + " end_time = case when completed = 1 then ? else end_time end "
-                + " where load_id = ?");
+                + " where load_id = ? and completed = 0");
         
         putSql("updateTableReloadStatusFinalizeCount", "update $(table_reload_status) set "
                 + " finalize_batch_count = ?, last_update_time = ? "
