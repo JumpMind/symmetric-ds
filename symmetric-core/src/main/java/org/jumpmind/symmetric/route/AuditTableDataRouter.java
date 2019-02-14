@@ -61,6 +61,11 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
 
     public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData,
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
+        
+        if (initialLoad) { // loads are not audited; this is for CDC.
+            return null;
+        }
+                
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE
                 || eventType == DataEventType.DELETE) {
