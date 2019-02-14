@@ -6,6 +6,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +56,7 @@ public class AckUriHandlerTest {
     Map<String, String[]> paramMap;
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         engine = mock(ISymmetricEngine.class);
         IParameterService parameterService = mock(IParameterService.class);
         ISymmetricDialect symmetricDialect = mock(ISymmetricDialect.class);
@@ -82,6 +85,7 @@ public class AckUriHandlerTest {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         when(request.getParameterMap()).thenReturn(paramMap);        
+        when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
     }
 
     /**
