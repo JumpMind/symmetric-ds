@@ -880,7 +880,7 @@ public class DbFill {
     private Object generateRandomValueForColumn(Table table, Column column) {
         Object objectValue = null;
         int type = column.getMappedTypeCode();
-        if (column.getPlatformColumns().get(platform.getName()) != null && column.getPlatformColumns().get(platform.getName()).isEnum()) {
+        if (column.getPlatformColumns() != null && column.getPlatformColumns().get(platform.getName()) != null && column.getPlatformColumns().get(platform.getName()).isEnum()) {
             objectValue = column.getPlatformColumns().get(platform.getName()).getEnumValues()[new Random().nextInt(column.getPlatformColumns().get(platform.getName()).getEnumValues().length)];
         } else if (column.isTimestampWithTimezone()) {
             objectValue = String.format("%s %s",
