@@ -34,12 +34,12 @@ import java.util.Map;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -99,6 +99,8 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         values.put("FK_NAME", "FOREIGNKEYNAME");
         values.put("PKCOLUMN_NAME", "PKCOLUMN_NAME");
         values.put("FKCOLUMN_NAME", "FKCOLUMN_NAME");
+        values.put("UPDATE_RULE", "UPDATE_RULE");
+        values.put("DELETE_RULE", "DELETE_RULE");
         
         values.put("INDEX_NAME", "INDEXNAME");
         values.put("NON_UNIQUE", "NON_UNIQUE");

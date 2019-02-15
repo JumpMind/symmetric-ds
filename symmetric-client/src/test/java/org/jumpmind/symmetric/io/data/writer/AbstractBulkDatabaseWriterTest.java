@@ -33,6 +33,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -246,6 +247,8 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             IncomingBatch expectedBatch = new IncomingBatch();
             expectedBatch.setErrorFlag(true);
             context.put("currentBatch", expectedBatch);
+            // Simulate DataLoaderService when bulk load fails. Fall back to default.
+            context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
 
             /* second try should be success because the bulk writer should fail back to using the default writer */
             long statementCount = writeData(bulkWriter, context, new TableCsvData(table, data));
