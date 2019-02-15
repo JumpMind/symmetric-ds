@@ -24,6 +24,8 @@ import java.util.Date;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
 
+import com.nuodb.impl.util.StringUtils;
+
 public class TableReloadRequest {
 
     protected String targetNodeId;
@@ -183,6 +185,10 @@ public class TableReloadRequest {
 
     public TableReloadRequestKey getTableReloadRequestKey() {
         return new TableReloadRequestKey(this.targetNodeId, this.sourceNodeId, this.triggerId, this.routerId, this.createTime);
+    }
+    
+    public boolean hasSetupBatches() {
+        return isCreateTable() || isDeleteFirst() || !StringUtils.isBlank(getBeforeCustomSql());
     }
     
 }
