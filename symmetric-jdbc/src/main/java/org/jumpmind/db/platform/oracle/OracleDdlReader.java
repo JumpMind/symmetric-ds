@@ -44,6 +44,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
@@ -517,4 +519,10 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
         }
         return values;
     }    
+    
+    // Oracle does not support on update actions
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
 }
