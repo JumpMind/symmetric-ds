@@ -23,12 +23,14 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -446,5 +448,11 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         }
         
         return triggers;
+    }
+    
+    // Tibero does not support on update actions
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
     }
 }

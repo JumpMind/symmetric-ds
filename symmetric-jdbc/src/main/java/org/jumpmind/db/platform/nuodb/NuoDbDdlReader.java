@@ -39,6 +39,7 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -258,6 +259,18 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         }else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
+    }
+    
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        // NuoDb does not support cascade actions
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
+    
+    @Override
+    protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
+        // NuoDb does not support cascade actions
+        fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
     }
 
     public static void main2(String[] args) throws SQLException {

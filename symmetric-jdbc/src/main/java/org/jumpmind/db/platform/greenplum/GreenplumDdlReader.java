@@ -29,9 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -152,6 +154,18 @@ public class GreenplumDdlReader extends PostgreSqlDdlReader {
 		}, tableName, schema);
     	
     	return triggers;
+    }
+    
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        // Greenplum does not support cascading
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
+    
+    @Override
+    protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
+        // Greenplum does not support cascading
+        fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
     }
     
 }

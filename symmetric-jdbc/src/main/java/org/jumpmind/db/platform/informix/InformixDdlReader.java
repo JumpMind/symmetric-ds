@@ -37,6 +37,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
@@ -200,4 +201,10 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
 
 		return triggers;
 	}
+    
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        // Informix does not support cascade update
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
 }
