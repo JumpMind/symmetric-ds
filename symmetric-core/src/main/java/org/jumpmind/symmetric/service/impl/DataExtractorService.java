@@ -1983,8 +1983,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void updateExtractRequestStatus(ISqlTransaction transaction, long extractId,
-            ExtractStatus status) {
-        transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(), extractId);
+            ExtractStatus status, long extractedRows, long extractedMillis) {
+        transaction.prepareAndExecute(getSql("updateExtractRequestStatus"), status.name(), extractedRows, extractedMillis, extractId);
     }
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
@@ -2078,10 +2078,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ISqlTransaction transaction = null;
                 try {
                     transaction = sqlTemplate.startSqlTransaction();
-                    updateExtractRequestStatus(transaction, request.getRequestId(), ExtractStatus.OK);
+                    long extractMillis = new Date().getTime() - processInfo.getStartTime().getTime();
+                    updateExtractRequestStatus(transaction, request.getRequestId(), ExtractStatus.OK, processInfo.getCurrentDataCount(), extractMillis);
                     if (childRequests != null) {
                         for (ExtractRequest childRequest : childRequests) {
-                            updateExtractRequestStatus(transaction, childRequest.getRequestId(), ExtractStatus.OK);
+                            updateExtractRequestStatus(transaction, childRequest.getRequestId(), ExtractStatus.OK, processInfo.getCurrentDataCount(), extractMillis);
                         }
                     }
                     transaction.commit();
@@ -2303,6 +2304,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             request.setTransferredMillis(row.getLong("transferred_millis"));
             request.setLoadedMillis(row.getLong("loaded_millis"));
             request.setParentRequestId(row.getLong("parent_request_id"));
+            request.setExtractedRows(row.getLong("extracted_rows"));
+            request.setExtractedMillis(row.getLong("extracted_millis"));
             return request;
         }
     }

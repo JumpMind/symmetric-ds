@@ -45,10 +45,12 @@ public class ExtractRequest implements Serializable {
     private long loadId;
     private String tableName;
     private long rows;
+    private long extractedRows;
     private long transferredRows;
     private long loadedRows;
     private long lastTransferredBatchId;
     private long lastLoadedBatchId;
+    private long extractedMillis;
     private long transferredMillis;
     private long loadedMillis;
     private long parentRequestId;
@@ -220,5 +222,22 @@ public class ExtractRequest implements Serializable {
     public void setParentRequestId(long parentRequestId) {
         this.parentRequestId = parentRequestId;
     }
+
+    public long getExtractedRows() {
+        return extractedRows;
+    }
+
+    public void setExtractedRows(long extractedRows) {
+        this.extractedRows = extractedRows;
+    }
+
+    public long getExtractedMillis() {
+        return extractedMillis;
+    }
+
+    public void setExtractedMillis(long extractedMillis) {
+        this.extractedMillis = extractedMillis;
+    }
+
     
 }

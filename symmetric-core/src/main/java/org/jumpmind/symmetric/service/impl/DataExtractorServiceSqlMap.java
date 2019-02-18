@@ -53,7 +53,7 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
         putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, load_id, table_name, total_rows, parent_request_id, last_update_time, create_time) "
                 + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");
         
-        putSql("updateExtractRequestStatus", "update $(extract_request) set status=?, last_update_time=current_timestamp where request_id=?");
+        putSql("updateExtractRequestStatus", "update $(extract_request) set status=?, last_update_time=current_timestamp, extracted_rows=?, extracted_millis=? where request_id=?");
         
         putSql("updateExtractRequestLoadTime", "update $(extract_request) set loaded_time = (case when end_batch_id = ? then current_timestamp else null end), "
                 + " loaded_rows = loaded_rows + ?, loaded_millis = loaded_millis + ?, last_loaded_batch_id = ?, "
