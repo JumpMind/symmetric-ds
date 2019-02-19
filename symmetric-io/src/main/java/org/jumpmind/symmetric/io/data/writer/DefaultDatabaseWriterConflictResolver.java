@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -329,15 +330,31 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
 
     private ISqlTransaction getTransaction(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter) {
-        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+        // There is code in DefaultDatabaseWriter.insert() that sets up the last error of SQLIntegrityConstraintViolationException
+        // when an insert of a record returns a count of 0 records inserted (with no SQL exception).
+        // That is so that the conflict resolution code that receives that information can resolve the conflict successfully.
+        // As a result of this, part of the conflict resolution is to delete the offending record (the duplicate key record) so
+        // that the new data can be inserted successfully.
+        // The current transaction needs to be used because there is a possibility that the duplicate record is part of this batch,
+        // hence this transaction.
+        // The check below is for Postgres and Redshift dialects. When an SQL exception occurs, the transaction will be rolled back
+        // for those dialects, so can't use the current transaction. But because an exception is generated (it didn't actually occur,
+        // it was created and set to lastError), we need to use the same transaction when it is a special transaction, that is,
+        // SQLIntegrityConstraintViolationException.
+        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction() &&
+                databaseWriter.getContext().getLastError() != null &&
+                ! (databaseWriter.getContext().getLastError() instanceof SQLIntegrityConstraintViolationException))
+        {
             return platform.getSqlTemplate().startSqlTransaction(true);
         } else {
             return databaseWriter.getTransaction();
         }
     }
     
-    private void doneWithTransaction(IDatabasePlatform platform, ISqlTransaction transaction) {
-        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+    private void doneWithTransaction(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, ISqlTransaction transaction) {
+        if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction() &&
+                databaseWriter.getContext().getLastError() != null &&
+                ! (databaseWriter.getContext().getLastError() instanceof SQLIntegrityConstraintViolationException)) {
             transaction.close();
         }
     }
@@ -348,7 +365,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             transaction = getTransaction(platform, databaseWriter);
             return callback.execute(transaction);
         } finally {
-            doneWithTransaction(platform, transaction);
+            doneWithTransaction(platform, databaseWriter, transaction);
         }
     }
     

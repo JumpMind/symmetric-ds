@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -210,6 +211,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     return LoadStatus.SUCCESS;
                 } else {
                     context.put(CUR_DATA,getCurData(getTransaction()));
+                    context.setLastError(new SQLIntegrityConstraintViolationException("duplicate", "23000"));
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
