@@ -25,9 +25,12 @@ import java.io.OutputStreamWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -46,6 +49,8 @@ import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
+
+import javassist.bytecode.Descriptor.Iterator;
 
 public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
@@ -215,7 +220,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 	        }
         }
     }
-    
+
     protected String getCommaDeliminatedColumns(Column[] cols) {
         DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
         String quote = dbInfo.getDelimiterToken();
@@ -226,6 +231,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         // ('column1', 'column2', @hexColumn3) SET 'column3'=UNHEX(@hexColumn3);
         
         Map<String, String> blobColumns = new LinkedHashMap<String, String>();
+        Map<String, String> bitColumns = new LinkedHashMap<String, String>();
         
         if (cols != null && cols.length > 0) {
             for (Column column : cols) {
@@ -234,6 +240,10 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     String hexVariable = String.format("@%s_hex", column.getName());
                     blobColumns.put(column.getName(), hexVariable);
                     columns.append(hexVariable);
+                } else if (column.getMappedTypeCode() == Types.BIT) {
+                    String bitVar = "@" + column.getName();
+                    columns.append(bitVar);
+                    bitColumns.put(column.getName(), bitVar);
                 } else {
                     columns.append(quote);
                     columns.append(column.getName());
@@ -262,6 +272,19 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 setClause.append("=UNHEX(");
                 setClause.append(blobColumns.get(columnName));
                 setClause.append("),");
+            }
+            
+            for (String columnName : bitColumns.keySet()) {
+                if (setClause.length() == 0) {
+                    setClause.append(" SET ");
+                }
+                
+                setClause.append(quote);
+                setClause.append(columnName);
+                setClause.append(quote);
+                setClause.append("=CAST(");
+                setClause.append(bitColumns.get(columnName));
+                setClause.append(" AS UNSIGNED),");
             }
             
             if (setClause.length() > 0) {
