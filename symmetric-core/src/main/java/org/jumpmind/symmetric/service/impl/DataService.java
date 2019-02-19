@@ -540,16 +540,12 @@ public class DataService extends AbstractService implements IDataService {
         int count = 0;
         try {
             transaction = sqlTemplate.startSqlTransaction();
+            Date now = new Date();
             count = transaction.prepareAndExecute(getSql("updateTableReloadStatusCancelled"),
                     new Object[] { 
-                            new Date(), loadId
+                            now, now, loadId
                             },
-                    new int[] { Types.TIMESTAMP,Types.NUMERIC});
-            transaction.prepareAndExecute(getSql("updateTableReloadStatusCancelled"),
-                    new Object[] { 
-                            new Date(), loadId
-                            },
-                    new int[] { Types.TIMESTAMP,Types.NUMERIC});
+                    new int[] { Types.TIMESTAMP,Types.TIMESTAMP,Types.NUMERIC});
             transaction.commit();
             return count;
         } catch (Error ex) {
