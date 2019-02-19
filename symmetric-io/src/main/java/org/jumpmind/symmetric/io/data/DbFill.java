@@ -715,6 +715,10 @@ public class DbFill {
                     count = tran.prepareAndExecute(insertStatement.getSql(), insertStatement.getValueArray(row.toArray(table.getColumnNames()), 
                         row.toArray(table.getPrimaryKeyColumnNames())));
                 } catch(SqlException e) {
+                    log.warn(e.getMessage());
+                    if(platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+                        tran.rollback();
+                    }
                     count = 0;
                 }
             }
