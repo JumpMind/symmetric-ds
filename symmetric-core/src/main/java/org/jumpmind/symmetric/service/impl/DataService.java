@@ -375,9 +375,9 @@ public class DataService extends AbstractService implements IDataService {
         return sqlTemplateDirty.queryForLong(getSql("countTableReloadStatusRowsByLoadId"), loadId);
     }
 
-    public void updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount, long rowsCount) {
+    public void updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount) {
             transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),
-                    new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount, rowsCount, new Date(), new Date(), loadId },
+                    new Object[] { batchId, batchCount, batchId, batchCount, batchId, batchCount, loadId, new Date(), new Date(), loadId },
                     new int[] { Types.NUMERIC, Types.NUMERIC,Types.NUMERIC, Types.NUMERIC,Types.NUMERIC, 
                             Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.TIMESTAMP, Types.NUMERIC});
             
@@ -413,7 +413,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
-    public void updateTableReloadRequestsLoadId(ISqlTransaction transaction, long loadId, int tableCount, TableReloadRequest request) {
+    public void updateTableReloadRequestsLoadId(ISqlTransaction transaction, long loadId, TableReloadRequest request) {
         Object[] args = new Object[] { loadId, new Date(), request.getTargetNodeId(), request.getSourceNodeId(), 
                             request.getTriggerId(), request.getRouterId(), request.getCreateTime() };   
         String sql = getSql("updateTableReloadRequestLoadId");
@@ -546,6 +546,7 @@ public class DataService extends AbstractService implements IDataService {
                             now, now, loadId
                             },
                     new int[] { Types.TIMESTAMP,Types.TIMESTAMP,Types.NUMERIC});
+            transaction.prepareAndExecute(getSql("updateProcessedTableReloadRequest"), now, loadId);
             transaction.commit();
             return count;
         } catch (Error ex) {
@@ -763,6 +764,12 @@ public class DataService extends AbstractService implements IDataService {
                         if (reloadRequests != null && reloadRequests.size() > 0) {
                             createTableReloadStatus(platform.supportsMultiThreadedTransactions() ? null : transaction,
                                     loadId, reloadRequests.get(0).getSourceNodeId(), reloadRequests.get(0).getTargetNodeId()); 
+                            for (TableReloadRequest request : reloadRequests) {
+                                updateTableReloadRequestsLoadId(
+                                    platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                            loadId, request);
+                            }
+                            
                         }
                         
                         String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
@@ -785,7 +792,7 @@ public class DataService extends AbstractService implements IDataService {
                                     triggerHistories = channelTriggerHistories;
                                 }
                             }
-                            Database.logMissingDependentTableNames(triggerRouterService.getTablesFor(triggerHistories));
+                            //Database.logMissingDependentTableNames(triggerRouterService.getTablesFor(triggerHistories));
                         } else {
                             for (TableReloadRequest reloadRequest : reloadRequests) {
                                 triggerHistories.addAll(engine.getTriggerRouterService()
@@ -822,15 +829,9 @@ public class DataService extends AbstractService implements IDataService {
                         processInfo.setTotalDataCount(totalTableCount);
                         
                         if (reloadRequests != null && reloadRequests.size() > 0) {
-                            for (TableReloadRequest request : reloadRequests) {
-                                updateTableReloadRequestsLoadId(
-                                        platform.supportsMultiThreadedTransactions() ? null : transaction, 
-                                                loadId, totalTableCount, request);
-                                
-                                updateTableReloadStatusTableCount(
+                            updateTableReloadStatusTableCount(
                                         platform.supportsMultiThreadedTransactions() ? null : transaction, 
                                                 loadId, totalTableCount);
-                            }
                         }
                            
                         int setupBatchCount = 0;

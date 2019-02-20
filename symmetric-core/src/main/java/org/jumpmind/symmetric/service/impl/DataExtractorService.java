@@ -1594,13 +1594,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         try {
             transaction = sqlTemplate.startSqlTransaction();
             
-            dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1, 
-                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0);            
-            
-            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), outgoingBatch.getDataRowCount(), 
+            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
+                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
                     outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
                     outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
+            dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);            
+            
+            
             transaction.commit();
         } catch (Error ex) {
             if (transaction != null) {
@@ -2153,7 +2154,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
                 // back out statistics from table reload request
                 if (batchLoadedCount > 0 || rowLoadedCount > 0) {
-                    dataService.updateTableReloadStatusDataLoaded(transaction, extractRequest.getLoadId(), extractRequest.getStartBatchId(), (int) batchLoadedCount * -1, rowLoadedCount * -1);
+                    dataService.updateTableReloadStatusDataLoaded(transaction, extractRequest.getLoadId(), extractRequest.getStartBatchId(), (int) batchLoadedCount * -1);
                 }
                 
                 // set status of batches back to requested
