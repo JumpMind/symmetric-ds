@@ -94,8 +94,11 @@ public class AckUriHandler extends AbstractUriHandler {
                     task.cancel(true);
                     break;
                 }
-            } catch (Exception e) {
-                log.error("Failed to save acks.  " + e.getClass().getName() + ": " + e.getMessage());
+            } catch (Throwable e) {
+                if (e.getCause() != null) {
+                    e = e.getCause();
+                }
+                log.error("Failed to save acks.  " + e.getClass().getName() + ": " + e.getMessage(), e);
                 break;
             }
         }
