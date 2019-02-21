@@ -65,7 +65,7 @@
     <table name="test_dataloader_grandchild">
         <column name="id" type="INTEGER" required="true" primaryKey="true" />
         <column name="pid" type="INTEGER" />
-        <foreign-key foreignTable="test_dataloader_child" name="fk_test_dataloader_grandchild_pid">
+        <foreign-key foreignTable="test_dataloader_child" name="fk_test_dataloader_grchld_pid">
             <reference local="pid" foreign="id" />
         </foreign-key>
     </table>
