@@ -126,7 +126,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + "   case "
                 + "     when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded "
                 + "   end, "
-                + " rows_loaded = (select sum(load_rows) from $(table_extract_request) where load_id = ?), last_update_time = ?, "
+                + " rows_loaded = (select sum(loaded_rows) from $(extract_request) where load_id = ?), last_update_time = ?, "
                 + " completed = case when (finalize_batch_count > 0 and finalize_batch_loaded = finalize_batch_count) or (finalize_batch_count = 0 and data_batch_loaded = data_batch_count) then 1 else 0 end, "
                 + " end_time = case when completed = 1 then ? else end_time end "
                 + " where load_id = ? and completed = 0");
