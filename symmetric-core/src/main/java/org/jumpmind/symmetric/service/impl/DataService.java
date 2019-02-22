@@ -384,7 +384,6 @@ public class DataService extends AbstractService implements IDataService {
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, Types.TIMESTAMP,
                         idType, Types.NUMERIC, idType, Types.NUMERIC, idType, Types.NUMERIC, idType,
                         Types.TIMESTAMP, idType });
-        System.out.println(loadId + ", " + batchId + ", " + batchCount);
     }
     
     public void updateTableReloadStatusDataCounts(ISqlTransaction transaction, long loadId, long startBatchId, long endBatchId, 
