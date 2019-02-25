@@ -117,7 +117,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " set completed = case when ("
                 + "    data_batch_count = (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
                 + "    setup_batch_count = (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
-                + "    finalize_batch_loaded = (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
+                + "    finalize_batch_count = (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
                 + "    then 1 else 0 end, "
                 + " end_time = case when ("
                 + "    data_batch_count = (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "

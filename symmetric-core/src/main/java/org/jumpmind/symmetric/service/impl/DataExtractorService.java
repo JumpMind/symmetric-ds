@@ -140,6 +140,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -2217,33 +2218,23 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     protected void checkSendDeferredConstraints(ExtractRequest request, Node targetNode, OutgoingBatch batch) {
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
             TableReloadRequest reloadRequest = dataService.getTableReloadRequest(request.getLoadId(), request.getTriggerId(), request.getRouterId());
-            if (reloadRequest != null && reloadRequest.isCreateTable()) {
+            if ((reloadRequest != null && reloadRequest.isCreateTable()) ||
+                    (reloadRequest == null && parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD))) {
                 boolean success = false;
                 Trigger trigger = triggerRouterService.getTriggerById(request.getTriggerId());
                 if (trigger != null) {
                     List<TriggerHistory> histories = triggerRouterService.getActiveTriggerHistories(triggerRouterService.getTriggerById(request.getTriggerId()));
                     if (histories != null && histories.size() > 0) {
-                        dataService.insertCreateEvent(targetNode, histories.get(0), reloadRequest.getRouterId(), Constants.SYSTEM_USER);
+                        Data data = new Data(histories.get(0).getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
+                                histories.get(0), trigger.getChannelId(), null, null);
+                        data.setNodeList(targetNode.getNodeId());
+                        dataService.insertData(data);
                         success = true;
                     }
                 }
                 if (!success) {
                     log.warn("Unable to send deferred constraints for trigger '{}' router '{}' in load {}", 
                             reloadRequest.getTriggerId(), reloadRequest.getRouterId(), reloadRequest.getLoadId());
-                }
-            } else if (reloadRequest == null && parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD)) {
-                boolean success = false;
-                List<TriggerHistory> histories = triggerRouterService.getActiveTriggerHistories(batch.getSummary().toLowerCase());
-                if (histories == null || histories.size() == 0) {
-                    histories = triggerRouterService.getActiveTriggerHistories(batch.getSummary().toUpperCase());
-                }
-                if (histories != null && histories.size() > 0) {
-                    dataService.insertCreateEvent(targetNode, histories.get(0), request.getRouterId(), Constants.SYSTEM_USER);
-                    success = true;
-                }
-                if (!success) {
-                    log.warn("Unable to send deferred constraints for table '{}' router '{}' in load {}", 
-                            batch.getSummary(), request.getRouterId(), request.getLoadId());
                 }
             }
         }
@@ -2572,6 +2563,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             boolean excludeForeignKeys = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_FOREIGN_KEYS, false);
                             boolean excludeIndexes = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_INDEXES, false);
                             boolean deferConstraints = outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false);
+                            
+                            String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                            if (pkData != null && pkData.length > 0) {
+                                outgoingBatch.setLoadId(Long.parseLong(pkData[0]));
+                                TableReloadStatus tableReloadStatus = dataService.getTableReloadStatusByLoadId(outgoingBatch.getLoadId());
+                                if (tableReloadStatus != null && tableReloadStatus.isCompleted()) {
+                                    // Ignore create table (indexes and foreign keys) at end of load if it was cancelled
+                                    return null;
+                                }
+                            }
                             
                             /*
                              * Force a reread of table so new columns are picked up.  A create

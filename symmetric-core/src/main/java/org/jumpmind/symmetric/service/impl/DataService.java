@@ -843,9 +843,13 @@ public class DataService extends AbstractService implements IDataService {
                             triggerHistories, triggerRoutersByHistoryId, 
                             mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
                         
-                        setupBatchCount += insertCreateBatchesForReload(targetNode, loadId, createBy,
+                        int createTableBatchCount = insertCreateBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,
                                 transaction, mapReloadRequests);
+                        setupBatchCount += createTableBatchCount;
+                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
+                            finalizeBatchCount += createTableBatchCount;
+                        }
 
                         setupBatchCount += insertDeleteBatchesForReload(targetNode, loadId, createBy,
                                 triggerHistories, triggerRoutersByHistoryId, transactional,

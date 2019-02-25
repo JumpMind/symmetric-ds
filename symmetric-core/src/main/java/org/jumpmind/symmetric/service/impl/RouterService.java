@@ -1134,6 +1134,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (context.getChannel().isReloadFlag()) {
                         context.setNeedsCommitted(true);
                     }
+                } else if (dataMetaData.getData().getDataEventType() == DataEventType.CREATE) {
+                    context.setNeedsCommitted(true);
                 } else {
                     context.setLastLoadId(-1);
                 }
