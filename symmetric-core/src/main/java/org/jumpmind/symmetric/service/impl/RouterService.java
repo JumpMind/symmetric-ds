@@ -356,6 +356,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             Map<String, ExtractRequest> extractRequests = null;
+            int extractRequestCount = 0;
             
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
@@ -371,6 +372,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .getActiveTriggerHistories(targetNode);
 
                         extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters, extractRequests);
+                        extractRequestCount += extractRequests == null ? 0 : extractRequests.size();
                     } else {
                         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
 
@@ -389,7 +391,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                 } else {
-                    throw new SymmetricException(String.format("Node '%s' can't process load for '%s' because of confilcting parameters: %s=%s and %s=%s", 
+                    throw new SymmetricException(String.format("Node '%s' can't process load for '%s' because of conflicting parameters: %s=%s and %s=%s", 
                             source.getNodeId(), load.getTargetNodeId(), ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED,
                             streamToFile));
                 }
@@ -406,6 +408,11 @@ public class RouterService extends AbstractService implements IRouterService {
                 List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
                 
                 extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories, triggerRouters, extractRequests);
+                extractRequestCount += extractRequests == null ? 0 : extractRequests.size();
+            }
+            
+            if (extractRequestCount == 0) {
+                gapDetector.setFullGapAnalysis(false);
             }
         }
     }
