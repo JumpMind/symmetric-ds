@@ -28,6 +28,7 @@ On MySQL 5.1, the SymmetricDS user needs the TRIGGER, PROCESS, and CREATE ROUTIN
 ----
 grant trigger on *.* to symmetric;
 grant create routine on *.* to symmetric;
+grant alter routine on *.* to symmetric;
 grant process on *.* to symmetric;
 ----
 
