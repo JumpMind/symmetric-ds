@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.sql.DataTruncation;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +47,9 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.InvalidSqlException;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.db.util.TableRow;
@@ -566,6 +569,14 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
     
+    protected int updateTableReloadRequestsError(long loadId, SqlException e) {
+        if (e.getCause() instanceof SQLException) {
+            SQLException ex = (SQLException) e.getCause();
+            return sqlTemplate.update(getSql("updateTableReloadStatusError"), ex.getErrorCode(), ex.getSQLState(), ex.getMessage(), loadId);
+        } else {
+            return sqlTemplate.update(getSql("updateTableReloadStatusError"), e.getErrorCode(), null, e.getMessage(), loadId);
+        }
+    }
     
     protected class TableReloadRequestMapper implements ISqlRowMapper<TableReloadRequest> {
 
@@ -753,13 +764,19 @@ public class DataService extends AbstractService implements IDataService {
                     NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
 
                     ISqlTransaction transaction = null;
+                    long loadId = 0;
 
                     try {
 
                         transaction = platform.getSqlTemplate().startSqlTransaction();
 
-                        long loadId = engine.getSequenceService().nextVal(transaction, 
-                                Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        if (reloadRequests != null && reloadRequests.size() > 0) {
+                            loadId = reloadRequests.get(0).getLoadId();
+                        }
+
+                        if (loadId == 0) {
+                            loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                        }
                         
                         processInfo.setCurrentLoadId(loadId);
                         
@@ -771,7 +788,9 @@ public class DataService extends AbstractService implements IDataService {
                                     platform.supportsMultiThreadedTransactions() ? null : transaction, 
                                             loadId, request);
                             }
-                            
+                            // force early commit to get load ID on the reload requests and reload status
+                            close(transaction);
+                            transaction = platform.getSqlTemplate().startSqlTransaction();
                         }
                         
                         String createBy = reverse ? nodeSecurity.getRevInitialLoadCreateBy()
@@ -918,10 +937,15 @@ public class DataService extends AbstractService implements IDataService {
                         if (transaction != null) {
                             transaction.rollback();
                         }
-                        if (ex instanceof RuntimeException) {
+                        if (ex instanceof InvalidSqlException) {
+                            log.info("Cancelling load " + loadId);
+                            if (ex.getCause() instanceof SqlException) {
+                                updateTableReloadRequestsError(loadId, (SqlException) ex.getCause());
+                            }
+                            updateTableReloadRequestsCancelled(loadId);
+                        } else if (ex instanceof RuntimeException) {
                             throw (RuntimeException) ex;
-                        }
-                        if (ex instanceof InterruptedException) {
+                        } else if (ex instanceof InterruptedException) {
                             log.info("Insert reload events was interrupted");
                         }
                     } finally {
@@ -1430,7 +1454,7 @@ public class DataService extends AbstractService implements IDataService {
         return requests;
     }
 
-    protected long getDataCountForReload(Table table, Node targetNode, String selectSql) {
+    protected long getDataCountForReload(Table table, Node targetNode, String selectSql) throws SqlException {
         long rowCount = -1;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_ESTIMATED_COUNTS) &&
                 (selectSql == null || StringUtils.isBlank(selectSql) || selectSql.replace(" ", "").equals("1=1"))) {
@@ -1454,9 +1478,9 @@ public class DataService extends AbstractService implements IDataService {
             
             try {            
                 rowCount = sqlTemplateDirty.queryForLong(sql);
-            } catch (Exception ex) {
-                throw new SymmetricException("Failed to execute row count SQL while starting reload.  If this is a syntax error, check your input and check "
-                        +  engine.getTablePrefix() + "_table_reload_request. Statement attempted: \"" + sql + "\"", ex);
+            } catch (SqlException ex) {
+                log.error("Failed to execute row count SQL while starting reload.  " + ex.getMessage() + ", SQL: \"" + sql + "\"");
+                throw new InvalidSqlException(ex);
             }
         }
         return rowCount;
