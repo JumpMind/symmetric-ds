@@ -220,6 +220,8 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
         if (!batchFromDatabase.getStatus().equals(Status.OK) && !batchFromDatabase.getStatus().equals(Status.IG)) {
             this.outgoingBatch.setStatus(Status.NE);
+            this.outgoingBatch.setExtractRowCount(this.outgoingBatch.getDataRowCount());
+            this.outgoingBatch.setExtractInsertRowCount(this.outgoingBatch.getDataInsertRowCount());
             checkSendChildRequests(batchFromDatabase, resource, stats);
             this.dataExtractorService.outgoingBatchService.updateOutgoingBatch(this.outgoingBatch);
         } else {
@@ -307,6 +309,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.outgoingBatch = this.batches.remove(0);
         this.outgoingBatch.setDataRowCount(0);
         this.outgoingBatch.setDataInsertRowCount(0);
+        this.outgoingBatch.setExtractStartTime(new Date());
         if (this.finishedBatches.size() > 0) {
             this.outgoingBatch.setExtractCount(this.outgoingBatch.getExtractCount() + 1);
         }
