@@ -39,6 +39,8 @@ public class Data extends CsvData implements Serializable {
      */
     private TriggerHistory triggerHistory;
 
+    private boolean isPreRouted;
+
     public Data(long dataId, String pkData, String rowData, DataEventType eventType,
             String tableName, Date createTime, TriggerHistory triggerHistory, String channelId,
             String transactionId, String sourceNodeId) {
@@ -168,6 +170,14 @@ public class Data extends CsvData implements Serializable {
     
     public String getNodeList() {
         return getAttribute(ATTRIBUTE_NODE_LIST);
+    }
+
+    public boolean isPreRouted() {
+        return isPreRouted;
+    }
+
+    public void setPreRouted(boolean isPreRouted) {
+        this.isPreRouted = isPreRouted;
     }
 
     public Date getCreateTime() {

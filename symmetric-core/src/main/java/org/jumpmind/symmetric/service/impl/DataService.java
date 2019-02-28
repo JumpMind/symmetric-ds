@@ -1885,9 +1885,9 @@ public class DataService extends AbstractService implements IDataService {
                         data.getOldData(),
                         data.getTriggerHistory() != null ? data.getTriggerHistory()
                                 .getTriggerHistoryId() : -1, data.getChannelId(),
-                        data.getExternalData(), data.getNodeList() }, new int[] { Types.VARCHAR,
+                        data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0 }, new int[] { Types.VARCHAR,
                         Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC });
         data.setDataId(id);
         return id;
     }
@@ -1937,6 +1937,7 @@ public class DataService extends AbstractService implements IDataService {
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
+            data.setPreRouted(true);
             long dataId = insertData(transaction, data);
             for (Node node : nodes) {
                 insertDataEventAndOutgoingBatch(transaction, dataId, channelId, node.getNodeId(),
@@ -1992,6 +1993,7 @@ public class DataService extends AbstractService implements IDataService {
      */
     public long insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data, String nodeId, String routerId, boolean isLoad,
             long loadId, String createBy, Status status, String overrideChannelId, long estimatedBatchRowCount) {
+        data.setPreRouted(true);
         long dataId = insertData(transaction, data);
         String channelId = null;
         if (isLoad) {
@@ -2137,6 +2139,54 @@ public class DataService extends AbstractService implements IDataService {
 
                     insertSqlEvent(transaction, triggerHistory, trigger.getChannelId(), targetNode,
                             sql, false, -1, null);
+                    transaction.commit();
+                    return "Successfully create SQL event for node " + targetNode.getNodeId();
+                } catch (Error ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } catch (RuntimeException ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
+                    throw ex;
+                } finally {
+                    close(transaction);
+                }
+            } else {
+                return "Trigger for table " + tableName + " does not exist from node "
+                        + sourceNode.getNodeGroupId();
+            }
+        }
+    }
+
+    public String sendSQL(String nodeId, String sql) {
+        String tableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE_HOST);
+        Node sourceNode = engine.getNodeService().findIdentity();
+        Node targetNode = engine.getNodeService().findNode(nodeId, true);
+        if (targetNode == null) {
+            return "Unknown node " + nodeId;
+        }
+
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        TriggerHistory triggerHistory = triggerRouterService.findTriggerHistory(null, null, tableName);
+
+        if (triggerHistory == null) {
+            return "Trigger for table " + tableName + " does not exist from node "
+                    + sourceNode.getNodeGroupId();
+        } else {
+            Trigger trigger = triggerRouterService.getTriggerById(triggerHistory.getTriggerId());
+            if (trigger != null) {
+                ISqlTransaction transaction = null;
+                try {
+                    transaction = sqlTemplate.startSqlTransaction();
+                    Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.SQL,
+                            CsvUtils.escapeCsvData(sql), null, triggerHistory, Constants.CHANNEL_CONFIG,
+                            null, null);
+                    data.setNodeList(targetNode.getNodeId());
+                    insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNode.getNodeId(),
+                            Constants.UNKNOWN_ROUTER_ID, false, -1, null, Status.NE, null, -1);
                     transaction.commit();
                     return "Successfully create SQL event for node " + targetNode.getNodeId();
                 } catch (Error ex) {
@@ -2885,6 +2935,7 @@ public class DataService extends AbstractService implements IDataService {
                 }
             }
             data.setTriggerHistory(triggerHistory);
+            data.setPreRouted(row.getBoolean("IS_PREROUTED"));
             return data;
         }
     }

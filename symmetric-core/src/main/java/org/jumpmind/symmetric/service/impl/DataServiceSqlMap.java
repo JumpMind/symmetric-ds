@@ -146,14 +146,14 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("selectEventDataToExtractSql",
                 ""
                         + "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                                                                          "
-                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, e.router_id from $(data) d inner join   "
+                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted, e.router_id from $(data) d inner join   "
                         + "  $(data_event) e on d.data_id = e.data_id inner join $(outgoing_batch) o on o.batch_id=e.batch_id                                  "
                         + "  where o.batch_id = ? and o.node_id = ?                                                                                                                                    ");
         
         putSql("selectEventDataByBatchIdSql",
                 ""
                         + "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                                                                          "
-                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, e.router_id from $(data) d inner join   "
+                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted, e.router_id from $(data) d inner join   "
                         + "  $(data_event) e on d.data_id = e.data_id inner join $(outgoing_batch) o on o.batch_id=e.batch_id                                  "
                         + "  where o.batch_id = ?    ");
         
@@ -165,7 +165,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectData",
             "select data_id, table_name, event_type, row_data, pk_data, old_data, " +
-            "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, '' as router_id " +
+            "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, '' as router_id, is_prerouted " +
             "from $(data) where data_id = ?");
 
         putSql("selectMaxDataEventDataIdSql", ""
@@ -175,9 +175,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + "select count(*) from $(data) where data_id > ? and data_id < ?   ");
 
         putSql("insertIntoDataSql",
-                ""
-                        + "insert into $(data) (data_id, table_name, event_type, row_data, pk_data,                               "
-                        + "  old_data, trigger_hist_id, channel_id, external_data, node_list, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)   ");
+                "insert into $(data) (data_id, table_name, event_type, row_data, pk_data, " +
+                "old_data, trigger_hist_id, channel_id, external_data, node_list, is_prerouted, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
 
         putSql("insertIntoDataEventSql",
                 ""

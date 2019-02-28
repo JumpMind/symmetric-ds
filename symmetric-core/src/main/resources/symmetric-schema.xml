@@ -93,6 +93,7 @@
         <column name="source_node_id" type="VARCHAR" size="50"  description="If the data was inserted by a SymmetricDS data loader, then the id of the source node is record so that data is not re-routed back to it." />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />
         <column name="node_list" type="VARCHAR" size="255"  description="A field that can be populated with a comma separated subset of node ids which will be the only nodes available to the router" />
+        <column name="is_prerouted" type="BOOLEANINT" size="1" required="true" default="0" description="Set to true when routing should ignore this row because data_event and outgoing_batch rows are manually entered." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_d_channel_id">
             <index-column name="data_id"/>

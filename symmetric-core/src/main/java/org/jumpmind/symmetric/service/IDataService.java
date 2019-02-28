@@ -90,6 +90,8 @@ public interface IDataService {
      *  @return message string indicating success or error
      */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
+    
+    public String sendSQL(String nodeId, String sql);
 
     public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
     

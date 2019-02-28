@@ -2199,11 +2199,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         // clear the incoming batch table for the batches at the target node, so the batches won't be skipped
         for (ExtractRequest extractRequest : allRequests) {
-            String symNode = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE);
             String symIncomingBatch = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_BATCH);
             String sql = "delete from " + symIncomingBatch + " where node_id = '" + nodeService.findIdentityNodeId() + 
                     "' and batch_id between " + extractRequest.getStartBatchId() + " and " + extractRequest.getEndBatchId();
-            dataService.sendSQL(extractRequest.getNodeId(), null, null, symNode, sql);
+            dataService.sendSQL(extractRequest.getNodeId(), sql);
         }
     }
 
