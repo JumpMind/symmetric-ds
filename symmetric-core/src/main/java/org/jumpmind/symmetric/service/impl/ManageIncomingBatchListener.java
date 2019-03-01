@@ -228,9 +228,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         || ex instanceof IoException) {
                     log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
                     this.currentBatch.setSqlMessage(ex.getMessage());
-                } else {
-                    log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
-    
+                } else {    
                     SQLException se = ExceptionUtils.unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
                         String message = ex.getMessage();
@@ -258,7 +256,10 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                     } else {
                         this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
                     }
-    
+
+                    if (this.currentBatch.getSqlCode() != ErrorConstants.FK_VIOLATION_CODE || !isNewErrorForCurrentBatch) {
+                        log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
+                    }
                 }
     
                 ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());

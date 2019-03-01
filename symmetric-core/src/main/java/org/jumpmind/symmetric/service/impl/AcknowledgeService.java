@@ -132,12 +132,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
 
                 if (status == Status.ER) {
-                    log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
-                            (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
-                    RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
-                    if (routerStats != null) {
-                        log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
-                    }
+                    boolean suppressLogError = false;
                     if (isNewError) {
                         engine.getStatisticManager().incrementDataLoadedOutgoingErrors(outgoingBatch.getChannelId(), 1);
                     }
@@ -146,6 +141,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
                         if (channel != null && !channel.isReloadFlag()) {
                             engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                            suppressLogError = true;
                         }
                     }
                     if (outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE
@@ -159,7 +155,16 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             if (resource != null) {
                                 log.info("The batch {} may be corrupt in staging, so removing it.", outgoingBatch.getNodeBatchId());
                                 resource.delete();
+                                suppressLogError = isNewError;
                             }
+                        }
+                    }
+                    if (!suppressLogError) {
+                        log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
+                                (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
+                        RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
+                        if (routerStats != null) {
+                            log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
                         }
                     }
                 } else if (status == Status.RS) {
