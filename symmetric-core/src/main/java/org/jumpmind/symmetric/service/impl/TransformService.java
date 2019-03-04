@@ -33,6 +33,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.transform.AdditiveColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.BinaryLeftColumnTransform;
@@ -245,12 +246,40 @@ public class TransformService extends AbstractService implements ITransformServi
 
                     byTableName.add(transformTable);
                 }
+                addBuiltInTableTransforms(byByLinkByTransformPoint);
                 lastCacheTimeInMs = System.currentTimeMillis();
                 this.transformsCacheByNodeGroupLinkByTransformPoint = byByLinkByTransformPoint;
             }
         }
         
         return byByLinkByTransformPoint;
+    }
+
+    private void addBuiltInTableTransforms(Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byLinkByTransformPoint) {
+        List<NodeGroupLink> nodeGroupLinks = configurationService.getNodeGroupLinks(true);
+        for (NodeGroupLink nodeGroupLink : nodeGroupLinks) {
+            Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byLinkByTransformPoint.get(nodeGroupLink);
+            if (byTransformPoint == null) {
+                byTransformPoint = new HashMap<TransformPoint, List<TransformTableNodeGroupLink>>();
+                byLinkByTransformPoint.put(nodeGroupLink, byTransformPoint);
+            }
+            List<TransformTableNodeGroupLink> transforms = byTransformPoint.get(TransformPoint.LOAD);
+            if (transforms == null) {
+                transforms = new ArrayList<TransformTableNodeGroupLink>();
+                byTransformPoint.put(TransformPoint.LOAD, transforms);
+            }
+            TransformColumn column = new TransformColumn("heartbeat_time", "heartbeat_time", false);
+            column.setTransformType("variable");
+            column.setTransformExpression("system_timestamp");
+            String tableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE_HOST);
+            TransformTableNodeGroupLink transform = new TransformTableNodeGroupLink();
+            transform.setSourceTableName(tableName);
+            transform.setTargetTableName(tableName);
+            transform.setTransformPoint(TransformPoint.LOAD);
+            transform.addTransformColumn(column);
+            transform.setNodeGroupLink(nodeGroupLink);
+            transforms.add(transform);
+        }
     }
 
     private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns, boolean replaceTokens) {

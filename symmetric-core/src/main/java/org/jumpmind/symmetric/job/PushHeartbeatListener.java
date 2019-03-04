@@ -87,8 +87,9 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             }
 
             log.debug("Updating my node info");
-            engine.getOutgoingBatchService().markHeartbeatAsSent();
-            engine.getNodeService().updateNodeHostForCurrentNode();
+            if (engine.getOutgoingBatchService().countOutgoingBatchesUnsentHeartbeat() == 0) {
+                engine.getNodeService().updateNodeHostForCurrentNode();
+            }
             log.debug("Done updating my node info");
 
             if (!engine.getNodeService().isRegistrationServer()) {

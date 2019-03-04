@@ -48,8 +48,6 @@ public interface IOutgoingBatchService {
     
     public void markAllConfigAsSentForNode(String nodeId);
     
-    public void markHeartbeatAsSent();
-
     public void updateAbandonedRoutingBatches();
 
     public OutgoingBatch findOutgoingBatch(long batchId, String nodeId);
@@ -98,7 +96,9 @@ public interface IOutgoingBatchService {
     public int countOutgoingBatchesInError(String channelId);
     
     public int countOutgoingBatchesUnsent(String channelId);
-        
+
+    public int countOutgoingBatchesUnsentHeartbeat();
+
     public Map<String, Integer> countOutgoingBatchesPendingByChannel(String nodeId);
     
     public long countUnsentRowsByTargetNode(String nodeId);
