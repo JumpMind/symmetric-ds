@@ -371,15 +371,25 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
 
     @Override
     public boolean isInitialLoadTwoPassLob(Table table) {
-        return parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
-                && !TableConstants.getTables(parameterService.getTablePrefix()).contains(table.getNameLowerCase())
-                && table.containsLobColumns(this.platform);
+        boolean initialLoadTwoPassLob = false;
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
+                && !TableConstants.getTables(parameterService.getTablePrefix()).contains(table.getNameLowerCase())) {
+            for (Column column : table.getLobColumns(this.platform)) {
+                if (!column.getJdbcTypeName().equalsIgnoreCase("LONG")) {
+                    initialLoadTwoPassLob = true;
+                    break;
+                }
+            }
+        }
+        return initialLoadTwoPassLob;
     }
 
     @Override
     public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
         String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
-        if (isFirstPass) {
+        if (column.getJdbcTypeName().equalsIgnoreCase("LONG")) {
+            return isFirstPass ? "1=1" : "1=0";
+        } else if (isFirstPass) {
             return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000";
         }
         return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";

@@ -101,6 +101,8 @@ abstract public class AbstractTriggerTemplate {
 
     protected String blobColumnTemplate;
     
+    protected String longColumnTemplate;
+    
     protected String binaryColumnTemplate;
 
     protected String imageColumnTemplate;
@@ -874,7 +876,11 @@ abstract public class AbstractTriggerTemplate {
                     break;
                 case Types.LONGVARCHAR:
                 case ColumnTypes.LONGNVARCHAR:
-                    if (!isLob) {
+                    if (column.getJdbcTypeName().equalsIgnoreCase("LONG") && isNotBlank(longColumnTemplate)) {
+                        templateToUse = longColumnTemplate;
+                        isLob = false;
+                        break;
+                    } else if (!isLob) {
                         templateToUse = stringColumnTemplate;
                         break;
                     }

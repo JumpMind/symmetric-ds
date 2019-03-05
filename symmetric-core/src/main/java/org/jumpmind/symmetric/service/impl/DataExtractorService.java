@@ -2873,7 +2873,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
 
-            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getChannelId());
+            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getReloadChannelId());
             
             if (channel.isReloadFlag() && symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
                 channel = new Channel();
