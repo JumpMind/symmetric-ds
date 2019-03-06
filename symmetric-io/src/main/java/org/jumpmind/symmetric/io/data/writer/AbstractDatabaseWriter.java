@@ -30,6 +30,7 @@ import java.util.Set;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.sql.TableNotFoundException;
 import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -143,7 +144,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                 || batch.getBatchId() == IoConstants.IGNORE_TABLES_BATCH)) {
             String qualifiedName = sourceTable.getFullyQualifiedTableName();
             if (!missingTables.contains(qualifiedName)) {
-                log.warn("Did not find the {} table in the target database", qualifiedName);
+                log.info("Did not find the {} table in the target database", qualifiedName);
                 missingTables.add(qualifiedName);
             }            
         } else {
@@ -260,7 +261,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                 if (sourceTable != null) {
                     // If the source table was found but the target table is
                     // still unknown throw an exception
-                    throw new SqlException(String.format("Could not find the target table '%s'",
+                    throw new TableNotFoundException(String.format("Could not find the target table '%s'",
                             sourceTable.getFullyQualifiedTableName()));
                 } else {
                     throw new SqlException("The target table was not specified");

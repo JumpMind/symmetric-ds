@@ -31,6 +31,7 @@ import java.util.concurrent.CancellationException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.TableNotFoundException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -257,7 +258,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
                     }
 
-                    if (this.currentBatch.getSqlCode() != ErrorConstants.FK_VIOLATION_CODE || !isNewErrorForCurrentBatch) {
+                    if (ex instanceof TableNotFoundException) {
+                        log.error(String.format("The incoming batch %s failed: %s", this.currentBatch.getNodeBatchId(), ex.getMessage()));
+                    } else if (this.currentBatch.getSqlCode() != ErrorConstants.FK_VIOLATION_CODE || !isNewErrorForCurrentBatch) {
                         log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
                     }
                 }
