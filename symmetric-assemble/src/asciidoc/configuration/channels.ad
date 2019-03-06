@@ -70,9 +70,7 @@ File Sync Channel:: Indicates whether a channel is available for file synchroniz
 Use Old Data To Route:: Indicates if the old data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
 Use Row Data To Route:: Indicates if the current data will be included for routing.   Routing can then use this data for processing.  Defaults to true.
 Use Primary Key (PK) Data to Route:: Indicates if the primary key data will be include for routing.   For example maybe a store ID is needed to apply logic on before sending to the appropriate target nodes.  Defaults to true.
-Tables Contain Big Lobs:: Indicates whether the channel contains tables with LOB columns exceeding the character limit for the database platform. 
-Some databases have shortcuts that SymmetricDS can take advantage of if it knows that the lob columns in SYM_DATA aren't going to contain large lobs.
-The definition of how large a 'big' lob is varies from database to database.
+Contains Lob or Wide Row Data:: For Oracle, Tibero, Firebird, and Interbase, this setting can be enabled when change data capture exceeds the character limit.  Oracle and Tibero have a character limit of 4000, while Firebird and Interbase have a character limit of 20000 for changes and 1000 for primary key values.  Change data capture is first attempted to extract as character data for better performance, then it will automatically fall back to extract as a large object (LOB).  Enable this setting when most changes captured on the channel need extracted as LOB or when the extraction is receiving a truncation error.
 
 .Sample Channels
 =====
