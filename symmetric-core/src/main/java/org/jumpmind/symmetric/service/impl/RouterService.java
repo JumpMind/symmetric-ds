@@ -132,6 +132,8 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
     
     protected boolean firstTimeCheck = true;
+    
+    protected boolean hasMaxDataRoutedOnChannel;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -215,19 +217,27 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     insertInitialLoadEvents();
-                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
-
-                    long ts = System.currentTimeMillis();
-                    gapDetector.beforeRouting();
                     
-                    dataCount = routeDataForEachChannel();
-                    ts = System.currentTimeMillis() - ts;
-                    if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.info("Routed {} data events in {} ms", dataCount, ts);
-                    }
-                    if (dataCount > 0) {
-                        gapDetector.afterRouting();
-                    }
+                    do {
+                        engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+    
+                        long ts = System.currentTimeMillis();
+                        hasMaxDataRoutedOnChannel = false;
+                        gapDetector.beforeRouting();
+                        
+                        dataCount = routeDataForEachChannel();
+                        ts = System.currentTimeMillis() - ts;
+                        if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
+                            log.info("Routed {} data events in {} ms", dataCount, ts);
+                        }
+                        if (dataCount > 0) {
+                            gapDetector.afterRouting();
+                        }
+                        if (hasMaxDataRoutedOnChannel) {
+                            log.debug("Immediately routing again because a channel reached max data to route");
+                        }
+                    } while (hasMaxDataRoutedOnChannel);
+
                 } finally {
                     if (!force) {
                         engine.getClusterService().unlock(ClusterConstants.ROUTE);
@@ -756,6 +766,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     completeBatchesAndCommit(context);
                     gapDetector.addDataIds(context.getDataIds());
                     gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
+                    hasMaxDataRoutedOnChannel |= context.getDataIds().size() >= context.getChannel().getMaxDataToRoute();
                     context.incrementStat(System.currentTimeMillis() - insertTs,
                             ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
 
