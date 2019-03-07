@@ -75,9 +75,12 @@ public interface IDataService {
 
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
+    public String reloadTableImmediate(String nodeId, String catalogName, String schemaName, String tableName, 
+            String overrideInitialLoadSelect, String overrideChannelId);
+
     public void reloadMissingForeignKeyRows(String nodeId, long dataId);
 
-    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, boolean sendCorrectionToPeers);
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers);
 
     /**
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data

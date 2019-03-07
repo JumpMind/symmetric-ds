@@ -672,11 +672,20 @@ public class DataService extends AbstractService implements IDataService {
             TriggerRouter triggerRouter, TriggerHistory triggerHistory,
             String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy,
             Status status, String channelId, long estimatedBatchRowCount) {
-        return insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                overrideInitialLoadSelect, isLoad, loadId, createBy,
-                status, channelId, estimatedBatchRowCount, true);
+        if (triggerHistory == null) {
+            triggerHistory = lookupTriggerHistory(triggerRouter.getTrigger());
+        }
+
+        Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.RELOAD,
+                overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter
+                        .getInitialLoadSelect(), null, triggerHistory, channelId,
+                null, null);
+        data.setNodeList(targetNode.getNodeId());
+        return insertDataAndDataEventAndOutgoingBatch(transaction, data,
+                targetNode.getNodeId(), triggerRouter.getRouter().getRouterId(), isLoad,
+                loadId, createBy, status, channelId, estimatedBatchRowCount);
     }
-    
+
     protected long insertReloadEvent(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory,
             String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy,
@@ -2233,15 +2242,17 @@ public class DataService extends AbstractService implements IDataService {
     @Override
     public String reloadTable(String nodeId, String catalogName, String schemaName,
             String tableName, String overrideInitialLoadSelect) {
-        return reloadTable(nodeId, catalogName, schemaName, tableName, null, false);
+        return reloadTable(nodeId, catalogName, schemaName, tableName, null, null, false);
     }
 
-    protected String reloadTableImmediate(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect) {
-        return reloadTable(nodeId, catalogName, schemaName, tableName, overrideInitialLoadSelect, true);
+    @Override
+    public String reloadTableImmediate(String nodeId, String catalogName, String schemaName, String tableName, 
+            String overrideInitialLoadSelect, String overrideChannelId) {
+        return reloadTable(nodeId, catalogName, schemaName, tableName, overrideInitialLoadSelect, overrideChannelId, true);
     }
 
     protected String reloadTable(String nodeId, String catalogName, String schemaName,
-            String tableName, String overrideInitialLoadSelect, boolean isImmediate) {
+            String tableName, String overrideInitialLoadSelect, String overrideChannelId, boolean isImmediate) {
         Node sourceNode = engine.getNodeService().findIdentity();
         Node targetNode = engine.getNodeService().findNode(nodeId);
         if (targetNode == null) {
@@ -2265,8 +2276,11 @@ public class DataService extends AbstractService implements IDataService {
                 if (triggerRouters != null && triggerRouters.size() > 0) {
                     for (TriggerRouter triggerRouter : triggerRouters) {
                         eventCount++;
-                        String channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine
+                        String channelId = overrideChannelId;
+                        if (channelId == null) {
+                            channelId = getReloadChannelIdForTrigger(triggerRouter.getTrigger(), engine
                                 .getConfigurationService().getChannels(false));
+                        }
                         
                         if (isImmediate) {
                             insertReloadEventImmediate(transaction, targetNode, triggerRouter, triggerHistory,
@@ -2306,7 +2320,7 @@ public class DataService extends AbstractService implements IDataService {
 
     }
 
-    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, boolean sendCorrectionToPeers) {
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers) {
         try {
             Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
             List<TableRow> tableRows = new ArrayList<TableRow>();
@@ -2356,13 +2370,14 @@ public class DataService extends AbstractService implements IDataService {
                                     + "to correct table '{}' for column '{}'",
                             sourceNodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(),
                             foreignTableRow.getWhereSql(), localTable.getName(), foreignTableRow.getReferenceColumnName());
-             
+
                     for (Node targetNode : targetNodes) {
-                        script.append("engine.getDataService().reloadTable(\"" + targetNode.getNodeId() + "\", " +
-                                ((schema == null) ? schema : "\"" + schema + "\"") + ", " +
-                                ((catalog == null) ? catalog : "\"" + catalog + "\"") + ", \"" +
+                        script.append("engine.getDataService().reloadTableImmediate(\"" + targetNode.getNodeId() + "\", " +
+                                (catalog == null ? catalog : "\"" + catalog + "\"") + ", " +
+                                (schema == null ? schema : "\"" + schema + "\"") + ", \"" +
                                 foreignTable.getName().replace("\"", "\\\"") + "\", \"" +
-                                foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\");\n");
+                                foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\", " +
+                                (channelId == null ? channelId : "\"" + channelId + "\"") + ");\n");
                     }
                 }
             }
@@ -2415,7 +2430,7 @@ public class DataService extends AbstractService implements IDataService {
                             + "to correct dataId '{}' table '{}' for column '{}'",
                             nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
                             dataId, data.getTableName(), foreignTableRow.getReferenceColumnName());
-                    reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql());
+                    reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(), null);
                 }
             }        
         }
