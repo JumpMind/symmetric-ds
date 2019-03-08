@@ -1,0 +1,100 @@
+=== Snowflake
+
+Send changes from your relational database to Snowflake.  
+
+==== Setup
+
+Snowflake is only support as a load only node in SymmetricDS.  See <<Load Only Node >> for details on setting up a load only node in SymmetricDS.
+
+
+ifdef::pro[]
+Setup the Snowflake node by using the <<Add Node>> wizard and selecting Snowflake as the type.  
+
+image::appendix/snowflake-database-settings.png[]
+
+After hitting next you can setup advanced options for your Snowflake node.
+
+endif::pro[]
+
+ifndef::pro[] 
+
+.Example properties to setup a Snowflake load only node
+----
+load.only=true
+target.db.driver=net.snowflake.client.jdbc.SnowflakeDriver
+target.db.url=jdbc:snowflake://<account_name>.snowflakecomputing.com/?db=<database_name>
+target.db.user=<snowflake_user>
+target.db.password=<snowflake_password>
+----
+
+endif::pro[]
+
+==== Loading Data Into Snowflake
+
+
+
+ifndef::pro[] 
+===== Setup reload channels for bulk loading.
+
+Update any reload channels that will be used on the table triggers that will capture changes and send them to snowflake by setting the column data_loader_type to 'bulk'.  It is also recommended to increase the batch size so that larger CSV files will be processed instead of the default size on reloads of 10,000 rows.
+
+
+.Example SQL to setup the main reload channel to use bulk and also update the batch sizes.
+[source, SQL]
+----
+update sym_channel set data_loader_type='bulk', max_batch_size=500000 where channel_id='reload'
+----
+endif::pro[]
+
+===== Choose a bulk load storage option
+
+SymmetricDS will create and send CSV files to the a desired storage location (see below) as part of the load.  Once the CSV files have been uploaded to a selected storage area Snowflake's COPY INTO command will be used to load the data into Snowflake.  Once the COPY INTO has completed SymmetricDS will also remove the CSV file from the storage container.
+
+.There are currently 3 supported storage options to stage the CSV files prior to loading into Snowflake
+* Snowflake Managed (internal storage)
+* AWS: S3 
+* Azure: Storage Account
+
+      
+SNOWFLAKE MANAGED:: Use a Snowflake managed internal stage.
+ifdef::pro[]
+image::appendix/snowflake-advanced-settings-snowflake-managed.png[]
+endif::pro[]
+ifndef::pro[] 
+[source, properties]
+----
+snowflake.staging.type=SNOWFLAKE_INTERNAL
+snowflake.internal.stage.name=<defaults to symmetricds>
+----
+endif::pro[]
+
+
+AWS S3:: Use an existing AWS S3 cloud storage.
+ifdef::pro[]
+image::appendix/snowflake-advanced-settings-aws-s3.png[]
+endif::pro[]
+ifndef::pro[] 
+[source, properties]
+----
+snowflake.staging.type=AWS_S3
+cloud.bulk.load.s3.bucket=
+cloud.bulk.load.s3.access.key=
+cloud.bulk.load.s3.secret.key=
+----
+endif::pro[]
+
+
+AZURE Storage Account:: Use an existing Azure Storage Account.
+ifdef::pro[]
+image::appendix/snowflake-advanced-settings-azure.png[]
+endif::pro[]
+ifndef::pro[] 
+[source, properties]
+----
+snowflake.staging.type=AZURE
+cloud.bulk.load.azure.account.name=<storage account name>
+cloud.bulk.load.azure.account.key=
+cloud.bulk.load.azure.blob.container=<defaults to symmetricds>
+cloud.bulk.load.azure.sas.token=
+----
+endif::pro[]
