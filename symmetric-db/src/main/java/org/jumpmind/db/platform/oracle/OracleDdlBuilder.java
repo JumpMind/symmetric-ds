@@ -546,7 +546,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
     
-    
     @Override
     protected String getSqlType(Column column) {
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);

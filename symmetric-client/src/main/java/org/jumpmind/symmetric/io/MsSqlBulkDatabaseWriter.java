@@ -205,7 +205,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
     protected void flush() {
         if (loadedRows > 0) {
-        	this.stagedInputFile.close();
+        	    this.stagedInputFile.close();
+        	    
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String filename;
             if (StringUtils.isEmpty(uncPath)) {
@@ -240,11 +241,12 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 	            //TODO:  clean this up, deal with errors, etc.?
 	            stmt.execute(sql);
 	            stmt.close();
-	
+	            loadedRows = 0;
 	        } catch (SQLException ex) {
 	            throw getPlatform().getSqlTemplate().translate(ex);
 	        } finally {
 	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+	            this.stagedInputFile.delete();
 	        }
         }
     }

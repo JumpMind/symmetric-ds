@@ -158,9 +158,15 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      *            The catalog
      */
     public void setCatalog(String catalog) {
+        for (ForeignKey fk : getForeignKeys()) {
+            if (fk.getForeignTableCatalog() != null && fk.getForeignTableCatalog().equals(this.catalog)) {
+                fk.setForeignTableCatalog(catalog);
+            }
+        }
         this.oldCatalog = this.catalog != null ? this.catalog : catalog;
         this.catalog = catalog;
         this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
+        
     }
 
     /**
@@ -179,6 +185,11 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      *            The schema
      */
     public void setSchema(String schema) {
+        for (ForeignKey fk : getForeignKeys()) {
+            if (fk.getForeignTableSchema() != null && fk.getForeignTableSchema().equals(this.schema)) {
+                fk.setForeignTableSchema(schema);
+            }
+        }
         this.oldSchema = this.schema != null ? this.schema : schema;
         this.schema = schema;
         this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;

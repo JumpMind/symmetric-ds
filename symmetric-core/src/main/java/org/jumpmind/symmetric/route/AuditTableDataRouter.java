@@ -65,7 +65,6 @@ public class AuditTableDataRouter extends AbstractDataRouter implements IBuiltIn
         if (initialLoad) { // loads are not audited; this is for CDC.
             return null;
         }
-        
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE
                 || eventType == DataEventType.DELETE) {
