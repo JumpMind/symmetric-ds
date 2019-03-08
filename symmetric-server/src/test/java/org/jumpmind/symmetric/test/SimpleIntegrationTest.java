@@ -1066,8 +1066,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                     rootHeartbeatTimeBefore, rootHeartbeatTimeAfter);
 
             assertEquals(
-                    "The client heartbeat time should have been the same as the root heartbeat time.",
-                    clientHeartbeatTimeAfter, rootHeartbeatTimeAfter);
+                    "The root heartbeat time should have been equal to or after the client heartbeat time.",
+                    rootHeartbeatTimeAfter.getTime() >= clientHeartbeatTimeAfter.getTime(), true);
         } finally {
             setLoggingLevelForTest(previous);
         }
