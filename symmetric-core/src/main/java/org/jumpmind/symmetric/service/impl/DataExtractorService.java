@@ -1414,12 +1414,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
                     new DataProcessor(dataReader, new ProcessInfoDataWriter(dataWriter, processInfo), "send from stage")
                             .process(ctx);
-                    if (dataReader.getStatistics().size() > 0 && currentBatch.getSentCount() == 1) {
-                        Statistics stats = dataReader.getStatistics().values().iterator().next();
-                        statisticManager.incrementDataSent(currentBatch.getChannelId(),
-                                stats.get(DataReaderStatistics.READ_RECORD_COUNT));
-                        long byteCount = stats.get(DataReaderStatistics.READ_BYTE_COUNT);
-                        statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), byteCount);
+                    if (dataReader.getStatistics().size() > 0) {
+                        if (currentBatch.getSentCount() == 1) {
+                            Statistics stats = dataReader.getStatistics().values().iterator().next();
+                            statisticManager.incrementDataSent(currentBatch.getChannelId(),
+                                    stats.get(DataReaderStatistics.READ_RECORD_COUNT));
+                            long byteCount = stats.get(DataReaderStatistics.READ_BYTE_COUNT);
+                            statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), byteCount);
+                        }
                     } else {
                         log.warn("Could not find recorded statistics for batch {}",
                                 currentBatch.getNodeBatchId());
