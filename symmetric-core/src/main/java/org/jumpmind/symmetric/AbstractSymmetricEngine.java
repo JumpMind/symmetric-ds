@@ -31,12 +31,12 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -139,8 +139,9 @@ import org.slf4j.MDC;
 
 abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
-    private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new HashMap<String, ISymmetricEngine>();
-    private static Map<String, ISymmetricEngine> registeredEnginesByName = new HashMap<String, ISymmetricEngine>();
+    private static Map<String, ISymmetricEngine> registeredEnginesByUrl = new ConcurrentHashMap<String, ISymmetricEngine>();
+
+    private static Map<String, ISymmetricEngine> registeredEnginesByName = new ConcurrentHashMap<String, ISymmetricEngine>();
 
     protected static final Logger log = LoggerFactory.getLogger(AbstractSymmetricEngine.class);
 
@@ -882,8 +883,12 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         removeMeFromMap(registeredEnginesByUrl);
         if (parameterService != null) {
             parameterService.setDatabaseHasBeenInitialized(false);
-            registeredEnginesByName.remove(getEngineName());
-            registeredEnginesByUrl.remove(getSyncUrl());
+            if (getEngineName() != null) {
+                registeredEnginesByName.remove(getEngineName());
+            }
+            if (getSyncUrl() != null) {
+                registeredEnginesByUrl.remove(getSyncUrl());
+            }
         }
         stop();
         if (jobManager != null) {
@@ -1227,7 +1232,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
      */
     private void registerHandleToEngine() {
         String url = getSyncUrl();
-        ISymmetricEngine alreadyRegister = registeredEnginesByUrl.get(url);
+        ISymmetricEngine alreadyRegister = null;
+        if (url != null) {
+            alreadyRegister = registeredEnginesByUrl.get(url);
+        }
         if (alreadyRegister == null || alreadyRegister.equals(this)) {
             if (url != null) {
                 registeredEnginesByUrl.put(url, this);
@@ -1237,7 +1245,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                             getSyncUrl());
         }
 
-        alreadyRegister = registeredEnginesByName.get(getEngineName());
+        if (getEngineName() != null) {
+            alreadyRegister = registeredEnginesByName.get(getEngineName());
+        }
         if (alreadyRegister == null || alreadyRegister.equals(this)) {
             registeredEnginesByName.put(getEngineName(), this);
         } else {

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -65,26 +66,34 @@ public class PushUriHandler extends AbstractUriHandler {
 
         String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
         
-        push(nodeId, threadChannel, inputStream, outputStream);
+        int rc = push(nodeId, threadChannel, inputStream, outputStream);
+        
+        if (rc != WebConstants.SC_OK) {
+            res.sendError(rc);
+        }
 
         res.flushBuffer();
         log.debug("Push completed for {}", nodeId);
-
-    }
-
-    protected void push(String sourceNodeId, InputStream inputStream, OutputStream outputStream) throws IOException {
-        push(sourceNodeId, null, inputStream, outputStream);
     }
     
-    protected void push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {
+    protected int push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {
         long ts = System.currentTimeMillis();
         try {
             Node sourceNode = nodeService.findNode(sourceNodeId, true);
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(sourceNodeId, true);
+            
+            if (nodeSecurity != null) {
+                String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
+                if (nodeSecurity.isRegistrationEnabled() && (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
+                    return WebConstants.REGISTRATION_REQUIRED;
+                }
+            }
             dataLoaderService.loadDataFromPush(sourceNode, channelId, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
         }
+        return WebConstants.SC_OK;
     }
 
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {

@@ -38,7 +38,7 @@
         <column name="use_pk_data_to_route" type="BOOLEANINT" size="1" required="true" default="1" description="Indicates whether to read the pk data during routing."/>
         <column name="reload_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for reloads."/>
         <column name="file_sync_flag" type="BOOLEANINT" size="1" required="true" default="0" description="Indicates that this channel is used for file sync."/>
-        <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint on how to treat captured data.  Currently only supported by Oracle, Interbase and Firebird.  If set to '0', then selects for routing and data extraction will be more efficient and lobs will be truncated at 4k in the trigger text.  When it is set to '0' there is a 4k limit on the total size of a row and on the size of a LOB column.  Note, when switching this value back and forth triggers need to be forced to regenerate."/>
+        <column name="contains_big_lob" type="BOOLEANINT" size="1" required="true" default="0" description="Provides SymmetricDS a hint on how to treat captured data.  Currently only supported by Oracle, Interbase and Firebird.  If set to '0', then selects for routing and data extraction will be more efficient and lobs will be truncated at 4k in the trigger text.  When it is set to '0' there is a 4k limit on the total size of a row and on the size of a LOB column."/>
         <column name="batch_algorithm" type="VARCHAR" size="50" required="true" default="default" description="The algorithm to use when batching data on this channel.  Possible values are: 'default', 'transactional', and 'nontransactional'"/>
         <column name="data_loader_type" type="VARCHAR" size="50" required="true" default="default" description="Identify the type of data loader this channel should use.  Allows for the default dataloader to be swapped out via configuration for more efficient platform specific data loaders."/>
         <column name="description" type="VARCHAR" size="255" description="Description on the type of data carried in this channel."/>
@@ -93,6 +93,7 @@
         <column name="source_node_id" type="VARCHAR" size="50"  description="If the data was inserted by a SymmetricDS data loader, then the id of the source node is record so that data is not re-routed back to it." />
         <column name="external_data" type="VARCHAR" size="50"  description="A field that can be populated by a trigger that uses the EXTERNAL_SELECT" />
         <column name="node_list" type="VARCHAR" size="255"  description="A field that can be populated with a comma separated subset of node ids which will be the only nodes available to the router" />
+        <column name="is_prerouted" type="BOOLEANINT" size="1" required="true" default="0" description="Set to true when routing should ignore this row because data_event and outgoing_batch rows are manually entered." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
         <index name="idx_d_channel_id">
             <index-column name="data_id"/>

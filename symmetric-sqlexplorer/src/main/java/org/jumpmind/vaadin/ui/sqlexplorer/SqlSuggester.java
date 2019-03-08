@@ -46,34 +46,39 @@ public class SqlSuggester implements Suggester {
 	
 	@Override
 	public List<Suggestion> getSuggestions(String text, int cursor) {
-		this.text = text;
-		this.cursor = cursor;
-		this.currentWord = getCurrentWord();
-		this.referencedTableNames = getReferencedTableNames();
-		this.aliases = getAliases();
-		
-		List<Suggestion> suggestions = new ArrayList<Suggestion>();
-		
-		int lastDeliminatorIndex = getLastDeliminatorIndex();
-		if (lastDeliminatorIndex > 0
-				&& text.charAt(lastDeliminatorIndex) == '.'
-				&& isSqlIdentifier(text.charAt(lastDeliminatorIndex-1))) {
-			suggestions.addAll(getHierarchySuggestions());
-		}
-		else if (lastDeliminatorIndex > 0 && text.charAt(lastDeliminatorIndex-1) != '.'
-				|| (lastDeliminatorIndex <= 0)) {
-			suggestions.addAll(getAliasSuggestions());
-			for (String fullTableName : referencedTableNames) {
-				String[] fullNameParts = parseFullName(fullTableName);
-				suggestions.addAll(getColumnNameSuggestions(fullNameParts[2],
-						fullNameParts[1], fullNameParts[0]));
-			}
-			suggestions.addAll(getCatalogNameSuggestions());
-			suggestions.addAll(getSchemaNameSuggestions(null));
-			suggestions.addAll(getTableNameSuggestions(null, null));
-		}
-		
-		return removeRepeats(suggestions);
+	    try {	        
+	        this.text = text;
+	        this.cursor = cursor;
+	        this.currentWord = getCurrentWord();
+	        this.referencedTableNames = getReferencedTableNames();
+	        this.aliases = getAliases();
+	        
+	        List<Suggestion> suggestions = new ArrayList<Suggestion>();
+	        
+	        int lastDeliminatorIndex = getLastDeliminatorIndex();
+	        if (lastDeliminatorIndex > 0
+	                && text.charAt(lastDeliminatorIndex) == '.'
+	                && isSqlIdentifier(text.charAt(lastDeliminatorIndex-1))) {
+	            suggestions.addAll(getHierarchySuggestions());
+	        }
+	        else if (lastDeliminatorIndex > 0 && text.charAt(lastDeliminatorIndex-1) != '.'
+	                || (lastDeliminatorIndex <= 0)) {
+	            suggestions.addAll(getAliasSuggestions());
+	            for (String fullTableName : referencedTableNames) {
+	                String[] fullNameParts = parseFullName(fullTableName);
+	                suggestions.addAll(getColumnNameSuggestions(fullNameParts[2],
+	                        fullNameParts[1], fullNameParts[0]));
+	            }
+	            suggestions.addAll(getCatalogNameSuggestions());
+	            suggestions.addAll(getSchemaNameSuggestions(null));
+	            suggestions.addAll(getTableNameSuggestions(null, null));
+	        }
+	        
+	        return removeRepeats(suggestions);
+	    } catch (Exception ex) {
+	        logger.debug("Failed to generate suggestions. cursor=" + cursor + " text=" + text, ex);
+	        return new ArrayList<Suggestion>();
+	    }
 	}
 	
 	private boolean isSqlIdentifier(char c) {

@@ -132,6 +132,8 @@ public class RouterService extends AbstractService implements IRouterService {
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
     
     protected boolean firstTimeCheck = true;
+    
+    protected boolean hasMaxDataRoutedOnChannel;
 
     public RouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -215,19 +217,27 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                     }
                     insertInitialLoadEvents();
-                    engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
-
-                    long ts = System.currentTimeMillis();
-                    gapDetector.beforeRouting();
                     
-                    dataCount = routeDataForEachChannel();
-                    ts = System.currentTimeMillis() - ts;
-                    if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
-                        log.info("Routed {} data events in {} ms", dataCount, ts);
-                    }
-                    if (dataCount > 0) {
-                        gapDetector.afterRouting();
-                    }
+                    do {
+                        engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
+    
+                        long ts = System.currentTimeMillis();
+                        hasMaxDataRoutedOnChannel = false;
+                        gapDetector.beforeRouting();
+                        
+                        dataCount = routeDataForEachChannel();
+                        ts = System.currentTimeMillis() - ts;
+                        if (dataCount > 0 || ts > Constants.LONG_OPERATION_THRESHOLD) {
+                            log.info("Routed {} data events in {} ms", dataCount, ts);
+                        }
+                        if (dataCount > 0) {
+                            gapDetector.afterRouting();
+                        }
+                        if (hasMaxDataRoutedOnChannel) {
+                            log.debug("Immediately routing again because a channel reached max data to route");
+                        }
+                    } while (hasMaxDataRoutedOnChannel);
+
                 } finally {
                     if (!force) {
                         engine.getClusterService().unlock(ClusterConstants.ROUTE);
@@ -268,11 +278,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId = new HashMap<String, List<TriggerRouter>>();
                     
                     if (nodeSecurities != null && nodeSecurities.size() > 0) {
-                        gapDetector.setFullGapAnalysis(true);
                         boolean reverseLoadFirst = parameterService
                                 .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
-                        boolean isInitialLoadQueued = false;
-
                         
                         for (NodeSecurity security : nodeSecurities) {
                         		Node targetNode = engine.getNodeService().findNode(security.getNodeId());
@@ -298,7 +305,6 @@ public class RouterService extends AbstractService implements IRouterService {
                                     dataService.insertReloadEvents(
                                             targetNode,
                                             false, processInfo, activeHistories, triggerRouters);
-                                    isInitialLoadQueued = true;
                                     ts = System.currentTimeMillis() - ts;
                                     if (ts > Constants.LONG_OPERATION_THRESHOLD) {
                                         log.warn("Inserted reload events for node {} took longer than expected.  It took {} ms",
@@ -327,9 +333,6 @@ public class RouterService extends AbstractService implements IRouterService {
                                 }
                             }
                         }
-                        if (isInitialLoadQueued) {
-                            gapDetector.setFullGapAnalysis(true);
-                        }
                     }
                     
                     processTableRequestLoads(identity, processInfo, triggerRoutersByTargetNodeGroupId);
@@ -349,14 +352,12 @@ public class RouterService extends AbstractService implements IRouterService {
         if (loadsToProcess.size() > 0) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
-            gapDetector.setFullGapAnalysis(true);
             
             boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             Map<String, ExtractRequest> extractRequests = null;
-            int extractRequestCount = 0;
             
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
@@ -372,7 +373,6 @@ public class RouterService extends AbstractService implements IRouterService {
                                 .getActiveTriggerHistories(targetNode);
 
                         extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters, extractRequests);
-                        extractRequestCount += extractRequests == null ? 0 : extractRequests.size();
                     } else {
                         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
 
@@ -408,11 +408,6 @@ public class RouterService extends AbstractService implements IRouterService {
                 List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
                 
                 extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories, triggerRouters, extractRequests);
-                extractRequestCount += extractRequests == null ? 0 : extractRequests.size();
-            }
-            
-            if (extractRequestCount == 0) {
-                gapDetector.setFullGapAnalysis(false);
             }
         }
     }
@@ -623,7 +618,9 @@ public class RouterService extends AbstractService implements IRouterService {
                             String currentChannelId = triggerRouter2.getTrigger().getChannelId();
                             if (anotherChannelTableName.equals(currentTableName) && currentChannelId.equals(channelId)
                                     && triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId()
-                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getSourceNodeGroupId())) {
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getSourceNodeGroupId()) &&
+                                            triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getTargetNodeGroupId())) {
                                 testableTriggerRouters.add(triggerRouter);
                             }
                         }
@@ -771,6 +768,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     completeBatchesAndCommit(context);
                     gapDetector.addDataIds(context.getDataIds());
                     gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
+                    hasMaxDataRoutedOnChannel |= context.getDataIds().size() >= context.getChannel().getMaxDataToRoute();
                     context.incrementStat(System.currentTimeMillis() - insertTs,
                             ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
 
@@ -928,18 +926,22 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (data != null) {
                         processInfo.setCurrentTableName(data.getTableName());
                         processInfo.incrementCurrentDataCount();
-                        boolean atTransactionBoundary = false;
-                        if (nextData != null) {
-                            String nextTxId = nextData.getTransactionId();
-                            atTransactionBoundary = nextTxId == null
-                                    || !nextTxId.equals(data.getTransactionId());
+                        if (data.isPreRouted()) {
+                            context.addData(data.getDataId());
+                        } else {
+                            boolean atTransactionBoundary = false;
+                            if (nextData != null) {
+                                String nextTxId = nextData.getTransactionId();
+                                atTransactionBoundary = nextTxId == null
+                                        || !nextTxId.equals(data.getTransactionId());
+                            }
+                            context.setEncountedTransactionBoundary(atTransactionBoundary);
+                            statsDataCount++;
+                            totalDataCount++;
+                            int dataEventsInserted = routeData(processInfo, data, context);
+                            statsDataEventCount += dataEventsInserted;
+                            totalDataEventCount += dataEventsInserted;
                         }
-                        context.setEncountedTransactionBoundary(atTransactionBoundary);
-                        statsDataCount++;
-                        totalDataCount++;
-                        int dataEventsInserted = routeData(processInfo, data, context);
-                        statsDataEventCount += dataEventsInserted;
-                        totalDataEventCount += dataEventsInserted;
                         long insertTs = System.currentTimeMillis();
                         try {
                             if (maxNumberOfEventsBeforeFlush <= context.getDataEventList().size()

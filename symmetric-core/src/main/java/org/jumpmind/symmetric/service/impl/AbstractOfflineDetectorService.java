@@ -109,8 +109,11 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         } else if (isSyncDisabled(error)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.SYNC_DISABLED);
-        } else if (isRegistrationRequired(error)) {
+        } else if (isRegistrationNotOpen(error)) {
             log.warn("Registration was not open at {}", new Object[] {remoteNode, syncUrl});
+            status.setStatus(Status.REGISTRATION_REQUIRED);
+        } else if (isRegistrationRequired(error)) {
+            log.warn("Registration is needed before communicating with {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.REGISTRATION_REQUIRED);
         } else if (getHttpException(error) != null) {
             HttpException http = getHttpException(error);
@@ -222,16 +225,26 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         boolean registrationRequired = false;
         if (ex != null) {
             Throwable cause = getRootCause(ex);
-            registrationRequired = cause instanceof RegistrationRequiredException || 
-                    cause instanceof RegistrationNotOpenException;
-            if (registrationRequired == false && (ex instanceof RegistrationRequiredException ||
-                    cause instanceof RegistrationNotOpenException)) {
+            registrationRequired = cause instanceof RegistrationRequiredException;
+            if (registrationRequired == false && (ex instanceof RegistrationRequiredException)) {
                 registrationRequired = true;
             }
         }
         return registrationRequired;
     }
-    
+
+    protected boolean isRegistrationNotOpen(Exception ex) {
+        boolean registrationNotOpen = false;
+        if (ex != null) {
+            Throwable cause = getRootCause(ex);
+            registrationNotOpen = cause instanceof RegistrationNotOpenException;
+            if (registrationNotOpen == false && (ex instanceof RegistrationNotOpenException)) {
+                registrationNotOpen = true;
+            }
+        }
+        return registrationNotOpen;
+    }
+
     protected HttpException getHttpException(Exception ex) {
         HttpException exception = null;
         if (ex != null) {

@@ -101,6 +101,13 @@ public class ChannelRouterContext extends SimpleRouterContext {
         }
     }
 
+    public void addData(long dataId) {
+        if (dataId != lastDataId) {
+            dataIds.add(dataId);
+            lastDataId = dataId;
+        }
+    }
+
     public Map<String, OutgoingBatch> getBatchesByNodes() {
         return batchesByNodes;
     }

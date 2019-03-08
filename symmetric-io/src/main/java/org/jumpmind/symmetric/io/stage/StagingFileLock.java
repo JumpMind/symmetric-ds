@@ -73,10 +73,26 @@ public class StagingFileLock {
     }
 
     public void releaseLock() {
-        if (lockFile.delete()) {
+        int retries = 5;
+        
+        boolean ok = false;
+        
+        do {
+            ok = lockFile.delete();
+            if (!ok) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception ex) {
+                    // no action.
+                }
+            }
+        } while (!ok && retries-- > 0);
+        
+        if (ok) {
             log.debug("Lock {} released successfully.", lockFile);
         } else {
-            log.warn("Failed to release lock {}", lockFile);
+            boolean exists = lockFile.exists();
+            log.warn("Failed to release lock {} exists={}", lockFile, exists);
         }
     }
     

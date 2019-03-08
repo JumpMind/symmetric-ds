@@ -89,7 +89,7 @@ public class VoltDbDdlReader extends AbstractJdbcDdlReader {
         // VoltDB does not support cascade actions
         fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
     }
-    
+
     @Override
     protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
         // VoltDB does not support cascade actions

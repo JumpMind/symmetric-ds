@@ -258,8 +258,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         }
     }
     
-    protected abstract AbstractDatabaseWriter create();
-    
+    protected abstract AbstractDatabaseWriter create();    
 
     @Override
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {

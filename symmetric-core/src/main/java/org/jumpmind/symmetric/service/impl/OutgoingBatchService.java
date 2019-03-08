@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.jumpmind.symmetric.common.TableConstants.SYM_NODE_HOST;
-import static org.jumpmind.symmetric.common.TableConstants.getTableName;
-
 import java.io.Serializable;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -147,23 +144,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 }
             }
         } while (updateCount > 0);
-    }
-
-    
-    @Override
-    public void markHeartbeatAsSent() {
-        String sql = getSql("cancelChannelBatchesSelectSql");
-        
-        List<Row> elgibleBatches = sqlTemplateDirty.query(sql, new Object[] { Constants.CHANNEL_HEARTBEAT, "OK",  getTableName(getTablePrefix(), SYM_NODE_HOST) });
-        
-        if (elgibleBatches != null) {
-            String updateSql = getSql("cancelChannelBatchSql");
-            for (Row elgibleBatch : elgibleBatches) {
-                String nodeId = elgibleBatch.getString("node_id");
-                long batchId = elgibleBatch.getLong("batch_id");                
-                sqlTemplate.update(updateSql, nodeId, batchId);
-            }
-        }
     }
 
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId) {
@@ -332,6 +312,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     @Override
     public int countOutgoingBatchesUnsent(String channelId) {
         return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentOnChannelSql"), channelId);
+    }
+
+    @Override
+    public int countOutgoingBatchesUnsentHeartbeat() {
+        return sqlTemplateDirty.queryForInt(getSql("countOutgoingBatchesUnsentHeartbeat"));
     }
 
     @Override

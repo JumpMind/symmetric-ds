@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -54,6 +57,12 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
     
     public ServerSymmetricEngine(File propertiesFile, ApplicationContext springContext, SymmetricEngineHolder engineHolder) {
         super(propertiesFile, springContext);
+        this.engineHolder = engineHolder;
+    }
+    
+    public ServerSymmetricEngine(DataSource dataSource, ApplicationContext springContext,
+            Properties properties, boolean registerEngine, SymmetricEngineHolder engineHolder) {
+        super(dataSource, springContext, properties, registerEngine);
         this.engineHolder = engineHolder;
     }
     

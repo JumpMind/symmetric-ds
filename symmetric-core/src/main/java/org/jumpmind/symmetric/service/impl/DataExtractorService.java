@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -209,7 +210,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     private IExtensionService extensionService;
 
-    private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
+    private Map<String, BatchLock> locks = new ConcurrentHashMap<String, BatchLock>();
     
     private CustomizableThreadFactory threadPoolFactory;
 
@@ -1166,6 +1167,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new org.jumpmind.exception.InterruptedException(e);
         }
         
+        log.debug("Acquired {}", lock);
         return lock;
     }
 
@@ -2199,11 +2201,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         // clear the incoming batch table for the batches at the target node, so the batches won't be skipped
         for (ExtractRequest extractRequest : allRequests) {
-            String symNode = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE);
             String symIncomingBatch = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_BATCH);
             String sql = "delete from " + symIncomingBatch + " where node_id = '" + nodeService.findIdentityNodeId() + 
                     "' and batch_id between " + extractRequest.getStartBatchId() + " and " + extractRequest.getEndBatchId();
-            dataService.sendSQL(extractRequest.getNodeId(), null, null, symNode, sql);
+            dataService.sendSQL(extractRequest.getNodeId(), sql);
         }
     }
 
@@ -2874,7 +2875,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
 
-            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getChannelId());
+            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getReloadChannelId());
             
             if (channel.isReloadFlag() && symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
                 channel = new Channel();

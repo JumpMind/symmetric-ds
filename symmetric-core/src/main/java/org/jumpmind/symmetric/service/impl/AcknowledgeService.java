@@ -114,38 +114,39 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
 
                 boolean isNewError = false;
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
-                    String sql = getSql("selectDataIdSql");
-                    if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
-                        sql = getSql("selectDataIdByCreateTimeSql");
-                    } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
-                        sql += getSql("orderByDataId");
-                    }
-
-                    List<Number> ids = sqlTemplateDirty.query(sql, new NumberMapper(), outgoingBatch.getBatchId());
-                    if (ids.size() >= batch.getErrorLine()) {
-                        long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
-                        if (outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId) {
-                            isNewError = true;
+                    if (outgoingBatch.isLoadFlag()) {
+                        isNewError = outgoingBatch.getSentCount() == 1;
+                    } else {
+                        String sql = getSql("selectDataIdSql");
+                        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
+                            sql = getSql("selectDataIdByCreateTimeSql");
+                        } else if (parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED, true)) {
+                            sql += getSql("orderByDataId");
                         }
-                        outgoingBatch.setFailedDataId(failedDataId);
+    
+                        List<Number> ids = sqlTemplateDirty.query(sql, new NumberMapper(), outgoingBatch.getBatchId());
+                        if (ids.size() >= batch.getErrorLine()) {
+                            long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
+                            if (outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId) {
+                                isNewError = true;
+                            }
+                            outgoingBatch.setFailedDataId(failedDataId);
+                        }
                     }
                 }
 
                 if (status == Status.ER) {
-                    log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
-                            (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
-                    RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
-                    if (routerStats != null) {
-                        log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
-                    }
+                    boolean suppressLogError = false;
                     if (isNewError) {
                         engine.getStatisticManager().incrementDataLoadedOutgoingErrors(outgoingBatch.getChannelId(), 1);
                     }
-                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
-                            && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
-                        Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
-                        if (channel != null && !channel.isReloadFlag()) {
+                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
+                        if (!outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
                             engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                            suppressLogError = true;
+                        }
+                        if (outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_RELOAD)) {
+                            suppressLogError = true;
                         }
                     }
                     if (outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE
@@ -159,7 +160,16 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             if (resource != null) {
                                 log.info("The batch {} may be corrupt in staging, so removing it.", outgoingBatch.getNodeBatchId());
                                 resource.delete();
+                                suppressLogError = isNewError;
                             }
+                        }
+                    }
+                    if (!suppressLogError) {
+                        log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
+                                (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
+                        RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
+                        if (routerStats != null) {
+                            log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
                         }
                     }
                 } else if (status == Status.RS) {

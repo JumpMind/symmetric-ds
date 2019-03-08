@@ -1,5 +1,5 @@
 /**
- * Licensed to JumpMind Inc under one or more contributor
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
@@ -22,8 +22,10 @@ package org.jumpmind.symmetric.io.stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,22 +33,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StagingManager implements IStagingManager {
-    
+
     private static final String LOCK_EXTENSION = ".lock";
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
     protected File directory;
-    
-    protected Set<String> resourcePaths;
-    
-    protected Map<String, IStagedResource> inUse;
-    
+
+    private Map<String, String> resourcePathsCache = new ConcurrentHashMap<String, String>();
+    protected Map<String, IStagedResource> inUse = new ConcurrentHashMap<String, IStagedResource>();
+
     boolean clusterEnabled;
     
     long lowFreeSpaceThresholdMegabytes;
@@ -55,106 +57,109 @@ public class StagingManager implements IStagingManager {
         log.info("The staging directory was initialized at the following location: " + directory);
         this.directory = new File(directory);
         this.directory.mkdirs();
-        this.resourcePaths = Collections.synchronizedSet(new TreeSet<String>());
-        this.inUse = new ConcurrentHashMap<String, IStagedResource>();
         this.clusterEnabled = clusterEnabled;
         this.lowFreeSpaceThresholdMegabytes = lowFreeSpaceThresholdMegabytes;
-        refreshResourceList();
     }
 
     public StagingManager(String directory, boolean clusterEnabled) {
         this(directory, clusterEnabled, 0);
     }
     
+    @Override
     public Set<String> getResourceReferences() {
-        synchronized (resourcePaths) {
-            return new TreeSet<String>(resourcePaths);
-        }
+        return new TreeSet<String>(resourcePathsCache.keySet());
     }
 
-    private void refreshResourceList() {
-        Collection<File> files = FileUtils.listFiles(this.directory,
-                new String[] { State.CREATE.getExtensionName(), State.DONE.getExtensionName() }, true);
-        for (File file : files) {
-            try {
-                String path = StagedResource.toPath(directory, file);
-                if (path != null && !resourcePaths.contains(path)) {
-                    resourcePaths.add(path);
-                }
-            } catch (IllegalStateException ex) {
-                log.warn(ex.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Clean up resources that are older than the passed in parameter.
-     * 
-     * @param ttlInMs
-     *            If resources are older than this number of milliseconds they
-     *            will be purged
-     */
+    @Override
     public long clean(long ttlInMs) {
-        synchronized (StagingManager.class) {
-            log.trace("Cleaning staging area");
-            Set<String> keys = getResourceReferences();
-            long purgedFileCount = 0;
-            long purgedFileSize = 0;
-            long purgedMemCount = 0;
-            long purgedMemSize = 0;
-            for (String key : keys) {
-                IStagedResource resource = new StagedResource(directory, key, this);
-                /* resource could have deleted itself between the time the keys were cloned and now */
-                if (resource != null) {
-                    boolean resourceIsOld = (System.currentTimeMillis() - resource
-                            .getLastUpdateTime()) > ttlInMs;
-                    if (resource.getState() == State.DONE && resourceIsOld) {
-                        if (!resource.isInUse()) {
-                            boolean file = resource.isFileResource();
-                            long size = resource.getSize();
-                            if (resource.delete()) {
-                                if (file) {
-                                    purgedFileCount++;
-                                    purgedFileSize += size;
-                                } else {
-                                    purgedMemCount++;
-                                    purgedMemSize += size;
-                                }
-                                resourcePaths.remove(key);
-                            } else {
-                                log.warn("Failed to delete the '{}' staging resource",
-                                        resource.getPath());
-                            }
-                        } else {
-                            log.info(
-                                    "The '{}' staging resource qualified for being cleaned, but was in use.  It will not be cleaned right now",
-                                    resource.getPath());
-                        }
-                    }
-                }
-            }
-            if (purgedFileCount > 0) {
-                if (purgedFileSize < 1000) {
-                    log.debug("Purged {} staged files, freeing {} bytes of disk space",
-                            purgedFileCount, (int) (purgedFileSize));
-                } else {
-                    log.debug("Purged {} staged files, freeing {} kbytes of disk space",
-                            purgedFileCount, (int) (purgedFileSize / 1000));
-                }
-            }
-            if (purgedMemCount > 0) {
-                if (purgedMemSize < 1000) {
-                    log.debug("Purged {} staged memory buffers, freeing {} bytes of memory",
-                            purgedMemCount, (int) (purgedMemSize));
-                } else {
-                    log.debug("Purged {} staged memory buffers, freeing {} kbytes of memory",
-                            purgedMemCount, (int) (purgedMemSize / 1000));
-                }
-            }
-            return purgedFileCount + purgedMemCount;
-        }
+        return clean(ttlInMs, null);
     }
     
+    public synchronized long clean(long ttlInMs, StagingPurgeContext context) {
+        try {
+            log.info("Cleaning staging...");
+            if (context == null) {
+                context = new StagingPurgeContext();
+            }
+            long start = System.currentTimeMillis();
+            context.setStartTime(start);
+            
+            resourcePathsCache.clear();
+            clean(FileSystems.getDefault().getPath(this.directory.getAbsolutePath()), ttlInMs, context);
+            logCleaningProgress(context);
+            long end = System.currentTimeMillis();
+            log.info("Finished cleaning staging in " + DurationFormatUtils.formatDurationWords(end-start, true, true) + ".");
+            return context.getPurgedFileSize() + context.getPurgedMemSize();
+        } catch (Exception ex) {
+            throw new RuntimeException("Failure while cleaning staging.", ex);
+        }
+    }
+
+    protected void logCleaningProgress(StagingPurgeContext context) {
+        if (context.getPurgedFileCount() > 0) {
+            log.info("Purged {} staging files, freed {} of disk space.",
+                    context.getPurgedFileCount(), FileUtils.byteCountToDisplaySize(context.getPurgedFileSize()));
+        }
+        if (context.getPurgedMemCount() > 0) {
+            log.info("Purged {} staging memory buffers, freed {}.",
+                    context.getPurgedMemCount(), FileUtils.byteCountToDisplaySize(context.getPurgedMemSize()));                    
+        }
+    }
+
+    protected void clean(Path path, long ttlInMs, StagingPurgeContext context) throws IOException {
+        DirectoryStream<Path> stream = Files.newDirectoryStream(path, STAGING_FILE_FILTER);
+        
+        if (context.shouldLogStatus()) {
+            logCleaningProgress(context);
+            context.setLastLogTime(System.currentTimeMillis());
+        }
+        
+        for (Path entry : stream) {
+            if (Files.isDirectory(entry)) {
+                clean(entry, ttlInMs, context);
+            } else {     
+                try {
+                    String stagingPath = StagedResource.toPath(directory, 
+                            new File((entry.getParent().toString() + "/" + entry.getFileName().toString())));
+                    IStagedResource resource = createStagedResource(stagingPath);  
+                    if (stagingPath != null) {
+                        if (shouldCleanPath(resource, ttlInMs, context)) {
+                            if (resource.getFile() != null) {
+                                context.incrementPurgedFileCount();
+                                context.addPurgedFileBytes(resource.getSize());
+                            } else {
+                                context.incrementPurgedMemoryCount();
+                                context.addPurgedMemoryBytes(resource.getSize());
+                            }
+                            
+                            cleanPath(resource, ttlInMs, context); // this comes after stat collection because 
+                                                                   // once the file is gone we loose visibility to size
+                        } else {
+                            resourcePathsCache.put(stagingPath,stagingPath);                            
+                        }
+                    }
+                } catch (IllegalStateException ex) {
+                    log.warn("Failure during refreshResourceList ", ex);
+                }                
+            }
+        }
+
+        stream.close();
+    } 
+    
+    protected boolean shouldCleanPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context) {
+        boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
+        return (resourceIsOld && resource.getState() == State.DONE && !resource.isInUse());
+    }
+
+    protected boolean cleanPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context) {
+        boolean success = resource.delete(); 
+        if (!success) {
+            log.warn("Failed to delete the '{}' staging resource", resource.getPath());
+        }
+        return success;
+    }
+
     /**
      * Create a handle that can be written to
      */
@@ -181,13 +186,13 @@ public class StagingManager implements IStagingManager {
         }
 
         this.inUse.put(filePath, resource);
-        this.resourcePaths.add(filePath);
+        this.resourcePathsCache.put(filePath, filePath);
         return resource;
     }
     
     protected IStagedResource createStagedResource(String filePath) {
-    	return new StagedResource(directory, filePath, this);    	
-    }
+        return new StagedResource(directory, filePath, this);       
+    }    
 
     protected String buildFilePath(Object... path) {
         StringBuilder buffer = new StringBuilder();
@@ -203,22 +208,22 @@ public class StagingManager implements IStagingManager {
         }
         return buffer.toString();
     }
-    
+
     public IStagedResource find(String path) {
         IStagedResource resource = inUse.get(path);
         if (resource == null) {
-            boolean foundResourcePath = resourcePaths.contains(path);
+            boolean foundResourcePath = resourcePathsCache.containsKey(path);
             if (!foundResourcePath && clusterEnabled) {
                 synchronized (this) {
                     IStagedResource staged = createStagedResource(path);
                     if (staged.exists() && staged.getState() == State.DONE) {
-                        resourcePaths.add(path);
+                        resourcePathsCache.put(path, path);
                         resource = staged;
                         foundResourcePath = true;
                     }
                 }
             } else if (foundResourcePath) {
-                resource = createStagedResource(path);         
+                resource = createStagedResource(path);           
             }
         }
         return resource;
@@ -227,21 +232,26 @@ public class StagingManager implements IStagingManager {
     public IStagedResource find(Object... path) {
         return find(buildFilePath(path));
     }
-    
+
+    public void removeResourcePath(String path) {
+        resourcePathsCache.remove(path);
+        inUse.remove(path);
+    }        
+
     @Override
     public StagingFileLock acquireFileLock(String serverInfo, Object... path) {
         String lockFilePath = String.format("%s/%s%s", directory, buildFilePath(path), LOCK_EXTENSION);
         log.debug("About to acquire lock at {}", lockFilePath);
-        
+
         StagingFileLock stagingFileLock = new StagingFileLock();
-        
+
         File lockFile = new File(lockFilePath);
         File containingDirectory = lockFile.getParentFile();
-        
+
         if (containingDirectory != null) {
             containingDirectory.mkdirs();
-        }
-        
+        }        
+
         boolean acquired = false;
         try {
             acquired = lockFile.createNewFile();
@@ -249,12 +259,12 @@ public class StagingManager implements IStagingManager {
                 FileUtils.write(lockFile, serverInfo);
             }
         } catch (IOException ex) { // Hitting this when file already exists.
-            log.warn("Failed to create lock file  (" + lockFilePath + ")", ex);
+            log.debug("Failed to create lock file  (" + lockFilePath + ")", ex);
         }
-        
+
         stagingFileLock.setAcquired(acquired);
         stagingFileLock.setLockFile(lockFile);
-        
+
         if (!acquired) {
             if (lockFile.exists()) {
                 try {                    
@@ -271,7 +281,19 @@ public class StagingManager implements IStagingManager {
             }
         }
 
-        
+
         return stagingFileLock;
     }
+
+    protected static final DirectoryStream.Filter<Path> STAGING_FILE_FILTER = new DirectoryStream.Filter<Path>() {
+        @Override
+        public boolean accept(Path entry)  {
+            boolean accept = Files.isDirectory(entry) || 
+                    entry.getFileName().toString().endsWith(".create") 
+                    || entry.getFileName().toString().endsWith(".done");
+            return accept;
+        }
+    };
+
+
 }
