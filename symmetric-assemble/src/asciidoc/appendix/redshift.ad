@@ -35,6 +35,8 @@ continually loaded from SymmetricDS, the "vacuum" command can be run after commi
 for the "batch commit" event, like this:
 
 [source, JAVA]
+----
 for (String tablename : context.getParsedTables().keySet()) {
     engine.getSqlTemplate().update("vacuum " + tablename, new Object[] { } );
 }
+----

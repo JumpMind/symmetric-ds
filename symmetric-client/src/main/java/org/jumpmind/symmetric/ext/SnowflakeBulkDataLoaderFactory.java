@@ -21,12 +21,10 @@ import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class SnowflakeBulkDataLoaderFactory implements IDataLoaderFactory {
     
-    private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
     private IParameterService parameterService;
 
     public SnowflakeBulkDataLoaderFactory(ISymmetricEngine engine) {
-        this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
     }
@@ -40,10 +38,8 @@ public class SnowflakeBulkDataLoaderFactory implements IDataLoaderFactory {
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
-        int maxRowsBeforeFlush = parameterService.getInt("snowflake.bulk.load.max.rows.before.flush", 100000);
-        
         return new SnowflakeBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                symmetricDialect.getTablePrefix(), stagingManager);
+                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService);
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

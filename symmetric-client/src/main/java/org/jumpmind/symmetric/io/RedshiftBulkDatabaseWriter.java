@@ -27,19 +27,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import org.jumpmind.db.model.Column;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
-import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.CsvUtils;
-import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.service.IParameterService;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -47,7 +44,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 
-public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
+public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
 
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
@@ -56,164 +53,74 @@ public class RedshiftBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected boolean needsExplicitIds;
     protected Table table = null;
 
-    protected int maxRowsBeforeFlush;
-    protected long maxBytesBeforeFlush;
-    private String bucket;
-    private String accessKey;
-    private String secretKey;
     private String appendToCopyCommand;
-    private String s3Endpoint;
-
+    
     public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
 			IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, int maxRowsBeforeFlush, long maxBytesBeforeFlush, String bucket,
-            String accessKey, String secretKey, String appendToCopyCommand, String s3Endpoint) {
-        super(symmetricPlatform, targetPlatform, tablePrefix);
-        this.stagingManager = stagingManager;
-        this.writerSettings.setDatabaseWriterFilters(filters);
-        this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
-        this.writerSettings.setCreateTableFailOnError(false);
-        this.maxRowsBeforeFlush = maxRowsBeforeFlush;
-        this.maxBytesBeforeFlush = maxBytesBeforeFlush;
-        this.bucket = bucket;
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.appendToCopyCommand = appendToCopyCommand;
-        this.s3Endpoint = s3Endpoint;
-    }
-
-    public boolean start(Table table) {
-        this.table = table;
-        if (super.start(table)) {
-            needsExplicitIds = false;
-            if (targetTable != null) {
-	            for (Column column : targetTable.getColumns()) {
-	                if (column.isAutoIncrement()) {
-	                    needsExplicitIds = true;
-	                    break;
-	                }
-	            }
-            }
-
-            if (stagedInputFile == null) {
-                createStagingFile();
-            }
-            return true;
-        } else {
-            return false;
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService) {
+        
+        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService);
+        
+        this.appendToCopyCommand = parameterService.getString("redshift.append.to.copy.command");
+        
+        if (parameterService.getInt("redshift.bulk.load.max.rows.before.flush") > 0) {
+            super.maxRowsBeforeFlush = parameterService.getInt("redshift.bulk.load.max.rows.before.flush");
+        }
+        
+        if (parameterService.getLong("redshift.bulk.load.max.bytes.before.flush") > 0) {
+            super.maxBytesBeforeFlush = parameterService.getLong("redshift.bulk.load.max.bytes.before.flush");
+        }
+        
+        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.bucket"))) {
+            super.s3Bucket = parameterService.getString("redshift.bulk.load.s3.bucket");
+        }
+        
+        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.access.key"))) {
+            super.s3AccessKey = parameterService.getString("redshift.bulk.load.s3.access.key");
+        }
+        
+        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.secret.key"))) {
+            super.s3SecretKey = parameterService.getString("redshift.bulk.load.s3.secret.key");
+        }
+        
+        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.endpoint"))) {
+            super.s3SecretKey = parameterService.getString("redshift.bulk.load.s3.endpoint");
         }
     }
 
     @Override
-    public void end(Table table) {
+    public void copyToCloudStorage() {
+        copyToS3CloudStorage();
+    }
+
+    @Override
+    public void loadToCloudDatabase() {
         try {
-            flush();
-            stagedInputFile.close();
-            stagedInputFile.delete();
+            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
+            Connection c = jdbcTransaction.getConnection();
+            String sql = "COPY " + getTargetTable().getFullyQualifiedTableName() +
+                    " (" + Table.getCommaDeliminatedColumns(table.getColumns()) +
+                    ") FROM 's3://" + s3Bucket + "/" + super.fileName + 
+                    "' CREDENTIALS 'aws_access_key_id=" + s3AccessKey + ";aws_secret_access_key=" + s3SecretKey + 
+                    "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "") + 
+                    (isNotBlank(appendToCopyCommand) ? (" " + appendToCopyCommand) : "");
+            Statement stmt = c.createStatement();
+
+            log.debug(sql);
+            stmt.execute(sql);
+            stmt.close();
+            getTargetTransaction().commit();
+        } catch (SQLException ex) {
+            throw getPlatform().getSqlTemplate().translate(ex);
         } finally {
-            super.end(table);
+            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
     }
 
-    public void bulkWrite(CsvData data) {
-        super.write(data);
-        
-        if (filterBefore(data)) {
-            try {
-                DataEventType dataEventType = data.getDataEventType();
-        
-                switch (dataEventType) {
-                    case INSERT:
-                        statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
-                        statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-                        try {
-                            String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                            String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
-                            stagedInputFile.getWriter(0).write(formattedData);
-                            loadedRows++;
-                            loadedBytes += formattedData.getBytes().length;
-                        } catch (Exception ex) {
-                            throw getPlatform().getSqlTemplate().translate(ex);
-                        } finally {
-                            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-                        }
-                        break;
-                    case UPDATE:
-                    case DELETE:
-                    default:
-                        flush();
-                        super.write(data);
-                        break;
-                }
-        
-                if (loadedRows >= maxRowsBeforeFlush || loadedBytes >= maxBytesBeforeFlush) {
-                    flush();
-                }
-                filterAfter(data);
-            } catch (RuntimeException e) {
-                if (filterError(data, e)) {
-                    throw e;
-                }
-            }
-        }
+    @Override
+    public void cleanUpCloudStorage() {
+        cleanUpS3Storage();
     }
 
-    protected void flush() {
-        if (loadedRows > 0) {
-            stagedInputFile.close();
-            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);  
-            AmazonS3 s3client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
-            if (isNotBlank(s3Endpoint)) {
-                s3client.setEndpoint(s3Endpoint);
-            }
-            String objectKey = stagedInputFile.getFile().getName();
-            try {
-                s3client.putObject(bucket, objectKey, stagedInputFile.getFile());
-            } catch (AmazonServiceException ase) {
-                log.error("Exception from AWS service: " + ase.getMessage());
-            } catch (AmazonClientException ace) {
-                log.error("Exception from AWS client: " + ace.getMessage());
-            }
-
-            try {
-                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
-                Connection c = jdbcTransaction.getConnection();
-                String sql = "COPY " + getTargetTable().getFullyQualifiedTableName() +
-                        " (" + Table.getCommaDeliminatedColumns(table.getColumns()) +
-                        ") FROM 's3://" + bucket + "/" + objectKey + 
-                        "' CREDENTIALS 'aws_access_key_id=" + accessKey + ";aws_secret_access_key=" + secretKey + 
-                        "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "") + 
-                        (isNotBlank(appendToCopyCommand) ? (" " + appendToCopyCommand) : "");
-                Statement stmt = c.createStatement();
-
-                log.debug(sql);
-                stmt.execute(sql);
-                stmt.close();
-                getTargetTransaction().commit();
-            } catch (SQLException ex) {
-                throw getPlatform().getSqlTemplate().translate(ex);
-            } finally {
-                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-            }
-
-            stagedInputFile.delete();
-            try {
-                s3client.deleteObject(bucket, objectKey);
-            } catch (AmazonServiceException ase) {
-                log.error("Exception from AWS service: " + ase.getMessage());
-            } catch (AmazonClientException ace) {
-                log.error("Exception from AWS client: " + ace.getMessage());
-            }
-
-            createStagingFile();
-            loadedRows = 0;
-            loadedBytes = 0;
-        }
-    }
-
-    protected void createStagingFile() {
-        stagedInputFile = stagingManager.create("bulkloaddir", table.getName() + getBatch().getBatchId() + ".csv");
-    }
 
 }

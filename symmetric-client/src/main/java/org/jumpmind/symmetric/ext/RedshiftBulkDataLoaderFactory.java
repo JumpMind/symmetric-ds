@@ -27,6 +27,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -60,32 +61,9 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
-        int maxRowsBeforeFlush = parameterService.getInt("redshift.bulk.load.max.rows.before.flush", 100000);
-        long maxBytesBeforeFlush = parameterService.getLong("redshift.bulk.load.max.bytes.before.flush", 1000000000);
-        String bucket = parameterService.getString("redshift.bulk.load.s3.bucket");
-        String accessKey = parameterService.getString("redshift.bulk.load.s3.access.key");
-        String secretKey = parameterService.getString("redshift.bulk.load.s3.secret.key");
-        String appendToCopyCommand = parameterService.getString("redshift.append.to.copy.command");
-        String s3Endpoint = parameterService.getString("redshift.bulk.load.s3.endpoint");
-
-        try {
-            Class<?> dbWriterClass = Class.forName("org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter");
-            Constructor<?> dbWriterConstructor = dbWriterClass.getConstructor(new Class<?>[] {
-                    IDatabasePlatform.class, IStagingManager.class, List.class,
-                    List.class, Integer.TYPE, Long.TYPE, String.class,
-                    String.class, String.class, String.class, String.class });
-            return (IDataWriter) dbWriterConstructor.newInstance(symmetricDialect.getPlatform(),
-                    symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers,
-                    maxRowsBeforeFlush, maxBytesBeforeFlush, bucket, accessKey, secretKey, appendToCopyCommand, s3Endpoint);
-
-        } catch (Exception e) {
-            log.warn("Failed to create the redshift database writer.  Check to see if all of the required jars have been added");
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException)e;
-            } else {
-                throw new RuntimeException(e);
-            }
-        }
+        return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
+                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService);
+        
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

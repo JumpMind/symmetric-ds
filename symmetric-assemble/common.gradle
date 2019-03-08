@@ -239,7 +239,9 @@ subprojects { subproject ->
         }
         provided "org.apache.kafka:kafka-clients:1.1.0"
         provided "org.apache.avro:avro:1.8.2"
-		provided "io.confluent:kafka-avro-serializer:3.2.1"
+		provided ("io.confluent:kafka-avro-serializer:3.2.1") {
+			exclude group: 'com.fasterxml.jackson.core'
+        	}
 		
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"
