@@ -87,6 +87,10 @@
     <category name="com.mangofactory.swagger.filters.AnnotatedParameterFilter">
         <priority value="ERROR" />
     </category>
+
+    <category name="org.eclipse.jetty.util.ssl.SslContextFactory">
+        <priority value="ERROR" />
+    </category>
     
     <!-- To print out SQL 
     <category name="org.jumpmind.db.sql">
