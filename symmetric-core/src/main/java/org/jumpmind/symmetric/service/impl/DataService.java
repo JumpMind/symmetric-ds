@@ -2254,7 +2254,7 @@ public class DataService extends AbstractService implements IDataService {
     @Override
     public String reloadTable(String nodeId, String catalogName, String schemaName,
             String tableName, String overrideInitialLoadSelect) {
-        return reloadTable(nodeId, catalogName, schemaName, tableName, null, null, false);
+        return reloadTable(nodeId, catalogName, schemaName, tableName, overrideInitialLoadSelect, null, false);
     }
 
     @Override
