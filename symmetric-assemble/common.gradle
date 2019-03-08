@@ -184,7 +184,7 @@ subprojects { subproject ->
         jt400Version = '9.7'
         javaMailVersion = '1.6.2'
         jdomVersion = '2.0.5'
-        junitVersion = '4.12'
+        junitVersion = '4.11'
         log4jVersion = '1.2.17'
         slf4jVersion = '1.7.26'
         mockitoVersion = '1.9.5'
