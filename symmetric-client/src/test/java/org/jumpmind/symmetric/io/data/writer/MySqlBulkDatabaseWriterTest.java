@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
 
+@SuppressWarnings("deprecation")
 public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
 
     protected static IStagingManager stagingManager;
@@ -56,6 +57,11 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
         return platform != null && platform instanceof MySqlDatabasePlatform;
+    }
+
+    @Override
+    public void testDuplicateRow() {
+        //  mysql already handles duplidates. no need to test the special functionality we added to handle dupes
     }
 
     protected AbstractDatabaseWriter create(){
