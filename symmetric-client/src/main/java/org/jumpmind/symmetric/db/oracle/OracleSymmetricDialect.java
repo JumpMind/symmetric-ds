@@ -390,7 +390,8 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         if (column.getJdbcTypeName().equalsIgnoreCase("LONG")) {
             return isFirstPass ? "1=1" : "1=0";
         } else if (isFirstPass) {
-            return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000";
+            return "(t." + quote + column.getName() + quote + " is null or " +
+                    "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000)";
         }
         return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";
     }
