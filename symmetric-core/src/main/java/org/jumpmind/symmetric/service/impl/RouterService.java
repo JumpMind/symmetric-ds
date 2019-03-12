@@ -749,6 +749,14 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             return 0;
         } catch (ProtocolException ex) {
+            List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
+            if (context != null) {
+                context.rollback();
+            }
+            for (OutgoingBatch batch : batches) {
+                batch.setStatus(Status.OK);
+                engine.getOutgoingBatchService().updateOutgoingBatch(batch);
+            }
             return -1;
         } catch (Throwable ex) {
             log.error(

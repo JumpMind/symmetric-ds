@@ -343,7 +343,8 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
         String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
         if (isFirstPass) {
-            return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000";
+            return "(t." + quote + column.getName() + quote + " is null or " +
+                    "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000)";
         }
         return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";
     }

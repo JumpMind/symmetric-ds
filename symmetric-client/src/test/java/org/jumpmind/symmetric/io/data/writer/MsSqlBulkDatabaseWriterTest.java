@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
 
+@SuppressWarnings("deprecation")
 public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
 
     protected static IStagingManager stagingManager;
