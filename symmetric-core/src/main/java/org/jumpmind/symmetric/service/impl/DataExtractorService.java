@@ -1051,8 +1051,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             if (!configurationService.getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob()) {
                                 log.warn(e.getMessage());
                                 log.info("Re-attempting extraction with contains_big_lobs enabled for channel " + currentBatch.getChannelId());
+                                extractInfo.setTotalDataCount(currentBatch.getDataRowCount());
                                 currentBatch.resetStats();
+                                IStagedResource resource = getStagedResource(currentBatch);
+                                if (resource != null) {
+                                    resource.delete();
+                                }
                                 dataReader = buildExtractDataReader(sourceNode, targetNode, currentBatch, extractInfo, true);
+                                writer = wrapWithTransformWriter(sourceNode, targetNode, extractInfo, dataWriter, useStagingDataWriter);
                                 new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
                             } else {
                                 throw e;
