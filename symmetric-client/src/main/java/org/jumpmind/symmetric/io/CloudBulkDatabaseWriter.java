@@ -15,6 +15,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ContextConstants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -26,9 +27,14 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.OperationContext;
 import com.microsoft.azure.storage.StorageException;
@@ -37,7 +43,6 @@ import com.microsoft.azure.storage.blob.BlobRequestOptions;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
-
 
 
 public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
@@ -61,6 +66,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
     protected String s3SecretKey;
     protected String s3Endpoint;
     protected String s3ObjectKey;
+    protected String s3Region;
     
     protected String azureAccountName;
     protected String azureAccountKey;
@@ -83,34 +89,50 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
         this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
         this.writerSettings.setCreateTableFailOnError(false);
         
-        this.maxRowsBeforeFlush = parameterService.getInt("cloud.bulk.load.max.rows.before.flush", 100000);
-        this.maxBytesBeforeFlush = parameterService.getLong("cloud.bulk.load.max.bytes.before.flush", 1000000000);
+        this.maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, -1);
+        this.maxBytesBeforeFlush = parameterService.getLong(ParameterConstants.CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, -1);
         
-        this.s3Bucket = parameterService.getString("cloud.bulk.load.s3.bucket");
-        this.s3AccessKey = parameterService.getString("cloud.bulk.load.s3.access.key");
-        this.s3SecretKey = parameterService.getString("cloud.bulk.load.s3.secret.key");
-        this.s3Endpoint = parameterService.getString("cloud.bulk.load.s3.endpoint");
+        this.s3Bucket = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_BUCKET);
+        this.s3AccessKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ACCESS_KEY);
+        this.s3SecretKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
+        this.s3Endpoint = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ENDPOINT);
+        this.s3Region = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_REGION, Regions.US_EAST_1.getName());
         
-        this.azureAccountName = parameterService.getString("cloud.bulk.load.azure.account.name");
-        this.azureAccountKey = parameterService.getString("cloud.bulk.load.azure.account.key");
-        this.azureBlobContainer = parameterService.getString("cloud.bulk.load.azure.blob.container", "symmetricds");
-        this.azureSasToken = parameterService.getString("cloud.bulk.load.azure.sas.token");
+        this.azureAccountName = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_NAME);
+        this.azureAccountKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_KEY);
+        this.azureBlobContainer = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER, "symmetricds");
+        this.azureSasToken = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
     }
     
     public void copyToS3CloudStorage() {
         stagedInputFile.close();
-        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);  
-        s3client = new AmazonS3Client(new BasicAWSCredentials(s3AccessKey, s3SecretKey));
+        statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS); 
+        
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(s3AccessKey, s3SecretKey);
+ 
+        s3client = AmazonS3ClientBuilder.standard()
+                                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                                .withRegion(s3Region)
+                                .build();
+        
+        TransferManager tm = TransferManagerBuilder.standard()
+                .withS3Client(s3client)
+                .build();
+        
+        
         if (isNotBlank(s3Endpoint)) {
             s3client.setEndpoint(s3Endpoint);
         }
         s3ObjectKey = stagedInputFile.getFile().getName();
         try {
-            s3client.putObject(s3Bucket, s3ObjectKey, stagedInputFile.getFile());
+            Upload upload = tm.upload(s3Bucket, s3ObjectKey, stagedInputFile.getFile());
+            upload.waitForCompletion();
         } catch (AmazonServiceException ase) {
             log.error("Exception from AWS service: " + ase.getMessage());
         } catch (AmazonClientException ace) {
             log.error("Exception from AWS client: " + ace.getMessage());
+        } catch (InterruptedException e) {
+            log.info("Upload to AWS interrupted", e);
         }
     }
     
@@ -137,9 +159,9 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                 s3client.deleteObject(s3Bucket, s3ObjectKey);
             }
         } catch (AmazonServiceException ase) {
-            log.warn("Exception from AWS service: " + ase.getMessage());
+            log.info("Exception from AWS service: " + ase.getMessage());
         } catch (AmazonClientException ace) {
-            log.warn("Exception from AWS client: " + ace.getMessage());
+            log.info("Exception from AWS client: " + ace.getMessage());
         }
     }
     
@@ -232,8 +254,6 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                         try {
                             String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
-                            //String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_DOUBLED, "\\N");
-                            
                             
                             if (needsBinaryConversion) {
                                 Column[] columns = targetTable.getColumns();
@@ -321,13 +341,14 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                 cleanUpCloudStorage();
                 
                 createStagingFile();
-                loadedRows = 0;
-                loadedBytes = 0;
+
             } catch (Throwable ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
                 this.stagedInputFile.delete();
+                loadedRows = 0;
+                loadedBytes = 0;
             }
         }
     }

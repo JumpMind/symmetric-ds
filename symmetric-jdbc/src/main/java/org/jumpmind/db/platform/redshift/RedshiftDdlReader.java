@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,12 +44,30 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 
 public class RedshiftDdlReader extends AbstractJdbcDdlReader {
-
+    protected static Map<String,String> columnNames;
+    static {
+        columnNames = mapNames();
+    }
+    
     public RedshiftDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
+    }
+    
+    protected static Map<String,String> mapNames(){
+        Map<String,String> values = new HashMap<String,String>();
+        values.put("IS_NULLABLE", "NULLABLE");
+        return values;
+    }
+    @Override
+    protected String getName(String defaultName){
+        String name = columnNames.get(defaultName);
+        if (name == null) {
+            name = super.getName(defaultName);
+        }
+        return name;
     }
     
     @Override
