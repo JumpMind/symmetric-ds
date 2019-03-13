@@ -195,7 +195,7 @@ subprojects { subproject ->
         springVersion = '4.3.22.RELEASE'
         jtdsVersion = '1.3.1'
         voltDbVersion = '8.4.1'
-        bouncyCastleVersion = '1.61'
+        bouncyCastleVersion = '1.59'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.2.0'
         jettyVersion = project.property('jetty.version')
