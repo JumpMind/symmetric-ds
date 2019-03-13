@@ -1050,7 +1050,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         } catch (ProtocolException e) {
                             if (!configurationService.getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob()) {
                                 log.warn(e.getMessage());
-                                log.info("Re-attempting extraction with contains_big_lobs enabled for channel " + currentBatch.getChannelId());
+                                log.info("Re-attempting extraction for batch {} with contains_big_lobs enabled for channel {}",
+                                        currentBatch.getBatchId(), currentBatch.getChannelId());
                                 extractInfo.setTotalDataCount(currentBatch.getDataRowCount());
                                 currentBatch.resetStats();
                                 IStagedResource resource = getStagedResource(currentBatch);

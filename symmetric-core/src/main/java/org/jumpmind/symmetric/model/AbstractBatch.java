@@ -177,6 +177,16 @@ public class AbstractBatch implements Serializable {
         setLoadMillis(0);
     }
 
+    public void resetRouterStats() {
+        dataRowCount = 0;
+        dataInsertRowCount = 0;
+        dataUpdateRowCount = 0;
+        dataDeleteRowCount = 0;
+        otherRowCount = 0;
+        reloadRowCount = 0;
+        tableCounts.clear();
+    }
+    
     public void revertStatsOnError() {
         if (this.oldDataRowCount > 0) {
             this.extractMillis = this.oldExtractMillis;

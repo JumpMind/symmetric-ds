@@ -490,8 +490,8 @@ public class RouterService extends AbstractService implements IRouterService {
      * thread pool here and waiting for all channels to be processed. The other
      * reason is to reduce the number of connections we are required to have.
      */
-    protected int routeDataForEachChannel() {
-        int dataCount = 0;
+    protected long routeDataForEachChannel() {
+        long dataCount = 0;
         Node sourceNode = engine.getNodeService().findIdentity();
         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                 new ProcessInfoKey(sourceNode.getNodeId(), null, ProcessType.ROUTER_JOB));
@@ -506,13 +506,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
-                    int count = routeDataForChannel(processInfo, nodeChannel, sourceNode, false);
-                    if (count >= 0) {
-                        dataCount += count;
-                    } else {
-                        log.info("Re-attempting routing with contains_big_lobs enabled for channel " + nodeChannel.getChannelId());
-                        dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, true);
-                    }
+                    dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, false, null);
                 } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled()) {
@@ -707,10 +701,11 @@ public class RouterService extends AbstractService implements IRouterService {
         return onlyDefaultRoutersAssigned;
     }
 
-    protected int routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode, boolean isOverrideContainsBigLob) {
+    protected long routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode, boolean isOverrideContainsBigLob,
+            Map<String, OutgoingBatch> overrideBatchesByNodes) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
-        int dataCount = -1;
+        long dataCount = -1;
         try {
             List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouters(false);
             boolean producesCommonBatches = producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(),
@@ -724,6 +719,10 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
             context.setOverrideContainsBigLob(isOverrideContainsBigLob);
+            
+            if (overrideBatchesByNodes != null) {
+                context.getBatchesByNodes().putAll(overrideBatchesByNodes);
+            }
 
             dataCount = selectDataAndRoute(processInfo, context);
             return dataCount;
@@ -732,13 +731,13 @@ public class RouterService extends AbstractService implements IRouterService {
             if (context != null) {
                 context.rollback();
             }
-            return 0;
+            return context.getCommittedDataEventCount();
         } catch (InterruptedException ex) {
             log.warn("The routing process was interrupted.  Rolling back changes");
             if (context != null) {
                 context.rollback();
             }
-            return 0;
+            return context.getCommittedDataEventCount();
         } catch (SyntaxParsingException ex) {
             log.error(
                     String.format(
@@ -747,17 +746,30 @@ public class RouterService extends AbstractService implements IRouterService {
             if (context != null) {
                 context.rollback();
             }
-            return 0;
+            return context.getCommittedDataEventCount();
         } catch (ProtocolException ex) {
-            List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
+            Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>(context.getBatchesByNodes());
             if (context != null) {
                 context.rollback();
             }
-            for (OutgoingBatch batch : batches) {
-                batch.setStatus(Status.OK);
-                engine.getOutgoingBatchService().updateOutgoingBatch(batch);
+            if (isOverrideContainsBigLob) {
+                log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
+                return context.getCommittedDataEventCount();
+            } else {
+                long batchId = -1;
+                for (OutgoingBatch batch : batchesByNodes.values()) {
+                    batch.resetRouterStats();
+                    batchId = batch.getBatchId();
+                }
+                log.info("Re-attempting routing for batch {} with contains_big_lobs enabled for channel {}", 
+                        batchId, nodeChannel.getChannelId());
+                dataCount = 0;
+                gapDetector.addDataIds(context.getDataIds());
+                gapDetector.afterRouting();
+                gapDetector.beforeRouting();
+                long dataCountWithBigLob = routeDataForChannel(processInfo, nodeChannel, sourceNode, true, batchesByNodes);
+                return context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
-            return -1;
         } catch (Throwable ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -765,7 +777,7 @@ public class RouterService extends AbstractService implements IRouterService {
             if (context != null) {
                 context.rollback();
             }
-            return 0;
+            return context.getCommittedDataEventCount();
         } finally {
             try {
                 if (dataCount > 0) {
@@ -795,7 +807,9 @@ public class RouterService extends AbstractService implements IRouterService {
                             engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
                     }
-                } else {
+                } else if (dataCount == -1) {
+                    // rolled back as exception, but let gap detector know about what was committed before halting
+                    gapDetector.addDataIds(context.getDataIds());
                     gapDetector.setIsAllDataRead(false);
                 }
             } catch (Exception e) {
@@ -913,14 +927,14 @@ public class RouterService extends AbstractService implements IRouterService {
      * @param context
      *            The current context of the routing process
      */
-    protected int selectDataAndRoute(ProcessInfo processInfo, ChannelRouterContext context) throws InterruptedException {
+    protected long selectDataAndRoute(ProcessInfo processInfo, ChannelRouterContext context) throws InterruptedException {
         IDataToRouteReader reader = startReading(context);
         Data data = null;
         Data nextData = null;
-        int totalDataCount = 0;
-        int totalDataEventCount = 0;
-        int statsDataCount = 0;
-        int statsDataEventCount = 0;
+        long totalDataCount = 0;
+        long totalDataEventCount = 0;
+        long statsDataCount = 0;
+        long statsDataEventCount = 0;
         final int maxNumberOfEventsBeforeFlush = parameterService
                 .getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
         try {

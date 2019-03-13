@@ -77,6 +77,9 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private Set<String> transactions = new HashSet<String>();
     private long lastDataId = -1;
     private List<Long> dataIds = new ArrayList<Long>();
+    private List<Long> uncommittedDataIds = new ArrayList<Long>();
+    private long uncommittedDataEventCount = 0;
+    private long committedDataEventCount = 0;
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
             throws SQLException {
@@ -96,16 +99,21 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void addDataEvent(long dataId, long batchId, String routerId) {
         dataEventsToSend.add(new DataEvent(dataId, batchId, routerId));
         if (dataId != lastDataId) {
-            dataIds.add(dataId);
+            uncommittedDataIds.add(dataId);
             lastDataId = dataId;
         }
+        uncommittedDataEventCount++;
     }
 
     public void addData(long dataId) {
         if (dataId != lastDataId) {
-            dataIds.add(dataId);
+            uncommittedDataIds.add(dataId);
             lastDataId = dataId;
         }
+    }
+
+    public long getCommittedDataEventCount() {
+        return this.committedDataEventCount;
     }
 
     public Map<String, OutgoingBatch> getBatchesByNodes() {
@@ -119,6 +127,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public void commit() {
         try {
             sqlTransaction.commit();
+            dataIds.addAll(uncommittedDataIds);
+            committedDataEventCount += uncommittedDataEventCount;
         } finally {
             clearState();
         }
@@ -131,6 +141,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
         this.batchesByNodes.clear();
         this.availableNodes.clear();
         this.dataEventsToSend.clear();
+        this.uncommittedDataIds.clear();
+        this.uncommittedDataEventCount = 0;
     }
 
     public void rollback() {
