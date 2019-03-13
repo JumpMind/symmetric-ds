@@ -474,10 +474,12 @@ final public class ParameterConstants {
     public final static String SNOWFLAKE_INTERNAL_STAGE_NAME = "snowflake.internal.stage.name";
     
     public final static String CLOUD_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "cloud.bulk.load.max.rows.before.flush";
+    public final static String CLOUD_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH = "cloud.bulk.load.max.bytes.before.flush";
     public final static String CLOUD_BULK_LOAD_S3_BUCKET = "cloud.bulk.load.s3.bucket";
     public final static String CLOUD_BULK_LOAD_S3_ACCESS_KEY = "cloud.bulk.load.s3.access.key";
     public final static String CLOUD_BULK_LOAD_S3_SECRET_KEY = "cloud.bulk.load.s3.secret.key";
     public final static String CLOUD_BULK_LOAD_S3_ENDPOINT = "cloud.bulk.load.s3.endpoint";
+    public final static String CLOUD_BULK_LOAD_S3_REGION = "cloud.bulk.load.s3.region";
     public final static String CLOUD_BULK_LOAD_AZURE_ACCOUNT_NAME = "cloud.bulk.load.azure.account.name";
     public final static String CLOUD_BULK_LOAD_AZURE_ACCOUNT_KEY = "cloud.bulk.load.azure.account.key";
     public final static String CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER = "cloud.bulk.load.azure.blob.container";

@@ -986,7 +986,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             // a scale specification)
             column.setScale(decimalDigits);
         }
-        column.setRequired("NO".equalsIgnoreCase(((String) values.get(getName("IS_NULLABLE"))).trim()));
+        if (values.get(getName("IS_NULLABLE")) != null) {
+            column.setRequired("NO".equalsIgnoreCase(((String) values.get(getName("IS_NULLABLE"))).trim()));
+        }
         column.setDescription((String) values.get(getName("REMARKS")));
 
         return column;
@@ -1294,6 +1296,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             boolean foundMetaDataDescriptor = false;
             String columnName = meta.getColumnName(i);
             for (MetaDataColumnDescriptor metaDataColumnDescriptor : columnDescriptors) {
+                
                 if (metaDataColumnDescriptor.getName().equals(columnName)) {
                     foundMetaDataDescriptor = true;
                     values.put(metaDataColumnDescriptor.getName(),

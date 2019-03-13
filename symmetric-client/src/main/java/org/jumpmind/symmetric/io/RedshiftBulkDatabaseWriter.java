@@ -38,18 +38,10 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.IParameterService;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-
 public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
 
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
-    protected int loadedRows = 0;
-    protected long loadedBytes = 0;
     protected boolean needsExplicitIds;
     protected Table table = null;
 
@@ -99,9 +91,11 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
             Connection c = jdbcTransaction.getConnection();
             String sql = "COPY " + getTargetTable().getFullyQualifiedTableName() +
-                    " (" + Table.getCommaDeliminatedColumns(table.getColumns()) +
+                    " (" + Table.getCommaDeliminatedColumns(targetTable.getColumns()) +
                     ") FROM 's3://" + s3Bucket + "/" + super.fileName + 
+                    "' REGION '" + s3Region +
                     "' CREDENTIALS 'aws_access_key_id=" + s3AccessKey + ";aws_secret_access_key=" + s3SecretKey + 
+                    "' DELIMITER '" + fieldTerminator + 
                     "' CSV DATEFORMAT 'YYYY-MM-DD HH:MI:SS' " + (needsExplicitIds ? "EXPLICIT_IDS" : "") + 
                     (isNotBlank(appendToCopyCommand) ? (" " + appendToCopyCommand) : "");
             Statement stmt = c.createStatement();
