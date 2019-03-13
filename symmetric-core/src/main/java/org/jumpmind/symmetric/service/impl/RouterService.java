@@ -761,7 +761,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch.resetRouterStats();
                     batchId = batch.getBatchId();
                 }
-                log.info("Re-attempting routing for batch {} with contains_big_lobs enabled for channel {}", 
+                log.info("Re-attempting routing for batch {} with contains_big_lobs temporarily enabled for channel {}", 
                         batchId, nodeChannel.getChannelId());
                 dataCount = 0;
                 gapDetector.addDataIds(context.getDataIds());
