@@ -13,7 +13,7 @@ ifndef::pro[]
 = SymmetricDS @appMajorVersion@ User Guide
 endif::pro[]
 
-Copyright (C) 2007-2018 JumpMind, Inc
+Copyright (C) 2007-@buildYear@ JumpMind, Inc
 
 Version @appVersion@
 

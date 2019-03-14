@@ -116,6 +116,7 @@ task generateDocs(type: Copy) {
             'appVersion': version,
             'appMajorVersion': version.substring(0, version.lastIndexOf(".")),
             'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+            'buildYear': new java.text.SimpleDateFormat('yyyy').format(new java.util.Date()),
             'scmVersion' : scmVersion
         ])
     }
@@ -126,6 +127,7 @@ task generateDocs(type: Copy) {
             'appVersion': version,
             'appMajorVersion': version.substring(0, version.lastIndexOf(".")),
             'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+            'buildYear': new java.text.SimpleDateFormat('yyyy').format(new java.util.Date()),
             'scmVersion' : scmVersion
         ])
     }
@@ -136,6 +138,7 @@ task generateDocs(type: Copy) {
             'appVersion': version,
             'appMajorVersion': version.substring(0, version.lastIndexOf(".")),
             'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+            'buildYear': new java.text.SimpleDateFormat('yyyy').format(new java.util.Date()),
             'scmVersion' : scmVersion
         ])
         

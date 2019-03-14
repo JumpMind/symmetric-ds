@@ -17,7 +17,7 @@ endif::pro[]
 
 
 
-Copyright (C) 2007-2017 JumpMind, Inc
+Copyright (C) 2007-@buildYear@ JumpMind, Inc
 
 Version @appVersion@
 
