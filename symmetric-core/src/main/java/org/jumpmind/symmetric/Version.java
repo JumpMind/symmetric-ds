@@ -79,5 +79,9 @@ final public class Version {
     public static long getBuildTime() {
         return version.getBuildTime();
     }
+    
+    public static String getBuildYear() {
+        return version.getBuildYear();
+    }
 
 }

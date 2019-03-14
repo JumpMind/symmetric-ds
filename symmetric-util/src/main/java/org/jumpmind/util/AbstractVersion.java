@@ -47,6 +47,8 @@ abstract public class AbstractVersion {
     private String version = null;
     
     private long buildTime = -1;
+    
+    private String buildYear;
 
     abstract protected String getArtifactName();
 
@@ -99,6 +101,18 @@ abstract public class AbstractVersion {
             }
         }
         return buildTime;
+    }
+
+    public String getBuildYear() {
+        if (buildYear == null) {
+            Attributes attributes = findManifestAttributes();            
+            try {
+                buildYear = attributes.getValue("Build-Time").substring(0, 4);
+            } catch (Exception e) {
+                buildYear = "";
+            }
+        }
+        return buildYear;
     }
 
     public String versionWithUnderscores() {
