@@ -200,7 +200,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private INodeService nodeService;
 
-    private IStatisticManager statisticManager;
+    IStatisticManager statisticManager;
 
     private IStagingManager stagingManager;
 
@@ -1393,13 +1393,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     }
                                     
                                     targetResource.setState(State.DONE);
-
                                     isRetry = true;
-                                    
-                                 if (currentBatch.getSentCount() == 1) {
-	                                	statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
-	                            		statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
-                                 }
+                                    statisticManager.incrementDataSent(currentBatch.getChannelId(), currentBatch.getDataRowCount());
+                                    statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), extractedBatch.getFile().length());
                                 } catch (Exception e) {   
                                     FileUtils.deleteQuietly(targetResource.getFile());
                                     throw new RuntimeException(e);
@@ -1422,7 +1418,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     new DataProcessor(dataReader, new ProcessInfoDataWriter(dataWriter, processInfo), "send from stage")
                             .process(ctx);
                     if (dataReader.getStatistics().size() > 0) {
-                        if (currentBatch.getSentCount() == 1) {
+                        if (!isRetry) {
                             Statistics stats = dataReader.getStatistics().values().iterator().next();
                             statisticManager.incrementDataSent(currentBatch.getChannelId(),
                                     stats.get(DataReaderStatistics.READ_RECORD_COUNT));
