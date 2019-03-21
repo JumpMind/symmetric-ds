@@ -154,11 +154,11 @@ public class StatisticService extends AbstractService implements IStatisticServi
         public ChannelStats mapRow(Row rs) {
             ChannelStats stats = new ChannelStats();
             stats.setNodeId(rs.getString("node_id"));
-            try {
+            if (rs.containsKey("host_name")) {
                 stats.setHostName(rs.getString("host_name"));
-                stats.setChannelId(rs.getString("channel_id"));
             }
-            catch (Exception e) {
+            if (rs.containsKey("channel_id")) {
+                stats.setChannelId(rs.getString("channel_id"));
             }
             stats.setStartTime(truncateToMinutes(rs.getDateTime("start_time")));
             stats.setEndTime(truncateToMinutes(rs.getDateTime("end_time")));
