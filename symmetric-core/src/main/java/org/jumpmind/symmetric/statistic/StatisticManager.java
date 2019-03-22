@@ -606,7 +606,14 @@ public class StatisticManager implements IStatisticManager {
 
     public Map<String, ChannelStats> getWorkingChannelStats() {
         if (channelStats != null) {
-            return new HashMap<String, ChannelStats>(channelStats);
+            HashMap<String, ChannelStats> stats = new HashMap<String, ChannelStats>();
+            for (ChannelStats stat : channelStats.values()) {
+                ChannelStats newStat = new ChannelStats(stat.getNodeId(), stat.getHostName(), stat.getStartTime(),
+                        stat.getEndTime(), stat.getChannelId());
+                newStat.add(stat);
+                stats.put(newStat.getChannelId(), newStat);
+            }
+            return stats;
         } else {
             return new HashMap<String, ChannelStats>();
         }
