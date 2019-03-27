@@ -74,11 +74,11 @@ public class ClusterService extends AbstractService implements IClusterService {
             PURGE_STATISTICS, SYNCTRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
             FILE_SYNC_PUSH, FILE_SYNC_TRACKER, FILE_SYNC_SCAN, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL, MONITOR,
             SYNC_CONFIG };
-    
+
     private static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
 
     private String serverId = null;
-    
+
     private Map<String, Lock> lockCache;
 
     public ClusterService(IParameterService parameterService, ISymmetricDialect dialect) {
@@ -91,7 +91,13 @@ public class ClusterService extends AbstractService implements IClusterService {
     public void init() {
         if (isClusteringEnabled()) {
             sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+            refreshLockEntries();
+        }
+    }
 
+    @Override
+    public void refreshLockEntries() {
+        if (isClusteringEnabled()) {
             Map<String, Lock> allLocks = findLocks();
 
             for (String action : actions) {
@@ -99,15 +105,15 @@ public class ClusterService extends AbstractService implements IClusterService {
                     initLockTable(action, TYPE_CLUSTER);
                 }
             }
-            
+
             for (String action : sharedActions) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_SHARED);
                 }
-            }
+            }        
         }
     }
-    
+
     @Override
     public synchronized void persistToTableForSnapshot() {
         sqlTemplate.update(getSql("deleteSql"));
@@ -116,7 +122,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             insertLock(lock);
         }
     }
-    
+
     protected void insertLock(Lock lock) {
         sqlTemplate.update(getSql("insertCompleteLockSql"), lock.getLockAction(), lock.getLockType(), lock.getLockingServerId(), lock.getLockTime(), lock.getSharedCount(), lock.isSharedEnable() ? 1 : 0, lock.getLastLockTime(), lock.getLastLockingServerId());
     }
@@ -125,7 +131,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     protected void initLockTable(final String action) {
         initLockTable(action, TYPE_CLUSTER);
     }
-    
+
     protected void initLockTable(final String action, final String lockType) {
         try {
             sqlTemplate.update(getSql("insertLockSql"), new Object[] { action, lockType });
@@ -346,7 +352,7 @@ public class ClusterService extends AbstractService implements IClusterService {
                     serverId = "unknown";
                 }
             }
-            
+
             log.info("This node picked a server id of {}", serverId);
         }
         return serverId;
