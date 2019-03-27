@@ -31,7 +31,9 @@ import org.jumpmind.symmetric.model.Lock;
  */
 public interface IClusterService {
 
-    public void init();    
+    public void init();
+    
+    public void refreshLockEntries();    
     
     public boolean lock(String action);
     
