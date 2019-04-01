@@ -171,7 +171,7 @@ public class ParameterService extends AbstractParameterService implements IParam
 
     public boolean isRegistrationServer() {
         return StringUtils.isBlank(getRegistrationUrl())
-                || getRegistrationUrl().equals(getSyncUrl());
+                || getRegistrationUrl().equalsIgnoreCase(getSyncUrl());
     }
 
 
