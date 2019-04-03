@@ -188,9 +188,11 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             } else if ( typeName.toUpperCase().equals("SQL_VARIANT")) {
                 return Types.BINARY;
             } else if (typeName.equalsIgnoreCase("DATETIMEOFFSET")) {
-                return MAPPED_TIMESTAMPTZ;            
+                return MAPPED_TIMESTAMPTZ;
             } else if (typeName.equalsIgnoreCase("datetime2")) {
                 return Types.TIMESTAMP;
+            } else if (typeName.equalsIgnoreCase("DATE")) {
+                return Types.DATE;
             }
         }
         return super.mapUnknownJdbcTypeForColumn(values); 
