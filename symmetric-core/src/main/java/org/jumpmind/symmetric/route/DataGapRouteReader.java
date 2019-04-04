@@ -274,12 +274,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 if (isEachGapQueried) {
                     okToProcess = true;
                 } else {
-                    for (DataGap gap : dataGaps) {
-                        if (dataId >= gap.getStartId() && dataId <= gap.getEndId()) {
-                            okToProcess = true;
-                            break;
-                        }
-                    }
+                    okToProcess = isInDataGap(dataId);
                 }
             } else {
                 while (!okToProcess && currentGap != null && dataId >= currentGap.getStartId()) {
@@ -298,6 +293,25 @@ public class DataGapRouteReader implements IDataToRouteReader {
         }
         return okToProcess;
     }
+    
+    protected boolean isInDataGap(long dataId) {
+        // binary search algorithm
+        int start = 0;
+        int end = dataGaps.size() - 1;
+        while (start <= end) {
+            int mid = (start + end) / 2;
+            DataGap midGap = dataGaps.get(mid);
+            if (dataId >= midGap.getStartId() && dataId <= midGap.getEndId()) {
+                return true;
+            }
+            if (dataId< midGap.getStartId()) {
+                end = mid - 1;
+            } else {
+                start = mid + 1;
+            }
+        }
+        return false;
+    }    
 
     public Data take() throws InterruptedException {
         Data data = null;
