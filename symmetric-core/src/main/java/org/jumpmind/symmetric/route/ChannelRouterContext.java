@@ -74,7 +74,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long maxPeekAheadQueueSize;
     private long dataRereadCount;
     private List<DataGap> dataGaps = new ArrayList<DataGap>();
-    private Set<String> transactions = new HashSet<String>();
     private long lastDataId = -1;
     private List<Long> dataIds = new ArrayList<Long>();
     private List<Long> uncommittedDataIds = new ArrayList<Long>();
@@ -173,7 +172,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         if (log.isDebugEnabled()) {
             log.debug(channel.getChannelId() + ", startDataId=" + startDataId + ", endDataId=" + endDataId + 
                     ", dataReadCount=" + dataReadCount + ", peekAheadFillCount=" + peekAheadFillCount +
-                    ", transactions=" + transactions.toString() + ", dataGaps=" + dataGaps.toString()); 
+                    ", dataGaps=" + dataGaps.toString()); 
         }
     }
 
@@ -283,16 +282,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public void setDataGaps(List<DataGap> dataGaps) {
         this.dataGaps = dataGaps;
-    }
-
-    public Set<String> getTransactions() {
-        return transactions;
-    }
-
-    public void addTransaction(String transactionId) {
-        if (isNotBlank(transactionId)) {
-            this.transactions.add(transactionId);
-        }
     }
     
     public void setOnlyDefaultRoutersAssigned(boolean onlyDefaultRoutersAssigned) {
