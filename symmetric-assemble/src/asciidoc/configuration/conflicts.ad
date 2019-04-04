@@ -10,16 +10,16 @@ endif::pro[]
 
 .Conflicts are broken into 3 key components in SymmetricDS:
 
-. Detection
-. Resolution
-. Ping Back
+. Detection - How to detect a conflict when loading data at the target.
+. Resolution - When a row is in conflict, what to do with it when loading at the target.
+. Ping Back - What data to capture at target during resolution, if any, that will be sent back to source.
 
 
 ifndef::pro[]
 Conflict detection and resolution strategies are configured in the <<CONFLICT>> table. They are configured at minimum for a specific 
 NODE_GROUP_LINK . The configuration can also be specific to a CHANNEL and/or table.
 
-Conflict detection is configured in the detect_type and detect_expression columns of CONFLICT . The value for detect_expression 
+Conflict detection is configured in the detect_type and detect_expression columns of <<CONFLICT>>. The value for detect_expression 
 depends on the detect_type.
 endif::pro[]
 
@@ -53,14 +53,17 @@ then no conflict is detected during an update or a delete. If a row already exis
 a conflict has occurred. If the target timestamp column is not equal to the old source timestamp column, then a conflict has been detected. 
 If a row already exists during an insert then a conflict has been detected.
 
+_You must specify the name of the column containing a timestamp to use in the detect_expression._
+
 |USE_VERSION|Indicates that the primary key plus a version column (as configured in detect_expression ) will indicate whether a conflict 
 has occurred. If the target version column is not equal to the old source version column, then a conflict has been detected. If a row already 
 exists during an insert then a conflict has been detected.
 
+_You must specify the name of the column containing a version number to use in the detect_expression._
+
 |===
 
-Resolution Type:: The choice of how to resolve a detected conflict is configured via the resolve type. Depending on the setting, 
-two additional boolean settings may also be configured, namely "resolve row only" and "resolve changes only".
+Resolution Type:: The choice of how to resolve a detected conflict is configured via the resolve type.
 
 .Resolution Types
 [cols=".^2,8"] 
@@ -86,8 +89,11 @@ should be ignore or just the row in conflict.
 
 |===
 
+TIP: To make a primary node group always win a conflict, use a "fallback" resolution on group links where primary is the source
+and an "ignore" resolution on group links where primary is the target.
+
 Ping Back:: For each configured conflict, you also have the ability to control if and how much "resolved" data is sent back to the 
-node who’s data change is in conflict. This "ping back" behavior is specified by the following options.
+node whose data change is in conflict. This "ping back" behavior is specified by the following options.
 
 .Ping Backs
 [cols=".^2,8"] 
@@ -106,9 +112,8 @@ ifdef::pro[]
 endif::pro[]
 Detection Expression:: An expression that provides additional information about the detection mechanism.  If the detection 
 mechanism is use_timestamp or use_version then this expression will be the name of the timestamp or version column.
-
-TIP: The detect_expression can be used to exclude certain column names from being used. In order to exclude column1 and column2, 
-the expression would be:
+The detect_expression is also used to exclude certain column names from being used.  For example, to exclude column1 and column2, 
+the expression is:
 ----
 excluded_column_names=column1,column2
 ----
