@@ -37,8 +37,6 @@ public class RouterStats {
 
     private List<DataGap> dataGaps;
     
-    private Set<String> transactions;
-    
     public RouterStats() {
     }
     
@@ -49,14 +47,12 @@ public class RouterStats {
         this.dataReadCount = dataReadCount;
         this.peekAheadFillCount = peekAheadFillCount;
         this.dataGaps = dataGaps;
-        this.transactions = transactions;
     }
     
     @Override
     public String toString() {
         return "{ startDataId: " + startDataId + ", endDataId: " + endDataId + ", dataReadCount: " + dataReadCount +
-                ", peekAheadFillCount: " + peekAheadFillCount + ", dataGaps: " + dataGaps.toString() + 
-                ", transactions: " + transactions.toString() + " }";
+                ", peekAheadFillCount: " + peekAheadFillCount + ", dataGaps: " + dataGaps.toString() + " }";
     }
 
     public long getStartDataId() {
@@ -97,13 +93,5 @@ public class RouterStats {
 
     public void setDataGaps(List<DataGap> dataGaps) {
         this.dataGaps = dataGaps;
-    }
-
-    public Set<String> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(Set<String> transactions) {
-        this.transactions = transactions;
     }
 }
