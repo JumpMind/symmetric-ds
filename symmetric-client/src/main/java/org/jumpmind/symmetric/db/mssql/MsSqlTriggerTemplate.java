@@ -91,7 +91,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "     $(custom_before_insert_text) \n" +
 "     if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data \n" +
-"			(table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
+"           (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" +
 "          select '$(targetTableName)','I', $(triggerHistoryId), $(columns), \n" +
 "                  $(channelExpression), $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), current_timestamp \n" +
 "       $(if:containsBlobClobColumns)                                                                                                                                      \n" +
@@ -278,23 +278,23 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
                 buildKeyVariablesDeclare(columns, "new"), ddl);
         
         ddl = FormatUtils.replace("anyNonBlobColumnChanged",
-        		buildNonLobColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
+                buildNonLobColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
         
         ddl = FormatUtils.replace("nonBlobColumns", buildNonLobColumnsString(table), ddl);
         return ddl;
     }
     
-    private boolean isNotComparable(Column column) {
-    	String columnType = column.getJdbcTypeName();
-    	return StringUtils.equalsIgnoreCase(columnType, "IMAGE")
-    			|| StringUtils.equalsIgnoreCase(columnType, "TEXT")
-    			|| StringUtils.equalsIgnoreCase(columnType, "NTEXT");
+    protected boolean isNotComparable(Column column) {
+        String columnType = column.getJdbcTypeName();
+        return StringUtils.equalsIgnoreCase(columnType, "IMAGE")
+                || StringUtils.equalsIgnoreCase(columnType, "TEXT")
+                || StringUtils.equalsIgnoreCase(columnType, "NTEXT");
     }    
     
     private String buildNonLobColumnsAreNotEqualString(Table table, String table1Name, String table2Name){
-    	StringBuilder builder = new StringBuilder();
-    	
-    	for(Column column : table.getColumns()){
+        StringBuilder builder = new StringBuilder();
+        
+        for(Column column : table.getColumns()){
             if (isNotComparable(column)) {
                 continue;
             }
@@ -305,29 +305,29 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
             builder.append(String.format("((%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NOT NULL AND %1$s.\"%2$s\"<>%3$s.\"%2$s\") or "
                             + "(%1$s.\"%2$s\" IS NULL AND %3$s.\"%2$s\" IS NOT NULL) or "
                             + "(%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NULL))", table1Name, column.getName(), table2Name));
-    	}
-    	if (builder.length() == 0) {
-    	    builder.append("1=1");
-    	}
-    	return builder.toString();
+        }
+        if (builder.length() == 0) {
+            builder.append("1=1");
+        }
+        return builder.toString();
     }
     
     private String buildNonLobColumnsString(Table table){
-    	StringBuilder builder = new StringBuilder();
-    	
-    	for(Column column : table.getColumns()){
-    		if(isNotComparable(column)){
-     			continue;
-     		}
-    		if(builder.length() > 0){
-    			builder.append(",");
-    		}
-    		builder.append('"');
-    		builder.append(column.getName());
-    		builder.append('"');
-    	}
-    	
-    	return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        
+        for(Column column : table.getColumns()){
+            if(isNotComparable(column)){
+                continue;
+            }
+            if(builder.length() > 0){
+                builder.append(",");
+            }
+            builder.append('"');
+            builder.append(column.getName());
+            builder.append('"');
+        }
+        
+        return builder.toString();
     }
     
     protected String getSourceTablePrefix(TriggerHistory triggerHistory) {
