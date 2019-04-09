@@ -278,7 +278,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         return ddl;
     }
     
-    private boolean isNotComparable(Column column) {
+    protected boolean isNotComparable(Column column) {
     	String columnType = column.getJdbcTypeName();
     	return StringUtils.equalsIgnoreCase(columnType, "IMAGE")
     			|| StringUtils.equalsIgnoreCase(columnType, "TEXT")
