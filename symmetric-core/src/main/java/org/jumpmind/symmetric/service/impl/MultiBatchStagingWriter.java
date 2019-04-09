@@ -305,6 +305,8 @@ public class MultiBatchStagingWriter implements IDataWriter {
             this.finishedBatches.add(outgoingBatch);
             rowCount += this.outgoingBatch.getDataRowCount();
             byteCount += this.outgoingBatch.getByteCount();
+            dataExtractorService.statisticManager.incrementDataBytesExtracted(this.outgoingBatch.getChannelId(), this.outgoingBatch.getByteCount());
+            dataExtractorService.statisticManager.incrementDataExtracted(this.outgoingBatch.getChannelId(), this.outgoingBatch.getDataRowCount());
         }
         this.outgoingBatch = this.batches.remove(0);
         this.outgoingBatch.setDataRowCount(0);

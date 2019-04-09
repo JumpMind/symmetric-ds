@@ -39,7 +39,7 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
             + " from $(data) d where d.channel_id=? $(dataRange) ");
         
         putSql("selectDataUsingStartDataId",
-            "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data, "
+            "select $(selectDataUsingStartDataIdHint) d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data, "
             + " d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted "
             + " from $(data) d where d.channel_id=? and data_id >= ? ");
         

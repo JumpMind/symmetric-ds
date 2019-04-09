@@ -79,6 +79,10 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_HINTS,  true)) {
             sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d " + parameterService.getTablePrefix() + "_IDX_D_CHANNEL_ID) */");
         }
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_SELECT_START_DATA_ID_HINT,  false)) {
+            sqlReplacementTokens.put("selectDataUsingStartDataIdHint", "/*+ full (d) */");
+        }
+        
     }
     
     @Override
