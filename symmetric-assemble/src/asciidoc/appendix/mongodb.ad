@@ -28,6 +28,7 @@ mongodb.password=xxxx
 mongodb.host=xxxx
 mongodb.port=xxxx
 mongodb.default.databasename=default
+mongodb.url=
 ----
       
 By default, the catalog or schema passed by SymmetricDS will be used for the MongoDB database name. The table passed by SymmetricDS 
@@ -43,3 +44,13 @@ SymmetricDS uses the MongoDB Java Driver to upsert documents.
 TIP: SymmetricDS transforms can be used to transform the data.  If a complex mapping is required that is not supported by transforms, then
 the `IDBObjectMapper` can be implemented and a new `MongoDataLoaderFactory` can be wired up
 as an extension point.
+
+==== Shared Clusters
+
+Use the mongodb.url parameter to connect to a shared cluster in Mongo.
+
+[source,properties]   
+----  
+mongodb.url=mongodb://host1:27017,host2:27017
+----
+

@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.WriteConcern;
 
 public class SimpleMongoClientManager implements IMongoClientManager {
@@ -58,13 +59,17 @@ public class SimpleMongoClientManager implements IMongoClientManager {
                 if (client == null) {
                     int port = 27017;
                     String host = "localhost";
+                    
                     if (parameterService != null) {
                         port = parameterService.getInt(name + MongoConstants.PORT, port);
                         host = parameterService.getString(name + MongoConstants.HOST, host);
                     }
-
+                    String dbUrl = "mongodb://" + host + ":" + port;
+                    if (parameterService != null) {
+                        dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
+                    }
                     try {
-                        client = new MongoClient(host, port);
+                        client = new MongoClient(new MongoClientURI(dbUrl));
                         clients.put(name, client);
                     } catch (UnknownHostException e) {
                         throw new SymmetricException(e);
