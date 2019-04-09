@@ -838,7 +838,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
             engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
                     context.getDataReadCount(), context.getPeekAheadFillCount(),
-                    context.getDataGaps(), context.getTransactions(), batches);
+                    context.getDataGaps(), null, batches);
         }
 
         for (OutgoingBatch batch : batches) {
