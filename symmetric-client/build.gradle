@@ -35,6 +35,8 @@ apply from: symAssembleDir + '/common.gradle'
         		exclude group: 'com.fasterxml.jackson.core'
         	}
         
+        provided 'org.apache.phoenix:phoenix:5.0.0-HBase-2.0'
+        
         provided 'org.apache.httpcomponents:httpclient:4.5.4' // This is required by com.amazonaws:aws-java-sdk.  It is called out here to upgrade the version because of a user's security concerns.
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')

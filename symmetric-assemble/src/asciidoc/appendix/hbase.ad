@@ -1,0 +1,7 @@
+
+=== HBase
+
+The HBase database is a load only database in SymmetricDS.  It does require the phoenix jdbc driver though to utilize it.   This driver should be downloaded and placed in the /lib folder of SymmetricDS and restarted.
+
+Tested with jar : phoenix-5.0.0-HBase-2.0-client.jar
+

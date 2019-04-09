@@ -23,6 +23,7 @@ package org.jumpmind.db.platform;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.db2.Db2zOsDmlStatement;
+import org.jumpmind.db.platform.hbase.HbaseDmlStatement;
 import org.jumpmind.db.platform.mssql.MsSqlDmlStatement;
 import org.jumpmind.db.platform.mysql.MySqlDmlStatement;
 import org.jumpmind.db.platform.oracle.OracleDmlStatement;
@@ -97,6 +98,10 @@ final public class DmlStatementFactory {
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (databaseName.startsWith("mssql")) {
             return new MsSqlDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
+                    nullKeyValues, ddlBuilder.getDatabaseInfo(),
+                    ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
+        } else if (DatabaseNamesConstants.HBASE.equals(databaseName)) {
+            return new HbaseDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns, 
                     nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else {
