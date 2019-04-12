@@ -35,16 +35,16 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory {
+public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
 
     private IStagingManager stagingManager; 
     private NativeJdbcExtractor jdbcExtractor;
-    private IParameterService parameterService;
-
+    
     public MySqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
@@ -67,7 +67,7 @@ public class MySqlBulkDataLoaderFactory implements IDataLoaderFactory {
 
         return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
         		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
-                maxBytesBeforeFlush, isLocal, isReplace);
+                maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWritterSettings());
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

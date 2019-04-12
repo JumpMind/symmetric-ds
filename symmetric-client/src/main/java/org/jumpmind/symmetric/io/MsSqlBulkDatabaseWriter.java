@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
@@ -63,8 +64,9 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 	public MsSqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
 			IDatabasePlatform tar, String tablePrefix,
 			IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
-			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator) {
-		super(symmetricPlatform, tar, tablePrefix);
+			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator, 
+			DatabaseWriterSettings writerSettings) {
+		super(symmetricPlatform, tar, tablePrefix, writerSettings);
 		this.jdbcExtractor = jdbcExtractor;
 		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
 		this.stagingManager = stagingManager;

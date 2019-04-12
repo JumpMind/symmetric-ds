@@ -44,6 +44,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
@@ -67,8 +68,8 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     public MySqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
 			IDatabasePlatform targetPlatform, String tablePrefix,
             IStagingManager stagingManager, NativeJdbcExtractor jdbcExtractor,
-            int maxRowsBeforeFlush, long maxBytesBeforeFlush, boolean isLocal, boolean isReplace) {
-        super(symmetricPlatform, targetPlatform, tablePrefix);
+            int maxRowsBeforeFlush, long maxBytesBeforeFlush, boolean isLocal, boolean isReplace, DatabaseWriterSettings settings) {
+        super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
         this.maxBytesBeforeFlush = maxBytesBeforeFlush;

@@ -14,9 +14,10 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
-public class TeradataBulkDataLoaderFactory implements IDataLoaderFactory {
+public class TeradataBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
 	private IStagingManager stagingManager;
     
     public TeradataBulkDataLoaderFactory(ISymmetricEngine engine) {
@@ -33,7 +34,7 @@ public class TeradataBulkDataLoaderFactory implements IDataLoaderFactory {
         List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
 	    return new TeradataBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-	    		stagingManager);
+	    		stagingManager, buildParameterDatabaseWritterSettings());
 	}
 	
 	public boolean isPlatformSupported(IDatabasePlatform platform) {

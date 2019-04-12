@@ -6,11 +6,13 @@ import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 
 public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
-    public JdbcBatchBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix) {
-        super(symmetricPlatform, targetPlatform, tablePrefix);
+    public JdbcBatchBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
+            String tablePrefix, DatabaseWriterSettings writerSettings) {
+        super(symmetricPlatform, targetPlatform, tablePrefix, writerSettings);
     }
 
     @Override

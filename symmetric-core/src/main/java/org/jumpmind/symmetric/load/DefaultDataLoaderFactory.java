@@ -47,11 +47,9 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint {
+public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    protected IParameterService parameterService;
 
     public DefaultDataLoaderFactory() {
     }
@@ -147,28 +145,11 @@ public class DefaultDataLoaderFactory implements IDataLoaderFactory, IBuiltInExt
     protected DatabaseWriterSettings buildDatabaseWriterSettings(List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedDatas) {
-        DatabaseWriterSettings settings = new DatabaseWriterSettings();
+        DatabaseWriterSettings settings = buildParameterDatabaseWritterSettings();
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
-        settings.setCreateTableAlterCaseToMatchDatabaseDefault(
-                parameterService.is(ParameterConstants.DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE, true));
-        settings.setMaxRowsBeforeCommit(
-                parameterService.getLong(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT));
-        settings.setCommitSleepInterval(
-                parameterService.getLong(ParameterConstants.DATA_LOADER_SLEEP_TIME_AFTER_EARLY_COMMIT));
-        settings.setIgnoreMissingTables(parameterService.is(ParameterConstants.DATA_LOADER_IGNORE_MISSING_TABLES));
-        settings.setTreatDateTimeFieldsAsVarchar(
-                parameterService.is(ParameterConstants.DATA_LOADER_TREAT_DATETIME_AS_VARCHAR));
-        settings.setSaveCurrentValueOnError(
-                parameterService.is(ParameterConstants.DATA_LOADER_ERROR_RECORD_CUR_VAL, false));
-        settings.setFitToColumn(parameterService.is(ParameterConstants.DATA_LOADER_FIT_TO_COLUMN, false));
-        settings.setLogConflictResolution(parameterService.is(ParameterConstants.LOG_CONFLICT_RESOLUTION));
-        settings.setTextColumnExpression(
-                parameterService.getString(ParameterConstants.DATA_LOADER_TEXT_COLUMN_EXPRESSION));
-        settings.setApplyChangesOnly(parameterService.is(ParameterConstants.DATA_LOADER_APPLY_CHANGES_ONLY, true));
-        settings.setUsePrimaryKeysFromSource(
-                parameterService.is(ParameterConstants.DATA_LOADER_USE_PRIMARY_KEYS_FROM_SOURCE));
-
+        
+        
         Map<String, Conflict> byChannel = new HashMap<String, Conflict>();
         Map<String, Conflict> byTable = new HashMap<String, Conflict>();
         boolean multipleDefaultSettingsFound = false;

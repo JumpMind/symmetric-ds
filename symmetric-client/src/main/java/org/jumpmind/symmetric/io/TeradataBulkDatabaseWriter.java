@@ -27,6 +27,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 
@@ -43,9 +44,10 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
 	public TeradataBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
 			IDatabasePlatform tar, String tablePrefix,
-			IStagingManager stagingManager) {
+			IStagingManager stagingManager, DatabaseWriterSettings settings) {
 		super(symmetricPlatform, tar, tablePrefix);
 		this.stagingManager = stagingManager;
+		this.writerSettings = settings;
 	}
 	
 	public boolean start(Table table) {

@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.ext;
 
-import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -35,16 +34,15 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
+public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
-    private IParameterService parameterService;
     private IStagingManager stagingManager;
 
     public RedshiftBulkDataLoaderFactory(ISymmetricEngine engine) {
@@ -62,7 +60,7 @@ public class RedshiftBulkDataLoaderFactory implements IDataLoaderFactory {
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
         return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService);
+                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, buildParameterDatabaseWritterSettings());
         
     }
 

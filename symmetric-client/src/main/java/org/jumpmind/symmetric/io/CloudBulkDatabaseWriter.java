@@ -19,6 +19,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
@@ -82,9 +83,10 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
     
     public CloudBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService) {
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix);
         this.stagingManager = stagingManager;
+        this.writerSettings = settings;
         this.writerSettings.setDatabaseWriterFilters(filters);
         this.writerSettings.setDatabaseWriterErrorHandlers(errorHandlers);
         this.writerSettings.setCreateTableFailOnError(false);

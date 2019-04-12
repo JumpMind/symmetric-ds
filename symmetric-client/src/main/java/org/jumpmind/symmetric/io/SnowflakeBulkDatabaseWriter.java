@@ -8,6 +8,7 @@ import java.util.List;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -27,8 +28,8 @@ public class SnowflakeBulkDatabaseWriter extends CloudBulkDatabaseWriter {
     
     public SnowflakeBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
             String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService) {
-        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService);
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings writerSettings) {
+        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, writerSettings);
         
         this.internalStage = parameterService.getString("snowflake.internal.stage.name", "symmetricds_stage");
         this.stagingType = parameterService.getString(ParameterConstants.SNOWFLAKE_STAGING_TYPE, STAGING_TYPE_SNOWFLAKE_INTERNAL);

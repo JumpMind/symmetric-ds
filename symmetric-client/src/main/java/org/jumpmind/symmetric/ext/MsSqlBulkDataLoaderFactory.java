@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.ext;
 
 import java.util.List;
 
+import org.apache.bcel.generic.D2F;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -31,21 +32,22 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.MsSqlBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
+import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
-public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
+public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
 
     private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
-    private IParameterService parameterService;
-
+    
     public MsSqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
         this.stagingManager = engine.getStagingManager();
@@ -71,7 +73,7 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
 
         return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
         		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
-                fireTriggers, uncPath, fieldTerminator, rowTerminator);
+                fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWritterSettings());
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
@@ -79,5 +81,7 @@ public class MsSqlBulkDataLoaderFactory implements IDataLoaderFactory {
                 || DatabaseNamesConstants.MSSQL2005.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2008
                     .equals(platform.getName()));
     }
+    
+    
 
 }
