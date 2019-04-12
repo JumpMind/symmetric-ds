@@ -6,6 +6,11 @@ Configuring a <<Users>> authentication on SymmetricDS using LDAP is as simple as
 console.auth.ldap.baseDN::  The LDAP base DN to search for a user.
                             [&#xA0;Default:&#xA0;]
                         
+
+A list of base DNs can be specified by separating each entry by a pipe ("|") symbol. +
+For example: +
+ou=Users,o=IT,c=US,dc=corp,dc=local|ou=Users,o=Tech,c=US,dc=corp,dc=local
+
 console.auth.ldap.host::  The LDAP server host name.
                             [&#xA0;Default:&#xA0;]
                             
