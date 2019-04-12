@@ -63,6 +63,7 @@ import org.jumpmind.symmetric.db.hsqldb2.HsqlDb2SymmetricDialect;
 import org.jumpmind.symmetric.db.informix.InformixSymmetricDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseSymmetricDialect;
 import org.jumpmind.symmetric.db.mariadb.MariaDBSymmetricDialect;
+import org.jumpmind.symmetric.db.mssql.MsSql2008SymmetricDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.mssql2000.MsSql2000SymmetricDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
@@ -108,7 +109,7 @@ public class JdbcSymmetricDialectFactory {
         } else if (platform instanceof OracleDatabasePlatform) {
             dialect = new OracleSymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2008DatabasePlatform) {
-            dialect = new MsSqlSymmetricDialect(parameterService, platform);
+            dialect = new MsSql2008SymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2005DatabasePlatform) {
             dialect = new MsSqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2000DatabasePlatform) {
