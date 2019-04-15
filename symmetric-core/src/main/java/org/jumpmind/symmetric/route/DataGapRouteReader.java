@@ -146,6 +146,10 @@ public class DataGapRouteReader implements IDataToRouteReader {
                     .equals(NonTransactionalBatchAlgorithm.NAME)
                     || !symmetricDialect.supportsTransactionId();
             
+            processInfo.setStatus(ProcessStatus.QUERYING);
+            cursor = prepareCursor();
+            processInfo.setStatus(ProcessStatus.EXTRACTING);            
+            
             if (transactional) {
                 executeTransactional(cursor);
             } else {
@@ -182,9 +186,6 @@ public class DataGapRouteReader implements IDataToRouteReader {
         long maxDataToRoute = context.getChannel().getMaxDataToRoute();
         List<Data> peekAheadQueue = new ArrayList<Data>(peekAheadCount);
 
-        processInfo.setStatus(ProcessStatus.QUERYING);
-        cursor = prepareCursor();
-        processInfo.setStatus(ProcessStatus.EXTRACTING);
         boolean moreData = true;
         while (dataCount < maxDataToRoute || (lastTransactionId != null)) {
             if (moreData && (lastTransactionId != null || peekAheadQueue.size() == 0)) {
