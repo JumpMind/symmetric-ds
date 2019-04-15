@@ -21,15 +21,19 @@
 package org.jumpmind.symmetric.util;
 
 import java.util.Collections;
+
 import java.util.List;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jumpmind.util.LogSummary;
 import org.jumpmind.util.LogSummaryAppender;
 
 public class LogSummaryAppenderUtils {
 
     private static final String LOG_SUMMARY_APPENDER_NAME = "SUMMARY";
+    
+    private static final Logger log = Logger.getLogger(LogSummaryAppenderUtils.class);
 
     private LogSummaryAppenderUtils() {
     }
@@ -37,16 +41,33 @@ public class LogSummaryAppenderUtils {
     public static void registerLogSummaryAppender() {
         LogSummaryAppender appender = getLogSummaryAppender();
         if (appender == null) {
-            appender = new LogSummaryAppender();
-            appender.setName(LOG_SUMMARY_APPENDER_NAME);
-            appender.setThreshold(Level.WARN);
-            org.apache.log4j.Logger.getRootLogger().addAppender(appender);
+            registerLogSummaryAppenderInternal();
         }
     }
-
+    
     public static LogSummaryAppender getLogSummaryAppender() {
-        return (LogSummaryAppender) org.apache.log4j.Logger.getRootLogger().getAppender(
-                LOG_SUMMARY_APPENDER_NAME);
+        try {            
+            LogSummaryAppender appender = (LogSummaryAppender) org.apache.log4j.Logger.getRootLogger().getAppender(
+                    LOG_SUMMARY_APPENDER_NAME);
+            return appender;
+        } catch (Exception ex) {
+            // Can get ClassCastException if if the app has been recycled in the same container.
+            log.debug("Failed to load appender " + LOG_SUMMARY_APPENDER_NAME, ex);
+            try {                
+                org.apache.log4j.Logger.getRootLogger().removeAppender(LOG_SUMMARY_APPENDER_NAME);
+            } catch (Exception ex2) {
+                log.debug("Failed to remove appender " + LOG_SUMMARY_APPENDER_NAME, ex2);    
+            }
+            return registerLogSummaryAppenderInternal();
+        }
+    }
+    
+    private static LogSummaryAppender registerLogSummaryAppenderInternal() {
+        LogSummaryAppender appender = new LogSummaryAppender();
+        appender.setName(LOG_SUMMARY_APPENDER_NAME);
+        appender.setThreshold(Level.WARN);
+        org.apache.log4j.Logger.getRootLogger().addAppender(appender);
+        return appender;
     }
 
     public static void clearAllLogSummaries(String engineName) {
