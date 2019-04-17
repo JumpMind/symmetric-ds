@@ -372,7 +372,8 @@ public class DataGapRouteReaderTest {
         assertEquals(4, queue.size());
         Iterator<Data> iter = queue.iterator();
         int index = 0;
-        long ids[] = { 1, 2, 4, -1 };
+        // Since this is executing in nontransactional mode, the data ids should show up in order, 1, 2, 3
+        long ids[] = { 1, 2, 3, -1 };
         while (iter.hasNext()) {
             Data d = iter.next();
             assertEquals(ids[index], d.getDataId());
