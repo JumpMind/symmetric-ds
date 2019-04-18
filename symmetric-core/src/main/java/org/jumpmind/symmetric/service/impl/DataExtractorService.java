@@ -2797,18 +2797,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         overrideSelectSql = overrideSelectSql.trim().substring(5);
                     }
 
-                    ForeignKey fk = this.sourceTable.getSelfReferencingForeignKey();
-                    if (fk != null) {
-                        Reference[] refs = fk.getReferences();
-                        if (refs.length == 1) {
-                            this.isSelfReferencingFk = true;
-                            this.selfRefParentColumnName = refs[0].getLocalColumnName();
-                            this.selfRefChildColumnName = refs[0].getForeignColumnName();
-                            this.selfRefLevel = 0;
-                            log.info("Ordering rows for table {} using self-referencing foreign key {} -> {}", 
-                                    this.sourceTable.getName(), this.selfRefParentColumnName, this.selfRefChildColumnName);
-                        } else {
-                            log.warn("Unable to order rows for self-referencing foreign key because it contains multiple columns");
+                    if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK)) {
+                        ForeignKey fk = this.sourceTable.getSelfReferencingForeignKey();
+                        if (fk != null) {
+                            Reference[] refs = fk.getReferences();
+                            if (refs.length == 1) {
+                                this.isSelfReferencingFk = true;
+                                this.selfRefParentColumnName = refs[0].getLocalColumnName();
+                                this.selfRefChildColumnName = refs[0].getForeignColumnName();
+                                this.selfRefLevel = 0;
+                                log.info("Ordering rows for table {} using self-referencing foreign key {} -> {}", 
+                                        this.sourceTable.getName(), this.selfRefParentColumnName, this.selfRefChildColumnName);
+                            } else {
+                                log.warn("Unable to order rows for self-referencing foreign key because it contains multiple columns");
+                            }
                         }
                     }
 
