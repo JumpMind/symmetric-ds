@@ -22,9 +22,8 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
-
-import com.nuodb.impl.util.StringUtils;
 
 public class TableReloadRequest {
 
