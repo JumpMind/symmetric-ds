@@ -881,16 +881,19 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
         
         for (Column column : table.getLobColumns(this.platform)) {
-            if (isFirstColumn) {
-                isFirstColumn = false;
-            } else {
-                if (isFirstPass) {
-                    sql += " and ";
+            String columnSql = getInitialLoadTwoPassLobLengthSql(column, isFirstPass);
+            if (columnSql != null && !columnSql.trim().equals("")) {
+                if (isFirstColumn) {
+                    isFirstColumn = false;
                 } else {
-                    sql += " or ";
+                    if (isFirstPass) {
+                        sql += " and ";
+                    } else {
+                        sql += " or ";
+                    }
                 }
+                sql += columnSql;
             }
-            sql += getInitialLoadTwoPassLobLengthSql(column, isFirstPass);
         }
         
         if (columns.size() > 0) {

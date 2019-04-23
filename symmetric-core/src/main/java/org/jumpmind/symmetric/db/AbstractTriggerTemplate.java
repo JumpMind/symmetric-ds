@@ -153,6 +153,7 @@ abstract public class AbstractTriggerTemplate {
                     || type == Types.TINYINT || type == Types.SMALLINT || type == Types.INTEGER || type == Types.BIGINT
                     || type == Types.NUMERIC || type == Types.BINARY || type == Types.VARBINARY
                     || (type == Types.BLOB && !requiresWrappedBlobTemplateForBlobType()) || type == Types.LONGVARBINARY
+                    || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE
                     || type == ColumnTypes.MSSQL_NTEXT) {
                 return false;
             }

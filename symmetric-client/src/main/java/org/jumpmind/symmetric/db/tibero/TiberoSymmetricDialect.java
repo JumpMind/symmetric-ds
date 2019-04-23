@@ -334,15 +334,30 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
 
     @Override
     public boolean isInitialLoadTwoPassLob(Table table) {
-        return parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
-                && !TableConstants.getTables(parameterService.getTablePrefix()).contains(table.getNameLowerCase())
-                && table.containsLobColumns(this.platform);
+        boolean initialLoadTwoPassLob = false;
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
+                && !TableConstants.getTables(parameterService.getTablePrefix()).contains(table.getNameLowerCase())) {
+            for (Column column : table.getLobColumns(this.platform)) {
+                if (isInitialLoadTwoPassLobColumn(column)) {
+                    initialLoadTwoPassLob = true;
+                    break;
+                }
+            }
+        }
+        return initialLoadTwoPassLob;
+    }
+
+    private boolean isInitialLoadTwoPassLobColumn(Column column) {
+        String typeName = column.getJdbcTypeName();
+        return typeName.equalsIgnoreCase("CLOB") || typeName.equalsIgnoreCase("BLOB");
     }
 
     @Override
     public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
         String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
-        if (isFirstPass) {
+        if (!isInitialLoadTwoPassLobColumn(column)) {
+            return null;
+        } else if (isFirstPass) {
             return "(t." + quote + column.getName() + quote + " is null or " +
                     "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000)";
         }

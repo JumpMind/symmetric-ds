@@ -199,7 +199,7 @@ subprojects { subproject ->
         animalSnifferVersion = '1.10'
         jnaVersion = '4.2.0'
         jettyVersion = project.property('jetty.version')
-        nuodbVersion = '2.6.1'
+        nuodbVersion = '3.3.1'
         tiberoVersion = '6'
         env = System.getenv()
     }
@@ -230,7 +230,7 @@ subprojects { subproject ->
         }
         provided "xalan:xalan:2.7.1" // Required by  org.firebirdsql.jdbc:jaybird, but a user's security requirement was for a newer version of xalan.
         provided ("net.sf.jt400:jt400:$jt400Version")
-        provided "com.nuodb.jdbc:nuodb-jdbc:$nuodbVersion"
+        provided "jdbc.nuodb:nuodb-jdbc:$nuodbVersion"
         provided "jdbc.tibero:tibero:$tiberoVersion"
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"

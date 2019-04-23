@@ -184,7 +184,8 @@ public abstract class WrapperService {
                             logger.log(Level.INFO, line, "java");
                             if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
                                     (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
-                                    line.matches(".*java.net.BindException.*")) {
+                                    line.matches(".*java.net.BindException.*") ||
+                                    line.matches(".*A fatal error has been detected.*")) {
                                 logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
                                 child.destroy();
                                 childReader.close();
