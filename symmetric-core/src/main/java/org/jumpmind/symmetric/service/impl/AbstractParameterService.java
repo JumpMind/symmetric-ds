@@ -125,12 +125,7 @@ abstract public class AbstractParameterService {
     }
 
     public String getString(String key, String defaultVal) {
-        String value = null;
-
-        if (StringUtils.isBlank(value)) {
-            value = getParameters().get(key, defaultVal);
-        }
-
+        String value = getParameters().get(key, defaultVal);
         return StringUtils.isBlank(value) ? defaultVal : value;
     }
 
