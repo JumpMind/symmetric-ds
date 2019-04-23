@@ -234,12 +234,18 @@ subprojects { subproject ->
         provided "jdbc.tibero:tibero:$tiberoVersion"
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
-        provided "com.datastax.cassandra:cassandra-driver-core:3.1.4"
+        provided ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
+            exclude group: 'org.slf4j'
+        }
         provided ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
         	exclude group: 'commons-lang', module: 'commons-lang'
         }
-        provided "org.apache.kafka:kafka-clients:1.1.0"
-        provided "org.apache.avro:avro:1.8.2"
+        provided ("org.apache.kafka:kafka-clients:1.1.0") {
+            exclude group: 'org.slf4j'
+        }
+        provided ("org.apache.avro:avro:1.8.2") {
+            exclude group: 'org.slf4j'
+        }
 		provided ("io.confluent:kafka-avro-serializer:3.2.1") {
 			exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'org.slf4j'
