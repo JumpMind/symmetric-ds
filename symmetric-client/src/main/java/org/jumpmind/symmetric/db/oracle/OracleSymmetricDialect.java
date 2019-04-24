@@ -379,7 +379,7 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_EXTRACT_USE_TWO_PASS_LOB)
                 && !TableConstants.getTables(parameterService.getTablePrefix()).contains(table.getNameLowerCase())) {
             for (Column column : table.getLobColumns(this.platform)) {
-                if (!column.getJdbcTypeName().equalsIgnoreCase("LONG")) {
+                if (isInitialLoadTwoPassLobColumn(column)) {
                     initialLoadTwoPassLob = true;
                     break;
                 }
@@ -388,11 +388,18 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return initialLoadTwoPassLob;
     }
 
+    private boolean isInitialLoadTwoPassLobColumn(Column column) {
+        String typeName = column.getJdbcTypeName();
+        boolean isLob = typeName.equalsIgnoreCase("CLOB") || typeName.equalsIgnoreCase("BLOB");
+        boolean isVariableBinary = typeName.equalsIgnoreCase("BINARY") || typeName.equalsIgnoreCase("VARBINARY");
+        return isLob || (isVariableBinary && column.getSizeAsInt() > 4000); 
+    }
+
     @Override
     public String getInitialLoadTwoPassLobLengthSql(Column column, boolean isFirstPass) {
         String quote = this.platform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
-        if (column.getJdbcTypeName().equalsIgnoreCase("LONG")) {
-            return isFirstPass ? "1=1" : "1=0";
+        if (!isInitialLoadTwoPassLobColumn(column)) {
+            return null;
         } else if (isFirstPass) {
             return "(t." + quote + column.getName() + quote + " is null or " +
                     "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000)";

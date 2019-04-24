@@ -90,6 +90,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     private static boolean isUpgradedInstanceId;
 
     private String serverId = null;
+
     private static String instanceId = null;
     
     private INodeService nodeService;
@@ -122,7 +123,13 @@ public class ClusterService extends AbstractService implements IClusterService {
         
         if (isClusteringEnabled()) {
             sqlTemplate.update(getSql("initLockSql"), new Object[] { getServerId() });
+            refreshLockEntries();
+        }
+    }
 
+    @Override
+    public void refreshLockEntries() {
+        if (isClusteringEnabled()) {
             Map<String, Lock> allLocks = findLocks();
 
             for (String action : actions) {
@@ -130,12 +137,12 @@ public class ClusterService extends AbstractService implements IClusterService {
                     initLockTable(action, TYPE_CLUSTER);
                 }
             }
-            
+
             for (String action : sharedActions) {
                 if (allLocks.get(action) == null) {
                     initLockTable(action, TYPE_SHARED);
                 }
-            }
+            }        
         }
     }
     
@@ -206,7 +213,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             insertLock(lock);
         }
     }
-    
+
     protected void insertLock(Lock lock) {
         sqlTemplate.update(getSql("insertCompleteLockSql"), lock.getLockAction(), lock.getLockType(), lock.getLockingServerId(), lock.getLockTime(), lock.getSharedCount(), lock.isSharedEnable() ? 1 : 0, lock.getLastLockTime(), lock.getLastLockingServerId());
     }
@@ -215,7 +222,7 @@ public class ClusterService extends AbstractService implements IClusterService {
     protected void initLockTable(final String action) {
         initLockTable(action, TYPE_CLUSTER);
     }
-    
+
     protected void initLockTable(final String action, final String lockType) {
         try {
             sqlTemplate.update(getSql("insertLockSql"), new Object[] { action, lockType });
@@ -478,7 +485,7 @@ public class ClusterService extends AbstractService implements IClusterService {
                     serverId = "unknown";
                 }
             }
-            
+
             log.info("This node picked a server id of {}", serverId);
         }
         return serverId;

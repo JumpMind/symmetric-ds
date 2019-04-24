@@ -327,6 +327,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         if (context.get(CTX_KEY_RESYNC_NEEDED) != null
                 && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("About to syncTriggers because new configuration came through the data loader");
+            engine.getClusterService().refreshLockEntries();  // Needed in case cluster.lock.enabled changed during config change.
             engine.getTriggerRouterService().syncTriggers();
             context.remove(CTX_KEY_RESYNC_NEEDED);
             engine.getRegistrationService().setAllowClientRegistration(true);

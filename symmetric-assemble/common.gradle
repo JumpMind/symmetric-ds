@@ -199,7 +199,7 @@ subprojects { subproject ->
         animalSnifferVersion = '1.10'
         jnaVersion = '4.2.0'
         jettyVersion = project.property('jetty.version')
-        nuodbVersion = '2.6.1'
+        nuodbVersion = '3.3.1'
         tiberoVersion = '6'
         env = System.getenv()
     }
@@ -230,19 +230,26 @@ subprojects { subproject ->
         }
         provided "xalan:xalan:2.7.1" // Required by  org.firebirdsql.jdbc:jaybird, but a user's security requirement was for a newer version of xalan.
         provided ("net.sf.jt400:jt400:$jt400Version")
-        provided "com.nuodb.jdbc:nuodb-jdbc:$nuodbVersion"
+        provided "jdbc.nuodb:nuodb-jdbc:$nuodbVersion"
         provided "jdbc.tibero:tibero:$tiberoVersion"
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
-        provided "com.datastax.cassandra:cassandra-driver-core:3.1.4"
+        provided ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
+            exclude group: 'org.slf4j'
+        }
         provided ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
         	exclude group: 'commons-lang', module: 'commons-lang'
         }
-        provided "org.apache.kafka:kafka-clients:1.1.0"
-        provided "org.apache.avro:avro:1.8.2"
+        provided ("org.apache.kafka:kafka-clients:1.1.0") {
+            exclude group: 'org.slf4j'
+        }
+        provided ("org.apache.avro:avro:1.8.2") {
+            exclude group: 'org.slf4j'
+        }
 		provided ("io.confluent:kafka-avro-serializer:3.2.1") {
 			exclude group: 'com.fasterxml.jackson.core'
-        	}
+            exclude group: 'org.slf4j'
+        }
 		
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"
