@@ -2205,12 +2205,35 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         
         // clear the incoming batch table for the batches at the target node, so the batches won't be skipped
+        String symIncomingBatch = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_BATCH);
+        String nodeIdentityId = nodeService.findIdentityNodeId();
+        
         for (ExtractRequest extractRequest : allRequests) {
-            String symIncomingBatch = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_INCOMING_BATCH);
-            String sql = "delete from " + symIncomingBatch + " where node_id = '" + nodeService.findIdentityNodeId() + 
+            String sql = "delete from " + symIncomingBatch + " where node_id = '" + nodeIdentityId + 
                     "' and batch_id between " + extractRequest.getStartBatchId() + " and " + extractRequest.getEndBatchId();
             dataService.sendSQL(extractRequest.getNodeId(), sql);
         }
+        
+        
+        for (ExtractRequest extractRequest : allRequests) {
+            
+            TableReloadStatus reloadStatus = dataService.getTableReloadStatusByLoadId(extractRequest.getLoadId());
+            OutgoingBatches setupBatches = outgoingBatchService.getOutgoingBatchByLoadRangeAndTable(extractRequest.getLoadId(), 1, 
+                    reloadStatus.getStartDataBatchId() - 1, extractRequest.getTableName().toLowerCase());
+            
+            // clear incoming batch table for all batches at the target node that were used to setup this load for a specific table (delete, truncate, etc)
+            for (OutgoingBatch batch : setupBatches.getBatches()) {
+                String sql = "delete from " + symIncomingBatch + " where node_id = '" + nodeIdentityId + 
+                        "' and batch_id = " + batch.getBatchId();
+                dataService.sendSQL(batch.getNodeId(), sql);
+                
+                // set status of these batches back to new so they are resent
+                batch.setStatus(Status.NE);
+                outgoingBatchService.updateOutgoingBatch(batch);
+            }
+        }
+        
+        
     }
 
     public void releaseMissedExtractRequests() {

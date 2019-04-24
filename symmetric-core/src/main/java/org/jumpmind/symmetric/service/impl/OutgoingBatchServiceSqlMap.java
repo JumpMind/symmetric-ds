@@ -99,6 +99,9 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("selectOutgoingBatchLoadSql",
                 "where load_id = ? order by batch_id   ");
 
+        putSql("selectOutgoingBatchLoadByBatchRangeByTableNameSql",
+                "where load_id = ? and batch_id between ? and ? and summary = ? order by batch_id   ");
+
         putSql("selectOutgoingBatchTimeRangeSql",
                 "where node_id=? and channel_id=? and create_time >= ? and create_time <= ? ");
 
