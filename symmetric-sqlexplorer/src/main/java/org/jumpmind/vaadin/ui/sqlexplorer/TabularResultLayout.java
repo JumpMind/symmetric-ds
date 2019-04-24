@@ -63,7 +63,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.contextmenu.ContextMenu;
-import com.vaadin.contextmenu.MenuItem;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.shared.ui.MarginInfo;
@@ -75,6 +74,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
+import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.VerticalLayout;
@@ -143,7 +143,7 @@ public class TabularResultLayout extends VerticalLayout {
 
     boolean isInQueryGeneralResults;
 
-    MenuItem followToMenu;
+    MenuBar.MenuItem followToMenu;
 
     MenuBar.MenuItem toggleKeepResultsButton;
 
@@ -205,39 +205,39 @@ public class TabularResultLayout extends VerticalLayout {
             });
 
             ContextMenu menu = new ContextMenu(grid, true);
-            menu.addItem(ACTION_SELECT, new ContextMenu.Command() {
+            menu.addItem(ACTION_SELECT, new MenuBar.Command() {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void menuSelected(com.vaadin.contextmenu.MenuItem selectedItem) {
+                public void menuSelected(MenuItem selectedItem) {
                     handleAction(ACTION_SELECT);
                 }
             });
-            menu.addItem(ACTION_INSERT, new ContextMenu.Command() {
+            menu.addItem(ACTION_INSERT, new MenuBar.Command() {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void menuSelected(com.vaadin.contextmenu.MenuItem selectedItem) {
+                public void menuSelected(MenuItem selectedItem) {
                     handleAction(ACTION_INSERT);
                 }
             });
-            menu.addItem(ACTION_UPDATE, new ContextMenu.Command() {
+            menu.addItem(ACTION_UPDATE, new MenuBar.Command() {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void menuSelected(com.vaadin.contextmenu.MenuItem selectedItem) {
+                public void menuSelected(MenuItem selectedItem) {
                     handleAction(ACTION_UPDATE);
                 }
             });
-            menu.addItem(ACTION_DELETE, new ContextMenu.Command() {
+            menu.addItem(ACTION_DELETE, new MenuBar.Command() {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void menuSelected(com.vaadin.contextmenu.MenuItem selectedItem) {
+                public void menuSelected(MenuItem selectedItem) {
                     handleAction(ACTION_DELETE);
                 }
             });
@@ -557,10 +557,11 @@ public class TabularResultLayout extends VerticalLayout {
                 optionTitle += ref.getLocalColumnName() + ", ";
             }
             optionTitle = optionTitle.substring(0, optionTitle.length() - 2) + ")";
-            followToMenu.addItem(optionTitle, new ContextMenu.Command() {
+            followToMenu.addItem(optionTitle, new MenuBar.Command() {
 
                 private static final long serialVersionUID = 1L;
 
+                
                 @Override
                 public void menuSelected(MenuItem selectedItem) {
                     followTo(foreignKey);
