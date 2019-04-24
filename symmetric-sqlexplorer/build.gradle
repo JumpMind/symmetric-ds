@@ -64,7 +64,7 @@ dependencies {
     compile "com.vaadin:vaadin-push:$vaadinVersion"
     compile "com.vaadin:vaadin-themes:$vaadinVersion"
     compile "org.vaadin.addons:aceeditor:0.8.15"
-    compile "com.vaadin:vaadin-context-menu:2.0.0"
+    compile "com.vaadin:vaadin-context-menu:3.0.0"
 
 	compile "org.apache.poi:poi-ooxml:3.17"
 //    provided ("com.vaadin:vaadin-client-compiler:$vaadinVersion") {
