@@ -972,8 +972,9 @@ public class DataService extends AbstractService implements IDataService {
                             transaction.rollback();
                         }
                         if (ex instanceof InvalidSqlException) {
-                            log.info("Cancelling load " + loadId);
+                            log.warn("Cancelling load " + loadId);
                             if (ex.getCause() instanceof SqlException) {
+                                log.error(ex.getCause().getMessage());
                                 updateTableReloadRequestsError(loadId, (SqlException) ex.getCause());
                             }
                             updateTableReloadRequestsCancelled(loadId);
@@ -1046,11 +1047,10 @@ public class DataService extends AbstractService implements IDataService {
                 break;
             }
         }
-        
         if (!validMatch) {
-            throw new SymmetricException("Table reload request submitted which does not have a valid trigger/router "
+            throw new InvalidSqlException("Invalid SQL", new SqlException("Table reload request submitted which does not have a valid trigger/router "
                     + "combination in sym_trigger_router. Request trigger id: '" + reloadRequest.getTriggerId() + "' router id: '" 
-                    + reloadRequest.getRouterId() + "' create time: " + reloadRequest.getCreateTime());
+                    + reloadRequest.getRouterId() + "' create time: " + reloadRequest.getCreateTime()));
         }
     }
 
