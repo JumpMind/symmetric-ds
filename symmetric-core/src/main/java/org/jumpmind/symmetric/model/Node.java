@@ -24,6 +24,7 @@ package org.jumpmind.symmetric.model;
 import static org.apache.commons.lang.StringUtils.isNumeric;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -312,7 +313,7 @@ public class Node implements Serializable, Comparable<Node> {
         String otherNodeId = other.getNodeId();
         if (nodeId != null && otherNodeId != null) {
             if (isNumeric(otherNodeId) && isNumeric(nodeId)) {
-                return new Long(nodeId).compareTo(new Long(otherNodeId));
+                return new BigDecimal(nodeId).compareTo(new BigDecimal(otherNodeId));
             } else {
                 return nodeId.compareTo(otherNodeId);
             }
