@@ -1327,7 +1327,8 @@ public class RestService {
     }
 
     private void startImpl(ISymmetricEngine engine) {
-        engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
+        engine.getParameterService().saveParameter(engine.getParameterService().getExternalId(), engine.getParameterService().getNodeGroupId(),
+                ParameterConstants.AUTO_START_ENGINE, "true", Constants.SYSTEM_USER);
         if (!engine.start()) {
             throw new InternalServerErrorException();
         }
@@ -1335,8 +1336,8 @@ public class RestService {
 
     private void stopImpl(ISymmetricEngine engine) {
         engine.stop();
-        engine.getParameterService().saveParameter(ParameterConstants.AUTO_START_ENGINE, "false", Constants.SYSTEM_USER);
-
+        engine.getParameterService().saveParameter(engine.getParameterService().getExternalId(), engine.getParameterService().getNodeGroupId(),
+                ParameterConstants.AUTO_START_ENGINE, "false", Constants.SYSTEM_USER);
     }
 
     private void syncTriggersImpl(ISymmetricEngine engine, boolean force) {
