@@ -258,6 +258,10 @@ public class DatabaseXmlUtil {
                                     if (isNotBlank(attributeValue)) {
                                         platformColumn.setDecimalDigits(Integer.parseInt(attributeValue));
                                     }
+                                } else if (attributeName.equalsIgnoreCase("enumValues")) {
+                                    if(isNotBlank(attributeValue)) {
+                                        platformColumn.setEnumValues(attributeValue.split(","));
+                                    }
                                 }
                             }
                             if (table != null && table.getColumnCount() > 0) {
@@ -512,6 +516,18 @@ public class DatabaseXmlUtil {
                             
                             if (platformColumn.getDefaultValue() != null) {
                                 output.write(" default=\"" + StringEscapeUtils.escapeXml(platformColumn.getDefaultValue()) + "\"");
+                            }
+                            if(platformColumn.getEnumValues() != null && platformColumn.getEnumValues().length > 0) {
+                                output.write(" enumValues=\"");
+                                boolean writeComma = false;
+                                for(String enumValue : platformColumn.getEnumValues()) {
+                                    if(writeComma) {
+                                        output.write(",");
+                                    }
+                                    output.write(enumValue);
+                                    writeComma = true;
+                                }
+                                output.write("\"");
                             }
 
                             output.write("/>\n");
