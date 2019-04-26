@@ -302,6 +302,10 @@ public class DerbyFunctions {
                         b.append("'").append(rs.getString(index)).append("'");
                         break;
                     case Types.DATE:
+                        b.append("{d '");
+                        b.append(rs.getString(index));
+                        b.append("'}");
+                        break;
                     case Types.TIMESTAMP:
                         b.append("{ts '");
                         b.append(rs.getString(index));
