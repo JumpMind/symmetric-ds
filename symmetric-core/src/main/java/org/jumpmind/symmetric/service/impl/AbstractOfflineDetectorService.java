@@ -71,77 +71,73 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         }
     }
     
-    protected void fireOffline(Exception error, Node remoteNode, RemoteNodeStatus status) {
+    protected void fireOffline(Exception exception, Node remoteNode, RemoteNodeStatus status) {
         String syncUrl = remoteNode.getSyncUrl() == null ? parameterService.getRegistrationUrl() : remoteNode
                         .getSyncUrl();
-        Throwable cause = getRootCause(error);
+        Throwable cause = getRootCause(exception);
         if (cause == null) {
-            cause = error;
+            cause = exception;
         }
-        if (isOffline(error)) {
-            String reason = cause.getMessage();
-            if (reason == null) {
-                reason = cause.getClass().getName();
-            }
+        if (isOffline(exception)) {
             if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, reason});
+                log.warn(String.format("Could not communicate with %s at %s because: %s", remoteNode, syncUrl, exception), exception);
             } else {
-                log.info("Could not communicate with {} at {} because: {}", new Object[] {remoteNode, syncUrl, reason});
+                log.info(String.format("Could not communicate with %s at %s because: %s", remoteNode, syncUrl, exception));
             }
             status.setStatus(Status.OFFLINE);
-        } else if (isServiceUnavailable(error)) {
+        } else if (isServiceUnavailable(exception)) {
             if (shouldLogTransportError(remoteNode.getNodeId())) {
                 log.warn("Remote node {} at {} was unavailable.", new Object[] {remoteNode, syncUrl});
             } else {
                 log.info("Remote node {} at {} was unavailable.  It may be starting up.", new Object[] {remoteNode, syncUrl});
             }
             status.setStatus(Status.OFFLINE);            
-        } else if (isBusy(error)) {
+        } else if (isBusy(exception)) {
             if (shouldLogTransportError(remoteNode.getNodeId())) {
                 log.warn("Remote node {} at {} was busy", new Object[] {remoteNode, syncUrl});
             } else {
                 log.info("Remote node {} at {} was busy", new Object[] {remoteNode, syncUrl});
             }
             status.setStatus(Status.BUSY);
-        } else if (isNotAuthenticated(error)) {
+        } else if (isNotAuthenticated(exception)) {
             log.warn("Authorization denied from {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.NOT_AUTHORIZED);
-        } else if (isSyncDisabled(error)) {
+        } else if (isSyncDisabled(exception)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.SYNC_DISABLED);
-        } else if (isRegistrationNotOpen(error)) {
-            log.warn("Registration was not open at {}", new Object[] {remoteNode, syncUrl});
+        } else if (isRegistrationNotOpen(exception)) {
+            log.warn("Registration was not open at {} {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.REGISTRATION_REQUIRED);
-        } else if (isRegistrationRequired(error)) {
-            log.warn("Registration is needed before communicating with {}", new Object[] {remoteNode, syncUrl});
+        } else if (isRegistrationRequired(exception)) {
+            log.warn("Registration is needed before communicating with {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.REGISTRATION_REQUIRED);
-        } else if (getHttpException(error) != null) {
-            HttpException http = getHttpException(error);
+        } else if (getHttpException(exception) != null) {
+            HttpException http = getHttpException(exception);
             if (shouldLogTransportError(remoteNode.getNodeId())) {
-                log.warn("Could not communicate with node '{}' at {} because it returned HTTP code {}", remoteNode, syncUrl, http.getCode());
+                log.warn(String.format("Could not communicate with %s at %s because it returned HTTP code %s", remoteNode, syncUrl, http.getCode()), exception);
             } else {
-                log.info("Could not communicate with node '{}' at {} because it returned HTTP code {}", remoteNode, syncUrl, http.getCode());
+                log.info(String.format("Could not communicate with %s at %s because it returned HTTP code %s", remoteNode, syncUrl, http.getCode()));
             }
         } else {
-            log.warn(String.format("Could not communicate with node '%s' at %s because of unexpected error", remoteNode, syncUrl), error);
+            log.warn(String.format("Could not communicate with node '%s' at %s because of unexpected error", remoteNode, syncUrl), exception);
             status.setStatus(Status.UNKNOWN_ERROR);
         }
 
         List<IOfflineClientListener> offlineListeners = extensionService.getExtensionPointList(IOfflineClientListener.class);
         if (offlineListeners != null) {
             for (IOfflineClientListener listener : offlineListeners) {
-                if (isOffline(error)) {
+                if (isOffline(exception)) {
                     listener.offline(remoteNode);
-                } else if (isBusy(error)) {
+                } else if (isBusy(exception)) {
                     listener.busy(remoteNode);
-                } else if (isNotAuthenticated(error)) {
+                } else if (isNotAuthenticated(exception)) {
                     listener.notAuthenticated(remoteNode);
-                } else if (isSyncDisabled(error)) {
+                } else if (isSyncDisabled(exception)) {
                     listener.syncDisabled(remoteNode);
-                } else if (isRegistrationRequired(error)) {
+                } else if (isRegistrationRequired(exception)) {
                     listener.registrationRequired(remoteNode);
                 } else {
-                    listener.unknownError(remoteNode, error);
+                    listener.unknownError(remoteNode, exception);
                 }
             }
         }
