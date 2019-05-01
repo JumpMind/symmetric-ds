@@ -136,6 +136,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     
     protected void buildSqlReplacementTokens() {
         sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "");
+        sqlReplacementTokens.put("selectDataUsingStartDataIdHint", "");
     }
     
     public Map<String, String> getSqlReplacementTokens() {
