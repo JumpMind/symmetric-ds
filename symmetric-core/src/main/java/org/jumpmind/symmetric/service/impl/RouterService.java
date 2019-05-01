@@ -109,7 +109,7 @@ import org.jumpmind.util.FormatUtils;
  */
 public class RouterService extends AbstractService implements IRouterService {
     
-    final int MAX_LOGGING_LENGTH = 512;
+    public static final int MAX_LOGGING_LENGTH = 512;
 
     protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
     
