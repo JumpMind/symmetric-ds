@@ -41,7 +41,7 @@ endif::pro[]
 ifdef::pro[]
 The SymmetricDS installer is an executable jar file named *symmetric-pro-<version>-setup.jar*.  
 In order to run the installer, you must have the Java Runtime Environment (JRE)
-version 6.0 or newer installed.
+version 8.0 or newer installed.
 Start the installer by _double-clicking_ it (if the JRE is in your path and associated with .jar files),
 or by running it from a command prompt, like this:
 
