@@ -79,6 +79,19 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
    <listener>
       <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
    </listener>    
+   
+   <filter>
+        <filter-name>LogRequestResponseFilter</filter-name>
+        <filter-class>org.jumpmind.symmetric.web.LogRequestResponseFilter</filter-class>
+        <init-param>
+            <param-name>enabled</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>LogRequestResponseFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>  
       
     <servlet>
         <servlet-name>SymmetricServlet</servlet-name>
