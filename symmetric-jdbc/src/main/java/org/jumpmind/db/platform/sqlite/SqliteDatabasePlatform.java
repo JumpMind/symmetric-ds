@@ -149,4 +149,9 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
    		
    		return result;
     }
+    
+    @Override
+    public boolean supportsMultiThreadedTransactions() {
+        return false;
+    }
 }
