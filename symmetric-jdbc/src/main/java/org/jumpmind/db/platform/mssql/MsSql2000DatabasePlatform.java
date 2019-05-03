@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.mssql;
 
+import java.sql.Types;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -93,6 +95,10 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
+        if ((column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() <= 8000)
+                || column.getMappedTypeCode() == Types.BINARY) {
+            return true;
+        }
         return !column.isOfBinaryType();
     }
 
