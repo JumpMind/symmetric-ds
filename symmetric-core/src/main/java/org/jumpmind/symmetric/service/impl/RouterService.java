@@ -300,7 +300,6 @@ public class RouterService extends AbstractService implements IRouterService {
                                     reloadRequest.setTargetNodeId(identity.getNodeId());
                                     reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
                                     reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
-                                    reloadRequest.setBeforeCustomSql(parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL));
                                     reloadRequest.setCreateTime(new Date());
                                     log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
                                     engine.getDataService().insertTableReloadRequest(reloadRequest);
@@ -314,7 +313,6 @@ public class RouterService extends AbstractService implements IRouterService {
                                     reloadRequest.setTargetNodeId(security.getNodeId());
                                     reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
                                     reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
-                                    reloadRequest.setBeforeCustomSql(parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL));
                                     reloadRequest.setCreateTime(new Date());
                                     log.info("Creating load request from node " + identity.getNodeId() + " to node " + security.getNodeId());
                                     engine.getDataService().insertTableReloadRequest(reloadRequest);
