@@ -365,7 +365,7 @@ are provided to the script:
 
 |===
 
-.Tranform Expression Example
+.Transform Expression Example
 ====
 ----
 #{currentValue} - #{oldValue} * #{PRICE}
