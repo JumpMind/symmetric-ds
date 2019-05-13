@@ -82,34 +82,21 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
         return dataTruncationViolation;
     }
     
-    @Override
-    public void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
-            LobHandler lobHandler) throws SQLException {
-        for (int i = 1; i <= args.length; i++) {
-            Object arg = args[i - 1];
-            int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
-            try {            
-                if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
-                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
-                } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
-                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
-                } else if (argType == Types.CLOB && lobHandler != null) {
-                    lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
-                } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
-                    setDecimalValue(ps, i, arg, argType);
-                } else if (argType == Types.TINYINT) {
-                    setTinyIntValue(ps, i, arg, argType);
-                } else if (argType == Types.BIT && arg instanceof Number) {
-                    // Incoming value is Integer (value of 1 = true, 0 = false), convert to string so Postgres can handle it
-                    setBitValue(ps, i, arg, argType);
-                } else {
-                    StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
-                }
-            } catch (SQLException ex) {
-                String msg = String.format("Parameter arg '%s' type: %s caused exception: %s", arg, TypeMap.getJdbcTypeName(argType), ex.getMessage()); 
-                throw new SQLException(msg, ex);
+    protected void setBitValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        if(argType == Types.BIT && arg != null && arg instanceof Number) {
+            Number n = (Number) arg;
+            if(n.intValue() > 0) {
+                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, "1");
+            } else if(n.intValue() == 0) {
+                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, "0");
+            } else {
+                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
             }
+        } else {
+            StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
         }
     }
+    
+
 
 }
