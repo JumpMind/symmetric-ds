@@ -1041,6 +1041,21 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
     }
     
+    protected void setBitValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
+        if(argType == Types.BIT && arg != null && arg instanceof Number) {
+            Number n = (Number) arg;
+            if(n.intValue() > 0) {
+                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, "1");
+            } else if(n.intValue() == 0) {
+                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, "0");
+            } else {
+                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+            }
+        } else {
+            StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+        }
+    }
+    
     protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), null);
     }

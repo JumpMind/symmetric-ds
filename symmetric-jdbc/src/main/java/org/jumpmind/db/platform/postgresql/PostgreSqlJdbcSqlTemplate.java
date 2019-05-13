@@ -26,11 +26,14 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
+import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.core.StatementCreatorUtils;
+import org.springframework.jdbc.support.lob.LobHandler;
 
 public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
@@ -76,5 +79,35 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     			}
     		}
         return dataTruncationViolation;
+    }
+    
+    @Override
+    public void setValues(PreparedStatement ps, Object[] args, int[] argTypes,
+            LobHandler lobHandler) throws SQLException {
+        for (int i = 1; i <= args.length; i++) {
+            Object arg = args[i - 1];
+            int argType = argTypes != null && argTypes.length >= i ? argTypes[i - 1] : SqlTypeValue.TYPE_UNKNOWN;
+            try {            
+                if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
+                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
+                } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
+                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
+                } else if (argType == Types.CLOB && lobHandler != null) {
+                    lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
+                } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
+                    setDecimalValue(ps, i, arg, argType);
+                } else if (argType == Types.TINYINT) {
+                    setTinyIntValue(ps, i, arg, argType);
+                } else if (argType == Types.BIT && arg instanceof Number) {
+                    // Incoming value is Integer (value of 1 = true, 0 = false), convert to string so Postgres can handle it
+                    setBitValue(ps, i, arg, argType);
+                } else {
+                    StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
+                }
+            } catch (SQLException ex) {
+                String msg = String.format("Parameter arg '%s' type: %s caused exception: %s", arg, TypeMap.getJdbcTypeName(argType), ex.getMessage()); 
+                throw new SQLException(msg, ex);
+            }
+        }
     }
 }
