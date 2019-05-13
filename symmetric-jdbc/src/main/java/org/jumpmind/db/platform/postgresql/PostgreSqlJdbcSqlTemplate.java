@@ -82,6 +82,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
         return dataTruncationViolation;
     }
     
+    @Override
     protected void setBitValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
         if(argType == Types.BIT && arg != null && arg instanceof Number) {
             Number n = (Number) arg;
