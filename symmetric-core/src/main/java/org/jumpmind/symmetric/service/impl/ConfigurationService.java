@@ -433,7 +433,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (usingExtractPeriod) {
-                sqlTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
+                sqlTemplate.query(getSql("selectNodeChannelControlSql"),
                     new ISqlRowMapper<Object>() {
                         public Object mapRow(Row row) {
                             String channelId = row.getString("channel_id");
