@@ -163,5 +163,15 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return getSqlTemplateDirty().queryForLong("select ifnull(table_rows,-1) from information_schema.tables where table_name = ? and table_schema = ?",
                 table.getName(), table.getCatalog());
     }
+    
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        if ((column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() <= 8000)
+                || column.getMappedTypeCode() == Types.BINARY) {
+            return true;
+        }
+        return !column.isOfBinaryType();
+    }
+    
 
 }
