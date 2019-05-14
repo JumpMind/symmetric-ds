@@ -74,25 +74,17 @@ IMPORTANT: When providing an
 endif::pro[]
 
 ===== Initial Load Extract In Background
-            
-By default, initial loads for a table are broken into multiple batches.   SymmetricDS will pre-extract 
-initial load batches versus having them extracted when
-the batch is pulled or pushed.  There are two ways to tell
-SymmetricDS the number of batches to create for a given table.  The first is to specify
-a positive integer in the initial_load_batch_count column on
-<<Table Routing>>.  This
-number will dictate the number of batches created for the initial load of the given table.
-The second way is to specify 0 for initial_load_batch_count on
-<<Table Routing>> and specify a max_batch_size on the reload channel for <<Channels>>.
-When 0 is specified for initial_load_batch_count, SymmetricDS will execute a count(*) query on the table during
-the extract process and pre-create N batches based on the total number of records found
-in the table divided by the `max_batch_size` on the reload channel.
 
-By setting the `initial.load.use.extract.job.enabled` to false all data for a given table will be initial loaded 
-in a single batch, regardless of the max batch size parameter on the reload channel.  That is, for a table with one million
-rows, all rows for that table will be initial loaded and sent to the destination node in a
-single batch. For large tables, this can result in a batch that can take a long time to
-extract and load.
+By default, initial loads for a table are broken into multiple batches, with the size of batches based on the
+`max_batch_size` of the <<Channels>> for the reload channel being used.
+Batches are pre-extracted to staging in the background, instead of waiting for a push or pull to extract them.
+An estimated count of rows for the table are queried from the database statistics, or it will execute a count(*) query
+from the table if statistics are not available.
+The extract process creates batches based on the number of rows in the table divided by the `max_batch_size`.
+
+If the background job is disabled by setting `initial.load.use.extract.job.enabled` to false,
+then all data for a given table will be extracted into a single batch during a push or pull, regardless of channel settings.
+For large tables, this can result in a batch that can take a long time to extract and load.
 
 ifndef::pro[]
 ===== Reverse Initial Loads

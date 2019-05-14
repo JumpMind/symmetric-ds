@@ -245,7 +245,7 @@ public class TransformWriter extends NestedDataWriter {
             if (log.isDebugEnabled()) {
                 log.debug(
                         "Transform indicated that the target row should be ignored with a target key of: {}",
-                        "unknown.  Transformation aborted during tranformation of key");
+                        "unknown.  Transformation aborted during transformation of key");
             }
             return new ArrayList<TransformedData>(0);
         } finally {

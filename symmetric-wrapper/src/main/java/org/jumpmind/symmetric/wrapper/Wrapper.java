@@ -35,7 +35,8 @@ public class Wrapper {
 
         String appDir = null;
         String configFile = null;
-        String jarFile = Wrapper.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        // Decode spaces and other special characters
+        String jarFile = Wrapper.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 
         if (args.length == 2) {
             configFile = args[1];

@@ -32,7 +32,7 @@ endif::pro[]
 ifdef::pro[]
 Download and install SymmetricDS from the http://www.jumpmind.com/products/symmetricds/download[JumpMind] website.
 
-TIP: For complete installation instructions click link:../user-guide.html#_installation[here,window="_tutorials"]
+TIP: For complete installation instructions click link:user-guide.html#_installation[here,window="_tutorials"]
 endif::pro[]
 
 
@@ -181,7 +181,7 @@ image::wizard-node-setup.png[]
 . Provide a password for the web console, hit next
 . Finish
 
-TIP: For complete instructions creating the master node click link:../user-guide.html#_master_node_setup[here,window="_tutorials"]
+TIP: For complete instructions creating the master node click link:user-guide.html#_master_node_setup[here,window="_tutorials"]
 
 endif::pro[]
 
@@ -268,7 +268,7 @@ image::wizard-config/wizard-config-client-server.png[]
 . Select tables you wish to sync from server to client, hit next
 . Verify the summary, hit finish
 
-TIP: For complete instructions for the quick config wizard click link:../user-guide.html#_quick_config_wizard[here,window="_tutorials"]
+TIP: For complete instructions for the quick config wizard click link:user-guide.html#_quick_config_wizard[here,window="_tutorials"]
 endif::pro[]
 
 
@@ -305,7 +305,7 @@ image::wizard-connect/wizard-connect-menu.png[]
 . Choose appropriate options here depending if your target tables already exist and if they should be initially loaded with data from the source.  Hit next
 . Hit finish
 
-TIP: For complete instructions to setup the target database click link:../user-guide.html#_add_node[here,window="_tutorials"] 
+TIP: For complete instructions to setup the target database click link:user-guide.html#_add_node[here,window="_tutorials"] 
 
 endif::pro[]
 

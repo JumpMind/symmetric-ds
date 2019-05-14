@@ -73,7 +73,7 @@ public abstract class WrapperService {
 
         stopProcesses(true);
         System.out.println("Waiting for server to start");
-        ArrayList<String> cmdLine = getWrapperCommand("exec");
+        ArrayList<String> cmdLine = getWrapperCommand("exec", false);
         Process process = null;
         boolean success = false;
         int rc = 0;
@@ -346,15 +346,18 @@ public abstract class WrapperService {
         return sb.toString();
     }
 
-    protected ArrayList<String> getWrapperCommand(String arg) {
+    protected ArrayList<String> getWrapperCommand(String arg, boolean isQuotedArguments) {
         ArrayList<String> cmd = new ArrayList<String>();
-        String quote = getWrapperCommandQuote();
+               
+        String quote = isQuotedArguments ? getWrapperCommandQuote() : ""; 
+        
         cmd.add(quote + config.getJavaCommand() + quote);
         cmd.add("-Djava.io.tmpdir="+quote+System.getProperty("java.io.tmpdir")+quote);
         cmd.add("-jar");
         cmd.add(quote + config.getWrapperJarPath() + quote);
         cmd.add(arg);
         cmd.add(quote + config.getConfigFile() + quote);
+        
         return cmd;
     }
 

@@ -487,6 +487,8 @@ final public class ParameterConstants {
     public final static String CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER = "cloud.bulk.load.azure.blob.container";
     public final static String CLOUD_BULK_LOAD_AZURE_SAS_TOKEN = "cloud.bulk.load.azure.sas.token";
     
+    public final static String SNAPSHOT_FILE_INCLUDE_HOSTNAME = "snapshot.file.include.hostname";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

@@ -406,7 +406,10 @@ public class SnapshotUtil {
 
         File jarFile = null;
         try {
-            jarFile = new File(getSnapshotDirectory(engine), tmpDir.getName() + ".zip");
+            String filename = tmpDir.getName() + ".zip";
+            if (parameterService.is(ParameterConstants.SNAPSHOT_FILE_INCLUDE_HOSTNAME))
+                filename = AppUtils.getHostName() + "_" + filename;
+            jarFile = new File(getSnapshotDirectory(engine), filename); 
             ZipBuilder builder = new ZipBuilder(tmpDir, jarFile, new File[] { tmpDir });
             builder.build();
             FileUtils.deleteDirectory(tmpDir);
