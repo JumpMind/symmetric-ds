@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.wrapper;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URLDecoder;
 
 public class Wrapper {
 
