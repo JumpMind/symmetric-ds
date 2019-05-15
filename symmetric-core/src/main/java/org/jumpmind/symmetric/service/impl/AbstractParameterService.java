@@ -156,28 +156,23 @@ abstract public class AbstractParameterService {
         getParameters();
     }
 
-    protected TypedProperties getParameters() {
+    protected synchronized TypedProperties getParameters() {
         long timeoutTime = System.currentTimeMillis() - cacheTimeoutInMs;
-        // Quick check if cache is timed out
+        // see if the parameters have timed out
         if (parameters == null || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < timeoutTime)) {
-            synchronized (this) {
-                // Synchronized check to prevent calling reread parameters multiple times
-                if (parameters == null || (cacheTimeoutInMs > 0 && lastTimeParameterWereCached < timeoutTime)) {
-                    try {
-                        parameters = rereadApplicationParameters();
-                        SymmetricUtils.replaceSystemAndEnvironmentVariables(parameters);
-                        lastTimeParameterWereCached = System.currentTimeMillis();
-                        cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
-                    } catch (SqlException ex) {
-                        if (parameters != null) {
-                            log.warn("Could not read database parameters.  We will try again later", ex);
-                        } else {
-                            log.error("Could not read database parameters and they have not yet been initialized");
-                            throw ex;
-                        }
-                        throw ex;
-                    }
+            try {
+                parameters = rereadApplicationParameters();
+                SymmetricUtils.replaceSystemAndEnvironmentVariables(parameters);
+                lastTimeParameterWereCached = System.currentTimeMillis();
+                cacheTimeoutInMs = getInt(ParameterConstants.PARAMETER_REFRESH_PERIOD_IN_MS);
+            } catch (SqlException ex) {
+                if (parameters != null) {
+                    log.warn("Could not read database parameters.  We will try again later", ex);
+                } else {
+                    log.error("Could not read database parameters and they have not yet been initialized");
+                    throw ex;
                 }
+                throw ex;
             }
         }
         return parameters;
@@ -192,7 +187,7 @@ abstract public class AbstractParameterService {
     }
 
    
-    public String getExternalId() {
+    public synchronized String getExternalId() {
     	if (externalId==null) {
     		String value = getString(ParameterConstants.EXTERNAL_ID);
     		value = substituteScripts(value);
@@ -201,10 +196,10 @@ abstract public class AbstractParameterService {
         		log.debug("External Id eval results in: {}",externalId);
         	}
     	}
-        return externalId;
+    	return externalId;
     }
 
-    public String getSyncUrl() {
+    public synchronized  String getSyncUrl() {
     	if (syncUrl==null) {
     		String value = getString(ParameterConstants.SYNC_URL);
     		value = substituteScripts(value);
@@ -216,10 +211,10 @@ abstract public class AbstractParameterService {
         		log.debug("Sync URL eval results in: {}",syncUrl);
         	}
     	}
-        return syncUrl;
+    	return syncUrl;
     }
 
-    public String getNodeGroupId() {
+    public synchronized String getNodeGroupId() {
     	if (nodeGroupId==null) {
     		String value = getString(ParameterConstants.NODE_GROUP_ID);
     		value = substituteScripts(value);
@@ -228,10 +223,10 @@ abstract public class AbstractParameterService {
         		log.debug("Node Group Id eval results in: {}",nodeGroupId);
         	}
     	}
-        return nodeGroupId;
+    	return nodeGroupId;
     }
 
-    public String getRegistrationUrl() {
+    public synchronized  String getRegistrationUrl() {
     	if (registrationUrl==null) {
     		String value = getString(ParameterConstants.REGISTRATION_URL);
     		value = substituteScripts(value);
@@ -243,10 +238,10 @@ abstract public class AbstractParameterService {
         		log.debug("Registration URL eval results in: {}",registrationUrl);
         	}
     	}
-        return registrationUrl;
+    	return registrationUrl;
     }
 
-    public String getEngineName() {
+    public synchronized  String getEngineName() {
     	if (engineName==null) {
     		String value = getString(ParameterConstants.ENGINE_NAME,"SymmetricDS");
     		value = substituteScripts(value);
@@ -268,7 +263,7 @@ abstract public class AbstractParameterService {
         return replacementValues;
     }
     
-    public void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
+    public synchronized void setDatabaseHasBeenInitialized(boolean databaseHasBeenInitialized) {
         if (this.databaseHasBeenInitialized != databaseHasBeenInitialized) {
             this.databaseHasBeenInitialized = databaseHasBeenInitialized;
             this.parameters = null;
@@ -277,7 +272,7 @@ abstract public class AbstractParameterService {
 
     abstract public TypedProperties getDatabaseParameters(String externalId, String nodeGroupId);
 
-    protected TypedProperties rereadDatabaseParameters(Properties p) {
+    protected synchronized TypedProperties rereadDatabaseParameters(Properties p) {
         if (databaseHasBeenInitialized) {
             TypedProperties properties = getDatabaseParameters(ParameterConstants.ALL,
                     ParameterConstants.ALL);
@@ -286,7 +281,6 @@ abstract public class AbstractParameterService {
             properties.putAll(getDatabaseParameters(
                     p.getProperty(ParameterConstants.EXTERNAL_ID),
                     p.getProperty(ParameterConstants.NODE_GROUP_ID)));
-            databaseHasBeenInitialized = true;
             return properties;
         } else {
             return new TypedProperties();
