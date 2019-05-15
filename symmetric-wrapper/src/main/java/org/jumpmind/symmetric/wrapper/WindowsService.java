@@ -209,7 +209,6 @@ public class WindowsService extends WrapperService {
                 String line = null, curLine = null;
                 boolean isHeaderLine = true;
                 while ((curLine = stdout.readLine()) != null && line == null) {
-                    System.out.println(curLine);
                     if (isHeaderLine) {
                         isHeaderLine = false;
                     } else if (line == null && !curLine.trim().equals("")) {
