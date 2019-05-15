@@ -21,14 +21,24 @@ where c.node_group_id=:NODE_GROUP_ID
 	and c.sync_enabled=1 and ... 
 ----
 
-As you can see, you have access to information about the node currently under consideration for routing through 
-the 'c' alias, for example c.external_id . There are two node-related tokens you can use in your expression:
+The SQL statement has access to the following variables that are replaced before running: 
 
-. :NODE_GROUP_ID
-. :EXTERNAL_DATA
+.Variables available to the subselect router
+[cols=".^2,8"] 
+|===
 
-Column names representing data for the row in question are prefixed with a colon as well., for example: :EMPLOYEE_ID, or :OLD_EMPLOYEE_ID. 
-Here, the OLD_ prefix indicates the value before the change in cases where the old data has been captured.
+|:NODE_GROUP_ID|The target node group ID that is configured for the router.
+
+|:EXTERNAL_DATA|The external data for current row, as configured by sym_trigger.external_select. 
+
+|:TABLE_NAME|The table name for the current row.
+
+|:COLUMN_NAME|Variables named for each column name (in uppercase), which return the column value for the new row.
+
+|:OLD_COLUMN_NAME|Variables named for each column name (in uppercase and prefixed with OLD_), which return the column value for the old row.
+
+|===
+
 
 .Sample Use Case for Subselect Router
 ====
