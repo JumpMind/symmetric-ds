@@ -42,7 +42,7 @@ public class SimpleMongoClientManager implements IMongoClientManager {
      * This is static because the MongoClient is thread safe and wraps a pool of
      * connections
      */
-    protected static Map<String, MongoClient> clients = new HashMap<String, MongoClient>();
+    protected final static Map<String, MongoClient> clients = new HashMap<String, MongoClient>();
 
     protected DB currentDB;
 
@@ -52,36 +52,31 @@ public class SimpleMongoClientManager implements IMongoClientManager {
     }
 
     @Override
-    public MongoClient get() {
+    public synchronized  MongoClient get() {
         MongoClient client = clients.get(name);
         if (client == null) {
-            synchronized (clients) {
-                if (client == null) {
-                    int port = 27017;
-                    String host = "localhost";
-                    
-                    if (parameterService != null) {
-                        port = parameterService.getInt(name + MongoConstants.PORT, port);
-                        host = parameterService.getString(name + MongoConstants.HOST, host);
-                    }
-                    String dbUrl = "mongodb://" + host + ":" + port;
-                    if (parameterService != null) {
-                        dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
-                    }
-                    try {
-                        client = new MongoClient(new MongoClientURI(dbUrl));
-                        clients.put(name, client);
-                    } catch (UnknownHostException e) {
-                        throw new SymmetricException(e);
-                    }
-                }
+            int port = 27017;
+            String host = "localhost";            
+            if (parameterService != null) {
+                port = parameterService.getInt(name + MongoConstants.PORT, port);
+                host = parameterService.getString(name + MongoConstants.HOST, host);
+            }
+            String dbUrl = "mongodb://" + host + ":" + port;
+            if (parameterService != null) {
+                dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
+            }
+            try {
+                client = new MongoClient(new MongoClientURI(dbUrl));
+                clients.put(name, client);
+            } catch (UnknownHostException e) {
+                throw new SymmetricException(e);
             }
         }
         return client;
     }
 
     @Override
-    public DB getDB(String name) {
+    public synchronized DB getDB(String name) {
         if (currentDB == null || !currentDB.getName().equals(name)) {
             currentDB = get().getDB(name);
             /**
