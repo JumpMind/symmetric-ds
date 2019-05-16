@@ -1881,7 +1881,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ExtractStatus.NE.name());
     }
 
-    private class NodeQueuePair {
+    private static class NodeQueuePair {
         private String nodeId;
         private String queue;
         public String getNodeId() {
@@ -1898,7 +1898,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    class NodeQueuePairMapper implements ISqlRowMapper<NodeQueuePair> {
+    static class NodeQueuePairMapper implements ISqlRowMapper<NodeQueuePair> {
         @Override
         public NodeQueuePair mapRow(Row row) {
             NodeQueuePair pair = new NodeQueuePair();
@@ -3040,13 +3040,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    class FutureExtractStatus {
+    static class FutureExtractStatus {
         boolean shouldExtractSkip;
         int batchExtractCount;
         int byteExtractCount;
     }
 
-    class FutureOutgoingBatch {
+    static class FutureOutgoingBatch {
         OutgoingBatch outgoingBatch;
         boolean isRetry;
         boolean isExtractSkipped;
@@ -3065,7 +3065,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    class BatchLock {
+    static class BatchLock {
         public BatchLock(String semaphoreKey) {
             this.semaphoreKey = semaphoreKey;
         }

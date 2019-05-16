@@ -617,7 +617,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     }
 
-    class NodeCommunicationMapper implements ISqlRowMapper<NodeCommunication> {
+    static class NodeCommunicationMapper implements ISqlRowMapper<NodeCommunication> {
         public NodeCommunication mapRow(Row rs) {
             NodeCommunication nodeCommunication = new NodeCommunication();
             nodeCommunication.setCommunicationType(CommunicationType.valueOf(rs.getString(
@@ -640,7 +640,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
     }
 
-    class ChannelThreadFactory implements ThreadFactory {
+    static class ChannelThreadFactory implements ThreadFactory {
 
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private String engineName;

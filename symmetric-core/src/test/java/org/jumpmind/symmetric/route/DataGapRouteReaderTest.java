@@ -382,7 +382,7 @@ public class DataGapRouteReaderTest {
 
     }
 
-    class ListReadCursor implements ISqlReadCursor<Data> {
+    static class ListReadCursor implements ISqlReadCursor<Data> {
 
         Iterator<Data> iterator;
 

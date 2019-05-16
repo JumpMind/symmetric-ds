@@ -287,8 +287,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return System.currentTimeMillis() - errorTime >= maxErrorMillis;
     }
 
-    public class NodeConnectionStatistics {
-
+    public static class NodeConnectionStatistics {
         int numOfRejections;
         long totalConnectionCount;
         long totalConnectionTimeMs;

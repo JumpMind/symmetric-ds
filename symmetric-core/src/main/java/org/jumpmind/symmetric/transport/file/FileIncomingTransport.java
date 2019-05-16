@@ -134,7 +134,7 @@ public class FileIncomingTransport implements IIncomingTransport {
         }
     }
     
-    public class FileIncomingFilter implements FilenameFilter {
+    public static class FileIncomingFilter implements FilenameFilter {
         String startFilter;
         String endFilter;
 

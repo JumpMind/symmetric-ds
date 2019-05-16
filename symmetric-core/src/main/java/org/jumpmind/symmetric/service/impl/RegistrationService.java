@@ -753,7 +753,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         this.allowClientRegistration = enabled;
     }
 
-    class RegistrationRequestMapper implements ISqlRowMapper<RegistrationRequest> {
+    static class RegistrationRequestMapper implements ISqlRowMapper<RegistrationRequest> {
         public RegistrationRequest mapRow(Row rs) {
             RegistrationRequest request = new RegistrationRequest();
             request.setNodeGroupId(rs.getString("node_group_id"));

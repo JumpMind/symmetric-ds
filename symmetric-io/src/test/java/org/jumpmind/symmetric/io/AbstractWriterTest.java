@@ -332,7 +332,7 @@ abstract public class AbstractWriterTest {
         return platform.getSqlTemplate().queryForMap("select * from " + getTestTable() + " where id=?", new Integer(id));
     }
 
-    protected class TableCsvData {
+    protected static class TableCsvData {
         Table table;
         List<CsvData> data;
 

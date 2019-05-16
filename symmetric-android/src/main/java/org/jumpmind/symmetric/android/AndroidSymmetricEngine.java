@@ -144,7 +144,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         return new AndroidClusterService(parameterService, symmetricDialect, nodeService);
     }
 
-    class AndroidRouterService extends RouterService {
+    static class AndroidRouterService extends RouterService {
 
         public AndroidRouterService(ISymmetricEngine engine) {
             super(engine);
@@ -166,7 +166,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         return new AndroidNodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
     }
 
-    class AndroidNodeCommunicationService extends NodeCommunicationService {
+    static class AndroidNodeCommunicationService extends NodeCommunicationService {
 
         public AndroidNodeCommunicationService(IClusterService clusterService, INodeService nodeService,
                 IParameterService parameterService, IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {

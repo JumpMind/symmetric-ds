@@ -332,7 +332,7 @@ public class SimpleStagingDataWriter {
         }
     }
 
-    class TableLine {
+    static class TableLine {
         String catalogLine;
         String schemaLine;
         String tableLine;

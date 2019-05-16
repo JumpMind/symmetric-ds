@@ -858,7 +858,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
         
-    class NodeRowMapper implements ISqlRowMapper<Node> {
+    static class NodeRowMapper implements ISqlRowMapper<Node> {
         public Node mapRow(Row rs) {
             Node node = new Node();
             node.setNodeId(rs.getString("node_id"));
@@ -900,7 +900,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    class NodeHostRowMapper implements ISqlRowMapper<NodeHost> {
+    static class NodeHostRowMapper implements ISqlRowMapper<NodeHost> {
         public NodeHost mapRow(Row rs) {
             NodeHost nodeHost = new NodeHost();
             nodeHost.setNodeId(rs.getString("node_id"));
