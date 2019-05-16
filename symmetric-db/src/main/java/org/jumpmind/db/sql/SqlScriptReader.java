@@ -255,7 +255,7 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         return false;
     }
 
-    class LiteralInfo {
+    static class LiteralInfo {
 
         public LiteralInfo(char type, int startIndex) {
             this.type = type;
@@ -266,7 +266,7 @@ public class SqlScriptReader extends LineNumberReader implements ISqlStatementSo
         int startIndex;
     }
     
-    class CheckEndStatus {
+    static class CheckEndStatus {
         LiteralInfo literalInfo = null;
         boolean inLineComment = false;
         boolean inBlockComment = false;

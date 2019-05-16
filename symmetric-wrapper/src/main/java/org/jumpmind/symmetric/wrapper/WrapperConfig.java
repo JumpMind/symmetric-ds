@@ -283,7 +283,7 @@ public class WrapperConfig {
         return value;
     }
     
-    public class FailureAction {
+    static public class FailureAction {
         int type;
         int delay;
         

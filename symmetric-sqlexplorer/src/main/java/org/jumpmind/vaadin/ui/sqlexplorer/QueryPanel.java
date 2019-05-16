@@ -676,7 +676,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         }
     }
 
-    class DummyChangeListener implements SelectionChangeListener, Serializable {
+    static class DummyChangeListener implements SelectionChangeListener, Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -684,7 +684,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         }
     }
     
-    class BlankSuggester implements Suggester {
+    static class BlankSuggester implements Suggester {
 
         @Override
         public List<Suggestion> getSuggestions(String text, int cursor) {

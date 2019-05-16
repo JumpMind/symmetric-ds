@@ -128,7 +128,7 @@ public class SimpleClassCompiler {
     }
 
     @IgnoreJRERequirement
-    class JavaObjectFromString extends SimpleJavaFileObject {
+    static class JavaObjectFromString extends SimpleJavaFileObject {
         private String data = null;
 
         public JavaObjectFromString(String className, String data) throws Exception {
@@ -142,7 +142,7 @@ public class SimpleClassCompiler {
     }
 
     @IgnoreJRERequirement
-    class JavaClassObject extends SimpleJavaFileObject {
+    static class JavaClassObject extends SimpleJavaFileObject {
         protected final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         public JavaClassObject(String name, Kind kind) {
@@ -160,7 +160,7 @@ public class SimpleClassCompiler {
     }
     
     @IgnoreJRERequirement
-    public class ClassFileManager extends ForwardingJavaFileManager {
+    static public class ClassFileManager extends ForwardingJavaFileManager {
         private HashMap<String, JavaClassObject> jclassObjects = new HashMap<String, JavaClassObject>();
 
         @SuppressWarnings("unchecked")

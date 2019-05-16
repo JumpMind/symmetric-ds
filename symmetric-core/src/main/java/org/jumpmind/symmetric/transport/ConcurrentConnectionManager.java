@@ -271,7 +271,7 @@ public class ConcurrentConnectionManager implements IConcurrentConnectionManager
         return this.nodeConnectionStatistics;
     }
 
-    public class NodeConnectionStatistics {
+    public static class NodeConnectionStatistics {
 
         int numOfRejections;
         long totalConnectionCount;

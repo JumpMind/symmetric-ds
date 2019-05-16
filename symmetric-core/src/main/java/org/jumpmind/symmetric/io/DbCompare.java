@@ -580,7 +580,7 @@ public class DbCompare {
         }                
     }
 
-    class CountingSqlReadCursor implements ISqlReadCursor<Row>, Closeable {
+    static class CountingSqlReadCursor implements ISqlReadCursor<Row>, Closeable {
 
         ISqlReadCursor<Row> wrapped;
         int count = 0;

@@ -435,7 +435,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return sqlTemplateDirty.query(getSql("getAllBatchesSql"), new BatchIdMapper());
     }
 
-    class BatchIdMapper implements ISqlRowMapper<BatchId> {
+    static class BatchIdMapper implements ISqlRowMapper<BatchId> {
         Map<String, BatchId> ids;
 
         public BatchIdMapper() {
@@ -456,7 +456,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
-    class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
+    static class LastCaptureByChannelMapper implements ISqlRowMapper<String> {
         private Map<String, Date> captureMap;
 
         public LastCaptureByChannelMapper(Map<String, Date> map) {
@@ -474,7 +474,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
-    class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {
+    static class IncomingBatchMapper implements ISqlRowMapper<IncomingBatch> {
 
         IncomingBatch batchToRefresh = null;
 
@@ -540,7 +540,7 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         }
     }
 
-    class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
+    static class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
 		boolean withNode = false;
 		boolean withChannel = false;
 		

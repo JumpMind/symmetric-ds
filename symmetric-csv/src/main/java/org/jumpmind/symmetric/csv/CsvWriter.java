@@ -530,7 +530,7 @@ public class CsvWriter {
         close(false);
     }
 
-    private class Letters {
+    private static class Letters {
         public static final char LF = '\n';
 
         public static final char CR = '\r';
@@ -550,7 +550,7 @@ public class CsvWriter {
         public static final char NULL = '\0';
     }
 
-    private class UserSettings {
+    private static class UserSettings {
         // having these as publicly accessible members will prevent
         // the overhead of the method call that exists on properties
         public char TextQualifier;

@@ -940,7 +940,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    class IncomingErrorMapper implements ISqlRowMapper<IncomingError> {
+    static class IncomingErrorMapper implements ISqlRowMapper<IncomingError> {
         public IncomingError mapRow(Row rs) {
             IncomingError incomingError = new IncomingError();
             incomingError.setBatchId(rs.getLong("batch_id"));

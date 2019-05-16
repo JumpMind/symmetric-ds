@@ -1912,7 +1912,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerName;
     }
 
-    class TriggerHistoryMapper implements ISqlRowMapper<TriggerHistory> {
+    static class TriggerHistoryMapper implements ISqlRowMapper<TriggerHistory> {
         Map<Long, TriggerHistory> retMap = null;
 
         TriggerHistoryMapper() {
@@ -1948,7 +1948,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class RouterMapper implements ISqlRowMapper<Router> {
+    static class RouterMapper implements ISqlRowMapper<Router> {
         
         List<NodeGroupLink> nodeGroupLinks;
         
@@ -1991,7 +1991,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerMapper implements ISqlRowMapper<Trigger> {
+    static class TriggerMapper implements ISqlRowMapper<Trigger> {
         public Trigger mapRow(Row rs) {
             Trigger trigger = new Trigger();
             trigger.setTriggerId(rs.getString("trigger_id"));
@@ -2060,7 +2060,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerRouterMapper implements ISqlRowMapper<TriggerRouter> {
+    static class TriggerRouterMapper implements ISqlRowMapper<TriggerRouter> {
 
         public TriggerRouterMapper() {
         }
@@ -2253,7 +2253,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerRoutersCache {
+    static class TriggerRoutersCache {
 
         public TriggerRoutersCache(Map<String, List<TriggerRouter>> triggerRoutersByTriggerId,
                 Map<String, Router> routersByRouterId) {

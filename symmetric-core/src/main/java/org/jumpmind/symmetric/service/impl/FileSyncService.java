@@ -1248,7 +1248,7 @@ INodeCommunicationExecutor {
         }
     }
 
-    class FileSnapshotMapper implements ISqlRowMapper<FileSnapshot> {
+    static class FileSnapshotMapper implements ISqlRowMapper<FileSnapshot> {
         public FileSnapshot mapRow(Row rs) {
             FileSnapshot fileSnapshot = new FileSnapshot();
             fileSnapshot.setCrc32Checksum(rs.getLong("crc32_checksum"));
