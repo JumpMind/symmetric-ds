@@ -702,7 +702,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
 
                     for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
-                        table.findColumn(it.next(), true).setPrimaryKey(true);
+                        Column column = table.findColumn(it.next(), true);
+                        if (column != null) {
+                            column.setPrimaryKey(true);
+                        }
                     }
 
                     if (getPlatformInfo().isSystemIndicesReturned()) {
