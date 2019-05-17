@@ -1,13 +1,10 @@
 package org.jumpmind.symmetric.io.stage;
 
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_INCOMING;
-
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_OUTGOING;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
