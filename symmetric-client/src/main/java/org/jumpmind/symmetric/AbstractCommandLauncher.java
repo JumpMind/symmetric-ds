@@ -341,7 +341,7 @@ public abstract class AbstractCommandLauncher {
         List<File> propFiles = new ArrayList<File>();
         File enginesDir = new File(getEnginesDir());
         File[] files = enginesDir.listFiles();
-        if (files !=null ) {
+        if (files != null ) {
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".properties")) {
