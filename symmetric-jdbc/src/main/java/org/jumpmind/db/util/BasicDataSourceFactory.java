@@ -24,7 +24,9 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
@@ -36,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
 public class BasicDataSourceFactory {
     
+    protected static Map<String, String> requiredConnectionProperties = new HashMap<String, String>(); 
+
     public static void prepareDriver(String clazzName) throws Exception {
         Driver driver = (Driver)Class.forName(clazzName).newInstance();
         synchronized (DriverManager.class) {
@@ -53,6 +57,10 @@ public class BasicDataSourceFactory {
                     DriverManager.deregisterDriver(driver2);
                 }
             }
+        }
+        
+        if (clazzName.equals("org.firebirdsql.jdbc.FBDriver")) {
+            requiredConnectionProperties.put("columnLabelForName", "true");
         }
     }
     
@@ -124,6 +132,12 @@ public class BasicDataSourceFactory {
                     dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
                 }
             }
+        }
+        for (String key : requiredConnectionProperties.keySet()) {
+            String value = requiredConnectionProperties.get(key); 
+            LoggerFactory.getLogger(BasicDataSourceFactory.class).info(
+                    "Setting required database connection property {}={}", key, value);
+            dataSource.addConnectionProperty(key, value);
         }
         
         String initSql = properties.get(BasicDataSourcePropertyConstants.DB_POOL_INIT_SQL, null);

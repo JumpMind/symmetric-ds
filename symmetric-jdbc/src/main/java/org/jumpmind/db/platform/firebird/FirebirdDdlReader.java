@@ -52,11 +52,19 @@ import org.jumpmind.db.sql.SqlException;
  */
 public class FirebirdDdlReader extends AbstractJdbcDdlReader {
 
+    protected boolean isLegacyJaybird;
+    
     public FirebirdDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern("%");
+
+        String classpath = System.getProperty("java.class.path");
+        isLegacyJaybird = classpath.contains("jaybird-2.1");
+        if (isLegacyJaybird) {
+            log.info("Detected older Jaybird driver");
+        }
     }
 
     @Override
@@ -261,14 +269,22 @@ public class FirebirdDdlReader extends AbstractJdbcDdlReader {
          * get back column names for more than one table. Example:
          * DatabaseMetaData.metaData.getColumns(null, null, "SYM\\_NODE", null)
          */
-        return String.format("\"%s\"", tableName).replaceAll("\\_", "\\\\_");
+        if (isLegacyJaybird) {
+            return String.format("\"%s\"", tableName).replaceAll("\\_", "\\\\_");    
+        } else {
+            return String.format("%s", tableName).replaceAll("\\_", "\\\\_");
+        }
     }
 
     @Override
     protected String getTableNamePatternForConstraints(String tableName) {
-        return String.format("\"%s\"", tableName).replaceAll("\\_", "\\\\_");
+        if (isLegacyJaybird) {
+            return String.format("\"%s\"", tableName).replaceAll("\\_", "\\\\_");
+        } else {
+            return super.getTableNamePatternForConstraints(tableName);
+        }
     }
-    
+
     @Override
 	public List<Trigger> getTriggers(final String catalog, final String schema,
 			final String tableName) throws SqlException {
