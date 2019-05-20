@@ -112,12 +112,12 @@ public class StagingManager implements IStagingManager {
                 clean(entry, ttlInMs, context);
             } else {     
                 try {
-                    String parentDirectory ="";
-                    if (entry.getParent() != null){
-                        parentDirectory=entry.getParent().toString();
+                    String parentDirectory = "";
+                    if (entry.getParent() != null) {
+                        parentDirectory = entry.getParent().toString();
                     }
-                    String entryName="";
-                    if ( entry.getFileName() != null){
+                    String entryName = "";
+                    if ( entry.getFileName() != null) {
                         entryName = entry.getFileName().toString();
                     }
                     String stagingPath = StagedResource.toPath(directory, 
@@ -273,13 +273,13 @@ public class StagingManager implements IStagingManager {
 
     protected static final DirectoryStream.Filter<Path> STAGING_FILE_FILTER = new DirectoryStream.Filter<Path>() {
         @Override
-        public boolean accept(Path entry)  {
+        public boolean accept(Path entry) {
             try {
                 boolean accept = Files.isDirectory(entry) ||
                     entry.getFileName().toString().endsWith(".create")
                     || entry.getFileName().toString().endsWith(".done");
                 return accept;
-            } catch (NullPointerException ex ){
+            } catch (NullPointerException ex ) {
                 return false;
             }
         }
