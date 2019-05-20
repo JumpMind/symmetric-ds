@@ -1018,9 +1018,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {
                     setDecimalValue(ps, i, arg, argType);
                 } else if (argType == Types.TINYINT) {
-                    setTinyIntValue(ps, i, arg, argType);
-                } else if (argType == Types.BIT && arg instanceof Number) {
-                    setBitValue(ps, i, arg, argType);
+                    setTinyIntValue(ps, i, arg, argType);                
                 } else {
                     StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
                 }
@@ -1041,10 +1039,6 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } else {
             StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
         }
-    }
-    
-    protected void setBitValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
-        StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
     }
     
     protected void setNanOrNull(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
