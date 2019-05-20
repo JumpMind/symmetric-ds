@@ -53,6 +53,9 @@ final public class ParameterConstants {
     public final static String JDBC_READ_STRINGS_AS_BYTES = "db.read.strings.as.bytes";
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
 
+    public final static String DB_USER = "db.user";
+    public final static String DB_PASSWORD = "db.password";
+    
     public final static String START_PULL_JOB = "start.pull.job";
     public final static String START_PUSH_JOB = "start.push.job"; 
     public final static String START_PURGE_OUTGOING_JOB = "start.purge.incoming.job"; // In <= 3.8m was start.purge.outgoing.job
@@ -104,6 +107,11 @@ final public class ParameterConstants {
     public final static String JOB_RANDOM_MAX_START_TIME_MS = "job.random.max.start.time.ms";
     public final static String JOB_PULL_PERIOD_TIME_MS = "job.pull.period.time.ms";
     public final static String JOB_PUSH_PERIOD_TIME_MS = "job.push.period.time.ms";
+    
+    public final static String JOB_FILE_SYNC_PULL_PERIOD_TIME_MS = "job.file.sync.pull.period.time.ms";
+    public final static String JOB_FILE_SYNC_PUSH_PERIOD_TIME_MS = "job.file.sync.push.period.time.ms";    
+    
+    public final static String JOB_ROUTING_PERIOD_TIME_MS = "job.routing.period.time.ms";    
     
     public final static String REGISTRATION_NUMBER_OF_ATTEMPTS = "registration.number.of.attempts";
     public final static String REGISTRATION_REOPEN_USE_SAME_PASSWORD = "registration.reopen.use.same.password";
@@ -382,17 +390,18 @@ final public class ParameterConstants {
     public final static String BSH_TRANSFORM_GLOBAL_SCRIPT = "bsh.transform.global.script";
     
     public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
-    
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
-
     public final static String MSSQL_LOCK_ESCALATION_DISABLED = "mssql.lock.escalation.disabled";
-
     public final static String MSSQL_INCLUDE_CATALOG_IN_TRIGGERS = "mssql.include.catalog.in.triggers";
-
     public final static String MSSQL_TRIGGER_EXECUTE_AS = "mssql.trigger.execute.as";
-    
     public final static String MSSQL_TRIGGER_ORDER_FIRST = "mssql.trigger.order.first";
     
+    public final static String MSSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "mssql.bulk.load.max.rows.before.flush";
+    public final static String MSSQL_BULK_LOAD_FIRE_TRIGGERS = "mssql.bulk.load.fire.triggers";
+    public final static String MSSQL_BULK_LOAD_UNC_PATH = "mssql.bulk.load.unc.path";
+    public final static String MSSQL_BULK_LOAD_ROW_TERMINATOR = "mssql.bulk.load.row.terminator";
+    public final static String MSSQL_BULK_LOAD_FIELD_TERMINATOR = "mssql.bulk.load.field.terminator";
+
     public final static String SQLITE_TRIGGER_FUNCTION_TO_USE = "sqlite.trigger.function.to.use";
     
     public final static String AS400_CAST_CLOB_TO = "as400.cast.clob.to";
@@ -462,7 +471,11 @@ final public class ParameterConstants {
     public final static String NODE_LOAD_ONLY = "load.only";
     
     public final static String MYSQL_TINYINT_DDL_TO_BOOLEAN = "mysql.tinyint.ddl.to.boolean";
-    
+    public final static String MYSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "mysql.bulk.load.max.rows.before.flush";
+    public final static String MYSQL_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH = "mysql.bulk.load.max.bytes.before.flush";
+    public final static String MYSQL_BULK_LOAD_LOCAL = "mysql.bulk.load.local";
+    public final static String MYSQL_BULK_LOAD_REPLACE = "mysql.bulk.load.replace";
+
     public static final String LOAD_ONLY_PROPERTY_PREFIX = "target.";
     
     public final static String KAFKA_PRODUCER = "kafka.producer";
@@ -488,6 +501,15 @@ final public class ParameterConstants {
     public final static String CLOUD_BULK_LOAD_AZURE_SAS_TOKEN = "cloud.bulk.load.azure.sas.token";
     
     public final static String SNAPSHOT_FILE_INCLUDE_HOSTNAME = "snapshot.file.include.hostname";
+    
+    public final static String REDSHIFT_APPEND_TO_COPY_COMMAND = "redshift.append.to.copy.command";
+    public final static String REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "redshift.bulk.load.max.rows.before.flush";
+    public final static String REDSHIFT_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH = "redshift.bulk.load.max.bytes.before.flush";
+    public final static String REDSHIFT_BULK_LOAD_S3_BUCKET = "redshift.bulk.load.s3.bucket";
+    public final static String REDSHIFT_BULK_LOAD_S3_ACCESS_KEY = "redshift.bulk.load.s3.access.key";
+    public final static String REDSHIFT_BULK_LOAD_S3_SECRET_KEY = "redshift.bulk.load.s3.secret.key";
+    public final static String REDSHIFT_BULK_LOAD_S3_ENDPOINT = "redshift.bulk.load.s3.endpoint";
+
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

@@ -145,7 +145,7 @@ public class AndroidJobManager implements IJobManager {
                     }
 
                     if (startRoutingJob
-                            && parameterService.getInt("job.routing.period.time.ms") < System.currentTimeMillis() - lastRouteTime) {
+                            && parameterService.getInt(ParameterConstants.JOB_ROUTING_PERIOD_TIME_MS) < System.currentTimeMillis() - lastRouteTime) {
                         try {
                             engine.route();
                         } catch (Throwable ex) {
@@ -156,7 +156,7 @@ public class AndroidJobManager implements IJobManager {
                     }
 
                     if (parameterService.is(ParameterConstants.START_PUSH_JOB)
-                            && parameterService.getInt("job.push.period.time.ms") < System
+                            && parameterService.getInt(ParameterConstants.JOB_PUSH_PERIOD_TIME_MS) < System
                                     .currentTimeMillis() - lastPushTime) {
                         try {
                             didWork = true;
@@ -169,7 +169,7 @@ public class AndroidJobManager implements IJobManager {
                     }
 
                     if (parameterService.is(ParameterConstants.START_PULL_JOB)
-                            && parameterService.getInt("job.pull.period.time.ms") < System
+                            && parameterService.getInt(ParameterConstants.JOB_PULL_PERIOD_TIME_MS) < System
                                     .currentTimeMillis() - lastPullTime) {
                         try {
                             didWork = true;
@@ -182,7 +182,7 @@ public class AndroidJobManager implements IJobManager {
                     }
 
                     if (parameterService.is(ParameterConstants.START_HEARTBEAT_JOB)
-                            && parameterService.getInt("job.heartbeat.period.time.ms") < System
+                            && parameterService.getInt(ParameterConstants.HEARTBEAT_JOB_PERIOD_MS) < System
                                     .currentTimeMillis() - lastHeartbeatTime) {
                         try {
                             didWork = true;
@@ -223,7 +223,7 @@ public class AndroidJobManager implements IJobManager {
                     
                     if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                             && parameterService.is(ParameterConstants.START_FILE_SYNC_PULL_JOB)
-                            && parameterService.getLong("job.file.sync.pull.period.time.ms", 60000) < (System
+                            && parameterService.getLong(ParameterConstants.JOB_FILE_SYNC_PULL_PERIOD_TIME_MS, 60000) < (System
                             .currentTimeMillis() - lastFileSyncPullTime)) {
                         try {
                             didWork = true;
@@ -237,7 +237,7 @@ public class AndroidJobManager implements IJobManager {
                     
                     if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                             && parameterService.is(ParameterConstants.START_FILE_SYNC_PUSH_JOB)
-                            && parameterService.getLong("job.file.sync.push.period.time.ms", 60000) < (System
+                            && parameterService.getLong(ParameterConstants.JOB_FILE_SYNC_PUSH_PERIOD_TIME_MS, 60000) < (System
                             .currentTimeMillis() - lastFileSyncPushTime)) {
                         try {
                             didWork = true;

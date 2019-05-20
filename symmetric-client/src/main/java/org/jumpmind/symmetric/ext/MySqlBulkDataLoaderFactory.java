@@ -26,6 +26,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.MySqlBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -37,7 +38,6 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
@@ -60,11 +60,11 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         
-        int maxRowsBeforeFlush = parameterService.getInt("mysql.bulk.load.max.rows.before.flush", 100000);
-        long maxBytesBeforeFlush = parameterService.getLong("mysql.bulk.load.max.bytes.before.flush", 1000000000);
-        boolean isLocal = Boolean.parseBoolean(parameterService.getString("mysql.bulk.load.local", "true"));
-        boolean isReplace = Boolean.parseBoolean(parameterService.getString("mysql.bulk.load.replace", "false"));
-
+        int maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.MYSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH, 100000);
+        long maxBytesBeforeFlush = parameterService.getLong(ParameterConstants.MYSQL_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH, 1000000000);
+        boolean isLocal = Boolean.parseBoolean(parameterService.getString(ParameterConstants.MYSQL_BULK_LOAD_LOCAL, "true"));
+        boolean isReplace = Boolean.parseBoolean(parameterService.getString(ParameterConstants.MYSQL_BULK_LOAD_REPLACE, "false"));
+        
         return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
         		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
                 maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWritterSettings());

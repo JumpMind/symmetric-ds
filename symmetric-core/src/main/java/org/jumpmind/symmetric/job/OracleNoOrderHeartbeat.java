@@ -56,8 +56,8 @@ public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExten
         String dbUrls = parameterService.getString(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS);
         if (parameterService.is(ParameterConstants.HEARTBEAT_ENABLED) && StringUtils.isNotBlank(dbUrls)) {
             
-            String user = parameterService.getString("db.user");
-            String password = parameterService.getString("db.password");
+            String user = parameterService.getString(ParameterConstants.DB_USER);
+            String password = parameterService.getString(ParameterConstants.DB_PASSWORD);
 
             if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
                 try {

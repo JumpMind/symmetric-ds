@@ -591,7 +591,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             } catch (SqlException e) {
                 log.error("Before using " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER + 
                         " parameter, you must 'grant select on gv$_sequences to " + 
-                        parameterService.getString("db.user") +
+                        parameterService.getString(ParameterConstants.DB_USER) +
                         "' or set the " + ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS +
                         " parameter to a list of db URLs");
                 throw e;

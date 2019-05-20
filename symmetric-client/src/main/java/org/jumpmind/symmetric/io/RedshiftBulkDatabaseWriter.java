@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -54,30 +55,30 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
         
         super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, settings);
         
-        this.appendToCopyCommand = parameterService.getString("redshift.append.to.copy.command");
+        this.appendToCopyCommand = parameterService.getString(ParameterConstants.REDSHIFT_APPEND_TO_COPY_COMMAND);
         
-        if (parameterService.getInt("redshift.bulk.load.max.rows.before.flush") > 0) {
-            super.maxRowsBeforeFlush = parameterService.getInt("redshift.bulk.load.max.rows.before.flush");
+        if (parameterService.getInt(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH) > 0) {
+            super.maxRowsBeforeFlush = parameterService.getInt(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH);
         }
         
-        if (parameterService.getLong("redshift.bulk.load.max.bytes.before.flush") > 0) {
-            super.maxBytesBeforeFlush = parameterService.getLong("redshift.bulk.load.max.bytes.before.flush");
+        if (parameterService.getLong(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH) > 0) {
+            super.maxBytesBeforeFlush = parameterService.getLong(ParameterConstants.REDSHIFT_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH);
         }
         
-        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.bucket"))) {
-            super.s3Bucket = parameterService.getString("redshift.bulk.load.s3.bucket");
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_BUCKET))) {
+            super.s3Bucket = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_BUCKET);
         }
         
-        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.access.key"))) {
-            super.s3AccessKey = parameterService.getString("redshift.bulk.load.s3.access.key");
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ACCESS_KEY))) {
+            super.s3AccessKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ACCESS_KEY);
         }
         
-        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.secret.key"))) {
-            super.s3SecretKey = parameterService.getString("redshift.bulk.load.s3.secret.key");
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY))) {
+            super.s3SecretKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
         }
         
-        if (StringUtils.isNotBlank(parameterService.getString("redshift.bulk.load.s3.endpoint"))) {
-            super.s3SecretKey = parameterService.getString("redshift.bulk.load.s3.endpoint");
+        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ENDPOINT))) {
+            super.s3Endpoint = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ENDPOINT);
         }
     }
 

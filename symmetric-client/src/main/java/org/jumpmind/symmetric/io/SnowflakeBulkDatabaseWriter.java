@@ -31,7 +31,7 @@ public class SnowflakeBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings writerSettings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, writerSettings);
         
-        this.internalStage = parameterService.getString("snowflake.internal.stage.name", "symmetricds_stage");
+        this.internalStage = parameterService.getString(ParameterConstants.SNOWFLAKE_INTERNAL_STAGE_NAME, "symmetricds_stage");
         this.stagingType = parameterService.getString(ParameterConstants.SNOWFLAKE_STAGING_TYPE, STAGING_TYPE_SNOWFLAKE_INTERNAL);
     }
 
