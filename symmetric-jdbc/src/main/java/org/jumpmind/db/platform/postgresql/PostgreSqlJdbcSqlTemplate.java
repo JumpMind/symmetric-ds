@@ -26,14 +26,11 @@ import java.sql.Types;
 
 import javax.sql.DataSource;
 
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
-import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.core.StatementCreatorUtils;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
@@ -81,23 +78,5 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     		}
         return dataTruncationViolation;
     }
-    
-    @Override
-    protected void setBitValue(PreparedStatement ps, int i, Object arg, int argType) throws SQLException {
-        if(argType == Types.BIT && arg != null && arg instanceof Number) {
-            Number n = (Number) arg;
-            if(n.intValue() > 0) {
-                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, "1");
-            } else if(n.intValue() == 0) {
-                StatementCreatorUtils.setParameterValue(ps, i, Types.VARCHAR, "0");
-            } else {
-                StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
-            }
-        } else {
-            StatementCreatorUtils.setParameterValue(ps, i, verifyArgType(arg, argType), arg);
-        }
-    }
-    
-
 
 }
