@@ -119,11 +119,11 @@ public class StagingManager implements IStagingManager {
                 clean(entry, ttlInMs, context);
             } else {     
                 try {
-                    String parentDirectory ="";
+                    String parentDirectory = "";
                     if (entry.getParent() != null) {
-                        parentDirectory=entry.getParent().toString();
+                        parentDirectory = entry.getParent().toString();
                     }
-                    String entryName="";
+                    String entryName = "";
                     if (entry.getFileName() != null) {
                         entryName = entry.getFileName().toString();
                     }
