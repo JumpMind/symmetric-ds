@@ -98,10 +98,15 @@ public class SqliteDdlReader implements IDdlReader {
         throw new NotImplementedException();
     }
 
+    private String quote(String name) {
+        String quote = platform.getDatabaseInfo().getDelimiterToken();
+        return quote + name + quote;
+    }
+    
     public Table readTable(String catalog, String schema, String tableName) {
         Table table = null;
 
-        List<Column> columns = platform.getSqlTemplate().query("pragma table_info(" + tableName + ")", COLUMN_MAPPER);
+        List<Column> columns = platform.getSqlTemplate().query("pragma table_info(" + quote(tableName) + ")", COLUMN_MAPPER);
 
         checkForAutoIncrementColumn(columns, tableName);
 
@@ -111,7 +116,7 @@ public class SqliteDdlReader implements IDdlReader {
                 table.addColumn(column);
             }
 
-            List<IIndex> indexes = platform.getSqlTemplate().query("pragma index_list(" + tableName + ")", INDEX_MAPPER);
+            List<IIndex> indexes = platform.getSqlTemplate().query("pragma index_list(" + quote(tableName) + ")", INDEX_MAPPER);
             for (IIndex index : indexes) {
 
                 List<IndexColumn> indexColumns = platform.getSqlTemplate().query("pragma index_info(" + index.getName() + ")",
@@ -135,7 +140,7 @@ public class SqliteDdlReader implements IDdlReader {
             }
 
             Map<Integer, ForeignKey> keys = new HashMap<Integer, ForeignKey>();
-            List<Row> rows = platform.getSqlTemplate().query("pragma foreign_key_list(" + tableName + ")", new RowMapper());
+            List<Row> rows = platform.getSqlTemplate().query("pragma foreign_key_list(" + quote(tableName) + ")", new RowMapper());
             for (Row row : rows) {
                 Integer id = row.getInt("id");
                 ForeignKey fk = keys.get(id);
