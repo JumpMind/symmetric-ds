@@ -332,7 +332,13 @@ public class DbTree extends Tree {
             DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, FontAwesome.BOOK, parent);
             parent.getChildren().add(catalogNode);
             
-            List<String> catalogSchemaChildren = reader.getSchemaNames(catalogNode.getName());
+            
+            List<String> catalogSchemaChildren = new ArrayList<String>();
+            try {
+                catalogSchemaChildren = reader.getSchemaNames(catalogNode.getName());
+            } catch (Exception e) {
+                log.debug("Unable to get schemas for catalog " + catalogNode.getName(), e);
+            }
             if(catalogSchemaChildren.size() == 0){
                 List<DbTreeNode> catalogTableChildren = getTableTreeNodes(reader,catalogNode,catalogNode.getName(),null);
                 if(catalogTableChildren.size() == 0){

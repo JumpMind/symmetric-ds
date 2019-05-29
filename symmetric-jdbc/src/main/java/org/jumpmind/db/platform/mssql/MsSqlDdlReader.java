@@ -274,7 +274,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         }
     }
     
-    @Override
+    @Override   
     public List<String> getTableNames(final String catalog, final String schema,
     		final String[] tableTypes) {
         StringBuilder sql = new StringBuilder("select \"TABLE_NAME\" from \"INFORMATION_SCHEMA\".\"TABLES\" where \"TABLE_TYPE\"='BASE TABLE'");
@@ -288,7 +288,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             args.add(schema);
         }
         
-    	return platform.getSqlTemplateDirty().queryWithHandler(sql.toString(), new StringMapper(), 
+    	return schema == null ? new ArrayList<String>() : platform.getSqlTemplateDirty().queryWithHandler(sql.toString(), new StringMapper(), 
     	        new ChangeCatalogConnectionHandler(catalog) ,args.toArray(new Object[args.size()]));
     }
     
