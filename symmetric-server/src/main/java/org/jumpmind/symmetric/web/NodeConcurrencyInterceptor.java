@@ -62,18 +62,16 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
         String poolId = req.getRequestURI();
         String nodeId = getNodeId(req);
         String method = req.getMethod();
-
         String threadChannel = req.getHeader(WebConstants.CHANNEL_QUEUE);
+        boolean isPush = ServletUtils.normalizeRequestUri(req).contains("push");
         
-        if (method.equals(WebConstants.METHOD_HEAD) && 
-                ServletUtils.normalizeRequestUri(req).contains("push")) {
+        if (method.equals(WebConstants.METHOD_HEAD) && isPush) {
             // I read here:
             // http://java.sun.com/j2se/1.5.0/docs/guide/net/http-keepalive.html
             // that keepalive likes to have a known content length. I also read
             // that HEAD is better if no content is going to be returned.
             resp.setContentLength(0);
-            if (!concurrentConnectionManager
-                    .reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT)) {
+            if (!concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.SOFT)) {
                 statisticManager.incrementNodesRejected(1);
                 ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
             } else {
@@ -82,7 +80,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 } catch (Exception ex) {
                     concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
                     log.error("Error building response headers", ex);
-                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 }
             }
             return false;
@@ -95,30 +93,31 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 } catch (Exception ex) {
                     concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
                     log.error("Error building response headers", ex);
-                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+                    ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                     return false;
                 }
-        	}
-        	else {
+        	} else {
                 statisticManager.incrementNodesRejected(1);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+                if (isPush) {
+                    log.warn("Missing reservation for push, so rejecting node {}", new Object[] { nodeId });
+                }
+                ServletUtils.sendError(resp, isPush ? WebConstants.SC_NO_RESERVATION : WebConstants.SC_SERVICE_BUSY);
                 return false;
             }
-        } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId,
-                ReservationType.HARD)) {
+        } else if (concurrentConnectionManager.reserveConnection(nodeId, poolId, ReservationType.HARD)) {
             try {
                 buildSuspendIgnoreResponseHeaders(nodeId, resp);
                 return true;
             } catch (Exception ex) {
                 concurrentConnectionManager.releaseConnection(nodeId, threadChannel, poolId);
                 log.error("Error building response headers", ex);
-                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+                ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 return false;
             }
 
         } else {
             statisticManager.incrementNodesRejected(1);
-            ServletUtils.sendError(resp, WebConstants.SC_SERVICE_BUSY);
+            ServletUtils.sendError(resp, isPush ? WebConstants.SC_NO_RESERVATION : WebConstants.SC_SERVICE_BUSY);
             return false;
         }
     }
