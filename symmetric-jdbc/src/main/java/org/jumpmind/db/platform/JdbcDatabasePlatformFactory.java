@@ -250,7 +250,7 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
 
-            if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1) {
+            if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion[2].equalsIgnoreCase("db2")) {
                 String productVersion = getDatabaseProductVersion(dataSource);
                 if (nameVersion[0].toUpperCase().indexOf("Z") != -1
                         || (productVersion != null && productVersion.startsWith("DSN"))) {
