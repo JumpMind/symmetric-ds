@@ -1520,7 +1520,12 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 ResultSet rs = null;
                 try {
                     
-                    rs = meta.getSchemas();
+                    try {
+                        rs = meta.getSchemas();
+                    } catch (SQLException e) {
+                        rs = meta.getSchemas("", null);
+                    }
+                    
                     while (rs.next()) {
                         int columnCount = rs.getMetaData().getColumnCount();
                         String schema = rs.getString(1);

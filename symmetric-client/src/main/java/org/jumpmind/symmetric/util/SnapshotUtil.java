@@ -151,13 +151,16 @@ public class SnapshotUtil {
                 }
             }
 
+            List<String> catalogNames = engine.getDatabasePlatform().getDdlReader().getCatalogNames();
             List<Trigger> triggers = triggerRouterService.getTriggers();
             for (Trigger trigger : triggers) {
-                Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                        trigger.getSourceTableName(), false);
-                if (table != null) {
-                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
-                }
+            	if (StringUtils.isBlank(trigger.getSourceCatalogName()) || catalogNames.contains(trigger.getSourceCatalogName())) {
+	                Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+	                        trigger.getSourceTableName(), false);
+	                if (table != null) {
+	                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
+	                }
+            	}
             }
 
             for (CatalogSchema catalogSchema : catalogSchemas.keySet()) {
@@ -170,10 +173,13 @@ public class SnapshotUtil {
                 } else {
                     String extra = "";
                     if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
-                        extra += catalogSchema.getCatalog() + "-";
+                        extra += catalogSchema.getCatalog();
                         export.setCatalog(catalogSchema.getCatalog());
                     }
                     if (!isDefaultSchema && catalogSchema.getSchema() != null) {
+                    	if (!extra.equals("")) {
+                    		extra += "-";
+                    	}
                         extra += catalogSchema.getSchema();
                         export.setSchema(catalogSchema.getSchema());
                     }

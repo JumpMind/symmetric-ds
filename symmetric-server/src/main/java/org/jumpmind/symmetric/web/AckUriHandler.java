@@ -25,12 +25,6 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -67,40 +61,24 @@ public class AckUriHandler extends AbstractUriHandler {
         Collections.sort(batches, BATCH_ID_COMPARATOR);
 
         res.setHeader("Transfer-Encoding", "chunked");
-                
-        ExecutorService executor = Executors.newFixedThreadPool(1);
-        Callable<Object> callable = new Callable<Object>() {
-            public Object call() throws Exception {
-                ack(batches);
-                return null;
-            }            
-        };
-        FutureTask<Object> task = new FutureTask<Object>(callable);
-        executor.execute(task);
-        
-        long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);        
+
+        long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
+        long ts = System.currentTimeMillis();
         PrintWriter writer = res.getWriter();
-        
-        while (true) {
-            try {
-                task.get(keepAliveMillis, TimeUnit.MILLISECONDS);
-                break;
-            } catch (TimeoutException ex) {
+
+        for (BatchAck batchInfo : batches) {
+            acknowledgeService.ack(batchInfo);
+
+            if (keepAliveMillis > 0 && System.currentTimeMillis() - ts >= keepAliveMillis) {
                 try {
                     writer.write("1=1&");
                     writer.flush();
                 } catch (Exception e) {
                     log.info("Unable to keep client connection alive.  " + e.getClass().getName() + ": " + e.getMessage());
-                    task.cancel(true);
-                    break;
+                    keepAliveMillis = 0;
                 }
-            } catch (Throwable e) {
-                if (e.getCause() != null) {
-                    e = e.getCause();
-                }
-                log.error("Failed to save acks.  " + e.getClass().getName() + ": " + e.getMessage(), e);
-                break;
             }
+            ts = System.currentTimeMillis();
         }
         
         writer.close();

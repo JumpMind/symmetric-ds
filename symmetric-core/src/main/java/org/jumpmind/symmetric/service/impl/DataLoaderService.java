@@ -445,7 +445,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 log.info("{} data and {} batches loaded during push request from {}.  There were {} batches in error",
                         new Object[] { okDataCount, okBatchesCount, sourceNode.toString(), errorBatchesCount });
             } else {
-                log.info("{} data and {} batches loaded during push request from {}.",
+                log.info("{} data and {} batches loaded during push request from {}",
                         new Object[] { okDataCount, okBatchesCount, sourceNode.toString() });                
             }
             statisticManager.addJobStats(sourceNode.getNodeId(), 1, "Push Handler",

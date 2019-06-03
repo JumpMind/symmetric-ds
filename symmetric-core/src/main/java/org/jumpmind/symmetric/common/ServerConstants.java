@@ -41,7 +41,9 @@ public class ServerConstants {
     
     public static final String SERVER_ALLOW_DIR_LISTING = "server.allow.dir.list";
     public static final String SERVER_ALLOW_HTTP_METHODS = "server.allow.http.methods";    
-    public static final String SERVER_DISALLOW_HTTP_METHODS = "server.disallow.http.methods";    
+    public static final String SERVER_DISALLOW_HTTP_METHODS = "server.disallow.http.methods";
+    
+    public final static String SERVER_HTTP_COOKIES_ENABLED = "server.http.cookies.enabled";
     
     public final static String STREAM_TO_FILE_ENCRYPT_ENABLED = "stream.to.file.encrypt.enabled";
     public final static String STREAM_TO_FILE_COMPRESSION_ENABLED = "stream.to.file.compression.enabled";

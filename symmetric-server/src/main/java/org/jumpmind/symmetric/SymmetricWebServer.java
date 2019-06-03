@@ -21,6 +21,8 @@
 package org.jumpmind.symmetric;
 
 import java.lang.management.ManagementFactory;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
@@ -206,6 +208,12 @@ public class SymmetricWebServer {
         allowDirListing = serverProperties.get(ServerConstants.SERVER_ALLOW_DIR_LISTING, "false");
         allowedMethods = serverProperties.get(ServerConstants.SERVER_ALLOW_HTTP_METHODS, "");
         disallowedMethods = serverProperties.get(ServerConstants.SERVER_DISALLOW_HTTP_METHODS, "OPTIONS");
+
+        if (serverProperties.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED, false)) {
+            if (CookieHandler.getDefault() == null) {
+                CookieHandler.setDefault(new CookieManager());
+            }
+        }
     }
 
     public SymmetricWebServer start(int httpPort, int jmxPort, String propertiesUrl) throws Exception {

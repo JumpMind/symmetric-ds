@@ -81,7 +81,12 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
 			}
 			
 			try {
-				Table schemas = CommonUiUtils.putResultsInTable(metaData.getSchemas(), Integer.MAX_VALUE, false);
+			    Table schemas;
+			    try {
+			        schemas = CommonUiUtils.putResultsInTable(metaData.getSchemas(), Integer.MAX_VALUE, false);
+			    } catch (SQLException e) {
+			        schemas = CommonUiUtils.putResultsInTable(metaData.getSchemas("", null), Integer.MAX_VALUE, false);
+                }
 				schemas.setSizeFull();
 				tabSheet.addTab(createTabData(schemas), "Schemas");
 			} catch (AbstractMethodError e) {

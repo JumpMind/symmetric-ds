@@ -51,6 +51,18 @@ If you are using UTF-8 encoding in the database, you might consider using the ch
 jdbc:mysql://hostname/databasename?tinyInt1isBit=false&characterEncoding=utf8
 ----
 
+If you are using Amazon Web Services to run the MySQL instance, Amazon by default uses binary log replication and disables the creation
+of triggers. In order to allow SymmetricDS to function correctly, the parameter 'log_bin_trust_function_creators' needs to be set
+to a value of '1'. You can set this value by logging into the database as root and enter the following command:
+
+----
+mysql -u USERNAME -p
+set global log_bin_trust_function_creators=1;
+----
+
+If you can not log into the server as root, then you can set the parameter in a new parameter group on the Relational Database Services
+(RDS) web console. See the documentation from RDS for details.
+
 .Supported Data Types
 |===
 |Data Type|Supported?

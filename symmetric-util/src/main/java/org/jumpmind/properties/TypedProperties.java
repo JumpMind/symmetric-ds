@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,7 @@ public class TypedProperties extends Properties {
             try {
                 returnValue = Long.parseLong(value);
             } catch (NumberFormatException ex) {
+                logPropertiesException(log, key, value);
             }
         }
         return returnValue;
@@ -117,6 +119,7 @@ public class TypedProperties extends Properties {
             try {
                 returnValue = Integer.parseInt(value);
             } catch (NumberFormatException ex) {
+                logPropertiesException(log, key, value);
             }
         }
         return returnValue;
@@ -194,6 +197,12 @@ public class TypedProperties extends Properties {
     
     public TypedProperties copy() {
         return new TypedProperties(this);
+    }
+    
+    public static void logPropertiesException(Logger logger, String key, String val) {
+        if (StringUtils.isNotBlank(val)) {
+            logger.error("Could not parse integer from parameter \"" + key + "\"=\"" + val + "\"");
+        }
     }
 
 }

@@ -193,30 +193,31 @@ public class ExtractDataReader implements IDataReader {
 
                 String sql = buildSelect(table, lobColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
-
-                for (Column lobColumn : lobColumns) {
-                    String valueForCsv = null;
-                    if (platform.isBlob(lobColumn.getMappedTypeCode())) {
-                        byte[] binaryData = row.getBytes(lobColumn.getName());
-                        if (binaryData != null) {
-                            if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                valueForCsv = new String(Base64.encodeBase64(binaryData));
-                            } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
-                                valueForCsv = new String(Hex.encodeHex(binaryData));
-                            } else {
-                                valueForCsv = new String(binaryData);
+                if (row != null) {
+                    for (Column lobColumn : lobColumns) {
+                        String valueForCsv = null;
+                        if (platform.isBlob(lobColumn.getMappedTypeCode())) {
+                            byte[] binaryData = row.getBytes(lobColumn.getName());
+                            if (binaryData != null) {
+                                if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
+                                    valueForCsv = new String(Base64.encodeBase64(binaryData));
+                                } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
+                                    valueForCsv = new String(Hex.encodeHex(binaryData));
+                                } else {
+                                    valueForCsv = new String(binaryData);
+                                }
+                                binaryData = null;
                             }
-                            binaryData = null;
+                        } else {
+                            valueForCsv = row.getString(lobColumn.getName());
                         }
-                    } else {
-                        valueForCsv = row.getString(lobColumn.getName());
+    
+                        int index = ArrayUtils.indexOf(columnNames, lobColumn.getName());
+                        rowData[index] = valueForCsv;
                     }
-
-                    int index = ArrayUtils.indexOf(columnNames, lobColumn.getName());
-                    rowData[index] = valueForCsv;
+    
+                    data.putParsedData(CsvData.ROW_DATA, rowData);
                 }
-
-                data.putParsedData(CsvData.ROW_DATA, rowData);
             }
         }
         return data;

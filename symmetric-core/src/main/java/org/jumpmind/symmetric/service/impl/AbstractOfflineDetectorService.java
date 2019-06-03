@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
+import org.jumpmind.symmetric.transport.NoReservationException;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
 import org.jumpmind.symmetric.transport.SyncDisabledException;
 
@@ -111,6 +112,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         } else if (isRegistrationRequired(exception)) {
             log.warn("Registration is needed before communicating with {} at {}", new Object[] {remoteNode, syncUrl});
             status.setStatus(Status.REGISTRATION_REQUIRED);
+        } else if (isNoReservation(exception)) {
+            log.warn("Missing reservation during push with {}", new Object[] { remoteNode });
+            status.setStatus(Status.BUSY);
         } else if (getHttpException(exception) != null) {
             HttpException http = getHttpException(exception);
             if (shouldLogTransportError(remoteNode.getNodeId())) {
@@ -239,6 +243,18 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
         }
         return registrationNotOpen;
+    }
+
+    protected boolean isNoReservation(Exception ex) {
+        boolean noReservation = false;
+        if (ex != null) {
+            Throwable cause = getRootCause(ex);
+            noReservation = cause instanceof NoReservationException;
+            if (noReservation == false && (ex instanceof NoReservationException)) {
+                noReservation = true;
+            }
+        }
+        return noReservation;
     }
 
     protected HttpException getHttpException(Exception ex) {

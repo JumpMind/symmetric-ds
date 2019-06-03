@@ -73,7 +73,11 @@ abstract public class AbstractParameterService {
     public BigDecimal getDecimal(String key, BigDecimal defaultVal) {
         String val = getString(key);
         if (val != null) {
-            return new BigDecimal(val);
+            try {
+                return new BigDecimal(val);
+            } catch (NumberFormatException ex) {
+                TypedProperties.logPropertiesException(log, key, val);
+            }
         }
         return defaultVal;
     }
@@ -106,8 +110,12 @@ abstract public class AbstractParameterService {
 
     public int getInt(String key, int defaultVal) {
         String val = getString(key);
-        if (StringUtils.isNotBlank(val)) {
-            return Integer.parseInt(val.trim());
+        if (val != null) {
+            try {
+                return Integer.parseInt(val.trim());
+            } catch (NumberFormatException ex) {
+                TypedProperties.logPropertiesException(log, key, val);
+            }
         }
         return defaultVal;
     }
@@ -119,7 +127,11 @@ abstract public class AbstractParameterService {
     public long getLong(String key, long defaultVal) {
         String val = getString(key);
         if (val != null) {
-            return Long.parseLong(val);
+            try {
+                return Long.parseLong(val);
+            } catch (NumberFormatException ex) {
+                TypedProperties.logPropertiesException(log, key, val);
+            }
         }
         return defaultVal;
     }

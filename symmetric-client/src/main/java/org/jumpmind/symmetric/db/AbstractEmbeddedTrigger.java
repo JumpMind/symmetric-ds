@@ -167,13 +167,17 @@ abstract public class AbstractEmbeddedTrigger {
             }
             out.append(escapeString(value));
             out.append("'");
-
         } else if (value instanceof Date) {
             out.append("'");
             synchronized (DATE_FORMATTER) {
                 out.append(DATE_FORMATTER.format(value));
             }
             out.append("'");
+        } else if (value instanceof byte[]) {
+            out.append("'");
+            value = convertBytesToString((byte[]) value, ((byte[]) value).length);
+            out.append(escapeString(value));
+            out.append("'");            
         } else {
             throw new IllegalStateException(String.format("Type not supported: %s", value.getClass().getName()));
         }
