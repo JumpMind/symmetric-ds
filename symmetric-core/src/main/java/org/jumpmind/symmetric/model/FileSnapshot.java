@@ -324,6 +324,10 @@ public class FileSnapshot implements Serializable {
         return true;
     }
 
-
+    public String toString() {
+    	StringBuilder sb = new StringBuilder("fileName: ").append(fileName).append(", relativeDir: ").append(relativeDir);
+    	sb.append(", fileSize: ").append(fileSize).append(" fileModifiedTime: ").append(new Date(fileModifiedTime));
+    	return sb.toString();
+    }
 
 }

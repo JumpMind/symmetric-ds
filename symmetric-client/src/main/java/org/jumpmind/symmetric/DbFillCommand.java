@@ -143,7 +143,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
             String[] strWeight = line.getOptionValue(OPTION_WEIGHTS).split(",");
             if (strWeight != null && strWeight.length == 3) {
                 for (int i=0; i<3; i++) {
-                    dmlWeight[i] = new Integer(strWeight[i]);
+                    dmlWeight[i] = Integer.valueOf(strWeight[i]);
                 }
                 dbFill.setDmlWeight(dmlWeight);
             }

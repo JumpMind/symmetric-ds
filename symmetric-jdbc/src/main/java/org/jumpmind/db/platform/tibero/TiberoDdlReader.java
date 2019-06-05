@@ -24,13 +24,12 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
-import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -144,7 +143,7 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         if (column.getMappedTypeCode() == Types.NUMERIC) {
-            PlatformColumn platformColumn = column.getPlatformColumns().get(platform.getName());
+            // PlatformColumn platformColumn = column.getPlatformColumns().get(platform.getName());
             //if (platformColumn.getDecimalDigits() == 0 && column.getSizeAsInt() == 15) {
             //    column.setSize("15");
             //}
@@ -218,11 +217,11 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
         return column;
     }
 
-    private boolean isColumnInteger(String tableName, String columnName) {
-        return (platform.getSqlTemplate().queryForInt(
-                "select case when data_precision is null and data_scale=0 then 1 else 0 end " +
-                "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
-    }
+//    private boolean isColumnInteger(String tableName, String columnName) {
+//        return (platform.getSqlTemplate().queryForInt(
+//                "select case when data_precision is null and data_scale=0 then 1 else 0 end " +
+//                "from all_tab_columns where table_name=? and column_name=?", tableName, columnName) == 1);
+//    }
 
     /*
      * Helper method that determines the auto increment status using Firebird's
@@ -349,13 +348,13 @@ public class TiberoDdlReader extends AbstractJdbcDdlReader {
                 String type = rs.getString(2);
                 // Only read in normal Tibero indexes
                 if (type.startsWith("NORMAL")) {
-                    values.put("INDEX_TYPE", new Short(DatabaseMetaData.tableIndexOther));
+                    values.put("INDEX_TYPE", Short.valueOf(DatabaseMetaData.tableIndexOther));
                     values.put("INDEX_NAME", name);
                     values.put("NON_UNIQUE",
                             "UNIQUE".equalsIgnoreCase(rs.getString(3)) ? Boolean.FALSE
                                     : Boolean.TRUE);
                     values.put("COLUMN_NAME", rs.getString(4));
-                    values.put("ORDINAL_POSITION", new Short(rs.getShort(5)));
+                    values.put("ORDINAL_POSITION", Short.valueOf(rs.getShort(5)));
 
                     readIndex(metaData, values, indices);
                 } else if (log.isDebugEnabled()) {

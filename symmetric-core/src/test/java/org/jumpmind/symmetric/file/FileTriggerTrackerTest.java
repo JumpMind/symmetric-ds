@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.file;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 import static org.junit.Assert.*;
 
@@ -119,9 +120,9 @@ public class FileTriggerTrackerTest {
         FileUtils.deleteQuietly(directory);
         directory.mkdirs();
         subdirectory.mkdirs();
-        FileUtils.write(fileInDirectory1, "abc");
-        FileUtils.write(fileInDirectory2, "1,2,3");
-        FileUtils.write(fileInSubDirectory, "abc");
+        FileUtils.write(fileInDirectory1, "abc", Charset.defaultCharset(), false);
+        FileUtils.write(fileInDirectory2, "1,2,3", Charset.defaultCharset(), false);
+        FileUtils.write(fileInSubDirectory, "abc", Charset.defaultCharset(), false);
     }
 
 }

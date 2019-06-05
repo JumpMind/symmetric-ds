@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.file;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -229,11 +230,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     entry.setTime(file.lastModified());
                                     zos.putNextEntry(entry);
                                     if (file.isFile()) {
-                                        FileInputStream fis = new FileInputStream(file);
-                                        try {
+                                        try(FileInputStream fis = new FileInputStream(file)) {
                                             IOUtils.copy(fis, zos);
-                                        } finally {
-                                            IOUtils.closeQuietly(fis);
                                         }
                                     }
                                     zos.closeEntry();
@@ -262,12 +260,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 script.buildScriptEnd(batch);
                 ZipEntry entry = new ZipEntry(batch.getBatchId() + "/" + script.getScriptFileName(batch));
                 zos.putNextEntry(entry);
-                IOUtils.write(script.getScript().toString(), zos);
+                IOUtils.write(script.getScript().toString(), zos, Charset.defaultCharset());
                 zos.closeEntry();
                 
                 entry = new ZipEntry(batch.getBatchId() + "/batch-info.txt");
                 zos.putNextEntry(entry);
-                IOUtils.write(batch.getChannelId(), zos);
+                IOUtils.write(batch.getChannelId(), zos, Charset.defaultCharset());
                 zos.closeEntry();
 
 
@@ -282,7 +280,9 @@ public class FileSyncZipDataWriter implements IDataWriter {
         try {
             if (zos != null) {
                 zos.finish();
-                IOUtils.closeQuietly(zos);
+                try {
+                	zos.close();
+                } catch(IOException e) { }
             }
         } catch (IOException e) {
             throw new IoException(e);

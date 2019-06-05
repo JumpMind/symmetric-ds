@@ -127,7 +127,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
                         }
                     }
                     if (interceptor == null) {                        
-                        interceptor = (IInterceptor) clazz.newInstance();
+                        interceptor = (IInterceptor) clazz.getDeclaredConstructor().newInstance();
                     }
                     
                     customInterceptors.add(interceptor);

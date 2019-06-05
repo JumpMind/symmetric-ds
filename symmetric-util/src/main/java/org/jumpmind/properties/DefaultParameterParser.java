@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +73,7 @@ public class DefaultParameterParser {
             if (inputStream == null) {
                 inputStream = getClass().getResourceAsStream(fileName);
             }
-            List<String> lines = IOUtils.readLines(inputStream);
+            List<String> lines = IOUtils.readLines(inputStream, Charset.defaultCharset());
             boolean extraLine = false;
             ParameterMetaData currentMetaData = new ParameterMetaData();
             for (String line : lines) {

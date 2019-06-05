@@ -164,6 +164,18 @@
         <priority value="ALL" />
     </category>                    
      -->    
+     
+     <!-- Debug file sync by enabling this
+    <category name="org.jumpmind.symmetric.service.impl.FileSyncService">
+    	<priority value="DEBUG"/>
+    </category>
+     -->
+    
+    <!-- Debug file sync by enabling this
+    <category name="org.jumpmind.symmetric.file.FileTriggerFileModifiedListener">
+    	<priority value="DEBUG"/>
+    </category>
+     -->
 
     <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
     <root>

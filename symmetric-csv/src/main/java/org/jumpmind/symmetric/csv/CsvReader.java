@@ -503,7 +503,7 @@ public class CsvReader {
 
         // use headersHolder.Length here in case headers is null
         for (int i = 0; i < headersHolder.Length; i++) {
-            headersHolder.IndexByName.put(headers[i], new Integer(i));
+            headersHolder.IndexByName.put(headers[i], Integer.valueOf(i));
         }
     }
 
@@ -1200,7 +1200,7 @@ public class CsvReader {
             headersHolder.Headers[i] = columnValue;
 
             // if there are duplicate header names, we will save the last one
-            headersHolder.IndexByName.put(columnValue, new Integer(i));
+            headersHolder.IndexByName.put(columnValue, Integer.valueOf(i));
         }
 
         if (result) {

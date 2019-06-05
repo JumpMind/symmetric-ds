@@ -21,12 +21,12 @@
 package org.jumpmind.symmetric.transport.internal;
 
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -58,7 +58,11 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
     }
 
     public void close() {
-        IOUtils.closeQuietly(writer);
+    	try {
+    		if(writer != null) {
+    			writer.close();
+    		}
+    	} catch(IOException e) { }
         open = false;
     }
 

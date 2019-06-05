@@ -28,7 +28,6 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 
@@ -53,22 +52,20 @@ abstract public class AbstractVersion {
     abstract protected String getArtifactName();
 
     protected Attributes findManifestAttributes() {
-        InputStream is = null;
         try {
             Enumeration<URL> resources = getClass().getClassLoader().getResources(
                     "META-INF/MANIFEST.MF");
             while (resources.hasMoreElements()) {
-                is = resources.nextElement().openStream();
-                Manifest manifest = new Manifest(is);
-                Attributes attributes = manifest.getMainAttributes();
-                if (getArtifactName().equals(attributes.getValue("Project-Artifact"))) {
-                    return attributes;
-                }
+            	try(InputStream is = resources.nextElement().openStream()) {
+	                Manifest manifest = new Manifest(is);
+	                Attributes attributes = manifest.getMainAttributes();
+	                if (getArtifactName().equals(attributes.getValue("Project-Artifact"))) {
+	                    return attributes;
+	                }
+            	}
             }
         } catch (IOException e) {
             // nothing to do, really
-        } finally {
-            IOUtils.closeQuietly(is);
         }
         return null;
     }

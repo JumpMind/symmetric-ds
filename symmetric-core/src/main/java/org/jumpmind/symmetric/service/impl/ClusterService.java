@@ -48,6 +48,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -154,7 +155,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         String instanceIdLocation = instanceIdFile.getAbsolutePath();
         
         try {            
-            instanceId = IOUtils.toString(new FileInputStream(instanceIdLocation)).trim();
+            instanceId = IOUtils.toString(new FileInputStream(instanceIdLocation), Charset.defaultCharset()).trim();
         } catch (Exception ex) {
             log.debug("Failed to load instance id from file '" + instanceIdLocation + "'", ex);
         }
@@ -174,7 +175,7 @@ public class ClusterService extends AbstractService implements IClusterService {
             }
             try {            
                 instanceIdFile.getParentFile().mkdirs();
-                IOUtils.write(newInstanceId, new FileOutputStream(instanceIdLocation));
+                IOUtils.write(newInstanceId, new FileOutputStream(instanceIdLocation), Charset.defaultCharset());
                 instanceId = newInstanceId;
                 isUpgradedInstanceId = true;
             } catch (Exception ex) {

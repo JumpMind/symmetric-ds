@@ -35,7 +35,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
     @Override
     public <T> T map(Map<String, Object> row, Class<T> clazz, String catalogName, String schemaName, String tableName) {
         try {
-            T object = clazz.newInstance();
+            T object = clazz.getDeclaredConstructor().newInstance();
             Table table = findTable(catalogName, schemaName, tableName);
             LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
             Set<String> propertyNames = objectToTableMapping.keySet();
@@ -113,7 +113,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
             try {
                 Table table = findTable(catalogName, schemaName, tableName);
 
-                T object = clazz.newInstance();
+                T object = clazz.getDeclaredConstructor().newInstance();
 
                 LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
                 LinkedHashMap<String, Object> objectValuesByColumnName = new LinkedHashMap<String, Object>();
@@ -176,7 +176,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
             try {
                 Table table = findTable(catalogName, schemaName, tableName);
 
-                T object = clazz.newInstance();
+                T object = clazz.getDeclaredConstructor().newInstance();
 
                 LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
                 LinkedHashMap<String, Object> objectValuesByColumnName = new LinkedHashMap<String, Object>();
@@ -217,7 +217,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
                 List<T> objects = new ArrayList<T>();
 
                 for (Row row : rows) {
-                    object = clazz.newInstance();
+                    object = clazz.getDeclaredConstructor().newInstance();
                     Set<String> propertyNames = objectToTableMapping.keySet();
                     for (String propertyName : propertyNames) {
                         Object value = row.get(objectToTableMapping.get(propertyName).getName());
@@ -239,7 +239,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
         try {
             Table table = findTable(catalogName, schemaName, tableName);
 
-            T object = clazz.newInstance();
+            T object = clazz.getDeclaredConstructor().newInstance();
 
             LinkedHashMap<String, Column> objectToTableMapping = mapObjectToTable(object, table);
 
@@ -255,7 +255,7 @@ public class SqlPersistenceManager extends AbstractPersistenceManager {
             List<T> objects = new ArrayList<T>();
 
             for (Row row : rows) {
-                object = clazz.newInstance();
+                object = clazz.getDeclaredConstructor().newInstance();
                 Set<String> propertyNames = objectToTableMapping.keySet();
                 for (String propertyName : propertyNames) {
                     Object value = row.get(objectToTableMapping.get(propertyName).getName());

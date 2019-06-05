@@ -20,10 +20,10 @@
  */
 package org.jumpmind.symmetric.io.data.reader;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -67,7 +67,9 @@ public class SqlDataReader extends AbstractTableDataReader {
 
     @Override
     protected void finish() {
-        IOUtils.closeQuietly(this.sqlScriptReader);
+    	try {
+    		this.sqlScriptReader.close();
+    	} catch(IOException e) { }
     }
 
 }

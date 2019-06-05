@@ -35,6 +35,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +55,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.log4j.Appender;
@@ -114,9 +114,7 @@ public class SnapshotUtil {
         tmpDir.mkdirs();
         log.info("Creating snapshot file in " + tmpDir.getAbsolutePath());
 
-        FileWriter fwriter = null;
-        try {
-            fwriter = new FileWriter(new File(tmpDir, "config-export.csv"));
+        try(FileWriter fwriter = new FileWriter(new File(tmpDir, "config-export.csv"))) {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
                     fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
                     TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
@@ -125,8 +123,6 @@ public class SnapshotUtil {
                     TableConstants.SYM_CONSOLE_USER_HIST);
         } catch (Exception e) {
             log.warn("Failed to export symmetric configuration", e);
-        } finally {
-            IOUtils.closeQuietly(fwriter);
         }
 
         File serviceConfFile = new File("conf/sym_service.conf");
@@ -168,33 +164,45 @@ public class SnapshotUtil {
                 boolean isDefaultCatalog = StringUtils.equalsIgnoreCase(catalogSchema.getCatalog(), engine.getDatabasePlatform().getDefaultCatalog());
                 boolean isDefaultSchema = StringUtils.equalsIgnoreCase(catalogSchema.getSchema(), engine.getDatabasePlatform().getDefaultSchema());
 
-                if (isDefaultCatalog && isDefaultSchema) {
-                    fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
-                } else {
-                    String extra = "";
-                    if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
-                        extra += catalogSchema.getCatalog();
-                        export.setCatalog(catalogSchema.getCatalog());
-                    }
-                    if (!isDefaultSchema && catalogSchema.getSchema() != null) {
-                    	if (!extra.equals("")) {
-                    		extra += "-";
-                    	}
-                        extra += catalogSchema.getSchema();
-                        export.setSchema(catalogSchema.getSchema());
-                    }
-                    fos = new FileOutputStream(new File(tmpDir, "table-definitions-" + extra + ".xml"));
+                try {
+	                if (isDefaultCatalog && isDefaultSchema) {
+	                    fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
+	                } else {
+	                    String extra = "";
+	                    if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
+	                        extra += catalogSchema.getCatalog();
+	                        export.setCatalog(catalogSchema.getCatalog());
+	                    }
+	                    if (!isDefaultSchema && catalogSchema.getSchema() != null) {
+	                    	if (!extra.equals("")) {
+	                    		extra += "-";
+	                    	}
+	                        extra += catalogSchema.getSchema();
+	                        export.setSchema(catalogSchema.getSchema());
+	                    }
+	                    fos = new FileOutputStream(new File(tmpDir, "table-definitions-" + extra + ".xml"));
+	                }
+	             
+	                List<Table> tables = catalogSchemas.get(catalogSchema);
+	                export.setFormat(Format.XML);
+	                export.setNoData(true);
+	                export.exportTables(fos, tables.toArray(new Table[tables.size()]));
+                } finally {
+                	if(fos != null) {
+                		try {
+                			fos.close();
+                		} catch(IOException e) { }
+                	}
                 }
-             
-                List<Table> tables = catalogSchemas.get(catalogSchema);
-                export.setFormat(Format.XML);
-                export.setNoData(true);
-                export.exportTables(fos, tables.toArray(new Table[tables.size()]));
             }
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
-            IOUtils.closeQuietly(fos);
+        	if(fos != null) {
+        		try {
+        			fos.close();
+        		} catch(IOException e) { }
+        	}
         }
 
         String tablePrefix = engine.getTablePrefix();
@@ -294,7 +302,11 @@ public class SnapshotUtil {
             } catch (IOException e) {
                 log.warn("Failed to export data gap information", e);
             } finally {
-                IOUtils.closeQuietly(fos);
+            	if(fos != null) {
+            		try {
+            			fos.close();
+            		} catch(IOException e) { }
+            	}
             }            
         }
 
@@ -312,7 +324,11 @@ public class SnapshotUtil {
         } catch (IOException e) {
             log.warn("Failed to export parameter information", e);
         } finally {
-            IOUtils.closeQuietly(fos);
+        	if(fos != null) {
+        		try {
+        			fos.close();
+        		} catch(IOException e) { }
+        	}
         }
 
         fos = null;
@@ -321,11 +337,17 @@ public class SnapshotUtil {
             Properties defaultParameters = new Properties();
             InputStream in = SnapshotUtil.class.getResourceAsStream("/symmetric-default.properties");
             defaultParameters.load(in);
-            IOUtils.closeQuietly(in);
+            if(in != null) {
+            	try {
+            		in.close();
+            	} catch(IOException e) { }
+            }
             in = SnapshotUtil.class.getResourceAsStream("/symmetric-console-default.properties");
             if (in != null) {
                 defaultParameters.load(in);
-                IOUtils.closeQuietly(in);
+                try {
+                	in.close();
+                } catch(IOException e) { }
             }
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
             Properties changedParameters = new SortedProperties();
@@ -342,7 +364,11 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export parameters-changed information", e);
         } finally {
-            IOUtils.closeQuietly(fos);
+        	if(fos != null) {
+        		try {
+        			fos.close();
+        		} catch(IOException e) { }
+        	}
         }
 
         writeRuntimeStats(engine, tmpDir);
@@ -361,7 +387,11 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export thread information", e);
         } finally {
-            IOUtils.closeQuietly(fos);
+        	if(fos != null) {
+        		try {
+        			fos.close();
+        		} catch(IOException e) { }
+        	}
         }
 
         File logDir = null;
@@ -441,7 +471,11 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
-            IOUtils.closeQuietly(fos);
+        	if(fos != null) {
+        		try {
+        			fos.close();
+        		} catch(IOException e) { }
+        	}
         }
     }
 
@@ -467,7 +501,9 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to run extract query " + sql, e);
         } finally {
-            writer.close();
+        	if(writer != null) {
+        		writer.close();
+        	}
         }
     }
 
@@ -486,7 +522,7 @@ public class SnapshotUtil {
                 }
             };
             printDirectoryContents(home, output, fileComparator);
-            FileUtils.write(new File(tmpDir, "directory-listing.txt"), output);
+            FileUtils.write(new File(tmpDir, "directory-listing.txt"), output, Charset.defaultCharset(), false);
         } catch (Exception ex) {
             log.warn("Failed to output the direcetory listing", ex);
         }
@@ -613,14 +649,16 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export runtime-stats information", e);
         } finally {
-            IOUtils.closeQuietly(fos);
+        	if(fos != null) {
+        		try {
+        			fos.close();
+        		} catch(IOException e) { }
+        	}
         }
     }
 
     protected static void writeJobsStats(ISymmetricEngine engine, File tmpDir) {
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(new File(tmpDir, "jobs.txt"));
+        try(FileWriter writer = new FileWriter(new File(tmpDir, "jobs.txt"))) {
             IJobManager jobManager = engine.getJobManager();
             IClusterService clusterService = engine.getClusterService();
             INodeService nodeService = engine.getNodeService();
@@ -655,8 +693,6 @@ public class SnapshotUtil {
             }
         } catch (Exception e) {
             log.warn("Failed to write jobs information", e);
-        } finally {
-            IOUtils.closeQuietly(writer);
         }
     }
 
@@ -703,10 +739,8 @@ public class SnapshotUtil {
     }
 
     public static File createThreadsFile(String parent, boolean isFiltered) {
-        FileWriter fwriter = null;
         File file = new File(parent, isFiltered ? "threads-filtered.txt" : "threads.txt");
-        try {
-            fwriter = new FileWriter(file);
+        try(FileWriter fwriter = new FileWriter(file)) {
             ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
             long[] threadIds = threadBean.getAllThreadIds();
             for (long l : threadIds) {
@@ -737,8 +771,6 @@ public class SnapshotUtil {
             }
         } catch (Exception e) {
             log.warn("Failed to export thread information", e);
-        } finally {
-            IOUtils.closeQuietly(fwriter);
         }
         return file;
     }

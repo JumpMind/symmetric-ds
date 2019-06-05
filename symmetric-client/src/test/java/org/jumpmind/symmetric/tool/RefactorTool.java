@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.tool;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
@@ -33,9 +34,9 @@ public class RefactorTool {
         for (File file : files) {
             if (file.getAbsolutePath().contains("/symmetric-")) {
                 System.out.println("Refactoring file: " + file.getName());
-                StringBuilder contents = new StringBuilder(FileUtils.readFileToString(file));
+                StringBuilder contents = new StringBuilder(FileUtils.readFileToString(file, Charset.defaultCharset()));
                 if (refactor(contents)) {
-                    FileUtils.write(file, contents.toString());
+                    FileUtils.write(file, contents.toString(), Charset.defaultCharset(), false);
                 }
             }
         }

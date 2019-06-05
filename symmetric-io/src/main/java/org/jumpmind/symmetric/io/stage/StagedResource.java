@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.slf4j.Logger;
@@ -154,7 +153,11 @@ public class StagedResource implements IStagedResource {
                             for (Thread thread : readers.keySet()) {
                                 BufferedReader reader = readers.get(thread);
                                 log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
-                                IOUtils.closeQuietly(reader);                                
+                                try {
+                                	if(reader != null) {
+                                		reader.close();     
+                                	}
+                                } catch(IOException e) { }
                             }
                         }
                         readers = null;
@@ -286,24 +289,32 @@ public class StagedResource implements IStagedResource {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader != null) {
-            IOUtils.closeQuietly(reader);
+        	try {
+        		reader.close();
+        	} catch(IOException e) { }
             readers.remove(thread);
             closeReadersMap();
         }
 
         if (writer != null) {
-            IOUtils.closeQuietly(writer);
+        	try {
+        		writer.close();
+        	} catch(IOException e) { }
             writer = null;
         }
         
         if (outputStream != null) {
-            IOUtils.closeQuietly(outputStream);
+        	try {
+        		outputStream.close();
+        	} catch(IOException e) { }
             outputStream = null;
         }
         
         InputStream inputStream = inputStreams != null ? inputStreams.get(thread) : null;
         if (inputStream != null) {
-            IOUtils.closeQuietly(inputStream);
+        	try {
+        		inputStream.close();
+        	} catch(IOException e) { }
             inputStreams.remove(thread);
             closeInputStreamsMap();
         }

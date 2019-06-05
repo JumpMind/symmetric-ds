@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.jumpmind.db.model.Column;
@@ -218,11 +218,17 @@ public class DbCompare {
                                 tableReport.setTargetRows(targetCursor.count);
             }
         } finally {
-            if (stream != null) {                
-                IOUtils.closeQuietly(stream);
+            if (stream != null) {
+            	try {
+            		stream.close();
+            	} catch(IOException e) { }
             }
-            IOUtils.closeQuietly(sourceCursor);
-            IOUtils.closeQuietly(targetCursor);
+            if(sourceCursor != null) {
+            	sourceCursor.close();
+            }
+            if(targetCursor != null) {
+            	targetCursor.close();
+            }
         }
 
         return tableReport;

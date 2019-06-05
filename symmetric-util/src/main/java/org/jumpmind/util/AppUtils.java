@@ -32,6 +32,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.TimeZone;
@@ -89,7 +90,7 @@ public class AppUtils {
 
                 if (isBlank(hostName)) {
                     try {
-                        hostName = IOUtils.toString(Runtime.getRuntime().exec("hostname").getInputStream());
+                        hostName = IOUtils.toString(Runtime.getRuntime().exec("hostname").getInputStream(), Charset.defaultCharset());
                     } catch (Exception ex) {}
                 }
                 
@@ -262,12 +263,9 @@ public class AppUtils {
                             file.getParentFile().mkdirs();
                             file.getParentFile().setLastModified(entry.getTime());
                         }
-                        FileOutputStream fos = new FileOutputStream(file);
-                        try {
+                        try(FileOutputStream fos = new FileOutputStream(file)) {
                             IOUtils.copy(is, fos);
                             file.setLastModified(entry.getTime());
-                        } finally {
-                            IOUtils.closeQuietly(fos);
                         }
                     }
                 }

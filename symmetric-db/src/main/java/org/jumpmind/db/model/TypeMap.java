@@ -169,8 +169,8 @@ public abstract class TypeMap
         }
 
         // Torque/Turbine extensions which we only support when reading from an XML schema
-        _typeNameToTypeCode.put("BOOLEANINT",  new Integer(Types.TINYINT));
-        _typeNameToTypeCode.put("BOOLEANCHAR", new Integer(Types.CHAR));
+        _typeNameToTypeCode.put("BOOLEANINT",  Integer.valueOf(Types.TINYINT));
+        _typeNameToTypeCode.put("BOOLEANCHAR", Integer.valueOf(Types.CHAR));
 
         registerJdbcType(ColumnTypes.SQLXML, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
         registerJdbcType(ColumnTypes.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
@@ -214,7 +214,7 @@ public abstract class TypeMap
      */
     public static String getJdbcTypeName(int typeCode)
     {
-        String description = _typeCodeToTypeName.get(new Integer(typeCode)); 
+        String description = _typeCodeToTypeName.get(Integer.valueOf(typeCode)); 
         if (StringUtils.isEmpty(description)) {
             description = String.valueOf(typeCode);
         }
@@ -230,7 +230,7 @@ public abstract class TypeMap
      */
     protected static void registerJdbcType(int typeCode, String typeName, JdbcTypeCategoryEnum category)
     {
-        Integer typeId = new Integer(typeCode);
+        Integer typeId = Integer.valueOf(typeCode);
 
         _typeNameToTypeCode.put(typeName.toUpperCase(), typeId);
         _typeCodeToTypeName.put(typeId, typeName.toUpperCase());
@@ -256,7 +256,7 @@ public abstract class TypeMap
     {
         Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.NUMERIC);
 
-        return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
+        return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
 
     /**
@@ -270,7 +270,7 @@ public abstract class TypeMap
     {
         Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.DATETIME);
 
-        return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
+        return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
 
     /**
@@ -284,7 +284,7 @@ public abstract class TypeMap
     {
         Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.TEXTUAL);
 
-        return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
+        return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
 
     /**
@@ -298,7 +298,7 @@ public abstract class TypeMap
     {
         Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.BINARY);
 
-        return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
+        return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
 
     /**
@@ -312,6 +312,6 @@ public abstract class TypeMap
     {
         Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.SPECIAL);
 
-        return typesInCategory == null ? false : typesInCategory.contains(new Integer(jdbcTypeCode));
+        return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
 }

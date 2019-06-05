@@ -222,7 +222,7 @@ abstract public class AbstractWriterTest {
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(getTestColumns()) + " from " + getTestTable() + " where "
                 + getWhere(getTestKeys());
-        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, new Long(testTableId));
+        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
 
         if (expectedValues != null) {
             expectedValues[1] = translateExpectedString(expectedValues[1], false);
@@ -300,7 +300,7 @@ abstract public class AbstractWriterTest {
                 } else if (resultObj instanceof Double) {
                     resultValue = resultObj.toString();
                     if (platform instanceof SqliteDatabasePlatform) {
-                        expected[i] = new Double(expected[i]).toString();
+                        expected[i] = Double.valueOf(expected[i]).toString();
                     }
                     
                 } else if (resultObj != null) {
@@ -329,7 +329,7 @@ abstract public class AbstractWriterTest {
     }
     
     public Map<String,Object> queryForRow(String id) {
-        return platform.getSqlTemplate().queryForMap("select * from " + getTestTable() + " where id=?", new Integer(id));
+        return platform.getSqlTemplate().queryForMap("select * from " + getTestTable() + " where id=?", Integer.valueOf(id));
     }
 
     protected static class TableCsvData {

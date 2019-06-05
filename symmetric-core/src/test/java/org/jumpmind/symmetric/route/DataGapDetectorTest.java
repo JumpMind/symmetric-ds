@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.route;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -46,7 +46,7 @@ import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
 import org.mockito.invocation.InvocationOnMock;
@@ -162,7 +162,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-    @Test
+	@Test
     public void testNewGapFull() throws Exception {
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
@@ -170,10 +170,10 @@ public class DataGapDetectorTest {
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(100L);
 
+        String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
-        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
-        String sql = Matchers.anyString();
-        when(sqlTemplate.query(sql, mapper, Matchers.eq(4L), Matchers.eq(50000004L))).thenReturn(dataIds);
+        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) ArgumentMatchers.any();
+        when(sqlTemplate.query(sql, mapper, ArgumentMatchers.eq(4L), ArgumentMatchers.eq(50000004L))).thenReturn(dataIds);
         
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
@@ -217,10 +217,10 @@ public class DataGapDetectorTest {
         dataIds.add(5L);
         dataIds.add(8L);
 
+        String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
-        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
-        String sql = Matchers.anyString();
-        when(sqlTemplate.query(sql, mapper, Matchers.eq(4L), Matchers.eq(50000004L))).thenReturn(dataIds);
+        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) ArgumentMatchers.any();
+        when(sqlTemplate.query(sql, mapper, ArgumentMatchers.eq(4L), ArgumentMatchers.eq(50000004L))).thenReturn(dataIds);
 
         List<DataGap> dataGaps = new ArrayList<DataGap>();
         dataGaps.add(new DataGap(3, 3));
@@ -269,9 +269,10 @@ public class DataGapDetectorTest {
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);
 
+        String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
-        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
-        when(sqlTemplate.query(Matchers.anyString(), mapper, (Object[])Matchers.anyVararg())).thenAnswer(new Answer<List<Long>>() {
+        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) ArgumentMatchers.any();
+        when(sqlTemplate.query(sql, mapper, (Object[])ArgumentMatchers.any())).thenAnswer(new Answer<List<Long>>() {
             public List<Long> answer(InvocationOnMock invocation) {
                 List<Long> dataIds = new ArrayList<Long>();
                 long startId = (Long) invocation.getArguments()[2];
@@ -466,10 +467,10 @@ public class DataGapDetectorTest {
         dataIds.add(843L);
         dataIds.add(844L);
 
+        String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
-        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
-        String sql = Matchers.anyString();
-        when(sqlTemplate.query(sql, mapper, Matchers.eq(841L), Matchers.eq(50000840L))).thenReturn(dataIds);
+        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) ArgumentMatchers.any();
+        when(sqlTemplate.query(sql, mapper, ArgumentMatchers.eq(841L), ArgumentMatchers.eq(50000840L))).thenReturn(dataIds);
 
         List<DataGap> dataGaps1 = new ArrayList<DataGap>();
         dataGaps1.add(new DataGap(841, 50000840));
@@ -563,10 +564,10 @@ public class DataGapDetectorTest {
         List<Long> dataIds = new ArrayList<Long>();
         dataIds.add(30953883L);
 
+        String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
-        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) Matchers.anyObject();
-        String sql = Matchers.anyString();
-        when(sqlTemplate.query(sql, mapper, Matchers.eq(30953883L), Matchers.eq(80953883L))).thenReturn(dataIds);
+        ISqlRowMapper<Long> mapper = (ISqlRowMapper<Long>) ArgumentMatchers.any();
+        when(sqlTemplate.query(sql, mapper, ArgumentMatchers.eq(30953883L), ArgumentMatchers.eq(80953883L))).thenReturn(dataIds);
 
         List<DataGap> dataGaps1 = new ArrayList<DataGap>();
         dataGaps1.add(new DataGap(30953883, 80953883));
@@ -754,7 +755,7 @@ public class DataGapDetectorTest {
               checkDeleteGap(allGaps, gap);
               return null;
             }
-        }).when(dataService).deleteDataGap(Matchers.eq(sqlTransaction), (DataGap) Matchers.anyObject());
+        }).when(dataService).deleteDataGap(ArgumentMatchers.eq(sqlTransaction), (DataGap) ArgumentMatchers.any());
 
         doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation) {
@@ -763,7 +764,7 @@ public class DataGapDetectorTest {
               checkInsertGap(allGaps, gap);
               return null;
             }
-        }).when(dataService).insertDataGap(Matchers.eq(sqlTransaction), (DataGap) Matchers.anyObject());
+        }).when(dataService).insertDataGap(ArgumentMatchers.eq(sqlTransaction), (DataGap) ArgumentMatchers.any());
 
         doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation) {
@@ -772,7 +773,7 @@ public class DataGapDetectorTest {
               checkInsertGap(allGaps, gap);
               return null;
             }
-        }).when(dataService).insertDataGap((DataGap) Matchers.anyObject());
+        }).when(dataService).insertDataGap((DataGap) ArgumentMatchers.any());
     }
 
     private void verifyInteractions(List<DataGap> dataGaps, List<Long> dataIds, boolean verifyDeletes) {

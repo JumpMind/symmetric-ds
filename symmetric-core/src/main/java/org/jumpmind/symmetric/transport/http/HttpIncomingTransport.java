@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -72,12 +71,16 @@ public class HttpIncomingTransport implements IIncomingTransport {
     @Override
     public void close() {
         if (reader != null) {
-            IOUtils.closeQuietly(reader);
+        	try {
+        		reader.close();
+        	} catch(IOException e) { }
             reader = null;
         } 
         
         if (is != null) {
-            IOUtils.closeQuietly(is);
+        	try {
+        		is.close();
+        	} catch(IOException e) { }
             is = null;
         }
     }

@@ -32,7 +32,6 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
@@ -100,8 +99,16 @@ public class FileIncomingTransport implements IIncomingTransport {
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(reader);
-        IOUtils.closeQuietly(in);
+    	try {
+    		if(reader != null) {
+    			reader.close();
+    		}
+    	} catch(IOException e) { }
+    	try {
+    		if(in != null) {
+    			in.close();
+    		}
+    	} catch(IOException e) { }
         open = false;
     }
 

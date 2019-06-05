@@ -75,7 +75,7 @@ public class JobCreator {
                 }
             }
             
-            return (AbstractJob) jobClass.newInstance(); // try default constructor.
+            return (AbstractJob) jobClass.getDeclaredConstructor().newInstance(); // try default constructor.
         } catch (Exception ex) {
             throw new SymmetricException("Failed to load and instantiate job class '" + className + "'", ex);
         }

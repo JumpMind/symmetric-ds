@@ -38,7 +38,7 @@ public class StatementBypassInterceptor extends StatementInterceptor {
         if (methodName.equals("getUpdateCount")) {
             InterceptResult result = new InterceptResult();
             result.setIntercepted(true);
-            result.setInterceptResult(new Integer(1));
+            result.setInterceptResult(Integer.valueOf(1));
             return result;
         }
         if (methodName.startsWith("execute")) {
@@ -50,7 +50,7 @@ public class StatementBypassInterceptor extends StatementInterceptor {
                 if (methodName.equals("execute")) {                    
                     result.setInterceptResult(Boolean.FALSE);
                 } else if (methodName.equals("executeUpdate")) {
-                    result.setInterceptResult(new Integer(1));
+                    result.setInterceptResult(Integer.valueOf(1));
                 }
                 String sql = sqlBuilder.buildDynamicSqlForLog(ps.getStatement(), psArgs.toArray(), null);
                 log.info("PreparedStatement." + methodName + " *BYPASSED* " + StringUtils.abbreviate(sql, 128));

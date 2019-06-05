@@ -263,7 +263,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     @Override
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + getTestTable() + " where " + getWhere(TEST_KEYS);
-        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, new Long(testTableId));
+        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
 
         if (expectedValues != null) {
             expectedValues[1] = translateExpectedString(expectedValues[1], false);

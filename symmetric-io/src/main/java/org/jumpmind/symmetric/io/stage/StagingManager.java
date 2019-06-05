@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io.stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -265,7 +266,7 @@ public class StagingManager implements IStagingManager {
         try {
             acquired = lockFile.createNewFile();
             if (acquired) {
-                FileUtils.write(lockFile, serverInfo);
+                FileUtils.write(lockFile, serverInfo, Charset.defaultCharset(), false);
             }
         } catch (IOException ex) { // Hitting this when file already exists.
             log.debug("Failed to create lock file  (" + lockFilePath + ")", ex);

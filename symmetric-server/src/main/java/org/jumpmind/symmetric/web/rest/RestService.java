@@ -378,18 +378,14 @@ public class RestService {
     @ResponseBody
     public final void getSnapshot(@PathVariable("engine") String engineName,
             HttpServletResponse resp) {
-        BufferedInputStream bis = null;
-        try {
-            ISymmetricEngine engine = getSymmetricEngine(engineName);
-            File file = engine.snapshot();
-            resp.setHeader("Content-Disposition",
-                    String.format("attachment; filename=%s", file.getName()));
-            bis = new BufferedInputStream(new FileInputStream(file));
+    	ISymmetricEngine engine = getSymmetricEngine(engineName);
+    	File file = engine.snapshot();
+    	resp.setHeader("Content-Disposition",
+                String.format("attachment; filename=%s", file.getName()));
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
             IOUtils.copy(bis, resp.getOutputStream());
         } catch (IOException e) {
             throw new IoException(e);
-        } finally {
-            IOUtils.closeQuietly(bis);
         }
     }
 

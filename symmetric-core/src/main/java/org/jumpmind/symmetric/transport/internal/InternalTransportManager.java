@@ -31,7 +31,6 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.io.IoConstants;
@@ -225,8 +224,16 @@ public class InternalTransportManager extends AbstractTransportManager implement
                 } catch (Exception e) {
                     log.error("", e);
                 } finally {
-                    IOUtils.closeQuietly(is);
-                    IOUtils.closeQuietly(os);
+                	try {
+                		if(is != null) {
+                			is.close();
+                		}
+                	} catch(IOException e) { }
+                	try {
+                		if(os != null) {
+                			os.close();
+                		}
+                	} catch(IOException e) { }
                 }
             }
         }.start();

@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.jmx;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -32,7 +33,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
@@ -296,17 +296,13 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         Date endBatchTime = FormatUtils.parseDate(endTime, FormatUtils.TIMESTAMP_PATTERNS);
         String[] channelIds = channelIdList.split(",");
         IDataExtractorService dataExtractorService = engine.getDataExtractorService();
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(file));
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             dataExtractorService.extractBatchRange(writer, nodeId, startBatchTime, endBatchTime,
                     channelIds);
             return true;
         } catch (Exception ex) {
             log.error("Failed to write batch range to file", ex);
             return false;
-        } finally {
-            IOUtils.closeQuietly(writer);
         }
     }   
 
@@ -390,7 +386,9 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         Writer writer = new FileWriter(new File(fileName));
         engine.getDataExtractorService().extractBatchRange(writer, nodeId,
                 Long.valueOf(startBatchId), Long.valueOf(endBatchId));
-        IOUtils.closeQuietly(writer);
+        try {
+        	writer.close();
+        } catch(IOException e) { }
     }
 
     @ManagedOperation(description = "Encrypts plain text for use with db.user and db.password properties")

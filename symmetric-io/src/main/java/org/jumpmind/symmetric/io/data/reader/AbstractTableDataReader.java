@@ -22,13 +22,13 @@ package org.jumpmind.symmetric.io.data.reader;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -159,7 +159,11 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
     }
 
     public void close() {
-        IOUtils.closeQuietly(reader);
+    	try {
+    		if(reader != null) {
+    			reader.close();
+    		}
+    	} catch(IOException e) { }
         finish();
     }
 

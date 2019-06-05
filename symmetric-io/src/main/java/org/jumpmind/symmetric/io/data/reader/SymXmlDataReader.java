@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -241,7 +240,11 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
     }
 
     public void close() {
-        IOUtils.closeQuietly(reader);
+    	try {
+    		if(reader != null) {
+    			reader.close();
+    		}
+    	} catch(IOException e) { }
     }
 
     public Map<Batch, Statistics> getStatistics() {

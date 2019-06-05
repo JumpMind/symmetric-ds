@@ -484,7 +484,7 @@ public class SymmetricWebServer {
             } else if (StringUtils.isNotBlank(host)) {
                 mbeanServer.setAttribute(name, new Attribute("Host", host));
             }
-            mbeanServer.setAttribute(name, new Attribute("Port", new Integer(jmxPort)));
+            mbeanServer.setAttribute(name, new Attribute("Port", Integer.valueOf(jmxPort)));
             ObjectName processorName = getXslJmxAdaptorName();
             mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
             mbeanServer.setAttribute(name, new Attribute("ProcessorName", processorName));

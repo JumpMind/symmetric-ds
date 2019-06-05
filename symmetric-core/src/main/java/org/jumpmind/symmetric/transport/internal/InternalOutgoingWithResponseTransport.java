@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -55,14 +54,30 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
     }
 
     public BufferedReader readResponse() throws IOException {
-        IOUtils.closeQuietly(writer);
+    	try {
+    		if(writer != null) {
+    			writer.close();
+    		}
+    	} catch(IOException e) { }
         return reader;
     }
 
     public void close() {
-        IOUtils.closeQuietly(os);
-        IOUtils.closeQuietly(writer);
-        IOUtils.closeQuietly(reader);
+    	try {
+    		if(os != null) {
+    			os.close();
+    		}
+    	} catch(IOException e) { }
+    	try {
+    		if(writer != null) {
+    			writer.close();
+    		}
+    	} catch(IOException e) { }
+    	try {
+    		if(reader != null) {
+    			reader.close();
+    		}
+    	} catch(IOException e) { }
         open = false;
     }
 

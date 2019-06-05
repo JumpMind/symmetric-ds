@@ -120,19 +120,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     public AbstractJdbcDdlReader(IDatabasePlatform platform) {
         this.platform = platform;
 
-        _defaultSizes.put(new Integer(Types.CHAR), "254");
-        _defaultSizes.put(new Integer(Types.VARCHAR), "254");
-        _defaultSizes.put(new Integer(Types.LONGVARCHAR), "254");
-        _defaultSizes.put(new Integer(Types.BINARY), "254");
-        _defaultSizes.put(new Integer(Types.VARBINARY), "254");
-        _defaultSizes.put(new Integer(Types.LONGVARBINARY), "254");
-        _defaultSizes.put(new Integer(Types.INTEGER), "32");
-        _defaultSizes.put(new Integer(Types.BIGINT), "64");
-        _defaultSizes.put(new Integer(Types.REAL), "7,0");
-        _defaultSizes.put(new Integer(Types.FLOAT), "15,0");
-        _defaultSizes.put(new Integer(Types.DOUBLE), "15,0");
-        _defaultSizes.put(new Integer(Types.DECIMAL), "15,15");
-        _defaultSizes.put(new Integer(Types.NUMERIC), "15,15");
+        _defaultSizes.put(Integer.valueOf(Types.CHAR), "254");
+        _defaultSizes.put(Integer.valueOf(Types.VARCHAR), "254");
+        _defaultSizes.put(Integer.valueOf(Types.LONGVARCHAR), "254");
+        _defaultSizes.put(Integer.valueOf(Types.BINARY), "254");
+        _defaultSizes.put(Integer.valueOf(Types.VARBINARY), "254");
+        _defaultSizes.put(Integer.valueOf(Types.LONGVARBINARY), "254");
+        _defaultSizes.put(Integer.valueOf(Types.INTEGER), "32");
+        _defaultSizes.put(Integer.valueOf(Types.BIGINT), "64");
+        _defaultSizes.put(Integer.valueOf(Types.REAL), "7,0");
+        _defaultSizes.put(Integer.valueOf(Types.FLOAT), "15,0");
+        _defaultSizes.put(Integer.valueOf(Types.DOUBLE), "15,0");
+        _defaultSizes.put(Integer.valueOf(Types.DECIMAL), "15,15");
+        _defaultSizes.put(Integer.valueOf(Types.NUMERIC), "15,15");
 
         _columnsForTable = initColumnsForTable();
         _columnsForColumn = initColumnsForColumn();
@@ -209,10 +209,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         result.add(new MetaDataColumnDescriptor(getName("TABLE_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("COLUMN_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("TYPE_NAME"), Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor(getName("DATA_TYPE"), Types.INTEGER, new Integer(
+        result.add(new MetaDataColumnDescriptor(getName("DATA_TYPE"), Types.INTEGER, Integer.valueOf(
                 java.sql.Types.OTHER)));
-        result.add(new MetaDataColumnDescriptor(getName("NUM_PREC_RADIX"), Types.INTEGER, new Integer(10)));
-        result.add(new MetaDataColumnDescriptor(getName("DECIMAL_DIGITS"), Types.INTEGER, new Integer(0)));
+        result.add(new MetaDataColumnDescriptor(getName("NUM_PREC_RADIX"), Types.INTEGER, Integer.valueOf(10)));
+        result.add(new MetaDataColumnDescriptor(getName("DECIMAL_DIGITS"), Types.INTEGER, Integer.valueOf(0)));
         result.add(new MetaDataColumnDescriptor(getName("COLUMN_SIZE"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("IS_NULLABLE"), Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor(getName("IS_AUTOINCREMENT"), Types.VARCHAR, "YES"));
@@ -258,7 +258,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         // we're also reading the table name so that a model reader impl can
         // filter manually
         result.add(new MetaDataColumnDescriptor(getName("FKTABLE_NAME"), Types.VARCHAR));
-        result.add(new MetaDataColumnDescriptor(getName("KEY_SEQ"), Types.TINYINT, new Short((short) 0)));
+        result.add(new MetaDataColumnDescriptor(getName("KEY_SEQ"), Types.TINYINT, Short.valueOf((short) 0)));
         result.add(new MetaDataColumnDescriptor(getName("FK_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("FKTABLE_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("PKCOLUMN_NAME"), Types.VARCHAR));
@@ -284,7 +284,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         // filter manually
         result.add(new MetaDataColumnDescriptor(getName("TABLE_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("NON_UNIQUE"), Types.BIT, Boolean.TRUE));
-        result.add(new MetaDataColumnDescriptor(getName("ORDINAL_POSITION"), Types.TINYINT, new Short(
+        result.add(new MetaDataColumnDescriptor(getName("ORDINAL_POSITION"), Types.TINYINT, Short.valueOf(
                 (short) 0)));
         result.add(new MetaDataColumnDescriptor(getName("COLUMN_NAME"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("TYPE"), Types.TINYINT));
@@ -978,7 +978,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }        
         
         if (columnSize == null) {
-            columnSize = (String) _defaultSizes.get(new Integer(column.getMappedTypeCode()));
+            columnSize = (String) _defaultSizes.get(Integer.valueOf(column.getMappedTypeCode()));
         }
         // we're setting the size after the precision and radix in case
         // the database prefers to return them in the size value

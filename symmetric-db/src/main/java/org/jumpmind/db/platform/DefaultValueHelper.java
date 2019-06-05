@@ -102,7 +102,7 @@ public class DefaultValueHelper {
                         .determineBooleanTypeCode()))) {
             result = value;
         } else if (TypeMap.isNumericType(targetTypeCode)) {
-            result = (value ? new Integer(1) : new Integer(0));
+            result = (value ? Integer.valueOf(1) : Integer.valueOf(0));
         } else {
             result = Boolean.toString(value);
         }

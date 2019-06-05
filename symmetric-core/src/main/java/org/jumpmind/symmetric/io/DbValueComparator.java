@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -126,8 +127,8 @@ public class DbValueComparator {
         
         if (source != null && target != null) {
             if (numericScale >= 0) {
-                source = source.setScale(numericScale, BigDecimal.ROUND_HALF_UP);
-                target = target.setScale(numericScale, BigDecimal.ROUND_HALF_UP);
+                source = source.setScale(numericScale, RoundingMode.HALF_UP);
+                target = target.setScale(numericScale, RoundingMode.HALF_UP);
             }
             return source.compareTo(target);
         }

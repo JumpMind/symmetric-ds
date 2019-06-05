@@ -78,7 +78,7 @@ public class DBFField {
 	public String format(Object obj) throws DBFException {
 		if (type == 'N' || type == 'F') {
 			if (obj == null) {
-				obj = new Double(0.0D);
+				obj = Double.valueOf(0.0D);
 			}
 			if (obj instanceof Number) {
 				Number number = (Number) obj;
@@ -127,7 +127,7 @@ public class DBFField {
 		}
 		if (type == 'L') {
 			if (obj == null) {
-				obj = new Boolean(false);
+				obj = Boolean.valueOf(false);
 			}
 			if (obj instanceof Boolean) {
 				Boolean boolean1 = (Boolean) obj;
@@ -160,9 +160,9 @@ public class DBFField {
 			}
 			try {
 				if (getDecimalCount() == 0) {
-					return new Long(s);
+					return Long.valueOf(s);
 				} else {
-					return new Double(s);
+					return Double.valueOf(s);
 				}
 			} catch (NumberFormatException numberformatexception) {
 				throw new DBFException(numberformatexception);
@@ -173,10 +173,10 @@ public class DBFField {
 		}
 		if (type == 'L') {
 			if (s.equals("Y") || s.equals("y") || s.equals("T") || s.equals("t")) {
-				return new Boolean(true);
+				return Boolean.valueOf(true);
 			}
 			if (s.equals("N") || s.equals("n") || s.equals("F") || s.equals("f")) {
-				return new Boolean(false);
+				return Boolean.valueOf(false);
 			} else {
 				throw new DBFException("Unrecognized value for logical field: " + s);
 			}

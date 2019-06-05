@@ -31,11 +31,9 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
@@ -56,8 +54,6 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     String outgoingDir;
     
     private List<OutgoingBatch> processedBatches;
-    
-    private String extension;
     
     public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) throws IOException {
         this.outgoingDir = outgoingDir;
@@ -116,8 +112,16 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(writer);
-        IOUtils.closeQuietly(out);
+    	try {
+    		if(writer != null) {
+    			writer.close();
+    		}
+    	} catch(IOException e) { }
+    	try {
+    		if(out != null) {
+    			out.close();
+    		}
+    	} catch(IOException e) { }
         open = false;
     }
 

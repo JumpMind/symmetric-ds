@@ -36,13 +36,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Appender;
@@ -134,9 +133,7 @@ public abstract class AbstractCommandLauncher {
             TypedProperties serverProperties = new TypedProperties();
 
             if (serverPropertiesFile.exists() && serverPropertiesFile.isFile()) {
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(serverPropertiesFile);
+                try(FileInputStream fis = new FileInputStream(serverPropertiesFile)) {
                     serverProperties.load(fis);
 
                     /* System properties always override */
@@ -150,8 +147,6 @@ public abstract class AbstractCommandLauncher {
 
                 } catch (IOException ex) {
                     log.error("Failed to load " + DEFAULT_SERVER_PROPERTIES, ex);
-                } finally {
-                    IOUtils.closeQuietly(fis);
                 }
             } else if (!serverPropertiesFile.exists()) {
                 log.debug("Failed to load " + DEFAULT_SERVER_PROPERTIES + ". File does not exist.");
@@ -167,7 +162,7 @@ public abstract class AbstractCommandLauncher {
     abstract protected boolean requiresPropertiesFile(CommandLine line);
 
     public void execute(String args[]) {
-        PosixParser parser = new PosixParser();
+        DefaultParser parser = new DefaultParser();
         Options options = new Options();
         buildOptions(options);
         try {
@@ -321,16 +316,12 @@ public abstract class AbstractCommandLauncher {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             Properties properties = new Properties();
-            FileInputStream is = null;
-            try {
-                is = new FileInputStream(file);
+            try(FileInputStream is = new FileInputStream(file)) {
                 properties.load(is);
                 if (engineName.equals(properties.getProperty(ParameterConstants.ENGINE_NAME))) {
                     return file;
                 }
             } catch (IOException ex) {
-            } finally {
-                IOUtils.closeQuietly(is);
             }
         }
         return null;
@@ -374,7 +365,7 @@ public abstract class AbstractCommandLauncher {
 
         if (line.hasOption(OPTION_JCE_PROVIDER)) {
             Provider provider = (Provider) Class.forName(line.getOptionValue(OPTION_JCE_PROVIDER))
-                    .newInstance();
+            		.getDeclaredConstructor().newInstance();
             Security.addProvider(provider);
         }
     }

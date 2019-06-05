@@ -448,7 +448,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
             }
             if (inBatchMode) {
                 if (marker == null) {
-                    marker = new Integer(markers.size() + 1);
+                    marker = Integer.valueOf(markers.size() + 1);
                 }
                 markers.add(marker);
                 long start = System.currentTimeMillis();

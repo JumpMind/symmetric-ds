@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -306,7 +307,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                             } else if (value instanceof Clob) {
                                 Clob clob = (Clob) value;
                                 try {
-                                    value = IOUtils.toByteArray(clob.getCharacterStream());
+                                    value = IOUtils.toByteArray(clob.getCharacterStream(), Charset.defaultCharset());
                                 } catch (IOException e) {
                                     throw new IoException(e);
                                 }
@@ -596,23 +597,17 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
         if (obj instanceof Blob) {
             Blob blob = (Blob) obj;
-            InputStream is = blob.getBinaryStream();
-            try {
+            try(InputStream is = blob.getBinaryStream()) {
                 obj = IOUtils.toByteArray(is);
             } catch (IOException e) {
                 throw new SqlException(e);
-            } finally {
-                IOUtils.closeQuietly(is);
             }
         } else if (obj instanceof Clob) {
             Clob clob = (Clob) obj;
-            Reader reader = clob.getCharacterStream();
-            try {
+            try(Reader reader = clob.getCharacterStream()) {
                 obj = IOUtils.toString(reader);
             } catch (IOException e) {
                 throw new SqlException(e);
-            } finally {
-                IOUtils.closeQuietly(reader);
             }
         } else if (className != null && ("oracle.sql.TIMESTAMP".equals(className))) {
             obj = rs.getTimestamp(index);
@@ -1045,13 +1040,13 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         } else if (String.class.isAssignableFrom(clazz)) {
             result = (T) rs.getString(1);
         } else if (Long.class.isAssignableFrom(clazz)) {
-            result = (T)new Long(rs.getLong(1));
+            result = (T)Long.valueOf(rs.getLong(1));
         } else if (Integer.class.isAssignableFrom(clazz)) {
-            result = (T)new Integer(rs.getInt(1));
+            result = (T)Integer.valueOf(rs.getInt(1));
         } else if (Float.class.isAssignableFrom(clazz)) {
-            result = (T)new Float(rs.getFloat(1));
+            result = (T)Float.valueOf(rs.getFloat(1));
         } else if (Double.class.isAssignableFrom(clazz)) {
-            result = (T)new Double(rs.getDouble(1));
+            result = (T)Double.valueOf(rs.getDouble(1));
         } else if (BigDecimal.class.isAssignableFrom(clazz)) {
             result = (T)rs.getBigDecimal(1);
         } else {

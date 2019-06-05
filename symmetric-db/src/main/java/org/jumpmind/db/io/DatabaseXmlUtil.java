@@ -35,7 +35,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -86,14 +85,10 @@ public class DatabaseXmlUtil {
      * @return The database model
      */
     public static Database read(File file) {
-        FileReader reader = null;
-        try {
-            reader = new FileReader(file);
+        try(FileReader reader = new FileReader(file)) {
             return read(reader);
         } catch (IOException e) {
             throw new IoException(e);
-        } finally {
-            IOUtils.closeQuietly(reader);
         }
     }
 

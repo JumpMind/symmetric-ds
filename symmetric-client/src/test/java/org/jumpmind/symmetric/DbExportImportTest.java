@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.sql.Types;
 import java.util.List;
 import java.util.Set;
@@ -513,7 +514,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         File a = new File(dir, platform.getTableFromCache("a", false).getName() + ".csv");
         Assert.assertTrue(a.exists());
         Assert.assertTrue(a.isFile());
-        List<String> lines = FileUtils.readLines(a);
+        List<String> lines = FileUtils.readLines(a, Charset.defaultCharset());
         Assert.assertEquals(9, lines.size());
         Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
         Assert.assertEquals("\"1\",\"This is a test of a\"", lines.get(6));
@@ -522,7 +523,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         File b = new File(dir, platform.getTableFromCache("b", false).getName() + ".csv");
         Assert.assertTrue(b.exists());
         Assert.assertTrue(b.isFile());
-        lines = FileUtils.readLines(b);
+        lines = FileUtils.readLines(b, Charset.defaultCharset());
         Assert.assertEquals(10, lines.size());
         Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
         Assert.assertEquals("\"1\",\"This is a test of b\"", lines.get(6));
@@ -532,7 +533,7 @@ public class DbExportImportTest extends AbstractServiceTest {
         File c = new File(dir, platform.getTableFromCache("c", false).getName() + ".csv");
         Assert.assertTrue(c.exists());
         Assert.assertTrue(c.isFile());
-        lines = FileUtils.readLines(c);
+        lines = FileUtils.readLines(c, Charset.defaultCharset());
         Assert.assertEquals(9, lines.size());
         Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
         Assert.assertEquals("\"1\",\"This is a test of c\"", lines.get(6));

@@ -376,13 +376,13 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 String type = rs.getString(2);
                 // Only read in normal oracle indexes
                 if (type.startsWith("NORMAL")) {
-                    values.put("INDEX_TYPE", new Short(DatabaseMetaData.tableIndexOther));
+                    values.put("INDEX_TYPE", Short.valueOf(DatabaseMetaData.tableIndexOther));
                     values.put("INDEX_NAME", name);
                     values.put("NON_UNIQUE",
                             "UNIQUE".equalsIgnoreCase(rs.getString(3)) ? Boolean.FALSE
                                     : Boolean.TRUE);
                     values.put("COLUMN_NAME", rs.getString(4));
-                    values.put("ORDINAL_POSITION", new Short(rs.getShort(5)));
+                    values.put("ORDINAL_POSITION", Short.valueOf(rs.getShort(5)));
 
                     readIndex(metaData, values, indices);
                 } else if (log.isDebugEnabled()) {

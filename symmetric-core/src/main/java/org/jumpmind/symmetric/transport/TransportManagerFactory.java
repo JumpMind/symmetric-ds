@@ -131,7 +131,7 @@ public class TransportManagerFactory {
                     }
                 }
                 if (httpTransportManager == null) {                        
-                    httpTransportManager = (HttpTransportManager) clazz.newInstance();
+                    httpTransportManager = (HttpTransportManager) clazz.getDeclaredConstructor().newInstance();
                 }
                 return httpTransportManager;
             } catch (Exception ex) {
