@@ -67,6 +67,8 @@ public class DbExportCommand extends AbstractCommandLauncher {
     
     private static final String OPTION_WHERE = "where";
 
+    private static final String OPTION_EXCLUDE_COLUMNS = "exclude-columns";
+    
     public DbExportCommand() {
         super("dbexport", "[tablename...]", "DbExport.Option.");
     }
@@ -111,6 +113,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_SQL, true);
         addOption(options, null, OPTION_WHERE, true);
         addOption(options, "i", OPTION_COMMENTS, false);
+        addOption(options, null, OPTION_EXCLUDE_COLUMNS, true);
     }
     
     @Override
@@ -178,7 +181,10 @@ public class DbExportCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_WHERE)) {
             dbExport.setWhereClause(line.getOptionValue(OPTION_WHERE));
         }        
- 
+        if (line.hasOption(OPTION_EXCLUDE_COLUMNS)) {
+            dbExport.setExcludeColumns(line.getOptionValue(OPTION_EXCLUDE_COLUMNS).split(","));
+        }
+        
         String[] args = line.getArgs();  
         if (line.hasOption(OPTION_SQL)) {
             if (args.length != 1) {

@@ -33,6 +33,7 @@ They are as follows:
 - *--debug* : Print debug information in logging.
 - *--dir <arg>* : Indicate a directory to use for the export of files.  If the directory is specified, then a file per table will be written to the directory.
 - *-e, --engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.
+- *--exclude-columns <arg>* : A comma separated list of columns to exclude from the exported tables.
 - *--format <arg>* : Output format: SQL, CSV, XML, or SYM_XML.
 - *-h, --help* : Print help with each option and description.  
 - *-i, --comments* : Write informational comments.
