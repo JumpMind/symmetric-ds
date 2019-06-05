@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.statistic;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -70,7 +71,7 @@ abstract public class AbstractStatsByPeriodMap<T,M extends AbstractNodeHostStats
     abstract protected void add(Date periodStart, M stat);
     
     protected int round(int value) {
-        return 5 * new BigDecimal((double) value / 5d).setScale(2, BigDecimal.ROUND_HALF_DOWN)
+        return 5 * new BigDecimal((double) value / 5d).setScale(2, RoundingMode.HALF_DOWN)
                 .intValue();
     }
 }

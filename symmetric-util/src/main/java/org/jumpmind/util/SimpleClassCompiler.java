@@ -103,7 +103,7 @@ public class SimpleClassCompiler {
                 log.debug("Compilation has succeeded");
                 Class<?> clazz =  fileManager.getClassLoader(null).loadClass(className);
                 if (clazz != null) {
-                    javaObject = clazz.newInstance();
+                    javaObject = clazz.getDeclaredConstructor().newInstance();
                     objectMap.put(id, javaObject);
                 } else {
                     throw new SimpleClassCompilerException("The '"+className+"' class could not be located");

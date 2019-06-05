@@ -419,7 +419,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
         Object[] filteredValues = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
             if (values[i] instanceof Boolean && !isBooleanSupported(dbDialect)) {
-                filteredValues[i] = ((Boolean) values[i]) ? new Integer(1) : new Integer(0);
+                filteredValues[i] = ((Boolean) values[i]) ? Integer.valueOf(1) : Integer.valueOf(0);
             } else {
                 filteredValues[i] = values[i];
             }

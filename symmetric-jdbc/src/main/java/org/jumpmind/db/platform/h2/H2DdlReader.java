@@ -63,7 +63,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
 		if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
 			String maxLength = (String) values.get("CHARACTER_MAXIMUM_LENGTH");
 			if (isNotBlank(maxLength)) {
-				Integer size = new Integer(maxLength);
+				Integer size = Integer.valueOf(maxLength);
 				column.setSize(size.toString());
 				column.findPlatformColumn(platform.getName()).setSize(size);
 			}
@@ -107,7 +107,7 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
 		List<MetaDataColumnDescriptor> result = super.initColumnsForColumn();
 		result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));
 		result.add(new MetaDataColumnDescriptor("NUMERIC_SCALE", 4,
-				new Integer(0)));
+				Integer.valueOf(0)));
 		result.add(new MetaDataColumnDescriptor("CHARACTER_MAXIMUM_LENGTH", 12));
 		return result;
 	}

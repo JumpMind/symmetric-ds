@@ -107,7 +107,7 @@ public class BatchStagingManager extends StagingManager {
             boolean resourceIsOld) {
         Set<Long> outgoingBatches = (Set<Long>) context.getContextValue("outgoingBatches");
         try {
-            Long batchId = new Long(path[path.length - 1]);
+            Long batchId = Long.valueOf(path[path.length - 1]);
             if (!outgoingBatches.contains(batchId) || ttlInMs == 0) {
                 return true;
             }
@@ -126,7 +126,7 @@ public class BatchStagingManager extends StagingManager {
         Map<String, Long> biggestIncomingByNode = (Map<String, Long>) context.getContextValue("biggestIncomingByNode");
         boolean recordIncomingBatchesEnabled = context.getBoolean("recordIncomingBatchesEnabled");
         try {
-            BatchId batchId = new BatchId(new Long(path[path.length - 1]), path[1]);
+            BatchId batchId = new BatchId(Long.valueOf(path[path.length - 1]), path[1]);
             Long biggestBatchId = biggestIncomingByNode.get(batchId.getNodeId());
             if ((recordIncomingBatchesEnabled && !incomingBatches.contains(batchId) && 
                     biggestBatchId != null && biggestBatchId > batchId.getBatchId() &&

@@ -45,9 +45,10 @@ import org.jumpmind.symmetric.service.impl.ExtensionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(PowerMockRunner.class)
+//@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class JavaColumnTransformTest {
 
     IExtensionService extensionService;
@@ -69,7 +70,7 @@ public class JavaColumnTransformTest {
         when(engine.getSymmetricDialect()).thenReturn(dialect);
 
         extensionService = new ExtensionService(engine);
-        when(engine.getExtensionService()).thenReturn(extensionService);
+//        when(engine.getExtensionService()).thenReturn(extensionService);
         
         context = mock(DataContext.class);
         when(context.findTransaction()).thenReturn(sqlTransaction);

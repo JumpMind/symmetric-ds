@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -964,7 +965,7 @@ INodeCommunicationExecutor {
 
             File batchInfo = new File(batchDir, "batch-info.txt");
             if (batchInfo.exists()) {
-                List<String> info = FileUtils.readLines(batchInfo);
+                List<String> info = FileUtils.readLines(batchInfo, Charset.defaultCharset());
                 if (info != null && info.size() > 0) {
                     incomingBatch.setChannelId(info.get(0).trim());
                 } else {
@@ -982,7 +983,7 @@ INodeCommunicationExecutor {
             if (incomingBatchService.acquireIncomingBatch(incomingBatch)) {
                 File syncScript = new File(batchDir, "sync.bsh");
                 if (syncScript.exists()) {
-                    String script = FileUtils.readFileToString(syncScript);
+                    String script = FileUtils.readFileToString(syncScript, Charset.defaultCharset());
                     Interpreter interpreter = new Interpreter();
                     boolean isLocked = false;
                     try {

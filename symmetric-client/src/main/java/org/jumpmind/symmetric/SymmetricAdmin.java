@@ -43,7 +43,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -283,7 +282,6 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         buildCryptoOptions(options);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
         List<String> args = line.getArgList();
@@ -374,16 +372,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         File[] files = findEnginePropertiesFiles();
         for (File file : files) {
             Properties properties = new Properties();
-            FileInputStream is = null;
-            try {
-                is = new FileInputStream(file);
+            try(FileInputStream is = new FileInputStream(file)) {
                 properties.load(is);
                 String name = properties.getProperty(ParameterConstants.ENGINE_NAME);
                 System.out.println(name + " -> " + file.getAbsolutePath());
                 count++;
             } catch (IOException ex) {
-            } finally {
-                IOUtils.closeQuietly(is);
             }
         }
         System.out.println(count + " engines returned");
@@ -519,7 +513,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             }
         }
         if (file != null) {
-            FileUtils.writeStringToFile(file, sqlBuffer.toString());
+            FileUtils.writeStringToFile(file, sqlBuffer.toString(), Charset.defaultCharset(), false);
         }
     }
 
@@ -645,7 +639,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private void sendScript(CommandLine line, List<String> args) throws Exception {
         String scriptName = popArg(args, "Script Name");
-        String scriptData = FileUtils.readFileToString(new File(scriptName));
+        String scriptData = FileUtils.readFileToString(new File(scriptName), Charset.defaultCharset());
         for (Node node : getNodes(line)) {
             System.out.println("Sending script to node '" + node.getNodeId() + "'");
             getSymmetricEngine().getDataService().sendScript(node.getNodeId(), scriptData, false);

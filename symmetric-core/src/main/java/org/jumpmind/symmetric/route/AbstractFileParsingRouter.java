@@ -102,7 +102,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 					int tableIndex=0;
 					for (Map.Entry<Integer, String> tableEntry : tableNames.entrySet()) {
 						String contextId = filePath + "[" + tableEntry.getValue() + "]";
-						Integer lineNumber = contextService.getString(contextId) == null ? 0 : new Integer(contextService.getString(contextId));
+						Integer lineNumber = contextService.getString(contextId) == null ? 0 : Integer.valueOf(contextService.getString(contextId));
 						
 						List<String> dataRows = parse(file, lineNumber, tableEntry.getKey());
 						String columnNames = getColumnNames();
@@ -177,7 +177,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 	         while ((thisLine = resource.getReader().readLine()) != null) {
 	            String[] split = thisLine.split("=");
 	            if (split.length == 2) {
-	            	bookmarkMap.put(split[0].trim(), new Integer(split[1].trim()));
+	            	bookmarkMap.put(split[0].trim(), Integer.valueOf(split[1].trim()));
 	            }
 	         }     
 			}

@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -689,7 +688,11 @@ public class DbExport {
                 csvWriter = null;
             }
 
-            IOUtils.closeQuietly(writer);
+            try {
+            	if(writer != null) {
+            		writer.close();
+            	}
+            } catch(IOException e) { }
             writer = null;
         }
 

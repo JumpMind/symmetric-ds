@@ -21,7 +21,6 @@
 package org.jumpmind.driver;
 
 import java.io.InputStream;
-
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -66,7 +65,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBoolean(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBoolean", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBoolean", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setByte(int arg1, byte arg2) throws SQLException {
@@ -77,7 +76,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setByte(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setByte", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setByte", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setShort(int arg1, short arg2) throws SQLException {
@@ -88,7 +87,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setShort(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setShort", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setShort", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setInt(int arg1, int arg2) throws SQLException {
@@ -99,7 +98,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setInt(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setInt", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setInt", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setLong(int arg1, long arg2) throws SQLException {
@@ -110,7 +109,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setLong(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setLong", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setLong", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setFloat(int arg1, float arg2) throws SQLException {
@@ -121,7 +120,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setFloat(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setFloat", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setFloat", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setDouble(int arg1, double arg2) throws SQLException {
@@ -132,7 +131,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setDouble(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setDouble", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setDouble", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setTimestamp(int arg1, Timestamp arg2) throws SQLException {
@@ -143,7 +142,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setTimestamp(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setTimestamp", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setTimestamp", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setTimestamp(int arg1, Timestamp arg2, Calendar arg3) throws SQLException {
@@ -154,7 +153,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setTimestamp(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setTimestamp", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setTimestamp", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setURL(int arg1, URL arg2) throws SQLException {
@@ -165,7 +164,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setURL(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setURL", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setURL", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setTime(int arg1, Time arg2, Calendar arg3) throws SQLException {
@@ -176,7 +175,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setTime(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setTime", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setTime", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setTime(int arg1, Time arg2) throws SQLException {
@@ -187,7 +186,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setTime(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setTime", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setTime", null,startTime, endTime ,arg1,arg2);
     }
 
     public boolean execute() throws SQLException {
@@ -258,7 +257,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.addBatch();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("addBatch", null,startTime, endTime );
+        interceptor.postExecute("addBatch", null,startTime, endTime );
     }
 
     public void setNull(int arg1, int arg2) throws SQLException {
@@ -269,7 +268,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNull(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNull", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNull", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setNull(int arg1, int arg2, String arg3) throws SQLException {
@@ -280,7 +279,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNull(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNull", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setNull", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setBigDecimal(int arg1, BigDecimal arg2) throws SQLException {
@@ -291,7 +290,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBigDecimal(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBigDecimal", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBigDecimal", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setString(int arg1, String arg2) throws SQLException {
@@ -302,7 +301,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setString(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setString", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setString", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setBytes(int arg1, byte[] arg2) throws SQLException {
@@ -313,7 +312,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBytes(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBytes", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBytes", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setDate(int arg1, Date arg2) throws SQLException {
@@ -324,7 +323,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setDate(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setDate", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setDate", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setDate(int arg1, Date arg2, Calendar arg3) throws SQLException {
@@ -335,7 +334,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setDate(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setDate", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setDate", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setAsciiStream(int arg1, InputStream arg2) throws SQLException {
@@ -346,7 +345,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setAsciiStream(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setAsciiStream(int arg1, InputStream arg2, long arg3) throws SQLException {
@@ -357,7 +356,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setAsciiStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setAsciiStream(int arg1, InputStream arg2, int arg3) throws SQLException {
@@ -368,10 +367,11 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setAsciiStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setAsciiStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
-    public void setUnicodeStream(int arg1, InputStream arg2, int arg3) throws SQLException {
+    @Deprecated
+	public void setUnicodeStream(int arg1, InputStream arg2, int arg3) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("setUnicodeStream", arg1,arg2,arg3);
         if (preResult.isIntercepted()) {
             return;
@@ -379,7 +379,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setUnicodeStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setUnicodeStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setUnicodeStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setBinaryStream(int arg1, InputStream arg2, long arg3) throws SQLException {
@@ -390,7 +390,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBinaryStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setBinaryStream(int arg1, InputStream arg2, int arg3) throws SQLException {
@@ -401,7 +401,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBinaryStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setBinaryStream(int arg1, InputStream arg2) throws SQLException {
@@ -412,7 +412,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBinaryStream(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBinaryStream", null,startTime, endTime ,arg1,arg2);
     }
 
     public void clearParameters() throws SQLException {
@@ -423,7 +423,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.clearParameters();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("clearParameters", null,startTime, endTime );
+        interceptor.postExecute("clearParameters", null,startTime, endTime );
     }
 
     public void setObject(int arg1, Object arg2, int arg3, int arg4) throws SQLException {
@@ -434,7 +434,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setObject(arg1,arg2,arg3,arg4);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2,arg3,arg4);
+        interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2,arg3,arg4);
     }
 
     public void setObject(int arg1, Object arg2, int arg3) throws SQLException {
@@ -445,7 +445,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setObject(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setObject(int arg1, Object arg2) throws SQLException {
@@ -456,7 +456,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setObject(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setObject", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setCharacterStream(int arg1, Reader arg2, long arg3) throws SQLException {
@@ -467,7 +467,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setCharacterStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setCharacterStream(int arg1, Reader arg2, int arg3) throws SQLException {
@@ -478,7 +478,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setCharacterStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setCharacterStream(int arg1, Reader arg2) throws SQLException {
@@ -489,7 +489,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setCharacterStream(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setCharacterStream", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setRef(int arg1, Ref arg2) throws SQLException {
@@ -500,7 +500,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setRef(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setRef", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setRef", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setBlob(int arg1, InputStream arg2, long arg3) throws SQLException {
@@ -511,7 +511,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBlob(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setBlob(int arg1, InputStream arg2) throws SQLException {
@@ -522,7 +522,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBlob(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setBlob(int arg1, Blob arg2) throws SQLException {
@@ -533,7 +533,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setBlob(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setBlob", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setClob(int arg1, Reader arg2) throws SQLException {
@@ -544,7 +544,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setClob(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setClob(int arg1, Reader arg2, long arg3) throws SQLException {
@@ -555,7 +555,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setClob(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setClob(int arg1, Clob arg2) throws SQLException {
@@ -566,7 +566,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setClob(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setClob", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setArray(int arg1, Array arg2) throws SQLException {
@@ -577,7 +577,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setArray(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setArray", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setArray", null,startTime, endTime ,arg1,arg2);
     }
 
     public ParameterMetaData getParameterMetaData() throws SQLException {
@@ -603,7 +603,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setRowId(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setRowId", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setRowId", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setNString(int arg1, String arg2) throws SQLException {
@@ -614,7 +614,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNString(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNString", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNString", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setNCharacterStream(int arg1, Reader arg2) throws SQLException {
@@ -625,7 +625,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNCharacterStream(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNCharacterStream", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNCharacterStream", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setNCharacterStream(int arg1, Reader arg2, long arg3) throws SQLException {
@@ -636,7 +636,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNCharacterStream(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setNCharacterStream", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setNClob(int arg1, Reader arg2, long arg3) throws SQLException {
@@ -647,7 +647,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNClob(arg1,arg2,arg3);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2,arg3);
+        interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2,arg3);
     }
 
     public void setNClob(int arg1, NClob arg2) throws SQLException {
@@ -658,7 +658,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNClob(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setNClob(int arg1, Reader arg2) throws SQLException {
@@ -669,7 +669,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setNClob(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNClob", null,startTime, endTime ,arg1,arg2);
     }
 
     public void setSQLXML(int arg1, SQLXML arg2) throws SQLException {
@@ -680,7 +680,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setSQLXML(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setSQLXML", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setSQLXML", null,startTime, endTime ,arg1,arg2);
     }
 
     public void close() throws SQLException {
@@ -691,7 +691,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.close();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("close", null,startTime, endTime );
+        interceptor.postExecute("close", null,startTime, endTime );
     }
 
     public Connection getConnection() throws SQLException {
@@ -807,7 +807,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.clearWarnings();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("clearWarnings", null,startTime, endTime );
+        interceptor.postExecute("clearWarnings", null,startTime, endTime );
     }
 
     public ResultSet executeQuery(String arg1) throws SQLException {
@@ -908,7 +908,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setMaxFieldSize(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setMaxFieldSize", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setMaxFieldSize", null,startTime, endTime ,arg1);
     }
 
     public int getMaxRows() throws SQLException {
@@ -934,7 +934,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setMaxRows(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setMaxRows", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setMaxRows", null,startTime, endTime ,arg1);
     }
 
     public void setEscapeProcessing(boolean arg1) throws SQLException {
@@ -945,7 +945,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setEscapeProcessing(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setEscapeProcessing", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setEscapeProcessing", null,startTime, endTime ,arg1);
     }
 
     public int getQueryTimeout() throws SQLException {
@@ -971,7 +971,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setQueryTimeout(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setQueryTimeout", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setQueryTimeout", null,startTime, endTime ,arg1);
     }
 
     public void cancel() throws SQLException {
@@ -982,7 +982,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.cancel();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("cancel", null,startTime, endTime );
+        interceptor.postExecute("cancel", null,startTime, endTime );
     }
 
     public void setCursorName(String arg1) throws SQLException {
@@ -993,7 +993,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setCursorName(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setCursorName", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setCursorName", null,startTime, endTime ,arg1);
     }
 
     public ResultSet getResultSet() throws SQLException {
@@ -1064,7 +1064,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setFetchDirection(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setFetchDirection", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setFetchDirection", null,startTime, endTime ,arg1);
     }
 
     public int getFetchDirection() throws SQLException {
@@ -1090,7 +1090,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setFetchSize(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setFetchSize", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setFetchSize", null,startTime, endTime ,arg1);
     }
 
     public int getFetchSize() throws SQLException {
@@ -1146,7 +1146,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.addBatch(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("addBatch", null,startTime, endTime ,arg1);
+        interceptor.postExecute("addBatch", null,startTime, endTime ,arg1);
     }
 
     public void clearBatch() throws SQLException {
@@ -1157,7 +1157,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.clearBatch();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("clearBatch", null,startTime, endTime );
+        interceptor.postExecute("clearBatch", null,startTime, endTime );
     }
 
     public int[] executeBatch() throws SQLException {
@@ -1213,7 +1213,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.setPoolable(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setPoolable", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setPoolable", null,startTime, endTime ,arg1);
     }
 
     public boolean isPoolable() throws SQLException {
@@ -1239,7 +1239,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         long startTime = System.currentTimeMillis();
         wrapped.closeOnCompletion();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("closeOnCompletion", null,startTime, endTime );
+        interceptor.postExecute("closeOnCompletion", null,startTime, endTime );
     }
 
     public boolean isCloseOnCompletion() throws SQLException {

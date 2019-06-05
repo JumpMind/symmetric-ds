@@ -23,7 +23,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 
 public class DataServiceTest {
 
@@ -61,10 +61,11 @@ public class DataServiceTest {
         gaps1.add(new DataGap(30953884, 80953883));
         gaps1.add(new DataGap(30953883, 80953883));
         
-        when(sqlTemplate.queryForLong(Matchers.anyString())).thenReturn(0L);
+        when(sqlTemplate.queryForLong(ArgumentMatchers.anyString())).thenReturn(0L);
+        String sql = ArgumentMatchers.anyString();
         @SuppressWarnings("unchecked")
-        ISqlRowMapper<DataGap> anyMapper = (ISqlRowMapper<DataGap>) Matchers.anyObject();
-        when(sqlTemplate.query(Matchers.anyString(), anyMapper, (Object[])Matchers.anyVararg())).thenReturn(gaps1);
+        ISqlRowMapper<DataGap> anyMapper = (ISqlRowMapper<DataGap>) ArgumentMatchers.any();
+        when(sqlTemplate.query(sql, anyMapper, (Object[])ArgumentMatchers.any())).thenReturn(gaps1);
 
         dataService.findDataGaps();
 

@@ -42,7 +42,7 @@ public class LogSqlBuilderTest {
     public void testSinglePlachodler() {
         final String SQL = "select * from sym_data where data_id = ?";
         LogSqlBuilder builder = new LogSqlBuilder();
-        String result = builder.buildDynamicSqlForLog(SQL, new Object[] {new Integer(234234)}, new int[] {Types.BIGINT});
+        String result = builder.buildDynamicSqlForLog(SQL, new Object[] {Integer.valueOf(234234)}, new int[] {Types.BIGINT});
         System.out.println(result);
         assertEquals("select * from sym_data where data_id = 234234", result);
     }
@@ -51,7 +51,7 @@ public class LogSqlBuilderTest {
     public void testSinglePlachodlerNoTypes() {
         final String SQL = "select * from sym_data where data_id = ?";
         LogSqlBuilder builder = new LogSqlBuilder();
-        String result = builder.buildDynamicSqlForLog(SQL, new Object[] {new Integer(234234)}, null);
+        String result = builder.buildDynamicSqlForLog(SQL, new Object[] {Integer.valueOf(234234)}, null);
         System.out.println(result);
         assertEquals("select * from sym_data where data_id = 234234", result);
     }

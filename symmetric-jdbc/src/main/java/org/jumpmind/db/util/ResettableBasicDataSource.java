@@ -26,7 +26,6 @@ import org.apache.commons.dbcp.AbandonedConfig;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.SQLNestedException;
 import org.apache.commons.pool.KeyedObjectPoolFactory;
 
 /**
@@ -34,7 +33,6 @@ import org.apache.commons.pool.KeyedObjectPoolFactory;
  * closed (all underlying connections are closed) and then allows new
  * connections to be created.
  */
-@SuppressWarnings("deprecation")
 public class ResettableBasicDataSource extends BasicDataSource {
 
     public ResettableBasicDataSource() {
@@ -77,7 +75,7 @@ public class ResettableBasicDataSource extends BasicDataSource {
                 connectionPool.close();
             } catch (Exception e1) {
             }
-            throw new SQLNestedException("Cannot create PoolableConnectionFactory (" + e.getMessage() + ")", e);
+            throw new SQLException("Cannot create PoolableConnectionFactory (" + e.getMessage() + ")", e);
         }
     }
 

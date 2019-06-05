@@ -38,7 +38,7 @@
                 <entry key="org.jumpmind.symmetric.${engine.name}:name=Parameters" value-ref="parameterManagementService" />
             </map>
         </property>
-        <property name="registrationBehaviorName" value="REGISTRATION_IGNORE_EXISTING" />
+        <property name="registrationPolicy" value="IGNORE_EXISTING" />
     </bean>
 
     <bean id="jmxAttributeSource" class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource" />

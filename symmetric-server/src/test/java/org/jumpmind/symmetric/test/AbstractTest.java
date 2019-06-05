@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -246,7 +247,7 @@ abstract public class AbstractTest {
         log.info("Loading " + fileName + " on " + regEngine.getEngineName());
         InputStream is = getClass().getResourceAsStream(fileName);
         assertNotNull("Could not find configuration as a resource", is);
-        List<IncomingBatch> batches = dataLoaderService.loadDataBatch(IOUtils.toString(is));
+        List<IncomingBatch> batches = dataLoaderService.loadDataBatch(IOUtils.toString(is, Charset.defaultCharset()));
         for (IncomingBatch batch : batches) {
             if (batch.getStatus() == Status.ER) {
                 inError = true;
@@ -346,6 +347,14 @@ abstract public class AbstractTest {
         getWebServer(serverGroup).getEngine().route();
         getWebServer(serverGroup).getEngine().openRegistration(clientGroup, clientGroup);
         pull(clientGroup);
+    }
+    
+    protected void logStartOfTest(String testName) {
+    	log.info("Start of test " + testName);
+    }
+    
+    protected void logEndOfTest(String testName) {
+    	log.info("End of test " + testName);
     }
 
 }

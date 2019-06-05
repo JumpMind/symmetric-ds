@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
@@ -47,7 +46,11 @@ public class TypedProperties extends Properties {
         } catch (IOException ex) {
             throw new IoException(ex);
         } finally {
-            IOUtils.closeQuietly(is);
+        	try {
+        		if(is != null) {
+        			is.close();
+        		}
+        	} catch(IOException e) { }
         }
     }
     
@@ -176,7 +179,7 @@ public class TypedProperties extends Properties {
             for (String clazz : clazzes) {
                 Class<?> c = Class.forName(clazz);
                 if (c != null) {
-                    objects.add((T) c.newInstance());
+                    objects.add((T) c.getDeclaredConstructor().newInstance());
                 }
             }
             return objects;

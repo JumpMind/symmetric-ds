@@ -112,7 +112,7 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
              */
             Collections.sort(list, new Comparator<OutgoingBatch>() {
                 public int compare(OutgoingBatch o1, OutgoingBatch o2) {
-                    return -new Long(o1.getBatchId()).compareTo(o2.getBatchId());
+                    return -Long.valueOf(o1.getBatchId()).compareTo(o2.getBatchId());
                 }
             });
 

@@ -27,7 +27,6 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +115,11 @@ public class SqlScript {
                     commitRate, this.resultsListener, this.scriptReader);
             return count;
         } finally {
-            IOUtils.closeQuietly(this.scriptReader);
+        	try {
+        		if(scriptReader != null) {
+        			scriptReader.close();
+        		}
+        	} catch(IOException e) { }
         }
 
     }

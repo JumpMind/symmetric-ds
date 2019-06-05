@@ -24,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -31,7 +32,15 @@ import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
@@ -39,7 +48,6 @@ import javax.sql.DataSource;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -461,7 +469,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Object parseBigInteger(String value) {
         try {
             value = cleanNumber(value);
-            return new Long(value.trim());
+            return Long.valueOf(value.trim());
         } catch (NumberFormatException ex) {
             return new BigDecimal(value.replace(',', '.')).toBigInteger();
         }
@@ -765,7 +773,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 throw new IoException("Could not find the file: %s", filePath);
             }
         } finally {
-            IOUtils.closeQuietly(is);
+        	if(is != null) {
+	        	try {
+	        		is.close();
+	        	} catch(IOException e) { }
+        	}
         }
     }
 

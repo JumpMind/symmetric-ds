@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 
@@ -50,12 +49,16 @@ public class InternalIncomingTransport implements IIncomingTransport {
 
     public void close() {
         if (reader != null) {
-            IOUtils.closeQuietly(reader);
+        	try {
+        		reader.close();
+        	} catch(IOException e) { }
             reader = null;
         }
 
         if (is != null) {
-            IOUtils.closeQuietly(is);
+        	try {
+        		is.close();
+        	} catch(IOException e) { }
             is = null;
         }
     }

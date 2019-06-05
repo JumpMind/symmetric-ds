@@ -26,7 +26,6 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -84,7 +83,11 @@ public class BandwidthService implements IBandwidthService {
             log.info("{} was calculated to have a download bandwidth of {} kbps", syncUrl, bw.getKbps());
             return bw;
         } finally {
-            IOUtils.closeQuietly(is);
+        	if(is != null) {
+        		try {
+        			is.close();
+        		} catch(IOException e) { }
+        	}
         }
     }
 

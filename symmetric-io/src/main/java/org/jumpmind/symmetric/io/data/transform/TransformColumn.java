@@ -222,7 +222,7 @@ public class TransformColumn implements Comparable<TransformColumn> {
     }
     
     public int compareTo(TransformColumn o) {
-        return new Integer(transformOrder).compareTo(new Integer(o.transformOrder));
+        return Integer.valueOf(transformOrder).compareTo(Integer.valueOf(o.transformOrder));
     }
 
 }

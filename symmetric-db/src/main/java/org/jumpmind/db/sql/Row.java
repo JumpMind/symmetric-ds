@@ -109,7 +109,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             if (obj instanceof Long) {
                 return (Long)obj;
             } else {
-                return new Long(obj.toString());    
+                return Long.valueOf(obj.toString());    
             }            
         } else {
             return null;

@@ -72,7 +72,7 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         try {
             if (objectMapper == null) {
-                objectMapper = (IDBObjectMapper)Class.forName("org.jumpmind.symmetric.io.SimpleDBObjectMapper").newInstance();
+                objectMapper = (IDBObjectMapper)Class.forName("org.jumpmind.symmetric.io.SimpleDBObjectMapper").getDeclaredConstructor().newInstance();
             }
             Method method = objectMapper.getClass().getMethod("setDefaultDatabaseName", String.class);
             if (method != null) {

@@ -633,7 +633,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         String tableName = formatTableName(TEST_TABLE, getPlatform());
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + tableName + " where "
                 + getWhere(TEST_KEYS);
-        Map<String, Object> results = getSqlTemplate().queryForMap(sql, new Object[] { new Long(testTableId) });
+        Map<String, Object> results = getSqlTemplate().queryForMap(sql, new Object[] { Long.valueOf(testTableId) });
         if (expectedValues != null) {
             expectedValues[1] = translateExpectedString(expectedValues[1], false);
             expectedValues[2] = translateExpectedString(expectedValues[2], true);

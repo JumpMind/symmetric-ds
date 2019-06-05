@@ -42,7 +42,6 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
@@ -356,15 +355,11 @@ public class SymmetricEngineHolder {
 
         File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
         File symmetricProperties = new File(enginesDir, engineName + ".properties");
-        FileOutputStream fileOs = null;
-        try {
-            fileOs = new FileOutputStream(symmetricProperties);
+        try(FileOutputStream fileOs = new FileOutputStream(symmetricProperties)) {
             properties.store(fileOs, "Updated by SymmetricDS Pro");
         } catch (IOException ex) {
             throw new RuntimeException("Failed to write symmetric.properties to engine directory",
                     ex);
-        } finally {
-            IOUtils.closeQuietly(fileOs);
         }
 
         ISymmetricEngine engine = null;
@@ -469,9 +464,7 @@ public class SymmetricEngineHolder {
             if (file.getName().endsWith(".properties")) {
                 // external.id
                 Properties properties = new Properties();
-                InputStream fileInputStream = null;
-                try {
-                    fileInputStream = new FileInputStream(file.getAbsolutePath());
+                try(InputStream fileInputStream = new FileInputStream(file.getAbsolutePath())) {
                     properties.load(fileInputStream);                    
                     final String userUrl = String.format("%s@%s", 
                             properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_USER, ""), 
@@ -487,10 +480,6 @@ public class SymmetricEngineHolder {
                         throw (SymmetricException)ex;
                     } else {                        
                         log.warn("Failed to validate engine properties file " + file, ex);
-                    }
-                } finally {
-                    if (fileInputStream != null) {
-                        IOUtils.closeQuietly(fileInputStream);
                     }
                 }
             }

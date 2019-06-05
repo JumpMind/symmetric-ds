@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
@@ -144,20 +143,17 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         conn.setDoOutput(true);
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
-        OutputStream os = conn.getOutputStream();
-        try {
+        try(OutputStream os = conn.getOutputStream()) {
             writeMessage(os, data);
             checkForConnectionUpgrade(conn);
 
-            InputStream is = conn.getInputStream();
-            byte[] bytes = new byte[32];
-            while (is.read(bytes) != -1) {
-                log.debug("Read keep-alive");
+            try(InputStream is = conn.getInputStream()) {
+	            byte[] bytes = new byte[32];
+	            while (is.read(bytes) != -1) {
+	                log.debug("Read keep-alive");
+	            }
             }
-            IOUtils.closeQuietly(is);
             return conn.getResponseCode();
-        } finally {
-            IOUtils.closeQuietly(os);
         }
     }
 

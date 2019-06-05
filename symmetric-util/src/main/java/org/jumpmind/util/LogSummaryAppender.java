@@ -104,7 +104,7 @@ public class LogSummaryAppender extends AppenderSkeleton {
             Collections.sort(list, new Comparator<LogSummary>() {
                 @Override
                 public int compare(LogSummary o1, LogSummary o2) {
-                    return new Long(o1.getMostRecentTime()).compareTo(o2.getMostRecentTime());
+                    return Long.valueOf(o1.getMostRecentTime()).compareTo(o2.getMostRecentTime());
                 }
             });
         }

@@ -78,7 +78,7 @@ public class FtpDataLoaderFactory implements IDataLoaderFactory, ISymmetricEngin
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         try {
-            FtpDataWriter ftpWriter = (FtpDataWriter) Class.forName(clazzName).newInstance();
+            FtpDataWriter ftpWriter = (FtpDataWriter) Class.forName(clazzName).getDeclaredConstructor().newInstance();
             ftpWriter.setFormat(format);
             ftpWriter.setProtocol(protocol);
             ftpWriter.setServer(server);

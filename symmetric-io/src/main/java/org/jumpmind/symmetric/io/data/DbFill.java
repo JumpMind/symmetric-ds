@@ -952,10 +952,10 @@ public class DbFill {
 
     private Object randomSmallInt(boolean unsigned) {
         if (unsigned) {
-            return new Integer(getRand().nextInt(32768));
+            return Integer.valueOf(getRand().nextInt(32768));
         } else {
             // TINYINT (-32768 32767)
-            return new Integer(getRand().nextInt(65535) - 32768);
+            return Integer.valueOf(getRand().nextInt(65535) - 32768);
         }
     }
 
@@ -972,7 +972,7 @@ public class DbFill {
 
     private Object randomTinyInt() {
         // TINYINT (-128 to 127) or (0 to 255) depending on database platform
-        return new Integer(getRand().nextInt(127));
+        return Integer.valueOf(getRand().nextInt(127));
     }
 
     private String randomString(int maxLength) {
@@ -1033,7 +1033,7 @@ public class DbFill {
     }
 
     private Integer randomInt() {
-        return new Integer(getRand().nextInt(1000000));
+        return Integer.valueOf(getRand().nextInt(1000000));
     }
 
     private String randomUUID() {

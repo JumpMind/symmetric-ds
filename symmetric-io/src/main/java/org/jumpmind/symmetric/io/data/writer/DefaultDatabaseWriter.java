@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -31,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -814,7 +814,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
             return sqlStatements;
         } finally {
-            IOUtils.closeQuietly(scriptReader);
+        	try {
+        		if(scriptReader != null) {
+        			scriptReader.close();
+        		}
+        	} catch(IOException e) { }
         }
     }
 

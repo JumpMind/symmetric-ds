@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
@@ -128,7 +129,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private void closeReader() {
         if (reader != null) {
-            IOUtils.closeQuietly(reader);
+        	try {
+        		reader.close();
+        	} catch(IOException e) { }
             reader = null;
         }
     }
@@ -137,14 +140,16 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         if (os != null) {
             try {
                 if (fileUpload) {
-                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os);
+                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os, Charset.defaultCharset());
                 }
                 os.flush();
             } catch (IOException ex) {
                 throw new IoException(ex);
             } finally {
                 if (closeQuietly) {
-                    IOUtils.closeQuietly(os);
+                	try {
+                		os.close();
+                	} catch(IOException e) { }
                 } else {
                     try {
                         os.close();
@@ -161,14 +166,16 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         if (writer != null) {
             try {
                 if (fileUpload) {
-                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os);
+                    IOUtils.write(CRLF + "--" + boundary + "--" + CRLF, os, Charset.defaultCharset());
                 }
                 writer.flush();
             } catch (IOException ex) {
                 throw new IoException(ex);
             } finally {
                 if (closeQuietly) {
-                    IOUtils.closeQuietly(writer);
+                	try {
+                		writer.close();
+                	} catch(IOException e) { }
                 } else {
                     try {
                         writer.close();
@@ -252,12 +259,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
             if (fileUpload) {
                 final String fileName = "file.zip";
-                IOUtils.write("--" + boundary + CRLF, os);
+                IOUtils.write("--" + boundary + CRLF, os, Charset.defaultCharset());
                 IOUtils.write("Content-Disposition: form-data; name=\"binaryFile\"; filename=\""
-                        + fileName + "\"" + CRLF, os);
+                        + fileName + "\"" + CRLF, os, Charset.defaultCharset());
                 IOUtils.write("Content-Type: " + URLConnection.guessContentTypeFromName(fileName)
-                        + CRLF, os);
-                IOUtils.write("Content-Transfer-Encoding: binary" + CRLF + CRLF, os);
+                        + CRLF, os, Charset.defaultCharset());
+                IOUtils.write("Content-Transfer-Encoding: binary" + CRLF + CRLF, os, Charset.defaultCharset());
                 os.flush();
 
             }

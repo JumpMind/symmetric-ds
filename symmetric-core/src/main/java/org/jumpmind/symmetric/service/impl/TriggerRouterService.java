@@ -2165,7 +2165,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 Table table2 = platform.getTableFromCache(o2.getSourceCatalogName(),
                         o2.getSourceSchemaName(), o2.getSourceTableName(), false);
 
-                return new Integer(sortedTables.indexOf(table1)).compareTo(new Integer(sortedTables
+                return Integer.valueOf(sortedTables.indexOf(table1)).compareTo(Integer.valueOf(sortedTables
                         .indexOf(table2)));
             };
         };

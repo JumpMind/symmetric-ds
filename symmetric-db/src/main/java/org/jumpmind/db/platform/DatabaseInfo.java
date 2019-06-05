@@ -279,24 +279,24 @@ public class DatabaseInfo {
      * Creates a new platform info object.
      */
     public DatabaseInfo() {
-        this.typesWithNullDefault.add(new Integer(Types.CHAR));
-        this.typesWithNullDefault.add(new Integer(Types.VARCHAR));
-        this.typesWithNullDefault.add(new Integer(Types.LONGVARCHAR));
-        this.typesWithNullDefault.add(new Integer(Types.CLOB));
-        this.typesWithNullDefault.add(new Integer(Types.BINARY));
-        this.typesWithNullDefault.add(new Integer(Types.VARBINARY));
-        this.typesWithNullDefault.add(new Integer(Types.LONGVARBINARY));
-        this.typesWithNullDefault.add(new Integer(Types.BLOB));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.CHAR));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.VARCHAR));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.LONGVARCHAR));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.CLOB));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.BINARY));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.VARBINARY));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.LONGVARBINARY));
+        this.typesWithNullDefault.add(Integer.valueOf(Types.BLOB));
 
-        this.typesWithSize.add(new Integer(Types.CHAR));
-        this.typesWithSize.add(new Integer(Types.VARCHAR));
-        this.typesWithSize.add(new Integer(Types.BINARY));
-        this.typesWithSize.add(new Integer(Types.VARBINARY));
-        this.typesWithSize.add(new Integer(ColumnTypes.NCHAR));
-        this.typesWithSize.add(new Integer(ColumnTypes.NVARCHAR));
+        this.typesWithSize.add(Integer.valueOf(Types.CHAR));
+        this.typesWithSize.add(Integer.valueOf(Types.VARCHAR));
+        this.typesWithSize.add(Integer.valueOf(Types.BINARY));
+        this.typesWithSize.add(Integer.valueOf(Types.VARBINARY));
+        this.typesWithSize.add(Integer.valueOf(ColumnTypes.NCHAR));
+        this.typesWithSize.add(Integer.valueOf(ColumnTypes.NVARCHAR));
 
-        this.typesWithPrecisionAndScale.add(new Integer(Types.DECIMAL));
-        this.typesWithPrecisionAndScale.add(new Integer(Types.NUMERIC));
+        this.typesWithPrecisionAndScale.add(Integer.valueOf(Types.DECIMAL));
+        this.typesWithPrecisionAndScale.add(Integer.valueOf(Types.NUMERIC));
     }
 
     // properties influencing the definition of columns
@@ -964,7 +964,7 @@ public class DatabaseInfo {
      * @return The native type or <code>null</code> if there isn't one defined
      */
     public String getNativeType(int typeCode) {
-        return (String) this.nativeTypes.get(new Integer(typeCode));
+        return (String) this.nativeTypes.get(Integer.valueOf(typeCode));
     }
 
     /**
@@ -981,7 +981,7 @@ public class DatabaseInfo {
      * @return The target jdbc type
      */
     public int getTargetJdbcType(int typeCode) {
-        Integer targetJdbcType = (Integer) targetJdbcTypes.get(new Integer(typeCode));
+        Integer targetJdbcType = (Integer) targetJdbcTypes.get(Integer.valueOf(typeCode));
 
         return targetJdbcType == null ? typeCode : targetJdbcType.intValue();
     }
@@ -996,7 +996,7 @@ public class DatabaseInfo {
      *            The native type
      */
     public void addNativeTypeMapping(int jdbcTypeCode, String nativeType) {
-        this.nativeTypes.put(new Integer(jdbcTypeCode), nativeType);
+        this.nativeTypes.put(Integer.valueOf(jdbcTypeCode), nativeType);
     }
 
     /**
@@ -1014,7 +1014,7 @@ public class DatabaseInfo {
      */
     public void addNativeTypeMapping(int jdbcTypeCode, String nativeType, int targetJdbcTypeCode) {
         addNativeTypeMapping(jdbcTypeCode, nativeType);
-        this.targetJdbcTypes.put(new Integer(jdbcTypeCode), new Integer(targetJdbcTypeCode));
+        this.targetJdbcTypes.put(Integer.valueOf(jdbcTypeCode), Integer.valueOf(targetJdbcTypeCode));
     }
 
     /**
@@ -1090,7 +1090,7 @@ public class DatabaseInfo {
      * @return <code>true</code> if the native type has a null default value
      */
     public boolean hasNullDefault(int sqlTypeCode) {
-        return typesWithNullDefault.contains(new Integer(sqlTypeCode));
+        return typesWithNullDefault.contains(Integer.valueOf(sqlTypeCode));
     }
 
     /**
@@ -1106,9 +1106,9 @@ public class DatabaseInfo {
      */
     public void setHasNullDefault(int sqlTypeCode, boolean hasNullDefault) {
         if (hasNullDefault) {
-            this.typesWithNullDefault.add(new Integer(sqlTypeCode));
+            this.typesWithNullDefault.add(Integer.valueOf(sqlTypeCode));
         } else {
-            this.typesWithNullDefault.remove(new Integer(sqlTypeCode));
+            this.typesWithNullDefault.remove(Integer.valueOf(sqlTypeCode));
         }
     }
 
@@ -1123,7 +1123,7 @@ public class DatabaseInfo {
      * @return <code>true</code> if the native type has a size specification
      */
     public boolean hasSize(int sqlTypeCode) {
-        return typesWithSize.contains(new Integer(sqlTypeCode));
+        return typesWithSize.contains(Integer.valueOf(sqlTypeCode));
     }
 
     /**
@@ -1139,9 +1139,9 @@ public class DatabaseInfo {
      */
     public void setHasSize(int sqlTypeCode, boolean hasSize) {
         if (hasSize) {
-            this.typesWithSize.add(new Integer(sqlTypeCode));
+            this.typesWithSize.add(Integer.valueOf(sqlTypeCode));
         } else {
-            this.typesWithSize.remove(new Integer(sqlTypeCode));
+            this.typesWithSize.remove(Integer.valueOf(sqlTypeCode));
         }
     }
 
@@ -1154,7 +1154,7 @@ public class DatabaseInfo {
      * @return The default size or <code>null</code> if none is defined
      */
     public Integer getDefaultSize(int jdbcTypeCode) {
-        return (Integer) typesDefaultSizes.get(new Integer(jdbcTypeCode));
+        return (Integer) typesDefaultSizes.get(Integer.valueOf(jdbcTypeCode));
     }
 
     /**
@@ -1167,7 +1167,7 @@ public class DatabaseInfo {
      *            The default size
      */
     public void setDefaultSize(int jdbcTypeCode, int defaultSize) {
-        this.typesDefaultSizes.put(new Integer(jdbcTypeCode), new Integer(defaultSize));
+        this.typesDefaultSizes.put(Integer.valueOf(jdbcTypeCode), Integer.valueOf(defaultSize));
     }
 
     /**
@@ -1204,7 +1204,7 @@ public class DatabaseInfo {
      *         specifications
      */
     public boolean hasPrecisionAndScale(int sqlTypeCode) {
-        return typesWithPrecisionAndScale.contains(new Integer(sqlTypeCode));
+        return typesWithPrecisionAndScale.contains(Integer.valueOf(sqlTypeCode));
     }
 
     /**
@@ -1221,9 +1221,9 @@ public class DatabaseInfo {
      */
     public void setHasPrecisionAndScale(int sqlTypeCode, boolean hasPrecisionAndScale) {
         if (hasPrecisionAndScale) {
-            this.typesWithPrecisionAndScale.add(new Integer(sqlTypeCode));
+            this.typesWithPrecisionAndScale.add(Integer.valueOf(sqlTypeCode));
         } else {
-            this.typesWithPrecisionAndScale.remove(new Integer(sqlTypeCode));
+            this.typesWithPrecisionAndScale.remove(Integer.valueOf(sqlTypeCode));
         }
     }
 

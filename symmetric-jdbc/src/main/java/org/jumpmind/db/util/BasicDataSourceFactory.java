@@ -41,7 +41,7 @@ public class BasicDataSourceFactory {
     protected static Map<String, String> requiredConnectionProperties = new HashMap<String, String>(); 
 
     public static void prepareDriver(String clazzName) throws Exception {
-        Driver driver = (Driver)Class.forName(clazzName).newInstance();
+        Driver driver = (Driver)Class.forName(clazzName).getDeclaredConstructor().newInstance();
         synchronized (DriverManager.class) {
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             while (drivers.hasMoreElements()) {

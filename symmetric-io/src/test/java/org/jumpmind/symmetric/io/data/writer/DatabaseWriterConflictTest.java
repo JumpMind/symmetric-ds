@@ -301,7 +301,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
         String sql = "select " + getSelect(getTestColumns()) + " from " + getTestTable() + " where "
                 + getWhere(getTestKeys());
-        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, new Long(testTableId));
+        Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
         assertEquals(getTestColumns(), expectedValues, results);
     }
 

@@ -155,7 +155,7 @@ public class DbImportCommand extends AbstractCommandLauncher {
                 for (String clazz : clazzes) {
                     if (StringUtils.isNotBlank(clazz)) {
                         IDatabaseWriterFilter databaseWriterFilter = (IDatabaseWriterFilter) Class
-                                .forName(clazz.trim()).newInstance();
+                                .forName(clazz.trim()).getDeclaredConstructor().newInstance();
                         dbImport.addDatabaseWriterFilter(databaseWriterFilter);
                     }
                 }

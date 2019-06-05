@@ -389,9 +389,9 @@ public class Column implements Cloneable, Serializable {
             this.size = size;
             if (pos < 0) {
                 scale = 0;
-                sizeAsInt = new Integer(size);
+                sizeAsInt = Integer.valueOf(size);
             } else {
-                sizeAsInt = new Integer(size.substring(0, pos));
+                sizeAsInt = Integer.valueOf(size.substring(0, pos));
                 scale = Integer.parseInt(size.substring(pos + 1));
             }
         } else {
@@ -429,7 +429,7 @@ public class Column implements Cloneable, Serializable {
      *            The scale
      */
     public void setSizeAndScale(int size, int scale) {
-        sizeAsInt = new Integer(size);
+        sizeAsInt = Integer.valueOf(size);
         this.scale = scale;
         this.size = String.valueOf(size);
         if (scale > 0) {
@@ -478,23 +478,23 @@ public class Column implements Cloneable, Serializable {
                 switch (mappedTypeCode) {
                     case Types.TINYINT:
                     case Types.SMALLINT:
-                        return new Short(getCleanDefaultValue());
+                        return Short.valueOf(getCleanDefaultValue());
                     case Types.INTEGER:
                         try {
-                            return new Integer(getCleanDefaultValue());
+                            return Integer.valueOf(getCleanDefaultValue());
                         } catch (NumberFormatException e) {
-                            return new Long(getCleanDefaultValue());
+                            return Long.valueOf(getCleanDefaultValue());
                         }
                     case Types.BIGINT:
-                        return new Long(getCleanDefaultValue());
+                        return Long.valueOf(getCleanDefaultValue());
                     case Types.DECIMAL:
                     case Types.NUMERIC:
                         return new BigDecimal(getCleanDefaultValue());
                     case Types.REAL:
-                        return new Float(getCleanDefaultValue());
+                        return Float.valueOf(getCleanDefaultValue());
                     case Types.DOUBLE:
                     case Types.FLOAT:
-                        return new Double(getCleanDefaultValue());
+                        return Double.valueOf(getCleanDefaultValue());
                     case Types.DATE:
                         return Date.valueOf(defaultValue);
                     case Types.TIME:

@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.route;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.data.transform.TransformedData;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
@@ -62,13 +61,13 @@ import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({ TransformedData.class })
+//@RunWith(PowerMockRunner.class)
+//@PrepareForTest({ TransformedData.class })
+@RunWith(MockitoJUnitRunner.class)
 public class DataGapRouteReaderTest {
-
+	
     final static String ENGINE_NAME = "testengine";
     final static String CHANNEL_ID = "testchannel";
     final static String NODE_ID = "00000";
@@ -97,24 +96,24 @@ public class DataGapRouteReaderTest {
 
         when(parameterService.getEngineName()).thenReturn(ENGINE_NAME);
         when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
-        when(parameterService.getInt(ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS))
-                .thenReturn(330);
+//        when(parameterService.getInt(ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS))
+//                .thenReturn(330);
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD))
                 .thenReturn(peekAheadMemoryThreshold);
-        when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL))
-                .thenReturn(100);
-        when(
-                parameterService
-                        .getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY))
-                .thenReturn(100);
-        when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED))
-                .thenReturn(true);
+//        when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL))
+//                .thenReturn(100);
+//        when(
+//                parameterService
+//                        .getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY))
+//                .thenReturn(100);
+//        when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED))
+//                .thenReturn(true);
 
         IStatisticManager statisticManager = mock(StatisticManager.class);
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
 
         INodeService nodeService = mock(NodeService.class);
-        when(nodeService.findIdentity()).thenReturn(new Node(NODE_ID, NODE_GROUP_ID));
+//        when(nodeService.findIdentity()).thenReturn(new Node(NODE_ID, NODE_GROUP_ID));
 
         IDatabasePlatform platform = mock(IDatabasePlatform.class);
         when(platform.getSqlTemplate()).thenReturn(sqlTemplate);
@@ -130,7 +129,7 @@ public class DataGapRouteReaderTest {
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getStatisticManager()).thenReturn(statisticManager);
         when(engine.getNodeService()).thenReturn(nodeService);
-        when(engine.getDataService()).thenReturn(dataService);
+//        when(engine.getDataService()).thenReturn(dataService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
         when(engine.getExtensionService()).thenReturn(extensionService);
         IRouterService routerService = new RouterService(engine);

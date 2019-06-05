@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.service.impl;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+import java.nio.charset.Charset;
 import java.sql.DataTruncation;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -1082,11 +1083,11 @@ public class DataService extends AbstractService implements IDataService {
                 Process process = pb.start();
                 java.io.InputStream is = process.getInputStream();
                 java.io.StringWriter ow = new java.io.StringWriter();
-                IOUtils.copy(is, ow);
+                IOUtils.copy(is, ow, Charset.defaultCharset());
                 String output = ow.toString();
                 output = StringEscapeUtils.escapeJavaScript(output);
                 
-                String script = IOUtils.toString(getClass().getResourceAsStream("/load-schema-at-target.bsh"));
+                String script = IOUtils.toString(getClass().getResourceAsStream("/load-schema-at-target.bsh"), Charset.defaultCharset());
                 script = script.replace("${data}", output);
                 script = script.replace("${commands}", formatCommandForScript(loadCommand));
                 
