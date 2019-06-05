@@ -29,13 +29,13 @@ import java.util.Set;
  */
 public interface ISqlTemplate {
 
-    @Deprecated
-    public byte[] queryForBlob(String sql, Object... args);
+//    @Deprecated
+//    public byte[] queryForBlob(String sql, Object... args);
 
     public byte[] queryForBlob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args);
     
-    @Deprecated
-    public String queryForClob(final String sql, final Object... args);
+//    @Deprecated
+//    public String queryForClob(final String sql, final Object... args);
 
     public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args);
 

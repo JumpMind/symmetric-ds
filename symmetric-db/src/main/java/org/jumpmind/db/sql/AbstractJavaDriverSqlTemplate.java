@@ -7,20 +7,20 @@ public abstract class AbstractJavaDriverSqlTemplate extends AbstractSqlTemplate 
 
 	public abstract String getDatabaseProductName();
 	
-	@Override
-	public byte[] queryForBlob(String sql, Object... args) {
-		return null;
-	}
+//	@Override
+//	public byte[] queryForBlob(String sql, Object... args) {
+//		return null;
+//	}
 
 	@Override
 	public byte[] queryForBlob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args) {
 		return null;
 	}
 
-	@Override
-	public String queryForClob(String sql, Object... args) {
-		return null;
-	}
+//	@Override
+//	public String queryForClob(String sql, Object... args) {
+//		return null;
+//	}
 
 	@Override
 	public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args) {
