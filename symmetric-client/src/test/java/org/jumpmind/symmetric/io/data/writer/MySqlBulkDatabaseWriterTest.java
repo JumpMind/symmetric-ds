@@ -33,9 +33,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
 
-@SuppressWarnings("deprecation")
 public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
 
     protected static IStagingManager stagingManager;
@@ -65,12 +63,14 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected AbstractDatabaseWriter create(){
-        return new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager, new CommonsDbcpNativeJdbcExtractor(), 10, 1000,true, true, null);
+        return new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+        		10, 1000,true, true, null);
     }
     
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager, new CommonsDbcpNativeJdbcExtractor(), 10, 1000,
+        return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+        		10, 1000,
                 true, true, null), new TableCsvData(table, data));
     }
 

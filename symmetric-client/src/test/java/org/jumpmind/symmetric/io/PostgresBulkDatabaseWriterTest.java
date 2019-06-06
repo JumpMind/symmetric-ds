@@ -23,21 +23,18 @@ package org.jumpmind.symmetric.io;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
-import org.jumpmind.symmetric.io.PostgresBulkDatabaseWriter;
-import org.jumpmind.symmetric.io.AbstractWriterTest.TableCsvData;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
+
+import org.junit.Assert;
 
 public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
 
@@ -60,7 +57,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
     @Override
     protected long writeData(TableCsvData... datas) {
         return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
-                new CommonsDbcpNativeJdbcExtractor(), 1000), datas);
+        		1000), datas);
     }
 
     @Override

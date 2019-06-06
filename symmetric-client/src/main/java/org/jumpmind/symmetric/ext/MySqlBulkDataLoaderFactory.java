@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -38,16 +37,13 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
 
     private IStagingManager stagingManager; 
-    private NativeJdbcExtractor jdbcExtractor;
     
     public MySqlBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
-        this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
         this.parameterService = engine.getParameterService();
     }
 
@@ -66,7 +62,8 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
         boolean isReplace = Boolean.parseBoolean(parameterService.getString(ParameterConstants.MYSQL_BULK_LOAD_REPLACE, "false"));
         
         return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-        		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
+        		stagingManager,
+        		maxRowsBeforeFlush,
                 maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWritterSettings());
     }
 

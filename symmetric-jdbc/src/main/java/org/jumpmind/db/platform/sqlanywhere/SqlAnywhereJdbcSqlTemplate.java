@@ -26,13 +26,12 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.sybase.SybaseJdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class SqlAnywhereJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
 
     public SqlAnywhereJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo, NativeJdbcExtractor nativeJdbcExtractor) {
-        super(dataSource, settings, lobHandler, databaseInfo, nativeJdbcExtractor);
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
+        super(dataSource, settings, lobHandler, databaseInfo);
     }
 
     public boolean supportsGetGeneratedKeys() {
@@ -44,3 +43,4 @@ public class SqlAnywhereJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
     }
 
 }
+

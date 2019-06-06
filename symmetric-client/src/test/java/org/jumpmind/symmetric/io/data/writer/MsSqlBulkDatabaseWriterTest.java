@@ -40,7 +40,6 @@ import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
 
 @SuppressWarnings("deprecation")
 public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
@@ -72,12 +71,14 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected AbstractDatabaseWriter create(){
-        return new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null, null);
+        return new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+        		1000, false, uncPath, null, null, null);
     }
     
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
-        return writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null, null), new TableCsvData(table, data));
+        return writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+        		1000, false, uncPath, null, null, null), new TableCsvData(table, data));
     }
 
     @Test
@@ -93,7 +94,8 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
             Column firstColumn = table.getColumn(0);
             table.removeColumn(firstColumn);
             table.addColumn(firstColumn);
-            writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager, new CommonsDbcpNativeJdbcExtractor(), 1000, false, uncPath, null, null, null), 
+            writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+            		1000, false, uncPath, null, null, null), 
                     new TableCsvData(table, data));
             values = (String[]) ArrayUtils.remove(values, values.length - 1);
             values = (String[]) ArrayUtils.add(values, 0, id);

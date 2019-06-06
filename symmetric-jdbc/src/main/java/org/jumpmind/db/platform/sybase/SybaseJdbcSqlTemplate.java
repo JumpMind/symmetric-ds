@@ -39,20 +39,18 @@ import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.SqlTypeValue;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
+
+import com.sybase.jdbc4.jdbc.SybPreparedStatement;
 
 public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTemplate {
 
     static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
 
-    private NativeJdbcExtractor nativeJdbcExtractor;
-    
     int jdbcMajorVersion;
 
     public SybaseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo, NativeJdbcExtractor nativeJdbcExtractor) {
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        this.nativeJdbcExtractor = nativeJdbcExtractor;
         primaryKeyViolationCodes = new int[] {423,511,515,530,547,2601,2615,2714};
         uniqueKeyViolationNameRegex = new String[] {"unique index '(.*)'"};
         foreignKeyViolationCodes = new int[] {546};
@@ -108,22 +106,22 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
                     }
                 }
 
-                Object[] params = new Object[] { new Integer(i), value, new Integer(precision), new Integer(scale) };
+                Object[] params = new Object[] { Integer.valueOf(i), value, Integer.valueOf(precision), Integer.valueOf(scale) };
                 try {
                     if (arg instanceof Long) {
-                        params = new Object[] { new Integer(i), new Long(arg.toString()) };
+                        params = new Object[] { Integer.valueOf(i), Long.valueOf(arg.toString()) };
                         parameterTypes = new Class[] { int.class, long.class };
                         Method method = clazz.getMethod("setLong", parameterTypes);
                         method.invoke(nativeStatement, params);
                     }
                     else if (arg instanceof Integer) {
-                        params = new Object[] { new Integer(i), new Integer(arg.toString()) };
+                        params = new Object[] { Integer.valueOf(i), Integer.valueOf(arg.toString()) };
                         parameterTypes = new Class[] { int.class, int.class };
                         Method method = clazz.getMethod("setInt", parameterTypes);
                         method.invoke(nativeStatement, params);
                     } else if (arg instanceof Boolean) {
                         Integer intValue = ((Boolean)arg) ? Integer.valueOf(1) : Integer.valueOf(0);
-                        params = new Object[] { new Integer(i), intValue };
+                        params = new Object[] {Integer.valueOf(i), intValue };
                         parameterTypes = new Class[] { int.class, int.class };
                         Method method = clazz.getMethod("setInt", parameterTypes);
                         method.invoke(nativeStatement, params);                        
@@ -149,10 +147,9 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     private PreparedStatement getNativeStmt(PreparedStatement ps) {
         PreparedStatement stmt = ps;
         try {
-            stmt = nativeJdbcExtractor.getNativePreparedStatement(ps);
+            stmt = (PreparedStatement) ps.unwrap(SybPreparedStatement.class);
         } catch (SQLException ex) {
-            log.warn("Could not find a native preparedstatement using {}", nativeJdbcExtractor
-                    .getClass().getName(), ex);
+            log.warn("Could not find a native preparedstatement using {}", ps.getClass().getName(), ex);
         }
         return stmt;
     }
@@ -179,3 +176,4 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
     }
 
 }
+

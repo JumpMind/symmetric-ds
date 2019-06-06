@@ -3,19 +3,15 @@ package org.jumpmind.db.platform.oracle;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
-@SuppressWarnings("deprecation")
 public class OracleLobHandler extends SymmetricLobHandler {
 
     DefaultLobHandler longHandler = new DefaultLobHandler();
 
     public OracleLobHandler() {
-        super(new org.springframework.jdbc.support.lob.OracleLobHandler());
-        ((org.springframework.jdbc.support.lob.OracleLobHandler) lobHandler)
-                .setNativeJdbcExtractor(JdbcUtils.getNativeJdbcExtractory());
+    	super(new DefaultLobHandler());
     }
 
     @Override

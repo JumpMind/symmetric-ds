@@ -43,8 +43,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 import oracle.sql.TIMESTAMPLTZ;
 import oracle.sql.TIMESTAMPTZ;
@@ -118,8 +116,6 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     public void testInsertTimestampTZ_timestamp() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
 
-            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
-
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
 
             List<CsvData> datas = new ArrayList<CsvData>();
@@ -139,7 +135,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Map<String, Object> rowData = queryForRow(id);
             DataSource datasource = (DataSource)platform.getDataSource();
             Connection connection = datasource.getConnection();
-            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+            Connection oracleConnection = connection.unwrap(oracle.jdbc.driver.OracleConnection.class);
 
             final String[] EXPECTED_TIMESTAMPTZ = {"2007-01-02 03:20:10.0 -5:00","2007-01-02 03:20:10.0 -4:00"};
 
@@ -155,8 +151,6 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testInsertTimestampTZ_timestampWithTimeZone() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
-
-            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
 
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
 
@@ -177,7 +171,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Map<String, Object> rowData = queryForRow(id);
             DataSource datasource = (DataSource)platform.getDataSource();
             Connection connection = datasource.getConnection();
-            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+            Connection oracleConnection = connection.unwrap(oracle.jdbc.driver.OracleConnection.class);
 
             checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, "2007-01-02 03:20:10.0 -8:00");
             checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, "2007-01-02 03:20:10.123 -8:00");
@@ -191,8 +185,6 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     @Test
     public void testInsertTimestampTZ_timestampWithLocalTimeZone() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
-            
-            NativeJdbcExtractor jdbcExtractor = new CommonsDbcpNativeJdbcExtractor();
             
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
             
@@ -213,7 +205,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             Map<String, Object> rowData = queryForRow(id);
             DataSource datasource = (DataSource)platform.getDataSource();
             Connection connection = datasource.getConnection();
-            Connection oracleConnection = jdbcExtractor.getNativeConnection(connection);
+            Connection oracleConnection = connection.unwrap(oracle.jdbc.driver.OracleConnection.class);
             
             checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, new String[]{"2007-01-02 06:20:10.123456789 America/New_York","2007-01-02 06:20:10.123456789 US/Eastern"});
             

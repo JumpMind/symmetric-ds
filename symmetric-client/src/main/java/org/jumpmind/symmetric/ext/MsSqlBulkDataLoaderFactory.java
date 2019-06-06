@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -39,15 +38,12 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
 
-    private NativeJdbcExtractor jdbcExtractor;
     private IStagingManager stagingManager;
     
     public MsSqlBulkDataLoaderFactory(ISymmetricEngine engine) {
-        this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
     }
@@ -70,7 +66,8 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
                 "||"));
 
         return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-        		stagingManager, jdbcExtractor, maxRowsBeforeFlush,
+        		stagingManager,
+        		maxRowsBeforeFlush,
                 fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWritterSettings());
     }
 

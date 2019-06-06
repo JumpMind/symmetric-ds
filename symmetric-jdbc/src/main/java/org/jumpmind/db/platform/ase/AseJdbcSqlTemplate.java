@@ -27,14 +27,13 @@ import org.jumpmind.db.platform.sybase.SybaseJdbcSqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class AseJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
 
     public AseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo,
-            NativeJdbcExtractor nativeJdbcExtractor) {
-        super(dataSource, settings, lobHandler, databaseInfo, nativeJdbcExtractor);
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo)
+    {
+        super(dataSource, settings, lobHandler, databaseInfo);
     }
 
     @Override
@@ -43,3 +42,4 @@ public class AseJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
     }
 
 }
+

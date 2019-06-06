@@ -39,17 +39,13 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-
-    protected NativeJdbcExtractor jdbcExtractor;
 
     protected int maxRowsBeforeFlush;
 
@@ -63,9 +59,8 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
     public PostgresBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
 			IDatabasePlatform targetPlatform, String tablePrefix, DatabaseWriterSettings settings,
-            NativeJdbcExtractor jdbcExtractor, int maxRowsBeforeFlush) {
+			int maxRowsBeforeFlush) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
-        this.jdbcExtractor = jdbcExtractor;
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
     }
     
@@ -159,7 +154,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         super.open(context);
         try {
             JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
-            Connection conn = jdbcExtractor.getNativeConnection(jdbcTransaction.getConnection());
+            Connection conn = jdbcTransaction.getConnection().unwrap(org.postgresql.jdbc.PgConnection.class);
             copyManager = new CopyManager((BaseConnection) conn);
         } catch (Exception ex) {
             throw getPlatform().getSqlTemplate().translate(ex);

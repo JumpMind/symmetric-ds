@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.List;
+
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -31,9 +32,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor;
 
-@SuppressWarnings("deprecation")
 public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
 
     @BeforeClass
@@ -60,14 +59,15 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
     }
 
     protected AbstractDatabaseWriter create(){
-        return new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), new CommonsDbcpNativeJdbcExtractor(), 1000);
+        return new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
+        		1000);
     }
 
     @Override
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), 
-                new CommonsDbcpNativeJdbcExtractor(), 1000), new TableCsvData(table, data));
+        		1000), new TableCsvData(table, data));
     }
    
 

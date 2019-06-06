@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.JdbcUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.PostgresBulkDatabaseWriter;
@@ -35,15 +34,11 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
-import org.springframework.jdbc.support.nativejdbc.NativeJdbcExtractor;
 
 public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
-    private NativeJdbcExtractor jdbcExtractor;
-    
     public PostgresBulkDataLoaderFactory(ISymmetricEngine engine) {
         super(engine.getParameterService());
-        this.jdbcExtractor = JdbcUtils.getNativeJdbcExtractory();
     }
 
     public String getTypeName() {
@@ -59,7 +54,7 @@ public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
         
         return new PostgresBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
         			symmetricDialect.getTablePrefix(),
-                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), jdbcExtractor,
+                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData),
                 maxRowsBeforeFlush);
     }
 

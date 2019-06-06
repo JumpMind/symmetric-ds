@@ -26,6 +26,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.File;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -228,7 +229,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     // the "parse" method also validates XML, will throw an exception if misformatted
                     builder.parse(new InputSource(new StringReader(xml)));               
-                    FileUtils.write(file, xml, false); 
+                    FileUtils.write(file, xml, Charset.defaultCharset(), false); 
                     extensionLocations.add("file:" + file.getAbsolutePath());
                 } catch (Exception e) {
                     log.error("Invalid " + ParameterConstants.EXTENSIONS_XML + " parameter.");
@@ -455,7 +456,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         ITypedPropertiesFactory factory = null;
         if (propFactoryClassName != null) {
             try {
-                factory = (ITypedPropertiesFactory) Class.forName(propFactoryClassName).newInstance();
+                factory = (ITypedPropertiesFactory) Class.forName(propFactoryClassName).getDeclaredConstructor().newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -471,7 +472,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         super.destroy();
         if (springContext instanceof AbstractApplicationContext) {
             try {
-            ((AbstractApplicationContext)springContext).destroy();
+            ((AbstractApplicationContext)springContext).close();
             } catch (Exception ex) {                
             }
         }
