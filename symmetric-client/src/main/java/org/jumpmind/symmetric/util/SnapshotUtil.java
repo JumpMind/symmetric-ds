@@ -299,7 +299,7 @@ public class SnapshotUtil {
                         fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\"" + "\"\n").getBytes());
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.warn("Failed to export data gap information", e);
             } finally {
             	if(fos != null) {
