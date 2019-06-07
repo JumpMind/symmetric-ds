@@ -515,29 +515,29 @@ public class DbExportImportTest extends AbstractServiceTest {
         Assert.assertTrue(a.exists());
         Assert.assertTrue(a.isFile());
         List<String> lines = FileUtils.readLines(a, Charset.defaultCharset());
-        Assert.assertEquals(9, lines.size());
-        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
-        Assert.assertEquals("\"1\",\"This is a test of a\"", lines.get(6));
-        Assert.assertEquals("\"2\",\"This is a test of a\"", lines.get(7));
+        Assert.assertEquals(10, lines.size());
+        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(6)));
+        Assert.assertEquals("\"1\",\"This is a test of a\"", lines.get(7));
+        Assert.assertEquals("\"2\",\"This is a test of a\"", lines.get(8));
 
         File b = new File(dir, platform.getTableFromCache("b", false).getName() + ".csv");
         Assert.assertTrue(b.exists());
         Assert.assertTrue(b.isFile());
         lines = FileUtils.readLines(b, Charset.defaultCharset());
-        Assert.assertEquals(10, lines.size());
-        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
-        Assert.assertEquals("\"1\",\"This is a test of b\"", lines.get(6));
-        Assert.assertEquals("\"2\",\"This is a test of b\"", lines.get(7));
-        Assert.assertEquals("\"3\",\"This is line 3 of b\"", lines.get(8));
+        Assert.assertEquals(11, lines.size());
+        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(6)));
+        Assert.assertEquals("\"1\",\"This is a test of b\"", lines.get(7));
+        Assert.assertEquals("\"2\",\"This is a test of b\"", lines.get(8));
+        Assert.assertEquals("\"3\",\"This is line 3 of b\"", lines.get(9));
 
         File c = new File(dir, platform.getTableFromCache("c", false).getName() + ".csv");
         Assert.assertTrue(c.exists());
         Assert.assertTrue(c.isFile());
         lines = FileUtils.readLines(c, Charset.defaultCharset());
-        Assert.assertEquals(9, lines.size());
-        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(5)));
-        Assert.assertEquals("\"1\",\"This is a test of c\"", lines.get(6));
-        Assert.assertEquals("\"2\",\"This is a test of c\"", lines.get(7));
+        Assert.assertEquals(10, lines.size());
+        Assert.assertTrue("\"id\",\"string_value\"".equalsIgnoreCase(lines.get(6)));
+        Assert.assertEquals("\"1\",\"This is a test of c\"", lines.get(7));
+        Assert.assertEquals("\"2\",\"This is a test of c\"", lines.get(8));
 
     }
 
