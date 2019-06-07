@@ -25,7 +25,7 @@ allprojects {
         maven { url "http://maven.vaadin.com/vaadin-addons" }
         maven { url 'https://plugins.gradle.org/m2' }
         maven { url "http://packages.confluent.io/maven/" }
-        maven { url "http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release" }
+        maven { url "https://repository.mulesoft.org/nexus/content/repositories/public/" }
     }
         
     ext {
