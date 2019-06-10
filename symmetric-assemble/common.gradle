@@ -86,6 +86,14 @@ subprojects { subproject ->
         classpath {
             downloadSources = true
             downloadJavadoc = false
+	        
+	        file {
+	        	whenMerged { classpath ->
+			        def list = classpath.getEntries()
+			        list.removeAll { it.kind=='lib' && it.path.contains('javax.validation') && it.path.contains('validation-api') }
+			        classpath.setEntries(list)
+			    }
+	        }
         }
         
         jdt {
@@ -279,4 +287,5 @@ subprojects { subproject ->
             delete wstFacetXml 
         }
     }
+    
 }
