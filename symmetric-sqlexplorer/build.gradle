@@ -56,9 +56,15 @@ dependencies {
     
     compile "org.springframework:spring-webmvc:$springVersion"
     
-    compile group: 'com.vaadin', name: 'vaadin-compatibility-server', version: "$vaadinVersion"
-    compile group: 'com.vaadin', name: 'vaadin-compatibility-client-compiled', version: "$vaadinVersion"
-    compile group: 'com.vaadin', name: 'vaadin-compatibility-client', version: "$vaadinVersion"
+    compile ("com.vaadin:vaadin-compatibility-server:$vaadinVersion") {
+        	exclude group: 'javax.validation'
+    }
+    compile ("com.vaadin:vaadin-compatibility-client-compiled:$vaadinVersion") {
+        	exclude group: 'javax.validation'
+    }
+    compile ("com.vaadin:vaadin-compatibility-client:$vaadinVersion") {
+        	exclude group: 'javax.validation'
+    }
     
     //compile "com.vaadin:vaadin-server:$vaadinVersion"
     compile "com.vaadin:vaadin-push:$vaadinVersion"
