@@ -1172,6 +1172,12 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.setNeedsCommitted(true);
                     }
                 } else if (dataMetaData.getData().getDataEventType() == DataEventType.CREATE) {
+                    if (dataMetaData.getData().getPkData() != null) {
+                        try {
+                            batch.setLoadId(Long.parseLong(dataMetaData.getData().getPkData()));
+                        } catch (NumberFormatException e) {
+                        }
+                    }
                     context.setNeedsCommitted(true);
                 } else {
                     context.setLastLoadId(-1);
