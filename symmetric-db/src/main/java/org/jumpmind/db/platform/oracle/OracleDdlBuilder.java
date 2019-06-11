@@ -73,7 +73,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.DECIMAL);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
-        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
+        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.DOUBLE);
@@ -89,7 +89,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
         databaseInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
