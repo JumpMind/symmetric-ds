@@ -58,6 +58,7 @@ import com.vaadin.ui.TextArea;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
+@SuppressWarnings("deprecation")
 public class DbExportDialog extends ResizableWindow {
 
     private static final String EXPORT_TO_THE_SQL_EDITOR = "Export to the SQL Editor";
@@ -68,6 +69,10 @@ public class DbExportDialog extends ResizableWindow {
 
     final Logger log = LoggerFactory.getLogger(getClass());
 
+    enum DbExportFormat {
+        SQL, XML, CSV, SYM_XML, CSV_DQUOTE;
+    }
+    
     private AbstractSelect formatSelect;
 
     private AbstractSelect compatibilitySelect;
@@ -280,6 +285,7 @@ public class DbExportDialog extends ResizableWindow {
                         quotedIdentifiers.setEnabled(true);
                         break;
                     case CSV:
+                    case CSV_DQUOTE:
                         compatibilitySelect.setEnabled(false);
                         compatibilitySelect.setNullSelectionAllowed(true);
                         compatibilitySelect.setValue(null);
@@ -472,7 +478,10 @@ public class DbExportDialog extends ResizableWindow {
 
     private StreamResource createResource() {
 
-        final String format = (String) formatSelect.getValue().toString();
+        String format = (String) formatSelect.getValue().toString();
+        if (format.equals("CSV_DQUOTE")) {
+            format = "CSV";
+        }
         StreamSource ss = new StreamSource() {
             private static final long serialVersionUID = 1L;
 
@@ -501,11 +510,4 @@ public class DbExportDialog extends ResizableWindow {
                 "table-export-%s." + format.toLowerCase(), datetime));
         return sr;
     }
-
-    enum DbExportFormat {
-
-        SQL, XML, CSV, SYM_XML;
-
-    }
-
 }

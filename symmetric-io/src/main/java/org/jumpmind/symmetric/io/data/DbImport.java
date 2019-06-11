@@ -52,6 +52,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.symmetric.io.data.reader.CsvDquoteDataReader;
 import org.jumpmind.symmetric.io.data.reader.CsvTableDataReader;
 import org.jumpmind.symmetric.io.data.reader.SqlDataReader;
 import org.jumpmind.symmetric.io.data.reader.SymXmlDataReader;
@@ -70,7 +71,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 public class DbImport {
 
     public enum Format {
-        SQL, CSV, XML, SYM_XML
+        SQL, CSV, XML, SYM_XML, CSV_DQUOTE
     };
 
     private Format format = Format.SQL;
@@ -156,6 +157,12 @@ public class DbImport {
             } else {
                 throw new RuntimeException("Table name argument is required when importing CSV.");
             }
+        } else if (format == Format.CSV_DQUOTE) {
+            if (StringUtils.isNotBlank(tableName)) {                
+                importTablesFromCsvDquote(in, tableName);
+            } else {
+                throw new RuntimeException("Table name argument is required when importing CSV.");
+            }
         } else if (format == Format.XML) {
             importTablesFromXml(in);
         } else if (format == Format.SYM_XML) {
@@ -207,6 +214,19 @@ public class DbImport {
         dataProcessor.process();
     }
 
+    protected void importTablesFromCsvDquote(InputStream in, String tableName) {
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
+        Table table = writer.getPlatform(tableName).readTableFromDatabase(catalog, schema, tableName);
+        if (table == null) {
+            throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");
+        }
+    
+        CsvDquoteDataReader reader = new CsvDquoteDataReader(BinaryEncoding.HEX, table.getCatalog(),
+                table.getSchema(), table.getName(), in);
+        DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
+        dataProcessor.process();
+    }
+    
     protected void importTablesFromXml(InputStream in) {        
         XmlDataReader reader = new XmlDataReader(in);
         DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());

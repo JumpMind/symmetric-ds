@@ -68,7 +68,7 @@ public class DbImportDialog extends ResizableWindow {
     final Logger log = LoggerFactory.getLogger(getClass());
     
     enum DbImportFormat {
-        SQL, XML, CSV, SYM_XML;
+        SQL, XML, CSV, SYM_XML, CSV_DQUOTE;
     }
 
     private Set<Table> selectedTablesSet;
@@ -157,6 +157,7 @@ public class DbImportDialog extends ResizableWindow {
                         alterCase.setEnabled(true);
                         break;
                     case CSV:
+                    case CSV_DQUOTE:
                         listOfTablesSelect.setEnabled(true);
                         alter.setEnabled(false);
                         alterCase.setEnabled(false);
@@ -296,7 +297,7 @@ public class DbImportDialog extends ResizableWindow {
     }
 
     protected void doDbImport() throws FileNotFoundException {
-        if (format.toString().equals("CSV")) {
+        if (format.toString().equals("CSV") || format.toString().equals("CSV_DQUOTE")) {
             dbImport.importTables(new BufferedInputStream(new FileInputStream(file)),
                     listOfTablesSelect.getValue().toString());
         } else {
@@ -323,7 +324,7 @@ public class DbImportDialog extends ResizableWindow {
     protected boolean importButtonEnable() {
         if (formatSelect.getValue() != null) {
                     if (!commitField.getValue().equals("")) {
-                        if (formatSelect.getValue().toString().equals("CSV")) {
+                        if (formatSelect.getValue().toString().equals("CSV") || formatSelect.getValue().toString().equals("CSV_DQUOTE")) {
                             if (listOfTablesSelect.getValue() != null) {
                                 return true;
                             }

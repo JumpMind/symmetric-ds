@@ -60,7 +60,7 @@ import org.jumpmind.symmetric.io.IoVersion;
 public class DbExport {
 
     public enum Format {
-        SQL, CSV, XML, SYM_XML
+        SQL, CSV, XML, SYM_XML, CSV_DQUOTE
     };
 
     public enum Compatible {
@@ -528,6 +528,12 @@ public class DbExport {
                     csvWriter.setTextQualifier('\"');
                     csvWriter.setUseTextQualifier(true);
                     csvWriter.setForceQualifier(true);
+                } else if (format == Format.CSV_DQUOTE && csvWriter == null) {
+                    csvWriter = new CsvWriter(writer, ',');
+                    csvWriter.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+                    csvWriter.setTextQualifier('\"');
+                    csvWriter.setUseTextQualifier(true);
+                    csvWriter.setForceQualifier(true);
                 } else if (format == Format.SQL) {
                     if (table.getCatalog() != null
                             && table.getCatalog().equals(platform.getDefaultCatalog())) {
@@ -579,7 +585,7 @@ public class DbExport {
                 writeComment("Table Columns: " + java.util.Arrays.deepToString(table.getColumnNames()));
                 writeComment("Started on " + df.format(new Date()));
 
-                if (format == Format.CSV) {
+                if (format == Format.CSV || format == Format.CSV_DQUOTE) {
                     csvWriter.writeRecord(table.getColumnNames());
                 } else if (!noData && format == Format.XML) {
                     write("<table_data name=\"", table.getName(), "\">\n");
@@ -604,7 +610,7 @@ public class DbExport {
             if (writer != null) {
                 try {
                     if (comments) {
-                        if (format == Format.CSV) {
+                        if (format == Format.CSV || format == Format.CSV_DQUOTE) {
                             write("# ", commentStr, "\n");
                         } else if (format == Format.XML) {
                             write("<!-- ", commentStr, " -->\n");
@@ -624,7 +630,7 @@ public class DbExport {
             String[] values = platform.getStringValues(BinaryEncoding.HEX, columns, row,
                     useVariableDates, false);
             try {
-                if (format == Format.CSV) {
+                if (format == Format.CSV || format == Format.CSV_DQUOTE) {
                     csvWriter.writeRecord(values, true);
                 } else if (format == Format.SQL) {
                     write(insertSql.buildDynamicSql(BinaryEncoding.HEX, row, useVariableDates,

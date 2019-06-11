@@ -131,7 +131,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
         
         if (line.hasOption(OPTION_FORMAT)) {
             dbExport.setFormat(Format.valueOf(line.getOptionValue(OPTION_FORMAT).toUpperCase()));
-            if (dbExport.getFormat() == Format.CSV && line.getArgs().length > 1
+            if ((dbExport.getFormat() == Format.CSV || dbExport.getFormat() == Format.CSV_DQUOTE) && line.getArgs().length > 1
                     && StringUtils.isBlank(dbExport.getDir())) {
                 throw new ParseException(
                         "When exporting multiple tables to CSV format you must designate a directory where the files will be written");

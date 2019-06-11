@@ -48,6 +48,14 @@ public class CsvUtils {
         csvReader.setCaptureRawRecord(false);
         return csvReader;
     }
+    
+    public static CsvReader getCsvReaderDquote(Reader reader) {
+        CsvReader csvReader = new CsvReader(reader);
+        csvReader.setEscapeMode(CsvWriter.ESCAPE_MODE_DOUBLED);
+        csvReader.setSafetySwitch(false);
+        csvReader.setCaptureRawRecord(false);
+        return csvReader;
+    }
 
     public static String[] tokenizeCsvData(String csvData) {
         String[] tokens = null;
