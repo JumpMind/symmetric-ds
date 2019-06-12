@@ -43,7 +43,6 @@ import com.vaadin.v7.data.Property;
 import com.vaadin.v7.data.Property.ValueChangeEvent;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.server.FileDownloader;
-import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.v7.ui.AbstractSelect;
@@ -206,6 +205,7 @@ public class DbExportDialog extends ResizableWindow {
 
             public void buttonClick(ClickEvent event) {
                 exportFileButton.removeClickShortcut();
+                fileDownloader.setFileDownloadResource(createResource());
                 doneButton.setClickShortcut(KeyCode.ENTER);
                 doneButton.focus();
             }
@@ -466,12 +466,6 @@ public class DbExportDialog extends ResizableWindow {
         }
         fileDownloader = new FileDownloader(createResource()) {
             private static final long serialVersionUID = 1L;
-
-            @Override
-            public Resource getFileDownloadResource() {
-                /* recreate the resource so the file name is regenerated */
-                return createResource();
-            }
         };
         fileDownloader.extend(exportFileButton);
     }
