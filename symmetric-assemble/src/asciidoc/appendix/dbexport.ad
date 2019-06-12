@@ -12,7 +12,7 @@ The next tab allows for specific choices for the format and content of the expor
 
 image::appendix/dbexport/dbexport-format-screen.png[width=600]
 
-The format option allows for choices between *SQL*, *XML*, *CSV*, and *SYM_XML*.
+The format option allows for choices between *SQL*, *XML*, *CSV*, *CSV_DQUOTE*, and *SYM_XML*.
 The Compatibility tab allows for a choice between any of the supported SQL dialects.
 The list of check boxes allows for more specific options for the content of the file including insert, drop or create scripts.  A where clause can also be added to make the SQL more specific.  
 
@@ -34,7 +34,7 @@ They are as follows:
 - *--dir <arg>* : Indicate a directory to use for the export of files.  If the directory is specified, then a file per table will be written to the directory.
 - *-e, --engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.
 - *--exclude-columns <arg>* : A comma separated list of columns to exclude from the exported tables.
-- *--format <arg>* : Output format: SQL, CSV, XML, or SYM_XML.
+- *--format <arg>* : Output format: SQL, CSV, CSV_DQUOTE, XML, or SYM_XML.
 - *-h, --help* : Print help with each option and description.  
 - *-i, --comments* : Write informational comments.
 - *--no-create-info* : Do not write statements to create tables.

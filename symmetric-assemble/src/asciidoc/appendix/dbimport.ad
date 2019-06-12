@@ -10,7 +10,7 @@ It also asks for the number of rows to commit, as well as multiple more specific
 
 image::appendix/dbimport/dbimport-tab.png[width=600]
 
-Input files can be in SQL, XML, CSV, or SYM_XML file formats.
+Input files can be in SQL, XML, CSV, CSV_DQUOTE, or SYM_XML file formats.
 
 The following is an example of the *SQL* format used for DbImport.
 
@@ -34,10 +34,20 @@ The following is an example of the *CSV* format used for DbImport.
 ----
 "ITEM_ID","NAME"
 "12","zSYwAyLGsbvsLhYFLBqmeprkfISVTlRnfHwsHFZcmZUpKQMXkT"
-"174","WHQwyMhrWVZzmXyzzHiXRSyzfuOSImgqflupGrtLwmaGrOvFek"
-"213","UlGKwTSLeygaxzkdTQxnvrSQMulBKbljpAkSVmbQCUONULUAlF"
-"239","OOvqpLHIVcbOlJCXemNjCajcEJaBrPlneDkCZXqGYMXIuGRORq"
 "471","RFHEaWcFtPDOkqEtbomEomuEWDQoAuyvJVnjPEsPpaqLxEuWpj"
+"113","SDFSDf\"SD\"ggdD"
+----
+
+The following is an example of the *CSV_DQUOTE* format used for DbImport. 
+*CSV_DQUOTE* escapes quote characters with double quotes if there are quotes in the column values so it can be correctly parsed by programs like Excel.
+For example, "SPbSDf""SD""gNdD" parses to SPbSDf"SD"gNdD.
+
+[source, csv]
+----
+"ITEM_ID","NAME"
+"12","zSYwAyLGsbvsLhYFLBqmeprkfISVTlRnfHwsHFZcmZUpKQMXkT"
+"471","RFHEaWcFtPDOkqEtbomEomuEWDQoAuyvJVnjPEsPpaqLxEuWpj"
+"113","SPbSDf""SD""gNdD"
 ----
 
 The following is an example of the *XML* format used for DbImport.
@@ -95,7 +105,7 @@ They are as follows:
 - *-e, --engine <arg>* : The name of a configured engine.  The name should correspond to an engine.name setting in one of the properties files in the engines directory.
 - *--filter-classes <arg>* : A comma separated list of Java classes that implement org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter.  These filters will be applied to the import.
 - *--force* : Ignore ANY errors and attempt to continue on processing the import data.
-- *--format <arg>* : Input format: SQL, CSV, XML, or SYM_XML.
+- *--format <arg>* : Input format: SQL, CSV, CSV_DQUOTE, XML, or SYM_XML.
 - *-h, --help* : Print help with each option and description.
 - *--ignore* : Indicates that conflicts with existing rows should be ignored.
 - *--interval <arg>* : The number of milliseconds to wait between committing transaction.
@@ -130,10 +140,20 @@ The following is an example of the *CSV* format used for DbImport.
 ----
 "ITEM_ID","NAME"
 "12","zSYwAyLGsbvsLhYFLBqmeprkfISVTlRnfHwsHFZcmZUpKQMXkT"
-"174","WHQwyMhrWVZzmXyzzHiXRSyzfuOSImgqflupGrtLwmaGrOvFek"
-"213","UlGKwTSLeygaxzkdTQxnvrSQMulBKbljpAkSVmbQCUONULUAlF"
-"239","OOvqpLHIVcbOlJCXemNjCajcEJaBrPlneDkCZXqGYMXIuGRORq"
 "471","RFHEaWcFtPDOkqEtbomEomuEWDQoAuyvJVnjPEsPpaqLxEuWpj"
+"113","SDFSDf\"SD\"ggdD"
+----
+
+The following is an example of the *CSV_DQUOTE* format used for DbImport. 
+*CSV_DQUOTE* escapes quote characters with double quotes if there are quotes in the column values so it can be correctly parsed by programs like Excel.
+For example, "SPbSDf""SD""gNdD" parses to SPbSDf"SD"gNdD.
+
+[source, csv]
+----
+"ITEM_ID","NAME"
+"12","zSYwAyLGsbvsLhYFLBqmeprkfISVTlRnfHwsHFZcmZUpKQMXkT"
+"471","RFHEaWcFtPDOkqEtbomEomuEWDQoAuyvJVnjPEsPpaqLxEuWpj"
+"113","SPbSDf""SD""gNdD"
 ----
 
 The following is an example of the *XML* format used for DbImport.
