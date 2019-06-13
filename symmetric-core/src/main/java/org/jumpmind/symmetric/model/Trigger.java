@@ -49,10 +49,22 @@ public class Trigger implements Serializable {
     private String triggerId;
 
     private String sourceTableName;
-
+    
     private String sourceSchemaName;
 
     private String sourceCatalogName;
+        
+    private boolean isSourceTableNameWildCarded;
+    
+    private boolean isSourceSchemaWildCarded;
+    
+    private boolean isSourceCatalogWildCarded;
+
+    private String sourceTableNameUnescaped;
+    
+    private String sourceSchemaNameUnescaped;
+
+    private String sourceCatalogNameUnescaped;
 
     private String channelId = Constants.CHANNEL_DEFAULT;
     
@@ -127,7 +139,7 @@ public class Trigger implements Serializable {
 
     public Trigger(String tableName, String channelId) {
         this.triggerId = tableName;
-        this.sourceTableName = tableName;
+        setSourceTableName(tableName);
         this.channelId = channelId;
     }
     
@@ -150,9 +162,11 @@ public class Trigger implements Serializable {
     public void nullOutBlankFields() {
         if (StringUtils.isBlank(sourceCatalogName)) {
             sourceCatalogName = null;
+            isSourceCatalogWildCarded = false;
         }
         if (StringUtils.isBlank(sourceSchemaName)) {
             sourceSchemaName = null;
+            isSourceSchemaWildCarded = false;
         }
     }
     
@@ -298,20 +312,24 @@ public class Trigger implements Serializable {
         return sourceTableName;
     }
 
+    public String getSourceTableNameUnescaped() {
+        return sourceTableNameUnescaped;
+    }
+
     public boolean isSourceWildCarded() {
         return isSourceTableNameWildCarded() || isSourceCatalogNameWildCarded() || isSourceSchemaNameWildCarded();
     }
     
     public boolean isSourceTableNameWildCarded() {
-        return sourceTableName != null && (sourceTableName.contains(FormatUtils.WILDCARD) || sourceTableName.contains(","));
+        return isSourceTableNameWildCarded;
     }
     
     public boolean isSourceCatalogNameWildCarded() {
-        return sourceCatalogName != null && (sourceCatalogName.contains(FormatUtils.WILDCARD) || sourceCatalogName.contains(","));
+        return isSourceCatalogWildCarded;
     }
 
     public boolean isSourceSchemaNameWildCarded() {
-        return sourceSchemaName != null && (sourceSchemaName.contains(FormatUtils.WILDCARD) || sourceSchemaName.contains(","));
+        return isSourceSchemaWildCarded;
     }
     
     public String getChannelExpression() {
@@ -324,22 +342,42 @@ public class Trigger implements Serializable {
 
     public void setSourceTableName(String sourceTableName) {
         this.sourceTableName = sourceTableName;
+        this.isSourceTableNameWildCarded = FormatUtils.isWildCarded(sourceTableName);
+        if (!this.isSourceTableNameWildCarded) {
+            this.sourceTableNameUnescaped = FormatUtils.unescapeWildCards(sourceTableName);
+        }
     }
 
     public String getSourceSchemaName() {
         return sourceSchemaName;
     }
 
+    public String getSourceSchemaNameUnescaped() {
+        return sourceSchemaNameUnescaped;
+    }
+
     public void setSourceSchemaName(String sourceSchemaName) {
         this.sourceSchemaName = sourceSchemaName;
+        this.isSourceSchemaWildCarded = FormatUtils.isWildCarded(sourceSchemaName);
+        if (!this.isSourceSchemaWildCarded) {
+            this.sourceSchemaNameUnescaped = FormatUtils.unescapeWildCards(sourceSchemaName);
+        }
     }
 
     public String getSourceCatalogName() {
         return sourceCatalogName;
     }
 
+    public String getSourceCatalogNameUnescaped() {
+        return sourceCatalogNameUnescaped;
+    }
+
     public void setSourceCatalogName(String sourceCatalogName) {
         this.sourceCatalogName = sourceCatalogName;
+        this.isSourceCatalogWildCarded = FormatUtils.isWildCarded(sourceCatalogName);
+        if (!this.isSourceCatalogWildCarded) {
+            this.sourceCatalogNameUnescaped = FormatUtils.unescapeWildCards(sourceCatalogName);
+        }
     }
 
     public String getChannelId() {
@@ -730,28 +768,30 @@ public class Trigger implements Serializable {
     public boolean matches(Table table, String defaultCatalog, String defaultSchema,
             boolean ignoreCase) {
         boolean catalogMatch = false;
-        if (isSourceCatalogNameWildCarded()) {
+        if (isSourceCatalogWildCarded) {
             catalogMatch = matches(sourceCatalogName, table.getCatalog(), ignoreCase);
         } else {
-            catalogMatch = (StringUtils.equals(sourceCatalogName, table.getCatalog()) ||
+            catalogMatch = (StringUtils.equals(sourceCatalogNameUnescaped, table.getCatalog()) ||
                     (StringUtils.isBlank(sourceCatalogName) && StringUtils.equals(defaultCatalog, table.getCatalog())));            
         }
 
         boolean schemaMatch = false;
-        if (isSourceSchemaNameWildCarded()) {
+        if (isSourceSchemaWildCarded) {
             schemaMatch = matches(sourceSchemaName, table.getSchema(), ignoreCase);
         } else {
-            schemaMatch = (StringUtils.equals(sourceSchemaName, table.getSchema()) ||
+            schemaMatch = (StringUtils.equals(sourceSchemaNameUnescaped, table.getSchema()) ||
                     (StringUtils.isBlank(sourceSchemaName) && StringUtils.equals(defaultSchema, table.getSchema())));            
         }
 
-        boolean tableMatches = ignoreCase ? table.getName().equalsIgnoreCase(sourceTableName)
-                : table.getName().equals(sourceTableName);
-
-        if (!tableMatches && isSourceTableNameWildCarded()) {
-            tableMatches = matches(sourceTableName, table.getName(), ignoreCase);
+        boolean tableMatch = false;
+        if (isSourceTableNameWildCarded) {
+            tableMatch = matches(sourceTableName, table.getName(), ignoreCase);
+        } else {
+            tableMatch = ignoreCase ? table.getName().equalsIgnoreCase(sourceTableNameUnescaped)
+                    : table.getName().equals(sourceTableNameUnescaped);
         }
-        return catalogMatch && schemaMatch && tableMatches;
+
+        return catalogMatch && schemaMatch && tableMatch;
     }
 
     public boolean matches(Trigger trigger) {

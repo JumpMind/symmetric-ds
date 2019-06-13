@@ -467,7 +467,7 @@ abstract public class AbstractTriggerTemplate {
         if (history != null) {
             targetTableName = history.getSourceTableName();
         } else {
-            targetTableName = trigger.getSourceTableName();
+            targetTableName = trigger.getSourceTableNameUnescaped();
         }
         return targetTableName;
     }

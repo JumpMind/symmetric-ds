@@ -1299,15 +1299,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         for (Table table : tables) {
                             boolean matchesCatalog = isEqual(
                                     trigger.isSourceCatalogNameWildCarded() ? table.getCatalog()
-                                            : trigger.getSourceCatalogName(),
+                                            : trigger.getSourceCatalogNameUnescaped(),
                                     history.getSourceCatalogName(), ignoreCase);
                             boolean matchesSchema = isEqual(
                                     trigger.isSourceSchemaNameWildCarded() ? table.getSchema()
-                                            : trigger.getSourceSchemaName(), history.getSourceSchemaName(),
+                                            : trigger.getSourceSchemaNameUnescaped(), history.getSourceSchemaName(),
                                     ignoreCase);
                             boolean matchesTable = isEqual(
                                     trigger.isSourceTableNameWildCarded() ? table.getName()
-                                            : trigger.getSourceTableName(), history.getSourceTableName(),
+                                            : trigger.getSourceTableNameUnescaped(), history.getSourceTableName(),
                                     ignoreCase);
                             foundTable |= matchesCatalog && matchesSchema && matchesTable;
                         }
@@ -1422,7 +1422,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 if (isBlank(trigger.getSourceCatalogName())) {
                    catalogNames.add(platform.getDefaultCatalog()); 
                 } else {
-                   catalogNames.add(trigger.getSourceCatalogName());
+                   catalogNames.add(trigger.getSourceCatalogNameUnescaped());
                 }
             }
             
@@ -1442,7 +1442,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     if (isBlank(trigger.getSourceSchemaName())) {
                         schemaNames.add(platform.getDefaultSchema());
                     } else {
-                        schemaNames.add(trigger.getSourceSchemaName());
+                        schemaNames.add(trigger.getSourceSchemaNameUnescaped());
                     }
                 }
 
@@ -1465,7 +1465,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     } else {
                         Table table = symmetricDialect.getPlatform().getTableFromCache(
                                 catalogName, schemaName,
-                                trigger.getSourceTableName(), !useTableCache);
+                                trigger.getSourceTableNameUnescaped(), !useTableCache);
                         if (table != null) {
                             tables.add(table);
                         }
@@ -1482,16 +1482,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private boolean containsExactMatchForSourceTableName(Table table, List<Trigger> triggers,
             boolean ignoreCase) {
         for (Trigger trigger : triggers) {
-        	String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();        	
-        	String sourceSchemaName = trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() : platform.getDefaultSchema();
-            if (trigger.getSourceTableName().equals(table.getName()) 
-            		&& (sourceCatalogName == null || sourceCatalogName.equals(table.getCatalog())) && 
-            		(sourceSchemaName == null || sourceSchemaName.equals(table.getSchema()))) {
-                return true;
-            } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(table.getName())
-            		&& (sourceCatalogName == null || sourceCatalogName.equalsIgnoreCase(table.getCatalog())) 
-            		&& (sourceSchemaName == null || sourceSchemaName.equalsIgnoreCase(table.getSchema()))) {
-                return true;
+            if (!trigger.isSourceWildCarded()) {
+            	String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();        	
+            	String sourceSchemaName = trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() : platform.getDefaultSchema();
+                if (trigger.getSourceTableName().equals(table.getName()) 
+                		&& (sourceCatalogName == null || sourceCatalogName.equals(table.getCatalog())) && 
+                		(sourceSchemaName == null || sourceSchemaName.equals(table.getSchema()))) {
+                    return true;
+                } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(table.getName())
+                		&& (sourceCatalogName == null || sourceCatalogName.equalsIgnoreCase(table.getCatalog())) 
+                		&& (sourceSchemaName == null || sourceSchemaName.equalsIgnoreCase(table.getSchema()))) {
+                    return true;
+                }
             }
         }
         return false;
@@ -1646,10 +1648,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
                     trigger.getTriggerId(),
-                    trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogName(),
-                    trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaName(),
-                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger
-                            .getSourceTableName());
+                    trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
+                    trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
+                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
 
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
@@ -1714,12 +1715,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 // Make sure all the triggers are removed from the
                 // table
                 try {
-                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            newestHistory.getNameForInsertTrigger(), trigger.getSourceTableName());
-                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            newestHistory.getNameForUpdateTrigger(), trigger.getSourceTableName());
-                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            newestHistory.getNameForDeleteTrigger(), trigger.getSourceTableName());
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogNameUnescaped(), trigger.getSourceSchemaNameUnescaped(),
+                            newestHistory.getNameForInsertTrigger(), trigger.getSourceTableNameUnescaped());
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogNameUnescaped(), trigger.getSourceSchemaNameUnescaped(),
+                            newestHistory.getNameForUpdateTrigger(), trigger.getSourceTableNameUnescaped());
+                    symmetricDialect.removeTrigger(null, trigger.getSourceCatalogNameUnescaped(), trigger.getSourceSchemaNameUnescaped(),
+                            newestHistory.getNameForDeleteTrigger(), trigger.getSourceTableNameUnescaped());
                 } catch (Error e) {
                     log.error("Failed to remove triggers for %s", trigger.getFullyQualifiedSourceTableName(), e);
                 }
@@ -1788,7 +1789,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if ((forceRebuild || !triggerIsActive) && triggerExists) {
                 symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
                         oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
-                                : trigger.getSourceTableName(), transaction);
+                                : trigger.getSourceTableNameUnescaped(), transaction);
                 triggerExists = false;
                 triggerRemoved = true;
             }
@@ -1798,9 +1799,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
                 insert(newTriggerHist);
                 hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                        trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogName(),
-                        trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaName(),
-                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableName());
+                        trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
+                        trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
+                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
             }
 
             try {

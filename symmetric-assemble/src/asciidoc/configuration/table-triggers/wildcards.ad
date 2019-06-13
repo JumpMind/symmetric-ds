@@ -1,17 +1,19 @@
 
 ==== Trigger Wildcards
 
-The source table name may contain the asterisk ('*') wildcard character so that one trigger entry can define synchronization 
-for many tables.   
+The source table name may be an expression that is used to match multiple table names.
+Special characters include the asterisk ('*') for wildcards, the comma (',') for multiple expressions,
+and the exclamation ('!') for negation.
 
 .Wildcard Rules
-* If multiple wildcard tokens are are supplied they should be deliminated with a comma.
-* Tokens are always evaluated from left to right. 
+* Separate multiple table names or table name expressions with a comma.
+* Characters are always evaluated from left to right. 
 * When a table match is made, the table is either added to or removed from the list of 
 tables. If another trigger already exists for a table, then that table is not included in the wildcard match (the explicitly defined 
-trigger entry take precendence).
-* System tables and any tables that start with the SymmetricDS table prefix will be excluded.
-* A wildcard token can also start with an exclamation ('!') to indicate an exclusive match.
+trigger entry take precedence).
+* System tables and any table names that start with the SymmetricDS table prefix will be excluded.
+* To negate the expression and exclude tables, start the expression with an exclamation.
+* Double up special characters to match a single literal character.  (Use two asterisks to match a single asterisk.) 
 
 ifdef::pro[]
 .Sample wildcard trigger for all tables that start with "sale" or " item"

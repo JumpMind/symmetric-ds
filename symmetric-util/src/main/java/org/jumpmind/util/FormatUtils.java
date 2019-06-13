@@ -52,9 +52,29 @@ public final class FormatUtils {
 
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
 
+    /* special characters for wildcard triggers */
+    
     public final static String WILDCARD = "*";
     
+    public final static String WILDCARD_SEPARATOR = ",";
+        
     public final static String NEGATE_TOKEN = "!";
+
+    /* special characters for wildcard triggers - char version for fast comparison */
+    
+    public final static char WILDCARD_SEPARATOR_CHAR = WILDCARD_SEPARATOR.charAt(0);
+
+    public final static char WILDCARD_CHAR = WILDCARD.charAt(0);
+
+    public final static char NEGATE_TOKEN_CHAR = NEGATE_TOKEN.charAt(0);
+
+    /* double up special characters to escape them */
+
+    public final static String WILDCARD_ESCAPED = WILDCARD + WILDCARD;
+    
+    public final static String WILDCARD_SEPARATOR_ESCAPED = WILDCARD_SEPARATOR + WILDCARD_SEPARATOR;
+
+    public final static String NEGATE_TOKEN_ESCAPED = NEGATE_TOKEN + NEGATE_TOKEN;
 
     public final static int MAX_CHARS_TO_LOG = 1000;
 
@@ -219,6 +239,62 @@ public final class FormatUtils {
         return match;
     }
     
+    public static String unescapeWildCards(String str) {
+        return str == null ? null : str.replace(WILDCARD_ESCAPED, WILDCARD).replace(WILDCARD_SEPARATOR_ESCAPED, WILDCARD_SEPARATOR);
+    }
+
+    public static String escapeWildCards(String str) {
+        return str == null ? null : str.replace(WILDCARD, WILDCARD_ESCAPED).replace(WILDCARD_SEPARATOR, WILDCARD_SEPARATOR_ESCAPED);
+    }
+
+    public static boolean isWildCarded(String str) {
+        boolean hasWildCard = false;
+        if (str != null) {
+            int countWildCard = 0;
+            int countCommas = 0;
+            int countNegates = 0;
+
+            for (int i = 0; i < str.length(); i++) {
+                char thisChar = str.charAt(i);
+
+                if (thisChar == WILDCARD_CHAR) {
+                    countWildCard++;
+                } else if (countWildCard > 0) {
+                    if (countWildCard % 2 == 1) {
+                        hasWildCard = true;
+                        break;
+                    }
+                    countWildCard = 0;
+                }
+
+                if (thisChar == WILDCARD_SEPARATOR_CHAR) {
+                    countCommas++;
+                } else if (countCommas > 0) {
+                    if (countCommas % 2 == 1) {
+                        hasWildCard = true;
+                        break;
+                    }
+                    countCommas = 0;
+                }
+                
+                if (thisChar == NEGATE_TOKEN_CHAR) {
+                    countNegates++;
+                } else if (countNegates > 0) {
+                    if (countNegates % 2 == 1) {
+                        hasWildCard = true;
+                        break;
+                    }
+                    countNegates = 0;
+                }
+            }
+            
+            if (countWildCard % 2 == 1 || countCommas % 2 == 1 || countNegates % 2 == 1) {
+                hasWildCard = true;
+            }
+        }
+        return hasWildCard;
+    }
+
     /**
      * Word wrap a string where the line size for the first line is different
      * than the lines sizes for the other lines.
