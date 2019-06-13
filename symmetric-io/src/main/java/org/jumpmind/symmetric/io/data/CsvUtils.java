@@ -87,6 +87,22 @@ public class CsvUtils {
         return out.toString();
     }
 
+    public static String escapeAndQuoteCsvData(String data) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
+        writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+        writer.setTextQualifier('"');
+        writer.setUseTextQualifier(true);
+        writer.setForceQualifier(false);
+        try {
+            writer.write(data, true);
+            writer.close();
+            out.close();
+        } catch (IOException e) {
+        }
+        return out.toString();
+    }
+
     public static String escapeCsvData(String[] data) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         

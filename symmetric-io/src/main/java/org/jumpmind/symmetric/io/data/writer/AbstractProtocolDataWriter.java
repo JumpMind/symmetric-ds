@@ -31,6 +31,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
@@ -134,7 +135,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             String tableKey = table.getTableKey();
             String fullyQualifiedTableName = table.getFullyQualifiedTableName();
             String previousTableKey = processedTables.get(fullyQualifiedTableName);
-            println(CsvConstants.TABLE, table.getName());
+            println(CsvConstants.TABLE, CsvUtils.escapeAndQuoteCsvData(table.getName()));
             if (!tableKey.equals(previousTableKey)) {
                 println(CsvConstants.KEYS, table.getPrimaryKeyColumns());
                 println(CsvConstants.COLUMNS, table.getColumns());
