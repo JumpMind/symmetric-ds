@@ -90,8 +90,6 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " from $(table_reload_status) "
                 + " where load_id = ?");
         
-        putSql("countTableReloadStatusRowsByLoadId", "select sum(rows_count) from $(table_reload_status) where load_id = ?");
-
         putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, processed = 1 where load_id = ?");
         
         putSql("updateTableReloadRequestLoadId", "update $(table_reload_request) set load_id = ?, last_update_time = ? where target_node_id = ? and source_node_id = ? and trigger_id = ? and router_id = ? and create_time = ?");

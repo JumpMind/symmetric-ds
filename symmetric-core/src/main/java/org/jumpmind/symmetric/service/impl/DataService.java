@@ -374,10 +374,6 @@ public class DataService extends AbstractService implements IDataService {
         return collapsedRequests;
     }
     
-    public long getTableReloadStatusRowCount(long loadId) {
-        return sqlTemplateDirty.queryForLong(getSql("countTableReloadStatusRowsByLoadId"), loadId);
-    }
-
     public void updateTableReloadStatusDataLoaded(ISqlTransaction transaction, long loadId, long batchId, int batchCount) {
         int idType = symmetricDialect.getSqlTypeForIds();
         transaction.prepareAndExecute(getSql("updateTableReloadStatusDataLoaded"),

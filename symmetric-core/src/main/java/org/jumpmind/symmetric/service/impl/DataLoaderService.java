@@ -41,10 +41,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -457,27 +455,13 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
     protected void purgeLoadBatchesFromStaging(List<IncomingBatch> batchList) {
         long threshold = parameterService.getLong(ParameterConstants.INITIAL_LOAD_PURGE_STAGE_IMMEDIATE_THRESHOLD_ROWS);
-        if (threshold >= 0 && batchList != null && batchList.size() > 0) {
-            Set<Long> loadIds = new HashSet<Long>();
+        if (threshold >= 0 && batchList != null) {
             for (IncomingBatch batch : batchList) {
-                if (batch.isLoadFlag() && !batch.isCommonFlag()) {
-                    loadIds.add(batch.getLoadId());
-                }
-            }
-            if (loadIds.size() > 0) {
-                long count = 0;
-                for (long loadId : loadIds) {
-                    count += engine.getDataService().getTableReloadStatusRowCount(loadId);
-                }
-                if (count > threshold) {
-                    for (IncomingBatch batch : batchList) {
-                        if (batch.isLoadFlag() && !batch.isCommonFlag()) {
-                            IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_INCOMING,
-                                    batch.getStagedLocation(), batch.getBatchId());
-                            if (resource != null) {
-                                resource.delete();
-                            }
-                        }
+                if (batch.isLoadFlag() && !batch.isCommonFlag() && batch.getDataRowCount() >= threshold) {
+                    IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_INCOMING,
+                            batch.getStagedLocation(), batch.getBatchId());
+                    if (resource != null) {
+                        resource.delete();
                     }
                 }
             }

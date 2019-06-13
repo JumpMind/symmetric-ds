@@ -63,8 +63,6 @@ public interface IDataService {
     
     public TableReloadStatus getTableReloadStatusByLoadId(long loadId);
     
-    public long getTableReloadStatusRowCount(long loadId);
-
     public void updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount);
     
     public int updateTableReloadRequestsCancelled(long loadId);

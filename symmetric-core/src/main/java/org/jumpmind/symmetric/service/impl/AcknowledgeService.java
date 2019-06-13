@@ -205,8 +205,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     protected void purgeLoadBatchesFromStaging(OutgoingBatch outgoingBatch) {
         long threshold = parameterService.getLong(ParameterConstants.INITIAL_LOAD_PURGE_STAGE_IMMEDIATE_THRESHOLD_ROWS);
         if (threshold >= 0 && outgoingBatch.isLoadFlag() && !outgoingBatch.isCommonFlag()) {
-            long count = engine.getDataService().getTableReloadStatusRowCount(outgoingBatch.getLoadId());
-            if (count > threshold) {
+            if (outgoingBatch.getDataRowCount() > threshold) {
                 IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
                         outgoingBatch.getStagedLocation(), outgoingBatch.getBatchId());
                 if (resource != null) {
