@@ -181,7 +181,8 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("findNodeHeartbeatsSql",
                 "select h.node_id, h.heartbeat_time, h.timezone_offset from $(node_host) h inner join $(node) n on h.node_id=n.node_id"
-              + " where n.sync_enabled = 1 and h.heartbeat_time = (select max(hh.heartbeat_time) from $(node_host) hh where hh.node_id = h.node_id)");
+              + " where n.sync_enabled = 1 and h.heartbeat_time = (select max(hh.heartbeat_time) from $(node_host) hh where hh.node_id = h.node_id)"
+              + " and (exists (select * from $(node) nn where nn.node_id=n.created_at_node_id) OR n.created_at_node_id is null)");
 
         putSql("findRootNodeSql",
                 "where created_at_node_id = node_id or created_at_node_id is null order by created_at_node_id desc");
