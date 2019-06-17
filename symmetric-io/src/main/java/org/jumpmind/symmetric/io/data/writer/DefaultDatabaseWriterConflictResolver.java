@@ -183,15 +183,20 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 } else {
                     // Couldn't find the unique index on the table, so the violation is the internal primary key index
                     isPrimaryKeyViolation = true;
+                    log.debug("Couldn't find unique index {} on table {}, so assuming primary key violation", violatedIndexName, targetTable.getName());
                 }
             } else {
                 // Couldn't find the unique index name from the exception, so the violation is the internal primary key index
                 isPrimaryKeyViolation = true;
+                log.debug("Assuming primary key violation for table {} with message {}", targetTable.getName(), e.getMessage());
             }
         }
         
         if (isPrimaryKeyViolation && data.getDataEventType().equals(DataEventType.UPDATE)) {
             // Primary key is preventing our update, so we delete the blocking row
+            log.info("Primary key violation on table {} during {} with batch {}.  Attempting to correct.", targetTable.getName(), 
+                    data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+
             Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
             List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
             List<String> whereValues = new ArrayList<String>();
@@ -199,7 +204,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             for (Column column : whereColumns) {
                 whereValues.add(values.get(column.getName()));
             }            
-            return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues) != 0;
+            return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false) != 0;
         }
         return false;
     }
@@ -215,11 +220,11 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             whereValues.add(values.get(indexColumn.getName()));
         }
         
-        return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues);
+        return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, true);
     }
 
     protected int deleteRow(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
-            List<Column> whereColumns, List<String> whereValues) {
+            List<Column> whereColumns, List<String> whereValues, boolean isUniqueKey) {
         Object[] objectValues = platform.getObjectValues(databaseWriter.getBatch().getBinaryEncoding(),
                 whereValues.toArray(new String[0]), whereColumns.toArray(new Column[0]));
         DmlStatement fromStmt = platform.createDmlStatement(DmlType.FROM, targetTable.getCatalog(), targetTable.getSchema(),
@@ -230,12 +235,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         try {
             count = prepareAndExecute(platform, databaseWriter, sql, objectValues);
             if (count == 0) {
-                log.error("Failed to find and delete the blocking row by unique constraint: " + sql + " " + 
-                        ArrayUtils.toString(objectValues));
+                log.error("Failed to find and delete the blocking row by {}: {} {}",
+                        isUniqueKey ? "unique constraint" : "primary key", sql, ArrayUtils.toString(objectValues));
             }
         } catch (SqlException ex) {
             if (sqlTemplate.isForeignKeyChildExistsViolation(ex)) {
-                log.info("Child exists foreign key violation while correcting unique constraint violation.  Attempting further corrections.");
+                log.info("Child exists foreign key violation while correcting {} violation.  Attempting further corrections.",
+                        isUniqueKey ? "unique constraint" : "primary key");
                 // Failed to delete the row because another row is referencing it                        
                 DmlStatement selectStmt = platform.createDmlStatement(DmlType.SELECT, targetTable.getCatalog(), targetTable.getSchema(),
                         targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), null,
