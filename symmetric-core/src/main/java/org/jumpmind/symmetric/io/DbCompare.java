@@ -365,7 +365,11 @@ public class DbCompare {
                 sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableName, true);
             } else {
                 sourceTable = sourceEngine.getDatabasePlatform().
-                        getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts.get("table"), true);
+                        getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts.get("table"), true);                
+                if (sourceTable == null) {                    
+                    sourceTable = sourceEngine.getDatabasePlatform().
+                            getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"), tableNameParts.get("table"), true);
+                }
             }
 
             if (sourceTable == null) {
