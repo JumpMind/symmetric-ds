@@ -50,6 +50,7 @@ public class DbCompareConfig {
     private Map<String, String> configSources = new HashMap<String, String>();
     
     public DbCompareConfig() {
+        configSources.put("sourceTableNames", "default");
         configSources.put("includedTableNames", "default");
         configSources.put("targetTableNames", "default");
         configSources.put("excludedTableNames", "default");
@@ -58,6 +59,7 @@ public class DbCompareConfig {
         configSources.put("whereClauses", "default");
         configSources.put("tablesToExcludedColumns", "default");
         configSources.put("sqlDiffFileName", "default");
+        configSources.put("outputSql", "default");
     }
     
     public String getSourceWhereClause(String tableName) {
