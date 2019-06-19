@@ -10,6 +10,8 @@ image::csv-router.png[]
 
 endif::pro[]
 
+In your router expression you can tell the router to include a transaction ID for the routed data with INCLUDE_TRANSACTION_ID=true|false. Default is false.
+
 ifndef::pro[]
 
 .The following SQL statement defines a router that will send data from a CSV file to table1 in the 'corp' node group.
@@ -17,9 +19,9 @@ ifndef::pro[]
 ----
 insert into SYM_ROUTER (router_id, target_table_name,
 	source_node_group_id, target_node_group_id, router_type,
-	create_time, last_update_time) values
+	router_expression, create_time, last_update_time) values
 	('store-2-corp-csv','table1','store', 'corp', 'csv', 
-	current_timestamp, current_timestamp); 
+	'INCLUDE_TRANSACTION_ID=true', current_timestamp, current_timestamp); 
 ----
 
 endif::pro[]
