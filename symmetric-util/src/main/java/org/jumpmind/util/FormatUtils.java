@@ -240,11 +240,13 @@ public final class FormatUtils {
     }
     
     public static String unescapeWildCards(String str) {
-        return str == null ? null : str.replace(WILDCARD_ESCAPED, WILDCARD).replace(WILDCARD_SEPARATOR_ESCAPED, WILDCARD_SEPARATOR);
+        return str == null ? null : str.replace(WILDCARD_ESCAPED, WILDCARD).replace(WILDCARD_SEPARATOR_ESCAPED, WILDCARD_SEPARATOR).replace(
+                NEGATE_TOKEN_ESCAPED, NEGATE_TOKEN);
     }
 
     public static String escapeWildCards(String str) {
-        return str == null ? null : str.replace(WILDCARD, WILDCARD_ESCAPED).replace(WILDCARD_SEPARATOR, WILDCARD_SEPARATOR_ESCAPED);
+        return str == null ? null : str.replace(WILDCARD, WILDCARD_ESCAPED).replace(WILDCARD_SEPARATOR, WILDCARD_SEPARATOR_ESCAPED).replace(
+                NEGATE_TOKEN, NEGATE_TOKEN_ESCAPED);
     }
 
     public static boolean isWildCarded(String str) {
