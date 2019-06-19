@@ -958,6 +958,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     autoIncrementColumn.setAutoIncrement(false);
                 }
             }
+            if (table.getCatalog() == null) {
+                table.setCatalog(getDefaultCatalog());
+            }
+            if (table.getSchema() == null) {
+                table.setSchema(getDefaultSchema());
+            }
         }
     }
 
