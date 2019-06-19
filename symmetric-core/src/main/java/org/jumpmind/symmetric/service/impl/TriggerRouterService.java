@@ -1507,9 +1507,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }        
 
         /* Re-lookup just in case the table was just altered */
-        platform.resetCachedTableModel();
-        table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(),
-                true);
+        table = platform.getTableFromCache(table.getCatalog(), table.getSchema(), table.getName(), true);
+
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
         for (Trigger trigger : triggersForCurrentNode) {
