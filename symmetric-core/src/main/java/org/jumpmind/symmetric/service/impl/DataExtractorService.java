@@ -2254,10 +2254,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (trigger != null) {
                     List<TriggerHistory> histories = triggerRouterService.getActiveTriggerHistories(triggerRouterService.getTriggerById(request.getTriggerId()));
                     if (histories != null && histories.size() > 0) {
-                        Data data = new Data(histories.get(0).getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
-                                histories.get(0), trigger.getChannelId(), null, null);
-                        data.setNodeList(targetNode.getNodeId());
-                        dataService.insertData(data);
+                        for (TriggerHistory history : histories) {
+                            Data data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
+                                    history, trigger.getChannelId(), null, null);
+                            data.setNodeList(targetNode.getNodeId());
+                            dataService.insertData(data);
+                        }
                         success = true;
                     }
                 }
