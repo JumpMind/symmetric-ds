@@ -29,7 +29,6 @@ import org.jumpmind.db.platform.derby.DerbyDatabasePlatform;
 import org.jumpmind.db.platform.firebird.FirebirdDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.db.platform.h2.H2DatabasePlatform;
-import org.jumpmind.db.platform.hana.HanaDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
@@ -59,7 +58,6 @@ import org.jumpmind.symmetric.db.firebird.Firebird21SymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.db.generic.GenericSymmetricDialect;
 import org.jumpmind.symmetric.db.h2.H2SymmetricDialect;
-import org.jumpmind.symmetric.db.hana.HanaSymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbSymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb2.HsqlDb2SymmetricDialect;
 import org.jumpmind.symmetric.db.informix.InformixSymmetricDialect;
@@ -170,8 +168,6 @@ public class JdbcSymmetricDialectFactory {
             dialect = new NuoDbSymmetricDialect(parameterService, platform);
         } else if (platform instanceof RaimaDatabasePlatform){
             dialect = new RaimaSymmetricDialect(parameterService, platform);
-        } else if (platform instanceof HanaDatabasePlatform){
-            dialect = new HanaSymmetricDialect(parameterService, platform);
         }else{
             dialect = new GenericSymmetricDialect(parameterService, platform);
         }
