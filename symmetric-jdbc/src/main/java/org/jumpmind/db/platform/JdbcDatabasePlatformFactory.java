@@ -42,6 +42,7 @@ import org.jumpmind.db.platform.firebird.FirebirdDialect1DatabasePlatform;
 import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.db.platform.h2.H2DatabasePlatform;
+import org.jumpmind.db.platform.hana.HanaDatabasePlatform;
 import org.jumpmind.db.platform.hbase.HbasePlatform;
 import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
@@ -121,6 +122,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, DatabaseNamesConstants.TIBERO, TiberoDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.RAIMA, RaimaDatabasePlatform.class);
         addPlatform(platforms, "phoenix", HbasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.HANA, HanaDatabasePlatform.class);
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);

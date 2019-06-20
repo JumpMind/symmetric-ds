@@ -217,6 +217,7 @@ subprojects { subproject ->
         jettyVersion = project.property('jetty.version')
         nuodbVersion = '3.3.1'
         tiberoVersion = '6'
+        hanaVersion = '2.3.62'
         env = System.getenv()
     }
 
@@ -248,6 +249,8 @@ subprojects { subproject ->
         provided ("net.sf.jt400:jt400:$jt400Version")
         provided "jdbc.nuodb:nuodb-jdbc:$nuodbVersion"
         provided "jdbc.tibero:tibero:$tiberoVersion"
+        provided "com.sap.cloud.db.jdbc:ngdbc:$hanaVersion"
+
         // javax.resource needed by jaybird
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
         provided ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {

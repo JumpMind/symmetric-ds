@@ -48,7 +48,7 @@ public class RouterServiceSqlMap extends AbstractSqlMap {
         putSql("orderByCreateTime", " order by d.create_time asc, d.data_id asc ");
 
         putSql("selectDistinctDataIdFromDataEventUsingGapsSql",
-            "select distinct(data_id) from $(data_event) where data_id >=? and data_id <= ? order by data_id asc ");
+            "select distinct data_id from $(data_event) where data_id >=? and data_id <= ? order by data_id asc ");
 
         putSql("selectUnroutedCountForChannelSql", "select count(*) from $(data) where channel_id=? and data_id >=? ");
 
