@@ -118,7 +118,7 @@ public class DataProcessor {
 
                         // pull and process any data events that are not wrapped
                         // in a table
-                        forEachDataInTable(context, processBatch, false, currentBatch);
+                        forEachDataInTable(context, processBatch, true, currentBatch);
 
                         // pull and process all data events wrapped in tables
                         forEachTableInBatch(context, processBatch, currentBatch);
