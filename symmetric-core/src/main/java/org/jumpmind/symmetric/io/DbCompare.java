@@ -322,7 +322,10 @@ public class DbCompare {
         List<String> tableNames = new ArrayList<String>();
 
         for (Trigger trigger : triggers) {
-            if (!configTables.contains(trigger.getFullyQualifiedSourceTableName())) {
+            if (!configTables.contains(trigger.getFullyQualifiedSourceTableName()) &&
+                    ((!CollectionUtils.isEmpty(config.getSourceTableNames()) &&
+                      config.getSourceTableNames().contains(trigger.getFullyQualifiedSourceTableName())) ||
+                      CollectionUtils.isEmpty(config.getSourceTableNames())) ) {
                 tableNames.add(trigger.getFullyQualifiedSourceTableName());
             }
         }
@@ -407,7 +410,7 @@ public class DbCompare {
             if (targetTable == null) {
                 log.warn("No target table found for name {}", tableName);
                 continue;
-            } 
+            }
 
             tables.applyColumnMappings();
             tables.filterExcludedColumns(config);
