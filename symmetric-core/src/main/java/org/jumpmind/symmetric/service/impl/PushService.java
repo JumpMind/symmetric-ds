@@ -221,7 +221,7 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         } catch (Exception ex) {
             processInfo.setStatus(ProcessStatus.ERROR);
             fireOffline(ex, remote, status);
-            if (isRegistrationRequired(ex)) {
+            if (isRegistrationRequired(ex) && !parameterService.isRegistrationServer()) {
                 log.info("Removing identity because registration is required");
                 nodeService.deleteIdentity();
                 nodeService.findIdentity(false);
