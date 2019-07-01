@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -41,12 +42,20 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     /* The subprotocol used by the standard DB2 driver. */
     public static final String JDBC_SUBPROTOCOL = "db2";    
-
+    
+    protected int majorVersion;
+    protected int minorVersion;
+    
     /*
      * Creates a new platform instance.
      */
     public Db2DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);        
+        majorVersion = sqlTemplate.getDatabaseMajorVersion();
+        minorVersion = sqlTemplate.getDatabaseMinorVersion();
+        if (majorVersion < 9 || (majorVersion == 9 && minorVersion < 7)) {
+            supportsTruncate = false;
+        }
     }
     
     @Override
@@ -102,5 +111,12 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         
         return result;
+    }
+    
+    @Override
+    public String getTruncateSql(Table table) {
+        String sql = super.getTruncateSql(table);
+        sql += " reuse storage immediate";
+        return sql;
     }
 }

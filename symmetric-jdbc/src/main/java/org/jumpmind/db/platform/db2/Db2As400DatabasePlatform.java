@@ -16,6 +16,7 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
 
     public Db2As400DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        supportsTruncate = false;
     }
 
     @Override

@@ -197,4 +197,5 @@ public interface IDatabasePlatform {
     
     public long getEstimatedRowCount(Table table);
 
+    public String getTruncateSql(Table table);
 }

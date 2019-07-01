@@ -38,6 +38,7 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
      */
     public MsSql2008DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        supportsTruncate = true;
     }
     
     @Override
@@ -58,5 +59,5 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
                 "where t.name = ? and schema_name(t.schema_id) = ?",
                 table.getName(), table.getSchema());
     }
-
+    
 }

@@ -68,7 +68,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
     
     public static final String CUR_DATA = "DatabaseWriter.CurData";
-
+    
+    private final String ATTRIBUTE_CHANNEL_ID_RELOAD = "reload";
+    
+    private final String TRUNCATE_PATTERN = "truncate table [^ ]+";
+    
     protected IDatabasePlatform platform;
 
     protected ISqlTransaction transaction;
@@ -825,11 +829,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected String preprocessSqlStatement(String sql) {
 		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
 		if (targetTable != null) {
-			sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()),sql);
+			sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()), sql);
 			sql = FormatUtils.replace("schemaName", quoteString(targetTable.getSchema()), sql);
 			sql = FormatUtils.replace("tableName", quoteString(targetTable.getName()), sql);
-		} else if (sourceTable != null){
-			sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()),sql);
+			
+			if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)) {    			
+    			sql = getPlatform().getTruncateSql(targetTable);
+			}
+		} else if (sourceTable != null) {
+			sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()), sql);
 			sql = FormatUtils.replace("schemaName", quoteString(sourceTable.getSchema()), sql);
 			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);
 		}

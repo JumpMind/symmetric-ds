@@ -10,6 +10,7 @@ public class KafkaPlatform extends AbstractDatabasePlatform {
 		super(settings);
 		super.ddlBuilder = new KafkaDdlBuilder();
 		super.ddlReader = new KafkaDdlReader(this);
+		supportsTruncate = false;
 	}
 	
 	@Override
@@ -46,6 +47,4 @@ public class KafkaPlatform extends AbstractDatabasePlatform {
 	public ISqlTemplate getSqlTemplateDirty() {
 		return new KafkaSqlTemplate();
 	}
-
-	
 }

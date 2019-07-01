@@ -122,6 +122,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     
     protected Boolean supportsMultiThreadedTransactions;
     
+    protected boolean supportsTruncate = true;
+    
     public AbstractDatabasePlatform(SqlTemplateSettings settings) {
         this.settings = settings;
     }
@@ -1178,5 +1180,19 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         
         return getSqlTemplateDirty().queryForLong(sql);
     }
-
+    
+    
+    public String getTruncateSql(Table table) {
+        String sql = null;
+        if (supportsTruncate) {
+            sql = "truncate table ";
+        } else {
+            log.info("Truncate is not supported on " + getName() + ". Changing to equivalent delete statement");
+            sql = "delete from ";
+        }
+        String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
+        sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
+        
+        return sql;
+    }
 }

@@ -46,6 +46,7 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public FirebirdDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        supportsTruncate = false;
     }
 
     @Override

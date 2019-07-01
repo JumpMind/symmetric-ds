@@ -29,6 +29,9 @@ public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
 
     public Db2zOsDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        if (majorVersion < 10) {
+            supportsTruncate = false;
+        }
     }
     
     @Override

@@ -51,6 +51,7 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
      */
     public MsSql2000DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        supportsTruncate = false;
     }
 
     @Override
