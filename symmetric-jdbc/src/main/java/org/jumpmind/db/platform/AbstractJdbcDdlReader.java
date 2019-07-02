@@ -214,6 +214,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         result.add(new MetaDataColumnDescriptor(getName("NUM_PREC_RADIX"), Types.INTEGER, Integer.valueOf(10)));
         result.add(new MetaDataColumnDescriptor(getName("DECIMAL_DIGITS"), Types.INTEGER, Integer.valueOf(0)));
         result.add(new MetaDataColumnDescriptor(getName("COLUMN_SIZE"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("CHAR_OCTET_LENGTH"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("IS_NULLABLE"), Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor(getName("IS_AUTOINCREMENT"), Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor(getName("REMARKS"), Types.VARCHAR));
@@ -994,6 +995,14 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         column.setDescription((String) values.get(getName("REMARKS")));
 
+        Object octetLength = values.get(getName("CHAR_OCTET_LENGTH"));
+        if (octetLength != null) {
+            try {
+                column.setCharOctetLength(Integer.parseInt(octetLength.toString()));
+            } catch (NumberFormatException e) {
+            }
+        }
+        
         return column;
     }
 
