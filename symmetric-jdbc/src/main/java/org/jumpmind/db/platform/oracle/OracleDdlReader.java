@@ -168,10 +168,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.getMappedTypeCode() == Types.DECIMAL) {
+        if (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC) {
             // We're back-mapping the NUMBER columns returned by Oracle
             // Note that the JDBC driver returns DECIMAL for these NUMBER
-            // columns
+            // columns for driver version 11 and before, but returns
+            // NUMERIC for driver version 12 and later.
             if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() == 0) {
                     /*
@@ -190,6 +191,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 } else {
                     column.setMappedTypeCode(Types.DOUBLE);
                 }
+            } else {
+                // Let's map DECIMAL to NUMERIC since DECIMAL doesn't really exist in Oracle
+                column.setMappedTypeCode(Types.NUMERIC);
             }
         } else if (column.getMappedTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
