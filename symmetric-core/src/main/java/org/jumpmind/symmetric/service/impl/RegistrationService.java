@@ -331,8 +331,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         String externalId = request.getExternalId() == null ? "" : request.getExternalId();
         String nodeGroupId = request.getNodeGroupId() == null ? "" : request.getNodeGroupId();
         return 0 < sqlTemplate.update(getSql("deleteRegistrationRequestSql"), new Object[] {
-                nodeGroupId, externalId, request.getIpAddress(), request.getHostName(),
-                request.getStatus().name() });
+                nodeGroupId, externalId, request.getHostName(), request.getStatus().name() });
     }
 
     public void saveRegistrationRequest(RegistrationRequest request) {
@@ -358,10 +357,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     new Object[] { request.getAttemptCount(), request.getLastUpdateBy(),
                             request.getLastUpdateTime(), request.getRegisteredNodeId(),
                             request.getStatus().name(), request.getErrorMessage(), nodeGroupId,
-                            externalId, request.getIpAddress(), request.getHostName() }, new int[] {
+                            externalId, request.getHostName() }, new int[] {
                             Types.NUMERIC, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR });
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
         }
         
         if (count == 0) {
