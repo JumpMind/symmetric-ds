@@ -8,6 +8,14 @@ configurations {
     sshAntTask
 }
 
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.ow2.asm') {
+            details.useVersion '5.0.3'
+        }
+    }
+}
+
 dependencies {
     sshAntTask 'org.apache.ant:ant-jsch:1.10.5', 'com.jcraft:jsch:0.1.55'
 }
