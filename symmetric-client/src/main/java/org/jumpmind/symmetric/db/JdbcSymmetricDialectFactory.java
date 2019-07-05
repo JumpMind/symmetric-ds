@@ -147,7 +147,7 @@ public class JdbcSymmetricDialectFactory {
             int dbMinorVersion = platform.getSqlTemplate().getDatabaseMinorVersion();
             if (dbMajorVersion == 2 && dbMinorVersion == 0) {
                 dialect = new Firebird20SymmetricDialect(parameterService, platform);
-            } else if (dbMajorVersion == 2) {
+            } else if (dbMajorVersion >= 2) {
                 dialect = new Firebird21SymmetricDialect(parameterService, platform);
             } else {
                 dialect = new FirebirdSymmetricDialect(parameterService, platform);
