@@ -12,6 +12,7 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.TableRow;
 
 public class CassandraDdlReader implements IDdlReader {
@@ -79,7 +80,7 @@ public class CassandraDdlReader implements IDdlReader {
     }
     
     @Override
-    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
 

@@ -30,6 +30,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.TableRow;
 
 public interface IDdlReader {
@@ -56,6 +57,6 @@ public interface IDdlReader {
 	
 	public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited);
 	
-	public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited);
+	public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding);
 	
 }

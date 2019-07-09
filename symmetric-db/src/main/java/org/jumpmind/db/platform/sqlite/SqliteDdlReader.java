@@ -48,6 +48,7 @@ import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlConstants;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.mapper.RowMapper;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.TableRow;
 
 public class SqliteDdlReader implements IDdlReader {
@@ -289,7 +290,7 @@ public class SqliteDdlReader implements IDdlReader {
     }
     
     @Override
-    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
 

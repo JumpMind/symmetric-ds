@@ -1,2 +1,5 @@
 /.DS_Store
 /.project
+*.iml
+
+/.idea/*

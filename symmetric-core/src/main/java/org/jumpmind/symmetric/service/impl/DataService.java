@@ -2341,7 +2341,7 @@ public class DataService extends AbstractService implements IDataService {
                 log.info("Could not find table " + table.getFullyQualifiedTableName());
             }
             tableRows.add(new TableRow(localTable, row, null, null, null));
-            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>());
+            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), symmetricDialect.getBinaryEncoding());
 
             if (foreignTableRows.isEmpty()) {
                 log.info("Could not determine foreign table rows to fix foreign key violation for "
@@ -2412,7 +2412,7 @@ public class DataService extends AbstractService implements IDataService {
             Row row = new Row(dataMap.size());
             row.putAll(dataMap);
             tableRows.add(new TableRow(table, row, null, null, null));
-            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>());
+            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), symmetricDialect.getBinaryEncoding());
             
             if (foreignTableRows.isEmpty()) {
                 log.info("Could not determine foreign table rows to fix foreign key violation for "
