@@ -10,8 +10,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -26,6 +29,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -231,7 +235,8 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                                     }
                                 }
                             }
-                            sendKafkaMessageByObject(pojo, kafkaDataKey);
+                            Future<RecordMetadata> kafkaResult = sendKafkaMessageByObject(pojo, kafkaDataKey);
+                            kafkaResult.get();
                         } else {
                             throw new RuntimeException("Unable to find a POJO to load for AVRO based message onto Kafka for table : " + tableName);
                         }
@@ -247,7 +252,13 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     } catch (InstantiationException e) {
                         log.info("Unable to instantiate a constructor on POJO based on table " + tableName, e);
                         throw new RuntimeException(e);
-                    } 
+                    } catch (InterruptedException e) {
+                        log.info("Unable to write to Kafka, table " + tableName, e);
+                        throw new RuntimeException(e);
+					} catch (ExecutionException e) {
+                        log.info("Unable to write to Kafka, table " + tableName, e);
+                        throw new RuntimeException(e);
+					} 
                 } else {
                     GenericData.Record avroRecord = new GenericData.Record(schema);
                     avroRecord.put("table", table.getName());
@@ -394,6 +405,8 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public void batchComplete(DataContext context) {
+    	LinkedList<Future<RecordMetadata>> pending = new LinkedList<Future<RecordMetadata>>();
+    	
         if (!context.getBatch().getChannelId().equals("heartbeat") && !context.getBatch().getChannelId().equals("config")) {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
             
@@ -404,22 +417,30 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     
                     
                     for (Map.Entry<String, List<String>> entry : kafkaDataMap.entrySet()) {
-                        for (String row : entry.getValue()) {
+                        
+						for (String row : entry.getValue()) {
                             if (messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
-                                sendKafkaMessage(producer, row, entry.getKey());
+                            	Future<RecordMetadata> result = sendKafkaMessage(producer, row, entry.getKey());
+                            	pending.add(result);
                             } else {
                                 kafkaText.append(row);
                             }
                         }
                         if (messageBy.equals(KAFKA_MESSAGE_BY_BATCH)) {
-                            sendKafkaMessage(producer, kafkaText.toString(), entry.getKey());
+                        	Future<RecordMetadata> result = sendKafkaMessage(producer, kafkaText.toString(), entry.getKey());
+                        	pending.add(result);
                         }
+                    }
+                    
+                    for (Future<RecordMetadata> request: pending) {
+                    	request.get();
                     }
                     kafkaDataMap = new HashMap<String, List<String>>();
                 } 
             } catch (Exception e) {
                 log.warn("Unable to write batch to Kafka " + batchFileName, e);
                 e.printStackTrace();
+                throw new RuntimeException("Unable to write batch to Kafka " + batchFileName, e);
             } finally {
                 producer.close();
                 context.put(KAFKA_TEXT_CACHE, new HashMap<String, List<String>>());
@@ -435,15 +456,17 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     public void batchRolledback(DataContext context) {
     }
 
-    public void sendKafkaMessage(KafkaProducer<String, String> producer, String kafkaText, String topic) {
-        producer.send(new ProducerRecord<String, String>(topic, kafkaText));
-        log.debug("Data to be sent to Kafka-" + kafkaText);
+    public Future<RecordMetadata> sendKafkaMessage(KafkaProducer<String, String> producer, String kafkaText, String topic) {
+    	log.debug("Data to be sent to Kafka-" + kafkaText);
+        return producer.send(new ProducerRecord<String, String>(topic, kafkaText));
+        
     }
 
-    public void sendKafkaMessageByObject(Object bean, String topic) {
+    public Future<RecordMetadata> sendKafkaMessageByObject(Object bean, String topic) {
         KafkaProducer<String, Object> producer = new KafkaProducer<String, Object>(configs);
-        producer.send(new ProducerRecord<String, Object>(topic, bean));
+        Future<RecordMetadata> result = producer.send(new ProducerRecord<String, Object>(topic, bean));
         producer.close();
+        return result;
     }
 
     public static byte[] datumToByteArray(Schema schema, GenericRecord datum) throws IOException {
