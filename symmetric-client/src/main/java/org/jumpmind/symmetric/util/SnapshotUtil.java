@@ -258,7 +258,11 @@ public class SnapshotUtil {
         extract(export, 10000, "order by start_id, end_id desc", new File(tmpDir, "sym_data_gap.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_DATA_GAP));
 
-        outputSymDataForBatchesInError(engine, tmpDir);    
+        try {
+            outputSymDataForBatchesInError(engine, tmpDir);
+        } catch (Exception e) {
+            log.warn("Failed to export data from batch in error", e);
+        }
         
         extract(export, new File(tmpDir, "sym_table_reload_request.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_TABLE_RELOAD_REQUEST));
@@ -816,11 +820,10 @@ public class SnapshotUtil {
                     
                     // Write parsed row data to file
                     String filenameParsed = tmpDir + File.separator + batch.getBatchId() + "_parsed.csv";
-                    String[] columnNames = engine.getDatabasePlatform().getTableFromCache(data.getTableName(), false).getColumnNames();                   
                     CsvWriter writer = null;
                     try {
                         writer = new CsvWriter(filenameParsed);
-                        writer.writeRecord(columnNames);
+                        writer.writeRecord(data.getTriggerHistory().getParsedColumnNames());
                         writer.writeRecord(data.toParsedRowData());
                         writer.writeRecord(data.toParsedOldData());
                     } catch (IOException e) {
