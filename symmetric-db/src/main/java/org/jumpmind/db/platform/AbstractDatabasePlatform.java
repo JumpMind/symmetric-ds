@@ -1199,4 +1199,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         
         return sql;
     }
+
+    public String getDeleteSql(Table table) {
+        String sql = null;
+        sql = "delete from ";
+        String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
+        sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
+
+        return sql;
+    }
 }

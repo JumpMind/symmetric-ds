@@ -249,4 +249,11 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         sql += " cascade";
         return sql;
     }
+
+    @Override
+    public String getDeleteSql(Table table) {
+        String sql = super.getDeleteSql(table);
+        sql += " cascade";
+        return sql;
+    }
 }
