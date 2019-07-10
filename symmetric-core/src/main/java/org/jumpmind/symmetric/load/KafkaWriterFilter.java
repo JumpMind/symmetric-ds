@@ -224,7 +224,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                                 }
                             }
                             Future<RecordMetadata> kafkaResult = sendKafkaMessageByObject(pojo, kafkaDataKey);
-                            kafkaResult.get();
+                            kafkaResult.get(); //Wait for Kafka to send pending messages or throw an exception
                         } else {
                             throw new RuntimeException(
                                     "Unable to find a POJO to load for AVRO based message onto Kafka for table : " + tableName);
@@ -421,6 +421,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     }
 
                     for (Future<RecordMetadata> request : pending) {
+                        //Wait for Kafka to send pending messages or throw an exception
                         request.get();
                     }
                     kafkaDataMap = new HashMap<String, List<String>>();
