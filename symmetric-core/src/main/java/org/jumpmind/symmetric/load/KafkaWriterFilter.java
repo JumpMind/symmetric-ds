@@ -74,19 +74,10 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
 
     private String schemaPackage;
 
-    private String[] parseDatePatterns = new String[] {
-            "yyyy/MM/dd HH:mm:ss.SSSSSS",
-            "yyyy-MM-dd HH:mm:ss",
-            "ddMMMyyyy:HH:mm:ss.SSS Z",
-            "ddMMMyyyy:HH:mm:ss.SSS",
-            "yyyy-MM-dd HH:mm:ss.SSS",
-            "ddMMMyyyy:HH:mm:ss.SSSSSS",
-            "yyyy-MM-dd",
-            "yyyy-MM-dd'T'HH:mmZZZZ",
-            "yyyy-MM-dd'T'HH:mm:ssZZZZ",
-            "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ"
-    };
-    
+    private String[] parseDatePatterns = new String[] { "yyyy/MM/dd HH:mm:ss.SSSSSS", "yyyy-MM-dd HH:mm:ss", "ddMMMyyyy:HH:mm:ss.SSS Z",
+            "ddMMMyyyy:HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SSS", "ddMMMyyyy:HH:mm:ss.SSSSSS", "yyyy-MM-dd", "yyyy-MM-dd'T'HH:mmZZZZ",
+            "yyyy-MM-dd'T'HH:mm:ssZZZZ", "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ" };
+
     private List<String> schemaPackageClassNames = new ArrayList<String>();
 
     public final static String KAFKA_FORMAT_XML = "XML";
@@ -144,7 +135,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
-        
+
         if (table.getNameLowerCase().startsWith("sym_")) {
             return true;
         } else {
@@ -219,18 +210,15 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                                     Class propertyTypeClass = PropertyUtils.getPropertyType(pojo, colName);
                                     if (CharSequence.class.equals(propertyTypeClass)) {
                                         PropertyUtils.setSimpleProperty(pojo, colName, rowData[i]);
-                                    }
-                                    else if (Long.class.equals(propertyTypeClass)) {
+                                    } else if (Long.class.equals(propertyTypeClass)) {
                                         Date date = null;
                                         try {
                                             date = DateUtils.parseDate(rowData[i], parseDatePatterns);
-                                        }
-                                        catch (Exception e) {
+                                        } catch (Exception e) {
                                             log.debug(rowData[i] + " was not a recognized date format so treating it as a long.");
                                         }
                                         BeanUtils.setProperty(pojo, colName, date != null ? date.getTime() : rowData[i]);
-                                    }
-                                    else {
+                                    } else {
                                         BeanUtils.setProperty(pojo, colName, rowData[i]);
                                     }
                                 }
@@ -238,7 +226,8 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                             Future<RecordMetadata> kafkaResult = sendKafkaMessageByObject(pojo, kafkaDataKey);
                             kafkaResult.get();
                         } else {
-                            throw new RuntimeException("Unable to find a POJO to load for AVRO based message onto Kafka for table : " + tableName);
+                            throw new RuntimeException(
+                                    "Unable to find a POJO to load for AVRO based message onto Kafka for table : " + tableName);
                         }
                     } catch (NoSuchMethodException e) {
                         log.info("Unable to find setter on POJO based on table " + table.getName(), e);
@@ -255,10 +244,10 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     } catch (InterruptedException e) {
                         log.info("Unable to write to Kafka, table " + tableName, e);
                         throw new RuntimeException(e);
-					} catch (ExecutionException e) {
+                    } catch (ExecutionException e) {
                         log.info("Unable to write to Kafka, table " + tableName, e);
                         throw new RuntimeException(e);
-					} 
+                    }
                 } else {
                     GenericData.Record avroRecord = new GenericData.Record(schema);
                     avroRecord.put("table", table.getName());
@@ -405,38 +394,37 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public void batchComplete(DataContext context) {
-    	LinkedList<Future<RecordMetadata>> pending = new LinkedList<Future<RecordMetadata>>();
-    	
+        LinkedList<Future<RecordMetadata>> pending = new LinkedList<Future<RecordMetadata>>();
+
         if (!context.getBatch().getChannelId().equals("heartbeat") && !context.getBatch().getChannelId().equals("config")) {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
-            
+
             KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
             try {
                 if (confluentUrl == null && kafkaDataMap.size() > 0) {
                     StringBuffer kafkaText = new StringBuffer();
-                    
-                    
+
                     for (Map.Entry<String, List<String>> entry : kafkaDataMap.entrySet()) {
-                        
-						for (String row : entry.getValue()) {
+
+                        for (String row : entry.getValue()) {
                             if (messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
-                            	Future<RecordMetadata> result = sendKafkaMessage(producer, row, entry.getKey());
-                            	pending.add(result);
+                                Future<RecordMetadata> result = sendKafkaMessage(producer, row, entry.getKey());
+                                pending.add(result);
                             } else {
                                 kafkaText.append(row);
                             }
                         }
                         if (messageBy.equals(KAFKA_MESSAGE_BY_BATCH)) {
-                        	Future<RecordMetadata> result = sendKafkaMessage(producer, kafkaText.toString(), entry.getKey());
-                        	pending.add(result);
+                            Future<RecordMetadata> result = sendKafkaMessage(producer, kafkaText.toString(), entry.getKey());
+                            pending.add(result);
                         }
                     }
-                    
-                    for (Future<RecordMetadata> request: pending) {
-                    	request.get();
+
+                    for (Future<RecordMetadata> request : pending) {
+                        request.get();
                     }
                     kafkaDataMap = new HashMap<String, List<String>>();
-                } 
+                }
             } catch (Exception e) {
                 log.warn("Unable to write batch to Kafka " + batchFileName, e);
                 e.printStackTrace();
@@ -457,9 +445,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public Future<RecordMetadata> sendKafkaMessage(KafkaProducer<String, String> producer, String kafkaText, String topic) {
-    	log.debug("Data to be sent to Kafka-" + kafkaText);
+        log.debug("Data to be sent to Kafka-" + kafkaText);
         return producer.send(new ProducerRecord<String, String>(topic, kafkaText));
-        
+
     }
 
     public Future<RecordMetadata> sendKafkaMessageByObject(Object bean, String topic) {
