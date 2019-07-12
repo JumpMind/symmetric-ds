@@ -69,9 +69,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         // Note that the back-mappings are partially done by the model reader,
         // not the driver
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
@@ -81,11 +81,11 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.DECIMAL);
-        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)");
+        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
