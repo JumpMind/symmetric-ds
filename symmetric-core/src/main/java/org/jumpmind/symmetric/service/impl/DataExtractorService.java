@@ -86,6 +86,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
@@ -214,8 +215,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     private CustomizableThreadFactory threadPoolFactory;
 
-    public DataExtractorService(ISymmetricEngine engine) {
+    public DataExtractorService(ISymmetricEngine engine, ISymmetricDialect extractSymmetricDialect) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
+        setExtractSymmetricDialect(extractSymmetricDialect);
         this.outgoingBatchService = engine.getOutgoingBatchService();
         this.routerService = engine.getRouterService();
         this.dataService = engine.getDataService();
@@ -1783,14 +1785,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         String tableName = triggerHistory.getSourceTableName();
         Table table = null;
         if (useDatabaseDefinition) {
-            table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
+            table = getExtractPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, false);
             
             if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
                 /*
                  * If the column count is less than what trigger history reports, then
                  * chances are the table cache is out of date.
                  */
-                table = platform.getTableFromCache(catalogName, schemaName, tableName, true);
+                table = getExtractPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, true);
             }
 
             if (table != null) {
@@ -2889,7 +2891,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (selfRefLevel == 0) {
                     selectSql += selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + " ";
                 } else {
-                    DatabaseInfo info = symmetricDialect.getPlatform().getDatabaseInfo();
+                    DatabaseInfo info = extractSymmetricDialect.getPlatform().getDatabaseInfo();
                     String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
                             sourceTable.getName(), info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());                    
                     String refSql= "select " + selfRefChildColumnName + " from " + tableName + 
@@ -2907,14 +2909,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getReloadChannelId());
             
-            if (channel.isReloadFlag() && symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+            if (channel.isReloadFlag() && extractSymmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
                 channel = new Channel();
                 channel.setContainsBigLob(!this.isLobFirstPass);
-                selectSql = symmetricDialect.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
+                selectSql = extractSymmetricDialect.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
                 log.info("Querying {} pass LOB for table {}: {}", (this.isLobFirstPass ? "first" : "second"), sourceTable.getName(), selectSql);
             }
             
-            String sql = symmetricDialect.createInitialLoadSqlFor(
+            String sql = extractSymmetricDialect.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable, triggerHistory, channel, selectSql);
 
             for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
@@ -2923,21 +2925,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             
             final String initialLoadSql = sql;
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
-            final boolean selectedAsCsv = symmetricDialect.getParameterService().is(
+            final boolean selectedAsCsv = extractSymmetricDialect.getParameterService().is(
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
-            final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
+            final boolean objectValuesWillNeedEscaped = !extractSymmetricDialect.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
-            final boolean[] isColumnPositionUsingTemplate = symmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
+            final boolean[] isColumnPositionUsingTemplate = extractSymmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
             log.debug(sql);
             
-            this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
+            this.cursor = extractSqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
                     String csvRow = null;                    
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
                     } else if (objectValuesWillNeedEscaped) {
-                        csvRow = platform.getCsvStringValue(
-                                symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
+                        csvRow = extractPlatform.getCsvStringValue(
+                                extractSymmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
                                 row, isColumnPositionUsingTemplate);
                     } else {
                         csvRow = row.csvValue();

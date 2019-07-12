@@ -77,6 +77,8 @@ final public class Constants {
     
     public static final String DEPLOYMENT_SUB_TYPE_LOAD_ONLY = "load-only";
     
+    public static final String DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY = "extract-only";
+    
     /**
      * Use this value for the router_id in {@link DataEvent} if the router is unknown.
      */

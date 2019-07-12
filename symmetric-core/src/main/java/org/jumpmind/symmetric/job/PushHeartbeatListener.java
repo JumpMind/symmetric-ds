@@ -68,9 +68,10 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     || me.getBatchToSendCount() != outgoingUnsentCount) {
                 log.info("Some attribute(s) of node changed.  Recording changes");
                 me.setDeploymentType(engine.getDeploymentType());
+                me.setDeploymentSubType(engine.getDeploymentSubType());
                 me.setSymmetricVersion(Version.version());
-                me.setDatabaseType(symmetricDialect.getName());
-                me.setDatabaseVersion(symmetricDialect.getVersion());
+                me.setDatabaseType(engine.getExtractSymmetricDialect().getName());
+                me.setDatabaseVersion(engine.getExtractSymmetricDialect().getVersion());
                 me.setBatchInErrorCount(outgoingErrorCount);
                 me.setBatchToSendCount(outgoingUnsentCount);
                 me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
