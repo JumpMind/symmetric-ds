@@ -146,6 +146,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
+import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -2713,12 +2714,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         private SimpleRouterContext routingContext;
 
         private Node node;
+        
+        private Set<Node> nodeSet;
 
         private TriggerRouter triggerRouter;
+        
+        private Map<String, IDataRouter> routers;
+        
+        private IDataRouter dataRouter;
         
         private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
         
         private String overrideSelectSql;
+        
+        private boolean initialLoadSelectUsed;
 
         private boolean isSelfReferencingFk;
         
@@ -2751,6 +2760,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     initialLoadEvents);
             this.batch = batch;
             this.node = nodeService.findNode(batch.getTargetNodeId(), true);
+            this.nodeSet = new HashSet<Node>(1);
+            this.nodeSet.add(node);
+            this.routers = routerService.getRouters();
+
             if (node == null) {
                 throw new SymmetricException("Could not find a node represented by %s",
                         this.batch.getTargetNodeId());
@@ -2774,12 +2787,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             CsvData data = null;
             do {
                 data = selectNext();
-            } while (data != null
-                    && routingContext != null
-                    && !routerService.shouldDataBeRouted(routingContext,
-                            new DataMetaData((Data) data, sourceTable, triggerRouter.getRouter(),
-                                    routingContext.getChannel()), node, true, StringUtils
-                                    .isNotBlank(triggerRouter.getInitialLoadSelect()), triggerRouter));
+            } while (data != null && routingContext != null && !shouldDataBeRouted(data));
 
             if (data != null && outgoingBatch != null && !outgoingBatch.isExtractJobFlag()) {
                 outgoingBatch.incrementExtractRowCount();
@@ -2787,6 +2795,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
             return data;
+        }
+
+        public boolean shouldDataBeRouted(CsvData data) {
+            DataMetaData dataMetaData = new DataMetaData((Data) data, sourceTable, triggerRouter.getRouter(), routingContext.getChannel());
+            Collection<String> nodeIds = dataRouter.routeToNodes(routingContext, dataMetaData, nodeSet, true,
+                    initialLoadSelectUsed, triggerRouter);
+            return nodeIds != null && nodeIds.contains(node.getNodeId());
         }
 
         protected CsvData selectNext() {
@@ -2805,6 +2820,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, true, false);
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
+                    this.initialLoadSelectUsed = StringUtils.isNotBlank(this.triggerRouter.getInitialLoadSelect());
+
+                    Router router = triggerRouter.getRouter();
+                    if (!StringUtils.isBlank(router.getRouterType())) {
+                        this.dataRouter = routers.get(router.getRouterType());
+                    }
+                    if (dataRouter == null) {
+                        this.dataRouter = routers.get("default");
+                    }
+                    
                     if (this.routingContext == null) {
                         NodeChannel channel = batch != null ? configurationService.getNodeChannel(
                                 batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
