@@ -108,6 +108,12 @@ public class WrapperLogHandler extends StreamHandler {
             try {
                 writer.close();
                 writer = null;
+            } catch (Exception e) {
+                reportError(null, e, ErrorManager.CLOSE_FAILURE);
+            }
+        }
+        if (executor != null) {
+            try {
                 executor.shutdown();
             } catch (Exception e) {
                 reportError(null, e, ErrorManager.CLOSE_FAILURE);
