@@ -237,6 +237,29 @@ public class DataService extends AbstractService implements IDataService {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
     
+    public void insertTableReloadRequest(TableReloadRequest request) {
+    	ISqlTransaction transaction = null;
+        try {
+            transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
+            insertTableReloadRequest(transaction, request);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
+        }
+    }
+    
     public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request) {
         Date time = new Date();
         request.setLastUpdateTime(time);
