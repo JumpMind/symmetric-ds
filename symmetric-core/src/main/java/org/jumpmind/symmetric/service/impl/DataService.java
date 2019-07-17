@@ -1903,7 +1903,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    protected long insertData(ISqlTransaction transaction, final Data data) {
+    public long insertData(ISqlTransaction transaction, final Data data) {
         long id = transaction.insertWithGeneratedKey(
                 getSql("insertIntoDataSql"),
                 symmetricDialect.getSequenceKeyName(SequenceIdentifier.DATA),
@@ -1916,9 +1916,9 @@ public class DataService extends AbstractService implements IDataService {
                         data.getOldData(),
                         data.getTriggerHistory() != null ? data.getTriggerHistory()
                                 .getTriggerHistoryId() : -1, data.getChannelId(),
-                        data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0 }, new int[] { Types.VARCHAR,
-                        Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC });
+                        data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0, data.getTransactionId() },
+                        new int[] { Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR });
         data.setDataId(id);
         return id;
     }

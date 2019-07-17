@@ -44,6 +44,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
+import static org.jumpmind.symmetric.service.ClusterConstants.LOG_MINER;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -84,7 +85,8 @@ public class ClusterService extends AbstractService implements IClusterService {
 
     private static final String[] actions = new String[] { ROUTE, PULL, PUSH, HEARTBEAT, PURGE_INCOMING, PURGE_OUTGOING,
             PURGE_STATISTICS, SYNC_TRIGGERS, PURGE_DATA_GAPS, STAGE_MANAGEMENT, WATCHDOG, STATISTICS, FILE_SYNC_PULL,
-            FILE_SYNC_PUSH, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL, MONITOR, SYNC_CONFIG };
+            FILE_SYNC_PUSH, FILE_SYNC_TRACKER, INITIAL_LOAD_EXTRACT, OFFLINE_PUSH, OFFLINE_PULL, MONITOR, SYNC_CONFIG,
+            LOG_MINER };
     
     private static final String[] sharedActions = new String[] { FILE_SYNC_SHARED };
 

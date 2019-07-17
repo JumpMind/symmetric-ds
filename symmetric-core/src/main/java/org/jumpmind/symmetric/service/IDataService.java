@@ -122,6 +122,8 @@ public interface IDataService {
     
     public long insertData(Data data);
     
+    public long insertData(ISqlTransaction transaction, final Data data);
+    
     public void insertDataEvents(ISqlTransaction transaction, List<DataEvent> events);
     
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad, long loadId, String createBy);
