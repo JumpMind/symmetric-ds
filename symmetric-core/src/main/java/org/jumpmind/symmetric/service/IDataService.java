@@ -49,7 +49,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface IDataService {
         
-    public void insertTableReloadRequest(TableReloadRequest request);
+    public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request);
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     

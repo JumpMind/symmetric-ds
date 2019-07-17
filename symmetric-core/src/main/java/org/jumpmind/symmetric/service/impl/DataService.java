@@ -237,7 +237,7 @@ public class DataService extends AbstractService implements IDataService {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
     
-    public void insertTableReloadRequest(TableReloadRequest request) {
+    public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request) {
         Date time = new Date();
         request.setLastUpdateTime(time);
         if (request.getCreateTime() == null) {
@@ -245,7 +245,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         request.setCreateTime(new Date((request.getCreateTime().getTime() / 1000) * 1000));
 
-        sqlTemplate.update(
+        transaction.prepareAndExecute(
                 getSql("insertTableReloadRequest"),
                 new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                         request.getCreateTime(), request.getLastUpdateBy(),
