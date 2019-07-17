@@ -51,6 +51,8 @@ public interface IDataService {
         
     public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request);
     
+    public void insertTableReloadRequest(TableReloadRequest request);
+    
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
     public TableReloadRequest getTableReloadRequest(long loadId);
