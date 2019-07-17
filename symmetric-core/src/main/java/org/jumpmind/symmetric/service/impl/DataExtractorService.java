@@ -1998,7 +1998,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
-        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
+        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId(), false);
         if (trigger == null || !trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
                 TableConstants.SYM_FILE_SNAPSHOT))) {
             return true;
@@ -2024,6 +2024,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         if (requests.size() > 0) {
             allChildRequests = getExtractChildRequestsForNode(nodeCommunication, requests);
         }
+
+        // refresh trigger cache
+        triggerRouterService.getTriggerById(null, true);
 
         /*
          * Process extract requests until it has taken longer than 30 seconds, and then
