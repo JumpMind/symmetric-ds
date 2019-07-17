@@ -46,6 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -58,6 +59,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Lock;
@@ -137,8 +139,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      */
     private Map<Integer, TriggerHistory> historyMap = Collections.synchronizedMap(new HashMap<Integer, TriggerHistory>());
 
-    public TriggerRouterService(ISymmetricEngine engine) {
+    public TriggerRouterService(ISymmetricEngine engine, ISymmetricDialect extractSymmetricDialect) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
+        setExtractSymmetricDialect(extractSymmetricDialect);
         this.clusterService = engine.getClusterService();
         this.configurationService = engine.getConfigurationService();
         this.statisticManager = engine.getStatisticManager();
@@ -1403,13 +1406,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers, boolean useTableCache) {
         Set<Table> tables = new HashSet<Table>();
+        
+        IDatabasePlatform sourcePlatform = getExtractPlatform(trigger.getSourceTableName());
+        
         try {
             boolean ignoreCase = this.parameterService
                     .is(ParameterConstants.DB_METADATA_IGNORE_CASE);
 
             List<String> catalogNames = new ArrayList<String>();
             if (trigger.isSourceCatalogNameWildCarded()) {
-                List<String> all = platform.getDdlReader().getCatalogNames();
+                List<String> all = sourcePlatform.getDdlReader().getCatalogNames();
                 for (String catalogName : all) {
                     if (trigger.matchesCatalogName(catalogName, ignoreCase)) {
                         catalogNames.add(catalogName);
@@ -1420,7 +1426,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             } else {
                 if (isBlank(trigger.getSourceCatalogName())) {
-                   catalogNames.add(platform.getDefaultCatalog()); 
+                   catalogNames.add(sourcePlatform.getDefaultCatalog()); 
                 } else {
                    catalogNames.add(trigger.getSourceCatalogNameUnescaped());
                 }
@@ -1429,7 +1435,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             for (String catalogName : catalogNames) {
                 List<String> schemaNames = new ArrayList<String>();
                 if (trigger.isSourceSchemaNameWildCarded()) {
-                    List<String> all = platform.getDdlReader().getSchemaNames(catalogName);
+                    List<String> all = sourcePlatform.getDdlReader().getSchemaNames(catalogName);
                     for (String schemaName : all) {
                         if (trigger.matchesSchemaName(schemaName, ignoreCase)) {
                             schemaNames.add(schemaName);
@@ -1440,7 +1446,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     }
                 } else {
                     if (isBlank(trigger.getSourceSchemaName())) {
-                        schemaNames.add(platform.getDefaultSchema());
+                        schemaNames.add(sourcePlatform.getDefaultSchema());
                     } else {
                         schemaNames.add(trigger.getSourceSchemaNameUnescaped());
                     }
@@ -1448,7 +1454,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                 for (String schemaName : schemaNames) {
                     if (trigger.isSourceTableNameWildCarded()) {
-                        Database database = symmetricDialect.getPlatform().readDatabase(
+                        Database database = sourcePlatform.readDatabase(
                                 catalogName, schemaName,
                                 new String[] { "TABLE" });
                         Table[] tableArray = database.getTables();
@@ -1463,7 +1469,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             }
                         }
                     } else {
-                        Table table = symmetricDialect.getPlatform().getTableFromCache(
+                        Table table = sourcePlatform.getTableFromCache(
                                 catalogName, schemaName,
                                 trigger.getSourceTableNameUnescaped(), !useTableCache);
                         if (table != null) {

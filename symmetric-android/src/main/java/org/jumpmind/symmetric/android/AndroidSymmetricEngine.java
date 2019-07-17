@@ -233,4 +233,9 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 	public ISymmetricDialect getSymmetricDialect() {
 		return this.symmetricDialect;
 	}
+
+    @Override
+    protected ISymmetricDialect checkExtractOnly() {
+        return getSymmetricDialect();
+    }
 }

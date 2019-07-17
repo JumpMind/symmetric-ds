@@ -54,6 +54,7 @@ import org.jumpmind.symmetric.AbstractCommandLauncher;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricAdmin;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.model.Node;
@@ -283,6 +284,17 @@ public class SymmetricEngineHolder {
             engine = new ServerSymmetricEngine(propertiesFile != null ? file
                     : null, springContext, this);
             engine.setDeploymentType(deploymentType);
+            
+            String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
+            String extractOnly = properties.getProperty(ParameterConstants.NODE_EXTRACT_ONLY);
+            String deploymentSubType = null;
+            if (loadOnly != null && loadOnly.equals("true")) {
+                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
+            } else if (extractOnly != null && extractOnly.equals("true")) {
+                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY;
+            }
+            engine.setDeploymentSubType(deploymentSubType);
+            
             synchronized (this) {
                 if (!engines.containsKey(engine.getEngineName())) {
                     engines.put(engine.getEngineName(), engine);
@@ -338,6 +350,18 @@ public class SymmetricEngineHolder {
                         SecurityConstants.PREFIX_ENC + service.encrypt(loadOnlyPassword));
             } catch (Exception ex) {
                 log.warn("Could not encrypt load only password", ex);
+            }
+        }
+
+        String extractOnlyPassword = properties.getProperty(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+        
+        if (StringUtils.isNotBlank(extractOnlyPassword) && !extractOnlyPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
+            try {
+                ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
+                properties.setProperty(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
+                        SecurityConstants.PREFIX_ENC + service.encrypt(extractOnlyPassword));
+            } catch (Exception ex) {
+                log.warn("Could not encrypt extract only password", ex);
             }
         }
 

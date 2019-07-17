@@ -470,6 +470,8 @@ final public class ParameterConstants {
     
     public final static String NODE_LOAD_ONLY = "load.only";
     
+    public final static String NODE_EXTRACT_ONLY = "extract.only";
+    
     public final static String MYSQL_TINYINT_DDL_TO_BOOLEAN = "mysql.tinyint.ddl.to.boolean";
     public final static String MYSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "mysql.bulk.load.max.rows.before.flush";
     public final static String MYSQL_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH = "mysql.bulk.load.max.bytes.before.flush";
@@ -477,6 +479,8 @@ final public class ParameterConstants {
     public final static String MYSQL_BULK_LOAD_REPLACE = "mysql.bulk.load.replace";
 
     public static final String LOAD_ONLY_PROPERTY_PREFIX = "target.";
+   
+    public static final String EXTRACT_ONLY_PROPERTY_PREFIX = "extract.";
     
     public final static String KAFKA_PRODUCER = "kafka.producer";
     public final static String KAFKA_FORMAT = "kafka.format";

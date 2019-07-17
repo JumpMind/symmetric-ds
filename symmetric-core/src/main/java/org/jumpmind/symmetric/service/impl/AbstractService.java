@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -69,6 +70,14 @@ abstract public class AbstractService implements IService {
 
     protected IDatabasePlatform platform;
 
+    protected ISymmetricDialect extractSymmetricDialect;
+
+    protected IDatabasePlatform extractPlatform;
+    
+    protected ISqlTemplate extractSqlTemplate;
+    
+    protected ISqlTemplate extractSqlTemplateDirty;
+    
     protected String tablePrefix;
 
     private ISqlMap sqlMap;
@@ -368,6 +377,33 @@ abstract public class AbstractService implements IService {
         if (o == null) {
             throw new SymmetricException(message);
         }
+    }
+
+    protected boolean isSymmetricTable(String tableName) {
+        return tableName.toUpperCase().startsWith(this.tablePrefix.toUpperCase());
+    }
+    
+    protected IDatabasePlatform getExtractPlatform(String tableName) {
+        return isSymmetricTable(tableName) ? symmetricDialect.getPlatform() : extractSymmetricDialect.getPlatform();
+    }
+    
+    protected boolean isSymmetricTable(Table table) {
+        return table.getNameLowerCase().startsWith(this.tablePrefix.toLowerCase());
+    }
+    
+    protected IDatabasePlatform getExtractPlatform(Table table) {
+        return isSymmetricTable(table) ? symmetricDialect.getPlatform() : extractSymmetricDialect.getPlatform();
+    }
+    
+    public ISymmetricDialect getExtractSymmetricDialect() {
+        return extractSymmetricDialect == null ? symmetricDialect : extractSymmetricDialect;
+    }
+
+    public void setExtractSymmetricDialect(ISymmetricDialect extractSymmetricDialect) {
+        this.extractPlatform = extractSymmetricDialect.getPlatform();
+        this.extractSqlTemplate = extractSymmetricDialect.getPlatform().getSqlTemplate();
+        this.extractSqlTemplateDirty = extractSymmetricDialect.getPlatform().getSqlTemplateDirty();
+        this.extractSymmetricDialect = extractSymmetricDialect;
     }
 
     

@@ -496,6 +496,36 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return files;
     }
     
+    protected ISymmetricDialect checkExtractOnly() {
+        if (parameterService.is(ParameterConstants.NODE_EXTRACT_ONLY, false)) {
+            TypedProperties properties = new TypedProperties();
+            for (String prop : BasicDataSourcePropertyConstants.allProps ) {
+                properties.put(prop, parameterService.getString(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + prop));
+            }
+            
+            String[] sqlTemplateProperties = new String[] {
+                ParameterConstants.DB_FETCH_SIZE,
+                ParameterConstants.DB_QUERY_TIMEOUT_SECS,
+                ParameterConstants.JDBC_EXECUTE_BATCH_SIZE,
+                ParameterConstants.JDBC_ISOLATION_LEVEL,
+                ParameterConstants.JDBC_READ_STRINGS_AS_BYTES,
+                ParameterConstants.TREAT_BINARY_AS_LOB_ENABLED,
+                ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS,
+                ParameterConstants.LOG_SQL_PARAMETERS_INLINE
+            };
+            for (String prop : sqlTemplateProperties) {
+                properties.put(prop, parameterService.getString(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + prop));
+            }
+            
+            IDatabasePlatform extractPlatform = createDatabasePlatform(null, properties, null, true, true);
+            JdbcSymmetricDialectFactory dialectFactory = new JdbcSymmetricDialectFactory(parameterService, extractPlatform);
+            return dialectFactory.create();
+        }
+        else {
+            return getSymmetricDialect();
+        }
+    }
+    
     protected void checkLoadOnly() {
      	if (parameterService.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
      		
@@ -571,4 +601,12 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 	public ISymmetricDialect getSymmetricDialect() {
 		return this.symmetricDialect;
 	}
+	
+	@Override
+    public ISymmetricDialect getExtractSymmetricDialect() {
+        return this.extractSymmetricDialect;
+    }
+    
+    
+	
 }

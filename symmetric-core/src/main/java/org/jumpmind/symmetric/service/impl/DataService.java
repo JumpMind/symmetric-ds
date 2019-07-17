@@ -60,6 +60,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -112,8 +113,9 @@ public class DataService extends AbstractService implements IDataService {
 
     private DataMapper dataMapper;
 
-    public DataService(ISymmetricEngine engine, IExtensionService extensionService) {
+    public DataService(ISymmetricEngine engine, IExtensionService extensionService, ISymmetricDialect extractSymmetricDialect) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
+        setExtractSymmetricDialect(extractSymmetricDialect);
         this.engine = engine;
         this.dataMapper = new DataMapper();
         this.extensionService = extensionService;
@@ -1408,7 +1410,7 @@ public class DataService extends AbstractService implements IDataService {
                         String reloadChannel = getReloadChannelIdForTrigger(trigger, channels);
                         Channel channel = channels.get(reloadChannel);
                                                    
-                        Table table = platform.getTableFromCache(
+                        Table table = getExtractPlatform(triggerHistory.getSourceTableName()).getTableFromCache(
                                 triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
                                 triggerHistory.getSourceTableName(), false);  
                         
@@ -1489,11 +1491,11 @@ public class DataService extends AbstractService implements IDataService {
         long rowCount = -1;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_ESTIMATED_COUNTS) &&
                 (selectSql == null || StringUtils.isBlank(selectSql) || selectSql.replace(" ", "").equals("1=1"))) {
-            rowCount = platform.getEstimatedRowCount(table);
+            rowCount = extractPlatform.getEstimatedRowCount(table);
         } 
         
         if (rowCount < 0) {
-            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+            DatabaseInfo dbInfo = extractPlatform.getDatabaseInfo();
             String quote = dbInfo.getDelimiterToken();
             String catalogSeparator = dbInfo.getCatalogSeparator();
             String schemaSeparator = dbInfo.getSchemaSeparator();
@@ -1508,7 +1510,7 @@ public class DataService extends AbstractService implements IDataService {
             }
             
             try {            
-                rowCount = sqlTemplateDirty.queryForLong(sql);
+                rowCount = extractSqlTemplateDirty.queryForLong(sql);
             } catch (SqlException ex) {
                 log.error("Failed to execute row count SQL while starting reload.  " + ex.getMessage() + ", SQL: \"" + sql + "\"");
                 throw new InvalidSqlException(ex);
