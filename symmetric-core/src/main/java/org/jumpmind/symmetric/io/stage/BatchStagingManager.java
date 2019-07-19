@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.io.stage;
 
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_INCOMING;
 import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_OUTGOING;
+import static org.jumpmind.symmetric.common.Constants.STAGING_CATEGORY_LOG_MINER;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,6 +98,8 @@ public class BatchStagingManager extends StagingManager {
             return shouldCleanOutgoingPath(resource, ttlInMs, context, path, resourceIsOld);
         }  else if (path[0].equals(STAGING_CATEGORY_INCOMING)) {
             return shouldCleanIncomingPath(resource, ttlInMs, context, path, resourceIsOld, resourceClearsMinTimeHurdle);
+        } else if (path[0].equals(STAGING_CATEGORY_LOG_MINER)) {
+            return false;
         } else {
             log.warn("Unrecognized path: " + resource.getPath());
         }        

@@ -47,6 +47,7 @@ public class ClusterConstants {
     public static final String FILE_SYNC_PULL = "File Sync Pull";
     public static final String FILE_SYNC_PUSH = "File Sync Push";
     public static final String MONITOR = "Monitor";
+    public static final String LOG_MINER = "Log Miner";
     
     public static final String FILE_SYNC_SHARED = "FILE_SYNC_SHARED";    
 

@@ -15,5 +15,8 @@ final public class ContextConstants {
 
     public static final String CONTEXT_BULK_WRITER_TO_USE = "bulkWriterToUse";
     
+    public static final String LOG_MINER_NEXT_ID = "log.miner.next.id";
+    
+    public static final String LOG_MINER_OPEN_TRANSACTIONS = "log.miner.open.transactions";
     
 }
