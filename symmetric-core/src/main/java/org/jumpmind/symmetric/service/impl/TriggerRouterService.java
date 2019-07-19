@@ -1743,10 +1743,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
             boolean triggerIsActive, Table table, List<TriggerHistory> activeTriggerHistories) {
 
+        
+        
         boolean triggerExists = false;
         boolean triggerRemoved = false;
-
-        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, symmetricDialect.getTriggerTemplate(), reason);
+        boolean isExtractOnlyTable = false;
+        
+        if (!getSymmetricDialect().equals(getExtractSymmetricDialect()) && !trigger.getSourceTableName().startsWith(getSymmetricDialect().getTablePrefix())) {
+            isExtractOnlyTable = true;
+        }
+        
+        TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, 
+                isExtractOnlyTable ? getExtractSymmetricDialect().getTriggerTemplate() : getSymmetricDialect().getTriggerTemplate(), 
+                reason);
         int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
 
         if (trigger.isSyncOnInsert()) {
@@ -1762,6 +1771,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (trigger.isSyncOnDelete()) {
             newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
                     maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+        }
+        
+        if (isExtractOnlyTable) {
+            if (hist == null && (oldhist == null || forceRebuild)) {
+                insert(newTriggerHist);
+                hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                        trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
+                        trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
+                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
+            }
+            return hist;
         }
 
         String oldTriggerName = null;
