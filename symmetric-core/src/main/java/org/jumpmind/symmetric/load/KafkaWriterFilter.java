@@ -145,6 +145,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             if (data.getDataEventType() == DataEventType.DELETE) {
                 rowData = data.getParsedData(CsvData.OLD_DATA);
             }
+            else if (data.getDataEventType() == DataEventType.CREATE) {
+                return false;
+            } 
 
             StringBuffer kafkaText = new StringBuffer();
 
