@@ -33,7 +33,7 @@ public class H2TriggerTemplate extends AbstractTriggerTemplate {
         emptyColumnTemplate = "''''" ;
         stringColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')||''\"'' end" ;
         numberColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||cast($(tableAlias)\"$(columnName)\" as varchar(50))||''\"'' end" ;
-        datetimeColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||formatdatetime($(tableAlias)\"$(columnName)\", ''yyyy-MM-dd HH:mm:ss.S'')||''\"'' end" ;
+        datetimeColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||formatdatetime($(tableAlias)\"$(columnName)\", ''yyyy-MM-dd HH:mm:ss.SSS'')||''\"'' end" ;
         clobColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||replace(replace($(tableAlias)\"$(columnName)\",''\\'',''\\\\''),''\"'',''\\\"'')||''\"'' end" ;
         blobColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' else ''\"''||replace(replace(sym_BASE64_ENCODE($(tableAlias)\"$(columnName)\"),''\\'',''\\\\''),''\"'',''\\\"'')||''\"'' end" ;
         booleanColumnTemplate = "case when $(tableAlias)\"$(columnName)\" is null then '''' when $(tableAlias)\"$(columnName)\" then ''\"1\"'' else ''\"0\"'' end" ;

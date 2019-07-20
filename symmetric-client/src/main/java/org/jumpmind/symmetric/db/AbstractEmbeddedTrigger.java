@@ -50,7 +50,7 @@ import org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger;
 abstract public class AbstractEmbeddedTrigger {
 
     protected static final char[] HEX = "0123456789abcdef".toCharArray();
-    protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+    protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     protected static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     protected static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
     protected static final String TEMPLATE_TABLE_SUFFIX = "_CONFIG";
