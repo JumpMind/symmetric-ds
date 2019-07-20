@@ -238,6 +238,29 @@ public class DataService extends AbstractService implements IDataService {
     }
     
     public void insertTableReloadRequest(TableReloadRequest request) {
+    	ISqlTransaction transaction = null;
+        try {
+            transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
+            insertTableReloadRequest(transaction, request);
+            transaction.commit();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
+        }
+    }
+    
+    public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request) {
         Date time = new Date();
         request.setLastUpdateTime(time);
         if (request.getCreateTime() == null) {
@@ -245,7 +268,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         request.setCreateTime(new Date((request.getCreateTime().getTime() / 1000) * 1000));
 
-        sqlTemplate.update(
+        transaction.prepareAndExecute(
                 getSql("insertTableReloadRequest"),
                 new Object[] { request.getReloadSelect(), request.getBeforeCustomSql(),
                         request.getCreateTime(), request.getLastUpdateBy(),

@@ -20,6 +20,10 @@
  */
 package org.jumpmind.symmetric;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -28,6 +32,9 @@ import org.h2.tools.Shell;
 public class DbSqlCommand extends AbstractCommandLauncher {
     
     private static final String OPTION_SQL = "sql";
+    private static final String OPTION_SQLFILE = "sqlfile";
+    
+    private Options localOptions;
     
     public DbSqlCommand() {
         super("dbsql", "", "DbSql.Option.");
@@ -48,6 +55,9 @@ public class DbSqlCommand extends AbstractCommandLauncher {
     protected void buildOptions(Options options) {
         super.buildOptions(options);
         addOption(options, null, OPTION_SQL, true);
+        addOption(options, null, OPTION_SQLFILE, true);
+        // Need reference to it for later, if errors
+        localOptions = options;
     }    
 
     @Override
@@ -72,6 +82,37 @@ public class DbSqlCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_SQL)) {
             String sql = line.getOptionValue(OPTION_SQL);
             shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver, "-sql", sql);
+        } else if(line.hasOption(OPTION_SQLFILE)) {
+        	File file = new File(line.getOptionValue(OPTION_SQLFILE));
+        	if(file.exists()) {
+        		BufferedReader br = null;
+        		try {
+        			br = new BufferedReader(new FileReader(file));
+	        		String sql = null;
+	        		while((sql = br.readLine()) != null) {
+	        			sql = sql.trim();
+	        			if(sql.endsWith(";")) {
+	        				sql = sql.substring(0,sql.length()-1);
+	        			}
+	        			if(sql.length() > 0) {
+		        			// Output the sql so the user knows the result of each sql statement
+		        			// The H2 shell tool outputs the result of the statement execution
+		        			System.out.println(sql);
+		        			shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver, "-sql", sql);
+	        			}
+	        		}
+        		} finally {
+        			if(br != null) {
+        				br.close();
+        			}
+        		}
+        	} else {
+        		// Notify user about missing file name
+        		System.err.println("-------------------------------------------------------------------------------");
+        		System.err.println("File does not exist: " + file.getPath());
+        		System.err.println("-------------------------------------------------------------------------------");
+        		printHelp(line, localOptions);
+        	}
         } else {        
             shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver);
         }
