@@ -240,6 +240,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return new HttpIncomingTransport(conn, engine.getParameterService());
     }
 
+    public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
+        HttpURLConnection conn = createGetConnectionFor(new URL(resolveURL(remote.getSyncUrl(), registrationUrl) + "/ping"));
+        return new HttpIncomingTransport(conn, engine.getParameterService());
+    }
+
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
             String securityToken, Map<String, String> requestProperties, 
             String registrationUrl) throws IOException {
