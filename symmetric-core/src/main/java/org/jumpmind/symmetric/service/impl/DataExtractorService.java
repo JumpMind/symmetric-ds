@@ -2082,7 +2082,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT, new ClusterLockRefreshListener(clusterService));
 
-                    checkSendDeferredConstraints(request, targetNode, firstBatch);
+                    checkSendDeferredConstraints(request, childRequests, targetNode, firstBatch);
                 } else {
                     log.info("Batches already had an OK status for request {} to extract table {} for batches {} through {} for node {}.  Not extracting.", 
                             new Object[] { request.getRequestId(), request.getTableName(), request.getStartBatchId(), request.getEndBatchId(), request.getNodeId() });
@@ -2248,7 +2248,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    protected void checkSendDeferredConstraints(ExtractRequest request, Node targetNode, OutgoingBatch batch) {
+    protected void checkSendDeferredConstraints(ExtractRequest request, List<ExtractRequest> childRequests, Node targetNode, OutgoingBatch batch) {
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
             TableReloadRequest reloadRequest = dataService.getTableReloadRequest(request.getLoadId(), request.getTriggerId(), request.getRouterId());
             if ((reloadRequest != null && reloadRequest.isCreateTable()) ||
@@ -2263,6 +2263,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     history, trigger.getChannelId(), null, null);
                             data.setNodeList(targetNode.getNodeId());
                             dataService.insertData(data);
+                            for (ExtractRequest childRequest : childRequests) {
+                                data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
+                                        history, trigger.getChannelId(), null, null);
+                                data.setNodeList(childRequest.getNodeId());
+                                dataService.insertData(data);                                
+                            }
                         }
                         success = true;
                     }
