@@ -46,6 +46,8 @@ public interface ITransportManager {
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
 
+    public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException;
+
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, String registrationUrl) throws IOException;
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
