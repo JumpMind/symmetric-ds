@@ -2263,11 +2263,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     history, trigger.getChannelId(), null, null);
                             data.setNodeList(targetNode.getNodeId());
                             dataService.insertData(data);
-                            for (ExtractRequest childRequest : childRequests) {
-                                data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
-                                        history, trigger.getChannelId(), null, null);
-                                data.setNodeList(childRequest.getNodeId());
-                                dataService.insertData(data);                                
+                            if (childRequests != null) {
+                                for (ExtractRequest childRequest : childRequests) {
+                                    data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
+                                            history, trigger.getChannelId(), null, null);
+                                    data.setNodeList(childRequest.getNodeId());
+                                    dataService.insertData(data);                                
+                                }
                             }
                         }
                         success = true;
