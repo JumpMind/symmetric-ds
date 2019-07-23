@@ -1201,8 +1201,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     }
 
     public String getDeleteSql(Table table) {
-        String sql = null;
-        sql = "delete from ";
+        String sql = "delete from ";
         String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
         sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
 
