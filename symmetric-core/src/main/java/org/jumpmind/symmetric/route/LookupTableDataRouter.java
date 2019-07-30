@@ -71,29 +71,33 @@ public class LookupTableDataRouter extends AbstractDataRouter implements IDataRo
             Set<Node> nodes, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
 
         Set<String> nodeIds = null;
-        Router router = dataMetaData.getRouter();
-        Map<String, String> params = null;
+        if (initialLoadSelectUsed && initialLoad) {
+            nodeIds = toNodeIds(nodes, null);
+        } else {
+            Router router = dataMetaData.getRouter();
+            Map<String, String> params = null;
+            
+            params = getParams(router, routingContext);
         
-        params = getParams(router, routingContext);
-    
-        Map<String, String> dataMap = getDataMap(dataMetaData, symmetricDialect);
-        Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
-        String column = params.get(PARAM_KEY_COLUMN);
-        if (dataMap.containsKey(column)) {
-            String keyData = dataMap.get(column);
-            Set<String> externalIds = lookupTable.get(keyData);
-            if (externalIds != null) {
-                for (Node node : nodes) {
-                    if (externalIds.contains(node.getExternalId()) || externalIds.contains(params.get(PARAM_ALL_NODES_VALUE))) {
-                        nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+            Map<String, String> dataMap = getDataMap(dataMetaData, symmetricDialect);
+            Map<String, Set<String>> lookupTable = getLookupTable(params, router, routingContext);
+            String column = params.get(PARAM_KEY_COLUMN);
+            if (dataMap.containsKey(column)) {
+                String keyData = dataMap.get(column);
+                Set<String> externalIds = lookupTable.get(keyData);
+                if (externalIds != null) {
+                    for (Node node : nodes) {
+                        if (externalIds.contains(node.getExternalId()) || externalIds.contains(params.get(PARAM_ALL_NODES_VALUE))) {
+                            nodeIds = addNodeId(node.getNodeId(), nodeIds, nodes);
+                        }
                     }
                 }
+            } else {
+                log.error(
+                        "Could not route data with an id of {} using the {} router because the column {} was not captured for the {} table",
+                        new Object[] { dataMetaData.getData().getDataId(), getClass().getSimpleName(),
+                                column, dataMetaData.getTable().getName() });
             }
-        } else {
-            log.error(
-                    "Could not route data with an id of {} using the {} router because the column {} was not captured for the {} table",
-                    new Object[] { dataMetaData.getData().getDataId(), getClass().getSimpleName(),
-                            column, dataMetaData.getTable().getName() });
         }
 
         return nodeIds;
