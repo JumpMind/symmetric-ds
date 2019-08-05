@@ -1,0 +1,26 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>StandardOutPath</key>
+    <string>${wrapper.home}/logs/wrapper.log</string>
+    <key>StandardErrorPath</key>
+    <string>${wrapper.home}/logs/wrapper.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>SYM_HOME</key>
+      <string>${wrapper.home}</string>
+    </dict>
+    <key>Label</key>
+    <string>${wrapper.displayname}</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/bash</string>
+      <string>${wrapper.home}/bin/sym_service</string>
+      <string>exec</string>
+    </array>
+    <key>SessionCreate</key>
+    <true/>
+    <key>UserName</key>
+    <string>${wrapper.run.as.user}</string>
+  </dict>
+</plist>
