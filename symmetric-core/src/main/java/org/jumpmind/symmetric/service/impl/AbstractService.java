@@ -72,12 +72,6 @@ abstract public class AbstractService implements IService {
 
     protected ISymmetricDialect extractSymmetricDialect;
 
-    protected IDatabasePlatform extractPlatform;
-    
-    protected ISqlTemplate extractSqlTemplate;
-    
-    protected ISqlTemplate extractSqlTemplateDirty;
-    
     protected String tablePrefix;
 
     private ISqlMap sqlMap;
@@ -400,9 +394,6 @@ abstract public class AbstractService implements IService {
     }
 
     public void setExtractSymmetricDialect(ISymmetricDialect extractSymmetricDialect) {
-        this.extractPlatform = extractSymmetricDialect.getPlatform();
-        this.extractSqlTemplate = extractSymmetricDialect.getPlatform().getSqlTemplate();
-        this.extractSqlTemplateDirty = extractSymmetricDialect.getPlatform().getSqlTemplateDirty();
         this.extractSymmetricDialect = extractSymmetricDialect;
     }
 

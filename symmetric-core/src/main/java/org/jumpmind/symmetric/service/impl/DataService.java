@@ -1491,11 +1491,11 @@ public class DataService extends AbstractService implements IDataService {
         long rowCount = -1;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_ESTIMATED_COUNTS) &&
                 (selectSql == null || StringUtils.isBlank(selectSql) || selectSql.replace(" ", "").equals("1=1"))) {
-            rowCount = extractPlatform.getEstimatedRowCount(table);
+            rowCount = extractSymmetricDialect.getPlatform().getEstimatedRowCount(table);
         } 
         
         if (rowCount < 0) {
-            DatabaseInfo dbInfo = extractPlatform.getDatabaseInfo();
+            DatabaseInfo dbInfo = extractSymmetricDialect.getPlatform().getDatabaseInfo();
             String quote = dbInfo.getDelimiterToken();
             String catalogSeparator = dbInfo.getCatalogSeparator();
             String schemaSeparator = dbInfo.getSchemaSeparator();
@@ -1510,7 +1510,7 @@ public class DataService extends AbstractService implements IDataService {
             }
             
             try {            
-                rowCount = extractSqlTemplateDirty.queryForLong(sql);
+                rowCount = extractSymmetricDialect.getPlatform().getSqlTemplateDirty().queryForLong(sql);
             } catch (SqlException ex) {
                 log.error("Failed to execute row count SQL while starting reload.  " + ex.getMessage() + ", SQL: \"" + sql + "\"");
                 throw new InvalidSqlException(ex);

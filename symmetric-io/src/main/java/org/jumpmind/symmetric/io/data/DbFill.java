@@ -939,6 +939,9 @@ public class DbFill {
                 }
                 if (!column.isPrimaryKey()) {
                     size = getRand().nextInt(size);
+                    if (size == 0) {
+                        size = 1;
+                    }
                 }
                 objectValue = randomString(size);
             }
@@ -1000,7 +1003,7 @@ public class DbFill {
         if (size <= 0 && (digits <= 0)) {
             // set the values to something reasonable
             size = 10;
-            digits = 6;
+            digits = 0;
         }
         Random rnd = getRand();
         StringBuilder str = new StringBuilder();

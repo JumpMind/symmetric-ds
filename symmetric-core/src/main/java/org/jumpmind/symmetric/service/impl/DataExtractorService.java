@@ -393,6 +393,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
             SelectFromTableSource source = new SelectFromTableSource(batch, initialLoadEvents);
+            source.setConfiguration(true);
             ExtractDataReader dataReader = new ExtractDataReader(
                     this.symmetricDialect.getPlatform(), source);
 
@@ -2610,7 +2611,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                              * event is usually sent after there is a change to the table so 
                              * we want to make sure that the cache is updated
                              */
-                            this.sourceTable = platform.getTableFromCache(sourceTable.getCatalog(), 
+                            this.sourceTable = getExtractSymmetricDialect().getPlatform().getTableFromCache(sourceTable.getCatalog(), 
                                     sourceTable.getSchema(), sourceTable.getName(), true);
                             
                             this.targetTable = columnsAccordingToTriggerHistory.lookup(
@@ -2732,6 +2733,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         boolean isLobFirstPass;
 
+        boolean isConfiguration;
+        
         public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
                 SelectFromTableEvent event) {
             this.outgoingBatch = outgoingBatch;
@@ -2770,6 +2773,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return targetTable;
         }
 
+        public void setConfiguration(boolean isConfiguration) {
+            this.isConfiguration = isConfiguration;
+        }
+        
         public CsvData next() {
             CsvData data = null;
             do {
@@ -2876,6 +2883,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 this.cursor = null;
             }
         }
+        
+        public ISymmetricDialect getSymmetricDialect() {
+            return this.isConfiguration ? symmetricDialect : extractSymmetricDialect;
+        }
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter) {
@@ -2891,7 +2902,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (selfRefLevel == 0) {
                     selectSql += selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + " ";
                 } else {
-                    DatabaseInfo info = extractSymmetricDialect.getPlatform().getDatabaseInfo();
+                    DatabaseInfo info = getSymmetricDialect().getPlatform().getDatabaseInfo();
                     String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
                             sourceTable.getName(), info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());                    
                     String refSql= "select " + selfRefChildColumnName + " from " + tableName + 
@@ -2909,14 +2920,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getReloadChannelId());
             
-            if (channel.isReloadFlag() && extractSymmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+            if (channel.isReloadFlag() && getSymmetricDialect().isInitialLoadTwoPassLob(this.sourceTable)) {
                 channel = new Channel();
                 channel.setContainsBigLob(!this.isLobFirstPass);
-                selectSql = extractSymmetricDialect.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
+                selectSql = getSymmetricDialect().getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
                 log.info("Querying {} pass LOB for table {}: {}", (this.isLobFirstPass ? "first" : "second"), sourceTable.getName(), selectSql);
             }
             
-            String sql = extractSymmetricDialect.createInitialLoadSqlFor(
+            String sql = getSymmetricDialect().createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable, triggerHistory, channel, selectSql);
 
             for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
@@ -2925,21 +2936,21 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             
             final String initialLoadSql = sql;
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
-            final boolean selectedAsCsv = extractSymmetricDialect.getParameterService().is(
+            final boolean selectedAsCsv = getSymmetricDialect().getParameterService().is(
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
-            final boolean objectValuesWillNeedEscaped = !extractSymmetricDialect.getTriggerTemplate()
+            final boolean objectValuesWillNeedEscaped = !getSymmetricDialect().getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
-            final boolean[] isColumnPositionUsingTemplate = extractSymmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
+            final boolean[] isColumnPositionUsingTemplate = getSymmetricDialect().getColumnPositionUsingTemplate(sourceTable, triggerHistory);
             log.debug(sql);
             
-            this.cursor = extractSqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
+            this.cursor = getSymmetricDialect().getPlatform().getSqlTemplate().queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
                     String csvRow = null;                    
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
                     } else if (objectValuesWillNeedEscaped) {
-                        csvRow = extractPlatform.getCsvStringValue(
-                                extractSymmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
+                        csvRow = getSymmetricDialect().getPlatform().getCsvStringValue(
+                                getSymmetricDialect().getBinaryEncoding(), sourceTable.getColumns(),
                                 row, isColumnPositionUsingTemplate);
                     } else {
                         csvRow = row.csvValue();
@@ -3040,6 +3051,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return initialLoadSelect;
         }
 
+        
     }
 
     static class FutureExtractStatus {
