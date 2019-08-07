@@ -19,7 +19,7 @@ JAVA="${wrapper.java.command}"
 JARFILE="${wrapper.jarfile}"
 SYM_HOME="${wrapper.home}"
 export SYM_HOME
-RUN_AS_USER=""
+RUN_AS_USER="${wrapper.run.as.user}"
 
 if [ "$RUN_AS_USER" != "" ]
 then
@@ -32,7 +32,13 @@ then
    if [ "$RUN_AS_USER" != "$user" ]
    then
       echo "Switching to user $RUN_AS_USER"
-      su - $RUN_AS_USER -c "`pwd`/$0 $1"
+      if [[ "$0" = /* ]]
+      then
+        COMMAND="$0"
+      else
+        COMMAND="`pwd`/$0"
+      fi
+      su - $RUN_AS_USER -c "${COMMAND} $1"
       exit $?
    fi
 fi

@@ -149,6 +149,10 @@ public class WrapperConfig {
         return prop.get("wrapper.java.additional");
     }
     
+    public String getRunAsUser() {
+    	return getProperty(prop, "wrapper.run.as.user", "");
+    }
+    
     public List<String> getApplicationParameters() {
         return getListProperty(prop, "wrapper.app.parameter");
     }

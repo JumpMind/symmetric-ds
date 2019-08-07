@@ -124,7 +124,7 @@ public class Wrapper {
     }
 
     protected static void printUsage() {
-        System.out.println("Usage: <start|stop|restart|install|remove|console>");
+        System.out.println("Usage: <start|stop|restart|install|uninstall|status|console>");
         System.out.println("   start      - Start service");
         System.out.println("   stop       - Stop service");
         System.out.println("   restart    - Restart service");
