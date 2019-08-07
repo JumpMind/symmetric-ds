@@ -193,6 +193,8 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 return Types.TIMESTAMP;
             } else if (typeName.equalsIgnoreCase("DATE")) {
                 return Types.DATE;
+            } else if (typeName.equalsIgnoreCase("VARBINARY") && size > 8000) {
+                return Types.BLOB;
             }
         }
         return super.mapUnknownJdbcTypeForColumn(values); 
