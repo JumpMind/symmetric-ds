@@ -1,0 +1,18 @@
+[Unit]
+Description=${wrapper.description}
+After=network-online.target
+
+[Service]
+Type=forking
+
+Environment="SYM_HOME=${wrapper.home}"
+
+ExecStart=${wrapper.java.command} -jar ${wrapper.jarfile} start
+ExecStop=${wrapper.java.command} -jar ${wrapper.jarfile} stop
+ExecReload=${wrapper.java.command} -jar ${wrapper.jarfile} restart
+Restart=no
+PIDFile=${wrapper.pidfile}
+User=${wrapper.run.as.user}
+
+[Install]
+WantedBy=multi-user.target
