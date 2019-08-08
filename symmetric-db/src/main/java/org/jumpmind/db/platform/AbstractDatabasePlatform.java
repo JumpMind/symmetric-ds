@@ -76,6 +76,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
+    public static final String ZERO_DATE_STRING = "0000-00-00 00:00:00";
     /*
      * The default name for models read from the database, if no name as given.
      */
@@ -868,6 +869,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         try {
             return Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
+        	if (!getDatabaseInfo().isZeroDateAllowed() && value != null && value.startsWith(ZERO_DATE_STRING)) {
+        		return null;
+        	}
             try {
                 return new Timestamp(FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS).getTime());
             } catch (Exception e) {
