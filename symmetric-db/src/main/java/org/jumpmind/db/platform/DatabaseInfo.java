@@ -275,6 +275,8 @@ public class DatabaseInfo {
     
     private boolean notNullColumnsSupported = true;
     
+    private boolean zeroDateAllowed;
+
 	/**
      * Creates a new platform info object.
      */
@@ -1357,5 +1359,12 @@ public class DatabaseInfo {
 		this.notNullColumnsSupported = notNullColumnsSupported;
 	}
     
-    
+	public boolean isZeroDateAllowed() {
+		return zeroDateAllowed;
+	}
+
+	public void setZeroDateAllowed(boolean zeroDateAllowed) {
+		this.zeroDateAllowed = zeroDateAllowed;
+	}
+	
 }

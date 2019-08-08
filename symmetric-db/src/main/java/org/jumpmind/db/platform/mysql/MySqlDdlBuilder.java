@@ -65,6 +65,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         // Double quotes are only allowed for delimiting identifiers if the
         // server SQL mode includes ANSI_QUOTES
         databaseInfo.setDelimiterToken("`");
+        databaseInfo.setZeroDateAllowed(true);
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "BIT");
