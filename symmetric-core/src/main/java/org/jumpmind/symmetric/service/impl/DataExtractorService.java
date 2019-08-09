@@ -2973,6 +2973,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     String csvRow = null;                    
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
+                        int commaCount = StringUtils.countMatches(csvRow, ",");
+                        if (commaCount < expectedCommaCount) {
+                            throw new SymmetricException(
+                                    "The extracted row data did not have the expected (%d) number of columns (actual=%s): %s.  The initial load sql was: %s",
+                                    expectedCommaCount, commaCount, csvRow, initialLoadSql);
+                        }
                     } else if (objectValuesWillNeedEscaped) {
                         csvRow = platform.getCsvStringValue(
                                 symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
@@ -2980,19 +2986,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         csvRow = row.csvValue();
                     }
-                    int commaCount = StringUtils.countMatches(csvRow, ",");
-                    if (expectedCommaCount <= commaCount) {
-                        Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
-                                .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
-                                null, null);
-                        data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
-                                .getRouterId());
-                        return data;
-                    } else {
-                        throw new SymmetricException(
-                                "The extracted row data did not have the expected (%d) number of columns (actual=%s): %s.  The initial load sql was: %s",
-                                expectedCommaCount, commaCount, csvRow, initialLoadSql);
-                    }
+
+                    Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
+                            .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
+                            null, null);
+                    data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
+                            .getRouterId());
+                    return data;
                 }
             });
         }
