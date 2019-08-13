@@ -39,10 +39,6 @@ public interface Advapi32Ex extends Advapi32 {
     Advapi32Ex INSTANCE = (Advapi32Ex) Native.loadLibrary("Advapi32", Advapi32Ex.class,
             W32APIOptions.UNICODE_OPTIONS);
 
-    SC_HANDLE CreateService(SC_HANDLE manager, String serviceName, String displayName, int access,
-            int serviceType, int startType, int errorControl, String commandLine,
-            String loadOrderGroup, String tagId, String dependencies, String user, String password);
-
     boolean ChangeServiceConfig2(SC_HANDLE service, int infoLevel, SERVICE_INFO info);
     
     boolean DeleteService(SC_HANDLE serviceHandle);

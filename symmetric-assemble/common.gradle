@@ -221,7 +221,7 @@ subprojects { subproject ->
         voltDbVersion = '8.4.1'
         bouncyCastleVersion = '1.59'
         animalSnifferVersion = '1.10'
-        jnaVersion = '4.2.0'
+        jnaVersion = '4.5.0'
         jettyVersion = project.property('jetty.version')
         nuodbVersion = '3.3.1'
         tiberoVersion = '6'
