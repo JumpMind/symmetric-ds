@@ -49,6 +49,9 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SystemPropertyUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
@@ -79,6 +82,8 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             "yyyy-MM-dd'T'HH:mm:ssZZZZ", "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZ" };
 
     private List<String> schemaPackageClassNames = new ArrayList<String>();
+
+    private Gson gson = new Gson();
 
     public final static String KAFKA_FORMAT_XML = "XML";
     public final static String KAFKA_FORMAT_JSON = "JSON";
@@ -163,23 +168,18 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             List<String> kafkaDataList = kafkaDataMap.get(kafkaDataKey);
 
             if (outputFormat.equals(KAFKA_FORMAT_JSON)) {
-                kafkaText.append("{\"").append(table.getName()).append("\": {").append("\"eventType\": \"" + data.getDataEventType() + "\",")
-                        .append("\"data\": { ");
+                JsonObject jsonData = new JsonObject();
                 for (int i = 0; i < table.getColumnNames().length; i++) {
-                    kafkaText.append("\"").append(table.getColumnNames()[i]).append("\": ");
-
-                    if (rowData[i] != null) {
-                        kafkaText.append("\"");
-                    }
-                    kafkaText.append(rowData[i]);
-                    if (rowData[i] != null) {
-                        kafkaText.append("\"");
-                    }
-                    if (i + 1 < table.getColumnNames().length) {
-                        kafkaText.append(",");
-                    }
+                    jsonData.addProperty(table.getColumnNames()[i], rowData[i]);
                 }
-                kafkaText.append(" } } }");
+                JsonObject change = new JsonObject();
+                change.addProperty("eventType", data.getDataEventType().toString());
+                change.add("data", jsonData);
+
+                JsonObject kafkaMessage = new JsonObject();
+                kafkaMessage.add(table.getName(), change);
+
+                kafkaText.append(gson.toJson(kafkaMessage));
             } else if (outputFormat.equals(KAFKA_FORMAT_CSV)) {
                 kafkaText.append("\nTABLE").append(",").append(table.getName()).append(",").append("EVENT").append(",")
                         .append(data.getDataEventType()).append(",");
