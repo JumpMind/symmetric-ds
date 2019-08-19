@@ -511,6 +511,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         String[] values = { getNextId(), "testColumnNotExisting", "string not null", "char",
                 "i do not exist!", "char not null", "2007-01-02 00:00:00.000",
                 "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747" };
+        massageExpectectedResultsForDialect2(values);
         List<String> valuesAsList = new ArrayList<String>(Arrays.asList(values));
         valuesAsList.remove(4);
         String[] expectedValues = valuesAsList.toArray(new String[valuesAsList.size()]);
@@ -626,15 +627,26 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     private String[] massageExpectectedResultsForDialect(String[] values) {
         RoundingMode mode = RoundingMode.DOWN;
         
-        if (values[5] != null
+        if(values[5] != null && platform instanceof MsSql2008DatabasePlatform) {
+        	// No time portion for a date field
+        	values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
+        } else if (values[5] != null
                 && (!(platform instanceof OracleDatabasePlatform
                         || platform instanceof TiberoDatabasePlatform
-                        || platform instanceof MsSql2000DatabasePlatform 
-                        || platform instanceof MsSql2005DatabasePlatform 
-                        || platform instanceof MsSql2008DatabasePlatform 
+	                    ||
+	                    	// Only SqlServer 2000 and 2005 should not be mangled. 2008 now uses Date and Time data types.
+	                    	(
+	                    			(platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform
+	                    	) && ! (platform instanceof MsSql2008DatabasePlatform)
+	                    	)
                         || platform instanceof AseDatabasePlatform
                         || platform instanceof SqlAnywhereDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
+        }
+        if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
+        	if(values[6].length() == 23) {
+        		values[6] = values[6] + "0000";
+        	}
         }
         if (values[10] != null) {
             values[10] = values[10].replace(',', '.');
@@ -657,4 +669,16 @@ public class DatabaseWriterTest extends AbstractWriterTest {
         return values;
     }
 
+    private String[] massageExpectectedResultsForDialect2(String[] values) {
+        if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
+        	// No time portion for a date field
+        	values[6] = values[6].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
+        }
+        if(values[7] != null && platform instanceof MsSql2008DatabasePlatform) {
+        	if(values[7].length() == 23) {
+        		values[7] = values[7] + "0000";
+        	}
+        }
+        return values;
+    }
 }
