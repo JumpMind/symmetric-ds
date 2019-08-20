@@ -1015,7 +1015,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
-            } else if (!isPreviouslyExtracted(currentBatch, true)) {
+            } else if (!isPreviouslyExtracted(currentBatch, false)) {
                 BatchLock lock = null;
                 try {
                     log.debug("{} attempting to acquire lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
@@ -1101,7 +1101,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (resource != null) {
                             resource.setState(State.DONE);
                         }
-                    } finally {                        
+                    } finally {
                         releaseLock(lock, currentBatch, useStagingDataWriter);
                         log.debug("{} released lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     }
@@ -1325,31 +1325,29 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected boolean isPreviouslyExtracted(OutgoingBatch currentBatch, boolean acquireReference) {
         IStagedResource previouslyExtracted = getStagedResource(currentBatch);
-        if (previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE) {
-            synchronized (DataExtractorService.this) {
-                if (previouslyExtracted.exists()) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("We have already extracted batch {}.  Using the existing extraction: {}", currentBatch.getBatchId(),
-                            previouslyExtracted);
-                    }
-                    if (acquireReference) {
-                        previouslyExtracted.reference();
-                    }
-                    return true;
-                }
+        if (previouslyExtracted != null && previouslyExtracted.getState() == State.DONE) {
+            if (log.isDebugEnabled()) {
+                log.debug("We have already extracted batch {}.  Using the existing extraction: {}",
+                        currentBatch.getBatchId(), previouslyExtracted);
             }
+            if (acquireReference) {
+                previouslyExtracted.reference();
+            }
+            return true;
         }
         return false;
     }
 
     protected boolean isRetry(OutgoingBatch currentBatch, Node remoteNode) {
-        boolean offline = parameterService.is(ParameterConstants.NODE_OFFLINE, false);
-        IStagedResource previouslyExtracted = getStagedResource(currentBatch);
-        boolean cclient = StringUtils.equals(remoteNode.getDeploymentType(), Constants.DEPLOYMENT_TYPE_CCLIENT);
-        return !offline && previouslyExtracted != null && previouslyExtracted.exists() && previouslyExtracted.getState() != State.CREATE
-                && currentBatch.getStatus() != OutgoingBatch.Status.RS && currentBatch.getSentCount() > 0 && 
-                remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0)
-                && !cclient;
+        if (currentBatch.getSentCount() > 0 && currentBatch.getStatus() != OutgoingBatch.Status.RS) { 
+            boolean offline = parameterService.is(ParameterConstants.NODE_OFFLINE, false);
+            boolean cclient = StringUtils.equals(remoteNode.getDeploymentType(), Constants.DEPLOYMENT_TYPE_CCLIENT);
+            if (remoteNode.isVersionGreaterThanOrEqualTo(3, 8, 0) && !offline && !cclient) {
+                IStagedResource previouslyExtracted = getStagedResource(currentBatch);
+                return previouslyExtracted != null && previouslyExtracted.getState() == State.DONE;
+            }
+        }
+        return false;
     }
 
     protected OutgoingBatch sendOutgoingBatch(ProcessInfo processInfo, Node targetNode,
