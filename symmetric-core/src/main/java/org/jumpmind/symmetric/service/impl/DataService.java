@@ -350,6 +350,11 @@ public class DataService extends AbstractService implements IDataService {
                 new TableReloadStatusMapper());
     }
     
+    public List<TableReloadStatus> getActiveTableReloadStatus() {
+        return sqlTemplateDirty.query(getSql("selectActiveTableReloadStatus"),
+                new TableReloadStatusMapper());
+    }
+    
     public TableReloadStatus getTableReloadStatusByLoadId(long loadId) {
         return sqlTemplateDirty.queryForObject(getSql("selectTableReloadStatusByLoadId"),
                 new TableReloadStatusMapper(), loadId);
@@ -1579,7 +1584,9 @@ public class DataService extends AbstractService implements IDataService {
                         .getTriggerRouterForCurrentNode(fileSyncSnapshotHistory.getTriggerId(),
                                 routerid, true);
 
-                if(!isFullLoad && reloadRequests != null && reloadRequests.get(fileSyncSnapshotTriggerRouter.getTriggerId() + fileSyncSnapshotTriggerRouter.getRouterId()) == null){
+                if(!isFullLoad && reloadRequests != null 
+                        && reloadRequests.get(fileSyncSnapshotTriggerRouter.getTriggerId() + fileSyncSnapshotTriggerRouter.getRouterId()) == null
+                        && !isReloadRequestForFileChannel(reloadRequests)){
                     return totalBatchCount;
                 }
                 
@@ -1615,6 +1622,14 @@ public class DataService extends AbstractService implements IDataService {
         return totalBatchCount;
     }
 
+    private boolean isReloadRequestForFileChannel(Map<String, TableReloadRequest> reloadRequests) {
+        for (TableReloadRequest reloadRequest : reloadRequests.values()) {
+            if (reloadRequest.getChannelId() != null && engine.getConfigurationService().getChannel(reloadRequest.getChannelId()).isFileSyncFlag()) {
+                return true;
+            }
+        }
+        return false;
+    }
     private TriggerHistory lookupTriggerHistory(Trigger trigger) {
         TriggerHistory history = engine.getTriggerRouterService()
                 .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
@@ -3041,5 +3056,4 @@ public class DataService extends AbstractService implements IDataService {
             return null;
         }
     }
-
 }
