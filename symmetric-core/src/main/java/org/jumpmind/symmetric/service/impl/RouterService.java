@@ -360,7 +360,7 @@ public class RouterService extends AbstractService implements IRouterService {
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
-            Map<String, ExtractRequest> extractRequests = null;
+            Map<Integer, ExtractRequest> extractRequests = null;
             
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);

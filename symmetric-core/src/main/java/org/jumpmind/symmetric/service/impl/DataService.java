@@ -782,8 +782,8 @@ public class DataService extends AbstractService implements IDataService {
     
     
     @Override
-    public Map<String, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
-            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<String, ExtractRequest> extractRequests) {
+    public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
+            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests) {
         if (engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS)) {
             try {
                 INodeService nodeService = engine.getNodeService();
@@ -1036,7 +1036,7 @@ public class DataService extends AbstractService implements IDataService {
         return extractRequests;
     }
 
-    private long getBatchCountFor(Map<String, ExtractRequest> extractRequests) {
+    private long getBatchCountFor(Map<Integer, ExtractRequest> extractRequests) {
         long batchCount = 0;
         for (ExtractRequest request : extractRequests.values()) {
             batchCount += ((request.getEndBatchId() - request.getStartBatchId()) + 1);
@@ -1397,14 +1397,14 @@ public class DataService extends AbstractService implements IDataService {
         return sqlEventsSent;
     }
     
-    private Map<String, ExtractRequest> insertLoadBatchesForReload(Node targetNode, long loadId, String createBy,
+    private Map<Integer, ExtractRequest> insertLoadBatchesForReload(Node targetNode, long loadId, String createBy,
             List<TriggerHistory> triggerHistories,
             Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId, boolean transactional,
             ISqlTransaction transaction, Map<String, TableReloadRequest> reloadRequests, ProcessInfo processInfo,
-            String selectSqlOverride, Map<String, ExtractRequest> extractRequests, boolean isFullLoad) throws InterruptedException {
+            String selectSqlOverride, Map<Integer, ExtractRequest> extractRequests, boolean isFullLoad) throws InterruptedException {
 
         Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
-        Map<String, ExtractRequest> requests = new HashMap<String, ExtractRequest>();
+        Map<Integer, ExtractRequest> requests = new HashMap<Integer, ExtractRequest>();
         if (extractRequests != null) {
             requests.putAll(extractRequests);
         }
@@ -1450,8 +1450,7 @@ public class DataService extends AbstractService implements IDataService {
 
                             long rowCount = -1;
                             long parentRequestId = 0;
-                            String extractRequestKey = triggerRouter.getTriggerId() + "::" + triggerRouter.getRouterId();
-                            ExtractRequest parentRequest = requests.get(extractRequestKey);
+                            ExtractRequest parentRequest = requests.get(triggerHistory.getTriggerHistoryId());
 
                             if (parentRequest != null) {
                                 Router router = engine.getTriggerRouterService().getRouterById(triggerRouter.getRouterId(), false);
@@ -1496,7 +1495,7 @@ public class DataService extends AbstractService implements IDataService {
                             ExtractRequest request = engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
                                     triggerRouter, startBatchId, endBatchId, loadId, table.getName(), rowCount, parentRequestId);
                             if (parentRequestId == 0) {
-                                requests.put(extractRequestKey, request);
+                                requests.put(triggerHistory.getTriggerHistoryId(), request);
                             }
                         } else {
                             log.warn("The table defined by trigger_hist row %d no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());
