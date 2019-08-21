@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.RegistrationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,60 +53,66 @@ public class DefaultNodeIdCreator implements INodeIdCreator, IBuiltInExtensionPo
         this.securityService = securityService;
     }        
     
+    /**
+     * Determine the node ID to use, given the node that is requesting to register, by trying to find its
+     * record with an open registration.
+     */
     public String selectNodeId(Node node, String remoteHost, String remoteAddress) {
-        final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
-        final boolean autoRegisterEnabled = parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
-        if (StringUtils.isBlank(node.getNodeId())) {
-            String nodeId = evaluateScript(node, remoteHost, remoteAddress);
-            if (StringUtils.isBlank(nodeId)) {
-                nodeId = buildNodeId(nodeService, node);
-                for (int sequence = 0; sequence < maxTries; sequence++) {
-                    NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-                    if ((security != null && security.isRegistrationEnabled()) || autoRegisterEnabled) {
-                        return nodeId;
-                    }
-                    nodeId = buildNodeId(nodeService, node) + "-" + sequence;
-                }
-            }
-            return nodeId;
-
-        }
-        return node.getNodeId();
-    }
-
-    public String generateNodeId(Node node, String remoteHost, String remoteAddress) {
-        final boolean autoRegisterEnabled = parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED);
-        final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
         String nodeId = node.getNodeId();
         if (StringUtils.isBlank(nodeId)) {
             nodeId = evaluateScript(node, remoteHost, remoteAddress);
-            if (StringUtils.isBlank(nodeId)) {
-                nodeId = buildNodeId(nodeService, node);
-                
-                if (!parameterService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)) {
-                    for (int sequence = 0; sequence < maxTries; sequence++) {
-                        if (nodeService.findNode(nodeId) == null || autoRegisterEnabled) {                        
-                            break;
-                        }
-                        nodeId = buildNodeId(nodeService, node) + "-" + sequence;                        
+        }
+        if (StringUtils.isBlank(nodeId)) {
+            String defaultNodeId = buildNodeId(nodeService, node);
+            if (parameterService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)) {
+                nodeId = defaultNodeId;
+            } else {
+                final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
+                String checkNodeId = defaultNodeId;
+                for (int sequence = 0; sequence < maxTries; sequence++) {
+                    NodeSecurity security = nodeService.findNodeSecurity(checkNodeId);
+                    if (security != null && security.isRegistrationEnabled()) {
+                        nodeId = checkNodeId;
+                        break;
                     }
-                    
-                    if (nodeService.findNode(nodeId) != null && !autoRegisterEnabled) {
-                        nodeId = null;
-                    }
-
+                    checkNodeId = defaultNodeId + "-" + sequence;
                 }
-                
-                
             }
         }
+        return nodeId;
+    }
 
-        if (StringUtils.isNotBlank(nodeId)) {
-            return nodeId;
-        } else {
-            throw new RuntimeException("Could not find nodeId for externalId of "
-                    + node.getExternalId() + " after " + maxTries + " tries.");
+    /**
+     * Determine node ID for the node that is about to be created and opened for registration.
+     * Return an existing node to re-open its registration.
+     */
+    public String generateNodeId(Node node, String remoteHost, String remoteAddress) {
+        String nodeId = node.getNodeId();
+        if (StringUtils.isBlank(nodeId)) {
+            nodeId = evaluateScript(node, remoteHost, remoteAddress);
         }
+        if (StringUtils.isBlank(nodeId)) {
+            String defaultNodeId = buildNodeId(nodeService, node);
+            if (parameterService.is(ParameterConstants.EXTERNAL_ID_IS_UNIQUE)) {
+                nodeId = defaultNodeId;
+            } else {
+                final int maxTries = parameterService.getInt(ParameterConstants.NODE_ID_CREATOR_MAX_NODES, 100);
+                String checkNodeId = defaultNodeId;
+                for (int sequence = 0; sequence < maxTries; sequence++) {
+                    NodeSecurity security = nodeService.findNodeSecurity(checkNodeId);
+                    if (security == null || security.isRegistrationEnabled()) {
+                        nodeId = checkNodeId;
+                        break;
+                    }
+                    checkNodeId = defaultNodeId + "-" + sequence;
+                }
+                if (StringUtils.isBlank(nodeId)) {
+                    throw new RegistrationFailedException("Could not find an available nodeId to use for externalId of "
+                            + node.getExternalId() + " after " + maxTries + " tries.");
+                }
+            }
+        }
+        return nodeId;
     }
 
     protected String buildNodeId(INodeService nodeService, Node node) {
