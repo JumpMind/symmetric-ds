@@ -462,4 +462,12 @@ public final class FormatUtils {
         }
     }
 
+    public static boolean isInteger(String s) {
+        try {
+            Long.parseLong(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }
