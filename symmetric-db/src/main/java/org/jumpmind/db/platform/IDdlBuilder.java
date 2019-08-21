@@ -20,6 +20,9 @@
  */
 package org.jumpmind.db.platform;
 
+import java.util.List;
+
+import org.jumpmind.db.alter.IModelChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
@@ -74,4 +77,6 @@ public interface IDdlBuilder {
     public String getColumnTypeDdl(Table table, Column column);
 
     public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn);
+    
+    public List<IModelChange> getDetectedChanges(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors);
 }
