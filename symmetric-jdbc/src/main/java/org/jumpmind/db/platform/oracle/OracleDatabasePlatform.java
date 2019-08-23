@@ -90,8 +90,8 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
-            defaultSchema = (String) getSqlTemplate().queryForObject(
-                    "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
+            defaultSchema = (String) getSqlTemplate()
+                    .queryForObject("SELECT sys_context('USERENV', 'CURRENT_SCHEMA') FROM dual", String.class);
         }
         return defaultSchema;
     }
@@ -103,34 +103,35 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     @Override
-   	public PermissionResult getCreateSymTriggerPermission() {
-       	String delimiter = getDatabaseInfo().getDelimiterToken();
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-       	String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";	
-       	
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-       	
-   		try {
-   			getSqlTemplate().update(triggerSql);
-   			result.setStatus(Status.PASS);
-   		} catch (SqlException e) {
-   			result.setException(e);
-   			result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-   		}
-   		
-   		return result;
+
+        String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter
+                + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+
+        return result;
     }
-    
+
     @Override
     public PermissionResult getExecuteSymPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-        String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";  
-        
+
+        String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";
+
         PermissionResult result = new PermissionResult(PermissionType.EXECUTE, executeSql);
-        
+
         try {
             getSqlTemplate().update(executeSql);
             result.setStatus(Status.PASS);
@@ -138,14 +139,15 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant EXECUTE on DBMS_LOB and UTL_RAW");
         }
-        
+
         return result;
     }
 
     @Override
     public long getEstimatedRowCount(Table table) {
-        return getSqlTemplateDirty().queryForLong("select nvl(num_rows, -1) from all_tables where table_name = ? and owner = ?",
-                table.getName(), table.getSchema());
+        return getSqlTemplateDirty().queryForLong(
+                "select nvl(num_rows, -1) from all_tables where table_name = ? and owner = ?", table.getName(),
+                table.getSchema());
     }
 
 }
