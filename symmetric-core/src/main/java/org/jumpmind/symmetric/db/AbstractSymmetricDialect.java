@@ -78,7 +78,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected IDatabasePlatform platform;
 
     protected IDatabasePlatform targetPlatform;
-    
+
     protected AbstractTriggerTemplate triggerTemplate;
 
     protected IParameterService parameterService;
@@ -102,16 +102,16 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected Set<String> sqlKeywords;
 
     protected boolean supportsTransactionViews = false;
-    
+
     protected boolean supportsSubselectsInDelete = true;
-    
+
     protected boolean supportsSubselectsInUpdate = true;
-    
-    protected Map<String,String> sqlReplacementTokens = new HashMap<String, String>();
+
+    protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
 
     public AbstractSymmetricDialect() {
     }
-    
+
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;
@@ -119,7 +119,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         log.info("The DbDialect being used is {}", this.getClass().getName());
 
         buildSqlReplacementTokens();
-        
+
         ISqlTemplate sqlTemplate = this.platform.getSqlTemplate();
         this.databaseMajorVersion = sqlTemplate.getDatabaseMajorVersion();
         this.databaseMinorVersion = sqlTemplate.getDatabaseMinorVersion();
@@ -127,18 +127,18 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.databaseProductVersion = sqlTemplate.getDatabaseProductVersion();
         this.driverName = sqlTemplate.getDriverName();
         this.driverVersion = sqlTemplate.getDriverVersion();
-                
+
     }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {
         return false;
     }
-    
+
     protected void buildSqlReplacementTokens() {
         sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "");
         sqlReplacementTokens.put("selectDataUsingStartDataIdHint", "");
     }
-    
+
     public Map<String, String> getSqlReplacementTokens() {
         return sqlReplacementTokens;
     }
@@ -149,10 +149,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      */
     public int getMaxTriggerNameLength() {
         int max = getPlatform().getDatabaseInfo().getMaxColumnNameLength();
-        return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max
-                : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
+        return max < MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE && max > 0 ? max : MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE;
     }
-    
+
     public void verifyDatabaseIsCompatible() {
     }
 
@@ -161,45 +160,43 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         createRequiredDatabaseObjects();
         platform.resetCachedTableModel();
     }
-    
+
     protected String replaceTokens(String sql, String objectName) {
         String ddl = FormatUtils.replace("functionName", objectName, sql);
         ddl = FormatUtils.replace("version", Version.versionWithUnderscores(), ddl);
         ddl = FormatUtils.replace("defaultSchema", platform.getDefaultSchema(), ddl);
-        return ddl;        
+        return ddl;
     }
-    
+
     protected boolean installed(String sql, String objectName) {
         return platform.getSqlTemplate().queryForInt(replaceTokens(sql, objectName)) > 0;
     }
-    
+
     protected void install(String sql, String objectName) {
         sql = replaceTokens(sql, objectName);
         log.info("Installing SymmetricDS database object:\n{}", sql);
         platform.getSqlTemplate().update(sql);
         log.info("Just installed {}", objectName);
     }
-    
+
     protected void uninstall(String sql, String objectName) {
         sql = replaceTokens(sql, objectName);
         platform.getSqlTemplate().update(sql);
         log.info("Just uninstalled {}", objectName);
-    }    
-    
-    public void dropTablesAndDatabaseObjects() {
-        Database modelFromDatabase = readSymmetricSchemaFromDatabase(); 
-        platform.dropDatabase(modelFromDatabase, true);
-        dropRequiredDatabaseObjects();        
     }
 
-    final public boolean doesTriggerExist(String catalogName, String schema, String tableName,
-            String triggerName) {
+    public void dropTablesAndDatabaseObjects() {
+        Database modelFromDatabase = readSymmetricSchemaFromDatabase();
+        platform.dropDatabase(modelFromDatabase, true);
+        dropRequiredDatabaseObjects();
+    }
+
+    final public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName) {
         if (StringUtils.isNotBlank(triggerName)) {
             try {
                 return doesTriggerExistOnPlatform(catalogName, schema, tableName, triggerName);
             } catch (Exception ex) {
-                log.warn("Could not figure out if the trigger exists.  Assuming that is does not",
-                        ex);
+                log.warn("Could not figure out if the trigger exists.  Assuming that is does not", ex);
                 return false;
             }
         } else {
@@ -212,25 +209,24 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public abstract void dropRequiredDatabaseObjects();
-    
+
     public abstract void createRequiredDatabaseObjects();
 
     abstract public BinaryEncoding getBinaryEncoding();
 
-    abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema,
-            String tableName, String triggerName);
+    abstract protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName,
+            String triggerName);
 
-    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema,
-            Trigger trigger) {
+    public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
         return "null";
     }
 
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table,
-            TriggerHistory triggerHistory, Channel channel, String overrideSelectSql) {
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory,
+            Channel channel, String overrideSelectSql) {
         return triggerTemplate.createInitalLoadSql(node, trigger, table, triggerHistory, channel, overrideSelectSql)
                 .trim();
     }
-    
+
     public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory) {
         return triggerTemplate.getColumnPositionUsingTemplate(originalTable, triggerHistory);
     }
@@ -240,21 +236,23 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     @Override
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms) {
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory,
+            List<TransformTableNodeGroupLink> transforms) {
         return createPurgeSqlFor(node, triggerRouter, triggerHistory, transforms, null);
     }
-    
+
     @Override
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, 
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory,
             List<TransformTableNodeGroupLink> transforms, String deleteSql) {
-        List<String> sqlStatements = createPurgeSqlForMultipleTables(node, triggerRouter, triggerHistory, transforms, deleteSql);
+        List<String> sqlStatements = createPurgeSqlForMultipleTables(node, triggerRouter, triggerHistory, transforms,
+                deleteSql);
         return sqlStatements.size() == 1 ? sqlStatements.get(0) : "";
     }
-    
+
     @Override
-    public List<String> createPurgeSqlForMultipleTables(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory,
-            List<TransformTableNodeGroupLink> transforms, String deleteSql) {
-        List<String> sqlStatements = new ArrayList<String>();                  
+    public List<String> createPurgeSqlForMultipleTables(Node node, TriggerRouter triggerRouter,
+            TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms, String deleteSql) {
+        List<String> sqlStatements = new ArrayList<String>();
         if (StringUtils.isEmpty(triggerRouter.getInitialLoadDeleteStmt())) {
             Set<String> tableNames = new HashSet<String>();
             if (transforms != null) {
@@ -264,15 +262,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             } else {
                 tableNames.add(triggerRouter.qualifiedTargetTableName(triggerHistory));
             }
-            
-            
+
             for (String tableName : tableNames) {
                 if (deleteSql == null) {
                     if (tableName.startsWith(parameterService.getTablePrefix())) {
                         deleteSql = "delete from %s";
                     } else {
                         deleteSql = parameterService.getString(ParameterConstants.INITIAL_LOAD_DELETE_FIRST_SQL);
-                    } 
+                    }
                 }
                 sqlStatements.add(String.format(deleteSql, tableName));
             }
@@ -281,25 +278,25 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
         return sqlStatements;
     }
-    
+
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
             String whereClause) {
-        return triggerTemplate.createCsvDataSql(
-                trigger,
-                triggerHistory,
-                platform.getTableFromCache(trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
-                channel, whereClause).trim();
+        return triggerTemplate
+                .createCsvDataSql(
+                        trigger, triggerHistory, platform.getTableFromCache(trigger.getSourceCatalogName(),
+                                trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
+                        channel, whereClause)
+                .trim();
     }
 
-    public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory,
-            Channel channel, String whereClause) {
-        return triggerTemplate.createCsvPrimaryKeySql(
-                trigger,
-                triggerHistory,
-                platform.getTableFromCache(trigger.getSourceCatalogName(),
-                        trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
-                channel, whereClause).trim();
+    public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel,
+            String whereClause) {
+        return triggerTemplate
+                .createCsvPrimaryKeySql(
+                        trigger, triggerHistory, platform.getTableFromCache(trigger.getSourceCatalogName(),
+                                trigger.getSourceSchemaName(), trigger.getSourceTableName(), false),
+                        channel, whereClause)
+                .trim();
     }
 
     public Set<String> getSqlKeywords() {
@@ -308,17 +305,19 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
         return sqlKeywords;
     }
-    
+
     protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName) {
         schemaName = schemaName == null ? "" : (schemaName + ".");
         return "drop trigger " + schemaName + triggerName;
     }
 
-    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName) {
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName) {
         ISqlTransaction transaction = null;
         try {
-            transaction = platform.getSqlTemplate().startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+            transaction = platform.getSqlTemplate()
+                    .startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
             removeTrigger(sqlBuffer, catalogName, schemaName, triggerName, tableName, transaction);
             transaction.commit();
         } catch (Exception ex) {
@@ -331,9 +330,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
 
     }
-    
-    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName,
-            ISqlTransaction transaction) {
+
+    public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
+            String tableName, ISqlTransaction transaction) {
         String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
@@ -341,8 +340,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
     }
 
-    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
-            String triggerName) {
+    public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
     }
 
     final protected void logSql(String sql, StringBuilder sqlBuffer) {
@@ -352,12 +350,13 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             sqlBuffer.append(System.getProperty("line.separator"));
         }
     }
-    
-    public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger, final TriggerHistory hist,
-            final Channel channel, final String tablePrefix, final Table table) {
+
+    public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger,
+            final TriggerHistory hist, final Channel channel, final String tablePrefix, final Table table) {
         ISqlTransaction transaction = null;
         try {
-            transaction = platform.getSqlTemplate().startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+            transaction = platform.getSqlTemplate()
+                    .startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
             createTrigger(sqlBuffer, dml, trigger, hist, channel, tablePrefix, table, transaction);
             transaction.commit();
         } catch (Exception ex) {
@@ -374,19 +373,18 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
      * Create the configured trigger. The catalog will be changed to the source
      * schema if the source schema is configured.
      */
-    public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml,
-            final Trigger trigger, final TriggerHistory hist, final Channel channel,
-            final String tablePrefix, final Table table, ISqlTransaction transaction) {
-        log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml),
-                table.getFullyQualifiedTableName());
+    public void createTrigger(final StringBuilder sqlBuffer, final DataEventType dml, final Trigger trigger,
+            final TriggerHistory hist, final Channel channel, final String tablePrefix, final Table table,
+            ISqlTransaction transaction) {
+        log.info("Creating {} trigger for {}", hist.getTriggerNameForDmlType(dml), table.getFullyQualifiedTableName());
 
         String previousCatalog = null;
         String sourceCatalogName = table.getCatalog();
         String defaultCatalog = platform.getDefaultCatalog();
         String defaultSchema = platform.getDefaultSchema();
 
-        String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel,
-                tablePrefix, table, defaultCatalog, defaultSchema);
+        String triggerSql = triggerTemplate.createTriggerDDL(dml, trigger, hist, channel, tablePrefix, table,
+                defaultCatalog, defaultSchema);
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
@@ -432,24 +430,24 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return null;
     }
 
-    protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist,
-            Channel channel, String tablePrefix, Table table) {
-        return triggerTemplate.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix,
-                table, platform.getDefaultCatalog(), platform.getDefaultSchema());
+    protected String createPostTriggerDDL(DataEventType dml, Trigger trigger, TriggerHistory hist, Channel channel,
+            String tablePrefix, Table table) {
+        return triggerTemplate.createPostTriggerDDL(dml, trigger, hist, channel, tablePrefix, table,
+                platform.getDefaultCatalog(), platform.getDefaultSchema());
     }
 
     public void createDdlTrigger(final String tablePrefix, StringBuilder sqlBuffer, String triggerName) {
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, platform.getDefaultCatalog(), platform.getDefaultSchema(),
-                    triggerName);
+            String triggerSql = triggerTemplate.createDdlTrigger(tablePrefix, platform.getDefaultCatalog(),
+                    platform.getDefaultSchema(), triggerName);
             log.info("Creating DDL trigger " + triggerName);
 
             if (triggerSql != null) {
                 ISqlTransaction transaction = null;
                 try {
-                    transaction = this.platform.getSqlTemplate().startSqlTransaction(
-                            platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
-    
+                    transaction = this.platform.getSqlTemplate()
+                            .startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
+
                     try {
                         log.debug("Running: {}", triggerSql);
                         logSql(triggerSql, sqlBuffer);
@@ -458,17 +456,17 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         log.info("Failed to create DDL trigger: {}", triggerSql);
                         throw ex;
                     }
-    
+
                     transaction.commit();
                 } catch (SqlException ex) {
-                	if (transaction != null) {
-                		transaction.rollback();
-                	}
+                    if (transaction != null) {
+                        transaction.rollback();
+                    }
                     throw ex;
                 } finally {
-                	if (transaction != null) {
-                		transaction.close();
-                	}
+                    if (transaction != null) {
+                        transaction.close();
+                    }
                 }
             }
         }
@@ -488,20 +486,19 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public Table getTable(TriggerHistory triggerHistory, boolean useCache) {
         if (triggerHistory != null) {
             return platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
-                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(),
-                    !useCache);
+                    triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), !useCache);
         } else {
             return null;
         }
     }
-    
+
     /*
      * @return true if SQL was executed.
      */
     public boolean createOrAlterTablesIfNecessary(String... tableNames) {
-        try {            
+        try {
             log.info("Checking if SymmetricDS tables need created or altered");
-            
+
             Database modelFromXml = readSymmetricSchemaFromXml();
             Database modelFromDatabase = readSymmetricSchemaFromDatabase();
 
@@ -512,9 +509,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             }
 
             IDdlBuilder builder = platform.getDdlBuilder();
-            
-            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = extensionService.getExtensionPointList(IAlterDatabaseInterceptor.class);
-            IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
+
+            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = extensionService
+                    .getExtensionPointList(IAlterDatabaseInterceptor.class);
+            IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors
+                    .toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
 
@@ -523,33 +522,30 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                         .getExtensionPointList(IDatabaseUpgradeListener.class);
 
                 for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                    String sql = listener.beforeUpgrade(this,
-                            this.parameterService.getTablePrefix(), modelFromDatabase,
+                    String sql = listener.beforeUpgrade(this, this.parameterService.getTablePrefix(), modelFromDatabase,
                             modelFromXml);
-                    SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true,
-                            false, false, delimiter, null);
+                    SqlScript script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter,
+                            null);
                     script.setListener(resultsListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                 }
 
-                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml,
-                        interceptors);
+                String alterSql = builder.alterDatabase(modelFromDatabase, modelFromXml, interceptors);
 
                 if (isNotBlank(alterSql)) {
                     log.info("There are SymmetricDS tables that needed altered");
 
                     log.debug("Alter SQL generated: {}", alterSql);
 
-                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(),
-                            true, false, false, delimiter, null);
+                    SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false,
+                            delimiter, null);
                     script.setListener(resultsListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
 
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {
-                        String sql = listener.afterUpgrade(this,
-                                this.parameterService.getTablePrefix(), modelFromXml);
-                        script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false,
-                                false, delimiter, null);
+                        String sql = listener.afterUpgrade(this, this.parameterService.getTablePrefix(), modelFromXml);
+                        script = new SqlScript(sql, getPlatform().getSqlTemplate(), true, false, false, delimiter,
+                                null);
                         script.setListener(resultsListener);
                         script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
                     }
@@ -574,9 +570,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             Database database = merge(readDatabaseFromXml("/symmetric-schema.xml"),
                     readDatabaseFromXml("/console-schema.xml"));
             prefixConfigDatabase(database);
-            
-            String extraTablesXml = parameterService
-                    .getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
+
+            String extraTablesXml = parameterService.getString(ParameterConstants.AUTO_CONFIGURE_EXTRA_TABLES);
             if (StringUtils.isNotBlank(extraTablesXml)) {
                 try {
                     database = merge(database, readDatabaseFromXml(extraTablesXml));
@@ -584,7 +579,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     log.error("", ex);
                 }
             }
-            
+
             return database;
         } catch (RuntimeException ex) {
             throw ex;
@@ -592,7 +587,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             throw new RuntimeException(ex);
         }
     }
-    
+
     public Database readSymmetricSchemaFromDatabase() {
         return platform.readFromDatabase(readSymmetricSchemaFromXml().getTables());
     }
@@ -623,52 +618,52 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String getName() {
-    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
-    			return targetPlatform.getSqlTemplate().getDatabaseProductName();
-    		}
+        if (targetPlatform != null && !targetPlatform.equals(platform)) {
+            return targetPlatform.getSqlTemplate().getDatabaseProductName();
+        }
         return databaseName;
     }
 
     public String getVersion() {
-    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
-			return targetPlatform.getSqlTemplate().getDatabaseMajorVersion() + 
-					"." + targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
-		}
+        if (targetPlatform != null && !targetPlatform.equals(platform)) {
+            return targetPlatform.getSqlTemplate().getDatabaseMajorVersion() + "."
+                    + targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
+        }
         return databaseMajorVersion + "." + databaseMinorVersion;
     }
 
     public int getMajorVersion() {
-    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
-			return targetPlatform.getSqlTemplate().getDatabaseMajorVersion();
-		}
+        if (targetPlatform != null && !targetPlatform.equals(platform)) {
+            return targetPlatform.getSqlTemplate().getDatabaseMajorVersion();
+        }
         return databaseMajorVersion;
     }
 
     public int getMinorVersion() {
-    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
-			return targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
-		}
+        if (targetPlatform != null && !targetPlatform.equals(platform)) {
+            return targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
+        }
         return databaseMinorVersion;
     }
 
     public String getProductVersion() {
-    		if (targetPlatform != null && !targetPlatform.equals(platform)) {
-			return targetPlatform.getSqlTemplate().getDatabaseProductVersion();
-		}
+        if (targetPlatform != null && !targetPlatform.equals(platform)) {
+            return targetPlatform.getSqlTemplate().getDatabaseProductVersion();
+        }
         return databaseProductVersion;
     }
 
     public boolean supportsTransactionViews() {
         return supportsTransactionViews;
     }
-    
+
     /*
      * Indicates if this dialect supports subselects in delete statements.
      */
     public boolean supportsSubselectsInDelete() {
         return supportsSubselectsInDelete;
     }
-    
+
     /*
      * Indicates if this dialect supports subselects in update statements.
      */
@@ -680,32 +675,31 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return insertWithGeneratedKey(sql, sequenceId, null, null);
     }
 
-    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier,
-            Object... args) {
-        return platform.getSqlTemplate().insertWithGeneratedKey(sql,
-                getSequenceKeyName(identifier), getSequenceKeyName(identifier), args, null);
+    public long insertWithGeneratedKey(final String sql, final SequenceIdentifier identifier, Object... args) {
+        return platform.getSqlTemplate().insertWithGeneratedKey(sql, getSequenceKeyName(identifier),
+                getSequenceKeyName(identifier), args, null);
     }
 
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-            case REQUEST:
-                return "sym_extract_r_st_request_id";
-            case DATA:
-                return "sym_data_data_id";
-            case TRIGGER_HIST:
-                return "sym_trigger_his_ger_hist_id";
+        case REQUEST:
+            return "sym_extract_r_st_request_id";
+        case DATA:
+            return "sym_data_data_id";
+        case TRIGGER_HIST:
+            return "sym_trigger_his_ger_hist_id";
         }
         return null;
     }
 
     public String getSequenceKeyName(SequenceIdentifier identifier) {
         switch (identifier) {
-            case REQUEST:
-                return "request_id";
-            case DATA:
-                return "data_id";
-            case TRIGGER_HIST:
-                return "trigger_hist_id";
+        case REQUEST:
+            return "request_id";
+        case DATA:
+            return "data_id";
+        case TRIGGER_HIST:
+            return "trigger_hist_id";
         }
         return null;
     }
@@ -764,20 +758,20 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void truncateTable(String tableName) {
-	   String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
-               .getDatabaseInfo().getDelimiterToken() : "";
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn()
+                ? platform.getDatabaseInfo().getDelimiterToken()
+                : "";
         boolean success = false;
         int tryCount = 5;
         while (!success && tryCount > 0) {
             try {
                 Table table = platform.getTableFromCache(tableName, false);
                 if (table != null) {
-                    platform.getSqlTemplate().update(
-                    		String.format("truncate table %s%s%s", quote, table.getName(), quote));
+                    platform.getSqlTemplate()
+                            .update(String.format("truncate table %s%s%s", quote, table.getName(), quote));
                     success = true;
                 } else {
-                    throw new RuntimeException(String.format("Could not find %s to trunate",
-                            tableName));
+                    throw new RuntimeException(String.format("Could not find %s to trunate", tableName));
                 }
             } catch (SqlException ex) {
                 log.warn("", ex);
@@ -797,11 +791,9 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public long getDatabaseTime() {
         try {
-            String sql = "select current_timestamp from " + this.parameterService.getTablePrefix()
-                    + "_node_identity";
+            String sql = "select current_timestamp from " + this.parameterService.getTablePrefix() + "_node_identity";
             sql = FormatUtils.replaceTokens(sql, platform.getSqlScriptReplacementTokens(), false);
-            Date dateTime = this.platform.getSqlTemplate()
-                    .queryForObject(sql, java.util.Date.class);
+            Date dateTime = this.platform.getSqlTemplate().queryForObject(sql, java.util.Date.class);
             if (dateTime != null) {
                 return dateTime.getTime();
             } else {
@@ -838,7 +830,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public String massageDataExtractionSql(String sql, boolean isContainsBigLob) {
-        String textColumnExpression = parameterService.getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
+        String textColumnExpression = parameterService
+                .getString(ParameterConstants.DATA_EXTRACTOR_TEXT_COLUMN_EXPRESSION);
         if (isNotBlank(textColumnExpression)) {
             sql = sql.replace("d.old_data", textColumnExpression.replace("$(columnName)", "d.old_data"));
             sql = sql.replace("d.row_data", textColumnExpression.replace("$(columnName)", "d.row_data"));
@@ -862,7 +855,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public boolean isInitialLoadTwoPassLob(Table table) {
         return false;
     }
-    
+
     public String getInitialLoadTwoPassLobSql(String sql, Table table, boolean isFirstPass) {
         List<Column> columns = table.getLobColumns(this.platform);
         boolean isFirstColumn = true;
@@ -873,14 +866,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             orderBySql = " " + sql.substring(index);
             sql = sql.substring(0, index);
         }
-        
+
         if (columns.size() > 0) {
             if (!sql.equals("")) {
                 sql += " and ";
-            }           
+            }
             sql += "(";
         }
-        
+
         for (Column column : table.getLobColumns(this.platform)) {
             String columnSql = getInitialLoadTwoPassLobLengthSql(column, isFirstPass);
             if (columnSql != null && !columnSql.trim().equals("")) {
@@ -896,7 +889,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                 sql += columnSql;
             }
         }
-        
+
         if (columns.size() > 0) {
             sql += ")";
         }
@@ -936,38 +929,38 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public String getTablePrefix() {
         return parameterService.getTablePrefix();
     }
-    
+
     public String getTemplateNumberPrecisionSpec() {
         return null;
     }
-    
+
     public int getSqlTypeForIds() {
         return Types.NUMERIC;
     }
-    
+
     @Override
     public IParameterService getParameterService() {
         return parameterService;
     }
-    
+
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
     }
-    
+
     public PermissionType[] getSymTablePermissions() {
-        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE,
+                PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER };
         return permissions;
     }
 
     @Override
     public IDatabasePlatform getTargetPlatform() {
-		return targetPlatform;
-	}
+        return targetPlatform;
+    }
 
     @Override
     public void setTargetPlatform(IDatabasePlatform targetPlatform) {
-		this.targetPlatform = targetPlatform;
-	}
-    
-    
+        this.targetPlatform = targetPlatform;
+    }
+
 }
