@@ -25,79 +25,79 @@ import java.util.TreeMap;
 
 public class PermissionResult {
 
-	public enum Status {
-		PASS, FAIL, UNIMPLEMENTED, UNSUPPORTED, NOT_APPLICABLE
-	}
-	
-	public enum PermissionCategory {
-	    TABLE_MODIFICATION, TRIGGERS, ADDITIONAL
-	}
-	
-	private PermissionType permissionType;
-	
-	private Status status = Status.FAIL;
-	
-	private Exception exception;
-	
-	private String solution;
-	
-	private PermissionCategory category;
-	
-	private String testDetails; // e.g. description or statment(s) used on the test
-	
-	private static Map<PermissionType, PermissionCategory> categories = new TreeMap<PermissionType, PermissionCategory>();
-	
-	static {
-	    categories.put(PermissionType.CREATE_TABLE, PermissionCategory.TABLE_MODIFICATION);
-	    categories.put(PermissionType.DROP_TABLE, PermissionCategory.TABLE_MODIFICATION);
-	    categories.put(PermissionType.ALTER_TABLE, PermissionCategory.TABLE_MODIFICATION);
-	    categories.put(PermissionType.CREATE_TRIGGER, PermissionCategory.TRIGGERS);
-	    categories.put(PermissionType.DROP_TRIGGER, PermissionCategory.TRIGGERS);
-	    categories.put(PermissionType.CREATE_FUNCTION, PermissionCategory.ADDITIONAL);
-	    categories.put(PermissionType.CREATE_ROUTINE, PermissionCategory.ADDITIONAL);
-	    categories.put(PermissionType.EXECUTE, PermissionCategory.ADDITIONAL);
-	}
-	
-	public PermissionResult(PermissionType permissionType, String testDetails) {
-		this.setPermissionType(permissionType);
-		this.setStatus(status);
-	    this.category = categories.get(permissionType);
-	    this.testDetails = testDetails;
-	}
+    public enum Status {
+        PASS, FAIL, UNIMPLEMENTED, UNSUPPORTED, NOT_APPLICABLE
+    }
 
-	public PermissionType getPermissionType() {
-		return permissionType;
-	}
+    public enum PermissionCategory {
+        TABLE_MODIFICATION, TRIGGERS, ADDITIONAL
+    }
 
-	public void setPermissionType(PermissionType permissionType) {
-		this.permissionType = permissionType;
-	}
+    private PermissionType permissionType;
 
-	public Status getStatus() {
-		return status;
-	}
+    private Status status = Status.FAIL;
 
-	public void setStatus(Status status) {
-		this.status = status;
-	}
+    private Exception exception;
 
-	public Exception getException() {
-		return exception;
-	}
+    private String solution;
 
-	public void setException(Exception exception) {
-		this.exception = exception;
-	}
+    private PermissionCategory category;
 
-	public String getSolution() {
-		return solution;
-	}
+    private String testDetails; // e.g. description or statment(s) used on the test
 
-	public void setSolution(String solution) {
-		this.solution = solution;
-	}
+    private static Map<PermissionType, PermissionCategory> categories = new TreeMap<PermissionType, PermissionCategory>();
 
-	public PermissionCategory getCategory() {
+    static {
+        categories.put(PermissionType.CREATE_TABLE, PermissionCategory.TABLE_MODIFICATION);
+        categories.put(PermissionType.DROP_TABLE, PermissionCategory.TABLE_MODIFICATION);
+        categories.put(PermissionType.ALTER_TABLE, PermissionCategory.TABLE_MODIFICATION);
+        categories.put(PermissionType.CREATE_TRIGGER, PermissionCategory.TRIGGERS);
+        categories.put(PermissionType.DROP_TRIGGER, PermissionCategory.TRIGGERS);
+        categories.put(PermissionType.CREATE_FUNCTION, PermissionCategory.ADDITIONAL);
+        categories.put(PermissionType.CREATE_ROUTINE, PermissionCategory.ADDITIONAL);
+        categories.put(PermissionType.EXECUTE, PermissionCategory.ADDITIONAL);
+    }
+
+    public PermissionResult(PermissionType permissionType, String testDetails) {
+        this.setPermissionType(permissionType);
+        this.setStatus(status);
+        this.category = categories.get(permissionType);
+        this.testDetails = testDetails;
+    }
+
+    public PermissionType getPermissionType() {
+        return permissionType;
+    }
+
+    public void setPermissionType(PermissionType permissionType) {
+        this.permissionType = permissionType;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        this.exception = exception;
+    }
+
+    public String getSolution() {
+        return solution;
+    }
+
+    public void setSolution(String solution) {
+        this.solution = solution;
+    }
+
+    public PermissionCategory getCategory() {
         return category;
     }
 
@@ -115,6 +115,6 @@ public class PermissionResult {
 
     @Override
     public String toString() {
-		return "Permission Type: " + permissionType + ", Status: " + status; 
-	}
+        return "Permission Type: " + permissionType + ", Status: " + status;
+    }
 }
