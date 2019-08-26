@@ -56,6 +56,7 @@ public class PermissionResult {
         categories.put(PermissionType.CREATE_FUNCTION, PermissionCategory.ADDITIONAL);
         categories.put(PermissionType.CREATE_ROUTINE, PermissionCategory.ADDITIONAL);
         categories.put(PermissionType.EXECUTE, PermissionCategory.ADDITIONAL);
+        categories.put(PermissionType.LOG_MINE, PermissionCategory.ADDITIONAL);
     }
 
     public PermissionResult(PermissionType permissionType, String testDetails) {

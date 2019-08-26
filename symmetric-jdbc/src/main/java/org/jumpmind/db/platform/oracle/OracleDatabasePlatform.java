@@ -125,9 +125,6 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public PermissionResult getExecuteSymPermission() {
-        String delimiter = getDatabaseInfo().getDelimiterToken();
-        delimiter = delimiter != null ? delimiter : "";
-
         String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";
 
         PermissionResult result = new PermissionResult(PermissionType.EXECUTE, executeSql);
@@ -138,6 +135,32 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         } catch (SqlException e) {
             result.setException(e);
             result.setSolution("Grant EXECUTE on DBMS_LOB and UTL_RAW");
+        }
+
+        return result;
+    }
+
+    @Override
+    protected PermissionResult getLogMinePermission() {
+        String sql = "alter session set nls_date_format='YYYY-MM-DD HH24:MI:SS'";
+        PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
+
+        try {
+            getSqlTemplate().update(sql);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant ALTER SESSION");
+            return result;
+        }
+
+        try {
+            getSqlTemplate().update("BEGIN dbms_logmnr.start_logmnr(STARTSCN => timestamp_to_scn(sysdate), " +
+                    "ENDSCN => timestamp_to_scn(sysdate), OPTIONS => DBMS_LOGMNR.CONTINUOUS_MINE);END;");
+            getSqlTemplate().update("BEGIN dbms_logmnr.end_logmnr();END;");
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant EXECUTE_CATALOG_ROLE");
         }
 
         return result;

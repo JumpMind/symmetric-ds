@@ -48,6 +48,7 @@ import javax.sql.DataSource;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
@@ -964,18 +965,25 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes) {
         List<PermissionResult> results = new ArrayList<PermissionResult>();
         Database database = new Database();
-        PermissionResult createResult = getCreateSymTablePermission(database);
-        PermissionResult createTriggerResult = getCreateSymTriggerPermission();
-        PermissionResult dropTriggerResult = getDropSymTriggerPermission();
+        PermissionResult createResult = null;
+        PermissionResult createTriggerResult = null;
+        PermissionResult dropTriggerResult = null;
         boolean drop = false;
+        if (ArrayUtils.contains(permissionTypes, PermissionType.CREATE_TABLE)) {
+            createResult = getCreateSymTablePermission(database);
+        }
+        if (ArrayUtils.contains(permissionTypes, PermissionType.CREATE_TRIGGER)) {
+            createTriggerResult = getCreateSymTriggerPermission();
+            dropTriggerResult = getDropSymTriggerPermission();
+        }
+        
         for (PermissionType permissionType : permissionTypes) {
             switch (permissionType) {
                 case CREATE_TABLE:
                     results.add(createResult);
                     break;
                 case ALTER_TABLE:
-                    PermissionResult alterResult = getAlterSymTablePermission(database);
-                    results.add(alterResult);
+                    results.add(getAlterSymTablePermission(database));
                     break;
                 case CREATE_TRIGGER:
                     results.add(createTriggerResult);
@@ -984,25 +992,26 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     results.add(dropTriggerResult);
                     break;
                 case EXECUTE:
-                    PermissionResult executeResult = getExecuteSymPermission();
-                    results.add(executeResult);
+                    results.add(getExecuteSymPermission());
                     break;
                 case DROP_TABLE:
                     drop = true;
                     break;
                 case CREATE_FUNCTION:
-                    PermissionResult createFunctionResult = getCreateSymFunctionPermission();
-                    results.add(createFunctionResult);
+                    results.add(getCreateSymFunctionPermission());
                     break;
                 case CREATE_ROUTINE:
-                    PermissionResult createRoutineResult = getCreateSymRoutinePermission();
-                    results.add(createRoutineResult);
+                    results.add(getCreateSymRoutinePermission());
+                    break;
+                case LOG_MINE:
+                    results.add(getLogMinePermission());
+                    break;
+                default:
                     break;
             }
         }
-        PermissionResult dropPermission = getDropSymTablePermission();
         if (drop) {
-            results.add(dropPermission);
+            results.add(getDropSymTablePermission());
         }
         
         logFailedResults(results);
@@ -1134,6 +1143,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected PermissionResult getCreateSymFunctionPermission() {
         PermissionResult result = new PermissionResult(PermissionType.CREATE_FUNCTION, "NOT_APPLICABLE");
         result.setStatus(Status.NOT_APPLICABLE);
+        return result;
+    }
+
+    protected PermissionResult getLogMinePermission() {
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, "UNIMPLEMENTED");
+        result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
 

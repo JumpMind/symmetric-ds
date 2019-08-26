@@ -76,7 +76,8 @@ final public class ParameterConstants {
     public final static String START_REFRESH_CACHE_JOB = "start.refresh.cache.job";
     public final static String START_FILE_SYNC_TRACKER_JOB = "start.file.sync.tracker.job";
     public final static String START_FILE_SYNC_PUSH_JOB = "start.file.sync.push.job";
-    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";   
+    public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";
+    public final static String START_LOG_MINER_JOB = "start.log.miner.job";
     
     public final static String ROUTE_ON_EXTRACT = "route.on.extract";
 
