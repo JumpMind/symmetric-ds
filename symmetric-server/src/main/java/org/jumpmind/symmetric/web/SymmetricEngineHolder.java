@@ -45,6 +45,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
+import org.jumpmind.properties.SortedProperties;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
@@ -379,11 +380,12 @@ public class SymmetricEngineHolder {
 
         File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
         File symmetricProperties = new File(enginesDir, engineName + ".properties");
-        try(FileOutputStream fileOs = new FileOutputStream(symmetricProperties)) {
-            properties.store(fileOs, "Updated by SymmetricDS Pro");
+        try (FileOutputStream fileOs = new FileOutputStream(symmetricProperties)) {
+            SortedProperties sortedProperties = new SortedProperties();
+            sortedProperties.putAll(properties);
+            sortedProperties.store(fileOs, "Updated by SymmetricDS Pro");
         } catch (IOException ex) {
-            throw new RuntimeException("Failed to write symmetric.properties to engine directory",
-                    ex);
+            throw new RuntimeException("Failed to write symmetric.properties to engine directory", ex);
         }
 
         ISymmetricEngine engine = null;
