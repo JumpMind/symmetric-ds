@@ -358,7 +358,7 @@ public class SymmetricEngineHolder {
         if (StringUtils.isNotBlank(extractOnlyPassword) && !extractOnlyPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
             try {
                 ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
-                properties.setProperty(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
+                properties.setProperty(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
                         SecurityConstants.PREFIX_ENC + service.encrypt(extractOnlyPassword));
             } catch (Exception ex) {
                 log.warn("Could not encrypt extract only password", ex);
