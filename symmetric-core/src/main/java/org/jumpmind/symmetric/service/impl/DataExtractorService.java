@@ -147,6 +147,7 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
 import org.jumpmind.symmetric.route.IDataRouter;
+import org.jumpmind.symmetric.route.IInitialLoadSelectAware;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -2247,7 +2248,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     protected void checkSendDeferredConstraints(ExtractRequest request, List<ExtractRequest> childRequests, Node targetNode, OutgoingBatch batch) {
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false) && !batch.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
             TableReloadRequest reloadRequest = dataService.getTableReloadRequest(request.getLoadId(), request.getTriggerId(), request.getRouterId());
             if ((reloadRequest != null && reloadRequest.isCreateTable()) ||
                     (reloadRequest == null && parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD))) {
@@ -2854,6 +2855,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.overrideSelectSql = currentInitialLoadEvent.getInitialLoadSelect();
                     if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
                         overrideSelectSql = overrideSelectSql.trim().substring(5);
+                    }
+                    if (dataRouter instanceof IInitialLoadSelectAware) {
+                        overrideSelectSql = ((IInitialLoadSelectAware) dataRouter) .getIntialLoadSelect();
                     }
 
                     if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK)) {
