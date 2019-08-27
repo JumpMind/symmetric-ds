@@ -440,11 +440,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
             log.debug("Deleted {} rows", count);
             totalCount += count;
 
-            if (totalCount > 0
-                    && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+            if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
                 log.info("Purged {} of {} rows so far using {} statements", new Object[] {
                         totalCount, identifier.toString().toLowerCase(), totalDeleteStmts });
                 ts = System.currentTimeMillis();
+                clusterService.refreshLock(ClusterConstants.PURGE_OUTGOING);
             }
             minId = maxId + 1;
         }
