@@ -452,6 +452,11 @@ public class DbFill {
         }
 
         ISqlTransaction tran = platform.getSqlTemplate().startSqlTransaction();
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = dbInfo.getDelimiterToken();
+        String catalogSeparator = dbInfo.getCatalogSeparator();
+        String schemaSeparator = dbInfo.getSchemaSeparator();
+
         int rowsInTransaction = 0;
         int rowsTotal = 0;
 
@@ -468,6 +473,11 @@ public class DbFill {
             for (int i = 0; i < numRowsToGenerate; i++) {
 
                 for (Table table : orderedTables) {
+                    if (table.hasAutoIncrementColumn()) {
+                        log.info("Turning on identity insert for table " + table.getName());
+                        tran.allowInsertIntoAutoIncrementColumns(true, table, quote, catalogSeparator, schemaSeparator);
+                    }
+                    
                     int dmlType = INSERT;
                     if (tableProperties != null && tableProperties.containsKey(table.getName())) {
                         dmlType = randomIUD(tableProperties.get(table.getName()));
@@ -518,6 +528,10 @@ public class DbFill {
                         }
                         rowsInTransaction = 0;
                         AppUtils.sleep(interval);
+                    }
+                    if (table.hasAutoIncrementColumn()) {
+                        log.info("Turning off identity insert for table " + table.getName());
+                        tran.allowInsertIntoAutoIncrementColumns(false, table, quote, catalogSeparator, schemaSeparator);
                     }
                 }
                 
@@ -882,10 +896,13 @@ public class DbFill {
     }
 
     private Object generateRandomValueForColumn(Table table, Column column) {
+        
         Object objectValue = null;
         int type = column.getMappedTypeCode();
         if (column.getPlatformColumns() != null && column.getPlatformColumns().get(platform.getName()) != null && column.getPlatformColumns().get(platform.getName()).isEnum()) {
             objectValue = column.getPlatformColumns().get(platform.getName()).getEnumValues()[new Random().nextInt(column.getPlatformColumns().get(platform.getName()).getEnumValues().length)];
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("uniqueidentifier")) {
+            objectValue = randomUUID();
         } else if (column.isTimestampWithTimezone()) {
             objectValue = String.format("%s %s",
                     FormatUtils.TIMESTAMP_FORMATTER.format(randomDate()),
