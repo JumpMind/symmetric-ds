@@ -610,6 +610,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         awaitTermination(executor);          
                     }
                 } else {
+                    transport.close();
                     awaitTermination(executor);            
                 }
                 
