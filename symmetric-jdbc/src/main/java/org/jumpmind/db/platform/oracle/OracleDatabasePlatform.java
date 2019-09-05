@@ -1,5 +1,9 @@
 package org.jumpmind.db.platform.oracle;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -29,7 +33,9 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -143,27 +149,52 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected PermissionResult getLogMinePermission() {
         String sql = "alter session set nls_date_format='YYYY-MM-DD HH24:MI:SS'";
-        PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
+        final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
 
         try {
             getSqlTemplate().update(sql);
-        } catch (SqlException e) {
+        } catch (Exception e) {
+            log.error("Error checking alter session permission", e);
+            result.setStatus(Status.FAIL);
             result.setException(e);
             result.setSolution("Grant ALTER SESSION");
             return result;
         }
 
-        try {
-            getSqlTemplate().update("BEGIN dbms_logmnr.start_logmnr(STARTSCN => timestamp_to_scn(sysdate), " +
-                    "ENDSCN => timestamp_to_scn(sysdate), OPTIONS => DBMS_LOGMNR.CONTINUOUS_MINE);END;");
-            getSqlTemplate().update("BEGIN dbms_logmnr.end_logmnr();END;");
-            result.setStatus(Status.PASS);
-        } catch (SqlException e) {
-            result.setException(e);
-            result.setSolution("Grant EXECUTE_CATALOG_ROLE");
-        }
+        return ((JdbcSqlTemplate) getSqlTemplate()).execute(new IConnectionCallback<PermissionResult>() {
+            @Override
+            public PermissionResult execute(Connection con) throws SQLException {
+                Statement st = con.createStatement();
+                boolean isBegin = false;
+                try {
+                    st.executeUpdate("BEGIN dbms_logmnr.start_logmnr(STARTSCN => timestamp_to_scn(sysdate), "
+                            + "ENDSCN => timestamp_to_scn(sysdate), OPTIONS => DBMS_LOGMNR.CONTINUOUS_MINE);END;");
+                    isBegin = true;
+                } catch (Exception e) {
+                    log.error("Error checking execute_catalog_role permission", e);
+                    result.setStatus(Status.FAIL);
+                    result.setException(e);
+                    result.setSolution("Grant EXECUTE_CATALOG_ROLE");
+                }
 
-        return result;
+                if (isBegin) {
+                    try {
+                        st.execute("select * from V$LOGMNR_CONTENTS");
+                        result.setStatus(Status.PASS);
+                    } catch (Exception e) {
+                        log.error("Error checking select_any_transaction permission", e);
+                        result.setStatus(Status.FAIL);
+                        result.setException(e);
+                        result.setSolution("Grant SELECT ANY TRANSACTION, SELECT ANY DICTIONARY");
+                    }
+                    try {
+                        st.executeUpdate("BEGIN dbms_logmnr.end_logmnr();END;");
+                    } catch (Exception e) {
+                    }
+                }
+                return result;
+            }
+        });
     }
 
     @Override

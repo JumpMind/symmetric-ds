@@ -4,13 +4,34 @@ This section describes Oracle specific SymmetricDS details.
 
 ==== Database Permissions
 The SymmetricDS database user generally needs privileges for connecting and creating tables (including indexes), triggers, sequences, 
-and procedures (including packages and functions). The following is an example of the needed grant statements:
+and procedures (including packages and functions). For change data capture, use the following permissions:
 
 [source, SQL]
 GRANT CONNECT TO SYMMETRIC;
 GRANT RESOURCE TO SYMMETRIC;
 GRANT CREATE ANY TRIGGER TO SYMMETRIC;
 GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;
+
+ifdef::pro[]
+.Log Miner Permissions
+
+If using Oracle 11g without CDB, use the following permissions:
+
+[source, SQL]
+grant create session, alter session, select any dictionary, execute_catalog_role to symmetric;
+
+If using Oracle 12c without CDB, use the following permissions:
+
+[source, SQL]
+grant create session, alter session, select any dictionary, execute_catalog_role, logmining to symmetric;
+
+If using Oracle 12c with PDB, use the following permissions:
+
+[source, SQL]
+grant create session, alter session, set container, select any dictionary, logmining, execute_catalog_role to c##symmetric CONTAINER=all;
+alter user c##symmetric set container_data = (cdb$root, <PDB name>) container=current;
+
+endif::pro[]
 
 ==== Known Limitations
 * The LONG data type is not supported with change capture, since LONG columns cannot be accessed from triggers.  The data in LONG columns can still be kept in sync by enabling the use_stream_lobs feature in <<TRIGGER>>.
@@ -24,8 +45,6 @@ sym_data is cast to a clob which prevents truncation at 4k.  There is overhead f
 ==== Bulk Loader
 SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
 To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("oracle_bulk") in the data_loader_type column of sym_channel.
-
-The bulk loader only supports simple data types.  The bulk loader does not support tables that contain lobs.
 
 ==== Optional - Partitioning
 Partitioning the DATA table by channel can help insert, routing and extraction performance on concurrent, high throughput systems. 
