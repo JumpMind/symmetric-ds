@@ -37,6 +37,7 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -423,12 +424,6 @@ abstract public class AbstractTriggerTemplate {
 		        ddl = reloadDdl;
 		    }
 		}
-    	if (dml.getDmlType().equals(DmlType.UPDATE) && trigger.isUseHandleKeyUpdates()) {
-    		String temp = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "HandleKeyUpdates" + "TriggerTemplate");
-    		if (StringUtils.trimToNull(temp)!=null) {
-    			ddl=temp;
-    		}
-    	}
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + symmetricDialect.getPlatform().getName());
@@ -476,6 +471,21 @@ abstract public class AbstractTriggerTemplate {
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
 
+    	// We have a special case for this special template variable.
+    	// We are replacing this template variable with other template variables
+    	// Only replace this special variable with a template variable for the following combined case
+    	// Otherwise, just replace with $(channelExpression) and let normal template variable replacement do its thing.
+    	if(trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)
+    			&& dml.getDmlType().equals(DmlType.UPDATE)
+    			&& TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(table.getName()))
+    	{
+    		ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(oldTriggerValue).$(oldColumnPrefix)" + symmetricDialect.getPlatform().alterCaseToMatchDatabaseDefaultCase("channel_id"), ddl);
+    	} else {
+    		ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(channelExpression)", ddl);
+    	}
+    	
+    	ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", getChannelExpression(), ddl);
+    	
         ddl = FormatUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history),
                 ddl);
 
@@ -570,7 +580,13 @@ abstract public class AbstractTriggerTemplate {
                 trigger.isUseCaptureOldData() ? buildColumnsString(ORIG_TABLE_ALIAS,
                         oldTriggerValue, oldColumnPrefix, table, orderedColumns, dml, true, channel,
                         trigger).toString() : "null", ddl);
-        ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
+        
+        String oldddl = null;
+        while(ddl != null && (! ddl.equals(oldddl))) {
+        	oldddl = ddl;
+        	ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
+        }
+        oldddl = null;
 
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);
@@ -635,6 +651,9 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("prefixName", tablePrefix, ddl);
         ddl = replaceDefaultSchemaAndCatalog(ddl);
 
+        ddl = FormatUtils.replace("hasPrimaryKeysDefined", getHasPrimaryKeysDefinedString(table), ddl);
+        ddl = FormatUtils.replace("primaryKeysUpdated", getPrimaryKeysUpdatedString(table), ddl);
+
         ddl = FormatUtils.replace("oracleToClob",
                 trigger.isUseCaptureLobs() ? toClobExpression(table) : "", ddl);
 
@@ -653,6 +672,11 @@ abstract public class AbstractTriggerTemplate {
                 break;
         }
         return ddl;
+    }
+    
+    private String getChannelExpression() {
+    	
+    	return null;
     }
     
     protected String toClobExpression(Table table) {
@@ -1217,4 +1241,31 @@ abstract public class AbstractTriggerTemplate {
             "/*+ parallel(" + this.symmetricDialect.getParameterService()
             .getString(ParameterConstants.DBDIALECT_ORACLE_LOAD_QUERY_HINT_PARALLEL_COUNT) + ") */": "", sql);
     }
+    
+    protected String getHasPrimaryKeysDefinedString(Table table) {
+    	return table.hasPrimaryKey() ? "1=1" : "1=2";
+    }
+    
+    protected String getPrimaryKeysUpdatedString(Table table) {
+    	StringBuffer sb = new StringBuffer();
+    	for(String primaryKey : table.getPrimaryKeyColumnNames()) {
+    		if(sb.length() > 0) {
+    			sb.append(" OR ");
+    		} else {
+    			sb.append("(");
+    		}
+    		sb.append(" UPDATE(").append(primaryKey).append(") ");
+    	}
+    	if(sb.length() > 0) {
+    		sb.append(")");
+    	}
+    	
+    	if(sb.length() > 0) {
+    		sb.insert(0, " AND ");
+    	}
+    	
+    	return sb.toString();
+    }
+    
+
 }
