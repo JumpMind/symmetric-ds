@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +34,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
 import org.jumpmind.symmetric.model.DataGap;
+import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
@@ -56,6 +55,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
 
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
+    private Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
     private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
     private ISqlTransaction sqlTransaction;
@@ -64,6 +64,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private Data lastDataProcessed;
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
+    private boolean produceGroupBatches = false;
     private boolean onlyDefaultRoutersAssigned = false;
     private boolean overrideContainsBigLob = false;
     private long lastLoadId = -1;
@@ -79,12 +80,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private List<Long> uncommittedDataIds = new ArrayList<Long>();
     private long uncommittedDataEventCount = 0;
     private long committedDataEventCount = 0;
+    private Map<String, IBatchAlgorithm> batchAlgorithms;
 
-    public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction)
+    public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction, Map<String, IBatchAlgorithm> batchAlgorithms)
             throws SQLException {
         super(nodeId, channel);
         this.sqlTransaction = transaction;
         this.sqlTransaction.setInBatchMode(true);
+        this.batchAlgorithms = batchAlgorithms;
     }
 
     public List<DataEvent> getDataEventList() {
@@ -119,6 +122,10 @@ public class ChannelRouterContext extends SimpleRouterContext {
         return batchesByNodes;
     }
 
+    public Map<Integer, Map<String, OutgoingBatch>> getBatchesByGroups() {
+        return batchesByGroups;
+    }
+
     public Map<TriggerRouter, Set<Node>> getAvailableNodes() {
         return availableNodes;
     }
@@ -138,6 +145,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         this.encountedTransactionBoundary = false;
         this.requestGapDetection = false;
         this.batchesByNodes.clear();
+        this.batchesByGroups.clear();
         this.availableNodes.clear();
         this.dataEventsToSend.clear();
         this.uncommittedDataIds.clear();
@@ -219,7 +227,15 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public boolean isProduceCommonBatches() {
         return produceCommonBatches;
     }    
-    
+
+    public void setProduceGroupBatches(boolean produceGroupBatches) {
+        this.produceGroupBatches = produceGroupBatches;
+    }
+
+    public boolean isProduceGroupBatches() {
+        return produceGroupBatches;
+    }    
+
     public void setLastLoadId(long lastLoadId) {
         this.lastLoadId = lastLoadId;
     }
@@ -304,4 +320,11 @@ public class ChannelRouterContext extends SimpleRouterContext {
         this.overrideContainsBigLob = overrideContainsBigLob;
     }
     
+    public Map<String, IBatchAlgorithm> getBatchAlgorithms() {
+        return batchAlgorithms;
+    }
+
+    public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData) {
+        return batchAlgorithms.get(channel.getBatchAlgorithm()).isBatchComplete(batch, dataMetaData, this);
+    }
 }

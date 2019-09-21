@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.service.impl;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +45,7 @@ import org.jumpmind.symmetric.model.OutgoingBatches;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.DataGapRouteReader;
+import org.jumpmind.symmetric.route.IBatchAlgorithm;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -941,7 +943,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         deleteAll(TEST_TABLE_1);
 
         ISqlTransaction transaction = getSqlTemplate().startSqlTransaction();
-        ChannelRouterContext context = new ChannelRouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, transaction);
+        ChannelRouterContext context = new ChannelRouterContext(TestConstants.TEST_ROOT_EXTERNAL_ID, testChannel, transaction, 
+                new HashMap<String, IBatchAlgorithm>());
         context.setDataGaps(engine.getDataService().findDataGaps());
         DataGapRouteReader reader = new DataGapRouteReader(context, engine);
         reader.run();

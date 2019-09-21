@@ -511,8 +511,9 @@ public class RouterService extends AbstractService implements IRouterService {
             for (NodeChannel nodeChannel : channels) {
                 engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
                 if (nodeChannel.isEnabled() && (readyChannels == null || readyChannels.contains(nodeChannel.getChannelId()))) {
+                    processInfo.setCurrentTableName("");
                     processInfo.setCurrentChannelId(nodeChannel.getChannelId());
-                    dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, false, null);
+                    dataCount += routeDataForChannel(processInfo, nodeChannel, sourceNode, false, null, null);
                 } else if (!nodeChannel.isEnabled()) {
                     gapDetector.setIsAllDataRead(false);
                     if (log.isDebugEnabled()) {
@@ -708,7 +709,7 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected long routeDataForChannel(ProcessInfo processInfo, final NodeChannel nodeChannel, final Node sourceNode, boolean isOverrideContainsBigLob,
-            Map<String, OutgoingBatch> overrideBatchesByNodes) {
+            Map<String, OutgoingBatch> overrideBatchesByNodes, Map<Integer, Map<String, OutgoingBatch>> overrideBatchesByGroups) {
         ChannelRouterContext context = null;
         long ts = System.currentTimeMillis();
         long dataCount = -1;
@@ -720,14 +721,19 @@ public class RouterService extends AbstractService implements IRouterService {
                     parameterService.getNodeGroupId(), triggerRouters);
             
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
-                    symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction());
+                    symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction(),
+                    extensionService.getExtensionPointMap(IBatchAlgorithm.class));
             context.setProduceCommonBatches(producesCommonBatches);
+            context.setProduceGroupBatches(parameterService.is(ParameterConstants.ROUTING_USE_COMMON_GROUPS));
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
             context.setOverrideContainsBigLob(isOverrideContainsBigLob);
             
             if (overrideBatchesByNodes != null) {
                 context.getBatchesByNodes().putAll(overrideBatchesByNodes);
+            }
+            if (overrideBatchesByNodes != null) {
+                context.getBatchesByGroups().putAll(overrideBatchesByGroups);
             }
 
             dataCount = selectDataAndRoute(processInfo, context);
@@ -754,7 +760,6 @@ public class RouterService extends AbstractService implements IRouterService {
             }
             return context.getCommittedDataEventCount();
         } catch (ProtocolException ex) {
-            Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>(context.getBatchesByNodes());
             if (context != null) {
                 context.rollback();
             }
@@ -762,10 +767,18 @@ public class RouterService extends AbstractService implements IRouterService {
                 log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
                 return context.getCommittedDataEventCount();
             } else {
+                Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>(context.getBatchesByNodes());
+                Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>(context.getBatchesByGroups());
                 long batchId = -1;
                 for (OutgoingBatch batch : batchesByNodes.values()) {
                     batch.resetRouterStats();
                     batchId = batch.getBatchId();
+                }
+                for (Map<String, OutgoingBatch> groupBatches : batchesByGroups.values()) {
+                    for (OutgoingBatch batch : groupBatches.values()) {
+                        batch.resetRouterStats();
+                        batchId = batch.getBatchId();
+                    }                    
                 }
                 log.info("Re-attempting routing for batch {} with contains_big_lobs temporarily enabled for channel {}", 
                         batchId, nodeChannel.getChannelId());
@@ -773,7 +786,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 gapDetector.addDataIds(context.getDataIds());
                 gapDetector.afterRouting();
                 gapDetector.beforeRouting();
-                long dataCountWithBigLob = routeDataForChannel(processInfo, nodeChannel, sourceNode, true, batchesByNodes);
+                long dataCountWithBigLob = routeDataForChannel(processInfo, nodeChannel, sourceNode, true, batchesByNodes, batchesByGroups);
                 return context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
         } catch (Throwable ex) {
@@ -835,12 +848,26 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected void completeBatchesAndCommit(ChannelRouterContext context) {
-        Set<IDataRouter> usedRouters = new HashSet<IDataRouter>(context.getUsedDataRouters());
-        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes()
-                .values());
-
         gapDetector.setFullGapAnalysis(context.getSqlTransaction(), true);
 
+        Set<IDataRouter> usedRouters = new HashSet<IDataRouter>(context.getUsedDataRouters());
+        List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
+        completeBatches(context, batches, usedRouters);
+        
+        for (Map<String, OutgoingBatch> groupBatches : context.getBatchesByGroups().values()) {
+            batches = new ArrayList<OutgoingBatch>(groupBatches.values());
+            completeBatches(context, batches, usedRouters);
+        }
+        
+        context.commit();
+
+        for (IDataRouter dataRouter : usedRouters) {
+            dataRouter.contextCommitted(context);
+        }
+        context.setNeedsCommitted(false);
+    }
+
+    protected void completeBatches(ChannelRouterContext context, List<OutgoingBatch> batches, Set<IDataRouter> usedRouters) {
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
             engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
                     context.getDataReadCount(), context.getPeekAheadFillCount(),
@@ -858,15 +885,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 batch.setStatus(Status.NE);
             }
             engine.getOutgoingBatchService().updateOutgoingBatch(context.getSqlTransaction(), batch);
-            context.getBatchesByNodes().remove(batch.getNodeId());
         }
-        
-        context.commit();
-
-        for (IDataRouter dataRouter : usedRouters) {
-            dataRouter.contextCommitted(context);
-        }
-        context.setNeedsCommitted(false);
     }
 
     protected Set<Node> findAvailableNodes(TriggerRouter triggerRouter, ChannelRouterContext context) {
@@ -1128,83 +1147,99 @@ public class RouterService extends AbstractService implements IRouterService {
 
     protected int insertDataEvents(ProcessInfo processInfo, ChannelRouterContext context, DataMetaData dataMetaData,
             Collection<String> nodeIds) {
+        final long ts = System.currentTimeMillis();
+        final String tableName = dataMetaData.getTable().getNameLowerCase();
+        final DataEventType eventType = dataMetaData.getData().getDataEventType();
+        final Router router = dataMetaData.getRouter();
+        final String routerId = router != null ? router.getRouterId() : Constants.UNKNOWN_ROUTER_ID;
+        Map<String, OutgoingBatch> batches = null;
+        long batchIdToReuse = -1;
+        long loadId = -1;
+        boolean dataEventAdded = false;
+        boolean useCommonMode = context.isProduceCommonBatches() || context.isProduceGroupBatches();
         int numberOfDataEventsInserted = 0;
+        
+        if (context.isProduceGroupBatches() && !context.isProduceCommonBatches()) {
+            Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = context.getBatchesByGroups();
+            int groupKey = nodeIds.hashCode();
+            batches = batchesByGroups.get(groupKey);
+            if (batches == null) {
+                batches = new HashMap<String, OutgoingBatch>();
+                batchesByGroups.put(groupKey, batches);
+            }
+            useCommonMode = nodeIds.size() > 1;
+        } else {
+            batches = context.getBatchesByNodes();
+        }
+        
+        if (eventType == DataEventType.RELOAD) {
+            loadId = context.getLastLoadId();
+            if (loadId < 0) {
+                loadId = engine.getSequenceService().nextVal(context.getSqlTransaction(), Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                context.setLastLoadId(loadId);
+            }
+            if (context.getChannel().isReloadFlag()) {
+                context.setNeedsCommitted(true);
+            }
+        } else if (eventType == DataEventType.CREATE) {
+            if (dataMetaData.getData().getPkData() != null) {
+                try {
+                    loadId = Long.parseLong(dataMetaData.getData().getPkData());
+                } catch (NumberFormatException e) {
+                }
+            }
+            context.setNeedsCommitted(true);
+        } else {
+            context.setLastLoadId(-1);
+        }
+
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
             nodeIds.add(Constants.UNROUTED_NODE_ID);
         }
-        long ts = System.currentTimeMillis();
-        long batchIdToReuse = -1;
-        boolean dataEventAdded = false;
+
         for (String nodeId : nodeIds) {
             if (nodeId != null) {
-                Map<String, OutgoingBatch> batches = context.getBatchesByNodes();
                 OutgoingBatch batch = batches.get(nodeId);
                 if (batch == null) {
-                    batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(),
-                            Status.RT);
+                    batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
                     batch.setBatchId(batchIdToReuse);
-                    batch.setCommonFlag(context.isProduceCommonBatches());
+                    batch.setCommonFlag(useCommonMode);
                     
-					log.debug(
-							"About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
-							new Object[] { nodeId, batch.getChannelId(),
-									context.getBatchesByNodes().values() });
+                    if (log.isDebugEnabled()) {
+                        log.debug("About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
+                                nodeId, batch.getChannelId(), batches.values());
+                    }
 
                     engine.getOutgoingBatchService().insertOutgoingBatch(batch);
                     processInfo.incrementBatchCount();
-                    context.getBatchesByNodes().put(nodeId, batch);
+                    batches.put(nodeId, batch);
 
                     // if in reuse mode, then share the batch id
-                    if (context.isProduceCommonBatches()) {
+                    if (useCommonMode) {
                         batchIdToReuse = batch.getBatchId();
-                    }
-                }
-                
-                if (dataMetaData.getData().getDataEventType() == DataEventType.RELOAD) {
-                    long loadId = context.getLastLoadId();
-                    if (loadId < 0) {
-                        loadId = engine.getSequenceService().nextVal(context.getSqlTransaction(), Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
-                        context.setLastLoadId(loadId);
-                    }
-                    batch.setLoadId(loadId);
-                    if (context.getChannel().isReloadFlag()) {
-                        context.setNeedsCommitted(true);
-                    }
-                } else if (dataMetaData.getData().getDataEventType() == DataEventType.CREATE) {
-                    if (dataMetaData.getData().getPkData() != null) {
-                        try {
-                            batch.setLoadId(Long.parseLong(dataMetaData.getData().getPkData()));
-                        } catch (NumberFormatException e) {
-                        }
-                    }
-                    context.setNeedsCommitted(true);
-                } else {
-                    context.setLastLoadId(-1);
+                    }   
                 }
 
-                batch.incrementRowCount(dataMetaData.getData().getDataEventType());
+                batch.incrementRowCount(eventType);
                 batch.incrementDataRowCount();
-                batch.incrementTableCount(dataMetaData.getTable().getNameLowerCase());
-                
-                if (!context.isProduceCommonBatches()
-                        || (context.isProduceCommonBatches() && !dataEventAdded)) {
-                    Router router = dataMetaData.getRouter();
-                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(),
-                            router != null ? router.getRouterId()
-                                    : Constants.UNKNOWN_ROUTER_ID);
+                batch.incrementTableCount(tableName);
+
+                if (loadId != -1) {
+                    batch.setLoadId(loadId);
+                }
+                if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
+                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(), routerId);
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
                 }
-                Map<String, IBatchAlgorithm> batchAlgorithms = extensionService.getExtensionPointMap(IBatchAlgorithm.class);
-                if (batchAlgorithms.get(context.getChannel().getBatchAlgorithm()).isBatchComplete(
-                        batch, dataMetaData, context)) {
+                if (context.isBatchComplete(batch, dataMetaData)) {
                     context.setNeedsCommitted(true);
                 }
             }
         }
-        context.incrementStat(System.currentTimeMillis() - ts,
-                ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
+
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
         return numberOfDataEventsInserted;
     }
 

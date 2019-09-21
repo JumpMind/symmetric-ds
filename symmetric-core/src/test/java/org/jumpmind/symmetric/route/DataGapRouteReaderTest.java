@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -43,7 +44,6 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
-import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
@@ -136,7 +136,7 @@ public class DataGapRouteReaderTest {
         when(engine.getRouterService()).thenReturn(routerService);
 
         ChannelRouterContext context = new ChannelRouterContext(NODE_ID, nodeChannel,
-                mock(ISqlTransaction.class));
+                mock(ISqlTransaction.class), new HashMap<String, IBatchAlgorithm>());
         context.setDataGaps(dataGaps);
 
         return new DataGapRouteReader(context, engine);
