@@ -1158,7 +1158,12 @@ public class RouterService extends AbstractService implements IRouterService {
         boolean dataEventAdded = false;
         boolean useCommonMode = context.isProduceCommonBatches() || context.isProduceGroupBatches();
         int numberOfDataEventsInserted = 0;
-        
+
+        if (nodeIds == null || nodeIds.size() == 0) {
+            nodeIds = new HashSet<String>(1);
+            nodeIds.add(Constants.UNROUTED_NODE_ID);
+        }
+
         if (context.isProduceGroupBatches() && !context.isProduceCommonBatches()) {
             Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = context.getBatchesByGroups();
             int groupKey = nodeIds.hashCode();
@@ -1175,7 +1180,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (eventType == DataEventType.RELOAD) {
             loadId = context.getLastLoadId();
             if (loadId < 0) {
-                loadId = engine.getSequenceService().nextVal(context.getSqlTransaction(), Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
                 context.setLastLoadId(loadId);
             }
             if (context.getChannel().isReloadFlag()) {
@@ -1191,11 +1196,6 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setNeedsCommitted(true);
         } else {
             context.setLastLoadId(-1);
-        }
-
-        if (nodeIds == null || nodeIds.size() == 0) {
-            nodeIds = new HashSet<String>(1);
-            nodeIds.add(Constants.UNROUTED_NODE_ID);
         }
 
         for (String nodeId : nodeIds) {
