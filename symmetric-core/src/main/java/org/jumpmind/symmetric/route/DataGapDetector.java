@@ -260,6 +260,14 @@ public class DataGapDetector {
         return dataService.findDataGaps();
     }
     
+    public DataGap getLastDataGap() {
+        List<DataGap> gaps = getDataGaps();
+        if (gaps.size() > 0) {
+            return gaps.get(gaps.size() - 1);
+        }
+        return null;
+    }
+
     public void addDataIds(List<Long> dataIds) {
     }
 

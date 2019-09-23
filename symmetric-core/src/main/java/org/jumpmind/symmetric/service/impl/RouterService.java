@@ -1292,9 +1292,16 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     public long getUnroutedDataCount() {
-        long maxDataIdAlreadyRouted = sqlTemplateDirty
-                .queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
-        long leftToRoute = engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted;
+        long maxDataIdAlreadyRouted = 0;
+        if (parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            maxDataIdAlreadyRouted = sqlTemplateDirty.queryForLong(getSql("selectLastDataIdRoutedUsingDataGapSql"));
+        } else {
+            DataGap lastGap = gapDetector.getLastDataGap();
+            if (lastGap != null) {
+                maxDataIdAlreadyRouted = lastGap.getStartId();
+            }
+        }
+        long leftToRoute = (engine.getDataService().findMaxDataId() - maxDataIdAlreadyRouted) + 1;
         
         if (leftToRoute > 0) {
             return leftToRoute;

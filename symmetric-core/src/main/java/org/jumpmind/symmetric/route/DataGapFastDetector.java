@@ -67,6 +67,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     protected IContextService contextService;
 
     protected List<DataGap> gaps;
+    
+    protected DataGap lastGap;
 
     protected List<Long> dataIds;
 
@@ -291,6 +293,9 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             }
 
             printStats = saveDataGaps(ts, printStats);
+            if (gaps.size() > 0) {
+                lastGap = gaps.get(gaps.size() - 1);
+            }
 
             setFullGapAnalysis(false);
             if (isBusyExpire) {
@@ -604,10 +609,17 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         return row.getLong("data_id");
     }
 
+    @Override
     public List<DataGap> getDataGaps() {
         return gaps;
     }
 
+    @Override
+    public DataGap getLastDataGap() {
+        return lastGap;
+    }
+
+    @Override
     public void addDataIds(List<Long> dataIds) {
         this.dataIds.addAll(dataIds);
     }
@@ -615,6 +627,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
     /**
      * This method is called for each channel that is routed.  Once it is set for a routing pass it should remain set until the routing pass is done.
      */
+    @Override
     public void setIsAllDataRead(boolean isAllDataRead) {
         this.isAllDataRead &= isAllDataRead;
     }
@@ -626,6 +639,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         return isFullGapAnalysis;
     }
 
+    @Override
     public void setFullGapAnalysis(boolean isFullGapAnalysis) {
         setFullGapAnalysis(null, isFullGapAnalysis);
     }
