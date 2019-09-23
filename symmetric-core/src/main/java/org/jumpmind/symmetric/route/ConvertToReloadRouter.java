@@ -1,0 +1,489 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.jumpmind.symmetric.route;
+
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.sql.UniqueKeyException;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
+import org.jumpmind.symmetric.io.data.DataEventType;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
+import org.jumpmind.symmetric.model.DataMetaData;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.Router;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
+
+/**
+ * Converts multiple change data rows into reload batches for each table ordered by foreign key dependencies.
+ *  
+ */
+public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
+
+    public final static String ROUTER_ID = "convertToReload";
+
+    private final static String ROUTERS = "c2rRouters";
+    
+    private final static String INSERT_DATA_SQL = "insert into sym_data " + 
+            "(data_id, table_name, event_type, row_data, trigger_hist_id, channel_id, node_list, create_time) values (null, ?, ?, ?, ?, ?, ?, ?)";
+
+    private final static int[] INSERT_DATA_TYPES = new int[] { Types.VARCHAR, Types.CHAR, Types.LONGVARCHAR, Types.INTEGER,
+            Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP };
+
+    private final static String INSERT_DATA_EVENT_SQL = "insert into sym_data_event " + 
+            "(data_id, batch_id, router_id, create_time) values (?, ?, ?, current_timestamp)";
+
+    protected ISymmetricEngine engine;
+    
+    protected static boolean firstTime = true;
+
+    public ConvertToReloadRouter(ISymmetricEngine engine) {
+        this.engine = engine;
+    }
+
+    @Override
+    public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
+            boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter) {
+
+        if (initialLoad) {
+            return toNodeIds(nodes, null);
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, RouterInfo> routers = (Map<String, RouterInfo>) context.get(ROUTERS);
+        if (routers == null) {
+            routers = new HashMap<String, RouterInfo>();
+            context.put(ROUTERS, routers);
+        }
+        String routerId = triggerRouter.getRouterId();
+        RouterInfo routerInfo = routers.get(routerId);
+        if (routerInfo == null) {
+            routerInfo = new RouterInfo(triggerRouter.getRouter(), nodes);
+            routers.put(routerId, routerInfo);
+        }
+
+        DataEventType eventType = dataMetaData.getData().getDataEventType();
+        TableInfo tableInfo = routerInfo.getTableInfo(dataMetaData, triggerRouter);
+        
+        if (eventType.equals(DataEventType.INSERT) || eventType.equals(DataEventType.UPDATE)) {
+            tableInfo.getCompoundIdList().add(getPkObjects(eventType, dataMetaData));                
+        } else if (eventType.equals(DataEventType.DELETE)) {
+            return toNodeIds(nodes, null);
+        }
+
+        return null;
+    }
+
+    protected Object[] getPkObjects(DataEventType eventType, DataMetaData dataMetaData) {
+        String[] rowValues = null;
+        if (eventType.equals(DataEventType.INSERT) || eventType.equals(DataEventType.UPDATE)) {
+            rowValues = dataMetaData.getData().toParsedRowData();
+        } else if (eventType.equals(DataEventType.DELETE)) {
+            rowValues = dataMetaData.getData().toParsedPkData();            
+        }
+        
+        Column[] pkColumns = dataMetaData.getTable().getPrimaryKeyColumns();
+        String[] pkValues = (String[]) ArrayUtils.subarray(rowValues, 0, pkColumns.length);
+        return engine.getDatabasePlatform().getObjectValues(engine.getSymmetricDialect().getBinaryEncoding(), pkValues, pkColumns);
+    }
+
+    @Override
+    public void completeBatch(SimpleRouterContext context, OutgoingBatch batch) {
+        log.debug("Completing batch {}", batch.getBatchId());        
+        if (batch.getNodeId().equals(Constants.UNROUTED_NODE_ID)) {
+            ISqlTemplate sqlTemplate = engine.getSqlTemplate();
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+
+                @SuppressWarnings("unchecked")
+                Map<String, RouterInfo> routers = (Map<String, RouterInfo>) context.get(ROUTERS);                
+                List<TableInfo> tableInfos = new ArrayList<TableInfo>();
+                for (RouterInfo routerInfo : routers.values()) {
+                    tableInfos.addAll(routerInfo.getTableInfos());
+                }
+                tableInfos = sortTableInfos(tableInfos);
+
+                queueEvents((ChannelRouterContext) context, transaction, batch, tableInfos);
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
+            }
+            transaction.commit();
+        }
+    }
+
+    protected List<TableInfo> sortTableInfos(Collection<TableInfo> tableInfos) {
+        List<TriggerHistory> histories = null;
+        if (firstTime) {
+            histories = engine.getTriggerRouterService().getActiveTriggerHistories();
+            firstTime = false;
+        } else {
+            histories = engine.getTriggerRouterService().getActiveTriggerHistoriesFromCache();
+        }
+        
+        List<Table> allTables = new ArrayList<Table>(histories.size());
+        for (TriggerHistory history : histories) {
+            Table table = engine.getDatabasePlatform().getTableFromCache(history.getSourceCatalogName(),
+                    history.getSourceSchemaName(), history.getSourceTableName(), false);
+            if (table != null) {
+                allTables.add(table);
+            }
+        }
+        List<Table> sortedTables = Database.sortByForeignKeys(allTables);
+
+        Map<Table, TableInfo> tableInfosByTable = new HashMap<Table, TableInfo>();
+        for (TableInfo tableInfo : tableInfos) {
+            tableInfosByTable.put(tableInfo.getTable(), tableInfo);
+        }
+        
+        List<TableInfo> sortedTableInfos = new ArrayList<TableInfo>();
+        for (Table table : sortedTables) {
+            TableInfo tableInfo = tableInfosByTable.get(table);
+            if (tableInfo != null) {
+                sortedTableInfos.add(tableInfo);
+            }
+        }
+
+        return sortedTableInfos;
+    }
+
+    protected void queueEvents(ChannelRouterContext context, ISqlTransaction transaction, OutgoingBatch origBatch, List<TableInfo> tableInfos) {
+
+        final long loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+        final int typeForId = engine.getSymmetricDialect().getSqlTypeForIds();
+        
+        for (TableInfo tableInfo : tableInfos) {
+            RouterInfo routerInfo = tableInfo.getRouterInfo();
+            String placeHolders = StringUtils.repeat("?", ", ", tableInfo.getPkColumnNames().length + 1);
+            String tempSql = "insert into " + routerInfo.getTempTableName() + "(" + tableInfo.getPkColumnNamesAsString() + ", "
+                    + " load_id) values (" + placeHolders + ")";
+    
+            if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.POSTGRESQL)) {
+                tempSql += " on conflict do nothing";
+            }
+            transaction.prepare(tempSql);
+    
+            int[] types = ArrayUtils.addAll(tableInfo.getPkColumnTypes(), new int[] { typeForId, typeForId });
+    
+            for (Object compoundId : tableInfo.getCompoundIdList()) {
+                Object[] values = ArrayUtils.add((Object[]) compoundId, loadId);
+                try {
+                    transaction.addRow(null, values, types);
+                } catch (UniqueKeyException e) {
+                }
+            }
+        }
+        
+        Map<String, OutgoingBatch> batchByNode = new HashMap<String, OutgoingBatch>();
+        for (TableInfo tableInfo : tableInfos) {
+            RouterInfo routerInfo = tableInfo.getRouterInfo();
+            String reloadSql = getTempTableSql(routerInfo, tableInfo, loadId);
+            for (Node node : routerInfo.getNodes()) {
+                OutgoingBatch batch = batchByNode.get(node.getNodeId());
+                if (batch == null) {
+                    batch = newBatch(transaction, node.getNodeId(), loadId, tableInfo, origBatch.getSummary());
+                    batchByNode.put(node.getNodeId(), batch);
+                }
+                batch.incrementTableCount(tableInfo.getTableName().toLowerCase());
+                long dataId = insertDataForBatch(transaction, tableInfo, batch.getBatchId(), DataEventType.RELOAD.getCode(), reloadSql);
+                context.getDataIds().add(dataId);
+            }
+        }        
+        origBatch.setLoadId(loadId);
+    }
+
+    protected String getTempTableSql(RouterInfo routerInfo, TableInfo tableInfo, long loadId) {
+        String sql = "1=1";
+        if (!StringUtils.isBlank(tableInfo.getInitialLoadSql())) {
+            sql = tableInfo.getInitialLoadSql();
+        }
+        if (tableInfo.getPkColumnNames().length == 1) {
+            sql += " and " + tableInfo.getPkColumnName() + " in (select " + tableInfo.getPkColumnName()
+                + " from " + routerInfo.getTempTableName() + " where load_id = " + loadId + ")";
+        } else {
+            sql += " and exists (select 1 from " + routerInfo.getTempTableName() + " r where "
+                + tableInfo.getPkColumnJoinSql() + " and r.load_id = " + loadId + ")";
+        }
+        return sql;
+    }
+
+    protected OutgoingBatch newBatch(ISqlTransaction transaction, String nodeId, long loadId, TableInfo tableInfo, String summary) {
+        OutgoingBatch batch = new OutgoingBatch(Constants.UNROUTED_NODE_ID, tableInfo.getChannelId(), Status.NE);
+        batch.setCreateBy(ROUTER_ID);
+        batch.incrementRowCount(DataEventType.RELOAD);
+        batch.setNodeId(nodeId);
+        batch.setLoadId(loadId);
+        batch.setSummary(summary);
+        engine.getOutgoingBatchService().insertOutgoingBatch(transaction, batch);
+        return batch;
+    }
+
+    protected long insertDataForBatch(ISqlTransaction transaction, TableInfo tableInfo, long batchId, String eventType, String sql) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        long dataId = transaction.insertWithGeneratedKey(INSERT_DATA_SQL,
+                engine.getSymmetricDialect().getSequenceKeyName(SequenceIdentifier.DATA),
+                engine.getSymmetricDialect().getSequenceName(SequenceIdentifier.DATA),
+                new Object[] { tableInfo.getTableName(), eventType, sql, tableInfo.getTriggerHistory().getTriggerHistoryId(),
+                        tableInfo.getChannelId(), null, now },
+                INSERT_DATA_TYPES);
+
+        transaction.prepareAndExecute(INSERT_DATA_EVENT_SQL, new Object[] { dataId, batchId, tableInfo.getRouterInfo().getRouter().getRouterId() },
+            new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
+        return dataId;
+    }
+
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
+    }
+
+    class RouterInfo {
+
+        private Router router;
+        
+        private Set<Node> nodes;
+
+        private Map<Integer, TableInfo> tableInfos = new HashMap<Integer, TableInfo>();
+
+        private String tempTableName;
+
+        public RouterInfo(Router router, Set<Node> nodes) {
+            this.router = router;
+            this.nodes = nodes;
+            String expression = router.getRouterExpression();
+
+            Pattern pattern = Pattern.compile(".*\\s*temptable=(\\S*)\\s*.*", Pattern.CASE_INSENSITIVE);
+            if (expression != null) {
+                Matcher matcher = pattern.matcher(expression);
+                if (matcher.matches()) {
+                    tempTableName = matcher.group(1);
+                }
+            }
+            if (StringUtils.isBlank(tempTableName)) {
+                throw new NotImplementedException("Missing temptable={name} for router expression.");
+            }
+        }
+
+        public Router getRouter() {
+            return router;
+        }
+
+        public Set<Node> getNodes() {
+            return nodes;
+        }
+
+        public TableInfo getTableInfo(DataMetaData dataMetaData, TriggerRouter triggerRouter) { 
+            TableInfo tableInfo = tableInfos.get(dataMetaData.getTriggerHistory().getTriggerHistoryId());
+            if (tableInfo == null) {
+                tableInfo = newTableInfo(dataMetaData, triggerRouter);
+                tableInfos.put(dataMetaData.getTriggerHistory().getTriggerHistoryId(), tableInfo);
+            }
+            return tableInfo;
+        }
+        
+        public Collection<TableInfo> getTableInfos() {
+            return tableInfos.values();
+        }
+
+        protected TableInfo newTableInfo(DataMetaData dataMetaData, TriggerRouter triggerRouter) {
+            return new TableInfo(this, dataMetaData, triggerRouter);
+        }
+        
+        public String getTempTableName() {
+            return tempTableName;
+        }
+    }
+    
+    class TableInfo {
+
+        protected RouterInfo routerInfo;
+
+        protected Table table;
+
+        protected String tableName;
+
+        protected String channelId;
+
+        protected String pkColumnName;
+
+        protected String sourceCatalog;
+        
+        protected String sourceSchema;
+
+        protected String targetCatalog;
+        
+        protected String targetSchema;
+        
+        protected String initialLoadSql;
+        
+        protected TriggerHistory triggerHistory;
+
+        protected String[] pkColumnNames;
+        
+        protected String pkColumnNamesAsString;
+        
+        protected String pkColumnJoinSql;
+
+        protected int[] pkColumnTypes;
+
+        protected List<Object> compoundIdList = new ArrayList<Object>();
+
+        public TableInfo(RouterInfo routerInfo, DataMetaData dataMetaData, TriggerRouter triggerRouter) {
+            this.routerInfo = routerInfo;
+            this.channelId = triggerRouter.getTrigger().getChannelId();
+            this.sourceCatalog = triggerRouter.getTrigger().getSourceCatalogName();
+            this.sourceSchema = triggerRouter.getTrigger().getSourceSchemaName();
+            this.table = dataMetaData.getTable();
+            this.tableName = table.getName();
+            this.pkColumnName = table.getPrimaryKeyColumnNames()[0];
+            this.initialLoadSql = triggerRouter.getInitialLoadSelect();
+            this.triggerHistory = dataMetaData.getTriggerHistory();
+
+            Router router = triggerRouter.getRouter();
+            if (router.isUseSourceCatalogSchema()) {
+                this.targetCatalog = table.getCatalog();
+                this.targetSchema = table.getSchema();                
+            } else {
+                if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
+                    this.targetCatalog = router.getTargetCatalogName();                    
+                }
+                if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
+                    this.targetSchema = router.getTargetSchemaName();
+                }
+            }
+            
+            this.pkColumnNames = table.getPrimaryKeyColumnNames();
+            this.pkColumnTypes = new int[table.getPrimaryKeyColumns().length];
+            
+            StringBuilder sbNames = new StringBuilder();
+            StringBuilder sbJoin = new StringBuilder();
+            int i = 0;
+            for (Column column : table.getPrimaryKeyColumns()) {
+                if (i > 0) {
+                    sbNames.append(", ");
+                    sbJoin.append(" and ");
+                }
+                this.pkColumnTypes[i++] = column.getJdbcTypeCode();
+                sbNames.append(column.getName());
+                sbJoin.append("r.").append(column.getName()).append(" = t.").append(column.getName());
+            }
+            this.pkColumnNamesAsString = sbNames.toString();
+            this.pkColumnJoinSql = sbJoin.toString();
+        }
+
+        public RouterInfo getRouterInfo() {
+            return routerInfo;
+        }
+
+        public Table getTable() {
+            return table;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        public String getChannelId() {
+            return channelId;
+        }
+
+        public String getPkColumnName() {
+            return pkColumnName;
+        }
+
+        public String getSourceCatalog() {
+            return sourceCatalog;
+        }
+
+        public String getSourceSchema() {
+            return sourceSchema;
+        }
+
+        public String getTargetCatalog() {
+            return targetCatalog;
+        }
+
+        public String getTargetSchema() {
+            return targetSchema;
+        }
+
+        public String getInitialLoadSql() {
+            return initialLoadSql;
+        }
+
+        public TriggerHistory getTriggerHistory() {
+            return triggerHistory;
+        }
+        
+        public String[] getPkColumnNames() {
+            return pkColumnNames;
+        }
+
+        public List<Object> getCompoundIdList() {
+            return compoundIdList;
+        }
+
+        public String getPkColumnNamesAsString() {
+            return pkColumnNamesAsString;
+        }
+
+        public String getPkColumnJoinSql() {
+            return pkColumnJoinSql;
+        }
+
+        public int[] getPkColumnTypes() {
+            return pkColumnTypes;
+        }
+    }
+}
