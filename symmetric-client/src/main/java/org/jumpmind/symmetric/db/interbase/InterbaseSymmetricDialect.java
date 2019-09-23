@@ -223,4 +223,9 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
         }
         return sql;
     }
+    
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        return platform.getSqlTemplate().queryForLong("select gen_id(GEN_" + getSequenceName(identifier) + ", 0) from rdb$database");
+    }
 }

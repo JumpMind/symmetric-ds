@@ -288,6 +288,13 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         return null;
     }
 
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        long id = platform.getSqlTemplate().queryForLong("select last_number - cache_size from user_sequences where sequence_name = ?", 
+                getSequenceName(identifier).toUpperCase());
+        return id < 0 ? 0 : id;
+    }
+
     public void cleanDatabase() {
         platform.getSqlTemplate().update("purge recyclebin");
     }

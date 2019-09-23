@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
@@ -228,6 +229,12 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return "var_old_data is null or var_row_data != var_old_data";
     }
     
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        return platform.getSqlTemplate().queryForLong("select auto_increment from information_schema.tables where table_schema = ? and table_name = ?",
+                platform.getDefaultCatalog(), parameterService.getTablePrefix() + "_" + identifier.toString());
+    }
+
     @Override
     public PermissionType[] getSymTablePermissions() {
         PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.CREATE_ROUTINE};

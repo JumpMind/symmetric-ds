@@ -2858,14 +2858,19 @@ public class DataService extends AbstractService implements IDataService {
         return orderBy;
     }
 
+    @Override
     public long findMaxDataId() {
-        return sqlTemplateDirty.queryForLong(getSql("selectMaxDataIdSql"));
+        long maxDataId = symmetricDialect.getCurrentSequenceValue(SequenceIdentifier.DATA);
+        if (maxDataId == -1) {
+            maxDataId = sqlTemplateDirty.queryForLong(getSql("selectMaxDataIdSql"));
+        }
+        return maxDataId;
     }
     
+    @Override
     public long findMinDataId() {
         return sqlTemplateDirty.queryForLong(getSql("selectMinDataIdSql"));
     }
-    
     
     @Override
     public void deleteCapturedConfigChannelData() {

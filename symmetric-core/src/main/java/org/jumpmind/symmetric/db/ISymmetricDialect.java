@@ -251,6 +251,8 @@ public interface ISymmetricDialect {
     public String getSequenceName(SequenceIdentifier identifier);
 
     public String getSequenceKeyName(SequenceIdentifier identifier);
+    
+    public long getCurrentSequenceValue(SequenceIdentifier identifier);
 
     public String getTablePrefix();
 

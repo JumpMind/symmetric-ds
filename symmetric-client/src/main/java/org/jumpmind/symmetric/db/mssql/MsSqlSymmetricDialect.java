@@ -45,6 +45,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Trigger;
@@ -56,7 +57,7 @@ import org.jumpmind.symmetric.service.IParameterService;
  * 
  * TODO support text and image fields, they cannot be referenced from the
  * inserted or deleted tables in the triggers. Here is one idea we could
- * implement: http://www.devx.com/getHelpOn/10MinuteSolution/16544
+ * implement: http://www.devx.com/getHelpOn/10MiSolution/16544
  */
 public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
@@ -469,6 +470,11 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
     	/* gets filled/replaced by trigger template as it will compare by each column */
         return "$(anyNonBlobColumnChanged)";
+    }
+
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        return platform.getSqlTemplate().queryForLong("select ident_current('" + parameterService.getTablePrefix() + "_" + identifier.toString() + "')");
     }
 
     @Override

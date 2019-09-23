@@ -30,6 +30,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -165,5 +166,10 @@ public class FirebirdSymmetricDialect extends AbstractSymmetricDialect implement
             sql = StringUtils.replace(sql, "d.pk_data", "cast(d.pk_data as varchar(" + sizes[2] + "))");
         }
         return sql;
+    }
+    
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        return platform.getSqlTemplate().queryForLong("select gen_id(GEN_" + getSequenceName(identifier) + ", 0) from rdb$database");
     }
 }

@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -245,6 +246,11 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         return "var_old_data is null or var_row_data != var_old_data";
+    }
+
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        return platform.getSqlTemplate().queryForLong("select last_value from " + getSequenceName(identifier) + "_seq");
     }
 
 }

@@ -703,6 +703,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         }
         return null;
     }
+    
+    @Override
+    public long getCurrentSequenceValue(SequenceIdentifier identifier) {
+        return -1;
+    }
 
     @Deprecated
     public Column[] orderColumns(String[] columnNames, Table table) {
