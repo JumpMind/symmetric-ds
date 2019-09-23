@@ -162,7 +162,10 @@ public class RouterService extends AbstractService implements IRouterService {
         extensionService.addExtensionPoint(DefaultReloadGenerator.NAME, new DefaultReloadGenerator(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));   
+                createSqlReplacementTokens()));
+        
+        gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(), 
+                symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService());
     }
 
     /**
@@ -207,16 +210,6 @@ public class RouterService extends AbstractService implements IRouterService {
                         firstTimeCheck = false;
                     }
 
-
-                    if (gapDetector == null) {
-                        if (parameterService.is(ParameterConstants.ROUTING_USE_FAST_GAP_DETECTOR)) {
-                            gapDetector = new DataGapFastDetector(engine.getDataService(), parameterService, engine.getContextService(), 
-                                    symmetricDialect, this, engine.getStatisticManager(), engine.getNodeService());
-                        } else {
-                            gapDetector = new DataGapDetector(engine.getDataService(), parameterService, symmetricDialect, 
-                                    this, engine.getStatisticManager(), engine.getNodeService());                        
-                        }
-                    }
                     insertInitialLoadEvents();
                     
                     do {
