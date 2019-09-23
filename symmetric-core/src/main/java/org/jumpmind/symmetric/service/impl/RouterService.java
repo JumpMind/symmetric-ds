@@ -80,6 +80,7 @@ import org.jumpmind.symmetric.route.CSVRouter;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter;
 import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
+import org.jumpmind.symmetric.route.ConvertToReloadRouter;
 import org.jumpmind.symmetric.route.DBFRouter;
 import org.jumpmind.symmetric.route.DataGapDetector;
 import org.jumpmind.symmetric.route.DataGapFastDetector;
@@ -160,6 +161,7 @@ public class RouterService extends AbstractService implements IRouterService {
 
         extensionService.addExtensionPoint("csv", new CSVRouter(engine));
         extensionService.addExtensionPoint(DefaultReloadGenerator.NAME, new DefaultReloadGenerator(engine));
+        extensionService.addExtensionPoint(ConvertToReloadRouter.ROUTER_ID, new ConvertToReloadRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
