@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.service.ClusterConstants;
 
@@ -84,10 +83,6 @@ public class BatchStagingManager extends StagingManager {
             return super.shouldCleanPath(resource, ttlInMs, context);
         }
         
-        if (resource.isInUse() || resource.getState() != State.DONE) {
-            return false;
-        }
-        
         String[] path = resource.getPath().split("/");
         
         boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
@@ -105,6 +100,7 @@ public class BatchStagingManager extends StagingManager {
     
     protected boolean shouldCleanOutgoingPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context, String[] path,
             boolean resourceIsOld) {
+        @SuppressWarnings("unchecked")
         Set<Long> outgoingBatches = (Set<Long>) context.getContextValue("outgoingBatches");
         try {
             Long batchId = Long.valueOf(path[path.length - 1]);
@@ -122,7 +118,9 @@ public class BatchStagingManager extends StagingManager {
     
     protected boolean shouldCleanIncomingPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context, String[] path, boolean resourceIsOld,
             boolean resourceClearsMinTimeHurdle) {
+        @SuppressWarnings("unchecked")
         Set<BatchId> incomingBatches = (Set<BatchId>) context.getContextValue("incomingBatches");
+        @SuppressWarnings("unchecked")
         Map<String, Long> biggestIncomingByNode = (Map<String, Long>) context.getContextValue("biggestIncomingByNode");
         boolean recordIncomingBatchesEnabled = context.getBoolean("recordIncomingBatchesEnabled");
         try {
