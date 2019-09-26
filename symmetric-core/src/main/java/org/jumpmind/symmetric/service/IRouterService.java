@@ -22,9 +22,7 @@ package org.jumpmind.symmetric.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
@@ -62,8 +60,6 @@ public interface IRouterService extends IService {
     
     public List<DataGap> getDataGaps();
 
-    public void stop ();
-    
-    public Set<Channel> getCommomBatchChannels(List<Channel> channels, String nodeGroupId, List<TriggerRouter> triggerRouters);
+    public void stop();
 
 }

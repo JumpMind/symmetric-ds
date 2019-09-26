@@ -583,6 +583,7 @@ public class RouterService extends AbstractService implements IRouterService {
         return FormatUtils.replace("dataRange", gapClause.toString(), sql);
     }
 
+    @Deprecated
     protected boolean producesCommonBatches(Channel channel, String nodeGroupId, List<TriggerRouter> triggerRouters) {
         String channelId = channel.getChannelId();
         Boolean producesCommonBatches = commonBatchesLastKnownState.get(channelId);
@@ -709,8 +710,9 @@ public class RouterService extends AbstractService implements IRouterService {
         long ts = System.currentTimeMillis();
         long dataCount = -1;
         try {
+            boolean useCommonGroups = parameterService.is(ParameterConstants.ROUTING_USE_COMMON_GROUPS);
             List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getTriggerRouters(false);
-            boolean producesCommonBatches = producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(),
+            boolean producesCommonBatches = !useCommonGroups && producesCommonBatches(nodeChannel.getChannel(), parameterService.getNodeGroupId(),
                     triggerRouters);
             boolean onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned(nodeChannel.getChannel(),
                     parameterService.getNodeGroupId(), triggerRouters);
@@ -719,7 +721,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction(),
                     extensionService.getExtensionPointMap(IBatchAlgorithm.class));
             context.setProduceCommonBatches(producesCommonBatches);
-            context.setProduceGroupBatches(parameterService.is(ParameterConstants.ROUTING_USE_COMMON_GROUPS));
+            context.setProduceGroupBatches(useCommonGroups);
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
             context.setOverrideContainsBigLob(isOverrideContainsBigLob);
@@ -847,13 +849,12 @@ public class RouterService extends AbstractService implements IRouterService {
 
         Set<IDataRouter> usedRouters = new HashSet<IDataRouter>(context.getUsedDataRouters());
         List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(context.getBatchesByNodes().values());
-        completeBatches(context, batches, usedRouters);
         
         for (Map<String, OutgoingBatch> groupBatches : context.getBatchesByGroups().values()) {
-            batches = new ArrayList<OutgoingBatch>(groupBatches.values());
-            completeBatches(context, batches, usedRouters);
+            batches.addAll(groupBatches.values());
         }
-        
+
+        completeBatches(context, batches, usedRouters);
         context.commit();
 
         for (IDataRouter dataRouter : usedRouters) {
@@ -870,7 +871,6 @@ public class RouterService extends AbstractService implements IRouterService {
         }
 
         for (OutgoingBatch batch : batches) {
-            batch.setRouterMillis(System.currentTimeMillis() - batch.getCreateTime().getTime());
             for (IDataRouter dataRouter : usedRouters) {
                 dataRouter.completeBatch(context, batch);
             }
@@ -879,6 +879,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } else {
                 batch.setStatus(Status.NE);
             }
+            batch.setRouterMillis((System.currentTimeMillis() - batch.getCreateTime().getTime()) / batches.size());
             engine.getOutgoingBatchService().updateOutgoingBatch(context.getSqlTransaction(), batch);
         }
     }
@@ -959,7 +960,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 .getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
         try {
             long ts = System.currentTimeMillis();
-            long startTime = System.currentTimeMillis();
+            long startTime = ts;
             nextData = reader.take();
             do {
                 if (nextData != null) {
@@ -1158,8 +1159,8 @@ public class RouterService extends AbstractService implements IRouterService {
             nodeIds = new HashSet<String>(1);
             nodeIds.add(Constants.UNROUTED_NODE_ID);
         }
-
-        if (context.isProduceGroupBatches() && !context.isProduceCommonBatches()) {
+        
+        if (context.isProduceGroupBatches()) {
             Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = context.getBatchesByGroups();
             int groupKey = nodeIds.hashCode();
             batches = batchesByGroups.get(groupKey);
@@ -1192,7 +1193,7 @@ public class RouterService extends AbstractService implements IRouterService {
         } else {
             context.setLastLoadId(-1);
         }
-
+        
         for (String nodeId : nodeIds) {
             if (nodeId != null) {
                 OutgoingBatch batch = batches.get(nodeId);
@@ -1326,15 +1327,4 @@ public class RouterService extends AbstractService implements IRouterService {
     	return table;
     }
 
-    @Override
-    public Set<Channel> getCommomBatchChannels(List<Channel> channels, String nodeGroupId, List<TriggerRouter> triggerRouters) {
-        Set<Channel> commonBatchChannels = new HashSet<Channel>();
-        
-        for (Channel channel : channels) {
-            if (producesCommonBatches(channel, nodeGroupId, triggerRouters)) {
-                commonBatchChannels.add(channel);
-            }
-        }
-        return commonBatchChannels;
-    }
 }
