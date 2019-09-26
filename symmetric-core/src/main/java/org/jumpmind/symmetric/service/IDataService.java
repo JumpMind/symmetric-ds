@@ -106,8 +106,8 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
     
-    public Map<String, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
-            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<String, ExtractRequest> extractRequests);
+    public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
+            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     

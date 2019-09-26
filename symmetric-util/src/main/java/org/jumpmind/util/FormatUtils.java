@@ -358,6 +358,30 @@ public final class FormatUtils {
         return StringUtils.abbreviate(value, MAX_CHARS_TO_LOG);
     }
     
+    /**
+     * Convert list of objects to abbreviated string for logging, making efficient use of memory for large lists 
+     */
+    @SuppressWarnings("rawtypes")
+    public static String abbreviateForLogging(List list, int maxCharsToLog) {
+        StringBuilder sb = new StringBuilder(maxCharsToLog);
+        sb.append("[");
+        boolean isFirst = true;
+        for (Object obj : list) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(obj.toString());
+            if (sb.length() >= maxCharsToLog) {
+                sb.append("...");
+                break;
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+    
     public static Date parseDate(String str, String[] parsePatterns) {
         return parseDate(str, parsePatterns, null);
     }
