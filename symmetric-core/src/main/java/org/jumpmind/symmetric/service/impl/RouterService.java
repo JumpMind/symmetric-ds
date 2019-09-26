@@ -907,35 +907,34 @@ public class RouterService extends AbstractService implements IRouterService {
         return engine.getGroupletService().getTargetEnabled(triggerRouter, nodes);
     }
 
-	protected IDataToRouteReader startReading(ChannelRouterContext context) {
-		IDataToRouteReader reader = new DataGapRouteReader(context, engine);
-		if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
-			reader.run();
-		} else {
-			if (readThread == null) {
-				readThread = Executors.newCachedThreadPool(new ThreadFactory() {
-					final AtomicInteger threadNumber = new AtomicInteger(1);
-					final String namePrefix = parameterService.getEngineName()
-							.toLowerCase() + "-router-reader-";
+    protected IDataToRouteReader startReading(ChannelRouterContext context) {
+        IDataToRouteReader reader = new DataGapRouteReader(context, engine);
+        if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
+            reader.run();
+        } else {
+            if (readThread == null) {
+                readThread = Executors.newCachedThreadPool(new ThreadFactory() {
+                    final AtomicInteger threadNumber = new AtomicInteger(1);
+                    final String namePrefix = parameterService.getEngineName().toLowerCase() + "-router-reader-";
 
-					public Thread newThread(Runnable r) {
-						Thread t = new Thread(r);
-						t.setName(namePrefix + threadNumber.getAndIncrement());
-						if (t.isDaemon()) {
-							t.setDaemon(false);
-						}
-						if (t.getPriority() != Thread.NORM_PRIORITY) {
-							t.setPriority(Thread.NORM_PRIORITY);
-						}
-						return t;
-					}
-				});
-			}
-			readThread.execute(reader);
-		}
+                    public Thread newThread(Runnable r) {
+                        Thread t = new Thread(r);
+                        t.setName(namePrefix + threadNumber.getAndIncrement());
+                        if (t.isDaemon()) {
+                            t.setDaemon(false);
+                        }
+                        if (t.getPriority() != Thread.NORM_PRIORITY) {
+                            t.setPriority(Thread.NORM_PRIORITY);
+                        }
+                        return t;
+                    }
+                });
+            }
+            readThread.execute(reader);
+        }
 
-		return reader;
-	}
+        return reader;
+    }
 
     /**
      * Pre-read data and fill up a queue so we can peek ahead to see if we have
