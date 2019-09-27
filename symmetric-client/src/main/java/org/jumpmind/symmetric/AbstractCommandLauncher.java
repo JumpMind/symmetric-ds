@@ -110,10 +110,10 @@ public abstract class AbstractCommandLauncher {
         }
         System.setProperty("log4j.sym.home", symHome);
         if (isBlank(System.getProperty("h2.baseDir.disable")) && isBlank(System.getProperty("h2.baseDir"))) {
-           System.setProperty("h2.baseDir", symHome + "/tmp/h2");
+           System.setProperty("h2.baseDir", symHome + "/db/h2");
         }
         if (isBlank(System.getProperty("derby.baseDir"))) {
-            System.setProperty("derby.baseDir", symHome + "/tmp/derby");
+            System.setProperty("derby.baseDir", symHome + "/db/derby");
         }
         DEFAULT_SERVER_PROPERTIES = System.getProperty(SystemConstants.SYSPROP_SERVER_PROPERTIES_PATH, symHome + "/conf/symmetric-server.properties");
         log = LoggerFactory.getLogger(AbstractCommandLauncher.class);
