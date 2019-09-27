@@ -349,6 +349,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.symmetricDialect.setExtensionService(extensionService);
         this.extractSymmetricDialect.setExtensionService(extensionService);
         this.parameterService.setExtensionService(extensionService);
+        this.contextService = new ContextService(parameterService, symmetricDialect);
 
         this.bandwidthService = new BandwidthService(parameterService);
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
@@ -396,7 +397,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncService = buildFileSyncService();
         this.fileSyncExtractorService = new FileSyncExtractorService(this, extractSymmetricDialect);
         this.mailService = new MailService(parameterService, symmetricDialect);
-        this.contextService = new ContextService(parameterService, symmetricDialect);
 
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {
