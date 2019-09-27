@@ -144,14 +144,14 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("selectEventDataToExtractSql",
                 ""
                         + "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                                                                          "
-                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted, e.router_id from $(data) d inner join   "
+                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted from $(data) d inner join   "
                         + "  $(data_event) e on d.data_id = e.data_id inner join $(outgoing_batch) o on o.batch_id=e.batch_id                                  "
                         + "  where o.batch_id = ? and o.node_id = ?                                                                                                                                    ");
         
         putSql("selectEventDataByBatchIdSql",
                 ""
                         + "select d.data_id, d.table_name, d.event_type, d.row_data as row_data, d.pk_data as pk_data, d.old_data as old_data,                                                                          "
-                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted, e.router_id from $(data) d inner join   "
+                        + "  d.create_time, d.trigger_hist_id, d.channel_id, d.transaction_id, d.source_node_id, d.external_data, d.node_list, d.is_prerouted from $(data) d inner join   "
                         + "  $(data_event) e on d.data_id = e.data_id inner join $(outgoing_batch) o on o.batch_id=e.batch_id                                  "
                         + "  where o.batch_id = ?    ");
         
@@ -177,8 +177,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 "old_data, trigger_hist_id, channel_id, external_data, node_list, is_prerouted, transaction_id, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
 
         putSql("insertIntoDataEventSql",
-                ""
-                        + "insert into $(data_event) (data_id, batch_id, router_id, create_time) values(?, ?, ?, current_timestamp)   ");
+                "insert into $(data_event) (data_id, batch_id, create_time) values(?, ?, current_timestamp)");
 
         putSql("findDataEventCreateTimeSql", ""
                 + "select max(create_time) from $(data_event) where data_id=?   ");        

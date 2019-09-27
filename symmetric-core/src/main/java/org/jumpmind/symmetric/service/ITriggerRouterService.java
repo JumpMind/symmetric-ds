@@ -78,6 +78,10 @@ public interface ITriggerRouterService {
      * @param refreshCache Indicates that the cache should be refreshed
      */
     public Map<String, List<TriggerRouter>> getTriggerRoutersForCurrentNode(boolean refreshCache);
+    
+    public Map<Integer, TriggerRouter> getTriggerRoutersByTriggerHist(String targetNodeGroupId, boolean refreshCache);
+    
+    public TriggerRouter getTriggerRouterByTriggerHist(String targetNodeGroupId, int triggerHistId, boolean refreshCache);
 
     /**
      * Get router that is currently in use by a trigger router at the node that is hosting this call.
@@ -141,7 +145,7 @@ public interface ITriggerRouterService {
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId);
     
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache);
-
+    
     public void inactivateTriggerHistory(TriggerHistory history);
 
     public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,

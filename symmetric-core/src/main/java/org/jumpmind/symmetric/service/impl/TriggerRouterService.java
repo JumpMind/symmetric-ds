@@ -113,11 +113,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     private Map<String, List<TriggerRouter>> triggerRouterCacheByChannel = new HashMap<String, List<TriggerRouter>>();
     
+    private Map<String, Map<Integer, TriggerRouter>> triggerRoutersByTriggerHist; 
+    
     private List<TriggerRouter> triggerRoutersCache = new ArrayList<TriggerRouter>();
 
     private long triggerRouterPerNodeCacheTime;
 
     private long triggerRouterPerChannelCacheTime;
+    
+    private long triggerRoutersByTriggerHistCacheTime;
 
     private TriggerFailureListener failureListener = new TriggerFailureListener();
 
@@ -709,7 +713,60 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggers;
     }
 
+    public TriggerRouter getTriggerRouterByTriggerHist(String targetNodeGroupId, int triggerHistId, boolean refreshCache) {
+        TriggerRouter triggerRouter = null;
+        TriggerHistory hist = getTriggerHistory(triggerHistId);
+        if (hist != null) {           
+            Map<String, List<TriggerRouter>> triggerRouters = getTriggerRoutersForCurrentNode(refreshCache);
+            for (List<TriggerRouter> list : triggerRouters.values()) {
+                for (TriggerRouter curTriggerRouter : list) {
+                    if (curTriggerRouter.getTriggerId().equals(hist.getTriggerId()) &&
+                            curTriggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId().equals(targetNodeGroupId)) {
+                        triggerRouter = curTriggerRouter;
+                        break;
+                    }
+                }
+            }
+        }
+        return triggerRouter;
+    }
+    
+    public Map<Integer, TriggerRouter> getTriggerRoutersByTriggerHist(String targetNodeGroupId, boolean refreshCache) {
+        long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
+        if (triggerRoutersByTriggerHist == null || refreshCache || System.currentTimeMillis() - triggerRoutersByTriggerHistCacheTime > cacheTimeoutInMs) {
+            synchronized(cacheLock) {
+                triggerRoutersByTriggerHistCacheTime = System.currentTimeMillis();
+                Map<String, Map<Integer, TriggerRouter>> cache = new HashMap<String, Map<Integer, TriggerRouter>>();
+                Map<String, List<TriggerRouter>> triggerRouters = getTriggerRoutersForCurrentNode(true);
+                
+                Map<String, TriggerHistory> triggerHistoryByTrigger = new HashMap<String, TriggerHistory>();
+                for (TriggerHistory hist : getActiveTriggerHistories()) {
+                    triggerHistoryByTrigger.put(hist.getTriggerId(), hist);
+                }
 
+                for (List<TriggerRouter> list : triggerRouters.values()) {
+                    for (TriggerRouter triggerRouter : list) {
+                        String groupId = triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId();
+                        Map<Integer, TriggerRouter> map = cache.get(groupId);
+                        if (map == null) {
+                            map = new HashMap<Integer, TriggerRouter>();
+                            cache.put(groupId, map);
+                        }
+                        TriggerHistory hist = triggerHistoryByTrigger.get(triggerRouter.getTriggerId());
+                        if (hist != null) {
+                            map.put(hist.getTriggerHistoryId(), triggerRouter);
+                        }
+                    }
+                }
+                triggerRoutersByTriggerHist = cache;
+            }
+        }
+        Map<Integer, TriggerRouter> map = triggerRoutersByTriggerHist.get(targetNodeGroupId);
+        if (map == null) {
+            map = new HashMap<Integer, TriggerRouter>();
+        }
+        return map;
+    }
 
     protected TriggerRoutersCache getTriggerRoutersCacheForCurrentNode(boolean refreshCache) {
         String myNodeGroupId = parameterService.getNodeGroupId();
@@ -905,7 +962,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             return null;
         }
     }
-    
+
     private List<TriggerRouter> enhanceTriggerRouters(List<TriggerRouter> triggerRouters) {
     	HashMap<String, Router> routersById = new HashMap<String, Router>();
     	for (Router router : getRouters()) {
@@ -1245,6 +1302,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             this.triggerRouterPerNodeCacheTime = 0;
             this.triggerRouterPerChannelCacheTime = 0;
             this.triggerRoutersCacheTime = 0;
+            this.triggerRoutersByTriggerHistCacheTime = 0;
             this.routersCacheTime = 0;
             this.triggersCacheTime = 0;
         }

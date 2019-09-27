@@ -126,12 +126,12 @@ public interface IDataService {
     
     public void insertDataEvents(ISqlTransaction transaction, List<DataEvent> events);
     
-    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, String routerId, boolean isLoad, long loadId, String createBy);
+    public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, boolean isLoad, long loadId, String createBy);
     
     public long insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
-            String nodeId, String routerId, boolean isLoad, long loadId, String createBy, Status status, long estimatedBatchRowCount);
+            String nodeId, boolean isLoad, long loadId, String createBy, Status status, long estimatedBatchRowCount);
 
-    public long insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, String routerId, boolean isLoad, long loadId, String createBy);
+    public long insertDataAndDataEventAndOutgoingBatch(Data data, String nodeId, boolean isLoad, long loadId, String createBy);
 
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
@@ -145,11 +145,11 @@ public interface IDataService {
     public void insertScriptEvent(ISqlTransaction transaction, String channelId,
             Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, String createBy);
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String createBy);
     
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy);
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy);
     
-    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, String routerId, boolean isLoad, long loadId, String createBy);
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId, String createBy);
     
     /**
      * Count the number of data ids in a range

@@ -338,9 +338,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Data data = new Data(1, null, sql.toString(), DataEventType.SQL,
                                 sourceTable, null, triggerHistory, triggerRouter.getTrigger()
                                         .getChannelId(), null, null);
-                        data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
-                                .getRouterId());
-                        initialLoadEvents.add(new SelectFromTableEvent(data));
+                        initialLoadEvents.add(new SelectFromTableEvent(data, triggerRouter));
                     }
                 }
             }
@@ -386,7 +384,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     DataEventType.INSERT, triggerHistory.getSourceTableName(),
                                     null, triggerHistory,
                                     triggerRouter.getTrigger().getChannelId(), null, null);
-                            initialLoadEvents.add(new SelectFromTableEvent(data));
+                            initialLoadEvents.add(new SelectFromTableEvent(data, triggerRouter));
                         }
                     }
                 }
@@ -2428,6 +2426,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
         
+        private Map<Integer, TriggerRouter> triggerRoutersByTriggerHist;
+        
         private boolean containsBigLob;
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
@@ -2441,6 +2441,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(sourceNode, targetNode);
             this.outgoingBatch.resetExtractRowStats();
             this.containsBigLob = containsBigLob;
+            this.triggerRoutersByTriggerHist = triggerRouterService.getTriggerRoutersByTriggerHist(targetNode.getNodeGroupId(), false);
         }
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
@@ -2483,72 +2484,60 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (data == null) {
                 data = this.cursor.next();
                 if (data != null) {
-                    String routerId = data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID);
+                    TriggerHistory triggerHistory = data.getTriggerHistory();
+                    TriggerRouter triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
 
-                    if (data.getDataEventType() == DataEventType.RELOAD) {
-                        TriggerHistory triggerHistory = data.getTriggerHistory();
-                        String triggerId = triggerHistory.getTriggerId();
-
-                        TriggerRouter triggerRouter = triggerRouterService
-                                .getTriggerRouterForCurrentNode(triggerId, routerId, false);
-                        if (triggerRouter != null) {
-                            processInfo.setCurrentTableName(triggerHistory.getSourceTableName());
-                            
-                            String initialLoadSelect = data.getRowData();
-                            if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
-                                //if (sourceTable == null) {
-                                    sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                                            .getRouter().getRouterId(), triggerHistory, false, true);
-                               // }
-                                Column[] columns = sourceTable.getPrimaryKeyColumns();
-                                DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
-                                String[] pkData = data.getParsedData(CsvData.PK_DATA);
-                                Row row = new Row(columns.length);
-                                
-                                for (int i = 0; i < columns.length; i++) {
-                                    row.put(columns[i].getName(), pkData[i]);
-                                }
-                                initialLoadSelect = dmlStmt.buildDynamicSql(batch.getBinaryEncoding(), row, false, true, columns);
-                                if (initialLoadSelect.endsWith(platform.getDatabaseInfo().getSqlCommandDelimiter())) {
-                                    initialLoadSelect = initialLoadSelect.substring(0, 
-                                            initialLoadSelect.length() - platform.getDatabaseInfo().getSqlCommandDelimiter().length());
-                                }
-                            }
-                            
-                            SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
-                                    triggerRouter, triggerHistory, initialLoadSelect);
-                            this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
-                                    event);
-                            data = (Data) this.reloadSource.next();
-                            this.sourceTable = reloadSource.getSourceTable();
-                            this.targetTable = this.reloadSource.getTargetTable();
-                            this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
-                            
-                            if (data == null) {
-                                data = (Data)next();
-                            }
-                        } else {
-                            log.warn(
-                                    "Could not find trigger router definition for {}:{}.  Skipping reload event with the data id of {}",
-                                    new Object[] { triggerId, routerId, data.getDataId() });
+                    if (triggerRouter == null) {
+                        triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(), 
+                                triggerHistory.getTriggerHistoryId(), true);
+                        if (triggerRouter == null) {
+                            log.warn("Could not find trigger router for trigger hist of {}.  Skipping event with the data id of {}",
+                                    triggerHistory.getTriggerHistoryId(), data.getDataId());
                             return next();
                         }
-                    } else {
-                        TriggerHistory triggerHistory = data.getTriggerHistory();
-                        Trigger trigger = triggerRouterService.getTriggerById(
-                                triggerHistory.getTriggerId(), false);
-                        boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
-                        if (trigger == null && !isFileParserRouter) {
-                            log.warn(
-                                    "Could not locate a trigger with the id of {} for table {} (data id {} with trigger hist id {}). It's possible this trigger was deleted before the batch could be extracted.",
-                                    new Object[] { triggerHistory.getTriggerId(),
-                                            triggerHistory.getSourceTableName(),
-                                            data.getDataId(),
-                                            triggerHistory.getTriggerHistoryId() });
+                        triggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), triggerRouter);
+                    }
+
+                    String routerId = triggerRouter.getRouterId();
+
+                    if (data.getDataEventType() == DataEventType.RELOAD) {
+                        processInfo.setCurrentTableName(triggerHistory.getSourceTableName());
+                        
+                        String initialLoadSelect = data.getRowData();
+                        if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
+                            sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
+                                    .getRouter().getRouterId(), triggerHistory, false, true);
+                            Column[] columns = sourceTable.getPrimaryKeyColumns();
+                            DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
+                            String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                            Row row = new Row(columns.length);
+                            
+                            for (int i = 0; i < columns.length; i++) {
+                                row.put(columns[i].getName(), pkData[i]);
+                            }
+                            initialLoadSelect = dmlStmt.buildDynamicSql(batch.getBinaryEncoding(), row, false, true, columns);
+                            if (initialLoadSelect.endsWith(platform.getDatabaseInfo().getSqlCommandDelimiter())) {
+                                initialLoadSelect = initialLoadSelect.substring(0, 
+                                        initialLoadSelect.length() - platform.getDatabaseInfo().getSqlCommandDelimiter().length());
+                            }
                         }
                         
-                        if (lastTriggerHistory == null || lastTriggerHistory
-                                .getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
+                        SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
+                                triggerRouter, triggerHistory, initialLoadSelect);
+                        this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
+                                event);
+                        data = (Data) this.reloadSource.next();
+                        this.sourceTable = reloadSource.getSourceTable();
+                        this.targetTable = this.reloadSource.getTargetTable();
+                        this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
+                        
+                        if (data == null) {
+                            data = (Data)next();
+                        }
+                    } else {
+                        Trigger trigger = triggerRouter.getTrigger();
+                        boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
+                        if (lastTriggerHistory == null || lastTriggerHistory.getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
                                 lastRouterId == null || !lastRouterId.equals(routerId)) {
                             
                             this.sourceTable = columnsAccordingToTriggerHistory.lookup(
@@ -2647,18 +2636,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             	&& sourceTable.getPrimaryKeyColumnCount() == 0
                             	&& copyTargetTable.getPrimaryKeyColumnCount() > 0) {
                             	
-                            		for (Column column : copyTargetTable.getColumns()) {
-                            			column.setPrimaryKey(false);
-                            		}
+                                for (Column column : copyTargetTable.getColumns()) {
+                                    column.setPrimaryKey(false);
+                                }
                             	
                             }
                             if (parameterService.is(ParameterConstants.MYSQL_TINYINT_DDL_TO_BOOLEAN, false)) {
-	                            	for (Column column : copyTargetTable.getColumns()) {
-	                            		if (column.getJdbcTypeCode() == Types.TINYINT) {
-	                            			column.setJdbcTypeCode(Types.BOOLEAN);
-	                            			column.setMappedTypeCode(Types.BOOLEAN);
-	                            		}
-	                        		}
+                                for (Column column : copyTargetTable.getColumns()) {
+                                    if (column.getJdbcTypeCode() == Types.TINYINT) {
+                                        column.setJdbcTypeCode(Types.BOOLEAN);
+                                        column.setMappedTypeCode(Types.BOOLEAN);
+                                    }
+                                }
                             }
                             data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
                         }
@@ -2805,11 +2794,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 this.isFirstRow = true;
                 if (this.currentInitialLoadEvent.containsData()) {
                     data = this.currentInitialLoadEvent.getData();
-                    this.currentInitialLoadEvent = null;
                     this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                            (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, false, true);
+                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, false, true);
                     this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                            (String) data.getAttribute(CsvData.ATTRIBUTE_ROUTER_ID), history, true, false);
+                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, true, false);
+                    this.currentInitialLoadEvent = null;
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
                     if (this.routingContext == null) {
@@ -2960,8 +2949,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
                                 .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
                                 null, null);
-                        data.putAttribute(Data.ATTRIBUTE_ROUTER_ID, triggerRouter.getRouter()
-                                .getRouterId());
                         return data;
                     } else {
                         throw new SymmetricException(
@@ -3022,9 +3009,10 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             trigger.getSourceTableName());
         }
 
-        public SelectFromTableEvent(Data data) {
+        public SelectFromTableEvent(Data data, TriggerRouter triggerRouter) {
             this.data = data;
             this.triggerHistory = data.getTriggerHistory();
+            this.triggerRouter = triggerRouter;
         }
 
         public TriggerHistory getTriggerHistory() {

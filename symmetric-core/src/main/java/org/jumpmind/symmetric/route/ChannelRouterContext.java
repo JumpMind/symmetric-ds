@@ -98,8 +98,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
         dataEventsToSend.clear();
     }
 
-    public void addDataEvent(long dataId, long batchId, String routerId) {
-        dataEventsToSend.add(new DataEvent(dataId, batchId, routerId));
+    public void addDataEvent(long dataId, long batchId) {
+        dataEventsToSend.add(new DataEvent(dataId, batchId));
         if (dataId != lastDataId) {
             uncommittedDataIds.add(dataId);
             lastDataId = dataId;

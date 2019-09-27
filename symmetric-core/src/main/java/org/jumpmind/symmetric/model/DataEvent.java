@@ -29,16 +29,13 @@ public class DataEvent implements Serializable {
     private long dataId;
    
     private long batchId;
-    
-    private String routerId;
 
     public DataEvent() {
     }
 
-    public DataEvent(long dataId, long batchId, String routerId) {
+    public DataEvent(long dataId, long batchId) {
         this.dataId = dataId;
         this.batchId = batchId;
-        this.routerId = routerId;
     }
     
     public long getBatchId() {
@@ -55,13 +52,5 @@ public class DataEvent implements Serializable {
 
     public void setDataId(long dataId) {
         this.dataId = dataId;
-    }
-
-    public void setRouterId(String routerId) {
-        this.routerId = routerId;
-    }
-    
-    public String getRouterId() {
-        return routerId;
     }
 }

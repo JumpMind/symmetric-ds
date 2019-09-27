@@ -1145,8 +1145,6 @@ public class RouterService extends AbstractService implements IRouterService {
         final long ts = System.currentTimeMillis();
         final String tableName = dataMetaData.getTable().getNameLowerCase();
         final DataEventType eventType = dataMetaData.getData().getDataEventType();
-        final Router router = dataMetaData.getRouter();
-        final String routerId = router != null ? router.getRouterId() : Constants.UNKNOWN_ROUTER_ID;
         Map<String, OutgoingBatch> batches = null;
         long batchIdToReuse = -1;
         long loadId = -1;
@@ -1224,7 +1222,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch.setLoadId(loadId);
                 }
                 if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
-                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId(), routerId);
+                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
                 }
