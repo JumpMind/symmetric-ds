@@ -214,6 +214,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         result.add(new MetaDataColumnDescriptor(getName("NUM_PREC_RADIX"), Types.INTEGER, Integer.valueOf(10)));
         result.add(new MetaDataColumnDescriptor(getName("DECIMAL_DIGITS"), Types.INTEGER, Integer.valueOf(0)));
         result.add(new MetaDataColumnDescriptor(getName("COLUMN_SIZE"), Types.VARCHAR));
+        result.add(new MetaDataColumnDescriptor(getName("CHAR_OCTET_LENGTH"), Types.VARCHAR));
         result.add(new MetaDataColumnDescriptor(getName("IS_NULLABLE"), Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor(getName("IS_AUTOINCREMENT"), Types.VARCHAR, "YES"));
         result.add(new MetaDataColumnDescriptor(getName("REMARKS"), Types.VARCHAR));
@@ -994,6 +995,14 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         }
         column.setDescription((String) values.get(getName("REMARKS")));
 
+        Object octetLength = values.get(getName("CHAR_OCTET_LENGTH"));
+        if (octetLength != null) {
+            try {
+                column.setCharOctetLength(Integer.parseInt(octetLength.toString()));
+            } catch (NumberFormatException e) {
+            }
+        }
+        
         return column;
     }
 
@@ -1715,7 +1724,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
 
     @Override
-    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited) {
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {
             if (!visited.contains(tableRow)) {
@@ -1750,7 +1759,9 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                 Row foreignRow = new Row(foreignTable.getColumnCount());
                                 if (foreignTable.getForeignKeyCount() > 0) {
                                     DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
-                                    Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
+                                    String[] keysAsStrings = whereRow.toStringArray(foreignTable.getPrimaryKeyColumnNames());
+
+                                    Object[] keys = platform.getObjectValues(encoding, keysAsStrings, foreignTable.getColumns());
                                     Map<String, Object> values = platform.getSqlTemplateDirty().queryForMap(selectSt.getSql(), keys);
                                     if (values == null) {
                                         log.warn(
@@ -1771,7 +1782,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                             log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
                         }
                         if (fkDepList.size() > 0) {
-                            fkDepList.addAll(getImportedForeignTableRows(fkDepList, visited));
+                            fkDepList.addAll(getImportedForeignTableRows(fkDepList, visited, encoding));
                         }
                     }
                 }

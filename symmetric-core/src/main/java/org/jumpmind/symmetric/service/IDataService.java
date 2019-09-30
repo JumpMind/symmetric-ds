@@ -49,6 +49,8 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface IDataService {
         
+    public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request);
+    
     public void insertTableReloadRequest(TableReloadRequest request);
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
@@ -61,8 +63,12 @@ public interface IDataService {
         
     public List<TableReloadStatus> getTableReloadStatus();
     
+    public List<TableReloadStatus> getActiveTableReloadStatus();
+
     public TableReloadStatus getTableReloadStatusByLoadId(long loadId);
-    
+
+    public List<TableReloadStatus> getTableReloadStatusByTarget(String targetNodeId);
+
     public void updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount);
     
     public int updateTableReloadRequestsCancelled(long loadId);
@@ -100,8 +106,8 @@ public interface IDataService {
 
     public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
     
-    public Map<String, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
-            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<String, ExtractRequest> extractRequests);
+    public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
+            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     

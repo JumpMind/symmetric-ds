@@ -34,4 +34,9 @@ public class MariaDBDatabasePlatform extends MySqlDatabasePlatform {
 		super(dataSource, settings);
 	}
 
+    @Override
+    protected MariaDBDdlReader createDdlReader() {
+        return new MariaDBDdlReader(this);
+    }
+
 }

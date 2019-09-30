@@ -385,18 +385,17 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 		currentModel = currentModel.copy();
 		mergeOrRemovePlatformTypes(currentModel, desiredModel);
 
-		ModelComparator comparator = new ModelComparator(this, databaseInfo, caseSensitive);
-		List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
-		if (alterDatabaseInterceptors != null) {
-			for (IAlterDatabaseInterceptor interceptor : alterDatabaseInterceptors) {
-				detectedChanges = interceptor.intercept(detectedChanges, currentModel, desiredModel);
-			}
-		}
+		List<IModelChange> detectedChanges = getDetectedChanges(currentModel, desiredModel, alterDatabaseInterceptors);
 		processChanges(currentModel, desiredModel, detectedChanges, ddl);
 	}
 
 	public boolean isAlterDatabase(Database currentModel, Database desiredModel,
 			IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
+		List<IModelChange> detectedChanges = getDetectedChanges(currentModel, desiredModel, alterDatabaseInterceptors);
+		return detectedChanges.size() > 0;
+	}
+	
+	public List<IModelChange> getDetectedChanges(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors) {
 		ModelComparator comparator = new ModelComparator(this, databaseInfo, caseSensitive);
 		List<IModelChange> detectedChanges = comparator.compare(currentModel, desiredModel);
 		if (alterDatabaseInterceptors != null) {
@@ -404,7 +403,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
 				detectedChanges = interceptor.intercept(detectedChanges, currentModel, desiredModel);
 			}
 		}
-		return detectedChanges.size() > 0;
+		return detectedChanges;
 	}
 
 	/**

@@ -242,5 +242,18 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 "on n.oid = c.relnamespace where c.relname = ? and n.nspname = ?",
                 table.getName(), table.getSchema());
     }
+    
+    @Override
+    public String getTruncateSql(Table table) {
+        String sql = super.getTruncateSql(table);
+        sql += " cascade";
+        return sql;
+    }
 
+    @Override
+    public String getDeleteSql(Table table) {
+        String sql = super.getDeleteSql(table);
+        sql += " cascade";
+        return sql;
+    }
 }

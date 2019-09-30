@@ -230,9 +230,11 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, "n", OPTION_NODE, true);
                 addOption(options, "g", OPTION_NODE_GROUP, true);
             }
-            if (cmd.equals(CMD_RELOAD_TABLE)) {
+            if (cmd.equals(CMD_RELOAD_TABLE) || cmd.equals(CMD_SYNC_TRIGGERS) || cmd.equals(CMD_SEND_SQL) || cmd.equals(CMD_SEND_SCHEMA)) {
                 addOption(options, "c", OPTION_CATALOG, true);
                 addOption(options, "s", OPTION_SCHEMA, true);
+            }
+            if (cmd.equals(CMD_RELOAD_TABLE)) {
                 addOption(options, "w", OPTION_WHERE, true);
             }
             if (cmd.equals(CMD_SYNC_TRIGGERS)) {
@@ -264,9 +266,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             }
             writer.flush();
         }
-    }
-
-    
+    }    
 
     @Override
     protected void buildOptions(Options options) {

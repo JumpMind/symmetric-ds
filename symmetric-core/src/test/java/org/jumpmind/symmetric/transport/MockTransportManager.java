@@ -30,6 +30,7 @@ import java.util.Map;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.transport.http.HttpIncomingTransport;
 
 public class MockTransportManager implements ITransportManager {
 
@@ -47,6 +48,10 @@ public class MockTransportManager implements ITransportManager {
     public IIncomingTransport getPullTransport(Node remote, Node local,
             String securityToken, Map<String, String> requestProperties, String registrationUrl)
             throws IOException {
+        return incomingTransport;
+    }
+
+    public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
         return incomingTransport;
     }
     

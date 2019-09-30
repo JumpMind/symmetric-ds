@@ -47,6 +47,7 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.transport.http.HttpIncomingTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +118,10 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
         });
         return new InternalIncomingTransport(respIs);
+    }
+
+    public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
+       return null;
     }
 
     public IOutgoingWithResponseTransport getPushTransport(final Node targetNode, final Node sourceNode,

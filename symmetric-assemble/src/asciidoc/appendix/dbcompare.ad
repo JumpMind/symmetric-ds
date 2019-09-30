@@ -59,7 +59,7 @@ image::appendix/dbcompare/dbcompare-config.png[width=1000]
 - *--output-sql <arg>* : An output file for SQL statements that if executed on the target, should bring it into sync with the source.
 - *-s, --source* : The source database engine properties file for comparison.
 - *-t, --target <arg>* : The target database engine properties file for comparison.
-- *--use-sym-config <arg>* : true|false.  If true, sym_trigger, sym_transform, etc. will be consulted to build up the data model to compare.  Default is true.
+- *--use-sym-config <arg>* : true|false.  If true, sym_trigger, sym_transform, etc. will be consulted to build up the data model to compare, and the tablename argument is no longer required, but if tablename is provided it will only compare the matching tables. Default is false.
 
 An example DbCompare results table is shown below:
 

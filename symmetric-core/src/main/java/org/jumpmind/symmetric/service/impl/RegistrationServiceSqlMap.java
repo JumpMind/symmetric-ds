@@ -72,7 +72,7 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
                         + "  set attempt_count=?,                                                                                      "
                         + "  last_update_by=?, last_update_time=?, registered_node_id=?, status=?, error_message=?   "
                         + "  where                                                                                                 "
-                        + "  node_group_id=? and external_id=? and ip_address=? and host_name=? and (status='RQ' or status='ER')                       ");
+                        + "  node_group_id=? and external_id=? and host_name=? and (status='RQ' or status='ER')                       ");
 
         putSql("selectRegistrationRequestSql",
                 ""
@@ -82,7 +82,7 @@ public class RegistrationServiceSqlMap extends AbstractSqlMap {
                         + "  where status in ('RQ','ER')                                                        ");
 
         putSql("deleteRegistrationRequestSql",
-                "delete from $(registration_request) where node_group_id=? and external_id=? and ip_address=? and host_name=? and status=?");
+                "delete from $(registration_request) where node_group_id=? and external_id=? and host_name=? and status=?");
 
     }
     

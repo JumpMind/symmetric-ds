@@ -38,6 +38,7 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
      */
     public MsSql2008DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        supportsTruncate = true;
     }
     
     @Override
@@ -52,11 +53,17 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
     
     @Override
     public long getEstimatedRowCount(Table table) {
-        String catalog = StringUtils.isNotBlank(table.getCatalog()) ? table.getCatalog() + "." : "";
+        String catalog = StringUtils.isNotBlank(table.getCatalog()) ? table.getCatalog() : "";
+        if(catalog.length() > 0) {
+	        if(getDdlBuilder().isDelimitedIdentifierModeOn()) {
+	        	catalog = getDdlBuilder().getDatabaseInfo().getDelimiterToken() + catalog + getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+	        }
+	        catalog = catalog + ".";
+        }
         return getSqlTemplateDirty().queryForLong("select sum(p.rows) from " + catalog + "sys.tables t inner join " +
                 catalog + "sys.partitions p on t.object_id = p.object_id and p.index_id IN (0, 1) " +
                 "where t.name = ? and schema_name(t.schema_id) = ?",
                 table.getName(), table.getSchema());
     }
-
+    
 }

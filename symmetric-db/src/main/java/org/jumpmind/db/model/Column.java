@@ -87,6 +87,8 @@ public class Column implements Cloneable, Serializable {
     /** The size of the column for JDBC types that require/support this. */
     private Integer sizeAsInt;
 
+    private int charOctetLength;
+
     /** The scale of the column for JDBC types that require/support this. */
     private int scale;
 
@@ -751,5 +753,13 @@ public class Column implements Cloneable, Serializable {
 //    public boolean isEnum() {
 //        return enumValues != null && enumValues.length > 0;
 //    }
+
+    public int getCharOctetLength() {
+        return charOctetLength;
+    }
+
+    public void setCharOctetLength(int charOctetLength) {
+        this.charOctetLength = charOctetLength;
+    }
 
 }

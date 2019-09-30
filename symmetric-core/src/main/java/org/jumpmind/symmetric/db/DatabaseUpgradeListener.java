@@ -22,14 +22,33 @@ package org.jumpmind.symmetric.db;
 
 import java.io.IOException;
 import java.sql.Types;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.jumpmind.db.alter.AddColumnChange;
+import org.jumpmind.db.alter.AddPrimaryKeyChange;
+import org.jumpmind.db.alter.ColumnDataTypeChange;
+import org.jumpmind.db.alter.ColumnSizeChange;
+import org.jumpmind.db.alter.CopyColumnValueChange;
+import org.jumpmind.db.alter.IModelChange;
+import org.jumpmind.db.alter.PrimaryKeyChange;
+import org.jumpmind.db.alter.RemoveColumnChange;
+import org.jumpmind.db.alter.RemovePrimaryKeyChange;
+import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
+import org.jumpmind.db.util.MultiInstanceofPredicate;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
@@ -71,11 +90,6 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
         
-        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD) ||
-                engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.FIREBIRD_DIALECT1)) {
-            checkForDroppedColumns(currentModel, desiredModel);
-        }
-        
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
             if (triggerTable != null) {
@@ -101,6 +115,34 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 log.info("Just uninstalled {}", function);
             }
         }
+        
+        // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
+        if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+	        // Drop triggers on sym tables
+	        List<IAlterDatabaseInterceptor> alterDatabaseInterceptors =
+	        		engine.getExtensionService().getExtensionPointList(IAlterDatabaseInterceptor.class);
+	        List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel,
+	        		desiredModel,
+	        		alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
+	        
+	        Predicate predicate = new MultiInstanceofPredicate(new Class[] {
+	        		RemovePrimaryKeyChange.class,
+	        		AddPrimaryKeyChange.class,
+	        		PrimaryKeyChange.class,
+	        		RemoveColumnChange.class,
+	        		AddColumnChange.class,
+	        		ColumnDataTypeChange.class,
+	        		ColumnSizeChange.class,
+	        		CopyColumnValueChange.class
+	        });
+	        Collection<TableChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
+	        Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
+	        for(TableChange change: modelChangesAffectingTriggers) {
+	        	setOfTableNamesToDropTriggersFor.add(change.getChangedTable().getName());
+	        }
+	        engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
+        }
+        
         return sb.toString();
     }
 
@@ -113,6 +155,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     @Override
     public String afterUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database model) throws IOException {
+    	
+    	// Leave this first so triggers are put back in place before any DML is done against SymmetricDS tables
+    	// Reinstall triggers on sym tables
+    	engine.getTriggerRouterService().syncTriggers();
+    	
         StringBuilder sb = new StringBuilder();
         if (isUpgradeFromPre38) {
             engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_SEQUENCE +

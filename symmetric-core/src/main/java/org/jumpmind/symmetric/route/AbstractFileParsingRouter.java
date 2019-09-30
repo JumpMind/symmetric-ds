@@ -37,11 +37,12 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 	
 	public final static String TRIGGER_ID_FILE_PARSER = "SYM_VIRTUAL_FILE_PARSE_TRIGGER";
 	
-	public final static String EXTERNAL_DATA_ROUTER_KEY="R";
-	public final static String EXTERNAL_DATA_TRIGGER_KEY="T";
-	public final static String EXTERNAL_DATA_FILE_DATA_ID="D";
+	public final static String EXTERNAL_DATA_ROUTER_KEY = "R";
+	public final static String EXTERNAL_DATA_TRIGGER_KEY = "T";
+	public final static String EXTERNAL_DATA_FILE_DATA_ID = "D";
 	
-	public final static String ROUTER_EXPRESSION_CHANNEL_KEY="CHANNEL";
+	public final static String ROUTER_EXPRESSION_CHANNEL_KEY = "CHANNEL";
+	public final static String ROUTER_EXPRESSION_INCLUDE_TRANSACTION_ID = "INCLUDE_TRANSACTION_ID";
 	
 	@Override
 	public Set<String> routeToNodes(SimpleRouterContext context, DataMetaData dataMetaData, Set<Node> nodes,
@@ -57,9 +58,10 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 		String lastEventType = newData.get("LAST_EVENT_TYPE");
 		String routerExpression = dataMetaData.getRouter().getRouterExpression();
 		String channelId = "default";
+		boolean includeTransactionId = false;
 		String filePath = relativeDir + "/" + fileName;
 		IContextService contextService = getEngine().getContextService();
-				
+		
 		if (lastEventType.equals(DataEventType.DELETE.toString())) {
 			log.debug("File deleted (" + filePath + "), cleaning up context value.");
 			contextService.delete(filePath);
@@ -67,14 +69,14 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 		else {
 			if (routerExpression != null) {
 				String[] keyValues = routerExpression.split(",");
-				if (keyValues.length > 0) {
-					for (int i=0; i< keyValues.length; i++) {
-						String[] keyValue = keyValues[i].split("=");
-						if (keyValue.length > 1) {
-							if (ROUTER_EXPRESSION_CHANNEL_KEY.equals(keyValue[0])) {
-								channelId = keyValue[1];
-							}
-						}
+				for (int i = 0; i < keyValues.length; i++) {
+					String[] keyValue = keyValues[i].split("=");
+					if (keyValue.length > 1) {
+						if (ROUTER_EXPRESSION_CHANNEL_KEY.equals(keyValue[0])) {
+							channelId = keyValue[1];
+						} else if (ROUTER_EXPRESSION_INCLUDE_TRANSACTION_ID.equalsIgnoreCase(keyValue[0])) {
+						    includeTransactionId = Boolean.valueOf(keyValue[1]);
+                        }
 					}
 				}
 			}
@@ -99,7 +101,11 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 					
 					
 					Map<Integer, String> tableNames = getTableNames(getTargetTableName(targetTableName, fileName), file);
-					int tableIndex=0;
+					int tableIndex = 0;
+					String transactionId = null;
+					if (includeTransactionId) {
+					    transactionId = String.valueOf(System.currentTimeMillis());
+					}
 					for (Map.Entry<Integer, String> tableEntry : tableNames.entrySet()) {
 						String contextId = filePath + "[" + tableEntry.getValue() + "]";
 						Integer lineNumber = contextService.getString(contextId) == null ? 0 : Integer.valueOf(contextService.getString(contextId));
@@ -118,6 +124,9 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 							data.setTriggerHistory(getTriggerHistory(tableEntry.getValue(), columnNames));
 							data.setExternalData(externalData);
 							data.setDataId(getEngine().getDataService().insertData(data));
+							if (includeTransactionId) {
+							    data.setTransactionId(transactionId);
+							}
 							lineNumber++;
 						}
 						if (!dataRows.isEmpty()) {
@@ -144,7 +153,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
 
 	}
 	
-	public  Map<Integer, String>  getTableNames(String tableName, File file) throws IOException {
+	public Map<Integer, String>  getTableNames(String tableName, File file) throws IOException {
 		Map<Integer, String>  tableNames = new HashMap<Integer, String>();
 		tableNames.put(1, (String) tableName);
 		return tableNames;

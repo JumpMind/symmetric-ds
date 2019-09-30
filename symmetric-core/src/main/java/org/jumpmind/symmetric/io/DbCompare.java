@@ -322,7 +322,10 @@ public class DbCompare {
         List<String> tableNames = new ArrayList<String>();
 
         for (Trigger trigger : triggers) {
-            if (!configTables.contains(trigger.getFullyQualifiedSourceTableName())) {
+            if (!configTables.contains(trigger.getFullyQualifiedSourceTableName()) &&
+                    ((!CollectionUtils.isEmpty(config.getSourceTableNames()) &&
+                      config.getSourceTableNames().contains(trigger.getFullyQualifiedSourceTableName())) ||
+                      CollectionUtils.isEmpty(config.getSourceTableNames())) ) {
                 tableNames.add(trigger.getFullyQualifiedSourceTableName());
             }
         }
@@ -365,7 +368,11 @@ public class DbCompare {
                 sourceTable = sourceEngine.getDatabasePlatform().getTableFromCache(tableName, true);
             } else {
                 sourceTable = sourceEngine.getDatabasePlatform().
-                        getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts.get("table"), true);
+                        getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts.get("table"), true);                
+                if (sourceTable == null) {                    
+                    sourceTable = sourceEngine.getDatabasePlatform().
+                            getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"), tableNameParts.get("table"), true);
+                }
             }
 
             if (sourceTable == null) {
@@ -403,7 +410,7 @@ public class DbCompare {
             if (targetTable == null) {
                 log.warn("No target table found for name {}", tableName);
                 continue;
-            } 
+            }
 
             tables.applyColumnMappings();
             tables.filterExcludedColumns(config);
@@ -481,7 +488,7 @@ public class DbCompare {
                 catalog = triggerRouter.getTargetCatalog(catalog, null);
                 schema = triggerRouter.getTargetSchema(schema, null);
             }
-        } 
+        }
         
         if (StringUtils.isEmpty(targetTableNameOverride)) {            
             targetTable = targetEngine.getDatabasePlatform().
@@ -517,8 +524,14 @@ public class DbCompare {
     }
 
     protected TransformTableNodeGroupLink getTransformFor(Table sourceTable) {
-        String sourceNodeGroupId = sourceEngine.getNodeService().findIdentity().getNodeGroupId(); 
-        String targetNodeGroupId = targetEngine.getNodeService().findIdentity().getNodeGroupId(); 
+        String sourceNodeGroupId = null;
+        if (sourceEngine.getNodeService().findIdentity() != null) {
+            sourceNodeGroupId = sourceEngine.getNodeService().findIdentity().getNodeGroupId();
+        }
+        String targetNodeGroupId = null;
+        if (targetEngine.getNodeService().findIdentity() != null) {
+            targetNodeGroupId = targetEngine.getNodeService().findIdentity().getNodeGroupId(); 
+        }
         List<TransformTableNodeGroupLink> transforms = 
                 sourceEngine.getTransformService().findTransformsFor(
                         sourceNodeGroupId, targetNodeGroupId, sourceTable.getName());
@@ -548,7 +561,7 @@ public class DbCompare {
 
     protected List<DbCompareTables> loadTablesFromArguments() {
         if (CollectionUtils.isEmpty(config.getSourceTableNames())) {
-            throw new RuntimeException("sourceTableNames not provided,  sourceTableNames must be provided "
+            throw new RuntimeException("sourceTableNames not provided, sourceTableNames must be provided "
                     + "when not comparing using SymmetricDS config.");
         }
 

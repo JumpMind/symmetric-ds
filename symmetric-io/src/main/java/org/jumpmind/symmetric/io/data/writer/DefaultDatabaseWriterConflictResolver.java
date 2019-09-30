@@ -211,7 +211,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
  
     protected int deleteUniqueConstraintRow(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
             IIndex uniqueIndex, CsvData data) {
-        Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+        Map<String, String> values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
         List<Column> whereColumns = new ArrayList<Column>();
         List<String> whereValues = new ArrayList<String>();
 
@@ -225,10 +225,20 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
     protected int deleteRow(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
             List<Column> whereColumns, List<String> whereValues, boolean isUniqueKey) {
-        Object[] objectValues = platform.getObjectValues(databaseWriter.getBatch().getBinaryEncoding(),
+        Object[] values = platform.getObjectValues(databaseWriter.getBatch().getBinaryEncoding(),
                 whereValues.toArray(new String[0]), whereColumns.toArray(new Column[0]));
+        boolean[] nullKeyValues = new boolean[values.length];
+        List<Object> valuesList = new ArrayList<Object>();
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == null) {
+                nullKeyValues[i] = true;
+            } else {
+                valuesList.add(values[i]);
+            } 
+        }
+        Object[] objectValues = valuesList.toArray(new Object[0]);
         DmlStatement fromStmt = platform.createDmlStatement(DmlType.FROM, targetTable.getCatalog(), targetTable.getSchema(),
-                targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), null,
+                targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), nullKeyValues,
                 databaseWriter.getWriterSettings().getTextColumnExpression());
         String sql = "DELETE " + fromStmt.getSql();
         int count = 0;
@@ -244,7 +254,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                         isUniqueKey ? "unique constraint" : "primary key");
                 // Failed to delete the row because another row is referencing it                        
                 DmlStatement selectStmt = platform.createDmlStatement(DmlType.SELECT, targetTable.getCatalog(), targetTable.getSchema(),
-                        targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), null,
+                        targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getColumns(), nullKeyValues,
                         databaseWriter.getWriterSettings().getTextColumnExpression());
                 // Query the row that we need to delete because it is blocking us                
                 Row uniqueRow = queryForRow(platform, databaseWriter, selectStmt.getSql(), objectValues);
@@ -278,9 +288,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable, CsvData data) {        
         Map<String, String> values = null;
         if (data.getDataEventType().equals(DataEventType.UPDATE)) {
-            values = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+            values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
         } else {
-            values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+            values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
         }
         
         List<TableRow> tableRows = new ArrayList<TableRow>();

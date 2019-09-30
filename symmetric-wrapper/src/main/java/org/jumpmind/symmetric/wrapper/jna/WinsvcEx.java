@@ -30,6 +30,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.WString;
 import com.sun.jna.platform.win32.Winsvc;
+import com.sun.jna.win32.StdCallLibrary.StdCallCallback;
 
 @IgnoreJRERequirement
 public interface WinsvcEx extends Winsvc {

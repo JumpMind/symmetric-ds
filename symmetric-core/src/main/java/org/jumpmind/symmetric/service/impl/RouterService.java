@@ -355,7 +355,7 @@ public class RouterService extends AbstractService implements IRouterService {
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
-            Map<String, ExtractRequest> extractRequests = null;
+            Map<Integer, ExtractRequest> extractRequests = null;
             
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
@@ -1017,7 +1017,7 @@ public class RouterService extends AbstractService implements IRouterService {
                                             + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, dataGaps={}",
                                     new Object[] {  context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
                                             context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(), 
-                                            StringUtils.abbreviate(context.getDataGaps().toString(), MAX_LOGGING_LENGTH)
+                                            FormatUtils.abbreviateForLogging(context.getDataGaps(), MAX_LOGGING_LENGTH)
                                             });
                             ts = System.currentTimeMillis();
                         }

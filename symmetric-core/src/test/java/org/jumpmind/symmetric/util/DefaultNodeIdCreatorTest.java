@@ -114,11 +114,20 @@ public class DefaultNodeIdCreatorTest {
         DefaultNodeIdCreator generator = new DefaultNodeIdCreator(paramService, new MockNodeService() {
             @Override
             public Node findNode(String nodeId) {
-
                 if (nodeId.equals("100")) {
                     Node node = new Node();
-                    node.setNodeId("100");
+                    node.setNodeId(nodeId);
                     return node;
+                } else {
+                    return null;
+                }
+            }
+            public NodeSecurity findNodeSecurity(String nodeId) {
+                if (nodeId.equals("100")) {
+                    NodeSecurity nodeSecurity = new NodeSecurity();
+                    nodeSecurity.setNodeId(nodeId);
+                    nodeSecurity.setRegistrationEnabled(false);
+                    return nodeSecurity;
                 } else {
                     return null;
                 }
@@ -129,8 +138,7 @@ public class DefaultNodeIdCreatorTest {
         String selectedNodeId = generator.generateNodeId(node, null, null);
         assertEquals(EXPECTED_NODE_ID, selectedNodeId);
     }
-    
-    
+        
     @Test
     public void testGenerateNodeIdWithMultipleExistingWithUniqueParam() throws Exception {
         final String EXPECTED_NODE_ID = "100-5";
@@ -141,11 +149,20 @@ public class DefaultNodeIdCreatorTest {
         DefaultNodeIdCreator generator = new DefaultNodeIdCreator(paramService, new MockNodeService() {
             @Override
             public Node findNode(String nodeId) {
-
                 if (nodeId != null && !nodeId.equals("100-5")) {
                     Node node = new Node();
                     node.setNodeId(nodeId);
                     return node;
+                } else {
+                    return null;
+                }
+            }
+            public NodeSecurity findNodeSecurity(String nodeId) {
+                if (nodeId != null && !nodeId.equals("100-5")) {
+                    NodeSecurity nodeSecurity = new NodeSecurity();
+                    nodeSecurity.setNodeId(nodeId);
+                    nodeSecurity.setRegistrationEnabled(false);
+                    return nodeSecurity;
                 } else {
                     return null;
                 }
@@ -170,6 +187,13 @@ public class DefaultNodeIdCreatorTest {
                 node.setNodeId(nodeId);
                 return node;
             }
+            public NodeSecurity findNodeSecurity(String nodeId) {
+                NodeSecurity nodeSecurity = new NodeSecurity();
+                nodeSecurity.setNodeId(nodeId);
+                nodeSecurity.setRegistrationEnabled(false);
+                return nodeSecurity;
+            }
+
         }, SecurityServiceFactory.create());
         Node node = new Node();
         node.setExternalId("100");

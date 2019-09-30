@@ -259,13 +259,15 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
 
+            if (nameVersion[2].equalsIgnoreCase("as400")) {
+                nameVersion[0] = DatabaseNamesConstants.DB2AS400;
+            }
+
             if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion[2].equalsIgnoreCase("db2")) {
                 String productVersion = getDatabaseProductVersion(dataSource);
                 if (nameVersion[0].toUpperCase().indexOf("Z") != -1
                         || (productVersion != null && productVersion.startsWith("DSN"))) {
                     nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
-                } else if (nameVersion[0].indexOf("400") != -1) {
-                    nameVersion[0] = DatabaseNamesConstants.DB2AS400;
                 } else {
                     nameVersion[0] = DatabaseNamesConstants.DB2;
                 }

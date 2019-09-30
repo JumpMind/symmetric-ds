@@ -55,6 +55,7 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
                 "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
         sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}", "$1");
         sqlScriptReplacementTokens.put("\\{d([^<]*?)\\}", "$1");
+        supportsTruncate = false;
     }
 
     @Override

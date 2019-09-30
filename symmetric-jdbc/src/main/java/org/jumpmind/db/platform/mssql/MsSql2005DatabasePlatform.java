@@ -37,6 +37,7 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
      */
     public MsSql2005DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        supportsTruncate = false;
     }
     
     @Override

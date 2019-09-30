@@ -34,6 +34,9 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityConstants;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.wrapper.Constants.Status;
 
 import com.sun.jna.Platform;
@@ -55,6 +58,8 @@ public abstract class WrapperService {
     public static WrapperService getInstance() {
         if (Platform.isWindows()) {
             instance = new WindowsService();
+        } else if(Platform.isMac()) {
+        	instance = new MacService();
         } else {
             instance = new UnixService();
         }
@@ -206,6 +211,26 @@ public abstract class WrapperService {
                         restartDetected = false;
                         startProcess = true;
                     } else if (keepRunning) {
+                    	long tenminutesinms = 60 * 10 * 1000;
+                        long twelveminutesinms = 60 * 12 * 1000;
+                        long tensecondsinms = 10 * 1000;
+                        long now = System.currentTimeMillis();
+                        while(child.isAlive()) {
+                            logger.log(Level.WARNING, "Server process has not stopped yet");
+                            if(System.currentTimeMillis() - now > twelveminutesinms) {
+                                logger.log(Level.SEVERE, "Server process never exited, exiting now");
+                                child.destroyForcibly();
+                                // If it has not exited by now, it probably never will.
+                                break;
+                            }
+                            if(System.currentTimeMillis() - now > tenminutesinms) {
+                                logger.log(Level.SEVERE, "Server process never exited, trying to force the exit of server process");
+                                child.destroyForcibly();
+                            }
+                            try {
+                                Thread.sleep(tensecondsinms);
+                            } catch(InterruptedException e) { }
+                        }
                         logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
                         long runTime = System.currentTimeMillis() - startTime;
                         if (System.currentTimeMillis() - startTime < 7000) {
@@ -225,7 +250,7 @@ public abstract class WrapperService {
                 updateStatus(Status.STOPPED);
                 throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Exception caught.");                
             } catch (Throwable ex2) {
-                ex.printStackTrace();
+                ex2.printStackTrace();
             }
         }
     }
@@ -417,6 +442,18 @@ public abstract class WrapperService {
     }
 
     protected void updateStatus(Status status) {
+    }
+    
+    protected String unobfuscate(String s) {
+    	if(s != null && s.startsWith(SecurityConstants.PREFIX_OBF)) {
+        	ISecurityService ss = SecurityServiceFactory.create();
+    		return ss.unobfuscate(s);
+    	}
+    	return s;
+    }
+    
+    protected String obfuscate(String s) {
+    	return SecurityServiceFactory.create().obfuscate(s);
     }
     
     private static String getStackTrace(Throwable throwable) {

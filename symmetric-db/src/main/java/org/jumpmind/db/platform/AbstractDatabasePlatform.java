@@ -85,6 +85,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public static final String REQUIRED_FIELD_NULL_SUBSTITUTE = " ";
 
+    public static final String ZERO_DATE_STRING = "0000-00-00 00:00:00";
     /*
      * The default name for models read from the database, if no name as given.
      */
@@ -122,6 +123,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Boolean supportsTransactions;
     
     protected Boolean supportsMultiThreadedTransactions;
+    
+    protected boolean supportsTruncate = true;
     
     public AbstractDatabasePlatform(SqlTemplateSettings settings) {
         this.settings = settings;
@@ -402,7 +405,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 String charValue = value.toString();
                 if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo().isBlankCharColumnSpacePadded())
                         || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
-                    objectValue = StringUtils.rightPad(charValue, column.getSizeAsInt(), ' ');
+                    if (column.getCharOctetLength() == 0 || column.getSizeAsInt() == column.getCharOctetLength()) {
+                        objectValue = StringUtils.rightPad(charValue, column.getSizeAsInt(), ' ');
+                    } else {
+                        objectValue = charValue + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes().length);
+                    }
                 }
             } else if (type == Types.BIGINT) {
                 objectValue = parseBigInteger(value);
@@ -921,6 +928,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         try {
             return Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
+        	if (!getDatabaseInfo().isZeroDateAllowed() && value != null && value.startsWith(ZERO_DATE_STRING)) {
+        		return null;
+        	}
             try {
                 return new Timestamp(FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS).getTime());
             } catch (Exception e) {
@@ -958,6 +968,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                             + " since it was not part of primary key and not supported on this database based on nonPKIdentityColumnsSupported.");
                     autoIncrementColumn.setAutoIncrement(false);
                 }
+            }
+            if (table.getCatalog() == null) {
+                table.setCatalog(getDefaultCatalog());
+            }
+            if (table.getSchema() == null) {
+                table.setSchema(getDefaultSchema());
             }
         }
     }
@@ -1187,5 +1203,27 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         
         return getSqlTemplateDirty().queryForLong(sql);
     }
+    
+    
+    public String getTruncateSql(Table table) {
+        String sql = null;
+        if (supportsTruncate) {
+            sql = "truncate table ";
+        } else {
+            log.info("Truncate is not supported on " + getName() + ". Changing to equivalent delete statement");
+            sql = "delete from ";
+        }
+        String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
+        sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
+        
+        return sql;
+    }
 
+    public String getDeleteSql(Table table) {
+        String sql = "delete from ";
+        String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
+        sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
+
+        return sql;
+    }
 }

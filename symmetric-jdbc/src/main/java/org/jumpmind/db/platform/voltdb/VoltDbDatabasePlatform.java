@@ -148,4 +148,9 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
+    
+    @Override
+    protected ISqlTemplate createSqlTemplateDirty() {
+        return sqlTemplate;
+    }
 }

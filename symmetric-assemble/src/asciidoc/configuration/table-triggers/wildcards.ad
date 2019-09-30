@@ -13,7 +13,8 @@ tables. If another trigger already exists for a table, then that table is not in
 trigger entry take precedence).
 * System tables and any table names that start with the SymmetricDS table prefix will be excluded.
 * To negate the expression and exclude tables, start the expression with an exclamation.
-* Double up special characters to match a single literal character.  (Use two asterisks to match a single asterisk.) 
+* Double up special characters to match a single literal character.  (Use two asterisks to match a single asterisk.)
+The entire expression is processed as wildcarded when an odd number of consecutive special characters are found.  
 
 ifdef::pro[]
 .Sample wildcard trigger for all tables that start with "sale" or " item"

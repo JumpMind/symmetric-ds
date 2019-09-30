@@ -21,6 +21,7 @@ package org.jumpmind.db.platform.interbase;
 
 import javax.sql.DataSource;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -86,4 +87,17 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return result;
     }
     
+    @Override
+    public String getTruncateSql(Table table) {
+        String sql = super.getTruncateSql(table);
+        sql += " cascade";
+        return sql;
+    }
+
+    @Override
+    public String getDeleteSql(Table table) {
+        String sql = super.getDeleteSql(table);
+        sql += " cascade";
+        return sql;
+    }
 }

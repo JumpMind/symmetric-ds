@@ -21,11 +21,13 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -42,6 +44,15 @@ public class PingUriHandler extends AbstractUriHandler {
             ServletException {
         res.setContentType("text/plain");
         res.getWriter().write("pong");
+    }
+
+    public void bandwidthTest(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
+        res.setContentType("text/plain");
+        Long start = System.currentTimeMillis();
+        long end = start + 5000;
+        while (System.currentTimeMillis() < end) {
+            res.getWriter().write(        RandomStringUtils.randomAlphabetic(600));
+        }
     }
 
 }

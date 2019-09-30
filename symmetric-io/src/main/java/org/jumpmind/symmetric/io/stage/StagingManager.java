@@ -226,7 +226,7 @@ public class StagingManager implements IStagingManager {
             if (!foundResourcePath) {
                 synchronized (this) {
                     IStagedResource staged = createStagedResource(path);
-                    if (staged.exists() && staged.getState() == State.DONE) {
+                    if (staged.getState() == State.DONE) {
                         resourcePathsCache.put(path, path);
                         resource = staged;
                         foundResourcePath = true;

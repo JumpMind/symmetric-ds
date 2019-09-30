@@ -369,8 +369,7 @@ public class StagedResource implements IStagedResource {
     public BufferedWriter getWriter(long threshold) {
         if (writer == null) {
             if (file != null && file.exists()) {
-                log.warn("getWriter had to delete {} because it already existed.", 
-                        file.getAbsolutePath(), new RuntimeException("Stack Trace"));
+                log.warn("getWriter had to delete {} because it already existed.", file.getAbsolutePath());
                 file.delete();
             } else if (this.memoryBuffer != null) {
                 log.warn("We had to delete the memory buffer for {} because it already existed", getPath());

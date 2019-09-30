@@ -49,7 +49,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " before_custom_sql, reload_time, processed, channel_id, last_update_by, last_update_time "
                 + " from $(table_reload_request) "
                 + " order by load_id desc, last_update_time desc");
-        
+
         putSql("selectTableReloadRequestsByLoadId", "select source_node_id, target_node_id, load_id, "
                 + " create_table, delete_first, reload_select, channel_id, "
                 + " before_custom_sql, processed, "
@@ -79,6 +79,18 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " from $(table_reload_status) "
                 + " order by load_id desc, completed, last_update_time desc");
         
+        putSql("selectActiveTableReloadStatus", "select source_node_id, target_node_id, load_id, "
+                + " end_data_batch_id, start_data_batch_id, "
+                + " setup_batch_count, data_batch_count, finalize_batch_count, " 
+                + " setup_batch_loaded, data_batch_loaded, finalize_batch_loaded, " 
+                + " table_count, rows_loaded, rows_count, "
+                + " completed, cancelled, "
+                + " start_time, end_time, last_update_time, last_update_by, "
+                + " error_flag, sql_state, sql_code, sql_message "
+                + " from $(table_reload_status) "
+                + " where completed = 0 and cancelled = 0"
+                + " order by load_id desc, completed, last_update_time desc");
+         
         putSql("selectTableReloadStatusByLoadId", "select source_node_id, target_node_id, load_id, "
                 + " end_data_batch_id, start_data_batch_id, "
                 + " setup_batch_count, data_batch_count, finalize_batch_count, " 
@@ -89,6 +101,17 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " error_flag, sql_state, sql_code, sql_message "
                 + " from $(table_reload_status) "
                 + " where load_id = ?");
+
+        putSql("selectTableReloadStatusByTargetNodeId", "select source_node_id, target_node_id, load_id, "
+                + " end_data_batch_id, start_data_batch_id, "
+                + " setup_batch_count, data_batch_count, finalize_batch_count, "
+                + " setup_batch_loaded, data_batch_loaded, finalize_batch_loaded, "
+                + " table_count, rows_loaded, rows_count, "
+                + " completed, cancelled, "
+                + " start_time, end_time, last_update_time, last_update_by, "
+                + " error_flag, sql_state, sql_code, sql_message "
+                + " from $(table_reload_status) "
+                + " where target_node_id = ?");
         
         putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, processed = 1 where load_id = ?");
         
