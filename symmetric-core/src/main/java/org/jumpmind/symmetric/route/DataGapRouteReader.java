@@ -540,7 +540,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
 
     public void setReading(boolean reading) {
         this.reading = reading;
-        if (processInfo.getStatus() != ProcessStatus.ERROR) {
+        if (processInfo != null && processInfo.getStatus() != ProcessStatus.ERROR) {
             processInfo.setStatus(ProcessStatus.OK);
         }
     }
