@@ -415,8 +415,9 @@ public class SnapshotUtil {
             logDir = new File("logs");
         }
 
+        Map<File, Layout> matches = null;
         if (!logDir.exists()) {
-            Map<File, Layout> matches = findSymmetricLogFile();
+            matches = findSymmetricLogFile();
             if (matches != null && matches.size() == 1) {
                 logDir = matches.keySet().iterator().next().getParentFile();
             }
@@ -436,8 +437,12 @@ public class SnapshotUtil {
             if (files != null) {
                 for (File file : files) {
                     String lowerCaseFileName = file.getName().toLowerCase();
-                    if (lowerCaseFileName.contains(".log")
-                            && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))) {
+                    if (
+                    		(lowerCaseFileName.contains(".log")
+                    				&& (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))
+                            )
+                    		||
+                    		compareLogFileName(lowerCaseFileName, matches)) {
                         try {
                             FileUtils.copyFileToDirectory(file, tmpDir);
                         } catch (IOException e) {
@@ -463,6 +468,19 @@ public class SnapshotUtil {
         
         log.info("Done creating snapshot file");
         return jarFile;
+    }
+    
+    private static boolean compareLogFileName(String fileName, Map<File, Layout> matches) {
+    	boolean ret = false;
+    	if(fileName != null && fileName.length() > 0 && matches != null && matches.size() > 0) {
+    		for(File f : matches.keySet()) {
+    			if(fileName.toLowerCase().contains(f.getName().toLowerCase())) {
+    				ret = true;
+    				break;
+    			}
+    		}
+    	}
+    	return ret;
     }
 
     protected static void extract(DbExport export, File file, String... tables) {
