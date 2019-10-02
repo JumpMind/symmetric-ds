@@ -73,7 +73,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
             Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP };
 
     private final static String INSERT_DATA_EVENT_SQL = "insert into sym_data_event " + 
-            "(data_id, batch_id, router_id, create_time) values (?, ?, ?, current_timestamp)";
+            "(data_id, batch_id, create_time) values (?, ?, current_timestamp)";
 
     protected ISymmetricEngine engine;
     
@@ -262,7 +262,7 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
                     batchByNode.put(nodeId, batch);
                 }
                 batch.incrementTableCount(tableName);
-                insertDataEvent(transaction, tableInfo, batch.getBatchId(), dataId);
+                insertDataEvent(transaction, batch.getBatchId(), dataId);
                 context.getDataIds().add(dataId);
             }
             insertBatchMs += (System.currentTimeMillis() - ts);
@@ -307,9 +307,9 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
         return dataId;
     }
 
-    protected void insertDataEvent(ISqlTransaction transaction, TableInfo tableInfo, long batchId, long dataId) {
-        transaction.prepareAndExecute(INSERT_DATA_EVENT_SQL, new Object[] { dataId, batchId, tableInfo.getRouterInfo().getRouter().getRouterId() },
-            new int[] { Types.NUMERIC, Types.NUMERIC, Types.VARCHAR });
+    protected void insertDataEvent(ISqlTransaction transaction, long batchId, long dataId) {
+        transaction.prepareAndExecute(INSERT_DATA_EVENT_SQL, new Object[] { dataId, batchId },
+            new int[] { Types.NUMERIC, Types.NUMERIC });
     }
 
     public void setSymmetricEngine(ISymmetricEngine engine) {
