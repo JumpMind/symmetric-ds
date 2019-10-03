@@ -212,7 +212,8 @@ public class ConvertToReloadRouter extends AbstractDataRouter implements IDataRo
         final int typeForId = engine.getSymmetricDialect().getSqlTypeForIds();
         boolean isPostgres = engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.POSTGRESQL);
         long ts = System.currentTimeMillis();
-        
+        transaction.flush();
+
         for (TableInfo tableInfo : tableInfos) {
             RouterInfo routerInfo = tableInfo.getRouterInfo();
             String placeHolders = StringUtils.repeat("?", ", ", tableInfo.getPkColumnNames().length + 1);
