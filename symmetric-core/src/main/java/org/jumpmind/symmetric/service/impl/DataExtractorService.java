@@ -78,6 +78,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -1049,7 +1050,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         try {
                             new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
                         } catch (Exception e) {
-                            if ((e instanceof ProtocolException || (e instanceof SQLException && ((SQLException) e).getErrorCode() == 6502)) && 
+                            if ((e instanceof ProtocolException || (e.getCause() != null && e.getCause() instanceof SQLException 
+                                    && ((SQLException) e.getCause()).getErrorCode() == 6502)) && 
                                     !configurationService.getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob()) {
                                 log.warn(e.getMessage());
                                 log.info("Re-attempting extraction for batch {} with contains_big_lobs temporarily enabled for channel {}",
