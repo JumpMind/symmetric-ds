@@ -14,6 +14,14 @@ GRANT EXECUTE ON UTL_RAW TO SYMMETRIC;
 
 ifdef::pro[]
 .Log Miner Permissions
+When using Log Miner instead of triggers, the SYSDBA should put the database into archive log mode:
+
+[source, SQL]
+shutdown immediate;
+startup mount;
+alter database archivelog;
+alter database open;
+alter database add supplemental log data (all) columns;
 
 If using Oracle 11g without CDB, use the following permissions:
 
@@ -31,8 +39,6 @@ If using Oracle 12c with PDB, use the following permissions:
 grant create session, alter session, set container, select any dictionary, logmining, execute_catalog_role to c##symmetric CONTAINER=all;
 alter user c##symmetric set container_data = (cdb$root, <PDB name>) container=current;
 
-endif::pro[]
-
 ==== Known Limitations
 * The LONG data type is not supported with change capture, since LONG columns cannot be accessed from triggers.  The data in LONG columns can still be kept in sync by enabling the use_stream_lobs feature in <<TRIGGER>>.
 * The global precision of numeric columns is controlled by the oracle.template.precision parameter.  It defaults to a precision of 30,10
@@ -44,7 +50,7 @@ sym_data is cast to a clob which prevents truncation at 4k.  There is overhead f
 
 ==== Bulk Loader
 SymmetricDS has bulk loading capability available for Oracle. SymmetricDS specifies data loader types on a channel by channel basis. 
-To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("oracle_bulk") in the data_loader_type column of sym_channel.
+To utilize Oracle Bulk loading versus straight JDBC insert, specify the Oracle Bulk Loader ("bulk") in the data_loader_type column of sym_channel.
 
 ==== Optional - Partitioning
 Partitioning the DATA table by channel can help insert, routing and extraction performance on concurrent, high throughput systems. 
