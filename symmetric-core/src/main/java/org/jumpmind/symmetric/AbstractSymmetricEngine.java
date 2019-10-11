@@ -80,6 +80,7 @@ import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
+import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -110,6 +111,7 @@ import org.jumpmind.symmetric.service.impl.FileSyncService;
 import org.jumpmind.symmetric.service.impl.GroupletService;
 import org.jumpmind.symmetric.service.impl.IncomingBatchService;
 import org.jumpmind.symmetric.service.impl.LoadFilterService;
+import org.jumpmind.symmetric.service.impl.InitialLoadService;
 import org.jumpmind.symmetric.service.impl.MailService;
 import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.NodeService;
@@ -193,6 +195,8 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected ITransformService transformService;
 
+    protected IInitialLoadService initialLoadService;
+    
     protected ILoadFilterService loadFilterService;
 
     protected ITriggerRouterService triggerRouterService;
@@ -397,6 +401,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncService = buildFileSyncService();
         this.fileSyncExtractorService = new FileSyncExtractorService(this, extractSymmetricDialect);
         this.mailService = new MailService(parameterService, symmetricDialect);
+        this.initialLoadService = new InitialLoadService(this);
 
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {
@@ -1172,6 +1177,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public ILoadFilterService getLoadFilterService() {
         return this.loadFilterService;
+    }
+
+    public IInitialLoadService getInitialLoadService() {
+        return initialLoadService;
     }
 
     public IConcurrentConnectionManager getConcurrentConnectionManager() {

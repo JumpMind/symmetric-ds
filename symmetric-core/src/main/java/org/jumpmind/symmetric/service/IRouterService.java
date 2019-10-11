@@ -26,7 +26,6 @@ import java.util.Map;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
@@ -43,10 +42,6 @@ public interface IRouterService extends IService {
     public long routeData(boolean force);
  
     public long getUnroutedDataCount();
-    
-    public int countNodesThatHaveReloadsQueuedUp();
-    
-    public List<NodeSecurity> findNodesThatAreReadyForInitialLoad();
     
     public boolean shouldDataBeRouted(SimpleRouterContext context, DataMetaData dataMetaData,
             Node node, boolean initialLoad, boolean initialLoadSelectUsed, TriggerRouter triggerRouter);

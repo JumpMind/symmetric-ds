@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.security.ISecurityService;
@@ -47,6 +46,7 @@ import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.ILoadFilterService;
+import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
@@ -289,6 +289,8 @@ public interface ISymmetricEngine {
     public ITransformService getTransformService();
     
     public ILoadFilterService getLoadFilterService();
+    
+    public IInitialLoadService getInitialLoadService();
     
     public ITransportManager getTransportManager();
     

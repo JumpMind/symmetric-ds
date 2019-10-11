@@ -26,7 +26,6 @@ import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESH
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,25 +50,19 @@ import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.ProtocolException;
-import org.jumpmind.symmetric.load.DefaultReloadGenerator;
-import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.DataMetaData;
-import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.Router;
-import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
@@ -99,12 +92,8 @@ import org.jumpmind.symmetric.route.SubSelectDataRouter;
 import org.jumpmind.symmetric.route.TPSRouter;
 import org.jumpmind.symmetric.route.TransactionalBatchAlgorithm;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IConfigurationService;
-import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
-import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IRouterService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
 import org.jumpmind.util.FormatUtils;
 
@@ -130,8 +119,6 @@ public class RouterService extends AbstractService implements IRouterService {
     protected IExtensionService extensionService;
     
     protected DataGapDetector gapDetector;
-
-    protected boolean syncTriggersBeforeInitialLoadAttempted = false;
     
     protected boolean firstTimeCheck = true;
     
@@ -160,7 +147,6 @@ public class RouterService extends AbstractService implements IRouterService {
         extensionService.addExtensionPoint("tps", new TPSRouter(engine));
 
         extensionService.addExtensionPoint("csv", new CSVRouter(engine));
-        extensionService.addExtensionPoint(DefaultReloadGenerator.NAME, new DefaultReloadGenerator(engine));
         extensionService.addExtensionPoint(ConvertToReloadRouter.ROUTER_ID, new ConvertToReloadRouter(engine));
 
         setSqlMap(new RouterServiceSqlMap(symmetricDialect.getPlatform(),
@@ -211,8 +197,6 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                         firstTimeCheck = false;
                     }
-
-                    insertInitialLoadEvents();
                     
                     do {
                         engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
@@ -242,247 +226,6 @@ public class RouterService extends AbstractService implements IRouterService {
             }
         }
         return dataCount;
-    }
-
-    /**
-     * If a load has been queued up by setting the initial load enabled or
-     * reverse initial load enabled flags, then the router service will insert
-     * the reload events. This process will not run at the same time sync
-     * triggers is running.
-     */
-    protected void insertInitialLoadEvents() {
-
-        ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
-                new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), null,
-                        ProcessType.INSERT_LOAD_EVENTS));
-        processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
-
-        try {
-
-            INodeService nodeService = engine.getNodeService();
-            Node identity = nodeService.findIdentity();
-            if (identity != null) {
-                boolean isClusteringEnabled = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
-                NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), !isClusteringEnabled);
-                if (engine.getParameterService().isRegistrationServer()
-                        || (identitySecurity != null && !identitySecurity.isRegistrationEnabled() && identitySecurity
-                                .getRegistrationTime() != null)) {
-
-                    List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
-                    Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId = new HashMap<String, List<TriggerRouter>>();
-                    
-                    if (nodeSecurities != null && nodeSecurities.size() > 0) {
-                        boolean reverseLoadFirst = parameterService
-                                .is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
-                        
-                        for (NodeSecurity security : nodeSecurities) {
-                        		Node targetNode = engine.getNodeService().findNode(security.getNodeId());
-                            List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
-                            
-                            if (activeHistories.size() > 0) {
-                                boolean thisMySecurityRecord = security.getNodeId().equals(
-                                        identity.getNodeId());
-                                boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-                                boolean initialLoadQueued = security.isInitialLoadEnabled();
-                                boolean registered = security.getRegistrationTime() != null;
-                                if (thisMySecurityRecord && reverseLoadQueued
-                                        && (reverseLoadFirst || !initialLoadQueued)) {
-                                    sendReverseInitialLoad(processInfo);
-                                    TableReloadRequest reloadRequest = new TableReloadRequest();
-                                    reloadRequest.setTriggerId(ParameterConstants.ALL);
-                                    reloadRequest.setRouterId(ParameterConstants.ALL);
-                                    reloadRequest.setSourceNodeId(security.getNodeId());
-                                    reloadRequest.setTargetNodeId(identity.getNodeId());
-                                    reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
-                                    reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
-                                    reloadRequest.setCreateTime(new Date());
-                                    log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
-                                    engine.getDataService().insertTableReloadRequest(reloadRequest);
-                                    
-                                } else if (!thisMySecurityRecord && registered && initialLoadQueued
-                                        &&  (!reverseLoadFirst || !reverseLoadQueued)) {
-                                    TableReloadRequest reloadRequest = new TableReloadRequest();
-                                    reloadRequest.setTriggerId(ParameterConstants.ALL);
-                                    reloadRequest.setRouterId(ParameterConstants.ALL);
-                                    reloadRequest.setSourceNodeId(identity.getNodeId());
-                                    reloadRequest.setTargetNodeId(security.getNodeId());
-                                    reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
-                                    reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
-                                    reloadRequest.setCreateTime(new Date());
-                                    log.info("Creating load request from node " + identity.getNodeId() + " to node " + security.getNodeId());
-                                    engine.getDataService().insertTableReloadRequest(reloadRequest);
-                                }
-                            } else {
-                                List<NodeGroupLink> links = engine.getConfigurationService()
-                                        .getNodeGroupLinksFor(parameterService.getNodeGroupId(),
-                                                false);
-                                if (links == null || links.size() == 0) {
-                                    log.warn(
-                                            "Could not queue up a load for {} because a node group link is NOT configured over which a load could be delivered",
-                                            security.getNodeId());
-                                } else {
-                                    log.warn(
-                                            "Could not queue up a load for {} because sync triggers has not yet run",
-                                            security.getNodeId());
-                                    if (!syncTriggersBeforeInitialLoadAttempted) {
-                                        syncTriggersBeforeInitialLoadAttempted = true;
-                                        engine.getTriggerRouterService().syncTriggers();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    processTableRequestLoads(identity, processInfo, triggerRoutersByTargetNodeGroupId);
-                }
-            }
-
-            processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
-        } catch (Exception ex) {
-            processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
-            log.error("", ex);
-        }
-
-    }
-
-    public void processTableRequestLoads(Node source, ProcessInfo processInfo,  Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId) {
-        List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
-        if (loadsToProcess.size() > 0) {
-            processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
-            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
-            
-            boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
-            boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
-
-            Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
-            Map<Integer, ExtractRequest> extractRequests = null;
-            
-            for (TableReloadRequest load : loadsToProcess) {
-                Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
-                if (!useExtractJob || streamToFile) {
-                    if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
-                        List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
-                        fullLoad.add(load);
-
-                        List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                                .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
-
-                        List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class)
-                                .getActiveTriggerHistories(targetNode);
-
-                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories, triggerRouters, extractRequests);
-                    } else {
-                        NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
-
-                        boolean registered = targetNodeSecurity != null && (targetNodeSecurity.getRegistrationTime() != null
-                                || targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
-                        if (registered) {
-                            // Make loads unique to the target and create time
-                            String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
-                            if (!requestsSplitByLoad.containsKey(key)) {
-                                requestsSplitByLoad.put(key, new ArrayList<TableReloadRequest>());
-                            }
-                            requestsSplitByLoad.get(key).add(load);
-                        } else {
-                            log.warn("There was a load queued up for '{}', but the node is not registered.  It is being ignored",
-                                    load.getTargetNodeId());
-                        }
-                    }
-                } else {
-                    throw new SymmetricException(String.format("Node '%s' can't process load for '%s' because of conflicting parameters: %s=%s and %s=%s", 
-                            source.getNodeId(), load.getTargetNodeId(), ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED,
-                            streamToFile));
-                }
-            }
-            
-            for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
-                Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0], true);
-                if (targetNode == null) {
-                    targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0], false);
-                }
-                ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-                List<TriggerRouter> triggerRouters = triggerRoutersByTargetNodeGroupId.get(targetNode.getNodeGroupId());
-                if (triggerRouters == null) {
-                    triggerRouters = triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
-                    triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
-                }
-                List<TriggerHistory> activeHistories = extensionService.getExtensionPoint(IReloadGenerator.class).getActiveTriggerHistories(targetNode);
-                
-                extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories, triggerRouters, extractRequests);
-            }
-        }
-    }
-    
-    public boolean isValidLoadTarget(String targetNodeId) {
-        boolean result = false;
-        NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(targetNodeId);
-
-        boolean reverseLoadFirst = parameterService.is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
-        boolean registered = targetNodeSecurity.getRegistrationTime() != null;
-        boolean reverseLoadQueued = targetNodeSecurity.isRevInitialLoadEnabled();
-
-        if (registered && (!reverseLoadFirst || !reverseLoadQueued)) {
-            result = true;
-        } else {
-            log.info("Unable to process load for target node id " + targetNodeId + " [registered: " + registered
-                    + ", reverse load first: " + reverseLoadFirst + ", reverse load queued: " + reverseLoadQueued
-                    + "]");
-        }
-        return result;
-    }
-    
-    @Override
-    public int countNodesThatHaveReloadsQueuedUp() {
-        Set<String> nodeIds = new HashSet<>();
-        IDataService dataService = engine.getDataService();
-        INodeService nodeService = engine.getNodeService();
-        String me = nodeService.findIdentityNodeId();        
-        List<TableReloadRequest> toProcess = dataService.getTableReloadRequestToProcess(me);
-        for (TableReloadRequest tableReloadRequest : toProcess) {
-            nodeIds.add(tableReloadRequest.getTargetNodeId());
-        }
-        
-        List<NodeSecurity> nodes = findNodesThatAreReadyForInitialLoad();
-        for (NodeSecurity nodeSecurity : nodes) {
-            nodeIds.add(nodeSecurity.getNodeId());
-        }
-        return nodeIds.size();
-    }
-
-    public List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
-        INodeService nodeService = engine.getNodeService();
-        IConfigurationService configurationService = engine.getConfigurationService();
-        String me = nodeService.findIdentityNodeId();
-        List<NodeSecurity> toReturn = new ArrayList<NodeSecurity>();
-        List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
-        for (NodeSecurity nodeSecurity : securities) {
-            if (((!nodeSecurity.getNodeId().equals(me)
-                    && nodeSecurity
-                        .isInitialLoadEnabled())
-                    || (!nodeSecurity.getNodeId().equals(me) && configurationService
-                            .isMasterToMaster()) || (nodeSecurity.getNodeId().equals(me) && nodeSecurity
-                    .isRevInitialLoadEnabled()))) {
-                toReturn.add(nodeSecurity);
-            }
-        }
-        return toReturn;
-    }
-
-    protected void sendReverseInitialLoad(ProcessInfo processInfo) {
-        INodeService nodeService = engine.getNodeService();
-        boolean queuedLoad = false;
-        List<Node> nodes = new ArrayList<Node>();
-        nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-        nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
-        for (Node node : nodes) {
-            engine.getDataService().insertReloadEvents(node, true, processInfo);
-            queuedLoad = true;
-        }
-
-        if (!queuedLoad) {
-            log.info("{} was enabled but no nodes were linked to load",
-                    ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
-        }
     }
 
     /**

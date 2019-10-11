@@ -63,6 +63,7 @@ public class BuiltInJobs {
         builtInJobs.add(new MonitorJob(engine, taskScheduler));
         builtInJobs.add(new ReportStatusJob(engine, taskScheduler));
         builtInJobs.add(new LogMinerJob(engine, taskScheduler));
+        builtInJobs.add(new InitialLoadJob(engine, taskScheduler));
 
         for (IJob builtInJob : builtInJobs) {
             setBuiltInDefaults(builtInJob);
