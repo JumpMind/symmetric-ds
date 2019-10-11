@@ -489,6 +489,7 @@ public class ClusterService extends AbstractService implements IClusterService {
                 }
             }
 
+            serverId = StringUtils.left(serverId, 255);
             log.info("This node picked a server id of {}", serverId);
         }
         return serverId;
