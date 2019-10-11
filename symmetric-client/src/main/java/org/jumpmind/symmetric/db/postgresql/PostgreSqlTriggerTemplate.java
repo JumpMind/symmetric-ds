@@ -94,7 +94,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_insert_text)                                                                                                                                             \n" +
 "                                  return null;                                                                                                                                                         \n" +
 "                                end;                                                                                                                                                                   \n" +
-"                                $function$ language plpgsql;                                                                                                                                           " );
+"                                $function$ language plpgsql" + getSecurityClause() + ";");
 
         sqlTemplates.put("insertReloadTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
@@ -118,7 +118,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_insert_text)                                                                                                                                             \n" +
 "                                  return null;                                                                                                                                                         \n" +
 "                                end;                                                                                                                                                                   \n" +
-"                                $function$ language plpgsql;                                                                                                                                           " );
+"                                $function$ language plpgsql" + getSecurityClause() + ";");
 
         
         sqlTemplates.put("insertPostTriggerTemplate" ,
@@ -155,7 +155,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_update_text)                                                                                                                                             \n" +
 "                                  return null;                                                                                                                                                         \n" +
 "                                end;                                                                                                                                                                   \n" +
-"                                $function$ language plpgsql;                                                                                                                                           " );
+"                                $function$ language plpgsql" + getSecurityClause() + ";");
 
         sqlTemplates.put("updateReloadTriggerTemplate" ,
 "create or replace function $(schemaName)f$(triggerName)() returns trigger as $function$                                                                                                                \n" +
@@ -185,7 +185,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_update_text)                                                                                                                                             \n" +
 "                                  return null;                                                                                                                                                         \n" +
 "                                end;                                                                                                                                                                   \n" +
-"                                $function$ language plpgsql;                                                                                                                                           " );
+"                                $function$ language plpgsql" + getSecurityClause() + ";");
 
         sqlTemplates.put("updatePostTriggerTemplate" ,
 "create trigger $(triggerName) after update on $(schemaName)$(tableName)                                                                                                                                \n" +
@@ -214,7 +214,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                  $(custom_on_delete_text)                                                                                                                                             \n" +
 "                                  return null;                                                                                                                                                         \n" +
 "                                end;                                                                                                                                                                   \n" +
-"                                $function$ language plpgsql;                                                                                                                                           " );
+"                                $function$ language plpgsql" + getSecurityClause() + ";");
 
         sqlTemplates.put("deletePostTriggerTemplate" ,
 "create trigger $(triggerName) after delete on $(schemaName)$(tableName)                                                                                                                                \n" +
@@ -236,6 +236,13 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         } else {
             return String.format("CURRENT_TIMESTAMP AT TIME ZONE '%s'", timezone);
         }    
+    }
+    
+    protected String getSecurityClause() {
+        if (symmetricDialect.getParameterService().is(ParameterConstants.POSTGRES_SECURITY_DEFINER, false)) {
+            return " security definer";
+        }
+        return "";
     }
 
 }
