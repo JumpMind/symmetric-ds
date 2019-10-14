@@ -3,3 +3,5 @@
 *.iml
 
 /.idea/*
+*.ipr
+*.iws

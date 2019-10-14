@@ -23,6 +23,7 @@ dependencies {
 allprojects {
 
     apply plugin: 'eclipse'
+    apply plugin: 'idea'
 
     group = 'org.jumpmind.symmetric'
     
@@ -114,6 +115,16 @@ subprojects { subproject ->
             project.natures.remove('org.eclipse.buildship.core.gradleprojectnature')            
         }
     }
+
+    idea {
+        module {
+            testResourceDirs = []
+            testSourceDirs = [ file('src/test/java'), file('src/test/groovy')]
+            resourceDirs += file('src/test/resources')
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }   
     
     javadoc {
         failOnError = false
@@ -287,7 +298,7 @@ subprojects { subproject ->
     }    
 
     task develop {
-        dependsOn tasks.cleanEclipse, tasks.eclipse
+        dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
         
         doLast {
             def wstFacetXml = "$projectDir/.settings/org.eclipse.wst.common.project.facet.core.xml"
