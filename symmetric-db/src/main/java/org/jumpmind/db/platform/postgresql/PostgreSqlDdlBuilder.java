@@ -280,6 +280,18 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
             return result.toString();
         }
     }
+    
+    @Override
+    protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
+    	if(sourceColumn != null && sourceColumn.getMappedTypeCode() == Types.TIME &&
+    			targetColumn != null && targetColumn.getMappedTypeCode() == Types.TIMESTAMP)
+    	{
+    		ddl.append("date_trunc('DAY', localtimestamp) + ");
+    		printIdentifier(getColumnName(sourceColumn), ddl);
+    	} else {
+    		super.writeCastExpression(sourceColumn, targetColumn, ddl);
+    	}
+    }
 
     @Override
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
