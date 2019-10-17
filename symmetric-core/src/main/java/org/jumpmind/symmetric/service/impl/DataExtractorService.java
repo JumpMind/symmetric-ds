@@ -155,6 +155,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IExtensionService;
+import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
 import org.jumpmind.symmetric.service.INodeService;
@@ -189,6 +190,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     IOutgoingBatchService outgoingBatchService;
 
     private IRouterService routerService;
+
+    private IInitialLoadService initialLoadService;
 
     private IConfigurationService configurationService;
 
@@ -232,6 +235,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.clusterService = engine.getClusterService();
         this.sequenceService = engine.getSequenceService();
         this.extensionService = engine.getExtensionService();
+        this.initialLoadService = engine.getInitialLoadService();
         setSqlMap(new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
@@ -541,6 +545,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         
         if (!startRoutingJob && parameterService.is(ParameterConstants.ROUTE_ON_EXTRACT)) {
+            initialLoadService.queueLoads(true);
             routerService.routeData(true);
         }
         

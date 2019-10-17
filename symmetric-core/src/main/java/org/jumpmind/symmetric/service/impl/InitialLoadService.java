@@ -59,7 +59,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
     protected IExtensionService extensionService;
 
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
-
+    
     public InitialLoadService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
 
@@ -89,7 +89,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     }
 
                     if (isRegistered) {
-                        processInitialLoad(identity, processInfo);
+                        processInitialLoadEnabledFlag(identity, processInfo);
                         processTableRequestLoads(identity, processInfo);
                     }
                     
@@ -111,7 +111,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
      * initial load enabled flags, then the router service will insert the reload
      * events. This process will not run at the same time sync triggers is running.
      */
-    public void processInitialLoad(Node identity, ProcessInfo processInfo) {
+    public void processInitialLoadEnabledFlag(Node identity, ProcessInfo processInfo) {
         try {
             List<NodeSecurity> nodeSecurities = findNodesThatAreReadyForInitialLoad();
             if (nodeSecurities != null && nodeSecurities.size() > 0) {
@@ -122,6 +122,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     activeHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
                 }
                 
+                Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup = new HashMap<String, List<TriggerRouter>>();
+
                 for (NodeSecurity security : nodeSecurities) {
                     if (reloadGenerator != null) {
                         Node targetNode = engine.getNodeService().findNode(security.getNodeId());
@@ -134,7 +136,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         boolean initialLoadQueued = security.isInitialLoadEnabled();
                         boolean registered = security.getRegistrationTime() != null;
                         if (thisMySecurityRecord && reverseLoadQueued && (reverseLoadFirst || !initialLoadQueued)) {
-                            sendReverseInitialLoad(processInfo);
+                            sendReverseInitialLoad(processInfo, activeHistories, triggerRoutersByNodeGroup);
                             TableReloadRequest reloadRequest = new TableReloadRequest();
                             reloadRequest.setTriggerId(ParameterConstants.ALL);
                             reloadRequest.setRouterId(ParameterConstants.ALL);
@@ -187,12 +189,21 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
             processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
 
+            int maxLoadCount = parameterService.getInt(ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER, 20);            
+            int activeLoadCount = engine.getDataService().getActiveTableReloadStatus().size();
+            String maxLoadsReachedMessage = "Max initial/partial loads of {} are already active";
+            if (activeLoadCount >= maxLoadCount) {
+                log.info(maxLoadsReachedMessage, activeLoadCount);
+                return;
+            }
+
             boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
-
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
+            Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup = new HashMap<String, List<TriggerRouter>>();
             Map<Integer, ExtractRequest> extractRequests = null;
             List<TriggerHistory> activeHistories = null;
+
             IReloadGenerator reloadGenerator = extensionService.getExtensionPoint(IReloadGenerator.class);
             if (reloadGenerator == null) {
                 activeHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
@@ -204,9 +215,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
                         fullLoad.add(load);
-
-                        List<TriggerRouter> triggerRouters = engine.getTriggerRouterService()
-                                .getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), targetNode.getNodeGroupId());
+                        List<TriggerRouter> triggerRouters = getTriggerRoutersForNodeGroup(triggerRoutersByNodeGroup, targetNode.getNodeGroupId());
 
                         if (reloadGenerator != null) {
                             activeHistories = reloadGenerator.getActiveTriggerHistories(targetNode);
@@ -214,6 +223,11 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
                         extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories,
                                 triggerRouters, extractRequests);
+
+                        if (++activeLoadCount >= maxLoadCount) {
+                            log.info(maxLoadsReachedMessage, activeLoadCount);
+                            return;
+                        }
                     } else {
                         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
 
@@ -259,8 +273,22 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
                 extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories,
                         triggerRouters, extractRequests);
+
+                if (++activeLoadCount >= maxLoadCount) {
+                    log.info(maxLoadsReachedMessage, activeLoadCount);
+                    return;
+                }
             }
         }
+    }
+
+    protected List<TriggerRouter> getTriggerRoutersForNodeGroup(Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup, String nodeGroupId) {
+        List<TriggerRouter> list = triggerRoutersByNodeGroup.get(nodeGroupId);
+        if (list == null) {
+            engine.getTriggerRouterService().getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), nodeGroupId);
+            triggerRoutersByNodeGroup.put(nodeGroupId, list);
+        }
+        return list;
     }
 
     protected List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
@@ -279,14 +307,16 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         return toReturn;
     }
 
-    protected void sendReverseInitialLoad(ProcessInfo processInfo) {
+    protected void sendReverseInitialLoad(ProcessInfo processInfo, List<TriggerHistory> activeHistories,
+            Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup) {        
         INodeService nodeService = engine.getNodeService();
         boolean queuedLoad = false;
         List<Node> nodes = new ArrayList<Node>();
         nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
         nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
         for (Node node : nodes) {
-            engine.getDataService().insertReloadEvents(node, true, processInfo);
+            List<TriggerRouter> triggerRouters = getTriggerRoutersForNodeGroup(triggerRoutersByNodeGroup, node.getNodeGroupId()); 
+            engine.getDataService().insertReloadEvents(node, true, null, processInfo, activeHistories, triggerRouters, null);
             queuedLoad = true;
         }
 

@@ -100,12 +100,6 @@ public interface IDataService {
     
     public String sendSQL(String nodeId, String sql);
 
-    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters);
-    
-    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo);
-
-    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo);
-    
     public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
             List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests);
     

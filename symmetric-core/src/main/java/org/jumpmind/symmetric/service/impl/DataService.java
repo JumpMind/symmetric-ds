@@ -761,28 +761,6 @@ public class DataService extends AbstractService implements IDataService {
     }
     
     @Override
-    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo) {
-        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-        Node sourceNode = engine.getNodeService().findIdentity();
-        insertReloadEvents(targetNode, reverse, null, processInfo, triggerRouterService.getActiveTriggerHistories(), 
-                triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()), null);
-    }
-    
-    @Override
-    public void insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo) {
-        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
-        Node sourceNode = engine.getNodeService().findIdentity();
-        insertReloadEvents(targetNode, reverse, reloadRequests, processInfo, triggerRouterService.getActiveTriggerHistories(), 
-                triggerRouterService.getAllTriggerRoutersForReloadForCurrentNode(sourceNode.getNodeGroupId(), targetNode.getNodeGroupId()), null);
-    }
-    
-    @Override
-    public void insertReloadEvents(Node targetNode, boolean reverse, ProcessInfo processInfo, List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters) {
-        insertReloadEvents(targetNode, reverse, null, processInfo, activeHistories, triggerRouters, null);
-    }    
-    
-    
-    @Override
     public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
             List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests) {
         if (engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS)) {

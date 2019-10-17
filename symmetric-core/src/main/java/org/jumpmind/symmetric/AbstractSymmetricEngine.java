@@ -380,6 +380,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.routerService = buildRouterService();
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
+        this.initialLoadService = new InitialLoadService(this);
         this.dataExtractorService = new DataExtractorService(this, extractSymmetricDialect);
         this.transportManager = new TransportManagerFactory(this).create();
         this.offlineTransportManager = new TransportManagerFactory(this).create(Constants.PROTOCOL_FILE);
@@ -401,7 +402,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.fileSyncService = buildFileSyncService();
         this.fileSyncExtractorService = new FileSyncExtractorService(this, extractSymmetricDialect);
         this.mailService = new MailService(parameterService, symmetricDialect);
-        this.initialLoadService = new InitialLoadService(this);
 
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {
