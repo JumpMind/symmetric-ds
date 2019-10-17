@@ -285,7 +285,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
     protected List<TriggerRouter> getTriggerRoutersForNodeGroup(Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup, String nodeGroupId) {
         List<TriggerRouter> list = triggerRoutersByNodeGroup.get(nodeGroupId);
         if (list == null) {
-            engine.getTriggerRouterService().getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), nodeGroupId);
+            list = engine.getTriggerRouterService().getAllTriggerRoutersForReloadForCurrentNode(parameterService.getNodeGroupId(), nodeGroupId);
             triggerRoutersByNodeGroup.put(nodeGroupId, list);
         }
         return list;
