@@ -46,7 +46,7 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class InterbaseDdlBuilder extends AbstractDdlBuilder {
 
-    public static int SWITCH_TO_LONGVARCHAR_SIZE = 4096;
+    public static int SWITCH_TO_LONGVARCHAR_SIZE = 3840;
 
     public InterbaseDdlBuilder() {
         
