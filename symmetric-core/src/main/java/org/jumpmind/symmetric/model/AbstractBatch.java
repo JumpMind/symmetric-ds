@@ -306,7 +306,7 @@ public class AbstractBatch implements Serializable {
     }
 
     public String getStagedLocation() {
-        return Batch.getStagedLocation(false, getNodeId());
+        return Batch.getStagedLocation(false, nodeId, batchId);
     }
 
     public void incrementByteCount(int size) {

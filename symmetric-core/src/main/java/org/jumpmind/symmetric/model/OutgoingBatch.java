@@ -66,7 +66,7 @@ public class OutgoingBatch extends AbstractBatch {
 
     @Override
     public String getStagedLocation() {
-        return Batch.getStagedLocation(isCommonFlag(), getNodeId());
+        return Batch.getStagedLocation(isCommonFlag(), getNodeId(), getBatchId());
     }
 
     @Override

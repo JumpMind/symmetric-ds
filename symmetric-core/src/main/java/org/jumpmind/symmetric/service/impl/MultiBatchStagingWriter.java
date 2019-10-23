@@ -240,7 +240,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
                 if (parentResource != null) {
                     IStagedResource childResource = stagingManager.create(Constants.STAGING_CATEGORY_OUTGOING, 
-                            Batch.getStagedLocation(false, childRequest.getNodeId()), childBatchId);
+                            Batch.getStagedLocation(false, childRequest.getNodeId(), childBatchId), childBatchId);
                     log.debug("About to copy batch {} to batch {}-{}", this.outgoingBatch.getNodeBatchId(), childRequest.getNodeId(), childBatchId);
                     BufferedReader reader = parentResource.getReader();
                     BufferedWriter writer = childResource.getWriter(memoryThresholdInBytes);
