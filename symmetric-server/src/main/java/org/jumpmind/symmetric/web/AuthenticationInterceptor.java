@@ -25,6 +25,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.service.INodeService;
@@ -41,22 +42,58 @@ public class AuthenticationInterceptor implements IInterceptor {
 
     private INodeService nodeService;
     
-    public AuthenticationInterceptor(INodeService nodeService) {
+    private boolean useSessionAuth;
+    
+    private int sessionExpireMillis;
+    
+    public AuthenticationInterceptor(INodeService nodeService, boolean useSessionAuth, int sessionExpireSeconds) {
         this.nodeService = nodeService;
+        this.useSessionAuth = useSessionAuth;
+        this.sessionExpireMillis = sessionExpireSeconds * 1000;
     }
 
-    public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException,
-            ServletException {
-        String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
-        String nodeId = req.getParameter(WebConstants.NODE_ID);
+    public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 
-        if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
-            ServletUtils.sendError(resp, HttpServletResponse.SC_FORBIDDEN);
-            return false;
+        HttpSession session = null;
+        String nodeId = null;
+        AuthenticationStatus status = AuthenticationStatus.FORBIDDEN;
+
+        if (useSessionAuth) {
+            session = req.getSession(false);
+            if (session != null) {
+                nodeId = (String) session.getAttribute(WebConstants.NODE_ID);
+                if ((sessionExpireMillis > 0 && System.currentTimeMillis() - session.getCreationTime() > sessionExpireMillis) 
+                        || StringUtils.isEmpty(nodeId)) {
+                    log.debug("Node '{}' needs to renew authentication", nodeId);
+                    session.invalidate();
+                    ServletUtils.sendError(resp, WebConstants.SC_AUTH_EXPIRED);
+                    return false;
+                }
+            }
         }
 
-        AuthenticationStatus status = nodeService.getAuthenticationStatus(nodeId, securityToken);
-
+        if (nodeId != null) {
+            status = AuthenticationStatus.ACCEPTED;
+        } else {
+            String securityToken = req.getHeader(WebConstants.SECURITY_TOKEN);
+            if (securityToken == null) {
+                securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
+            }
+            nodeId = req.getParameter(WebConstants.NODE_ID);
+    
+            if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
+                ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN);
+                return false;
+            }
+    
+            status = nodeService.getAuthenticationStatus(nodeId, securityToken);
+            
+            if (useSessionAuth && AuthenticationStatus.ACCEPTED.equals(status)) {
+                session = req.getSession();
+                session.setAttribute(WebConstants.NODE_ID, nodeId);
+            }
+        }
+        
         if (AuthenticationStatus.ACCEPTED.equals(status)) {
             log.debug("Node '{}' successfully authenticated", nodeId);
             return true;

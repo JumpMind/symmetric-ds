@@ -57,12 +57,22 @@ public class HttpIncomingTransport implements IIncomingTransport {
     
     private String redirectionUrl;
     
+    private String nodeId;
+    
+    private String securityToken;
+
     public HttpIncomingTransport(HttpURLConnection connection, IParameterService parameterService) {
         this.connection = connection;
         this.parameterService = parameterService;
         this.httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
-    
+
+    public HttpIncomingTransport(HttpURLConnection connection, IParameterService parameterService, String nodeId, String securityToken) {
+        this(connection, parameterService);
+        this.nodeId = nodeId;
+        this.securityToken = securityToken;
+    }
+
     @Override
     public String getUrl() {
         return this.connection.getURL().toExternalForm();
@@ -71,16 +81,18 @@ public class HttpIncomingTransport implements IIncomingTransport {
     @Override
     public void close() {
         if (reader != null) {
-        	try {
-        		reader.close();
-        	} catch(IOException e) { }
+            try {
+                reader.close();
+            } catch (IOException e) {
+            }
             reader = null;
-        } 
-        
+        }
+
         if (is != null) {
-        	try {
-        		is.close();
-        	} catch(IOException e) { }
+            try {
+                is.close();
+            } catch (IOException e) {
+            }
             is = null;
         }
     }
@@ -116,7 +128,11 @@ public class HttpIncomingTransport implements IIncomingTransport {
         case WebConstants.SC_SERVICE_UNAVAILABLE:
             throw new ServiceUnavailableException();
         case WebConstants.SC_FORBIDDEN:
+            HttpTransportManager.clearSession(connection);
             throw new AuthenticationException();
+        case WebConstants.SC_AUTH_EXPIRED:
+            HttpTransportManager.clearSession(connection);
+            throw new AuthenticationException(true);
         case WebConstants.SC_NO_CONTENT:
             throw new NoContentException();
         case WebConstants.SC_OK:
@@ -159,20 +175,16 @@ public class HttpIncomingTransport implements IIncomingTransport {
     {      
        boolean redir;
        int redirects = 0;
-       do
-       {
+       do {
           connection.setInstanceFollowRedirects(false);         
           redir = false;
              int stat = connection.getResponseCode();
-             if (stat >= 300 && stat <= 307 && stat != 306 &&
-                stat != HttpURLConnection.HTTP_NOT_MODIFIED)
-             {
+             if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpURLConnection.HTTP_NOT_MODIFIED) {
                 URL base = connection.getURL();
                 redirectionUrl = connection.getHeaderField("Location");
 
                 URL target = null;
-                if (redirectionUrl != null)
-                {
+                if (redirectionUrl != null) {
                    target = new URL(base, redirectionUrl);
                 }
                 connection.disconnect();
@@ -180,29 +192,19 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 // and should be limited to 5 redirections at most.
                 if (target == null || !(target.getProtocol().equals("http")
                    || target.getProtocol().equals("https"))
-                   || redirects >= 5)
-                {
+                   || redirects >= 5) {
                    throw new SecurityException("illegal URL redirect");
                 }
                 redir = true;
-                connection = HttpTransportManager.openConnection(target, getBasicAuthUsername(), getBasicAuthPassword());
+                connection = HttpTransportManager.openConnection(target, nodeId, securityToken);
                 connection.setConnectTimeout(httpTimeout);
                 connection.setReadTimeout(httpTimeout);
 
                 redirects++;
              }
-       }
-       while (redir);
+       } while (redir);
        
        return connection;
-    }
-    
-    protected String getBasicAuthUsername() {
-        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME);
-    }
-
-    protected String getBasicAuthPassword() {
-        return parameterService.getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD);
     }
     
     public HttpURLConnection getConnection() {

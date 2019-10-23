@@ -79,7 +79,9 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
     protected void init() {
         super.init();
 
-        AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService);
+        boolean useSessionAuth = parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_SESSION_AUTH);
+        int sessionExpireSeconds = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_SESSION_EXPIRE_SECONDS);
+        AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService, useSessionAuth, sessionExpireSeconds);
         NodeConcurrencyInterceptor concurrencyInterceptor = new NodeConcurrencyInterceptor(
                 concurrentConnectionManager, configurationService, statisticManager);
         IInterceptor[] customInterceptors = buildCustomInterceptors();

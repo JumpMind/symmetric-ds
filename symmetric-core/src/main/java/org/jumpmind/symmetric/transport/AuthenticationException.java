@@ -25,4 +25,17 @@ public class AuthenticationException extends OfflineException {
 
     private static final long serialVersionUID = -6322765147037755510L;
 
+    private boolean isExpiredSession;
+
+    public AuthenticationException() {
+    }
+    
+    public AuthenticationException(boolean isExpiredSession) {
+        this.isExpiredSession = isExpiredSession;
+    }
+
+    public boolean isExpiredSession() {
+        return isExpiredSession;
+    }
+
 }

@@ -26,11 +26,9 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
-import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +39,7 @@ public class BandwidthService implements IBandwidthService {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private IParameterService parameterService;
-
     public BandwidthService(IParameterService parameterService) {
-        this.parameterService = parameterService;
     }
 
     public double getDownloadKbpsFor(String syncUrl, long sampleSize, long maxTestDuration) {
@@ -70,7 +65,6 @@ public class BandwidthService implements IBandwidthService {
             URL u = new URL(String.format("%s/bandwidth?sampleSize=%s", syncUrl, sampleSize));
             bw.start();
             HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-            setBasicAuthIfNeeded(conn);
 
             conn.connect();
             is = conn.getInputStream();
@@ -83,20 +77,12 @@ public class BandwidthService implements IBandwidthService {
             log.info("{} was calculated to have a download bandwidth of {} kbps", syncUrl, bw.getKbps());
             return bw;
         } finally {
-        	if(is != null) {
-        		try {
-        			is.close();
-        		} catch(IOException e) { }
-        	}
-        }
-    }
-
-    protected void setBasicAuthIfNeeded(HttpURLConnection conn) {
-        if (parameterService != null) {
-            HttpTransportManager.setBasicAuthIfNeeded(conn, parameterService
-                    .getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_USERNAME),
-                    parameterService
-                            .getString(ParameterConstants.TRANSPORT_HTTP_BASIC_AUTH_PASSWORD));
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
         }
     }
 

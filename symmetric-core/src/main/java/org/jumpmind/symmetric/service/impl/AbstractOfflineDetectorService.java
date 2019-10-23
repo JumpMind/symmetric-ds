@@ -101,7 +101,11 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
             status.setStatus(Status.BUSY);
         } else if (isNotAuthenticated(exception)) {
-            log.warn("Authorization denied from {} at {}", new Object[] {remoteNode, syncUrl});
+            if (isAuthenticationExpired(exception)) {
+                log.debug("Authentication is required again to renew session");
+            } else {
+                log.warn("Authorization denied from {} at {}", new Object[] {remoteNode, syncUrl});
+            }
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isSyncDisabled(exception)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
@@ -187,6 +191,24 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
                     cause instanceof AuthenticationException;
         }
         return offline;
+    }
+
+    protected boolean isAuthenticationExpired(Exception ex) {
+        boolean expired = false;
+        if (ex != null) {
+            Throwable cause = getRootCause(ex);
+            AuthenticationException authException = null;
+            if (ex instanceof AuthenticationException) {
+                authException = (AuthenticationException) ex;
+            }
+            if (cause instanceof AuthenticationException) {
+                authException = (AuthenticationException) cause;
+            }
+            if (authException != null) {
+                expired = authException.isExpiredSession();
+            }
+        }
+        return expired;
     }
 
     protected boolean isBusy(Exception ex) {
