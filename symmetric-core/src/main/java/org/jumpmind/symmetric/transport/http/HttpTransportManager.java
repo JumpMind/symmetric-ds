@@ -27,13 +27,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -69,9 +66,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     protected ISymmetricEngine engine;
     
-    protected static boolean useHeaderSecurityToken;
+    protected Map<String, String> sessionIdByUri = new HashMap<String, String>();
+
+    protected boolean useHeaderSecurityToken;
     
-    protected static boolean useSessionAuth;
+    protected boolean useSessionAuth;
 
     public HttpTransportManager() {
     }
@@ -163,55 +162,45 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected void checkForConnectionUpgrade(HttpURLConnection conn) {
     }
 
-    public static HttpURLConnection openConnection(URL url, String nodeId, String securityToken)
+    public HttpURLConnection openConnection(URL url, String nodeId, String securityToken)
             throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty(WebConstants.HEADER_ACCEPT_CHARSET, IoConstants.ENCODING);
-        addSecurityToken(conn, securityToken);
+
+        boolean hasSession = false;
+        if (useSessionAuth) {
+            String sessionId = sessionIdByUri.get(getUri(conn));
+            if (sessionId != null) {
+                conn.setRequestProperty(WebConstants.HEADER_SESSION_ID, sessionId);
+                hasSession = true;
+            }
+        }
+
+        if (securityToken != null && useHeaderSecurityToken && !hasSession) {
+            conn.addRequestProperty(WebConstants.HEADER_SECURITY_TOKEN, securityToken);
+        }
         return conn;
     }
 
-    protected static void addSecurityToken(HttpURLConnection connection, String securityToken) {
-        if (securityToken != null && useHeaderSecurityToken && !hasSession(connection)) {
-            connection.addRequestProperty(WebConstants.SECURITY_TOKEN, securityToken);
-        }
-    }
-
-    public static boolean clearSession(HttpURLConnection connection) {
+    public void updateSession(HttpURLConnection conn) {
         if (useSessionAuth) {
-            return getCookieManager().getCookieStore().removeAll();
-        }
-        return false;
+            String sessionId = conn.getHeaderField(WebConstants.HEADER_SET_SESSION_ID);
+            if (sessionId != null) {
+                sessionIdByUri.put(getUri(conn), sessionId);
+            }
+        }        
     }
-
-    protected static CookieManager getCookieManager() {
-        CookieManager manager = (CookieManager) CookieHandler.getDefault();
-        if (manager == null) {
-            manager = new CookieManager();
-            CookieHandler.setDefault(manager);
-        }
-        return manager;
-    }
-
-    protected static boolean hasSession(HttpURLConnection connection) {
-        boolean hasSession = false;
+    
+    public void clearSession(HttpURLConnection conn) {
         if (useSessionAuth) {
-            List<HttpCookie> cookies = null;
-            try {
-                cookies = getCookieManager().getCookieStore().get(connection.getURL().toURI());
-            } catch (URISyntaxException e) {
-                log.error("Bad URL", e);
-            }
-            if (cookies != null) {
-                for (HttpCookie cookie : cookies) {
-                    if (cookie.getName().startsWith(WebConstants.SESSION_PREFIX)) {
-                        hasSession = true;
-                        break;
-                    }
-                }
-            }
+            sessionIdByUri.remove(getUri(conn));
         }
-        return hasSession;
+    }
+
+    protected String getUri(HttpURLConnection conn) {
+        String uri = conn.getURL().toString();
+        uri = uri.substring(0, uri.lastIndexOf("/"));
+        return uri;
     }
 
     public int getOutputStreamSize() {
@@ -255,7 +244,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 conn.addRequestProperty(key, requestProperties.get(key));
             }
         }
-        return new HttpIncomingTransport(conn, engine.getParameterService(), local.getNodeId(), securityToken);
+        return new HttpIncomingTransport(this, conn, engine.getParameterService(), local.getNodeId(), securityToken);
     }
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken,
@@ -267,19 +256,19 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 conn.addRequestProperty(key, requestProperties.get(key));
             }
         }
-        return new HttpIncomingTransport(conn, engine.getParameterService(), local.getNodeId(), securityToken);
+        return new HttpIncomingTransport(this, conn, engine.getParameterService(), local.getNodeId(), securityToken);
     }
 
     public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
         HttpURLConnection conn = createGetConnectionFor(new URL(resolveURL(remote.getSyncUrl(), registrationUrl) + "/ping"));
-        return new HttpIncomingTransport(conn, engine.getParameterService());
+        return new HttpIncomingTransport(this, conn, engine.getParameterService());
     }
 
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
             String securityToken, Map<String, String> requestProperties, 
             String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
     }
@@ -287,7 +276,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false);
     }
@@ -295,7 +284,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("filesync/push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), true);
     }    
@@ -306,11 +295,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         append(builder, WebConstants.SYMMETRIC_VERSION, symmetricVersion);
         append(builder, WebConstants.CONFIG_VERSION, configVersion);
         HttpURLConnection conn = createGetConnectionFor(new URL(builder.toString()), local.getNodeId(), securityToken);
-        return new HttpIncomingTransport(conn, engine.getParameterService());
+        return new HttpIncomingTransport(this, conn, engine.getParameterService());
     }
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
-        return new HttpIncomingTransport(createGetConnectionFor(new URL(buildRegistrationUrl(
+        return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
                 registrationUrl, node))), engine.getParameterService());
     }
 
@@ -334,7 +323,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected HttpURLConnection createGetConnectionFor(URL url, String nodeId, String securityToken) throws IOException {
-        HttpURLConnection conn = HttpTransportManager.openConnection(url, nodeId, securityToken);
+        HttpURLConnection conn = openConnection(url, nodeId, securityToken);
         conn.setRequestProperty("accept-encoding", "gzip");
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());

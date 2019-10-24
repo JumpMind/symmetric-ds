@@ -45,6 +45,8 @@ import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
     
+    private HttpTransportManager httpTransportManager;
+
     private HttpURLConnection connection;
 
     private BufferedReader reader;
@@ -61,14 +63,16 @@ public class HttpIncomingTransport implements IIncomingTransport {
     
     private String securityToken;
 
-    public HttpIncomingTransport(HttpURLConnection connection, IParameterService parameterService) {
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpURLConnection connection, IParameterService parameterService) {
+        this.httpTransportManager = httpTransportManager;
         this.connection = connection;
         this.parameterService = parameterService;
         this.httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
 
-    public HttpIncomingTransport(HttpURLConnection connection, IParameterService parameterService, String nodeId, String securityToken) {
-        this(connection, parameterService);
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpURLConnection connection, IParameterService parameterService,
+            String nodeId, String securityToken) {
+        this(httpTransportManager, connection, parameterService);
         this.nodeId = nodeId;
         this.securityToken = securityToken;
     }
@@ -128,14 +132,15 @@ public class HttpIncomingTransport implements IIncomingTransport {
         case WebConstants.SC_SERVICE_UNAVAILABLE:
             throw new ServiceUnavailableException();
         case WebConstants.SC_FORBIDDEN:
-            HttpTransportManager.clearSession(connection);
+            httpTransportManager.clearSession(connection);
             throw new AuthenticationException();
         case WebConstants.SC_AUTH_EXPIRED:
-            HttpTransportManager.clearSession(connection);
+            httpTransportManager.clearSession(connection);
             throw new AuthenticationException(true);
         case WebConstants.SC_NO_CONTENT:
             throw new NoContentException();
         case WebConstants.SC_OK:
+            httpTransportManager.updateSession(connection);
             is = HttpTransportManager.getInputStreamFrom(connection);
             return is;
         default:
@@ -196,7 +201,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
                    throw new SecurityException("illegal URL redirect");
                 }
                 redir = true;
-                connection = HttpTransportManager.openConnection(target, nodeId, securityToken);
+                connection = httpTransportManager.openConnection(target, nodeId, securityToken);
                 connection.setConnectTimeout(httpTimeout);
                 connection.setReadTimeout(httpTimeout);
 

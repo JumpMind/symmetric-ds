@@ -54,6 +54,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private String boundary;
 
+    private HttpTransportManager httpTransportManager;
+
     private URL url;
 
     private OutputStream os;
@@ -84,10 +86,11 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private Map<String, String> requestProperties;
     
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
+    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String nodeId,
             String securityToken, boolean streamOutputEnabled, int streamOutputSize,
             boolean fileUpload) {
+        this.httpTransportManager = httpTransportManager;
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
@@ -100,11 +103,11 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.fileUpload = fileUpload;
     }
     
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
+    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String nodeId,
             String securityToken, boolean streamOutputEnabled, int streamOutputSize,
             boolean fileUpload, Map<String, String> requestProperties) {
-        this(url, httpTimeout, useCompression, compressionStrategy, compressionLevel, nodeId, securityToken,
+        this(httpTransportManager, url, httpTimeout, useCompression, compressionStrategy, compressionLevel, nodeId, securityToken,
                 streamOutputEnabled, streamOutputSize, fileUpload);
         this.requestProperties = requestProperties;
     }
@@ -195,7 +198,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      */
     private HttpURLConnection requestReservation(String queue) {
         try {
-            connection = HttpTransportManager.openConnection(url, nodeId, securityToken);
+            connection = httpTransportManager.openConnection(url, nodeId, securityToken);
             connection.setUseCaches(false);
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
@@ -203,6 +206,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setRequestProperty(WebConstants.CHANNEL_QUEUE, queue);
 
             analyzeResponseCode(connection.getResponseCode());
+            httpTransportManager.updateSession(connection);
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -211,7 +215,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public OutputStream openStream() {
         try {
-            connection = HttpTransportManager.openConnection(url, nodeId, securityToken);
+            connection = httpTransportManager.openConnection(url, nodeId, securityToken);
             if (streamOutputEnabled) {
                 connection.setChunkedStreamingMode(streamOutputChunkSize);
             }
@@ -293,10 +297,10 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         } else if (WebConstants.SC_NO_RESERVATION == code) {
             throw new NoReservationException();
         } else if (WebConstants.SC_FORBIDDEN == code) {
-            HttpTransportManager.clearSession(connection);
+            httpTransportManager.clearSession(connection);
             throw new AuthenticationException();
         } else if (WebConstants.SC_AUTH_EXPIRED == code) {
-            HttpTransportManager.clearSession(connection);
+            httpTransportManager.clearSession(connection);
             throw new AuthenticationException(true);
         } else if (WebConstants.SYNC_DISABLED == code) {
             throw new SyncDisabledException();
@@ -311,6 +315,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         closeWriter(false);
         closeOutputStream(false);
         analyzeResponseCode(connection.getResponseCode());
+        httpTransportManager.updateSession(connection);
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;
     }

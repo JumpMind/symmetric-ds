@@ -49,7 +49,7 @@ public class SymmetricPushClient {
 
     public void open() {
         try {
-            transport = new HttpOutgoingTransport(new URL(buildUrl()), 30000, true, 0, -1, null,
+            transport = new HttpOutgoingTransport(new HttpTransportManager(), new URL(buildUrl()), 30000, true, 0, -1, null,
                     null, false, -1, false);
             writer = new ProtocolDataWriter(nodeId, transport.openWriter(), false);
             writer.start(batch);
