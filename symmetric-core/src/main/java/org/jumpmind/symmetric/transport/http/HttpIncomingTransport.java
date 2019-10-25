@@ -33,6 +33,7 @@ import org.jumpmind.exception.HttpException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
+import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -109,6 +110,8 @@ public class HttpIncomingTransport implements IIncomingTransport {
             throw new RegistrationNotOpenException();
         case WebConstants.REGISTRATION_REQUIRED:
             throw new RegistrationRequiredException();
+        case WebConstants.REGISTRATION_PENDING:
+            throw new RegistrationPendingException();
         case WebConstants.SYNC_DISABLED:
             throw new SyncDisabledException();
         case WebConstants.SC_SERVICE_BUSY:

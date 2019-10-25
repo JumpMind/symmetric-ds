@@ -271,6 +271,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             
             saveRegistrationRequest(new RegistrationRequest(foundNode, RegistrationStatus.OK,
                     remoteHost, remoteAddress));
+            markNodeAsRegistrationPending(nodeId);
 
             statisticManager.incrementNodesRegistered(1);
 
@@ -422,6 +423,30 @@ public class RegistrationService extends AbstractService implements IRegistratio
             for (INodeRegistrationListener l : registrationListeners) {
                 l.registrationSyncTriggers();
             }
+            symmetricDialect.enableSyncTriggers(transaction);
+            close(transaction);
+        }
+    }
+
+    protected void markNodeAsRegistrationPending(String nodeId) {
+        ISqlTransaction transaction = null;
+        try {
+            transaction = sqlTemplate.startSqlTransaction();
+            symmetricDialect.disableSyncTriggers(transaction, nodeId);
+            transaction.prepareAndExecute(getSql("registrationPendingSql"), nodeId);
+            transaction.commit();
+            nodeService.flushNodeAuthorizedCache();
+        } catch (Error ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
             symmetricDialect.enableSyncTriggers(transaction);
             close(transaction);
         }

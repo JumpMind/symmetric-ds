@@ -85,6 +85,9 @@ public class PushUriHandler extends AbstractUriHandler {
             if (nodeSecurity != null) {
                 String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
                 if (nodeSecurity.isRegistrationEnabled() && (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
+                    if (nodeSecurity.getRegistrationTime() != null) {
+                        return WebConstants.REGISTRATION_PENDING;                        
+                    }
                     return WebConstants.REGISTRATION_REQUIRED;
                 }
             }

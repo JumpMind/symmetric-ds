@@ -51,6 +51,8 @@ public class WebConstants {
 
     public static final int REGISTRATION_REQUIRED = 657;
     
+    public static final int REGISTRATION_PENDING = 667;
+    
     public static final int SYNC_DISABLED = 658;
     
     public static final int SC_FORBIDDEN = 659;

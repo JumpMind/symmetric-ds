@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -306,6 +307,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             throw new SyncDisabledException();
         } else if (WebConstants.REGISTRATION_REQUIRED == code) {
             throw new RegistrationRequiredException();
+        } else if (WebConstants.REGISTRATION_PENDING == code) {
+            throw new RegistrationPendingException();
         } else if (code != WebConstants.SC_OK) {
             throw new HttpException(code, "Received an unexpected response code of " + code + " from the server");
         }
