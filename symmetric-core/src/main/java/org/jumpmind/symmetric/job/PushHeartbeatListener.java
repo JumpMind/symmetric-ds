@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.job;
 
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -88,7 +89,10 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
             }
 
             log.debug("Updating my node info");
-            if (engine.getOutgoingBatchService().countOutgoingBatchesUnsentHeartbeat() == 0) {
+            Set<Node> targetNodes = new HashSet<Node>();
+            targetNodes.addAll(engine.getNodeService().findNodesWhoPullFromMe());
+            targetNodes.addAll(engine.getNodeService().findNodesToPushTo());
+            if (engine.getOutgoingBatchService().countOutgoingBatchesUnsentHeartbeat() < targetNodes.size() || targetNodes.size() == 0) {
                 engine.getNodeService().updateNodeHostForCurrentNode();
             }
             log.debug("Done updating my node info");
