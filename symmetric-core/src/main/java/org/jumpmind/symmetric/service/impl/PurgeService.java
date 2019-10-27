@@ -93,10 +93,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
             log.info("The outgoing purge process has completed");
         }
         
-        List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
-        for (IPurgeListener purgeListener : purgeListeners) {
-            rowsPurged += purgeListener.purgeOutgoing(force);
-        }        
         return rowsPurged;
     }
 
@@ -106,11 +102,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         rowsPurged += purgeIncoming(retentionCutoff, force);
-        
-        List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
-        for (IPurgeListener purgeListener : purgeListeners) {
-            rowsPurged += purgeListener.purgeIncoming(force);
-        }
                
         return rowsPurged;
     }
@@ -133,6 +124,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeStranded(retentionCutoff);
                     rowsPurged += purgeExtractRequests();
                     rowsPurged += purgeStrandedChannels();
+                }
+                
+                List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
+                for (IPurgeListener purgeListener : purgeListeners) {
+                    rowsPurged += purgeListener.purgeOutgoing(force);
                 }
             } finally {
                 if (!force) {
@@ -462,6 +458,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     purgedRowCount += purgeIncomingError();
                     purgedRowCount += purgeRegistrationRequests();
                     purgedRowCount += purgeMonitorEvents();
+                    
+                    List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
+                    for (IPurgeListener purgeListener : purgeListeners) {
+                        purgedRowCount += purgeListener.purgeIncoming(force);
+                    }
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_INCOMING);
