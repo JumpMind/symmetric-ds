@@ -275,7 +275,7 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
         return redirectMap;
     }
 
-    public class Expression {
+    public static class Expression {
         public static final String EQUALS = "=";
         public static final String NOT_EQUALS = "!=";
         public static final String CONTAINS = "contains";

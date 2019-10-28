@@ -38,7 +38,6 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
-import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -65,6 +64,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         // Double quotes are only allowed for delimiting identifiers if the
         // server SQL mode includes ANSI_QUOTES
         databaseInfo.setDelimiterToken("`");
+        databaseInfo.setZeroDateAllowed(true);
 
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "LONGBLOB", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.BIT, "BIT");

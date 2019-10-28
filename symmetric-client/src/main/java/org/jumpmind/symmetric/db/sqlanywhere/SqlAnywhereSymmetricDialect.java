@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 
 /*
  * Sybase dialect was tested with jconn4 JDBC driver.
@@ -247,12 +248,16 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
     }
 
     public String getSyncTriggersExpression() {
-        return "$(defaultCatalog)$(defaultSchema)"+parameterService.getTablePrefix()+"_triggers_disabled(0) = 0";
+        return SymmetricUtils.quote(this, platform.getDefaultCatalog()) +
+                ".$(defaultSchema)"+
+                parameterService.getTablePrefix()+"_triggers_disabled(0) = 0";
     }
 
     @Override
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger) {
-        return platform.getDefaultCatalog() + ".$(defaultSchema)"+parameterService.getTablePrefix()+"_txid(0)";
+        return SymmetricUtils.quote(this, platform.getDefaultCatalog()) +
+                ".$(defaultSchema)"+
+                parameterService.getTablePrefix()+"_txid(0)";
     }
 
     @Override

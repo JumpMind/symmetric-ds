@@ -9,8 +9,8 @@ public class Db2As400TriggerTemplate extends Db2TriggerTemplate {
         super(symmetricDialect);
         
         stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || rtrim(char(year(timestamp_iso($(tableAlias).\"$(columnName)\"))))||'-'||substr(digits(month(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'.'||RIGHT(REPEAT('0',6)||rtrim(char(microsecond(timestamp_iso($(tableAlias).\"$(columnName)\")))),6) || '\"' end";
         String castClobTo = symmetricDialect.getParameterService().getString(ParameterConstants.AS400_CAST_CLOB_TO, "DCLOB");
-        
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as "+castClobTo+"),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
 
         sqlTemplates.put("insertTriggerTemplate" ,

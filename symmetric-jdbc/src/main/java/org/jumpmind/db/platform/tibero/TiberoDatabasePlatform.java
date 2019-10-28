@@ -4,15 +4,12 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
-import org.jumpmind.db.platform.tibero.TiberoDdlBuilder;
-import org.jumpmind.db.platform.tibero.TiberoDdlReader;
-import org.jumpmind.db.platform.tibero.TiberoJdbcSqlTemplate;
-import org.jumpmind.db.platform.tibero.TiberoLobHandler;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -111,6 +108,12 @@ public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
         
         return result;
     }
-    
+
+    @Override
+    public long getEstimatedRowCount(Table table) {
+        return getSqlTemplateDirty().queryForLong("select nvl(num_rows,-1) from all_tables where table_name = ? and owner = ?",
+                table.getName(), table.getSchema());
+    }
+
 }
 

@@ -47,7 +47,7 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  */
 public interface IDataService {
         
-    public void insertTableReloadRequest(TableReloadRequest request);
+    public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request);
     
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
     
@@ -113,6 +113,8 @@ public interface IDataService {
 
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
+    public void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history, String channelId, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
+
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
     
     public void insertScriptEvent(String channelId, Node targetNode, String script, boolean isLoad,
@@ -122,6 +124,8 @@ public interface IDataService {
             Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
     public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String routerId, boolean isLoad, long loadId, String createBy);
+    
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, String routerId, boolean isLoad, long loadId, String createBy);
     
     /**
      * Count the number of data ids in a range

@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -205,7 +206,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     private IExtensionService extensionService;
 
-    private Map<String, BatchLock> locks = new HashMap<String, BatchLock>();
+    private Map<String, BatchLock> locks = new ConcurrentHashMap<String, BatchLock>();
     
     private CustomizableThreadFactory threadPoolFactory;
 
@@ -1134,6 +1135,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new org.jumpmind.exception.InterruptedException(e);
         }
         
+        log.debug("Acquired {}", lock);
         return lock;
     }
 
@@ -1759,7 +1761,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ExtractStatus.NE.name());
     }
 
-    private class NodeQueuePair {
+    private static class NodeQueuePair {
         private String nodeId;
         private String queue;
         public String getNodeId() {
@@ -1776,7 +1778,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    class NodeQueuePairMapper implements ISqlRowMapper<NodeQueuePair> {
+    static class NodeQueuePairMapper implements ISqlRowMapper<NodeQueuePair> {
         @Override
         public NodeQueuePair mapRow(Row row) {
             NodeQueuePair pair = new NodeQueuePair();
@@ -2570,7 +2572,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
                 if (selfRefLevel == 0) {
-                    selectSql += selfRefParentColumnName + " is null";
+                    selectSql += selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + " ";
                 } else {
                     DatabaseInfo info = symmetricDialect.getPlatform().getDatabaseInfo();
                     String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
@@ -2582,7 +2584,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     for (int i = 1; i < selfRefLevel; i++) {
                         selectSql += refSql + " in (";
                     }
-                    selectSql += refSql + " is null)" + StringUtils.repeat(")", selfRefLevel - 1);
+                    selectSql += refSql + " is null or " + selfRefChildColumnName + " = " + selfRefParentColumnName + " ) and " + 
+                            selfRefParentColumnName + " != " + selfRefChildColumnName + StringUtils.repeat(")", selfRefLevel - 1);
                 }
                 log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
             }
@@ -2714,13 +2717,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     }
 
-    class FutureExtractStatus {
+    static class FutureExtractStatus {
         boolean shouldExtractSkip;
         int batchExtractCount;
         int byteExtractCount;
     }
 
-    class FutureOutgoingBatch {
+    static class FutureOutgoingBatch {
         OutgoingBatch outgoingBatch;
         boolean isRetry;
         boolean isExtractSkipped;
@@ -2739,7 +2742,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    class BatchLock {
+    static class BatchLock {
         public BatchLock(String semaphoreKey) {
             this.semaphoreKey = semaphoreKey;
         }

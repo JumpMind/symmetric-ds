@@ -433,7 +433,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
             }
 
             if (usingExtractPeriod) {
-                sqlTemplate.query(getSql("selectNodeChannelControlLastExtractTimeSql"),
+                sqlTemplate.query(getSql("selectNodeChannelControlSql"),
                     new ISqlRowMapper<Object>() {
                         public Object mapRow(Row row) {
                             String channelId = row.getString("channel_id");
@@ -634,7 +634,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         sqlTemplate.update(getSql("updateNodeChannelLastExtractTime"), channel.getLastExtractTime(), channel.getChannelId(), channel.getNodeId());
     }
 
-    class NodeGroupChannelWindowMapper implements ISqlRowMapper<NodeGroupChannelWindow> {
+    static class NodeGroupChannelWindowMapper implements ISqlRowMapper<NodeGroupChannelWindow> {
         public NodeGroupChannelWindow mapRow(Row row) {
             NodeGroupChannelWindow window = new NodeGroupChannelWindow();
             window.setNodeGroupId(row.getString("node_group_id"));
@@ -646,7 +646,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    class NodeGroupLinkMapper implements ISqlRowMapper<NodeGroupLink> {
+    static class NodeGroupLinkMapper implements ISqlRowMapper<NodeGroupLink> {
         public NodeGroupLink mapRow(Row row) {
             NodeGroupLink link = new NodeGroupLink();
             link.setSourceNodeGroupId(row.getString("source_node_group_id"));
@@ -661,7 +661,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    class NodeGroupMapper implements ISqlRowMapper<NodeGroup> {
+    static class NodeGroupMapper implements ISqlRowMapper<NodeGroup> {
         public NodeGroup mapRow(Row row) {
             NodeGroup group = new NodeGroup();
             group.setNodeGroupId(row.getString("node_group_id"));
@@ -673,7 +673,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
         }
     }
 
-    class NodeChannelMapper implements ISqlRowMapper<NodeChannel> {
+    static class NodeChannelMapper implements ISqlRowMapper<NodeChannel> {
         String nodeId;
         
         public NodeChannelMapper(String nodeId) {

@@ -266,7 +266,7 @@ public class SymRollingFileAppenderTest {
         return appender;
     }
 
-    class TestCategory extends Category {
+    static class TestCategory extends Category {
         public TestCategory(String name) {
             super(name);
         }

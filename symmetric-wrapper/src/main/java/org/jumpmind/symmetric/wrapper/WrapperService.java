@@ -184,7 +184,8 @@ public abstract class WrapperService {
                             logger.log(Level.INFO, line, "java");
                             if ((usingHeapDump && line.matches("Heap dump file created.*")) || 
                                     (!usingHeapDump && line.matches("java.lang.OutOfMemoryError.*")) ||
-                                    line.matches(".*java.net.BindException.*")) {
+                                    line.matches(".*java.net.BindException.*") ||
+                                    line.matches(".*A fatal error has been detected.*")) {
                                 logger.log(Level.SEVERE, "Stopping server because its output matches a failure condition");
                                 child.destroy();
                                 childReader.close();
@@ -205,6 +206,26 @@ public abstract class WrapperService {
                         restartDetected = false;
                         startProcess = true;
                     } else if (keepRunning) {
+                        long tenminutesinms = 60 * 10 * 1000;
+                        long twelveminutesinms = 60 * 12 * 1000;
+                        long tensecondsinms = 10 * 1000;
+                        long now = System.currentTimeMillis();
+                        while(child.isAlive()) {
+                            logger.log(Level.WARNING, "Server process has not stopped yet");
+                            if(System.currentTimeMillis() - now > twelveminutesinms) {
+                                logger.log(Level.SEVERE, "Server process never exited, exiting now");
+                                child.destroyForcibly();
+                                // If it has not exited by now, it probably never will.
+                                break;
+                            }
+                            if(System.currentTimeMillis() - now > tenminutesinms) {
+                                logger.log(Level.SEVERE, "Server process never exited, trying to force the exit of server process");
+                                child.destroyForcibly();
+                            }
+                            try {
+                                Thread.sleep(tensecondsinms);
+                            } catch(InterruptedException e) { }
+                        }
                         logger.log(Level.SEVERE, "Unexpected exit from server: " + child.exitValue());
                         long runTime = System.currentTimeMillis() - startTime;
                         if (System.currentTimeMillis() - startTime < 7000) {
@@ -224,7 +245,7 @@ public abstract class WrapperService {
                 updateStatus(Status.STOPPED);
                 throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Exception caught.");                
             } catch (Throwable ex2) {
-                ex.printStackTrace();
+                ex2.printStackTrace();
             }
         }
     }
@@ -375,7 +396,7 @@ public abstract class WrapperService {
             pid = Integer.parseInt(reader.readLine());
             reader.close();
         } catch (FileNotFoundException e) {
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return pid;

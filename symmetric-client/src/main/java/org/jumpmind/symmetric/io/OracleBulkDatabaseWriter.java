@@ -78,8 +78,12 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     public boolean start(Table table) {
         if (super.start(table)) {
+            if (isLoadOnly() && isSymmetricTable(targetTable.getNameLowerCase())) {
+                return true;
+            }
             // TODO come up with smarter way to build procedures
             buildBulkInsertProcedure(targetTable);
+            
             return true;
         } else {
             return false;
@@ -87,57 +91,61 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void bulkWrite(CsvData data) {
-        DataEventType dataEventType = data.getDataEventType();
-
-        if (lastEventType != null && !lastEventType.equals(dataEventType)) {
-            flush();
-        }
-
-        lastEventType = dataEventType;
-
-        boolean requiresFlush = false;
-        switch (dataEventType) {
-            case INSERT:
-                statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
-                statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
-                if (filterBefore(data)) {
-                    Object[] rowData = getPlatform()
-                    		.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
-                            targetTable.getColumns(), false, writerSettings.isFitToColumn());
-
-                    rowData = convertObjectValues(rowData, targetTable.getColumns());
-
-                    for (int i = 0; i < rowData.length; i++) {
-
-                        List<Object> columnList = null;
-                        if (rowArrays.size() > i) {
-                            columnList = rowArrays.get(i);
-                        } else {
-                            columnList = new ArrayList<Object>();
-                            rowArrays.add(columnList);
-                        }
-                        columnList.add(rowData[i]);
-
-                        if (columnList.size() >= maxRowsBeforeFlush) {
-                            requiresFlush = true;
-                        }
-                    }
-                    uncommittedCount++;
-                }
-                break;
-            case UPDATE:
-            case DELETE:
-            default:
+        if (isLoadOnly() && isSymmetricTable(targetTable.getNameLowerCase())) {
+            writeDefault(data);
+        } else {
+            DataEventType dataEventType = data.getDataEventType();
+    
+            if (lastEventType != null && !lastEventType.equals(dataEventType)) {
                 flush();
-                writeDefault(data);
-                break;
+            }
+    
+            lastEventType = dataEventType;
+    
+            boolean requiresFlush = false;
+            switch (dataEventType) {
+                case INSERT:
+                    statistics.get(batch).increment(DataWriterStatisticConstants.ROWCOUNT);
+                    statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
+                    if (filterBefore(data)) {
+                        Object[] rowData = getPlatform()
+                        		.getObjectValues(batch.getBinaryEncoding(), getRowData(data, CsvData.ROW_DATA),
+                                targetTable.getColumns(), false, writerSettings.isFitToColumn());
+    
+                        rowData = convertObjectValues(rowData, targetTable.getColumns());
+    
+                        for (int i = 0; i < rowData.length; i++) {
+    
+                            List<Object> columnList = null;
+                            if (rowArrays.size() > i) {
+                                columnList = rowArrays.get(i);
+                            } else {
+                                columnList = new ArrayList<Object>();
+                                rowArrays.add(columnList);
+                            }
+                            columnList.add(rowData[i]);
+    
+                            if (columnList.size() >= maxRowsBeforeFlush) {
+                                requiresFlush = true;
+                            }
+                        }
+                        uncommittedCount++;
+                    }
+                    break;
+                case UPDATE:
+                case DELETE:
+                default:
+                    flush();
+                    writeDefault(data);
+                    break;
+            }
+    
+            if (requiresFlush) {
+                flush();
+            }
+    
+            checkForEarlyCommit();
         }
-
-        if (requiresFlush) {
-            flush();
-        }
-
-        checkForEarlyCommit();
     }
 
     /**
@@ -333,8 +341,12 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     @Override
     public void end(Table table) {
-        flush();
-        super.end(table);
+        if (isLoadOnly() && isSymmetricTable(targetTable.getNameLowerCase())) {
+            super.end(table);
+        } else {
+            flush();
+            super.end(table);
+        }
     }
 
     protected void buildBulkDataType(int typeCode) {

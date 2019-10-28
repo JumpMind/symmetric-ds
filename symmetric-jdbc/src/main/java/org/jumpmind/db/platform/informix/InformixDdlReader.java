@@ -34,6 +34,7 @@ import java.util.Map;
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
@@ -200,4 +201,10 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
 
 		return triggers;
 	}
+    
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        // Informix does not support cascade update
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
 }

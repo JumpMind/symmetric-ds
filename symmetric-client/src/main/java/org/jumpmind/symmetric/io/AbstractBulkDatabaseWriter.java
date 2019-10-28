@@ -1,6 +1,8 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -22,6 +24,7 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
     public void start(Batch batch) {
         super.start(batch);
         if (isFallBackToDefault()) {
+            getTransaction().setInBatchMode(false);
             log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId() + " using DEFAULT loader");
         }else{
             log.debug("Writing batch " + batch.getBatchId() + " on channel " + batch.getChannelId() + " to node " + batch.getTargetNodeId() + " using BULK loader");

@@ -212,49 +212,6 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         }
     }
     
-    @Test
-    public void testDuplicateRow(){ 
-        if (shouldTestRun(platform)) {
-            platform.getSqlTemplate().update("truncate table " + getTestTable());
-            List<CsvData> data = new ArrayList<CsvData>();
-            
-            String id=getNextId();
-            String[] values1 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
-            data.add(new CsvData(DataEventType.INSERT, values1));
-            
-            String[] values2 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
-            data.add(new CsvData(DataEventType.INSERT, values2));
-            
-            Table table = platform.getTableFromCache(getTestTable(), false);        
-            AbstractDatabaseWriter bulkWriter = create();
-            
-            DataContext context = new DataContext();
-
-            try {
-                /* first try should have failed */
-                writeData(bulkWriter, context, new TableCsvData(table, data));
-                fail("The bulk writer should have failed");
-            } catch (Exception ex) {                
-            }
-            
-            /* Recreate the writer because in the real world that is what would happen */ 
-            bulkWriter = create();            
-            context = new DataContext();
-            
-            IncomingBatch expectedBatch = new IncomingBatch();
-            expectedBatch.setErrorFlag(true);
-            context.put("currentBatch", expectedBatch);
-
-            /* second try should be success because the bulk writer should fail back to using the default writer */
-            long statementCount = writeData(bulkWriter, context, new TableCsvData(table, data));
-
-            Assert.assertEquals(2, statementCount);
-            Assert.assertEquals(1, countRows(getTestTable()));
-        }
-    }
-    
     protected abstract AbstractDatabaseWriter create();
     
 

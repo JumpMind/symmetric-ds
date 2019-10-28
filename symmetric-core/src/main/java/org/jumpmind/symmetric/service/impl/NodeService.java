@@ -858,7 +858,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
         
-    class NodeRowMapper implements ISqlRowMapper<Node> {
+    static class NodeRowMapper implements ISqlRowMapper<Node> {
         public Node mapRow(Row rs) {
             Node node = new Node();
             node.setNodeId(rs.getString("node_id"));
@@ -900,7 +900,7 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    class NodeHostRowMapper implements ISqlRowMapper<NodeHost> {
+    static class NodeHostRowMapper implements ISqlRowMapper<NodeHost> {
         public NodeHost mapRow(Row rs) {
             NodeHost nodeHost = new NodeHost();
             nodeHost.setNodeId(rs.getString("node_id"));
@@ -933,7 +933,11 @@ public class NodeService extends AbstractService implements INodeService {
         if (node == null) {
             retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
         } else if (!syncEnabled(node)) {
-            retVal = AuthenticationStatus.SYNC_DISABLED;
+            if(registrationOpen(node)){
+                retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
+            }else{
+                retVal = AuthenticationStatus.SYNC_DISABLED;
+            }
         } else if (!isNodeAuthorized(nodeId, securityToken)) {
             retVal = AuthenticationStatus.FORBIDDEN;
         }
@@ -946,6 +950,14 @@ public class NodeService extends AbstractService implements INodeService {
             syncEnabled = node.isSyncEnabled();
         }
         return syncEnabled;
-    }    
+    }
+
+    protected boolean registrationOpen(Node node){
+        NodeSecurity security = findNodeSecurity(node.getNodeId());
+        if(security != null){
+            return security.isRegistrationEnabled();
+        }
+        return false;
+    } 
 
 }

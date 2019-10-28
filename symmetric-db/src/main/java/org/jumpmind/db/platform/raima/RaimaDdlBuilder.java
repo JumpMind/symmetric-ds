@@ -34,6 +34,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -212,6 +213,7 @@ public class RaimaDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" (");
             writeForeignReferences(key, ddl);
             ddl.append(")");
+            writeCascadeAttributesForForeignKey(key, ddl);
             printEndOfStatement(ddl);
         }
     }
@@ -296,6 +298,22 @@ public class RaimaDdlBuilder extends AbstractDdlBuilder {
             targetColumn.setAutoIncrement(true);
         }
         printEndOfStatement(ddl);
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // Raima does not support ON UPDATE SET DEFAULT
+        if(! key.getOnUpdateAction().equals(ForeignKeyAction.SETDEFAULT)) {
+            super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
+        }
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Raima does not support ON DELETE SET DEFAULT
+        if(! key.getOnDeleteAction().equals(ForeignKeyAction.SETDEFAULT)) {
+            super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        }
     }
 
 }

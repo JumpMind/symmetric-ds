@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.symmetric.SymmetricException;
@@ -40,6 +41,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.TriggerRouter;
+import org.jumpmind.symmetric.service.impl.RouterService;
 import org.slf4j.Logger;
 
 public class ChannelRouterContext extends SimpleRouterContext {
@@ -73,7 +75,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long maxPeekAheadQueueSize;
     private long dataRereadCount;
     private List<DataGap> dataGaps = new ArrayList<DataGap>();
-    private Set<String> transactions = new HashSet<String>();
     private long lastDataId = -1;
     private List<Long> dataIds = new ArrayList<Long>();
 
@@ -153,7 +154,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
         if (log.isDebugEnabled()) {
             log.debug(channel.getChannelId() + ", startDataId=" + startDataId + ", endDataId=" + endDataId + 
                     ", dataReadCount=" + dataReadCount + ", peekAheadFillCount=" + peekAheadFillCount +
-                    ", transactions=" + transactions.toString() + ", dataGaps=" + dataGaps.toString()); 
+                    ", dataGaps=" + StringUtils.abbreviate(dataGaps.toString(), RouterService.MAX_LOGGING_LENGTH)); 
         }
     }
 
@@ -263,16 +264,6 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public void setDataGaps(List<DataGap> dataGaps) {
         this.dataGaps = dataGaps;
-    }
-
-    public Set<String> getTransactions() {
-        return transactions;
-    }
-
-    public void addTransaction(String transactionId) {
-        if (isNotBlank(transactionId)) {
-            this.transactions.add(transactionId);
-        }
     }
     
     public void setOnlyDefaultRoutersAssigned(boolean onlyDefaultRoutersAssigned) {

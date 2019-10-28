@@ -44,6 +44,7 @@ import java.util.UUID;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Channel;
@@ -285,6 +286,7 @@ public class UpdateService extends AbstractService implements IUpdateService {
 
         prop.put("db_type", symmetricDialect.getName());
         prop.put("db_version", symmetricDialect.getVersion());
+        long mobileNodeCount = 0;
         Set<String> databaseTypes = new HashSet<String>();
         for (Node clientNode : engine.getNodeService().findAllNodes()) {
             String databaseType = clientNode.getDatabaseType() + " " + clientNode.getDatabaseVersion();
@@ -295,7 +297,12 @@ public class UpdateService extends AbstractService implements IUpdateService {
                     break;
                 }
             }
+            String deployType = clientNode.getDeploymentType();
+            if (deployType.equals("android") || deployType.equals(Constants.DEPLOYMENT_TYPE_CCLIENT)) {
+                mobileNodeCount++;
+            }
         }
+        prop.put("mobile_nodes", mobileNodeCount);
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -1);

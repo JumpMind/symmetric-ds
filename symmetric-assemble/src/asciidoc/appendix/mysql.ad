@@ -23,11 +23,22 @@ On MySQL 5.0, the SymmetricDS user needs the SUPER privilege in order to create 
 grant super on *.* to symmetric;
 ----
 
-On MySQL 5.1, the SymmetricDS user needs the TRIGGER and CREATE ROUTINE privileges in order to create triggers and functions.
+On MySQL 5.1, the SymmetricDS user needs the TRIGGER, PROCESS, and CREATE ROUTINE privileges in order to create triggers and functions.
 
 ----
 grant trigger on *.* to symmetric;
 grant create routine on *.* to symmetric;
+grant alter routine on *.* to symmetric;
+grant process on *.* to symmetric;
+----
+
+Starting in MySQL 5.7.6, the "PROCESS" privilege is also required for the MySQL user that is modifying the application tables.
+This is required to look up the transaction id. Internally, the trigger will submit this query during an insert/update/delete:
+
+select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();
+
+----
+grant process on *.* to db_user;
 ----
 
 MySQL allows '0000-00-00 00:00:00' to be entered as a value for datetime and timestamp columns.

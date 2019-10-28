@@ -53,7 +53,7 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t1));
         assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
@@ -93,7 +93,7 @@ public class DatabaseTest {
         list.add(t8);
         
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t5));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
@@ -118,7 +118,7 @@ public class DatabaseTest {
         list.add(t2);
         list.add(t1);
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         // for now just make sure it doesn't blow up
         
@@ -144,7 +144,7 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t2) < list.indexOf(t1));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
@@ -169,7 +169,7 @@ public class DatabaseTest {
         list.add(t4);
         list.add(t3);
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
@@ -194,7 +194,7 @@ public class DatabaseTest {
         list.add(t3);
         list.add(t4);
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t4));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
@@ -221,7 +221,7 @@ public class DatabaseTest {
         list.add(t3);
         list.add(t4);
         
-        list = Database.sortByForeignKeys(list, null, null, null, null);
+        list = Database.sortByForeignKeys(list, null, null, null);
         
         assertTrue(list.toString(), list.indexOf(t4) < list.indexOf(t3));
         assertTrue(list.toString(), list.indexOf(t3) < list.indexOf(t2));
@@ -244,7 +244,7 @@ public class DatabaseTest {
         list.add(t4);
         
         Map<Table, Set<String>> missingDependencyMap = new HashMap<Table, Set<String>>();
-        list = Database.sortByForeignKeys(list, null, null, null, missingDependencyMap);
+        list = Database.sortByForeignKeys(list, null, null, missingDependencyMap);
         
         assertTrue(list.toString(), list.indexOf(t1) < list.indexOf(t4));
         
@@ -284,7 +284,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.size() == 3);
     }
@@ -304,7 +304,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(1).contains(t2));
@@ -327,7 +327,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(1).contains(t2));
@@ -360,7 +360,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(1).contains(t2));
@@ -394,7 +394,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(2).contains(t2));
@@ -426,7 +426,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(1).contains(t2));
@@ -458,7 +458,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(1).contains(t2));
@@ -487,7 +487,7 @@ public class DatabaseTest {
         
         Map<Integer, Set<Table>> dependencyMap = new HashMap<Integer, Set<Table>>();
         
-        list = Database.sortByForeignKeys(list, null, null, dependencyMap, null);
+        list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
         assertTrue(dependencyMap.get(1).contains(t1));
         assertTrue(dependencyMap.get(1).contains(t4));

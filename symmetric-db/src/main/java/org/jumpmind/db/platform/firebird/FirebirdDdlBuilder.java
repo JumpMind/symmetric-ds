@@ -34,8 +34,10 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -409,5 +411,27 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         printIdentifier(getColumnName(change.getColumn()), ddl);
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // Firebird does not support ON UPDATE RESTRICT, but RESTRICT is just like NOACTION
+        ForeignKeyAction original = key.getOnUpdateAction();
+        if(key.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT)) {
+            key.setOnUpdateAction(ForeignKeyAction.NOACTION);
+        }
+        super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
+        key.setOnUpdateAction(original);
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Firebird does not support ON DELETE RESTRICT, but RESTRICT is just like NOACTION
+        ForeignKeyAction original = key.getOnDeleteAction();
+        if(key.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT)) {
+            key.setOnDeleteAction(ForeignKeyAction.NOACTION);
+        }
+        super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        key.setOnDeleteAction(original);
     }
 }

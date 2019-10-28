@@ -576,18 +576,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
 
                 OutputStreamWriter outWriter = null;
                 if (out != null) {
-                    outWriter = new OutputStreamWriter(out, IoConstants.ENCODING);
-                    long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
-                    while (!executor.awaitTermination(keepAliveMillis, TimeUnit.MILLISECONDS)) {
-                        outWriter.write("1=1&");
-                        outWriter.flush();
+                    try {                        
+                        outWriter = new OutputStreamWriter(out, IoConstants.ENCODING);
+                        long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
+                        while (!executor.awaitTermination(keepAliveMillis, TimeUnit.MILLISECONDS)) {
+                            outWriter.write("1=1&");
+                            outWriter.flush();
+                        }
+                    } catch (Exception ex) {
+                        log.warn("Failed to send keep alives to " + sourceNode + " " + ex.toString());
+                        awaitTermination(executor);          
                     }
                 } else {
-                    long hours = 1;
-                    while (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-                        log.info(String.format("Executor has been awaiting loader termination for %d hour(s).", hours));
-                        hours++;
-                    }            
+                    awaitTermination(executor);            
                 }
                 
                 loadListener.isDone();
@@ -631,6 +632,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
             }
         }
         return listener.getBatchesProcessed();
+    }
+
+    private void awaitTermination(ExecutorService executor) throws InterruptedException {
+        long hours = 1;
+        while (!executor.awaitTermination(1, TimeUnit.HOURS)) {
+            log.info(String.format("Executor has been awaiting loader termination for %d hour(s).", hours));
+            hours++;
+        }
     }
 
     protected void logOrRethrow(Throwable ex) throws IOException {
@@ -931,7 +940,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         }
     }
 
-    class IncomingErrorMapper implements ISqlRowMapper<IncomingError> {
+    static class IncomingErrorMapper implements ISqlRowMapper<IncomingError> {
         public IncomingError mapRow(Row rs) {
             IncomingError incomingError = new IncomingError();
             incomingError.setBatchId(rs.getLong("batch_id"));
@@ -1047,7 +1056,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
                                 listener.currentBatch.setStatus(Status.OK);
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
-                                processor.process(ctx);
+                                try {
+                                    listener.getBatchesProcessed().remove(listener.currentBatch);
+                                    processor.process(ctx);
+                                } catch (Exception retryException) {
+                                    isError = true;
+                                    incomingBatch = listener.currentBatch;
+                                    incomingBatch.setStatus(Status.ER);
+                                    incomingBatchService.updateIncomingBatch(incomingBatch);
+                                    throw e;
+                                }
                             } else {
                                 isError = true;
                                 throw e;

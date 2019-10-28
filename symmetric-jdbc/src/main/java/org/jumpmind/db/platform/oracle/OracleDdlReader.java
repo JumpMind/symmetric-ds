@@ -34,14 +34,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
@@ -153,6 +157,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             return Types.VARCHAR;
         } else if (typeName != null && typeName.startsWith("INTERVAL")) {
             return Types.VARCHAR;            
+        } else if (typeName != null && typeName.startsWith("ROWID")) {
+            return Types.VARCHAR;            
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
@@ -162,10 +168,11 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-        if (column.getMappedTypeCode() == Types.DECIMAL) {
+        if (column.getMappedTypeCode() == Types.DECIMAL || column.getMappedTypeCode() == Types.NUMERIC) {
             // We're back-mapping the NUMBER columns returned by Oracle
             // Note that the JDBC driver returns DECIMAL for these NUMBER
-            // columns
+            // columns for driver version 11 and before, but returns
+            // NUMERIC for driver version 12 and later.
             if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() == 0) {
                     /*
@@ -184,6 +191,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 } else {
                     column.setMappedTypeCode(Types.DOUBLE);
                 }
+            } else {
+                // Let's map DECIMAL to NUMERIC since DECIMAL doesn't really exist in Oracle
+                column.setMappedTypeCode(Types.NUMERIC);
             }
         } else if (column.getMappedTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
@@ -233,7 +243,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                 defaultValue = defaultValue.substring(2, defaultValue.length()-2);
             }
             column.setDefaultValue(unescape(defaultValue, "'", "''"));
-        }
+        } 
         return column;
     }
 
@@ -334,30 +344,29 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
         StringBuilder query = new StringBuilder();
 
-        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM USER_INDEXES a, USER_IND_COLUMNS b WHERE ");
-        query.append("a.TABLE_NAME=? AND a.GENERATED=? AND a.TABLE_TYPE=? AND a.TABLE_NAME=b.TABLE_NAME AND a.INDEX_NAME=b.INDEX_NAME AND ");
-        query.append("a.INDEX_NAME NOT IN (SELECT DISTINCT c.CONSTRAINT_NAME FROM USER_CONSTRAINTS c WHERE c.CONSTRAINT_TYPE=? AND c.TABLE_NAME=a.TABLE_NAME");
+        query.append("SELECT a.INDEX_NAME, a.INDEX_TYPE, a.UNIQUENESS, b.COLUMN_NAME, b.COLUMN_POSITION FROM ALL_INDEXES a "); 
+        query.append("JOIN ALL_IND_COLUMNS b ON a.table_name = b.table_name AND a.INDEX_NAME=b.INDEX_NAME AND a.TABLE_OWNER = b.TABLE_OWNER ");
+        query.append("WHERE ");
+        query.append("a.TABLE_NAME = ? "); 
+        query.append("AND a.GENERATED='N' "); 
+        query.append("AND a.TABLE_TYPE='TABLE' "); 
         if (metaData.getSchemaPattern() != null) {
-            query.append(" AND c.OWNER LIKE ?) AND a.TABLE_OWNER LIKE ?");
-        } else {
-            query.append(")");
+            query.append("AND a.TABLE_OWNER = ?");
         }
-
+        
         Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         PreparedStatement stmt = null;
 
         try {
+            Set<String> pkIndecies = readPkIndecies(connection, metaData.getSchemaPattern(), tableName);
+            
             stmt = connection.prepareStatement(query.toString());
             stmt.setString(
                     1,
                     getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
                             .toUpperCase());
-            stmt.setString(2, "N");
-            stmt.setString(3, "TABLE");
-            stmt.setString(4, "P");
             if (metaData.getSchemaPattern() != null) {
-                stmt.setString(5, metaData.getSchemaPattern().toUpperCase());
-                stmt.setString(6, metaData.getSchemaPattern().toUpperCase());
+                stmt.setString(2, metaData.getSchemaPattern().toUpperCase());
             }
 
             ResultSet rs = stmt.executeQuery();
@@ -365,6 +374,9 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
 
             while (rs.next()) {
                 String name = rs.getString(1);
+                if (pkIndecies.contains(name)) { // Filter PK indexes from these results.
+                    continue;
+                }
                 String type = rs.getString(2);
                 // Only read in normal oracle indexes
                 if (type.startsWith("NORMAL")) {
@@ -425,47 +437,96 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT * FROM ALL_TRIGGERS "
-				+ "WHERE TABLE_NAME=? and OWNER=?";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setSchemaName(row.getString("OWNER"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(Boolean.valueOf(row.getString("STATUS")));
-				trigger.setSource("create ");
-				String triggerType = row.getString("TRIGGERING_EVENT");
-				if (triggerType.equals("DELETE")
-						|| triggerType.equals("INSERT")
-						|| triggerType.equals("UPDATE")) {
-					trigger.setTriggerType(TriggerType.valueOf(triggerType));
-				}
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-		
-		for (final Trigger trigger : triggers) {
-			String name = trigger.getName();
-			String sourceSql = "select TEXT from all_source "
-							 + "where NAME=? order by LINE ";
-			sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
-				public Trigger mapRow(Row row) {
-					trigger.setSource(trigger.getSource()+"\n"+row.getString("TEXT"));;
-					return trigger;
-				}
-			}, name);
-		}
-		
-		return triggers;
-	}
+        log.debug("Reading triggers for: {}", tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        
+        String sql = "SELECT TRIGGER_NAME, OWNER, TABLE_NAME, STATUS, TRIGGERING_EVENT FROM ALL_TRIGGERS WHERE TABLE_NAME=? and OWNER=?";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setSchemaName(row.getString("OWNER"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(Boolean.valueOf(row.getString("STATUS")));
+                trigger.setSource("create ");
+                String triggerType = row.getString("TRIGGERING_EVENT");
+                if (triggerType.equals("DELETE")
+                        || triggerType.equals("INSERT")
+                        || triggerType.equals("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                }
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+        
+        for (final Trigger trigger : triggers) {
+            String name = trigger.getName();
+            String sourceSql = "select TEXT from all_source where OWNER=? AND NAME=? order by LINE";
+            
+            final StringBuilder buff = new StringBuilder();
+            buff.append(trigger.getSource());
+            sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
+                public Trigger mapRow(Row row) {
+                    String line = row.getString("TEXT");
+                    if (!line.endsWith("\n")) {
+                        buff.append("\n");
+                    }
+                    buff.append(line);
+                    return trigger;
+                }
+            }, schema, name);
+            trigger.setSource(buff.toString());
+        }
+        
+        return triggers;
+    }
+    
+    protected Set<String> readPkIndecies(Connection connection, String schema, String tableName) throws SQLException {
+        String QUERY = "SELECT CONSTRAINT_NAME FROM ALL_CONSTRAINTS c WHERE c.TABLE_NAME = ? AND CONSTRAINT_TYPE = 'P'";
+        if (schema != null) {
+            QUERY += " AND c.OWNER = ?";
+        }
+        ResultSet rs = null;
+        PreparedStatement stmt = null;
+        Set<String> values = new LinkedHashSet<String>();
+        try {            
+            stmt = connection.prepareStatement(QUERY);
+            stmt.setString(
+                    1,
+                    getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? tableName : tableName
+                            .toUpperCase());
+            if (schema != null) {
+                stmt.setString(2, schema.toUpperCase());
+            }
+            
+            rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                String pkIndexName = rs.getString(1);
+                values.add(pkIndexName);
+            }
+            
+            
+        } finally {
+            if (rs != null) {                
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            
+        }
+        return values;
+    }    
+    
+    // Oracle does not support on update actions
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
 }

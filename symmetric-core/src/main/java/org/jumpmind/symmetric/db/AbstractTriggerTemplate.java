@@ -875,6 +875,9 @@ abstract public class AbstractTriggerTemplate {
                 case Types.BIT:
                     templateToUse = booleanColumnTemplate;
                     break;
+                case Types.ROWID:
+                    templateToUse = stringColumnTemplate;
+                    break;
                 default:
                     if (column.getJdbcTypeName() != null) {
                         if (column.getJdbcTypeName().toUpperCase().equals(TypeMap.INTERVAL)) {
@@ -1102,7 +1105,7 @@ abstract public class AbstractTriggerTemplate {
         this.imageColumnTemplate = imageColumnTemplate;
     }
 
-    protected class ColumnString {
+    protected static class ColumnString {
 
         String columnString;
         boolean isBlobClob = false;

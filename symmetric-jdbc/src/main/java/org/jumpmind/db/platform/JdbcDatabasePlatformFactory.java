@@ -250,7 +250,7 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
 
-            if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1) {
+            if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion[2].equalsIgnoreCase("db2")) {
                 String productVersion = getDatabaseProductVersion(dataSource);
                 if (nameVersion[0].toUpperCase().indexOf("Z") != -1
                         || (productVersion != null && productVersion.startsWith("DSN"))) {
@@ -295,21 +295,15 @@ public class JdbcDatabasePlatformFactory {
     private static boolean isGreenplumDatabase(Connection connection) {
         Statement stmt = null;
         ResultSet rs = null;
-        String productName = null;
-        boolean isGreenplum = false;
+        int greenplumCount = 0;
         try {
             stmt = connection.createStatement();
-            rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_NAME);
-            while (rs.next()) {
-                productName = rs.getString(1);
-            }
-            if (productName != null && productName.equalsIgnoreCase("Greenplum")) {
-                isGreenplum = true;
+            rs = stmt.executeQuery(GreenplumPlatform.SQL_GET_GREENPLUM_COUNT);
+            if (rs.next()) {
+                greenplumCount = rs.getInt(1);
             }
         } catch (SQLException ex) {
-            // ignore the exception, if it is caught, then this is most likely
-            // not
-            // a greenplum database
+        	throw new RuntimeException(ex);
         } finally {
             try {
                 if (rs != null) {
@@ -321,7 +315,7 @@ public class JdbcDatabasePlatformFactory {
             } catch (SQLException ex) {
             }
         }
-        return isGreenplum;
+        return greenplumCount > 0;
     }
 
     private static boolean isRedshiftDatabase(Connection connection) {

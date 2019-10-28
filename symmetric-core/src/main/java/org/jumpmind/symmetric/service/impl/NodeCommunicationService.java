@@ -96,25 +96,21 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
     }
 
-    private final void initialize() {
+    private synchronized final void initialize() {
         if (!initialized) {
-            synchronized (this) {
-                if (!initialized) {
-                    if (clusterService.isClusteringEnabled()) {
-                        try {
-                            int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"),
-                                    clusterService.getServerId());
-                            if (locksCleared > 0) {
-                                log.info("Cleared {} node communication locks for {}", locksCleared,
-                                        clusterService.getServerId());
-                            }
-                        } finally {
-                            initialized = true;
-                        }
-                    } else {
-                        initialized = true;
+            if (clusterService.isClusteringEnabled()) {
+                try {
+                    int locksCleared = sqlTemplate.update(getSql("clearLocksOnRestartSql"),
+                            clusterService.getServerId());
+                    if (locksCleared > 0) {
+                        log.info("Cleared {} node communication locks for {}", locksCleared,
+                                clusterService.getServerId());
                     }
+                } finally {
+                    initialized = true;
                 }
+            } else {
+                initialized = true;
             }
         }
     }
@@ -621,7 +617,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     }
 
-    class NodeCommunicationMapper implements ISqlRowMapper<NodeCommunication> {
+    static class NodeCommunicationMapper implements ISqlRowMapper<NodeCommunication> {
         public NodeCommunication mapRow(Row rs) {
             NodeCommunication nodeCommunication = new NodeCommunication();
             nodeCommunication.setCommunicationType(CommunicationType.valueOf(rs.getString(
@@ -644,7 +640,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
     }
 
-    class ChannelThreadFactory implements ThreadFactory {
+    static class ChannelThreadFactory implements ThreadFactory {
 
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private String engineName;

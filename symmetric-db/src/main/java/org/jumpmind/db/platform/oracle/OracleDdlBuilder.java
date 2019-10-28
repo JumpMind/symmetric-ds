@@ -39,8 +39,11 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -53,6 +56,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected static final String PREFIX_TRIGGER = "TRG";
 
     protected static final String PREFIX_SEQUENCE = "SEQ";
+    
+    protected static final String ROWID_TYPE = "ROWID";
 
     public OracleDdlBuilder() {
         super(DatabaseNamesConstants.ORACLE);
@@ -64,11 +69,11 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         // Note that the back-mappings are partially done by the model reader,
         // not the driver
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)");
+        databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMBER(38)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.BINARY, "RAW", Types.VARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.BIT, "NUMBER(1)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.TIMESTAMP);
-        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER");
+        databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMBER", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "DOUBLE PRECISION");
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT", Types.DOUBLE);
@@ -76,15 +81,15 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.NULL, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.DECIMAL);
-        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.NUMERIC, "NUMBER", Types.NUMERIC);
+        databaseInfo.addNativeTypeMapping(Types.INTEGER, "NUMBER(22)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.OTHER, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.REF, "BLOB", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)");
+        databaseInfo.addNativeTypeMapping(Types.SMALLINT, "NUMBER(5)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.STRUCT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIME, "DATE", Types.DATE);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "TIMESTAMP");
-        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.DECIMAL);
+        databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMBER(3)", Types.NUMERIC);
         databaseInfo.addNativeTypeMapping(Types.VARBINARY, "RAW");
         databaseInfo.addNativeTypeMapping(Types.VARCHAR, "VARCHAR2");
         databaseInfo.addNativeTypeMapping("BOOLEAN", "NUMBER(1)", "BIT");
@@ -529,6 +534,31 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         ddl.append("DROP PRIMARY KEY");
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
+    }
+    
+    @Override
+    protected String getSqlType(Column column) {
+        PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
+        if (platformColumn != null && platformColumn.getType() != null 
+                && platformColumn.getType().equals(ROWID_TYPE)) {
+            return ROWID_TYPE;
+        } else {
+            return super.getSqlType(column);
+        }
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // Oracle does not support ON UPDATE
+        return;
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Oracle only supports CASCADE and SET NULL
+        if(key.getOnDeleteAction().equals(ForeignKeyAction.CASCADE) || key.getOnDeleteAction().equals(ForeignKeyAction.SETNULL)) {
+            super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        }
     }
 
 }

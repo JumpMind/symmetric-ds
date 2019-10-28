@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -40,7 +41,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     
     private String category;
     
-    private Map<Batch, IStagedResource> stagedResources = new HashMap<Batch, IStagedResource>();
+    private Map<Batch, IStagedResource> stagedResources = new ConcurrentHashMap<Batch, IStagedResource>();
     
     private long memoryThresholdInBytes;
     

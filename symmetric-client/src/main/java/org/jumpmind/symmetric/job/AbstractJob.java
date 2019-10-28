@@ -202,16 +202,17 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     @Override
     public boolean invoke(boolean force) {
-        IParameterService parameterService = engine.getParameterService();
-        long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD,-1);
-        
-        boolean ok = checkPrerequsites(force);
-        if (!ok) {
-            return false;
-        }
-
-        try {
+        try {            
             MDC.put("engineName", engine.getEngineName());
+            
+            IParameterService parameterService = engine.getParameterService();
+            long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD,-1);
+            
+            boolean ok = checkPrerequsites(force);
+            if (!ok) {
+                return false;
+            }
+            
             long startTime = System.currentTimeMillis();
             try {
                 if (!running.compareAndSet(false, true)) { // This ensures this job only runs once on this instance.

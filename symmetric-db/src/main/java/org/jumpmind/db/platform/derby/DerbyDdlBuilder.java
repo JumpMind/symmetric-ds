@@ -28,9 +28,11 @@ import org.jumpmind.db.alter.TableChange;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -167,6 +169,22 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
+        // Derby does not support ON UPDATE SET DEFAULT
+        if(! key.getOnUpdateAction().equals(ForeignKeyAction.SETDEFAULT)) {
+            super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
+        }
+    }
+    
+    @Override
+    protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
+        // Derby does not support ON DELETE SET DEFAULT
+        if(! key.getOnDeleteAction().equals(ForeignKeyAction.SETDEFAULT)) {
+            super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
+        }
     }
     
 }

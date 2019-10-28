@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
+import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
@@ -248,4 +249,15 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         }
     }
 
+    @Override
+    protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
+        // NuoDb does not support cascade actions
+        fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
+    }
+
+    @Override
+    protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
+        // NuoDb does not support cascade actions
+        fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
+    }
 }

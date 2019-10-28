@@ -30,4 +30,23 @@ public class MsSqlDmlStatement extends DmlStatement {
             return super.getTypeCode(column, isDateOverrideToTimestamp);
         }
     }
+    
+    @Override
+    protected void appendColumnParameter(StringBuilder sql, Column column) {
+        if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("datetime2") && column.getMappedTypeCode() == Types.VARCHAR) {
+            sql.append("cast(? AS datetime2(6))").append(",");
+        } else {
+            super.appendColumnParameter(sql, column);
+        }
+    }
+    
+    @Override
+    protected void appendColumnEquals(StringBuilder sql, Column column) {
+        if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("datetime2") && column.getMappedTypeCode() == Types.VARCHAR) {
+            sql.append(quote).append(column.getName()).append(quote)
+            .append(" = cast(? AS datetime2(6))");
+        } else {
+            super.appendColumnEquals(sql, column);
+        }
+    }
 }

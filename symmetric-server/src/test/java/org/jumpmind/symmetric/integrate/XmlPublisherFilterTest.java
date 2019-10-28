@@ -87,7 +87,7 @@ public class XmlPublisherFilterTest {
 
     }
 
-    class Output implements IPublisher {
+    static class Output implements IPublisher {
         private String output;
 
         public void publish(Context context, String text) {

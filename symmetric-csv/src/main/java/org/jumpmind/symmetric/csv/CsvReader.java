@@ -1563,7 +1563,7 @@ public class CsvReader {
         close(false);
     }
 
-    private class ComplexEscape {
+    private static class ComplexEscape {
         private static final int UNICODE = 1;
 
         private static final int OCTAL = 2;
@@ -1587,27 +1587,27 @@ public class CsvReader {
         return result;
     }
 
-    private class DataBuffer {
-        public char[] Buffer;
+    private static class DataBuffer {
+        private char[] Buffer;
 
-        public int Position;
+        private int Position;
 
         // / <summary>
         // / How much usable data has been read into the stream,
         // / which will not always be as long as Buffer.Length.
         // / </summary>
-        public int Count;
+        private int Count;
 
         // / <summary>
         // / The position of the cursor in the buffer when the
         // / current column was started or the last time data
         // / was moved out to the column buffer.
         // / </summary>
-        public int ColumnStart;
+        private int ColumnStart;
 
-        public int LineStart;
+        private int LineStart;
 
-        public DataBuffer() {
+        private DataBuffer() {
             Buffer = new char[StaticSettings.MAX_BUFFER_SIZE];
             Position = 0;
             Count = 0;
@@ -1616,85 +1616,85 @@ public class CsvReader {
         }
     }
 
-    private class ColumnBuffer {
-        public char[] Buffer;
+    private static class ColumnBuffer {
+        private char[] Buffer;
 
-        public int Position;
+        private int Position;
 
-        public ColumnBuffer() {
+        private ColumnBuffer() {
             Buffer = new char[StaticSettings.INITIAL_COLUMN_BUFFER_SIZE];
             Position = 0;
         }
     }
 
-    private class RawRecordBuffer {
-        public char[] Buffer;
+    private static class RawRecordBuffer {
+        private char[] Buffer;
 
-        public int Position;
+        private int Position;
 
-        public RawRecordBuffer() {
+        private RawRecordBuffer() {
             Buffer = new char[StaticSettings.INITIAL_COLUMN_BUFFER_SIZE * StaticSettings.INITIAL_COLUMN_COUNT];
             Position = 0;
         }
     }
 
-    private class Letters {
-        public static final char LF = '\n';
+    private static class Letters {
+        private static final char LF = '\n';
 
-        public static final char CR = '\r';
+        private static final char CR = '\r';
 
-        public static final char QUOTE = '"';
+        private static final char QUOTE = '"';
 
-        public static final char COMMA = ',';
+        private static final char COMMA = ',';
 
-        public static final char SPACE = ' ';
+        private static final char SPACE = ' ';
 
-        public static final char TAB = '\t';
+        private static final char TAB = '\t';
 
-        public static final char POUND = '#';
+        private static final char POUND = '#';
 
-        public static final char BACKSLASH = '\\';
+        private static final char BACKSLASH = '\\';
 
-        public static final char NULL = '\0';
+        private static final char NULL = '\0';
 
-        public static final char BACKSPACE = '\b';
+        private static final char BACKSPACE = '\b';
 
-        public static final char FORM_FEED = '\f';
+        private static final char FORM_FEED = '\f';
 
-        public static final char ESCAPE = '\u001B'; // ASCII/ANSI escape
+        private static final char ESCAPE = '\u001B'; // ASCII/ANSI escape
 
-        public static final char VERTICAL_TAB = '\u000B';
+        private static final char VERTICAL_TAB = '\u000B';
 
-        public static final char ALERT = '\u0007';
+        private static final char ALERT = '\u0007';
     }
 
-    private class UserSettings {
+    private static class UserSettings {
         // having these as publicly accessible members will prevent
         // the overhead of the method call that exists on properties
 
-        public char TextQualifier;
+        private char TextQualifier;
 
-        public boolean TrimWhitespace;
+        private boolean TrimWhitespace;
 
-        public boolean UseTextQualifier;
+        private boolean UseTextQualifier;
 
-        public char Delimiter;
+        private char Delimiter;
 
-        public char RecordDelimiter;
+        private char RecordDelimiter;
 
-        public char Comment;
+        private char Comment;
 
-        public boolean UseComments;
+        private boolean UseComments;
 
-        public int EscapeMode;
+        private int EscapeMode;
 
-        public boolean SafetySwitch;
+        private boolean SafetySwitch;
 
-        public boolean SkipEmptyRecords;
+        private boolean SkipEmptyRecords;
 
-        public boolean CaptureRawRecord;
+        private boolean CaptureRawRecord;
 
-        public UserSettings() {
+        private UserSettings() {
             TextQualifier = Letters.QUOTE;
             TrimWhitespace = true;
             UseTextQualifier = true;
@@ -1709,30 +1709,30 @@ public class CsvReader {
         }
     }
 
-    private class HeadersHolder {
-        public String[] Headers;
+    private static class HeadersHolder {
+        private String[] Headers;
 
-        public int Length;
+        private int Length;
 
-        public HashMap<String,Integer> IndexByName;
+        private HashMap<String,Integer> IndexByName;
 
-        public HeadersHolder() {
+        private HeadersHolder() {
             Headers = null;
             Length = 0;
             IndexByName = new HashMap<String,Integer>();
         }
     }
 
-    private class StaticSettings {
+    private static class StaticSettings {
         // these are static instead of final so they can be changed in unit test
         // isn't visible outside this class and is only accessed once during
         // CsvReader construction
-        public static final int MAX_BUFFER_SIZE = 1024;
+        private static final int MAX_BUFFER_SIZE = 1024;
 
-        public static final int MAX_FILE_BUFFER_SIZE = 4 * 1024;
+        private static final int MAX_FILE_BUFFER_SIZE = 4 * 1024;
 
-        public static final int INITIAL_COLUMN_COUNT = 10;
+        private static final int INITIAL_COLUMN_COUNT = 10;
 
-        public static final int INITIAL_COLUMN_BUFFER_SIZE = 50;
+        private static final int INITIAL_COLUMN_BUFFER_SIZE = 50;
     }
 }

@@ -109,7 +109,7 @@ import org.jumpmind.util.FormatUtils;
  */
 public class RouterService extends AbstractService implements IRouterService {
     
-    final int MAX_LOGGING_LENGTH = 512;
+    public static final int MAX_LOGGING_LENGTH = 512;
 
     protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
     
@@ -589,12 +589,14 @@ public class RouterService extends AbstractService implements IRouterService {
             if (producesCommonBatches && triggerRouters != null) {
                 List<TriggerRouter> testableTriggerRouters = new ArrayList<TriggerRouter>();
                 for (TriggerRouter triggerRouter : triggerRouters) {
-                    if (triggerRouter.getTrigger().getChannelId().equals(channel.getChannelId())) {
+                    if (triggerRouter.getTrigger().getChannelId().equals(channelId)) {
                         testableTriggerRouters.add(triggerRouter);
                     } else {
                         /*
-                         * Add any trigger router that is in another channel, but is
-                         * for a table that is in the current channel
+                         * This trigger is not on this channel. If there is
+                         * another trigger on this channel for the same table
+                         * AND this trigger is syncing to this node, then
+                         * consider it to check on common batch mode
                          */
                         String anotherChannelTableName = triggerRouter.getTrigger()
                                 .getFullyQualifiedSourceTableName();
@@ -603,14 +605,16 @@ public class RouterService extends AbstractService implements IRouterService {
                                     .getTrigger()
                                     .getFullyQualifiedSourceTableName();
                             String currentChannelId = triggerRouter2.getTrigger().getChannelId();
-                            if (anotherChannelTableName
-                                    .equals(currentTableName) && currentChannelId.equals(channelId)) {
+                            if (anotherChannelTableName.equals(currentTableName) && currentChannelId.equals(channelId)
+                                    && triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId()
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getSourceNodeGroupId()) &&
+                                            triggerRouter.getRouter().getNodeGroupLink().getSourceNodeGroupId()
+                                            .equals(triggerRouter2.getRouter().getNodeGroupLink().getTargetNodeGroupId())) {
                                 testableTriggerRouters.add(triggerRouter);
                             }
                         }
                     }
                 }         
-                
                 for (TriggerRouter triggerRouter : testableTriggerRouters) {
                     boolean isDefaultRouter = "default".equals(triggerRouter.getRouter().getRouterType());
                     /*
@@ -765,6 +769,8 @@ public class RouterService extends AbstractService implements IRouterService {
                             engine.getStatisticManager().setDataUnRouted(channelId, dataLeftToRoute);
                         }
                     }
+                } else {
+                    gapDetector.setIsAllDataRead(false);
                 }
             } catch (Exception e) {
                 if (context != null) {
@@ -792,7 +798,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (engine.getParameterService().is(ParameterConstants.ROUTING_LOG_STATS_ON_BATCH_ERROR)) {
             engine.getStatisticManager().addRouterStats(context.getStartDataId(), context.getEndDataId(), 
                     context.getDataReadCount(), context.getPeekAheadFillCount(),
-                    context.getDataGaps(), context.getTransactions(), batches);
+                    context.getDataGaps(), null, batches);
         }
 
         for (OutgoingBatch batch : batches) {
@@ -1106,6 +1112,9 @@ public class RouterService extends AbstractService implements IRouterService {
                         context.setLastLoadId(loadId);
                     }
                     batch.setLoadId(loadId);
+                    if (context.getChannel().isReloadFlag()) {
+                        context.setNeedsCommitted(true);
+                    }
                 } else {
                     context.setLastLoadId(-1);
                 }

@@ -149,7 +149,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
 
     }
 
-    class ExtractResults {
+    static class ExtractResults {
 
         private List<OutgoingBatch> batches;
         private String csv;
@@ -169,7 +169,7 @@ public abstract class AbstractDataExtractorServiceTest extends AbstractServiceTe
 
     }
 
-    class TestExtract {
+    static class TestExtract {
 
         private int id;
         private String varcharValue;

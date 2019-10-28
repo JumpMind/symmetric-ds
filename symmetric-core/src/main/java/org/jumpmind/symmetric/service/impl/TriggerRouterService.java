@@ -1343,20 +1343,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     protected void dropTriggers(TriggerHistory history, StringBuilder sqlBuffer) {
         try {
-            if (StringUtils.isNotBlank(history.getNameForInsertTrigger())) {
-                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
-                        history.getNameForInsertTrigger(), history.getSourceTableName());
-            }
+            dropTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                    history.getNameForInsertTrigger(), history.getSourceTableName());
 
-            if (StringUtils.isNotBlank(history.getNameForDeleteTrigger())) {
-                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
-                        history.getNameForDeleteTrigger(), history.getSourceTableName());
-            }
+            dropTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                    history.getNameForDeleteTrigger(), history.getSourceTableName());
 
-            if (StringUtils.isNotBlank(history.getNameForUpdateTrigger())) {
-                symmetricDialect.removeTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
-                        history.getNameForUpdateTrigger(), history.getSourceTableName());
-            }
+            dropTrigger(sqlBuffer, history.getSourceCatalogName(), history.getSourceSchemaName(),
+                    history.getNameForUpdateTrigger(), history.getSourceTableName());
 
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
                 for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
@@ -1379,6 +1373,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         } catch (Throwable ex) {
             log.error("Error while dropping triggers for table {}", history.getSourceTableName(), ex);
+        }
+    }
+    
+    protected void dropTrigger(StringBuilder sqlBuffer, String catalog, String schema, String triggerName, String tableName) {
+        if (StringUtils.isNotBlank(triggerName)) {
+            try {
+                symmetricDialect.removeTrigger(sqlBuffer, catalog, schema, triggerName, tableName);
+            } catch (Throwable e) {
+                log.error("Error while dropping trigger {} for table {}", triggerName, tableName, e);
+            }
         }
     }
 
@@ -1507,8 +1511,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
         for (Trigger trigger : triggersForCurrentNode) {
-            if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(),
-                    ignoreCase)) {
+            if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
+                    (!trigger.isSourceTableNameWildCarded() || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
                 log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
                 updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories);
                 log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
@@ -1908,7 +1912,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerName;
     }
 
-    class TriggerHistoryMapper implements ISqlRowMapper<TriggerHistory> {
+    static class TriggerHistoryMapper implements ISqlRowMapper<TriggerHistory> {
         Map<Long, TriggerHistory> retMap = null;
 
         TriggerHistoryMapper() {
@@ -1944,7 +1948,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class RouterMapper implements ISqlRowMapper<Router> {
+    static class RouterMapper implements ISqlRowMapper<Router> {
         
         List<NodeGroupLink> nodeGroupLinks;
         
@@ -1987,7 +1991,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerMapper implements ISqlRowMapper<Trigger> {
+    static class TriggerMapper implements ISqlRowMapper<Trigger> {
         public Trigger mapRow(Row rs) {
             Trigger trigger = new Trigger();
             trigger.setTriggerId(rs.getString("trigger_id"));
@@ -2056,7 +2060,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerRouterMapper implements ISqlRowMapper<TriggerRouter> {
+    static class TriggerRouterMapper implements ISqlRowMapper<TriggerRouter> {
 
         public TriggerRouterMapper() {
         }
@@ -2204,7 +2208,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return triggerRoutersByHistoryId;
     }
 
-    protected List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
+    public List<Table> getSortedTablesFor(List<TriggerHistory> histories) {
+        return Database.sortByForeignKeys(getTablesFor(histories), null, null, null);
+    }
+
+    public List<Table> getTablesFor(List<TriggerHistory> histories) {
         List<Table> tables = new ArrayList<Table>(histories.size());
         for (TriggerHistory triggerHistory : histories) {
             Table table = platform.getTableFromCache(triggerHistory.getSourceCatalogName(),
@@ -2214,7 +2222,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 tables.add(table);
             }
         }
-        return Database.sortByForeignKeys(tables, null, tablePrefix, null, null);
+        return tables;
     }
 
     protected void awaitTermination(ExecutorService executor, List<Future<?>> futures) {
@@ -2245,7 +2253,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
     }
 
-    class TriggerRoutersCache {
+    static class TriggerRoutersCache {
 
         public TriggerRoutersCache(Map<String, List<TriggerRouter>> triggerRoutersByTriggerId,
                 Map<String, Router> routersByRouterId) {

@@ -160,6 +160,7 @@ final public class ParameterConstants {
     public final static String INITIAL_LOAD_SCHEMA_LOAD_COMMAND = "initial.load.schema.load.command";
     public final static String INITIAL_LOAD_EXTRACT_AND_SEND_WHEN_STAGED = "initial.load.extract.and.send.when.staged";
     public final static String INITIAL_LOAD_TRANSPORT_MAX_BYTES_TO_SYNC = "initial.load.transport.max.bytes.to.sync";
+    public final static String INITIAL_LOAD_USE_ESTIMATED_COUNTS = "initial.load.use.estimated.counts";
     
     public final static String CREATE_TABLE_WITHOUT_DEFAULTS = "create.table.without.defaults";
     public final static String CREATE_TABLE_WITHOUT_FOREIGN_KEYS = "create.table.without.foreign.keys";
@@ -227,6 +228,7 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_USE_TRANSACTION_VIEW = "oracle.use.transaction.view";
     public final static String DBDIALECT_ORACLE_TEMPLATE_NUMBER_SPEC = "oracle.template.precision";
     public final static String DBDIALECT_ORACLE_USE_HINTS = "oracle.use.hints";
+    public final static String DBDIALECT_ORACLE_USE_SELECT_START_DATA_ID_HINT = "oracle.use.select.data.using.start.data.id.hint";
     public final static String DBDIALECT_ORACLE_SEQUENCE_NOORDER = "oracle.sequence.noorder";
     public final static String DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS = "oracle.sequence.noorder.nextvalue.db.urls";
 

@@ -306,7 +306,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         return simpleClassCompiler.getCompiledClass(javaCode);
     }
     
-    class ExtensionRowMapper implements ISqlRowMapper<Extension> {
+    static class ExtensionRowMapper implements ISqlRowMapper<Extension> {
         @Override
         public Extension mapRow(Row row) {
             Extension extension = new Extension();

@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
@@ -94,6 +95,10 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         }
 
         Table table = super.readTable(connection, metaData, values);
+        
+        if(StringUtils.equalsIgnoreCase(table.getSchema(),"sys")){
+            return null;
+        }
 
         if (table != null) {
             // Sql Server does not return the auto-increment status via the
@@ -165,7 +170,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         if (isNotBlank(columnSize)) {
             size = Integer.parseInt(columnSize);
         }
-        if (typeName != null) {           
+        if (typeName != null) {            
             if (typeName.toLowerCase().startsWith("text")) {
                 return Types.LONGVARCHAR;
             } else if ( typeName.toLowerCase().startsWith("ntext")) {
@@ -182,9 +187,11 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 return Types.LONGNVARCHAR;
             } else if ( typeName.toUpperCase().equals("SQL_VARIANT")) {
                 return Types.BINARY;
-            } else if (typeName != null && typeName.equalsIgnoreCase("DATETIMEOFFSET")) {
+            } else if (typeName.equalsIgnoreCase("DATETIMEOFFSET")) {
                 return MAPPED_TIMESTAMPTZ;            
-            } 
+            } else if (typeName.equalsIgnoreCase("datetime2")) {
+                return Types.TIMESTAMP;
+            }
         }
         return super.mapUnknownJdbcTypeForColumn(values); 
     }

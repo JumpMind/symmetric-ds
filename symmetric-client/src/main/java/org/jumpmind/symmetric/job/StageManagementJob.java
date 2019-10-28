@@ -45,8 +45,10 @@ public class StageManagementJob extends AbstractJob {
     public void doJob(boolean force) throws Exception {
         IStagingManager stagingManager = engine.getStagingManager();
         if (stagingManager != null) {
-            stagingManager.clean(engine.getParameterService()
+            long processed = stagingManager.clean(engine.getParameterService()
                     .getLong(ParameterConstants.STREAM_TO_FILE_TIME_TO_LIVE_MS));
+
+            setProcessedCount(processed);
         }
     }
 

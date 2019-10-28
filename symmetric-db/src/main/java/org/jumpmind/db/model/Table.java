@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -154,9 +155,15 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      *            The catalog
      */
     public void setCatalog(String catalog) {
+        for (ForeignKey fk : getForeignKeys()) {
+            if (fk.getForeignTableCatalog() != null && fk.getForeignTableCatalog().equals(this.catalog)) {
+                fk.setForeignTableCatalog(catalog);
+            }
+        }
         this.oldCatalog = this.catalog != null ? this.catalog : catalog;
         this.catalog = catalog;
         this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
+        
     }
 
     /**
@@ -175,6 +182,11 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      *            The schema
      */
     public void setSchema(String schema) {
+        for (ForeignKey fk : getForeignKeys()) {
+            if (fk.getForeignTableSchema() != null && fk.getForeignTableSchema().equals(this.schema)) {
+                fk.setForeignTableSchema(schema);
+            }
+        }
         this.oldSchema = this.schema != null ? this.schema : schema;
         this.schema = schema;
         this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
@@ -1234,6 +1246,25 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         Table table = copy();
         table.orderColumns(orderedColumnNames);
         
+        Set<String> columnNameSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+        columnNameSet.addAll(Arrays.asList(orderedColumnNames));
+
+        List<IIndex> indices = new ArrayList<IIndex>();
+        for(IIndex index : table.getIndices()){
+            boolean keepIndex = true;
+            for(IndexColumn columnInIndex : index.getColumns()){
+                if(columnInIndex == null || !columnNameSet.contains(columnInIndex.getName())){
+                    keepIndex = false;
+                    break;
+                }
+            }
+            if(keepIndex){
+                indices.add(index);
+            }
+        }
+        table.removeAllIndices();
+        table.addIndices(indices);
+
         if (setPrimaryKeys && columns != null) {
             for (Column column : table.columns) {
                 if (column != null) {
@@ -1257,10 +1288,14 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                 List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
                 Set<String> columnsSet = new HashSet<String>(Arrays.asList(orderedColumnNames));
                 for (ForeignKey fk : table.getForeignKeys()) {
+                    boolean addFk = true;
                     for (Reference ref : fk.getReferences()) {
-                        if (ref != null && ref.getLocalColumnName() != null && columnsSet.contains(ref.getLocalColumnName())) {
-                            foreignKeys.add(fk);
-                        }
+                        if (ref != null && ref.getLocalColumnName() != null && !columnsSet.contains(ref.getLocalColumnName())) {
+                            addFk = false; 
+                        }  
+                    }
+                    if (addFk) {
+                        foreignKeys.add(fk);
                     }
                 }
                 table.removeAllForeignKeys();

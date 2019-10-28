@@ -18,7 +18,7 @@ Different monitor types can check the CPU usage, disk usage, memory usage, batch
 of data gaps.
 Custom monitor types can be created using <<_extensions,Extensions>> that use the IMonitorType interface.
 When the value returned from the check meets or exceeds the threshold value, a <<_monitor_event>> is recorded.
-The <<_monitor_event>> table is synchronized on the heartbeat channel, which allows a central server to see events from remote nodes,
+The <<_monitor_event>> table is synchronized on the "monitor" channel, which allows a central server to see events from remote nodes,
 but this behavior can be disabled by setting the `monitor.events.capture.enabled` parameter to false.
 
 To be immediately notified of a monitor event, use <<_notifications,Notifications>> to match on the severity level.
