@@ -99,7 +99,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                     new TableCsvData(table, data));
             values = (String[]) ArrayUtils.remove(values, values.length - 1);
             values = (String[]) ArrayUtils.add(values, 0, id);
-            assertTestTableEquals(id, values);
+            assertTestTableEquals(id, massageExpectectedResultsForDialect(values));
         }
     }
 

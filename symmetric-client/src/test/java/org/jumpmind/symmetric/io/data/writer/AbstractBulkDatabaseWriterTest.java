@@ -33,6 +33,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -71,7 +72,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         List<CsvData> data = new ArrayList<CsvData>();
         data.add(new CsvData(DataEventType.INSERT, (String[]) ArrayUtils.clone(values)));
         writeData(data);
-        assertTestTableEquals(values[0], values);
+        assertTestTableEquals(values[0], massageExpectectedResultsForDialect(values));
     }
 
     protected abstract long writeData(List<CsvData> data);
@@ -276,6 +277,19 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             }
         }
         assertEquals(TEST_COLUMNS, expectedValues, results);
+    }
+    
+    protected String[] massageExpectectedResultsForDialect(String[] values) {
+    	if(values[5] != null && platform instanceof MsSql2008DatabasePlatform) {
+        	// No time portion for a date field
+        	values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
+        }
+    	if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
+        	if(values[6].length() == 23) {
+        		values[6] = values[6] + "0000";
+        	}
+        }
+    	return values;
     }
 
 }
