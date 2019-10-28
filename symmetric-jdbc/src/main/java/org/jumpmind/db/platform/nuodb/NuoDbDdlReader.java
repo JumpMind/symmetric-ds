@@ -102,7 +102,11 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
     
     @Override
     protected String getName(String defaultName){
-        return columnNames.get(defaultName);
+        String name = columnNames.get(defaultName);
+        if (name == null) {
+            name = super.getName(defaultName);
+        }
+        return name;
     }
 
     @Override
