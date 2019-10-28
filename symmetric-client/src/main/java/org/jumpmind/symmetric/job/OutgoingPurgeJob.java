@@ -46,7 +46,7 @@ public class OutgoingPurgeJob extends AbstractJob {
         
     @Override
     public void doJob(boolean force) throws Exception {
-        engine.getPurgeService().purgeOutgoing(force);        
+        setProcessedCount(engine.getPurgeService().purgeOutgoing(force));        
     }
     
     @Override
