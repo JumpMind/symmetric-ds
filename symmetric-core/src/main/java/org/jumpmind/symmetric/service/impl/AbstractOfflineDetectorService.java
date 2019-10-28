@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
+import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -101,7 +102,11 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
             status.setStatus(Status.BUSY);
         } else if (isNotAuthenticated(exception)) {
-            log.warn("Authorization denied from {} at {}", new Object[] {remoteNode, syncUrl});
+            if (isAuthenticationExpired(exception)) {
+                log.debug("Authentication is required again to renew session");
+            } else {
+                log.warn("Authorization denied from {} at {}", new Object[] {remoteNode, syncUrl});
+            }
             status.setStatus(Status.NOT_AUTHORIZED);
         } else if (isSyncDisabled(exception)) {
             log.warn("Sync was not enabled for {} at {}", new Object[] {remoteNode, syncUrl});
@@ -111,6 +116,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             status.setStatus(Status.REGISTRATION_REQUIRED);
         } else if (isRegistrationRequired(exception)) {
             log.warn("Registration is needed before communicating with {} at {}", new Object[] {remoteNode, syncUrl});
+            status.setStatus(Status.REGISTRATION_REQUIRED);
+        } else if (isRegistrationPending(exception)) {
+            log.info("Registration is still pending");
             status.setStatus(Status.REGISTRATION_REQUIRED);
         } else if (isNoReservation(exception)) {
             log.warn("Missing reservation during push with {}", new Object[] { remoteNode });
@@ -189,6 +197,24 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         return offline;
     }
 
+    protected boolean isAuthenticationExpired(Exception ex) {
+        boolean expired = false;
+        if (ex != null) {
+            Throwable cause = getRootCause(ex);
+            AuthenticationException authException = null;
+            if (ex instanceof AuthenticationException) {
+                authException = (AuthenticationException) ex;
+            }
+            if (cause instanceof AuthenticationException) {
+                authException = (AuthenticationException) cause;
+            }
+            if (authException != null) {
+                expired = authException.isExpiredSession();
+            }
+        }
+        return expired;
+    }
+
     protected boolean isBusy(Exception ex) {
         boolean offline = false;
         if (ex != null) {
@@ -231,6 +257,18 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
         }
         return registrationRequired;
+    }
+
+    protected boolean isRegistrationPending(Exception ex) {
+        boolean registrationPending = false;
+        if (ex != null) {
+            Throwable cause = getRootCause(ex);
+            registrationPending = cause instanceof RegistrationPendingException;
+            if (registrationPending == false && (ex instanceof RegistrationPendingException)) {
+                registrationPending = true;
+            }
+        }
+        return registrationPending;
     }
 
     protected boolean isRegistrationNotOpen(Exception ex) {

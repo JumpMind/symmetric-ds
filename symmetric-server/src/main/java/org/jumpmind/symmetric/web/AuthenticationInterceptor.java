@@ -21,12 +21,15 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.INodeService.AuthenticationStatus;
 import org.slf4j.Logger;
@@ -37,26 +40,70 @@ import org.slf4j.LoggerFactory;
  */
 public class AuthenticationInterceptor implements IInterceptor {
     
-    Logger log = LoggerFactory.getLogger(getClass());
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private INodeService nodeService;
     
-    public AuthenticationInterceptor(INodeService nodeService) {
+    private ISecurityService securityService;
+    
+    private Map<String, AuthenticationSession> sessions = new HashMap<String, AuthenticationSession>();
+
+    private boolean useSessionAuth;
+    
+    private int sessionExpireMillis;
+    
+    public AuthenticationInterceptor(INodeService nodeService, ISecurityService securityService, 
+            boolean useSessionAuth, int sessionExpireSeconds) {
         this.nodeService = nodeService;
+        this.securityService = securityService;
+        this.useSessionAuth = useSessionAuth;
+        this.sessionExpireMillis = sessionExpireSeconds * 1000;
     }
 
-    public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException,
-            ServletException {
-        String securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
-        String nodeId = req.getParameter(WebConstants.NODE_ID);
+    public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 
-        if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
-            ServletUtils.sendError(resp, HttpServletResponse.SC_FORBIDDEN);
-            return false;
+        String nodeId = null;
+        String securityToken = null;
+        AuthenticationStatus status = null;
+        AuthenticationSession session = null;
+
+        if (useSessionAuth && (session = getSession(req, false)) != null) {
+            nodeId = (String) session.getAttribute(WebConstants.NODE_ID);
+            securityToken = (String) session.getAttribute(WebConstants.SECURITY_TOKEN);
+
+            if (!StringUtils.isEmpty(securityToken) && !StringUtils.isEmpty(nodeId)) {
+                status = nodeService.getAuthenticationStatus(nodeId, securityToken);
+            }
+            
+            if (status == null || AuthenticationStatus.FORBIDDEN.equals(status) || (AuthenticationStatus.ACCEPTED.equals(status)
+                    && sessionExpireMillis > 0 && System.currentTimeMillis() - session.getCreationTime() > sessionExpireMillis)) {
+                log.debug("Node '{}' needs to renew authentication", nodeId);
+                sessions.remove(session.getId());
+                ServletUtils.sendError(resp, WebConstants.SC_AUTH_EXPIRED);
+                return false;
+            }
+        } else {
+            securityToken = req.getHeader(WebConstants.HEADER_SECURITY_TOKEN);
+            if (securityToken == null) {
+                securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
+            }
+            nodeId = req.getParameter(WebConstants.NODE_ID);
+    
+            if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
+                ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN);
+                return false;
+            }
+    
+            status = nodeService.getAuthenticationStatus(nodeId, securityToken);
+            
+            if (useSessionAuth && AuthenticationStatus.ACCEPTED.equals(status)) {
+                session = getSession(req, true);
+                session.setAttribute(WebConstants.NODE_ID, nodeId);
+                session.setAttribute(WebConstants.SECURITY_TOKEN, securityToken);
+                resp.setHeader(WebConstants.HEADER_SET_SESSION_ID, session.getId());
+            }
         }
-
-        AuthenticationStatus status = nodeService.getAuthenticationStatus(nodeId, securityToken);
-
+        
         if (AuthenticationStatus.ACCEPTED.equals(status)) {
             log.debug("Node '{}' successfully authenticated", nodeId);
             return true;
@@ -74,9 +121,19 @@ public class AuthenticationInterceptor implements IInterceptor {
             return false;
         }
     }
-    
-    public void after(HttpServletRequest req, HttpServletResponse res) throws IOException,
-            ServletException {
+ 
+    protected AuthenticationSession getSession(HttpServletRequest req, boolean create) {
+        String sessionId = req.getHeader(WebConstants.HEADER_SESSION_ID);
+        AuthenticationSession session = sessions.get(sessionId);
+        if (session == null && create) {
+            String id = securityService.nextSecureHexString(30);
+            session = new AuthenticationSession(id);
+            sessions.put(id, session);
+        }
+        return session;
+    }
+
+    public void after(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
     }
 
 }

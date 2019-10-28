@@ -466,6 +466,7 @@ public class FileSyncTest extends AbstractTest {
 
     protected boolean pullFiles() {
         trackChangesOnServer();
+        getWebServer("server").getEngine().getInitialLoadService().queueLoads(true);
         getWebServer("server").getEngine().getRouterService().routeData(true);
         return pullFiles("client");
     }

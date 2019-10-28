@@ -213,7 +213,7 @@ subprojects { subproject ->
         h2Version = '1.3.176'
         derbyVersion = '10.14.2.0'
         mariaDbVersion = '2.4.0'
-        postgresqlVersion =  '42.2.5'
+        postgresqlVersion =  '42.2.8'
         hsqldbVersion = '2.4.1'
         sqliteVersion = '3.25.2'
         firebirdVersion = '3.0.5'

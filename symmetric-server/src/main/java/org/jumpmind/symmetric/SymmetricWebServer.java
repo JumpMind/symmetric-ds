@@ -38,11 +38,6 @@ import javax.websocket.server.ServerEndpointConfig;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -51,8 +46,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
@@ -262,8 +255,6 @@ public class SymmetricWebServer {
 
         server.setConnectors(getConnectors(server, httpPort, securePort, mode));
         
-        setupBasicAuthIfNeeded(server);
-        
         webapp = new WebAppContext();
         webapp.setParentLoaderPriority(true);
         webapp.setConfigurationDiscovered(true);
@@ -296,7 +287,7 @@ public class SymmetricWebServer {
                     .setInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE, Boolean.toString(true));
         }
         
-        webapp.getSessionHandler().getSessionCookieConfig().setName("JSESSIONID_" + (httpsPort > 0 && httpsEnabled ? httpsPort : "") + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));        
+        webapp.getSessionHandler().getSessionCookieConfig().setName(WebConstants.SESSION_PREFIX + (httpsPort > 0 && httpsEnabled ? httpsPort : "") + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));        
         
         server.setHandler(webapp);
 
@@ -377,35 +368,6 @@ public class SymmetricWebServer {
                     throw new InterruptedException("Timed out waiting for engines to start");
                 }
             }
-        }
-    }
-
-    protected void setupBasicAuthIfNeeded(Server server) {
-        if (StringUtils.isNotBlank(basicAuthUsername)) {
-            ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
-
-            Constraint constraint = new Constraint();
-            constraint.setName(Constraint.__BASIC_AUTH);
-
-            constraint.setRoles(new String[] { SecurityConstants.EMBEDDED_WEBSERVER_DEFAULT_ROLE });
-            constraint.setAuthenticate(true);
-
-            ConstraintMapping cm = new ConstraintMapping();
-            cm.setConstraint(constraint);
-            cm.setPathSpec("/*");
-            // sh.setConstraintMappings(new ConstraintMapping[] {cm});
-            sh.addConstraintMapping(cm);
-
-            sh.setAuthenticator(new BasicAuthenticator());
-
-            HashLoginService loginService = new HashLoginService();
-            UserStore userStore = new UserStore();
-            userStore.addUser(basicAuthUsername, new Password(basicAuthPassword), null);
-            loginService.setUserStore(userStore);
-            sh.setLoginService(loginService);
-
-            server.setHandler(sh);
-
         }
     }
 
@@ -567,14 +529,6 @@ public class SymmetricWebServer {
 
     public void setHost(String host) {
         this.host = host;
-    }
-
-    public void setBasicAuthPassword(String basicAuthPassword) {
-        this.basicAuthPassword = basicAuthPassword;
-    }
-
-    public void setBasicAuthUsername(String basicAuthUsername) {
-        this.basicAuthUsername = basicAuthUsername;
     }
 
     public void setWebAppDir(String webAppDir) {

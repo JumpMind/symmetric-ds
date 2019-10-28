@@ -1389,7 +1389,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             			targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
                             } else {
                             	IStagedResource targetResource = targetEngine.getStagingManager().create( 
-                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId()), 
+                                        Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch.getBatchId()), 
                                         currentBatch.getBatchId());
                                 try {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());

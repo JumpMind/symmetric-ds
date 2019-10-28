@@ -51,9 +51,13 @@ public class WebConstants {
 
     public static final int REGISTRATION_REQUIRED = 657;
     
+    public static final int REGISTRATION_PENDING = 667;
+    
     public static final int SYNC_DISABLED = 658;
     
     public static final int SC_FORBIDDEN = 659;
+    
+    public static final int SC_AUTH_EXPIRED = 669;
     
     public static final int SC_SERVICE_UNAVAILABLE = 660;
     
@@ -136,7 +140,7 @@ public class WebConstants {
     public static final String DEPLOYMENT_TYPE = "deploymentType";
 
     public static final String SECURITY_TOKEN = "securityToken";
-
+    
     public static final String SUSPENDED_CHANNELS = "Suspended-Channels";
 
     public static final String IGNORED_CHANNELS = "Ignored-Channels";
@@ -146,5 +150,13 @@ public class WebConstants {
     public static final String CHANNEL_QUEUE = "threadChannel";
     
     public static final String CONFIG_VERSION = "configVersion";
+    
+    public static final String SESSION_PREFIX = "JSESSIONID_";
+    
+    public static final String HEADER_SECURITY_TOKEN = "Security-Token";
+    
+    public static final String HEADER_SESSION_ID = "Session-ID";
+    
+    public static final String HEADER_SET_SESSION_ID = "Set-Session-ID";
 
 }

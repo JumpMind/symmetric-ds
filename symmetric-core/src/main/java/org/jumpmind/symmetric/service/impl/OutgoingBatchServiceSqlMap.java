@@ -147,7 +147,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "select count(*) from $(outgoing_batch) where status != 'OK' and channel_id=?");
 
         putSql("countOutgoingBatchesUnsentHeartbeat",
-                "select count(*) from $(outgoing_batch) b inner join $(data_event) e on e.batch_id = b.batch_id " +
+                "select count(distinct b.node_id) from $(outgoing_batch) b inner join $(data_event) e on e.batch_id = b.batch_id " +
                 "inner join $(data) d on d.data_id = e.data_id " + 
                 "where b.channel_id = 'heartbeat' and b.status != 'OK' and d.source_node_id is null");
 

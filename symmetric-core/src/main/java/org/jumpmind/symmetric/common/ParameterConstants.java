@@ -271,8 +271,9 @@ final public class ParameterConstants {
     public final static String TRANSPORT_HTTP_COMPRESSION_DISABLED_SERVLET = "web.compression.disabled";
     public final static String TRANSPORT_HTTP_COMPRESSION_LEVEL = "compression.level";
     public final static String TRANSPORT_HTTP_COMPRESSION_STRATEGY = "compression.strategy";
-    public final static String TRANSPORT_HTTP_BASIC_AUTH_USERNAME = "http.basic.auth.username";
-    public final static String TRANSPORT_HTTP_BASIC_AUTH_PASSWORD = "http.basic.auth.password";
+    public final static String TRANSPORT_HTTP_USE_SESSION_AUTH = "http.use.session.auth";
+    public final static String TRANSPORT_HTTP_SESSION_EXPIRE_SECONDS = "http.session.expire.seconds";
+    public final static String TRANSPORT_HTTP_USE_HEADER_SECURITY_TOKEN = "http.use.header.security.token";
     public final static String TRANSPORT_TYPE = "transport.type";
     public final static String TRANSPORT_MAX_BYTES_TO_SYNC = "transport.max.bytes.to.sync";
     public final static String TRANSPORT_MAX_ERROR_MILLIS = "transport.max.error.millis";

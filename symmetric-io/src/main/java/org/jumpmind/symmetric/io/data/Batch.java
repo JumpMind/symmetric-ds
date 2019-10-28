@@ -178,14 +178,14 @@ public class Batch {
     
     public String getStagedLocation() {
         if (batchType == BatchType.EXTRACT) {
-            return getStagedLocation(common, targetNodeId);            
+            return getStagedLocation(common, targetNodeId, batchId);            
         } else {
-            return getStagedLocation(common, sourceNodeId);    
+            return getStagedLocation(common, sourceNodeId, batchId);    
         }        
     }
     
-    public static String getStagedLocation(boolean common, String nodeId) {
-        return common ? "common" : nodeId;
+    public static String getStagedLocation(boolean common, String nodeId, long batchId) {
+        return common ? "common/" + String.format("%03d", batchId % 1000) : nodeId;
     }
     
     public void setComplete(boolean complete) {

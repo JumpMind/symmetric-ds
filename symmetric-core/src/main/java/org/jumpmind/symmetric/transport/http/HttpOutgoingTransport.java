@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.transport.AuthenticationException;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
@@ -53,6 +54,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     static final String CRLF = "\r\n";
 
     private String boundary;
+
+    private HttpTransportManager httpTransportManager;
 
     private URL url;
 
@@ -72,9 +75,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private int compressionLevel;
 
-    private String basicAuthUsername;
+    private String nodeId;
 
-    private String basicAuthPassword;
+    private String securityToken;
 
     private boolean streamOutputEnabled = false;
 
@@ -84,36 +87,29 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private Map<String, String> requestProperties;
     
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
-            int compressionStrategy, int compressionLevel, String basicAuthUsername,
-            String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize,
+    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, boolean useCompression,
+            int compressionStrategy, int compressionLevel, String nodeId,
+            String securityToken, boolean streamOutputEnabled, int streamOutputSize,
             boolean fileUpload) {
+        this.httpTransportManager = httpTransportManager;
         this.url = url;
         this.httpTimeout = httpTimeout;
         this.useCompression = useCompression;
         this.compressionLevel = compressionLevel;
         this.compressionStrategy = compressionStrategy;
-        this.basicAuthUsername = basicAuthUsername;
-        this.basicAuthPassword = basicAuthPassword;
+        this.nodeId = nodeId;
+        this.securityToken = securityToken;
         this.streamOutputChunkSize = streamOutputSize;
         this.streamOutputEnabled = streamOutputEnabled;
         this.fileUpload = fileUpload;
     }
     
-    public HttpOutgoingTransport(URL url, int httpTimeout, boolean useCompression,
-            int compressionStrategy, int compressionLevel, String basicAuthUsername,
-            String basicAuthPassword, boolean streamOutputEnabled, int streamOutputSize,
+    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, boolean useCompression,
+            int compressionStrategy, int compressionLevel, String nodeId,
+            String securityToken, boolean streamOutputEnabled, int streamOutputSize,
             boolean fileUpload, Map<String, String> requestProperties) {
-        this.url = url;
-        this.httpTimeout = httpTimeout;
-        this.useCompression = useCompression;
-        this.compressionLevel = compressionLevel;
-        this.compressionStrategy = compressionStrategy;
-        this.basicAuthUsername = basicAuthUsername;
-        this.basicAuthPassword = basicAuthPassword;
-        this.streamOutputChunkSize = streamOutputSize;
-        this.streamOutputEnabled = streamOutputEnabled;
-        this.fileUpload = fileUpload;
+        this(httpTransportManager, url, httpTimeout, useCompression, compressionStrategy, compressionLevel, nodeId, securityToken,
+                streamOutputEnabled, streamOutputSize, fileUpload);
         this.requestProperties = requestProperties;
     }
 
@@ -129,9 +125,10 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private void closeReader() {
         if (reader != null) {
-        	try {
-        		reader.close();
-        	} catch(IOException e) { }
+            try {
+                reader.close();
+            } catch (IOException e) {
+            }
             reader = null;
         }
     }
@@ -147,9 +144,10 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                 throw new IoException(ex);
             } finally {
                 if (closeQuietly) {
-                	try {
-                		os.close();
-                	} catch(IOException e) { }
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                    }
                 } else {
                     try {
                         os.close();
@@ -173,9 +171,10 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                 throw new IoException(ex);
             } finally {
                 if (closeQuietly) {
-                	try {
-                		writer.close();
-                	} catch(IOException e) { }
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                    }
                 } else {
                     try {
                         writer.close();
@@ -200,8 +199,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      */
     private HttpURLConnection requestReservation(String queue) {
         try {
-            connection = HttpTransportManager.openConnection(url, basicAuthUsername,
-                    basicAuthPassword);
+            connection = httpTransportManager.openConnection(url, nodeId, securityToken);
             connection.setUseCaches(false);
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
@@ -209,6 +207,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setRequestProperty(WebConstants.CHANNEL_QUEUE, queue);
 
             analyzeResponseCode(connection.getResponseCode());
+            httpTransportManager.updateSession(connection);
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -217,8 +216,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     public OutputStream openStream() {
         try {
-            connection = HttpTransportManager.openConnection(url, basicAuthUsername,
-                    basicAuthPassword);
+            connection = httpTransportManager.openConnection(url, nodeId, securityToken);
             if (streamOutputEnabled) {
                 connection.setChunkedStreamingMode(streamOutputChunkSize);
             }
@@ -228,13 +226,12 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setConnectTimeout(httpTimeout);
             connection.setReadTimeout(httpTimeout);
             
-            if (this.requestProperties != null) {
-	            for (Map.Entry<String, String> requestProperty : this.requestProperties.entrySet()) {
-	            	connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
-	            }
+            if (requestProperties != null) {
+                for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
+                    connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
+                }
             }
             
-            boundary = Long.toHexString(System.currentTimeMillis());
             if (!fileUpload) {
                 connection.setRequestMethod("PUT");
                 connection.setRequestProperty("Accept-Encoding", "gzip");
@@ -242,8 +239,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                     connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
                 }
             } else {
-                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary="
-                        + boundary);
+                boundary = Long.toHexString(System.currentTimeMillis());
+                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             }
 
             os = connection.getOutputStream();
@@ -301,11 +298,17 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         } else if (WebConstants.SC_NO_RESERVATION == code) {
             throw new NoReservationException();
         } else if (WebConstants.SC_FORBIDDEN == code) {
+            httpTransportManager.clearSession(connection);
             throw new AuthenticationException();
+        } else if (WebConstants.SC_AUTH_EXPIRED == code) {
+            httpTransportManager.clearSession(connection);
+            throw new AuthenticationException(true);
         } else if (WebConstants.SYNC_DISABLED == code) {
             throw new SyncDisabledException();
         } else if (WebConstants.REGISTRATION_REQUIRED == code) {
             throw new RegistrationRequiredException();
+        } else if (WebConstants.REGISTRATION_PENDING == code) {
+            throw new RegistrationPendingException();
         } else if (code != WebConstants.SC_OK) {
             throw new HttpException(code, "Received an unexpected response code of " + code + " from the server");
         }
@@ -315,6 +318,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         closeWriter(false);
         closeOutputStream(false);
         analyzeResponseCode(connection.getResponseCode());
+        httpTransportManager.updateSession(connection);
         this.reader = HttpTransportManager.getReaderFrom(connection);
         return this.reader;
     }
@@ -338,12 +342,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         suspendIgnoreChannelsList.addSuspendChannels(suspends);
         suspendIgnoreChannelsList.addIgnoreChannels(ignores);
 
-        ChannelMap localSuspendIgnoreChannelsList = configurationService
-                .getSuspendIgnoreChannelLists(targetNode.getNodeId());
-        suspendIgnoreChannelsList.addSuspendChannels(
-                localSuspendIgnoreChannelsList.getSuspendChannels());
-        suspendIgnoreChannelsList.addIgnoreChannels(
-                localSuspendIgnoreChannelsList.getIgnoreChannels());
+        ChannelMap localSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists(targetNode.getNodeId());
+        suspendIgnoreChannelsList.addSuspendChannels(localSuspendIgnoreChannelsList.getSuspendChannels());
+        suspendIgnoreChannelsList.addIgnoreChannels(localSuspendIgnoreChannelsList.getIgnoreChannels());
 
         return suspendIgnoreChannelsList;
     }
