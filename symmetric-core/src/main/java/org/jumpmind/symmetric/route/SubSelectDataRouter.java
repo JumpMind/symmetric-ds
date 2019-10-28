@@ -82,7 +82,9 @@ public class SubSelectDataRouter extends AbstractDataRouter implements IBuiltInE
                 sqlParams.put("NODE_GROUP_ID", dataMetaData.getRouter().getNodeGroupLink()
                         .getTargetNodeGroupId());
                 sqlParams.put("EXTERNAL_DATA", dataMetaData.getData().getExternalData());
+                sqlParams.put("DATA_EVENT_TYPE", dataMetaData.getData().getDataEventType().name());
                 sqlParams.put("TABLE_NAME", dataMetaData.getData().getTableName());
+
                 ISqlTemplate template = symmetricDialect.getPlatform().getSqlTemplate();
                 List<String> ids = template.query(String.format("%s%s", sql, subSelect),
                         new StringMapper(), sqlParams);
