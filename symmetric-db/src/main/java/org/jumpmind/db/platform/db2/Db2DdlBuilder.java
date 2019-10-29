@@ -47,6 +47,8 @@ import org.jumpmind.db.platform.PlatformUtils;
  */
 public class Db2DdlBuilder extends AbstractDdlBuilder {
 
+    protected boolean migrateDataToRemoveColumn = false;
+    
     public Db2DdlBuilder() {
         super(DatabaseNamesConstants.DB2);
         
@@ -188,7 +190,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
 
-            if (change instanceof RemoveColumnChange) {
+            if (change instanceof RemoveColumnChange && !migrateDataToRemoveColumn) {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
