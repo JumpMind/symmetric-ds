@@ -31,6 +31,8 @@ The SQL statement has access to the following variables that are replaced before
 
 |:EXTERNAL_DATA|The external data for current row, as configured by sym_trigger.external_select. 
 
+|:DATA_EVENT_TYPE|The event type of either INSERT, UPDATE, or DELETE.
+
 |:TABLE_NAME|The table name for the current row.
 
 |:COLUMN_NAME|Variables named for each column name (in uppercase), which return the column value for the new row.
