@@ -405,9 +405,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 String charValue = value.toString();
                 if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo().isBlankCharColumnSpacePadded())
                         || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
-                    if (column.getCharOctetLength() == 0 || column.getSizeAsInt() == column.getCharOctetLength()) {
+                    if (column.getSizeAsInt() != column.getCharOctetLength()) {
+                        // using multiple-byte character set, the size is maximum number of characters
                         objectValue = StringUtils.rightPad(charValue, column.getSizeAsInt(), ' ');
                     } else {
+                        // single-byte character set or field defined as number of bytes
                         objectValue = charValue + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes().length);
                     }
                 }
