@@ -2968,7 +2968,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
             final boolean[] isColumnPositionUsingTemplate = symmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
             final boolean checkRowLength = parameterService.is(ParameterConstants.EXTRACT_CHECK_ROW_SIZE, false);
-            final long rowMaxLength = parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000);
+            final long rowMaxLength = parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000000);
             
             log.debug(sql);
             
