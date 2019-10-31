@@ -513,6 +513,7 @@ final public class ParameterConstants {
     public final static String REDSHIFT_BULK_LOAD_S3_SECRET_KEY = "redshift.bulk.load.s3.secret.key";
     public final static String REDSHIFT_BULK_LOAD_S3_ENDPOINT = "redshift.bulk.load.s3.endpoint";
 
+    public final static String POSTGRES_SECURITY_DEFINER = "postgres.security.definer";
     
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;

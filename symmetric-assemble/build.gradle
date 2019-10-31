@@ -17,6 +17,14 @@ buildscript {
     }
 }
 
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+task develop {
+    dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
+}
+
 task buildScriptDependencies(type: org.gradle.api.tasks.diagnostics.DependencyReportTask) {
     configurations = project.buildscript.configurations
 }

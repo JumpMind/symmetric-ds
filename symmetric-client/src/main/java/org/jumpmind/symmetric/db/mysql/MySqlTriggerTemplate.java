@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.mysql;
 
 import java.util.HashMap;
 
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.util.SymmetricUtils;
@@ -34,7 +35,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
         stringColumnTemplate = "cast(if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace($(tableAlias).`$(columnName)`,'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"')) as char)\n" ;                               
         geometryColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',replace(replace(astext($(tableAlias).`$(columnName)`),'\\\\','\\\\\\\\'),'\"','\\\\\"'),'\"'))\n" ;
         numberColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',cast($(tableAlias).`$(columnName)` as char),'\"'))\n" ;
-        datetimeColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',cast($(tableAlias).`$(columnName)` as char),'\"'))\n" ;
+        datetimeColumnTemplate = "if($(tableAlias).`$(columnName)` is null" + getConvertZeroDateToNull() + ",'',concat('\"',cast($(tableAlias).`$(columnName)` as char),'\"'))\n" ;
         clobColumnTemplate =    stringColumnTemplate;
         blobColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',hex($(tableAlias).`$(columnName)`),'\"'))\n" ;
         booleanColumnTemplate = "if($(tableAlias).`$(columnName)` is null,'',concat('\"',cast($(tableAlias).`$(columnName)` as unsigned),'\"'))\n" ;
@@ -163,6 +164,13 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "select concat($(columns)) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                        " );
     }
     
+    protected String getConvertZeroDateToNull() {
+        if (symmetricDialect.getParameterService().getString(BasicDataSourcePropertyConstants.DB_POOL_URL).contains("zeroDateTimeBehavior=convertToNull")) {
+            return " or $(tableAlias).`$(columnName)` = '0000-00-00'";
+        }
+        return "";
+    }
+
     @Override
     protected String castDatetimeColumnToString(String columnName) {
         return "cast(\n" + SymmetricUtils.quote(symmetricDialect, columnName) + " as char) as \n" + columnName;

@@ -93,10 +93,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
             log.info("The outgoing purge process has completed");
         }
         
-        List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
-        for (IPurgeListener purgeListener : purgeListeners) {
-            rowsPurged += purgeListener.purgeOutgoing(force);
-        }        
         return rowsPurged;
     }
 
@@ -106,11 +102,6 @@ public class PurgeService extends AbstractService implements IPurgeService {
         retentionCutoff.add(Calendar.MINUTE,
                 -parameterService.getInt(ParameterConstants.PURGE_RETENTION_MINUTES));
         rowsPurged += purgeIncoming(retentionCutoff, force);
-        
-        List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
-        for (IPurgeListener purgeListener : purgeListeners) {
-            rowsPurged += purgeListener.purgeIncoming(force);
-        }
                
         return rowsPurged;
     }
@@ -133,6 +124,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     rowsPurged += purgeStranded(retentionCutoff);
                     rowsPurged += purgeExtractRequests();
                     rowsPurged += purgeStrandedChannels();
+                }
+                
+                List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
+                for (IPurgeListener purgeListener : purgeListeners) {
+                    rowsPurged += purgeListener.purgeOutgoing(force);
                 }
             } finally {
                 if (!force) {
@@ -294,20 +290,20 @@ public class PurgeService extends AbstractService implements IPurgeService {
         return dataDeletedCount;
     }
     
-    private long purgeStranded(final Calendar time) {        
+    private long purgeStranded(final Calendar time) {
         log.info("Getting range for stranded data events");
-        int maxNumOfDataEventsToPurgeInTx = parameterService
-                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
+        int maxNumOfDataEventsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
         long minGapStartId = sqlTemplateDirty.queryForLong(getSql("minDataGapStartId"));
-        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[] { time.getTime() });
+        long[] minMaxEvent = queryForMinMax(getSql("selectStrandedDataEventRangeSql"), new Object[0]);
         int strandedEventDeletedCount = purgeByMinMax(minMaxEvent, minGapStartId, MinMaxDeleteSql.STRANDED_DATA_EVENT,
                 time.getTime(), maxNumOfDataEventsToPurgeInTx);
         statisticManager.incrementPurgedDataEventRows(strandedEventDeletedCount);
         
         log.info("Getting range for stranded data");
-        int maxNumOfDataIdsToPurgeInTx = parameterService
-                .getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
-        long[] minMax = queryForMinMax(getSql("selectDataRangeSql"), new Object[0]);
+        int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
+        long minDataId = sqlTemplateDirty.queryForLong(getSql("selectDataMinSql"));
+        long minDataEventId = sqlTemplateDirty.queryForLong(getSql("selectDataEventMinSql"));
+        long[] minMax = new long[] { minDataId, Math.min(minDataEventId, minGapStartId)-1 };
         int strandedDeletedCount = purgeByMinMax(minMax, minGapStartId, MinMaxDeleteSql.STRANDED_DATA,
                 time.getTime(), maxNumOfDataIdsToPurgeInTx);
         statisticManager.incrementPurgedDataRows(strandedDeletedCount);
@@ -395,6 +391,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                             idSqlType, idSqlType, idSqlType, idSqlType, Types.VARCHAR};
                     break;
                 case DATA_RANGE:
+                case STRANDED_DATA:
                     deleteSql = getSql("deleteDataByRangeSql");
                     args = new Object[] { minId, maxId, cutoffTime };
                     argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
@@ -423,15 +420,10 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     args = new Object[] { minId, maxId };
                     argTypes = new int[] { idSqlType, idSqlType };
                     break;
-                case STRANDED_DATA:
-                    deleteSql = getSql("deleteStrandedData");
-                    args = new Object[] { minId, maxId, minGapStartId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType};
-                    break;
                 case STRANDED_DATA_EVENT:
                     deleteSql = getSql("deleteStrandedDataEvent");
-                    args = new Object[] { minId, maxId, cutoffTime, minId, maxId };
-                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP, idSqlType, idSqlType };
+                    args = new Object[] { minId, maxId, cutoffTime };
+                    argTypes = new int[] { idSqlType, idSqlType, Types.TIMESTAMP };
                     break;
             }
 
@@ -440,11 +432,15 @@ public class PurgeService extends AbstractService implements IPurgeService {
             log.debug("Deleted {} rows", count);
             totalCount += count;
 
-            if (totalCount > 0
-                    && (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5)) {
+            if (count == 0 && (identifier == MinMaxDeleteSql.STRANDED_DATA || identifier == MinMaxDeleteSql.STRANDED_DATA_EVENT)) {
+                break;
+            }
+
+            if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE * 5) {
                 log.info("Purged {} of {} rows so far using {} statements", new Object[] {
                         totalCount, identifier.toString().toLowerCase(), totalDeleteStmts });
                 ts = System.currentTimeMillis();
+                clusterService.refreshLock(ClusterConstants.PURGE_OUTGOING);
             }
             minId = maxId + 1;
         }
@@ -462,6 +458,11 @@ public class PurgeService extends AbstractService implements IPurgeService {
                     purgedRowCount += purgeIncomingError();
                     purgedRowCount += purgeRegistrationRequests();
                     purgedRowCount += purgeMonitorEvents();
+                    
+                    List<IPurgeListener> purgeListeners = extensionService.getExtensionPointList(IPurgeListener.class);
+                    for (IPurgeListener purgeListener : purgeListeners) {
+                        purgedRowCount += purgeListener.purgeIncoming(force);
+                    }
                 } finally {
                     if (!force) {
                         clusterService.unlock(ClusterConstants.PURGE_INCOMING);

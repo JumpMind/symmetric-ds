@@ -98,7 +98,6 @@ import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
-import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -2721,7 +2720,7 @@ public class DataService extends AbstractService implements IDataService {
     public void insertDataGap(ISqlTransaction transaction, DataGap gap) {
         log.debug("Inserting data gap: {}", gap);
         transaction.prepareAndExecute(getSql("insertDataGapSql"),
-                new Object[] { AppUtils.getHostName(), gap.getStartId(), gap.getEndId(),
+                new Object[] { engine.getClusterService().getServerId(), gap.getStartId(), gap.getEndId(),
                     gap.getCreateTime() }, new int[] {
                         Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
     }

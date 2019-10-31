@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -90,7 +91,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
         this.extensionService = extensionService;
         this.clusterService = clusterService;
         this.contextService = contextService;
-        hostName = AppUtils.getHostName();
+        hostName = StringUtils.left(AppUtils.getHostName(), 60);
         
         IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(), 
                 new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(), new MonitorTypeLog(), new MonitorTypeOfflineNodes() };

@@ -1622,12 +1622,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (verifyInDatabase) {
             Channel channel = configurationService.getChannel(trigger.getChannelId());
             if (channel == null) {
-                errorMessage = String
-                        .format("Trigger %s had an unrecognized channel_id of '%s'.  Please check to make sure the channel exists.  Creating trigger on the '%s' channel",
-                                trigger.getTriggerId(), trigger.getChannelId(),
-                                Constants.CHANNEL_DEFAULT);
-                log.error(errorMessage);
-                trigger.setChannelId(Constants.CHANNEL_DEFAULT);
+                log.warn("Trigger '{}' has a channel of '{}' not found in sym_channel table", trigger.getTriggerId(), trigger.getChannelId());
             }
         }
 

@@ -296,6 +296,7 @@ public class NodeService extends AbstractService implements INodeService {
 
             flushNodeGroupCache();
         }
+        flushNodeCache();
     }
 
     public boolean updateNode(Node node) {
@@ -933,9 +934,9 @@ public class NodeService extends AbstractService implements INodeService {
         if (node == null) {
             retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
         } else if (!syncEnabled(node)) {
-            if(registrationOpen(node)){
+            if (registrationOpen(node)) {
                 retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
-            }else{
+            } else {
                 retVal = AuthenticationStatus.SYNC_DISABLED;
             }
         } else if (!isNodeAuthorized(nodeId, securityToken)) {
@@ -952,12 +953,12 @@ public class NodeService extends AbstractService implements INodeService {
         return syncEnabled;
     }
 
-    protected boolean registrationOpen(Node node){
+    protected boolean registrationOpen(Node node) {
         NodeSecurity security = findNodeSecurity(node.getNodeId());
-        if(security != null){
+        if (security != null) {
             return security.isRegistrationEnabled();
         }
         return false;
-    } 
+    }
 
 }

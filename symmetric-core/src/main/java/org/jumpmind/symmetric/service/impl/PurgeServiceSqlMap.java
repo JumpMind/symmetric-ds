@@ -67,13 +67,9 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 
         putSql("updateStrandedBatchesByChannel", "update $(outgoing_batch) set status=? where channel_id=? and status != ?");
 
-        putSql("deleteStrandedData" ,
-"delete from $(data) where                                       " + 
-"  data_id between ? and ? and                                   " + 
-"  data_id < ? and         " + 
-"  create_time < ? and                                           " + 
-"  data_id not in (select e.data_id from $(data_event) e where   " + 
-"  e.data_id between ? and ?)                                    " );
+        putSql("selectDataEventMinSql", "select min(data_id) from $(data_event)");
+        
+        putSql("selectDataMinSql", "select min(data_id) from $(data)");
 
         putSql("deleteDataSql" ,
 "delete from $(data) where                                       " + 
@@ -122,14 +118,12 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectStrandedDataEventRangeSql" ,
 "select min(batch_id) as min_id, max(batch_id)+1 as max_id from $(data_event) " + 
-"where create_time < ? " +
-"and batch_id < (select min(batch_id) from $(outgoing_batch))");
+"where batch_id < (select min(batch_id) from $(outgoing_batch))");
 
         putSql("deleteStrandedDataEvent",
 "delete from $(data_event) " + 
 "where batch_id between ? and ? " +
-"and create_time < ? " +
-"and batch_id not in (select batch_id from $(outgoing_batch) where batch_id between ? and ?)");
+"and create_time < ? ");
 
         putSql("minOutgoingBatchNotStatusSql",
                 "select min(batch_id) from $(outgoing_batch) where status != ?");
