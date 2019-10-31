@@ -56,19 +56,22 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     protected IConnectionHandler connectionHandler;
     
+    protected boolean returnLobObjects;
+    
     public JdbcSqlReadCursor() {
     }
     
     public JdbcSqlReadCursor(JdbcSqlTemplate sqlTemplate, ISqlRowMapper<T> mapper, String sql,
             Object[] values, int[] types) {
-        this(sqlTemplate, mapper, sql, values, types, null);
+        this(sqlTemplate, mapper, sql, values, types, null, false);
     }
 
     public JdbcSqlReadCursor(JdbcSqlTemplate sqlTemplate, ISqlRowMapper<T> mapper, String sql,
-            Object[] values, int[] types, IConnectionHandler connectionHandler) {
+            Object[] values, int[] types, IConnectionHandler connectionHandler, boolean returnLobObjects) {
         this.sqlTemplate = sqlTemplate;
         this.mapper = mapper;
         this.connectionHandler = connectionHandler;
+        this.returnLobObjects = returnLobObjects;
         
         try {
             c = sqlTemplate.getDataSource().getConnection();
@@ -132,7 +135,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                     rsColumnCount = rsMetaData.getColumnCount();
                 }
                 
-                Row row = getMapForRow(rs, rsMetaData, rsColumnCount, sqlTemplate.getSettings().isReadStringsAsBytes());
+                Row row = getMapForRow(rs, rsMetaData, rsColumnCount, sqlTemplate.getSettings().isReadStringsAsBytes(), returnLobObjects);
                 T value = mapper.mapRow(row);
                 if (value != null) {
                     return value;
@@ -145,11 +148,11 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
     }
 
     protected static Row getMapForRow(ResultSet rs, ResultSetMetaData argResultSetMetaData, 
-            int columnCount, boolean readStringsAsBytes) throws SQLException {
+            int columnCount, boolean readStringsAsBytes, boolean returnLobObjects) throws SQLException {
         Row mapOfColValues = new Row(columnCount);
         for (int i = 1; i <= columnCount; i++) {
             String key = JdbcSqlTemplate.lookupColumnName(argResultSetMetaData, i);
-            Object obj = JdbcSqlTemplate.getResultSetValue(rs, argResultSetMetaData, i, readStringsAsBytes);
+            Object obj = JdbcSqlTemplate.getResultSetValue(rs, argResultSetMetaData, i, readStringsAsBytes, returnLobObjects);
             mapOfColValues.put(key, obj);
         }
         return mapOfColValues;

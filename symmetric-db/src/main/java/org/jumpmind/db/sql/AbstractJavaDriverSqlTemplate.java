@@ -41,6 +41,12 @@ public abstract class AbstractJavaDriverSqlTemplate extends AbstractSqlTemplate 
 	public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] params, int[] types) {
 		return null;
 	}
+	
+
+    @Override
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
+        return null;
+    }
 
 	@Override
 	public int update(boolean autoCommit, boolean failOnError, int commitRate, ISqlResultsListener listener,

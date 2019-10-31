@@ -281,7 +281,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
                     int columnCount = rsMetaData.getColumnCount();
                     while (rs.next()) {
                         Row row = JdbcSqlReadCursor.getMapForRow(rs, rsMetaData, columnCount, 
-                                jdbcSqlTemplate.getSettings().isReadStringsAsBytes());
+                                jdbcSqlTemplate.getSettings().isReadStringsAsBytes(), false);
                         T value = mapper.mapRow(row);
                         list.add(value);
                     }

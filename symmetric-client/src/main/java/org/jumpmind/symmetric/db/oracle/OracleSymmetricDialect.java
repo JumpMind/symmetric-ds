@@ -403,8 +403,11 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
         } else if (isFirstPass) {
             return "(t." + quote + column.getName() + quote + " is null or " +
                     "dbms_lob.getlength(t." + quote + column.getName() + quote + ") <= 4000)";
+        } else if (parameterService.is(ParameterConstants.EXTRACT_CHECK_ROW_SIZE, false)) {
+            return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") between 4001 and " + parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000000);
         }
         return "dbms_lob.getlength(t." + quote + column.getName() + quote + ") > 4000";
+        
     }
 
     @Override

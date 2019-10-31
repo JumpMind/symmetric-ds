@@ -69,6 +69,8 @@ public interface ISqlTemplate {
     
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper);
 
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects);
+
     public List<Row> query(String sql);
 
     public List<Row> query(String sql, Object[] params, int[] types);

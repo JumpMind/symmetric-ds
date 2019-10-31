@@ -2967,10 +2967,32 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             final boolean objectValuesWillNeedEscaped = !symmetricDialect.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
             final boolean[] isColumnPositionUsingTemplate = symmetricDialect.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
+            final boolean checkRowLength = parameterService.is(ParameterConstants.EXTRACT_CHECK_ROW_SIZE, false);
+            final long rowMaxLength = parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000);
+            
             log.debug(sql);
             
             this.cursor = sqlTemplate.queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
+                    if (checkRowLength) {
+                        // Account for double byte characters and encoding
+                        long rowSize = row.getLength() * 2;
+                        
+                        if (rowSize > rowMaxLength) {
+                            StringBuffer pkValues = new StringBuffer();
+                            int i = 0;
+                            Object[] rowValues = row.values().toArray();
+                            for (String name : sourceTable.getPrimaryKeyColumnNames()) {
+                                pkValues.append(name).append("=").append(rowValues[i]);
+                                i++;
+                            }
+                            log.warn("Extract row max size exceeded, keys [" + pkValues.toString() + "], size=" + rowSize);
+                            Data data = new Data(0, null, "", DataEventType.SQL, triggerHistory
+                                    .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
+                                    null, null);
+                            return data;
+                        }
+                    }
                     String csvRow = null;                    
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
@@ -2995,7 +3017,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             .getRouterId());
                     return data;
                 }
-            });
+            }, checkRowLength && sourceTable.containsLobColumns(symmetricDialect.getPlatform()) && !sourceTable.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix()));
         }
 
         public boolean requiresLobsSelectedFromSource(CsvData data) {
