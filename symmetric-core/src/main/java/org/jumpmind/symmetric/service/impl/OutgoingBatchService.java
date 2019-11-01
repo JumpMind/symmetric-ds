@@ -20,19 +20,15 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.Serializable;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -46,7 +42,6 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.IOutgoingBatchFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.LoadSummary;
 import org.jumpmind.symmetric.model.NodeChannel;
 import org.jumpmind.symmetric.model.NodeGroupChannelWindow;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
@@ -55,7 +50,6 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
-import org.jumpmind.symmetric.model.OutgoingLoadSummary;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
@@ -636,20 +630,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         		"whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
     		return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(false, false), args);
     }
-
-    public List<OutgoingBatchSummary> findOutgoingBatchSummaryByNodeAndChannel(String nodeId,
-    		String channelId, Date sinceCreateTime, Status... statuses) {
-    
-    		Object[] args = new Object[statuses.length + 2];
-    		args[args.length - 1] = nodeId;
-    		args[args.length - 2] = channelId;
-        StringBuilder inList = buildStatusList(args, statuses);
-
-    		String sql = getSql("selectOutgoingBatchSummaryPrefixSql", 
-        		"selectOutgoingBatchSummaryStatsPrefixSql",
-        		"whereStatusAndNodeAndChannelGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
-    		return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(false, false), args);
-    }
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummary(Status... statuses) {
     		Object[] args = new Object[statuses.length];
@@ -673,350 +653,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 inList.substring(0, inList.length() - 1));
 
         return sqlTemplateDirty.query(sql, new OutgoingBatchSummaryMapper(true, true), args);
-    }
-
-    public Map<String, LoadCounts> getActiveLoadCounts() {
-        return sqlTemplateDirty.queryForMap(getSql("getActiveLoadCountsSql"), new ISqlRowMapper<LoadCounts>() {
-
-            @Override
-            public LoadCounts mapRow(Row rs) {
-                LoadCounts lc = new LoadCounts();
-                lc.setLoadedBatchCount(rs.getInt("loaded_batch_count"));
-                lc.setLoadedByteCount(rs.getLong("loaded_byte_count"));
-                lc.setLoadedRowCount(rs.getLong("loaded_row_count"));
-                
-                return lc;
-            }
-            
-        }, "load_id");
-    }
-
-    public List<LoadSummary> getQueuedLoads(String sourceNodeId) {
-        return sqlTemplateDirty.query(getSql("getLoadSummaryUnprocessedSql"), new LoadSummaryMapper(), sourceNodeId);
-    }
-
-    public LoadSummary getLoadSummary(long loadId) {
-        return sqlTemplateDirty.queryForObject(getSql("getLoadSummarySql"), new LoadSummaryMapper(), loadId);
-    }
-
-    private static class LoadSummaryMapper implements ISqlRowMapper<LoadSummary> {
-        public LoadSummary mapRow(Row rs) {
-            LoadSummary summary = new LoadSummary();         
-            // summary.setLoadId(rs.getLong("load_id"));
-            summary.setNodeId(rs.getString("node_id"));
-            summary.setCreateBy(rs.getString("last_update_by"));
-            summary.setTableCount(rs.getInt("table_count"));
-            String triggerId = rs.getString("trigger_id");
-            if (triggerId == null || triggerId.equals(ParameterConstants.ALL)) {
-                summary.setFullLoad(true);
-            } else {
-                summary.setFullLoad(false);
-            }
-            summary.setCreateFirst(rs.getBoolean("create_table"));
-            summary.setDeleteFirst(rs.getBoolean("delete_first"));
-            summary.setRequestProcessed(rs.getBoolean("processed"));
-            summary.setIgnoreCount(rs.getInt("ignore_count"));
-            // summary.setConditional(rs.getBoolean("reload_select"));
-            // summary.setCustomSql(rs.getBoolean("before_custom_sql"));
-            return summary;
-        }
-    }
-
-    public Map<String, Map<String, LoadStatusSummary>> getLoadStatusSummaries(int loadId) {
-        LoadStatusByQueueMapper mapper = new LoadStatusByQueueMapper(this.symmetricDialect.getTablePrefix());
-        sqlTemplateDirty.query(getSql("getLoadStatusSummarySql"), mapper, loadId);
-        return mapper.getResults();
-    }
-
-    private static class LoadStatusByQueueMapper implements ISqlRowMapper<Object> {
-        Map<String, Map<String, LoadStatusSummary>> results = new TreeMap<String, Map<String, LoadStatusSummary>>(Collections.reverseOrder());
-        String tablePrefix;
-
-        public LoadStatusByQueueMapper(String tablePrefix) {
-            this.tablePrefix = tablePrefix;
-        }
-
-        @Override
-        public Object mapRow(Row rs) {
-            String queue = rs.getString("queue");
-            String status = rs.getString("status");
-
-            Map<String, LoadStatusSummary> statusMap = results.get(queue);
-            if (statusMap == null) {
-                statusMap = new HashMap<String, LoadStatusSummary>();
-            }
-
-            LoadStatusSummary statusSummary = new LoadStatusSummary();
-            statusSummary.setCreateTime(rs.getDateTime("create_time"));
-            statusSummary.setLastUpdateTime(rs.getDateTime("last_update_time"));
-            statusSummary.setByteCount(rs.getLong("byte_count"));
-            statusSummary.setDataEventCount(rs.getLong("data_events"));
-            statusSummary.setCount(rs.getInt("count_ids"));
-            statusSummary.setExtractStartTime(rs.getDateTime("min_extract_start_time"));
-            statusSummary.setTransferStartTime(rs.getDateTime("min_transfer_start_time"));
-            statusSummary.setLoadStartTime(rs.getDateTime("min_load_start_time"));
-            if (statusSummary.getExtractStartTime() != null) {
-                statusSummary.setExtractEndTime(new Date(statusSummary.getExtractStartTime().getTime() + rs.getLong("full_extract_millis")));
-            }
-            if (statusSummary.getTransferStartTime() != null) {
-                statusSummary
-                        .setTransferEndTime(new Date(statusSummary.getTransferStartTime().getTime() + rs.getLong("full_transfer_millis")));
-            }
-            if (statusSummary.getLoadStartTime() != null) {
-                statusSummary.setLoadEndTime(new Date(statusSummary.getLoadStartTime().getTime() + rs.getLong("full_load_millis")));
-            }
-            String minSummary = rs.getString("min_summary");
-            String maxSummary = rs.getString("max_summary");
-            if (minSummary != null && minSummary.startsWith(this.tablePrefix)) {
-                minSummary = maxSummary;
-            }
-            statusSummary.setTables(minSummary);
-
-            statusMap.put(status, statusSummary);
-
-            results.put(queue, statusMap);
-
-            return null;
-        }
-
-        public Map<String, Map<String, LoadStatusSummary>> getResults() {
-            return results;
-        }
-    }
-
-    public static class LoadStatusSummary {
-        private long dataEventCount;
-        private long byteCount;
-        private String status;
-        private int count;
-        private Date createTime;
-        private Date lastUpdateTime;
-        private Date extractStartTime;
-        private Date transferStartTime;
-        private Date loadStartTime;
-        private Date extractEndTime;
-        private Date transferEndTime;
-        private Date loadEndTime;
-        private String tables;
-
-        public String getStatus() {
-            return status;
-        }
-
-        public void setStatus(String status) {
-            this.status = status;
-        }
-
-        public int getCount() {
-            return count;
-        }
-
-        public void setCount(int count) {
-            this.count = count;
-        }
-
-        public Date getCreateTime() {
-            return createTime;
-        }
-
-        public void setCreateTime(Date createTime) {
-            this.createTime = createTime;
-        }
-
-        public Date getLastUpdateTime() {
-            return lastUpdateTime;
-        }
-
-        public void setLastUpdateTime(Date lastUpdateTime) {
-            this.lastUpdateTime = lastUpdateTime;
-        }
-
-        public long getDataEventCount() {
-            return dataEventCount;
-        }
-
-        public void setDataEventCount(long dataEventCount) {
-            this.dataEventCount = dataEventCount;
-        }
-
-        public long getByteCount() {
-            return byteCount;
-        }
-
-        public void setByteCount(long byteCount) {
-            this.byteCount = byteCount;
-        }
-
-        public Date getExtractStartTime() {
-            return extractStartTime;
-        }
-
-        public void setExtractStartTime(Date extractStartTime) {
-            this.extractStartTime = extractStartTime;
-        }
-
-        public Date getTransferStartTime() {
-            return transferStartTime;
-        }
-
-        public void setTransferStartTime(Date transferStartTime) {
-            this.transferStartTime = transferStartTime;
-        }
-
-        public Date getLoadStartTime() {
-            return loadStartTime;
-        }
-
-        public void setLoadStartTime(Date loadStartTime) {
-            this.loadStartTime = loadStartTime;
-        }
-
-        public Date getExtractEndTime() {
-            return extractEndTime;
-        }
-
-        public void setExtractEndTime(Date extractEndTime) {
-            this.extractEndTime = extractEndTime;
-        }
-
-        public Date getTransferEndTime() {
-            return transferEndTime;
-        }
-
-        public void setTransferEndTime(Date transferEndTime) {
-            this.transferEndTime = transferEndTime;
-        }
-
-        public Date getLoadEndTime() {
-            return loadEndTime;
-        }
-
-        public void setLoadEndTime(Date loadEndTime) {
-            this.loadEndTime = loadEndTime;
-        }
-
-        public String getTables() {
-            return tables;
-        }
-
-        public void setTables(String tables) {
-            this.tables = tables;
-        }
-
-    }
-
-    public Map<String, Integer> getLoadOverview(long loadId) {
-        return sqlTemplateDirty.queryForMap(getSql("getLoadOverviewSql"), "status", "count", loadId);
-    }
-
-    public List<OutgoingLoadSummary> getLoadSummaries(boolean activeOnly) {
-        final Map<String, OutgoingLoadSummary> loadSummaries = new TreeMap<String, OutgoingLoadSummary>();
-        sqlTemplate.query(getSql("getLoadSummariesSql"), new ISqlRowMapper<OutgoingLoadSummary>() {
-            public OutgoingLoadSummary mapRow(Row rs) {
-                long loadId = rs.getLong("load_id");
-                String nodeId = rs.getString("node_id");
-                String loadNodeId = String.format("%010d-%s", loadId, nodeId);
-                OutgoingLoadSummary summary = loadSummaries.get(loadNodeId);
-                if (summary == null) {
-                    summary = new OutgoingLoadSummary();
-                    summary.setLoadId(loadId);
-                    summary.setNodeId(nodeId);
-                    summary.setChannelId(rs.getString("channel_id"));
-                    summary.setCreateBy(rs.getString("create_by"));
-                    loadSummaries.put(loadNodeId, summary);
-                }
-
-                Status status = Status.valueOf(rs.getString("status"));
-                int count = rs.getInt("cnt");
-
-                Date lastUpdateTime = rs.getDateTime("last_update_time");
-                if (summary.getLastUpdateTime() == null || summary.getLastUpdateTime().before(lastUpdateTime)) {
-                    summary.setLastUpdateTime(lastUpdateTime);
-                }
-
-                Date createTime = rs.getDateTime("create_time");
-                if (summary.getCreateTime() == null || summary.getCreateTime().after(createTime)) {
-                    summary.setCreateTime(createTime);
-                }
-
-                summary.setReloadBatchCount(summary.getReloadBatchCount() + count);
-
-                if (status == Status.OK || status == Status.IG) {
-                    summary.setFinishedBatchCount(summary.getFinishedBatchCount() + count);
-                } else {
-                    summary.setPendingBatchCount(summary.getPendingBatchCount() + count);
-
-                    boolean inError = rs.getBoolean("error_flag");
-                    summary.setInError(inError || summary.isInError());
-
-                    if (status != Status.NE && count == 1) {
-                        summary.setCurrentBatchId(rs.getLong("current_batch_id"));
-                        summary.setCurrentDataEventCount(rs.getLong("current_data_event_count"));
-                    }
-
-                }
-                return null;
-            }
-        });
-
-        List<OutgoingLoadSummary> loads = new ArrayList<OutgoingLoadSummary>(loadSummaries.values());
-        Iterator<OutgoingLoadSummary> it = loads.iterator();
-        while (it.hasNext()) {
-            OutgoingLoadSummary loadSummary = it.next();
-            if (activeOnly && !loadSummary.isActive()) {
-                it.remove();
-            }
-        }
-
-        return loads;
-    }
-
-    public Collection<LoadSummary> getLoadHistory(String sourceNodeId, final String symTablePrefix, final int rowsReturned) {
-        final Map<Date, LoadSummary> loads = new TreeMap<Date, LoadSummary>(Collections.reverseOrder());
-
-        sqlTemplateDirty.query(getSql("getLoadHistorySql"), new ISqlRowMapper<LoadSummary>() {
-
-            @Override
-            public LoadSummary mapRow(Row rs) {
-                Date createTime = rs.getDateTime("create_time");
-                Date lastUpdateTime = rs.getDateTime("last_update_time");
-
-                LoadSummary loadSummary;
-
-                if (!loads.containsKey(createTime) && loads.size() < rowsReturned) {
-                    loadSummary = new LoadSummary();
-                    loadSummary.setCreateTime(createTime);
-                    loadSummary.setLastUpdateTime(lastUpdateTime);
-                    loads.put(createTime, loadSummary);
-                }
-
-                loadSummary = loads.get(createTime);
-                if (loadSummary != null) {
-                    if (lastUpdateTime.after(loadSummary.getLastUpdateTime())) {
-                        loadSummary.setLastUpdateTime(lastUpdateTime);
-                    }
-
-                    loadSummary.setTableCount(rs.getInt("table_count"));
-                    loadSummary.setTargetNodeCount(loadSummary.getTargetNodeCount() + 1);
-
-                    if (ParameterConstants.ALL.equals(rs.getString("trigger_id"))) {
-                        loadSummary.setCurrentTableName(ParameterConstants.ALL);
-                        loadSummary.setFullLoad(true);
-                    } else if (loadSummary.getTableCount() == 1) {
-                        if (rs.getString("min_table").toUpperCase().startsWith(symTablePrefix.toUpperCase())) {
-                            loadSummary.setCurrentTableName(rs.getString("max_table"));
-                        } else {
-                            loadSummary.setCurrentTableName(rs.getString("min_table"));
-                        }
-
-                    } else {
-                        loadSummary.setCurrentTableName(null);
-                    }
-                }
-                return null;
-            }
-        }, sourceNodeId);
-        return loads.values();
     }
 
     @Override
@@ -1150,32 +786,4 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         }
     }
 
-    
-    public class LoadCounts implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private long loadedRowCount;
-        private int loadedBatchCount;
-        private long loadedByteCount;
-        
-        public long getLoadedRowCount() {
-            return loadedRowCount;
-        }
-        public void setLoadedRowCount(long loadedRowCount) {
-            this.loadedRowCount = loadedRowCount;
-        }
-        public int getLoadedBatchCount() {
-            return loadedBatchCount;
-        }
-        public void setLoadedBatchCount(int loadedBatchCount) {
-            this.loadedBatchCount = loadedBatchCount;
-        }
-        public long getLoadedByteCount() {
-            return loadedByteCount;
-        }
-        public void setLoadedByteCount(long loadedByteCount) {
-            this.loadedByteCount = loadedByteCount;
-        }
-        
-        
-    }
 }

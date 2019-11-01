@@ -194,79 +194,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
         putSql("updateOutgoingBatchesStatusSql",
                 "update $(outgoing_batch) set status=? where status = ?   ");
 
-        putSql("getLoadSummariesSql",
-                "select b.load_id, b.node_id, b.status, b.create_by, max(error_flag) as error_flag, count(*) as cnt, min(b.create_time) as create_time,          "
-              + "       max(b.last_update_time) as last_update_time, min(b.batch_id) as current_batch_id,  "
-              + "       min(b.data_row_count) as current_data_event_count, b.channel_id                                                                                      "
-              + "from $(outgoing_batch) b                                                                                                   "
-              + "     join $(channel) c on c.channel_id = b.channel_id 																							"					
-              + "where c.reload_flag = 1                                                                                                                    "
-              + " and b.load_id > 0                                                                                                                         "
-              + "group by b.load_id, b.node_id, b.status, b.channel_id, b.create_by                                                                              "
-              + "order by b.load_id desc                                                                                                                         ");
-
-        putSql("getActiveLoadCountsSql", 
-                  "select r.load_id, count(ob.batch_id) as loaded_batch_count, sum(ob.data_row_count) as loaded_row_count, "
-                + "sum(ob.byte_count) as loaded_byte_count "
-                + "from $(table_reload_request) r "
-                + "join $(outgoing_batch) ob on ob.load_id = r.load_id " 
-                + "where r.completed = 0 and ob.status = 'OK' and ob.reload_row_count > 0 "
-                + "group by r.load_id");
-        
-        putSql("getLoadSummaryUnprocessedSql", 
-                "select r.source_node_id, r.target_node_id, "
-                + "   count(TRIGGER_ID) as table_count, max(TRIGGER_ID) as trigger_id, "
-                + "   max(create_table) as create_table, max(delete_first) as delete_first, max(processed) as processed, " 
-                + "   max(reload_select) as reload_select, max(before_custom_sql) as before_custom_sql, " 
-                + "   max(last_update_by) as last_update_by, min(last_update_time) as last_update_time "
-                + "from $(table_reload_request) r "
-                + "where processed = 0 and source_node_id = ? "
-                + "group by r.source_node_id, r.target_node_id");
-      
-        putSql("getLoadSummarySql",
-                "select " 
-        		+ "b.node_id, b.load_id, count(*) as table_count, max(trigger_id) as trigger_id, max(create_table) as create_table, "
-                + "max(delete_first) as delete_first, max(processed) as processed, max(ignore_count) as ignore_count, max(last_update_by) as last_update_by, max(b.last_update_time) as last_update_time "
-                + "from $(outgoing_batch) b join $(data_event) e on b.batch_id = e.batch_id join $(data) d on "
-                + "d.data_id = e.data_id left join $(table_reload_request) r on b.load_id = r.load_id where b.load_id = ? and d.event_type = 'R' "
-                + "group by b.load_id, b.node_id order by max(b.last_update_time) desc");
-        
-        putSql("getLoadOverviewSql",
-                "select status, count(batch_id) as count "
-                + " from $(outgoing_batch) "
-                + " where load_id = ?"
-                + " group by status");
-        
-        putSql("getLoadHistorySql",
-                "select r.load_id, max(trigger_id) as trigger_id, count(trigger_id) as table_count, max(target_node_id) as target_node_id, "
-                + "create_time, o.last_update_time, min_table, max_table "
-                + "from $(table_reload_request) r "
-                + "join ( "
-                + "   select load_id, max(last_update_time) as last_update_time, min(summary) as min_table, max(summary) as max_table "
-                + "    from $(outgoing_batch) "
-                + "    group by load_id "
-                + ") o on o.load_id = r.load_id "
-                + "where source_node_id = ? "
-                + "group by r.load_id, create_time "
-                + "order by create_time desc "
-                );
-        
-        
-        putSql("getLoadStatusSummarySql", 
-                "select ob.load_id, count(ob.batch_id) as count_ids, ob.status, c.queue, max(ob.last_update_time) as last_update_time,  "
-                + " min(ob.create_time) as create_time, sum(ob.data_row_count) as data_events, sum(ob.byte_count) as byte_count, " 
-                + " min(extract_start_time) as min_extract_start_time, min(transfer_start_time) as min_transfer_start_time, "
-                + " min(load_start_time) as min_load_start_time, "
-                + " min(summary) as min_summary, max(summary) as max_summary, "
-                + " sum(extract_millis + transform_extract_millis) as full_extract_millis, "
-                + " sum(network_millis) as full_transfer_millis, "
-                + " sum(load_millis + transform_load_millis + filter_millis) as full_load_millis "
-                + " from $(outgoing_batch) ob  "
-                + " join $(channel) c on c.channel_id = ob.channel_id  "
-                + " where ob.load_id = ? "
-                + " group by ob.load_id, c.queue, ob.status"
-                + " order by ob.load_id asc");        
-
         putSql("deleteOutgoingBatchesForNodeSql", 
                 "delete from $(outgoing_batch) where node_id=? and channel_id=? and batch_id < "
                 + "(select max(batch_id) from $(outgoing_batch) where node_id=? and channel_id=?) ");
@@ -280,8 +207,6 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
 
         
         putSql("getAllBatchesSql", "select batch_id from $(outgoing_batch)");
-        
-        
 
     }
 
