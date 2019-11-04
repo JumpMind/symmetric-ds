@@ -55,11 +55,11 @@ task integrationTest(type: Test) {
 	// We must define the directories in which our test reports are written
 	// for various formats, e.g. binary, HTML, and XML.
 	
-	binResultsDir = file("$buildDir/integration-test-results/binary/integrationTest/" + System.getProperty("test.name"))
+	binResultsDir = file("$buildDir/integration-test-results/binary/integrationTest")
 	
 	reports {
-		html.destination = "$buildDir/reports/integration-test/" + System.getProperty("test.name")
-		junitXml.destination = "$buildDir/integration-test-results/" + System.getProperty("test.name")
+		html.destination = "$buildDir/reports/integration-test"
+		junitXml.destination = "$buildDir/integration-test-results"
 	}
 	
 	// As we want our new task to execute after the unit tests,
