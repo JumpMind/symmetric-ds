@@ -2250,7 +2250,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     protected void checkSendDeferredConstraints(ExtractRequest request, List<ExtractRequest> childRequests, Node targetNode, OutgoingBatch batch) {
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false) && !batch.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
             TableReloadRequest reloadRequest = dataService.getTableReloadRequest(request.getLoadId(), request.getTriggerId(), request.getRouterId());
             if ((reloadRequest != null && reloadRequest.isCreateTable()) ||
                     (reloadRequest == null && parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD))) {
