@@ -74,6 +74,9 @@ subprojects { subproject ->
     apply plugin: 'propdeps-eclipse'
     apply plugin: 'maven'
 
+    // Integration test plugin
+    apply from: "$symAssembleDir/gradle/integrationTest.gradle"
+    
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
 
@@ -89,6 +92,10 @@ subprojects { subproject ->
     
     compileTestJava {
     	options.compilerArgs += '-Xlint:deprecation'
+    }
+    
+    compileIntegrationTestJava {
+        options.compilerArgs += '-Xlint:deprecation'
     }
     
     eclipse {   
@@ -174,6 +181,20 @@ subprojects { subproject ->
     
     test {
         ignoreFailures true
+        systemProperty "test.server", System.getProperty("test.server", "h2")
+        systemProperty "test.client", System.getProperty("test.client", "h2")
+        systemProperty "test.root", System.getProperty("test.root", "h2")
+        systemProperty "port.number", System.getProperty("port.number", "31415")
+        systemProperty "db2i.db.user", System.getProperty("db2i.db.user")
+        systemProperty "db2i.db.password", System.getProperty("db2i.db.password")
+        minHeapSize = "128m"
+        maxHeapSize = "512m"
+        forkEvery=1
+    }
+    
+    integrationTest {
+        ignoreFailures true
+        systemProperty "test.name", System.getProperty("test.name", "h2")
         systemProperty "test.server", System.getProperty("test.server", "h2")
         systemProperty "test.client", System.getProperty("test.client", "h2")
         systemProperty "test.root", System.getProperty("test.root", "h2")
