@@ -2250,7 +2250,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     protected void checkSendDeferredConstraints(ExtractRequest request, List<ExtractRequest> childRequests, Node targetNode, OutgoingBatch batch) {
-        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false) && !batch.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
             TableReloadRequest reloadRequest = dataService.getTableReloadRequest(request.getLoadId(), request.getTriggerId(), request.getRouterId());
             if ((reloadRequest != null && reloadRequest.isCreateTable()) ||
                     (reloadRequest == null && parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD))) {
@@ -2260,16 +2260,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     List<TriggerHistory> histories = triggerRouterService.getActiveTriggerHistories(triggerRouterService.getTriggerById(request.getTriggerId()));
                     if (histories != null && histories.size() > 0) {
                         for (TriggerHistory history : histories) {
-                            Data data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
-                                    history, trigger.getChannelId(), null, null);
-                            data.setNodeList(targetNode.getNodeId());
-                            dataService.insertData(data);
-                            if (childRequests != null) {
-                                for (ExtractRequest childRequest : childRequests) {
-                                    data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
-                                            history, trigger.getChannelId(), null, null);
-                                    data.setNodeList(childRequest.getNodeId());
-                                    dataService.insertData(data);                                
+                            Channel channel = configurationService.getChannel(trigger.getReloadChannelId());
+                            if (!channel.isFileSyncFlag()) {
+                                Data data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
+                                        history, trigger.getChannelId(), null, null);
+                                data.setNodeList(targetNode.getNodeId());
+                                dataService.insertData(data);
+                                if (childRequests != null) {
+                                    for (ExtractRequest childRequest : childRequests) {
+                                        data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
+                                                history, trigger.getChannelId(), null, null);
+                                        data.setNodeList(childRequest.getNodeId());
+                                        dataService.insertData(data);                                
+                                    }
                                 }
                             }
                         }
