@@ -15,6 +15,12 @@ final public class ContextConstants {
 
     public static final String CONTEXT_BULK_WRITER_TO_USE = "bulkWriterToUse";
     
+    public static final String PURGE_LAST_DATA_ID = "purge.last.data.id";
+    
+    public static final String PURGE_LAST_EVENT_BATCH_ID = "purge.last.event.batch.id";
+    
+    public static final String PURGE_LAST_BATCH_ID = "purge.last.batch.id";
+    
     public static final String LOG_MINER_NEXT_ID = "log.miner.next.id";
     
     public static final String LOG_MINER_OPEN_TRANSACTIONS = "log.miner.open.transactions";

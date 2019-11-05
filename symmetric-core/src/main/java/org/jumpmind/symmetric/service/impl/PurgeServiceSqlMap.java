@@ -40,9 +40,9 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         
         putSql("deleteMonitorEventSql", "delete from $(monitor_event) where event_time < ?");
 
-        putSql("selectOutgoingBatchRangeSql" ,
-"select min(batch_id) as min_id, max(batch_id) as max_id from $(outgoing_batch) where                         " + 
-"  create_time < ? and status = ? and batch_id < (select max(batch_id) from $(outgoing_batch))                " );
+        putSql("minOutgoingBatchId", "select min(batch_id) from $(outgoing_batch)");
+
+        putSql("maxOutgoingBatchId", "select max(batch_id) from $(outgoing_batch) where batch_id > ? and create_time < ?");
 
         putSql("deleteOutgoingBatchSql" ,
 "delete from $(outgoing_batch) where status = ? and batch_id between ?                " + 
@@ -54,8 +54,10 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 "  $(outgoing_batch) where batch_id between ? and ? and status != ?)                 " + 
 "  and batch_id between ? and ?                                                      " );
 
-        putSql("selectDataRangeSql" ,
-"select min(data_id) as min_id, max(data_id) as max_id from $(data) where data_id < (select max(data_id) from $(data))   " );
+        putSql("minDataId", "select min(data_id) from $(data)");
+        
+        putSql("maxDataId", "select max(data_id) from $(data_event) where batch_id in (select max(batch_id) from $(outgoing_batch) " + 
+                "where batch_id > ? and create_time < ? group by channel_id)");
 
         putSql("selectNodesWithStrandedBatches", "select distinct node_id from $(outgoing_batch) " + 
 "where node_id not in (select node_id from $(node) where sync_enabled = ?) and status != ?");
@@ -144,6 +146,15 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         
         putSql("deleteDataByChannel", "delete from $(data) where channel_id = ?");
 
+        putSql("selectLingeringBatches", "select distinct batch_id from $(outgoing_batch) where batch_id < ? and status = ?");
+        
+        putSql("countCommonBatchNotStatusForBatchId", "select count(*) from $(outgoing_batch) where batch_id = ? and status != ?");
+        
+        putSql("deleteDataByBatchId", "delete from $(data) where data_id in (select data_id from sym_data_event where batch_id = ?)");
+        
+        putSql("deleteDataEventByBatchId", "delete from $(data_event) where batch_id = ?");
+        
+        putSql("deleteOutgoingBatchByBatchId", "delete from $(outgoing_batch) where batch_id = ? and status = ?");
     }
 
 }
