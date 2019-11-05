@@ -283,6 +283,9 @@ public class SnapshotUtil {
         extract(export, new File(tmpDir, "sym_extract_request.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_EXTRACT_REQUEST));
 
+        extract(export, new File(tmpDir, "sym_context.csv"),
+                TableConstants.getTableName(tablePrefix, TableConstants.SYM_CONTEXT));
+
         if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
             final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements", "mon$io_stats",
                     "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables" };
