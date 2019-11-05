@@ -1,74 +1,75 @@
 sourceSets {
-	integrationTest {
-		// java.srcDir 'src/integrationTest/java'
-		compileClasspath += sourceSets.main.output
-		compileClasspath += sourceSets.test.output
-		// resources.srcDir 'src/integrationTest/resources'
-		runtimeClasspath += sourceSets.main.output
-		runtimeClasspath += sourceSets.test.output
-	}
+    integrationTest {
+        // java.srcDir 'src/integrationTest/java'
+        compileClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.test.output
+        // resources.srcDir 'src/integrationTest/resources'
+        runtimeClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.test.output
+    }
 }
 
 configurations {
-	integrationTestImplementation.extendsFrom testImplementation
+    integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 dependencies {
-	// Provides, at compile-time, the classes produced by the main and test SourceSets,
-	// allowing the integration tests to access the production code in main
-	// and allowing them to reuse any unit test helper methods in test.
-	integrationTestImplementation sourceSets.main.output
-	integrationTestImplementation sourceSets.test.output
+    // Provides, at compile-time, the classes produced by the main and test SourceSets,
+    // allowing the integration tests to access the production code in main
+    // and allowing them to reuse any unit test helper methods in test.
+    // CAUSES PROBLEMS WITH VAADINTHEMECOMPILE, AND DOESN'T SEEM TO BE NEEDED
+    // integrationTestImplementation sourceSets.main.output
+    // integrationTestImplementation sourceSets.test.output
 	
-	// Provides, at compile-time, the dependencies that both
-	// main and test require in order to successfully compile.
-	integrationTestImplementation configurations.implementation
-	integrationTestImplementation configurations.testImplementation
+    // Provides, at compile-time, the dependencies that both
+    // main and test require in order to successfully compile.
+    integrationTestImplementation configurations.implementation
+    integrationTestImplementation configurations.testImplementation
 	
-	// Provides, at run-time, the dependencies that both
-	// main and test require to run.
-	integrationTestRuntimeOnly configurations.runtimeOnly
-	integrationTestRuntimeOnly configurations.testRuntimeOnly
+    // Provides, at run-time, the dependencies that both
+    // main and test require to run.
+    integrationTestRuntimeOnly configurations.runtimeOnly
+    integrationTestRuntimeOnly configurations.testRuntimeOnly
 }
 
 task integrationTest(type: Test) {
-	// The group and description are useful to define
-	// as they will be shown to anyone who runs gradle tasks,
-	// which provides a detailed list of all runnable tasks
-	// within the project.
+    // The group and description are useful to define
+    // as they will be shown to anyone who runs gradle tasks,
+    // which provides a detailed list of all runnable tasks
+    // within the project.
 	
-	group = LifecycleBasePlugin.VERIFICATION_GROUP
-	description = 'Runs the integration tests.'
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = 'Runs the integration tests.'
 	
-	// Integration tests are often memory intensive and
-	// could use an increase in the JVM’s maximum heap size.
+    // Integration tests are often memory intensive and
+    // could use an increase in the JVM’s maximum heap size.
 	
-	// maxHeapSize = '1024m'
+    // maxHeapSize = '1024m'
 	
-	// The task requires us to define where both our classes and classpath reside,
-	// which we can find from the SourceSet we defined previously.
+    // The task requires us to define where both our classes and classpath reside,
+    // which we can find from the SourceSet we defined previously.
 	
-	testClassesDir = sourceSets.integrationTest.output.classesDir
-	classpath = sourceSets.integrationTest.runtimeClasspath
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
 	
-	// We must define the directories in which our test reports are written
-	// for various formats, e.g. binary, HTML, and XML.
+    // We must define the directories in which our test reports are written
+    // for various formats, e.g. binary, HTML, and XML.
 	
-	binResultsDir = file("$buildDir/integration-test-results/binary/integrationTest")
+    binResultsDir = file("$buildDir/integration-test-results/binary/integrationTest")
 	
-	reports {
-		html.destination = "$buildDir/reports/integration-test"
-		junitXml.destination = "$buildDir/integration-test-results"
-	}
+    reports {
+        html.destination = "$buildDir/reports/integration-test"
+        junitXml.destination = "$buildDir/integration-test-results"
+    }
 	
-	// As we want our new task to execute after the unit tests,
-	// we can use the mustRunAfter ordering rule to ensure that
-	// whenever both of these tasks are in the same execution
-	// lifecycle (e.g. when running the check task),
-	// the unit tests are ran before the integration tests.
+    // As we want our new task to execute after the unit tests,
+    // we can use the mustRunAfter ordering rule to ensure that
+    // whenever both of these tasks are in the same execution
+    // lifecycle (e.g. when running the check task),
+    // the unit tests are ran before the integration tests.
 	
-	mustRunAfter tasks.test
+    mustRunAfter tasks.test
 	
 	
 }
@@ -92,15 +93,15 @@ check.dependsOn integrationTest
 // be prioritized before our integrationTest task within the task execution graph.
 	
 gradle.projectsEvaluated {
-	// We begin by defining an empty list that will contain tasks that are quick-to-execute.
+    // We begin by defining an empty list that will contain tasks that are quick-to-execute.
 	
     def quickTasks = [] 
 
-	// Then we iterate over every project that is now configured under the rootProject.
+    // Then we iterate over every project that is now configured under the rootProject.
 	
     gradle.rootProject.allprojects.each { project -> 
     
-    	// Any tasks named test represent the unit tests and are added to the list.
+        // Any tasks named test represent the unit tests and are added to the list.
     	
         quickTasks.addAll(project.tasks.findAll { it.name == 'test' }) 
         
@@ -120,5 +121,5 @@ gradle.projectsEvaluated {
 
 // Let's add the target directory to clean
 cleanIntegrationTest.doLast {
-	file('target').deleteDir()
+    file('target').deleteDir()
 }

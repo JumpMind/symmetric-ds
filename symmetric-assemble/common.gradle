@@ -194,7 +194,6 @@ subprojects { subproject ->
     
     integrationTest {
         ignoreFailures true
-        systemProperty "test.name", System.getProperty("test.name", "h2")
         systemProperty "test.server", System.getProperty("test.server", "h2")
         systemProperty "test.client", System.getProperty("test.client", "h2")
         systemProperty "test.root", System.getProperty("test.root", "h2")
