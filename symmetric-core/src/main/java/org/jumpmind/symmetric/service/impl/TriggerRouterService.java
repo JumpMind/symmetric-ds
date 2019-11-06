@@ -1815,19 +1815,21 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 reason);
         int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
 
-        if (trigger.isSyncOnInsert()) {
-            newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
-        }
-
-        if (trigger.isSyncOnUpdate()) {
-            newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
-        }
-
-        if (trigger.isSyncOnDelete()) {
-            newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+        if (!isExtractOnlyTable) {
+            if (trigger.isSyncOnInsert()) {
+                newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
+                        maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+            }
+    
+            if (trigger.isSyncOnUpdate()) {
+                newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
+                        maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+            }
+    
+            if (trigger.isSyncOnDelete()) {
+                newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
+                        maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+            }
         }
         
         if (isExtractOnlyTable) {
