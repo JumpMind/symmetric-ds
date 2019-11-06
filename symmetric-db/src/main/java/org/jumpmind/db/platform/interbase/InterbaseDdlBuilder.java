@@ -94,8 +94,8 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setHasSize(Types.BINARY, false);
         databaseInfo.setHasSize(Types.VARBINARY, false);
 
-        databaseInfo.setNonBlankCharColumnSpacePadded(false);
-        databaseInfo.setBlankCharColumnSpacePadded(false);
+        databaseInfo.setNonBlankCharColumnSpacePadded(true);
+        databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
 
