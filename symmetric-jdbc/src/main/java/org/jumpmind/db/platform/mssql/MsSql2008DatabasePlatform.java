@@ -55,10 +55,10 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
     public long getEstimatedRowCount(Table table) {
         String catalog = StringUtils.isNotBlank(table.getCatalog()) ? table.getCatalog() : "";
         if(catalog.length() > 0) {
-	        if(getDdlBuilder().isDelimitedIdentifierModeOn()) {
-	        	catalog = getDdlBuilder().getDatabaseInfo().getDelimiterToken() + catalog + getDdlBuilder().getDatabaseInfo().getDelimiterToken();
-	        }
-	        catalog = catalog + ".";
+            if(getDdlBuilder().isDelimitedIdentifierModeOn()) {
+                catalog = getDdlBuilder().getDatabaseInfo().getDelimiterToken() + catalog + getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+            }
+            catalog = catalog + ".";
         }
         return getSqlTemplateDirty().queryForLong("select sum(p.rows) from " + catalog + "sys.tables t inner join " +
                 catalog + "sys.partitions p on t.object_id = p.object_id and p.index_id IN (0, 1) " +

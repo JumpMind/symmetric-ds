@@ -65,29 +65,29 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
             table.setCatalog(null);
             
             if (table.getIndexCount() > 0) {
-            		Collection<IIndex> nonPkIndices = new ArrayList<IIndex>();
-            		
-            		for (IIndex index : table.getIndices()) {
-            			if (index.getColumnCount() == table.getPrimaryKeyColumnCount()) {
-            				int matches = 0;
-            				for (IndexColumn indexColumn : index.getColumns()) {
-            					for (String pkColName : table.getPrimaryKeyColumnNames()) {
-            						if (pkColName.equals(indexColumn.getName())) {
-            							matches++;
-            						}
-            					}
-            				}
-            				if (matches != index.getColumnCount()) {
-            					nonPkIndices.add(index);
-            				}
-            			}
-            			else {
-            				nonPkIndices.add(index);
-            			}
-            		}
-            		
-            		table.removeAllIndices();
-            		table.addIndices(nonPkIndices);
+                    Collection<IIndex> nonPkIndices = new ArrayList<IIndex>();
+                    
+                    for (IIndex index : table.getIndices()) {
+                        if (index.getColumnCount() == table.getPrimaryKeyColumnCount()) {
+                            int matches = 0;
+                            for (IndexColumn indexColumn : index.getColumns()) {
+                                for (String pkColName : table.getPrimaryKeyColumnNames()) {
+                                    if (pkColName.equals(indexColumn.getName())) {
+                                        matches++;
+                                    }
+                                }
+                            }
+                            if (matches != index.getColumnCount()) {
+                                nonPkIndices.add(index);
+                            }
+                        }
+                        else {
+                            nonPkIndices.add(index);
+                        }
+                    }
+                    
+                    table.removeAllIndices();
+                    table.addIndices(nonPkIndices);
             }
         }
         return table;

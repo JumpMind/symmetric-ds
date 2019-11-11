@@ -223,7 +223,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         List<T> availableExtensions = getExtensionPointList(extensionClass);
         for (T extension : availableExtensions) {
             if(!(extension instanceof IBuiltInExtensionPoint)){
-            	return extension;
+                return extension;
             }
         }
         for (T extension : availableExtensions) {

@@ -100,97 +100,97 @@ private static final long serialVersionUID = 1L;
         this.minBatchId = errorBatchId;
     }
 
-	public long getExtractMillis() {
-		return extractMillis;
-	}
+    public long getExtractMillis() {
+        return extractMillis;
+    }
 
-	public void setExtractMillis(long extractMillis) {
-		this.extractMillis = extractMillis;
-	}
+    public void setExtractMillis(long extractMillis) {
+        this.extractMillis = extractMillis;
+    }
 
-	public long getTransferMillis() {
-		return transferMillis;
-	}
+    public long getTransferMillis() {
+        return transferMillis;
+    }
 
-	public void setTransferMillis(long transferMillis) {
-		this.transferMillis = transferMillis;
-	}
+    public void setTransferMillis(long transferMillis) {
+        this.transferMillis = transferMillis;
+    }
 
-	public long getLoadMillis() {
-		return loadMillis;
-	}
+    public long getLoadMillis() {
+        return loadMillis;
+    }
 
-	public void setLoadMillis(long loadMillis) {
-		this.loadMillis = loadMillis;
-	}
+    public void setLoadMillis(long loadMillis) {
+        this.loadMillis = loadMillis;
+    }
 
-	public long getRouterMillis() {
-		return routerMillis;
-	}
+    public long getRouterMillis() {
+        return routerMillis;
+    }
 
-	public void setRouterMillis(long routerMillis) {
-		this.routerMillis = routerMillis;
-	}
+    public void setRouterMillis(long routerMillis) {
+        this.routerMillis = routerMillis;
+    }
 
-	public int getInsertCount() {
-		return insertCount;
-	}
+    public int getInsertCount() {
+        return insertCount;
+    }
 
-	public void setInsertCount(int insertCount) {
-		this.insertCount = insertCount;
-	}
+    public void setInsertCount(int insertCount) {
+        this.insertCount = insertCount;
+    }
 
-	public int getUpdateCount() {
-		return updateCount;
-	}
+    public int getUpdateCount() {
+        return updateCount;
+    }
 
-	public void setUpdateCount(int updateCount) {
-		this.updateCount = updateCount;
-	}
+    public void setUpdateCount(int updateCount) {
+        this.updateCount = updateCount;
+    }
 
-	public int getDeleteCount() {
-		return deleteCount;
-	}
+    public int getDeleteCount() {
+        return deleteCount;
+    }
 
-	public void setDeleteCount(int deleteCount) {
-		this.deleteCount = deleteCount;
-	}
+    public void setDeleteCount(int deleteCount) {
+        this.deleteCount = deleteCount;
+    }
 
-	public int getOtherCount() {
-		return otherCount;
-	}
+    public int getOtherCount() {
+        return otherCount;
+    }
 
-	public void setOtherCount(int otherCount) {
-		this.otherCount = otherCount;
-	}
+    public void setOtherCount(int otherCount) {
+        this.otherCount = otherCount;
+    }
 
-	public int getReloadCount() {
-		return reloadCount;
-	}
+    public int getReloadCount() {
+        return reloadCount;
+    }
 
-	public void setReloadCount(int reloadCount) {
-		this.reloadCount = reloadCount;
-	}
+    public void setReloadCount(int reloadCount) {
+        this.reloadCount = reloadCount;
+    }
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
+    public static long getSerialversionuid() {
+        return serialVersionUID;
+    }
 
-	public long getTotalBytes() {
-		return totalBytes;
-	}
+    public long getTotalBytes() {
+        return totalBytes;
+    }
 
-	public void setTotalBytes(long totalBytes) {
-		this.totalBytes = totalBytes;
-	}
+    public void setTotalBytes(long totalBytes) {
+        this.totalBytes = totalBytes;
+    }
 
-	public long getTotalMillis() {
-		return totalMillis;
-	}
+    public long getTotalMillis() {
+        return totalMillis;
+    }
 
-	public void setTotalMillis(long totalMillis) {
-		this.totalMillis = totalMillis;
-	}
+    public void setTotalMillis(long totalMillis) {
+        this.totalMillis = totalMillis;
+    }
     
     
 }

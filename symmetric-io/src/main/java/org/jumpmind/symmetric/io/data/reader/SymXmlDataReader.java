@@ -240,11 +240,11 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
     }
 
     public void close() {
-    	try {
-    		if(reader != null) {
-    			reader.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(reader != null) {
+                reader.close();
+            }
+        } catch(IOException e) { }
     }
 
     public Map<Batch, Statistics> getStatistics() {

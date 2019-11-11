@@ -44,38 +44,38 @@ public class MsSql2000SymmetricDialect extends MsSqlSymmetricDialect {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
           String sql = "  create function dbo.$(functionName) (\n" + 
-                  		"     @binvalue varbinary(8000)) returns varchar(8000)\n" + 
-                  		"   as \n" + 
-                  		"   begin\n" + 
-                  		"   declare @charvalue varchar(8000)\n" + 
-                  		"   declare @i int\n" + 
-                  		"   declare @length int\n" + 
-                  		"   declare @hexstring char(16)\n" + 
-                  		"\n" + 
-                  		"   select @charvalue = ''\n" + 
-                  		"   select @i = 1\n" + 
-                  		"   select @length = datalength(@binvalue)\n" + 
-                  		"   select @hexstring = '0123456789abcdef'\n" + 
-                  		"\n" + 
-                  		"   while (@i <= @length)\n" + 
-                  		"   begin\n" + 
-                  		"\n" + 
-                  		"     declare @tempint int\n" + 
-                  		"     declare @firstint int\n" + 
-                  		"     declare @secondint int\n" + 
-                  		"\n" + 
-                  		"     select @tempint = convert(int, substring(@binvalue,@i,1))\n" + 
-                  		"     select @firstint = floor(@tempint/16)\n" + 
-                  		"     select @secondint = @tempint - (@firstint*16)\n" + 
-                  		"\n" + 
-                  		"     select @charvalue = @charvalue +\n" + 
-                  		"       substring(@hexstring, @firstint+1, 1) +\n" + 
-                  		"       substring(@hexstring, @secondint+1, 1)\n" + 
-                  		"\n" + 
-                  		"     select @i = @i + 1\n" + 
-                  		"   end\n" + 
-                  		"    return @charvalue\n" + 
-                  		"   end";
+                          "     @binvalue varbinary(8000)) returns varchar(8000)\n" + 
+                          "   as \n" + 
+                          "   begin\n" + 
+                          "   declare @charvalue varchar(8000)\n" + 
+                          "   declare @i int\n" + 
+                          "   declare @length int\n" + 
+                          "   declare @hexstring char(16)\n" + 
+                          "\n" + 
+                          "   select @charvalue = ''\n" + 
+                          "   select @i = 1\n" + 
+                          "   select @length = datalength(@binvalue)\n" + 
+                          "   select @hexstring = '0123456789abcdef'\n" + 
+                          "\n" + 
+                          "   while (@i <= @length)\n" + 
+                          "   begin\n" + 
+                          "\n" + 
+                          "     declare @tempint int\n" + 
+                          "     declare @firstint int\n" + 
+                          "     declare @secondint int\n" + 
+                          "\n" + 
+                          "     select @tempint = convert(int, substring(@binvalue,@i,1))\n" + 
+                          "     select @firstint = floor(@tempint/16)\n" + 
+                          "     select @secondint = @tempint - (@firstint*16)\n" + 
+                          "\n" + 
+                          "     select @charvalue = @charvalue +\n" + 
+                          "       substring(@hexstring, @firstint+1, 1) +\n" + 
+                          "       substring(@hexstring, @secondint+1, 1)\n" + 
+                          "\n" + 
+                          "     select @i = @i + 1\n" + 
+                          "   end\n" + 
+                          "    return @charvalue\n" + 
+                          "   end";
             install(sql, encode);
         }
         

@@ -49,16 +49,16 @@ public class InternalIncomingTransport implements IIncomingTransport {
 
     public void close() {
         if (reader != null) {
-        	try {
-        		reader.close();
-        	} catch(IOException e) { }
+            try {
+                reader.close();
+            } catch(IOException e) { }
             reader = null;
         }
 
         if (is != null) {
-        	try {
-        		is.close();
-        	} catch(IOException e) { }
+            try {
+                is.close();
+            } catch(IOException e) { }
             is = null;
         }
     }

@@ -130,9 +130,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
     
     @Override
-	public IOutgoingWithResponseTransport getPushTransport(final Node remote, final Node local, String securityToken,
-			Map<String, String> requestProperties, String registrationUrl) throws IOException {
-    	final PipedOutputStream pushOs = new PipedOutputStream();
+    public IOutgoingWithResponseTransport getPushTransport(final Node remote, final Node local, String securityToken,
+            Map<String, String> requestProperties, String registrationUrl) throws IOException {
+        final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
 
         final PipedOutputStream respOs = new PipedOutputStream();
@@ -146,7 +146,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
-	}
+    }
 
     public IOutgoingWithResponseTransport getFilePushTransport(final Node targetNode, final Node sourceNode,
             String securityToken, String registrationUrl) throws IOException {
@@ -229,16 +229,16 @@ public class InternalTransportManager extends AbstractTransportManager implement
                 } catch (Exception e) {
                     log.error("", e);
                 } finally {
-                	try {
-                		if(is != null) {
-                			is.close();
-                		}
-                	} catch(IOException e) { }
-                	try {
-                		if(os != null) {
-                			os.close();
-                		}
-                	} catch(IOException e) { }
+                    try {
+                        if(is != null) {
+                            is.close();
+                        }
+                    } catch(IOException e) { }
+                    try {
+                        if(os != null) {
+                            os.close();
+                        }
+                    } catch(IOException e) { }
                 }
             }
         }.start();
@@ -264,5 +264,5 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return null;
     }
 
-	
+    
 }

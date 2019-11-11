@@ -280,16 +280,16 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     }
     
     protected String[] massageExpectectedResultsForDialect(String[] values) {
-    	if(values[5] != null && platform instanceof MsSql2008DatabasePlatform) {
-        	// No time portion for a date field
-        	values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
+        if(values[5] != null && platform instanceof MsSql2008DatabasePlatform) {
+            // No time portion for a date field
+            values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
         }
-    	if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
-        	if(values[6].length() == 23) {
-        		values[6] = values[6] + "0000";
-        	}
+        if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
+            if(values[6].length() == 23) {
+                values[6] = values[6] + "0000";
+            }
         }
-    	return values;
+        return values;
     }
 
 }

@@ -36,18 +36,18 @@ import org.springframework.core.io.Resource;
 
 public class TypedPropertiesFactory implements ITypedPropertiesFactory {
 
-	protected File propertiesFile;
-	
-	protected Properties properties;
-	
-	public TypedPropertiesFactory() {	
-	}
-	
-	public void init(File propertiesFile, Properties properties) {
-		this.propertiesFile = propertiesFile;
-		this.properties = properties;
-	}
-	
+    protected File propertiesFile;
+    
+    protected Properties properties;
+    
+    public TypedPropertiesFactory() {    
+    }
+    
+    public void init(File propertiesFile, Properties properties) {
+        this.propertiesFile = propertiesFile;
+        this.properties = properties;
+    }
+    
     public TypedProperties reload() {
         PropertiesFactoryBean factoryBean = new PropertiesFactoryBean();
         factoryBean.setIgnoreResourceNotFound(true);

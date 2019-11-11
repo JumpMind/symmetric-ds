@@ -55,9 +55,9 @@ final public class DmlStatementFactory {
             throw new RuntimeException(
                     "Unable to create DML statements for unknown dialect: " + databaseName);
         } else {
-        	ddlBuilder.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
+            ddlBuilder.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
             return createDmlStatement(databaseName, dmlType, catalogName, schemaName, tableName, keys,
-                    columns, nullKeyValues, ddlBuilder, null);        	
+                    columns, nullKeyValues, ddlBuilder, null);            
         }
     }
 

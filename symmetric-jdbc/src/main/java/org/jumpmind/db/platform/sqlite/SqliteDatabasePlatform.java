@@ -49,8 +49,8 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
         super(dataSource, settings);
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-	    		sqlScriptReplacementTokens = new HashMap<String, String>();
-	    }
+                sqlScriptReplacementTokens = new HashMap<String, String>();
+        }
         sqlScriptReplacementTokens.put("current_timestamp",
                 "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
         sqlScriptReplacementTokens.put("\\{ts([^<]*?)\\}", "$1");
@@ -131,24 +131,24 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
     }
     
     @Override
-   	protected PermissionResult getCreateSymTriggerPermission() {
-       	String delimiter = getDatabaseInfo().getDelimiterToken();
+       protected PermissionResult getCreateSymTriggerPermission() {
+           String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
            
-       	String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
-       			+ "FOR EACH ROW BEGIN SELECT 1; END";
-       	
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-       	
-   		try {
-   			getSqlTemplate().update(triggerSql);
-   			result.setStatus(Status.PASS);
-   		} catch (SqlException e) {
-   			result.setException(e);
-   			result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-   		}
-   		
-   		return result;
+           String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
+                   + "FOR EACH ROW BEGIN SELECT 1; END";
+           
+           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+           
+           try {
+               getSqlTemplate().update(triggerSql);
+               result.setStatus(Status.PASS);
+           } catch (SqlException e) {
+               result.setException(e);
+               result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+           }
+           
+           return result;
     }
     
     @Override

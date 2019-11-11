@@ -154,9 +154,9 @@ public class StagedResource implements IStagedResource {
                                 BufferedReader reader = readers.get(thread);
                                 log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
                                 try {
-                                	if(reader != null) {
-                                		reader.close();     
-                                	}
+                                    if(reader != null) {
+                                        reader.close();     
+                                    }
                                 } catch(IOException e) { }
                             }
                         }
@@ -224,7 +224,7 @@ public class StagedResource implements IStagedResource {
     
 
     @SuppressWarnings("resource")
-	public synchronized BufferedReader getReader() {
+    public synchronized BufferedReader getReader() {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader == null) {
@@ -289,32 +289,32 @@ public class StagedResource implements IStagedResource {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader != null) {
-        	try {
-        		reader.close();
-        	} catch(IOException e) { }
+            try {
+                reader.close();
+            } catch(IOException e) { }
             readers.remove(thread);
             closeReadersMap();
         }
 
         if (writer != null) {
-        	try {
-        		writer.close();
-        	} catch(IOException e) { }
+            try {
+                writer.close();
+            } catch(IOException e) { }
             writer = null;
         }
         
         if (outputStream != null) {
-        	try {
-        		outputStream.close();
-        	} catch(IOException e) { }
+            try {
+                outputStream.close();
+            } catch(IOException e) { }
             outputStream = null;
         }
         
         InputStream inputStream = inputStreams != null ? inputStreams.get(thread) : null;
         if (inputStream != null) {
-        	try {
-        		inputStream.close();
-        	} catch(IOException e) { }
+            try {
+                inputStream.close();
+            } catch(IOException e) { }
             inputStreams.remove(thread);
             closeInputStreamsMap();
         }
@@ -338,11 +338,11 @@ public class StagedResource implements IStagedResource {
     }
 
     protected OutputStream createOutputStream() throws FileNotFoundException {
-    	return new BufferedOutputStream(new FileOutputStream(file));
+        return new BufferedOutputStream(new FileOutputStream(file));
     }
 
     @SuppressWarnings("resource")
-	public synchronized InputStream getInputStream() {
+    public synchronized InputStream getInputStream() {
         Thread thread = Thread.currentThread();
         InputStream reader = inputStreams != null ? inputStreams.get(thread) : null;
         if (reader == null) {
@@ -363,7 +363,7 @@ public class StagedResource implements IStagedResource {
     }
     
     protected InputStream createInputStream() throws FileNotFoundException {
-    	return new BufferedInputStream(new FileInputStream(file));
+        return new BufferedInputStream(new FileInputStream(file));
     }
     
     public BufferedWriter getWriter(long threshold) {
@@ -382,7 +382,7 @@ public class StagedResource implements IStagedResource {
     }
 
     protected BufferedWriter createWriter(long threshold) {
-        return new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer, file));    	
+        return new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer, file));        
     }
 
     public long getSize() {

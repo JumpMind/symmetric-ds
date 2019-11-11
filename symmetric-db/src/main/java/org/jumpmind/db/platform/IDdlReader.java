@@ -51,12 +51,12 @@ public interface IDdlReader {
     
     public List<Trigger> getTriggers(String catalog, String schema, String tableName);
 
-	public Trigger getTriggerFor(Table table, String name);
+    public Trigger getTriggerFor(Table table, String name);
     
-	public Collection<ForeignKey> getExportedKeys(Table table);
-	
-	public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited);
-	
-	public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding);
-	
+    public Collection<ForeignKey> getExportedKeys(Table table);
+    
+    public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited);
+    
+    public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding);
+    
 }

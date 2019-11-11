@@ -43,8 +43,8 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
         super(dataSource, overrideSettings(settings));
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-	    		sqlScriptReplacementTokens = new HashMap<String, String>();
-	    }
+                sqlScriptReplacementTokens = new HashMap<String, String>();
+        }
         sqlScriptReplacementTokens.put("current_timestamp", "sysdate");
     }
 

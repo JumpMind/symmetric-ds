@@ -183,7 +183,7 @@ INodeCommunicationExecutor {
     }
 
     protected void trackChanges(ProcessInfo processInfo, boolean useCrc) {
-    	long ctxTime = engine.getContextService().getLong(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME);
+        long ctxTime = engine.getContextService().getLong(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME);
         Date ctxDate = new Date(ctxTime);
         if (ctxTime == 0) {
             ctxDate = null;
@@ -194,8 +194,8 @@ INodeCommunicationExecutor {
         for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
             if (fileTriggerRouter.isEnabled()) {
                 try {
-                	FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
-                	boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
+                    FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter), 
                             processInfo, useCrc, engine);
                     DirectorySnapshot dirSnapshot = tracker.trackChanges();
@@ -228,8 +228,8 @@ INodeCommunicationExecutor {
             List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.isEnabled()) {
-                	FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
-                	boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
+                    FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
+                    boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
                     FileAlterationObserver observer = new FileAlterationObserver(fileTriggerRouter.getFileTrigger().getBaseDir(),
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
                     FileTriggerFileModifiedListener listener = new FileTriggerFileModifiedListener(fileTriggerRouter, ctxDate,
@@ -253,12 +253,12 @@ INodeCommunicationExecutor {
     }
     
     protected boolean shouldIgnoreInitialFiles(FileTriggerRouter router, FileTrigger trigger, Date contextDate) {
-    	if (!router.isInitialLoadEnabled()) {
-    		if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
-        		return true;
-        	}
-    	}
-    	return false;
+        if (!router.isInitialLoadEnabled()) {
+            if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected long saveDirectorySnapshot(FileTriggerRouter fileTriggerRouter, DirectorySnapshot dirSnapshot, boolean shouldIgnore) {
@@ -466,7 +466,7 @@ INodeCommunicationExecutor {
             try {
                 sqlTransaction = sqlTemplate.startSqlTransaction();
                 if (shouldIgnore) {
-                	engine.getSymmetricDialect().disableSyncTriggers(sqlTransaction, null);
+                    engine.getSymmetricDialect().disableSyncTriggers(sqlTransaction, null);
                 }
                 for (FileSnapshot fileSnapshot : changes) {
                     save(sqlTransaction, fileSnapshot);
@@ -484,9 +484,9 @@ INodeCommunicationExecutor {
                 }
                 throw ex;
             } finally {
-            	if (shouldIgnore && sqlTransaction != null) {
-            		engine.getSymmetricDialect().enableSyncTriggers(sqlTransaction);
-            	}
+                if (shouldIgnore && sqlTransaction != null) {
+                    engine.getSymmetricDialect().enableSyncTriggers(sqlTransaction);
+                }
                 close(sqlTransaction);
             }
         }
@@ -1274,8 +1274,8 @@ INodeCommunicationExecutor {
         }
     }
 
-	@Override
-	public void save(List<FileSnapshot> changes) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void save(List<FileSnapshot> changes) {
+        // TODO Auto-generated method stub
+    }
 }

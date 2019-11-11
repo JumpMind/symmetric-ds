@@ -367,16 +367,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
 
                         Table table = symmetricDialect.getPlatform().getTableFromCache(
-                        		triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
-                        		triggerHistory.getSourceTableName(), false);
+                                triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
+                                triggerHistory.getSourceTableName(), false);
                         String initialLoadSql = "1=1 order by ";
                         String quote = symmetricDialect.getPlatform().getDdlBuilder().getDatabaseInfo().getDelimiterToken();
                         Column[] pkColumns = table.getPrimaryKeyColumns();
                         for (int j = 0; j < pkColumns.length; j++) {
-                        	if (j > 0) {
-                        		initialLoadSql += ", ";	
-                        	}
-                        	initialLoadSql += quote + pkColumns[j].getName() + quote;
+                            if (j > 0) {
+                                initialLoadSql += ", ";    
+                            }
+                            initialLoadSql += quote + pkColumns[j].getName() + quote;
                         }
 
                         if (!triggerRouter.getTrigger().getSourceTableName()
@@ -467,7 +467,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         // any other batches are loaded.
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_BLOCK_CHANNELS, true)) {
             if (batches.containsLoadBatches() && !(parameterService.is(ParameterConstants.INITIAL_LOAD_UNBLOCK_CHANNELS_ON_ERROR, true) 
-            		 && batches.containsBatchesInError())) {
+                     && batches.containsBatchesInError())) {
                 batches.removeNonLoadBatches();
             }
         }
@@ -1384,17 +1384,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             Node sourceNode = nodeService.findIdentity();
                             Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
                             if(sourceNode.equals(targetNodeByEngine) || !targetNodeByEngine.equals(targetNode)) {
-                            	log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a miss configuration of the sync urls '{}'", 
-                            			targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
+                                log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a miss configuration of the sync urls '{}'", 
+                                        targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
                             } else {
-                            	IStagedResource targetResource = targetEngine.getStagingManager().create( 
+                                IStagedResource targetResource = targetEngine.getStagingManager().create( 
                                         Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch.getBatchId()), 
                                         currentBatch.getBatchId());
                                 try {
                                     SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
                                     processInfo.setCurrentDataCount(currentBatch.getDataRowCount());
                                     if(log.isDebugEnabled()) {
-                                    	log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
+                                        log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
                                     }
                                     
                                     targetResource.setState(State.DONE);
@@ -1539,8 +1539,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 
                 if (batch.getSentCount() == 1) {
-	                statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataRowCount());
-	                statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
+                    statisticManager.incrementDataSent(batch.getChannelId(), batch.getDataRowCount());
+                    statisticManager.incrementDataBytesSent(batch.getChannelId(), totalBytesRead);
                 }
                 
                 if (log.isDebugEnabled() && totalThrottleTime > 0) {
@@ -2643,20 +2643,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 }
                             }
                             if (excludeForeignKeys || deferConstraints) {
-                            	copyTargetTable.removeAllForeignKeys();
+                                copyTargetTable.removeAllForeignKeys();
                             }
                             if (excludeIndexes || deferConstraints) {
                                 copyTargetTable.removeAllIndexes();
                             }
                             
                             if (parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_PK_IF_SOURCE_WITHOUT_PK, false)
-                            	&& sourceTable.getPrimaryKeyColumnCount() == 0
-                            	&& copyTargetTable.getPrimaryKeyColumnCount() > 0) {
-                            	
+                                && sourceTable.getPrimaryKeyColumnCount() == 0
+                                && copyTargetTable.getPrimaryKeyColumnCount() > 0) {
+                                
                                 for (Column column : copyTargetTable.getColumns()) {
                                     column.setPrimaryKey(false);
                                 }
-                            	
+                                
                             }
                             if (parameterService.is(ParameterConstants.MYSQL_TINYINT_DDL_TO_BOOLEAN, false)) {
                                 for (Column column : copyTargetTable.getColumns()) {

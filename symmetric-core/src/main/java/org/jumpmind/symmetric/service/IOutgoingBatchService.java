@@ -108,7 +108,7 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatchSummary> findOutgoingBatchSummaryByChannel(OutgoingBatch.Status ... statuses);    
     
     public List<OutgoingBatchSummary> findOutgoingBatchSummaryByNode(String nodeId,
-    		Date sinceCreateTime, Status... statuses);
+            Date sinceCreateTime, Status... statuses);
     
     public int countOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, List<Long> loads);

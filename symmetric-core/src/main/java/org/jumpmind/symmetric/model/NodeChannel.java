@@ -254,11 +254,11 @@ public class NodeChannel implements Serializable {
     }
     
     public void setQueue(String queue) {
-    	this.channel.setQueue(queue);
+        this.channel.setQueue(queue);
     }
     
     public String getQueue() {
-    	return this.channel.getQueue();
+        return this.channel.getQueue();
     }
     
     public BigDecimal getMaxKBytesPerSecond() {

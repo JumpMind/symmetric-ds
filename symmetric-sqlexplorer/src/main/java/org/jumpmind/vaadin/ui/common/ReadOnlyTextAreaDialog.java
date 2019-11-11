@@ -86,11 +86,11 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     protected IDatabasePlatform platform;
 
     public ReadOnlyTextAreaDialog(final String title, final String value, boolean isEncodedInHex) {
-    	this(title, value, null, null, null, isEncodedInHex, false);
+        this(title, value, null, null, null, isEncodedInHex, false);
     }
     
     public ReadOnlyTextAreaDialog(final String title, final String value, Table table, Object[] primaryKeys,
-    		IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob) {
+            IDatabasePlatform platform, boolean isEncodedInHex, boolean isLob) {
         super(title);
         this.table = table;
         this.primaryKeys = primaryKeys;
@@ -132,8 +132,8 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         }
         
         if (table != null && isLob) {
-        	buildUploadButton(title, value);
-        	buildDownloadButton(title);
+            buildUploadButton(title, value);
+            buildDownloadButton(title);
         }
 
         Label spacer = new Label();
@@ -171,97 +171,97 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     }
     
     private void buildUploadButton(String title, final String value) {
-    	final Button uploadButton = new Button("Upload");
-    	final Button viewTextButton = new Button("View Text");
-    	
-    	LobUploader lobUploader = new LobUploader();
-    	final Upload upload = new Upload("Upload new " + table.getColumnWithName(title)
-    			.getMappedType(), lobUploader);
-    	upload.addSucceededListener(lobUploader);
+        final Button uploadButton = new Button("Upload");
+        final Button viewTextButton = new Button("View Text");
+        
+        LobUploader lobUploader = new LobUploader();
+        final Upload upload = new Upload("Upload new " + table.getColumnWithName(title)
+                .getMappedType(), lobUploader);
+        upload.addSucceededListener(lobUploader);
 
-    	uploadButton.addClickListener(new ClickListener() {
-			private static final long serialVersionUID = 1L;
+        uploadButton.addClickListener(new ClickListener() {
+            private static final long serialVersionUID = 1L;
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				wrapper.replaceComponent(textField, upload);
-				wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
-		    	buttonLayout.replaceComponent(uploadButton, viewTextButton);
-			}
-		});
-    	
-    	viewTextButton.addClickListener(new ClickListener() {
-			private static final long serialVersionUID = 1L;
+            @Override
+            public void buttonClick(ClickEvent event) {
+                wrapper.replaceComponent(textField, upload);
+                wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
+                buttonLayout.replaceComponent(uploadButton, viewTextButton);
+            }
+        });
+        
+        viewTextButton.addClickListener(new ClickListener() {
+            private static final long serialVersionUID = 1L;
 
-			@Override
-			public void buttonClick(ClickEvent event) {
-				wrapper.replaceComponent(upload, textField);
-				wrapper.setComponentAlignment(textField, Alignment.TOP_LEFT);
-				buttonLayout.replaceComponent(viewTextButton, uploadButton);
-			}
-		});
-    	
-    	if (value != null) {
-    		buttonLayout.addComponent(uploadButton);
-    		buttonLayout.setComponentAlignment(uploadButton, Alignment.BOTTOM_CENTER);
-    	} else {
-    		wrapper.replaceComponent(textField, upload);
-			wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
-    	}
+            @Override
+            public void buttonClick(ClickEvent event) {
+                wrapper.replaceComponent(upload, textField);
+                wrapper.setComponentAlignment(textField, Alignment.TOP_LEFT);
+                buttonLayout.replaceComponent(viewTextButton, uploadButton);
+            }
+        });
+        
+        if (value != null) {
+            buttonLayout.addComponent(uploadButton);
+            buttonLayout.setComponentAlignment(uploadButton, Alignment.BOTTOM_CENTER);
+        } else {
+            wrapper.replaceComponent(textField, upload);
+            wrapper.setComponentAlignment(upload, Alignment.MIDDLE_CENTER);
+        }
     }
     
     private void buildDownloadButton(String title) {
-    	downloadButton = new Button("Download");
-    	final byte[] lobData = getLobData(title);
-    	if (lobData != null) {
-	    	Resource resource = new StreamResource(new StreamSource() {
-	
-				private static final long serialVersionUID = 1L;
-	
-				public InputStream getStream() {
-					return new ByteArrayInputStream(lobData);
-				}
-				
-			}, title);
-	    	FileDownloader fileDownloader = new FileDownloader(resource);
-	    	fileDownloader.extend(downloadButton);
-	    	buttonLayout.addComponent(downloadButton);
-	    	buttonLayout.setComponentAlignment(downloadButton, Alignment.BOTTOM_CENTER);
-	    	
-	    	long fileSize = lobData.length;
-	    	String sizeText = fileSize + " Bytes";
-	    	if (fileSize / 1024 > 0) {
-	    		sizeText = Math.round(fileSize / 1024.0) + " kB";
-	    		fileSize /= 1024;
-	    	}
-	    	if (fileSize / 1024 > 0) {
-	    		sizeText = Math.round(fileSize / 1024.0) + " MB";
-	    		fileSize /= 1024;
-	    	}
-	    	if (fileSize / 1024 > 0) {
-	    		sizeText = Math.round(fileSize / 1024.0) + " GB";
-	    	}
-	    	Label sizeLabel = new Label(sizeText);
-	    	buttonLayout.addComponent(sizeLabel);
-	    	buttonLayout.setExpandRatio(sizeLabel, 1.0f);
-	    	buttonLayout.setComponentAlignment(sizeLabel, Alignment.BOTTOM_CENTER);
-    	}
+        downloadButton = new Button("Download");
+        final byte[] lobData = getLobData(title);
+        if (lobData != null) {
+            Resource resource = new StreamResource(new StreamSource() {
+    
+                private static final long serialVersionUID = 1L;
+    
+                public InputStream getStream() {
+                    return new ByteArrayInputStream(lobData);
+                }
+                
+            }, title);
+            FileDownloader fileDownloader = new FileDownloader(resource);
+            fileDownloader.extend(downloadButton);
+            buttonLayout.addComponent(downloadButton);
+            buttonLayout.setComponentAlignment(downloadButton, Alignment.BOTTOM_CENTER);
+            
+            long fileSize = lobData.length;
+            String sizeText = fileSize + " Bytes";
+            if (fileSize / 1024 > 0) {
+                sizeText = Math.round(fileSize / 1024.0) + " kB";
+                fileSize /= 1024;
+            }
+            if (fileSize / 1024 > 0) {
+                sizeText = Math.round(fileSize / 1024.0) + " MB";
+                fileSize /= 1024;
+            }
+            if (fileSize / 1024 > 0) {
+                sizeText = Math.round(fileSize / 1024.0) + " GB";
+            }
+            Label sizeLabel = new Label(sizeText);
+            buttonLayout.addComponent(sizeLabel);
+            buttonLayout.setExpandRatio(sizeLabel, 1.0f);
+            buttonLayout.setComponentAlignment(sizeLabel, Alignment.BOTTOM_CENTER);
+        }
     }
     
     protected byte[] getLobData(String title) {
-    	ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-    	String sql = buildLobSelect(table.getPrimaryKeyColumns());
-    	byte[] array;
-    	if (platform.isBlob(column.getMappedTypeCode())) {
-    	    array = sqlTemplate.queryForBlob(sql, column.getJdbcTypeCode(), column.getJdbcTypeName(), primaryKeys);
-    	} else {
-    		String results = sqlTemplate.queryForClob(sql, column.getJdbcTypeCode(), column.getJdbcTypeName(), primaryKeys);
-    		if (results != null) {
-    		    array = results.getBytes();
-    		} else {
-    		    array = null;
-    		}
-    	}
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+        String sql = buildLobSelect(table.getPrimaryKeyColumns());
+        byte[] array;
+        if (platform.isBlob(column.getMappedTypeCode())) {
+            array = sqlTemplate.queryForBlob(sql, column.getJdbcTypeCode(), column.getJdbcTypeName(), primaryKeys);
+        } else {
+            String results = sqlTemplate.queryForClob(sql, column.getJdbcTypeCode(), column.getJdbcTypeName(), primaryKeys);
+            if (results != null) {
+                array = results.getBytes();
+            } else {
+                array = null;
+            }
+        }
         return array;
     }
     
@@ -287,24 +287,24 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     }
     
     protected String buildLobUpdate(Column[] pkColumns) {
-    	StringBuilder sql = new StringBuilder("update ");
+        StringBuilder sql = new StringBuilder("update ");
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
         sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), 
                 dbInfo.getSchemaSeparator()));
-    	sql.append(" set ");
+        sql.append(" set ");
         sql.append(quote);
-    	sql.append(column.getName());
+        sql.append(column.getName());
         sql.append(quote);
-    	sql.append("=? where ");
-    	for (Column col : pkColumns) {
-    		sql.append(quote);
+        sql.append("=? where ");
+        for (Column col : pkColumns) {
+            sql.append(quote);
             sql.append(col.getName());
             sql.append(quote);
             sql.append("=? and ");
-    	}
+        }
         sql.delete(sql.length() - 5, sql.length());
-    	return sql.toString();
+        return sql.toString();
     }
     
     public void selectAll() {
@@ -341,69 +341,69 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     }
     
     private class LobUploader implements Receiver, SucceededListener {
-		
-    	private static final long serialVersionUID = 1L;
-    	
-    	File file;
+        
+        private static final long serialVersionUID = 1L;
+        
+        File file;
 
-		@Override
-		public OutputStream receiveUpload(String filename, String mimeType) {
-			FileOutputStream out = null;
-			try {
-				file = new File(System.getProperty("java.io.tmpdir"), filename);
-				out = new FileOutputStream(file);
-			} catch (FileNotFoundException e) {
-				NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
-						"Cause: the file could not be found.<br><br>" +
-						"To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e, Type.ERROR_MESSAGE);
-				return new ByteArrayOutputStream();
-			}
-			return out;
-		}
-		
-		public void uploadSucceeded(SucceededEvent event) {
-			log.info("File received successfully. Updating database");
-			String sql = buildLobUpdate(table.getPrimaryKeyColumns());
-			Connection con = null;
-			PreparedStatement ps = null;
-			try {
-				long startTime = System.nanoTime();
-				con = ((DataSource) platform.getDataSource()).getConnection();
-				con.setAutoCommit(false);
-				ps = con.prepareStatement(sql);
-				InputStream stream = new FileInputStream(file);
-				ps.setBinaryStream(1, (InputStream) stream, (int) file.length());
-				for (int i=0; i<primaryKeys.length; i++) {
-					ps.setObject(i+2, primaryKeys[i], table.getPrimaryKeyColumns()[i].getMappedTypeCode());
-				}
-				ps.executeUpdate();
-				con.commit();
-				long executionTime = System.nanoTime()-startTime;
-				log.info("Upload succeeded in "+executionTime+" ms");
-				ReadOnlyTextAreaDialog.this.close();
-			} catch (SQLException e1) {
-				NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
-						"Cause: the sql update statement failed.<br><br>" +
-						"To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e1, Type.ERROR_MESSAGE);
-			} catch (FileNotFoundException e2) {
-				// do nothing -- already notified
-			} finally {
-				if (ps != null) {
-					try {
-						ps.close();
-					} catch (SQLException e) {
-					}
-				}
-				if (con != null) {
-					try {
-						con.close();
-					} catch (SQLException e) {
-					}
-				}
-				FileUtils.deleteQuietly(file);
-				log.info("Deleted uploaded file");
-			}
-		}
+        @Override
+        public OutputStream receiveUpload(String filename, String mimeType) {
+            FileOutputStream out = null;
+            try {
+                file = new File(System.getProperty("java.io.tmpdir"), filename);
+                out = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
+                        "Cause: the file could not be found.<br><br>" +
+                        "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e, Type.ERROR_MESSAGE);
+                return new ByteArrayOutputStream();
+            }
+            return out;
+        }
+        
+        public void uploadSucceeded(SucceededEvent event) {
+            log.info("File received successfully. Updating database");
+            String sql = buildLobUpdate(table.getPrimaryKeyColumns());
+            Connection con = null;
+            PreparedStatement ps = null;
+            try {
+                long startTime = System.nanoTime();
+                con = ((DataSource) platform.getDataSource()).getConnection();
+                con.setAutoCommit(false);
+                ps = con.prepareStatement(sql);
+                InputStream stream = new FileInputStream(file);
+                ps.setBinaryStream(1, (InputStream) stream, (int) file.length());
+                for (int i=0; i<primaryKeys.length; i++) {
+                    ps.setObject(i+2, primaryKeys[i], table.getPrimaryKeyColumns()[i].getMappedTypeCode());
+                }
+                ps.executeUpdate();
+                con.commit();
+                long executionTime = System.nanoTime()-startTime;
+                log.info("Upload succeeded in "+executionTime+" ms");
+                ReadOnlyTextAreaDialog.this.close();
+            } catch (SQLException e1) {
+                NotifyDialog.show("Upload Error", "<b>The file could not be uploaded.</b><br>" +
+                        "Cause: the sql update statement failed.<br><br>" +
+                        "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.", e1, Type.ERROR_MESSAGE);
+            } catch (FileNotFoundException e2) {
+                // do nothing -- already notified
+            } finally {
+                if (ps != null) {
+                    try {
+                        ps.close();
+                    } catch (SQLException e) {
+                    }
+                }
+                if (con != null) {
+                    try {
+                        con.close();
+                    } catch (SQLException e) {
+                    }
+                }
+                FileUtils.deleteQuietly(file);
+                log.info("Deleted uploaded file");
+            }
+        }
     }
 
     public static void show(String title, String value, boolean isEncodedInHex) {
@@ -412,9 +412,9 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     }
     
     public static void show(String title, String value, Table table, Object[] primaryKeys, IDatabasePlatform platform,
-    		boolean isEncodedInHex, boolean isLob) {
+            boolean isEncodedInHex, boolean isLob) {
         ReadOnlyTextAreaDialog dialog = new ReadOnlyTextAreaDialog(title, value, table, primaryKeys, platform,
-        		isEncodedInHex, isLob);
+                isEncodedInHex, isLob);
         dialog.showAtSize(.45);
     }
 }

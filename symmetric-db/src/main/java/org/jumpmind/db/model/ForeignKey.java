@@ -35,7 +35,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * Represents a database foreign key.
  */
 public class ForeignKey implements Cloneable, Serializable {
-	
+    
     public enum ForeignKeyAction {
         CASCADE("CASCADE"),
         NOACTION("NO ACTION"),
@@ -386,7 +386,7 @@ public class ForeignKey implements Cloneable, Serializable {
         }
     }
 
-	/**
+    /**
      * Compares this foreign key to the given one while ignoring the case of
      * identifiers.
      * 
@@ -538,38 +538,38 @@ public class ForeignKey implements Cloneable, Serializable {
         return result.toString();
     }
 
-	public String getForeignTableCatalog() {
-		return foreignTableCatalog;
-	}
+    public String getForeignTableCatalog() {
+        return foreignTableCatalog;
+    }
 
-	public void setForeignTableCatalog(String foreignTableCatalog) {
-		this.foreignTableCatalog = foreignTableCatalog;
-	}
+    public void setForeignTableCatalog(String foreignTableCatalog) {
+        this.foreignTableCatalog = foreignTableCatalog;
+    }
 
-	public String getForeignTableSchema() {
-		return foreignTableSchema;
-	}
+    public String getForeignTableSchema() {
+        return foreignTableSchema;
+    }
 
-	public void setForeignTableSchema(String foreignTableSchema) {
-		this.foreignTableSchema = foreignTableSchema;
-	}
+    public void setForeignTableSchema(String foreignTableSchema) {
+        this.foreignTableSchema = foreignTableSchema;
+    }
     
     public ForeignKeyAction getOnDeleteAction() {
-		return onDeleteAction;
-	}
+        return onDeleteAction;
+    }
 
-	public void setOnDeleteAction(ForeignKeyAction onDeleteAction) {
-		this.onDeleteAction = onDeleteAction;
-	}
+    public void setOnDeleteAction(ForeignKeyAction onDeleteAction) {
+        this.onDeleteAction = onDeleteAction;
+    }
 
-	public ForeignKeyAction getOnUpdateAction() {
-		return onUpdateAction;
-	}
+    public ForeignKeyAction getOnUpdateAction() {
+        return onUpdateAction;
+    }
 
-	public void setOnUpdateAction(ForeignKeyAction onUpdateAction) {
-		this.onUpdateAction = onUpdateAction;
-	}
-	
+    public void setOnUpdateAction(ForeignKeyAction onUpdateAction) {
+        this.onUpdateAction = onUpdateAction;
+    }
+    
     public static ForeignKeyAction getForeignKeyAction(short importedKeyAction) {
         switch(importedKeyAction) {
         case DatabaseMetaData.importedKeyCascade:

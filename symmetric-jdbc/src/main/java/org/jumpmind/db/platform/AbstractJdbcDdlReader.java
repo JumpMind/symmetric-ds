@@ -143,8 +143,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
     @Override
     public List<Trigger> getTriggers(String catalog, String schema,
-    		String tableName) {
-    	return Collections.emptyList();
+            String tableName) {
+        return Collections.emptyList();
     }
 
     /*
@@ -1102,15 +1102,15 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             fk = new ForeignKey(fkName);
             fk.setForeignTableName((String) values.get(getName("PKTABLE_NAME")));
             try {
-            		fk.setForeignTableCatalog((String) values.get(getName("PKTABLE_CAT")));
+                    fk.setForeignTableCatalog((String) values.get(getName("PKTABLE_CAT")));
             } catch (Exception e) { }
             try {
-        			fk.setForeignTableSchema((String) values.get(getName("PKTABLE_SCHEM")));
-	        	} catch (Exception e) { }
+                    fk.setForeignTableSchema((String) values.get(getName("PKTABLE_SCHEM")));
+                } catch (Exception e) { }
             readForeignKeyUpdateRule(values, fk);
             readForeignKeyDeleteRule(values, fk);
-	        
-	        knownFks.put(fkName, fk);
+            
+            knownFks.put(fkName, fk);
         }
 
         Reference ref = new Reference();
@@ -1566,7 +1566,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     
     public List<String> getTableNames(final String catalog, final String schema,
             final String[] tableTypes) {
-    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
         List<String> list = sqlTemplate.execute(new IConnectionCallback<List<String>>() {
             public List<String> execute(Connection connection) throws SQLException {
                 ArrayList<String> list = new ArrayList<String>();
@@ -1612,19 +1612,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     }
     
     public List<String> getListOfTriggers() {
-    	return new ArrayList<String>();
+        return new ArrayList<String>();
     }
     
     public Trigger getTriggerFor(Table table, String triggerName) {
-    	Trigger trigger = null;
-    	List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
-    	for (Trigger t : triggers) {
-    		if (t.getName().equals(triggerName)) {
-    			trigger = t;
-    			break;
-    		}
-    	}
-    	return trigger;
+        Trigger trigger = null;
+        List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
+        for (Trigger t : triggers) {
+            if (t.getName().equals(triggerName)) {
+                trigger = t;
+                break;
+            }
+        }
+        return trigger;
     }
 
     @Override

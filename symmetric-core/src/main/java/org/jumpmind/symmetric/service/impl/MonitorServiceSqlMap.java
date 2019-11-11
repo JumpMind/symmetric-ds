@@ -45,9 +45,9 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                 "severity_level, create_time, last_update_by, last_update_time from $(monitor)");
 
         putSql("selectMonitorWhereNotResolved",
-        		"select m.monitor_id, m.external_id, m.node_group_id, m." + type + ", m.expression, m.enabled, m.threshold, m.run_period, m.run_count, " +
+                "select m.monitor_id, m.external_id, m.node_group_id, m." + type + ", m.expression, m.enabled, m.threshold, m.run_period, m.run_count, " +
                         "m.severity_level, m.create_time, m.last_update_by, m.last_update_time, me.is_resolved from $(monitor) m inner join " +
-        				"$(monitor_event) me on m.monitor_id = me.monitor_id where (m.node_group_id = ? or m.node_group_id = 'ALL') and " + 
+                        "$(monitor_event) me on m.monitor_id = me.monitor_id where (m.node_group_id = ? or m.node_group_id = 'ALL') and " + 
                         "(m.external_id = ? or m.external_id = 'ALL') and m.enabled = 1 and me.is_resolved = 0");
         
         putSql("whereMonitorByNodeSql",

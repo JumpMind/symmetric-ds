@@ -246,13 +246,13 @@ public class DbFill {
     }
     
     protected List<Table> removeSymTables(List<Table> tables) {
-    		List<Table> filteredTables = new ArrayList<Table>();
-    		for (Table table : tables) {
-    			if (!table.getNameLowerCase().startsWith("sym_")) {
-    				filteredTables.add(table);
-    			}
-    		}
-    		return filteredTables;
+            List<Table> filteredTables = new ArrayList<Table>();
+            for (Table table : tables) {
+                if (!table.getNameLowerCase().startsWith("sym_")) {
+                    filteredTables.add(table);
+                }
+            }
+            return filteredTables;
     }
 
     protected String toString(List<Table> tables) {
@@ -552,14 +552,14 @@ public class DbFill {
     }
 
     private void truncateTable(Table table) {
-    	if (verbose) {
-    		log.info("Truncating table " + table.getFullyQualifiedTableName());
-    	}
-    	String options = "";
-    	if (platform.getName().startsWith(DatabaseNamesConstants.POSTGRESQL)) {
-    	    options = " cascade";    
-    	}
-    	platform.getSqlTemplate().update("truncate table " + table.getFullyQualifiedTableName() + options);
+        if (verbose) {
+            log.info("Truncating table " + table.getFullyQualifiedTableName());
+        }
+        String options = "";
+        if (platform.getName().startsWith(DatabaseNamesConstants.POSTGRESQL)) {
+            options = " cascade";    
+        }
+        platform.getSqlTemplate().update("truncate table " + table.getFullyQualifiedTableName() + options);
     }
 
     /**
@@ -682,8 +682,8 @@ public class DbFill {
      * TODO: Add updates to primary key, avoid updates to foreign keys
      */
     private void updateRandomRecord(ISqlTransaction tran, Table table) {
-    	DmlStatement updStatement = createUpdateDmlStatement(table); 
-    	Row row = createRandomUpdateValues(tran, updStatement, table);
+        DmlStatement updStatement = createUpdateDmlStatement(table); 
+        Row row = createRandomUpdateValues(tran, updStatement, table);
         Object[] values = new Object[table.getColumnCount()];
         int i = 0;
         for (Column column : table.getColumns()) {
@@ -712,15 +712,15 @@ public class DbFill {
         }
     }
 
-	/**
+    /**
      * Select a random row from the table and update all columns except for primary and foreign keys.
      *
      * @param sqlTemplate
      * @param table
      */
     private void insertRandomRecord(ISqlTransaction tran, Table table) {
-    	DmlStatement insertStatement = createInsertDmlStatement(table); 
-    	Row row = null;
+        DmlStatement insertStatement = createInsertDmlStatement(table); 
+        Row row = null;
         try {
             int count = 0;
             for (int i = 0; i < 100 && count == 0; i++) {
@@ -761,21 +761,21 @@ public class DbFill {
     }
     
     public String createDynamicRandomInsertSql(Table table) {
-    	DmlStatement insertStatement = createInsertDmlStatement(table);
-    	Row row = createRandomInsertValues(insertStatement, table);
-    	return insertStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
+        DmlStatement insertStatement = createInsertDmlStatement(table);
+        Row row = createRandomInsertValues(insertStatement, table);
+        return insertStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
     }
     
     public String createDynamicRandomUpdateSql(Table table) {
-    	DmlStatement updStatement = createUpdateDmlStatement(table);
-    	Row row = createRandomUpdateValues(null, updStatement, table);
-    	return updStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
+        DmlStatement updStatement = createUpdateDmlStatement(table);
+        Row row = createRandomUpdateValues(null, updStatement, table);
+        return updStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
     }
     
     public String createDynamicRandomDeleteSql(Table table) {
-    	DmlStatement deleteStatement = createDeleteDmlStatement(table);
-    	Row row = selectRandomRow(null, table);
-    	return deleteStatement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
+        DmlStatement deleteStatement = createDeleteDmlStatement(table);
+        Row row = selectRandomRow(null, table);
+        return deleteStatement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
     }
 
     /**
@@ -786,10 +786,10 @@ public class DbFill {
      * @param selectColumns If provided, the rows that match this criteria are deleted.
      */
     private void deleteRandomRecord(ISqlTransaction tran, Table table) {
-    	DmlStatement deleteStatement = createDeleteDmlStatement(table); 
-    	Row row = selectRandomRow(tran, table);
+        DmlStatement deleteStatement = createDeleteDmlStatement(table); 
+        Row row = selectRandomRow(tran, table);
 
-    	try {
+        try {
             tran.prepareAndExecute(deleteStatement.getSql(), row.toArray(table.getPrimaryKeyColumnNames()));
         } catch (SqlException ex) {
             log.info("Failed to delete from {}: {}", table.getName(), ex.getMessage());
@@ -1100,7 +1100,7 @@ public class DbFill {
     protected Table getDbTable(String tableName) {
         return getAllDbTables().get(tableName);
     }
-	
+    
     public DmlStatement createInsertDmlStatement(Table table) {
         return platform.createDmlStatement(DmlType.INSERT, table.getCatalog(), table.getSchema(), table.getName(),
                 table.getPrimaryKeyColumns(), table.getColumns(), null, textColumnExpression);
@@ -1243,14 +1243,14 @@ public class DbFill {
     }
 
     public boolean isTruncate() {
-		return truncate;
-	}
+        return truncate;
+    }
 
-	public void setTruncate(boolean truncate) {
-		this.truncate = truncate;
-	}
+    public void setTruncate(boolean truncate) {
+        this.truncate = truncate;
+    }
 
-	public String[] getIgnore() {
+    public String[] getIgnore() {
         return ignore;
     }
 
@@ -1298,11 +1298,11 @@ public class DbFill {
     }
     
     public void setPrint(boolean print) {
-    	this.print = print;
+        this.print = print;
     }
     
     public boolean getPrint() {
-    	return print;
+        return print;
     }
     
     public void setUseRandomCount(boolean useRandomCount) {
@@ -1326,15 +1326,15 @@ public class DbFill {
     }
 
     public int getInsertWeight() {
-    	return dmlWeight[0];
+        return dmlWeight[0];
     }
     
     public int getUpdateWeight() {
-    	return dmlWeight[1];
+        return dmlWeight[1];
     }
     
     public int getDeleteWeight() {
-    	return dmlWeight[2];
+        return dmlWeight[2];
     }
 
     public void setTextColumnExpression(String textColumnExpression) {

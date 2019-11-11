@@ -237,7 +237,7 @@ public class DataService extends AbstractService implements IDataService {
     }
     
     public void insertTableReloadRequest(TableReloadRequest request) {
-    	ISqlTransaction transaction = null;
+        ISqlTransaction transaction = null;
         try {
             transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
             insertTableReloadRequest(transaction, request);
@@ -948,9 +948,9 @@ public class DataService extends AbstractService implements IDataService {
                         }
                                                 
                         if (isFullLoad && !Constants.DEPLOYMENT_TYPE_REST.equals(targetNode.getDeploymentType())) {
-                        	insertNodeSecurityUpdate(transaction, nodeIdRecord,
+                            insertNodeSecurityUpdate(transaction, nodeIdRecord,
                                     targetNode.getNodeId(), true, loadId, createBy, symNodeSecurityReloadChannel);
-                        	    finalizeBatchCount++;
+                                finalizeBatchCount++;
                         }
 
                         engine.getStatisticManager().incrementNodesLoaded(1);
@@ -2052,7 +2052,7 @@ public class DataService extends AbstractService implements IDataService {
     public long insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
             String nodeId, boolean isLoad, long loadId, String createBy,
             Status status, long estimatedBatchRowCount) {
-    	    return insertDataAndDataEventAndOutgoingBatch(transaction, data, nodeId, isLoad, loadId, createBy, status, null, estimatedBatchRowCount);
+            return insertDataAndDataEventAndOutgoingBatch(transaction, data, nodeId, isLoad, loadId, createBy, status, null, estimatedBatchRowCount);
     }
 
     protected long insertDataEventAndOutgoingBatch(ISqlTransaction transaction, long dataId,
@@ -2099,7 +2099,7 @@ public class DataService extends AbstractService implements IDataService {
         Data data = createData(transaction, null, null, tablePrefix + "_node_security",
                 " t.node_id = '" + nodeIdRecord + "'");
         if (data != null) {
-        	insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNodeId,
+            insertDataAndDataEventAndOutgoingBatch(transaction, data, targetNodeId,
                     isLoad, loadId, createBy, Status.NE, channelId, -1);
         } else {
             throw new SymmetricException(String.format("Unable to issue an update for %s_node_security. " + 

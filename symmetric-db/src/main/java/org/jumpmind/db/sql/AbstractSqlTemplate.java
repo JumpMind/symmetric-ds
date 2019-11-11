@@ -295,7 +295,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
         if (isUniqueKeyViolation(ex) && !(ex instanceof UniqueKeyException)) {
             return new UniqueKeyException(ex);
         } else if (isDataTruncationViolation(ex))  {
-        		return new DataTruncationException(ex);
+                return new DataTruncationException(ex);
         } else if (ex instanceof SqlException) {
             return (SqlException) ex;
         } else {

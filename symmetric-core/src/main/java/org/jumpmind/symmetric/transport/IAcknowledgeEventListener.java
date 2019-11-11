@@ -29,10 +29,10 @@ import org.jumpmind.symmetric.model.BatchAck;
  */
 public interface IAcknowledgeEventListener extends IExtensionPoint {
 
-	/**
-	 * Batch status change event handler. 
-	 * @param batchInfo The batch metadata.
-	 */
-	public void onAcknowledgeEvent(BatchAck batchInfo);
-	
+    /**
+     * Batch status change event handler. 
+     * @param batchInfo The batch metadata.
+     */
+    public void onAcknowledgeEvent(BatchAck batchInfo);
+    
 }

@@ -387,7 +387,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         engine.getDataExtractorService().extractBatchRange(writer, nodeId,
                 Long.valueOf(startBatchId), Long.valueOf(endBatchId));
         try {
-        	writer.close();
+            writer.close();
         } catch(IOException e) { }
     }
 

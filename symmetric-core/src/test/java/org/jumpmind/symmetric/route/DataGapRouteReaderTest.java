@@ -67,7 +67,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 //@PrepareForTest({ TransformedData.class })
 @RunWith(MockitoJUnitRunner.class)
 public class DataGapRouteReaderTest {
-	
+    
     final static String ENGINE_NAME = "testengine";
     final static String CHANNEL_ID = "testchannel";
     final static String NODE_ID = "00000";

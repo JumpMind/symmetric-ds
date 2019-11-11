@@ -152,13 +152,13 @@ public class SnapshotUtil {
             List<String> catalogNames = engine.getDatabasePlatform().getDdlReader().getCatalogNames();
             List<Trigger> triggers = triggerRouterService.getTriggers();
             for (Trigger trigger : triggers) {
-            	if (StringUtils.isBlank(trigger.getSourceCatalogName()) || catalogNames.contains(trigger.getSourceCatalogName())) {
-	                Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-	                        trigger.getSourceTableName(), false);
-	                if (table != null) {
-	                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
-	                }
-            	}
+                if (StringUtils.isBlank(trigger.getSourceCatalogName()) || catalogNames.contains(trigger.getSourceCatalogName())) {
+                    Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                            trigger.getSourceTableName(), false);
+                    if (table != null) {
+                        addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
+                    }
+                }
             }
 
             for (CatalogSchema catalogSchema : catalogSchemas.keySet()) {
@@ -167,44 +167,44 @@ public class SnapshotUtil {
                 boolean isDefaultSchema = StringUtils.equalsIgnoreCase(catalogSchema.getSchema(), engine.getDatabasePlatform().getDefaultSchema());
 
                 try {
-	                if (isDefaultCatalog && isDefaultSchema) {
-	                    fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
-	                } else {
-	                    String extra = "";
-	                    if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
-	                        extra += catalogSchema.getCatalog();
-	                        export.setCatalog(catalogSchema.getCatalog());
-	                    }
-	                    if (!isDefaultSchema && catalogSchema.getSchema() != null) {
-	                    	if (!extra.equals("")) {
-	                    		extra += "-";
-	                    	}
-	                        extra += catalogSchema.getSchema();
-	                        export.setSchema(catalogSchema.getSchema());
-	                    }
-	                    fos = new FileOutputStream(new File(tmpDir, "table-definitions-" + extra + ".xml"));
-	                }
-	             
-	                List<Table> tables = catalogSchemas.get(catalogSchema);
-	                export.setFormat(Format.XML);
-	                export.setNoData(true);
-	                export.exportTables(fos, tables.toArray(new Table[tables.size()]));
+                    if (isDefaultCatalog && isDefaultSchema) {
+                        fos = new FileOutputStream(new File(tmpDir, "table-definitions.xml"));
+                    } else {
+                        String extra = "";
+                        if (!isDefaultCatalog && catalogSchema.getCatalog() != null) {
+                            extra += catalogSchema.getCatalog();
+                            export.setCatalog(catalogSchema.getCatalog());
+                        }
+                        if (!isDefaultSchema && catalogSchema.getSchema() != null) {
+                            if (!extra.equals("")) {
+                                extra += "-";
+                            }
+                            extra += catalogSchema.getSchema();
+                            export.setSchema(catalogSchema.getSchema());
+                        }
+                        fos = new FileOutputStream(new File(tmpDir, "table-definitions-" + extra + ".xml"));
+                    }
+                 
+                    List<Table> tables = catalogSchemas.get(catalogSchema);
+                    export.setFormat(Format.XML);
+                    export.setNoData(true);
+                    export.exportTables(fos, tables.toArray(new Table[tables.size()]));
                 } finally {
-                	if(fos != null) {
-                		try {
-                			fos.close();
-                		} catch(IOException e) { }
-                	}
+                    if(fos != null) {
+                        try {
+                            fos.close();
+                        } catch(IOException e) { }
+                    }
                 }
             }
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
-        	if(fos != null) {
-        		try {
-        			fos.close();
-        		} catch(IOException e) { }
-        	}
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException e) { }
+            }
         }
 
         String tablePrefix = engine.getTablePrefix();
@@ -295,8 +295,8 @@ public class SnapshotUtil {
         }
         
         if (engine.getSymmetricDialect() instanceof MySqlSymmetricDialect) {
-        	extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
-        			"show processlist");
+            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
+                    "show processlist");
         }
 
         if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
@@ -313,11 +313,11 @@ public class SnapshotUtil {
             } catch (Exception e) {
                 log.warn("Failed to export data gap information", e);
             } finally {
-            	if(fos != null) {
-            		try {
-            			fos.close();
-            		} catch(IOException e) { }
-            	}
+                if(fos != null) {
+                    try {
+                        fos.close();
+                    } catch(IOException e) { }
+                }
             }            
         }
 
@@ -335,11 +335,11 @@ public class SnapshotUtil {
         } catch (IOException e) {
             log.warn("Failed to export parameter information", e);
         } finally {
-        	if(fos != null) {
-        		try {
-        			fos.close();
-        		} catch(IOException e) { }
-        	}
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException e) { }
+            }
         }
 
         fos = null;
@@ -349,15 +349,15 @@ public class SnapshotUtil {
             InputStream in = SnapshotUtil.class.getResourceAsStream("/symmetric-default.properties");
             defaultParameters.load(in);
             if(in != null) {
-            	try {
-            		in.close();
-            	} catch(IOException e) { }
+                try {
+                    in.close();
+                } catch(IOException e) { }
             }
             in = SnapshotUtil.class.getResourceAsStream("/symmetric-console-default.properties");
             if (in != null) {
                 defaultParameters.load(in);
                 try {
-                	in.close();
+                    in.close();
                 } catch(IOException e) { }
             }
             Properties effectiveParameters = engine.getParameterService().getAllParameters();
@@ -375,11 +375,11 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export parameters-changed information", e);
         } finally {
-        	if(fos != null) {
-        		try {
-        			fos.close();
-        		} catch(IOException e) { }
-        	}
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException e) { }
+            }
         }
 
         writeRuntimeStats(engine, tmpDir);
@@ -398,11 +398,11 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export thread information", e);
         } finally {
-        	if(fos != null) {
-        		try {
-        			fos.close();
-        		} catch(IOException e) { }
-        	}
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException e) { }
+            }
         }
 
         File logDir = null;
@@ -441,11 +441,11 @@ public class SnapshotUtil {
                 for (File file : files) {
                     String lowerCaseFileName = file.getName().toLowerCase();
                     if (
-                    		(lowerCaseFileName.contains(".log")
-                    				&& (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))
+                            (lowerCaseFileName.contains(".log")
+                                    && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))
                             )
-                    		||
-                    		compareLogFileName(lowerCaseFileName, matches)) {
+                            ||
+                            compareLogFileName(lowerCaseFileName, matches)) {
                         try {
                             FileUtils.copyFileToDirectory(file, tmpDir);
                         } catch (IOException e) {
@@ -474,16 +474,16 @@ public class SnapshotUtil {
     }
     
     private static boolean compareLogFileName(String fileName, Map<File, Layout> matches) {
-    	boolean ret = false;
-    	if(fileName != null && fileName.length() > 0 && matches != null && matches.size() > 0) {
-    		for(File f : matches.keySet()) {
-    			if(fileName.toLowerCase().contains(f.getName().toLowerCase())) {
-    				ret = true;
-    				break;
-    			}
-    		}
-    	}
-    	return ret;
+        boolean ret = false;
+        if(fileName != null && fileName.length() > 0 && matches != null && matches.size() > 0) {
+            for(File f : matches.keySet()) {
+                if(fileName.toLowerCase().contains(f.getName().toLowerCase())) {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+        return ret;
     }
 
     protected static void extract(DbExport export, File file, String... tables) {
@@ -500,39 +500,39 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export table definitions", e);
         } finally {
-        	if (fos != null) {
-        		try {
-        			fos.close();
-        		} catch(IOException e) { }
-        	}
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException e) { }
+            }
         }
     }
 
     protected static void extractQuery(ISqlTemplate sqlTemplate, String fileName, String sql) {
-    	CsvWriter writer = null;
+        CsvWriter writer = null;
         try {
-        	List<Row> rows = sqlTemplate.query(sql);
-        	writer = new CsvWriter(fileName);
+            List<Row> rows = sqlTemplate.query(sql);
+            writer = new CsvWriter(fileName);
             boolean isFirstRow = true;
-        	for (Row row : rows) {
-        		if (isFirstRow) {
-            		for (String key : row.keySet()) {
-            			writer.write(key);
-            		}
-            		writer.endRecord();
-            		isFirstRow = false;
-        		}
-        		for (String key : row.keySet()) {
-        			writer.write(row.getString(key));
-        		}
-        		writer.endRecord();
-        	}
+            for (Row row : rows) {
+                if (isFirstRow) {
+                    for (String key : row.keySet()) {
+                        writer.write(key);
+                    }
+                    writer.endRecord();
+                    isFirstRow = false;
+                }
+                for (String key : row.keySet()) {
+                    writer.write(row.getString(key));
+                }
+                writer.endRecord();
+            }
         } catch (Exception e) {
             log.warn("Failed to run extract query " + sql, e);
         } finally {
-        	if(writer != null) {
-        		writer.close();
-        	}
+            if(writer != null) {
+                writer.close();
+            }
         }
     }
 
@@ -631,7 +631,7 @@ public class SnapshotUtil {
 
             runtimeProperties.setProperty("engine.is.started", Boolean.toString(engine.isStarted()));
             runtimeProperties.setProperty("engine.last.restart", engine.getLastRestartTime() != null ? 
-            		engine.getLastRestartTime().toString() : "");
+                    engine.getLastRestartTime().toString() : "");
 
             runtimeProperties.setProperty("time.server", new Date().toString());
             runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
@@ -667,10 +667,10 @@ public class SnapshotUtil {
             runtimeProperties.setProperty("server.id", engine.getClusterService().getServerId());
 
             try {
-	            MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-	            ObjectName oName = new ObjectName("java.lang:type=OperatingSystem");
-	            runtimeProperties.setProperty("file.descriptor.open.count", mbeanServer.getAttribute(oName, "OpenFileDescriptorCount").toString());
-	            runtimeProperties.setProperty("file.descriptor.max.count", mbeanServer.getAttribute(oName, "MaxFileDescriptorCount").toString());
+                MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+                ObjectName oName = new ObjectName("java.lang:type=OperatingSystem");
+                runtimeProperties.setProperty("file.descriptor.open.count", mbeanServer.getAttribute(oName, "OpenFileDescriptorCount").toString());
+                runtimeProperties.setProperty("file.descriptor.max.count", mbeanServer.getAttribute(oName, "MaxFileDescriptorCount").toString());
             } catch (Exception e) {
             }
             
@@ -678,11 +678,11 @@ public class SnapshotUtil {
         } catch (Exception e) {
             log.warn("Failed to export runtime-stats information", e);
         } finally {
-        	if(fos != null) {
-        		try {
-        			fos.close();
-        		} catch(IOException e) { }
-        	}
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch(IOException e) { }
+            }
         }
     }
 

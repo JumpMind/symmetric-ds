@@ -360,66 +360,66 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     @Override
     public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId, Date sinceCreateTime,
-    		Status... statuses) {
-    		
-    		Object[] args = new Object[statuses.length + 1];
-    		args[args.length - 1] = nodeId;
+            Status... statuses) {
+            
+            Object[] args = new Object[statuses.length + 1];
+            args[args.length - 1] = nodeId;
         StringBuilder inList = buildStatusList(args, statuses);
 
-    		String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
-        		"selectIncomingBatchSummaryStatsPrefixSql",
-        		"whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
-    		return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
+            String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
+                "selectIncomingBatchSummaryStatsPrefixSql",
+                "whereStatusAndNodeGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+            return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
     }
     
     protected StringBuilder buildStatusList(Object[] args, Status...statuses) {
-		StringBuilder inList = new StringBuilder();
-	    for (int i = 0; i < statuses.length; i++) {
-	        args[i] = statuses[i].name();
-	        inList.append("?,");
-	    }
-	    return inList;
-	}
+        StringBuilder inList = new StringBuilder();
+        for (int i = 0; i < statuses.length; i++) {
+            args[i] = statuses[i].name();
+            inList.append("?,");
+        }
+        return inList;
+    }
     
     public List<IncomingBatchSummary> findIncomingBatchSummaryByChannel(Status... statuses) {
-    		Object[] args = new Object[statuses.length];
+            Object[] args = new Object[statuses.length];
         StringBuilder inList = buildStatusList(args, statuses);
         
         String sql = getSql("selectIncomingBatchSummaryByNodeAndChannelPrefixSql",
-        		"selectIncomingBatchSummaryStatsPrefixSql",
-        		"whereStatusGroupByStatusAndNodeAndChannelSql"
-        		).replace(":STATUS_LIST",
+                "selectIncomingBatchSummaryStatsPrefixSql",
+                "whereStatusGroupByStatusAndNodeAndChannelSql"
+                ).replace(":STATUS_LIST",
                 inList.substring(0, inList.length() - 1));
 
         return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(true, true), args);
     }
 
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses) {
-		Object[] args = new Object[statuses.length];
+        Object[] args = new Object[statuses.length];
         StringBuilder inList = buildStatusList(args, statuses);
 
         String sql = getSql("selectIncomingBatchSummaryByNodePrefixSql", 
-        		"selectIncomingBatchSummaryStatsPrefixSql",
-        		"whereStatusGroupByStatusAndNodeSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+                "selectIncomingBatchSummaryStatsPrefixSql",
+                "whereStatusGroupByStatusAndNodeSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
 
         return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(true, false), args);
     }
     
 
-	public List<IncomingBatchSummary> findIncomingBatchSummaryByNodeAndChannel(String nodeId, String channelId,
-			Date sinceCreateTime, Status... statuses) {
-		
-    		Object[] args = new Object[statuses.length + 2];
-    		args[args.length - 1] = nodeId;
-    		args[args.length - 2] = channelId;
+    public List<IncomingBatchSummary> findIncomingBatchSummaryByNodeAndChannel(String nodeId, String channelId,
+            Date sinceCreateTime, Status... statuses) {
+        
+            Object[] args = new Object[statuses.length + 2];
+            args[args.length - 1] = nodeId;
+            args[args.length - 2] = channelId;
         StringBuilder inList = buildStatusList(args, statuses);
 
-    		String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
-        		"selectIncomingBatchSummaryStatsPrefixSql",
-        		"whereStatusAndNodeAndChannelGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
-    		return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
+            String sql = getSql("selectIncomingBatchSummaryPrefixSql", 
+                "selectIncomingBatchSummaryStatsPrefixSql",
+                "whereStatusAndNodeAndChannelGroupByStatusSql").replace(":STATUS_LIST", inList.substring(0, inList.length() - 1));
+            return sqlTemplateDirty.query(sql, new IncomingBatchSummaryMapper(false, false), args);
     
-	}
+    }
 
 
     @Override
@@ -541,46 +541,46 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     }
 
     static class IncomingBatchSummaryMapper implements ISqlRowMapper<IncomingBatchSummary> {
-		boolean withNode = false;
-		boolean withChannel = false;
-		
-		public IncomingBatchSummaryMapper(boolean withNode, boolean withChannel) {
-			this.withNode = withNode;
-			this.withChannel = withChannel;
-		}
-		
-	    public IncomingBatchSummary mapRow(Row rs) {
-	    		IncomingBatchSummary summary = new IncomingBatchSummary();
-	        
-	        if (withNode) {
-	        		summary.setNodeId(rs.getString("node_id"));
-	        }
-	        if (withChannel) {
-	        		summary.setChannel(rs.getString("channel_id"));
-	        }
-	        summary.setBatchCount(rs.getInt("batches"));
-	        summary.setDataCount(rs.getInt("data"));
-	        summary.setStatus(Status.valueOf(rs.getString("status")));
-	        summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
-	        summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
-	        summary.setTotalBytes(rs.getLong("total_bytes"));
-	        summary.setTotalMillis(rs.getLong("total_millis"));
-	        
-	        summary.setErrorFlag(rs.getBoolean("error_flag"));
-	        summary.setMinBatchId(rs.getLong("batch_id"));
-	        summary.setInsertCount(rs.getInt("insert_event_count"));
-	        summary.setUpdateCount(rs.getInt("update_event_count"));
-	        summary.setDeleteCount(rs.getInt("delete_event_count"));
-	        summary.setOtherCount(rs.getInt("other_event_count"));
-	        summary.setOtherCount(rs.getInt("reload_event_count"));
-	        
-	        summary.setRouterMillis(rs.getLong("total_router_millis"));
-	        summary.setExtractMillis(rs.getLong("total_extract_millis"));
-	        summary.setTransferMillis(rs.getLong("total_network_millis"));
-	        summary.setLoadMillis(rs.getLong("total_load_millis"));
-	        
-	        return summary;
-	    }
-	}
+        boolean withNode = false;
+        boolean withChannel = false;
+        
+        public IncomingBatchSummaryMapper(boolean withNode, boolean withChannel) {
+            this.withNode = withNode;
+            this.withChannel = withChannel;
+        }
+        
+        public IncomingBatchSummary mapRow(Row rs) {
+                IncomingBatchSummary summary = new IncomingBatchSummary();
+            
+            if (withNode) {
+                    summary.setNodeId(rs.getString("node_id"));
+            }
+            if (withChannel) {
+                    summary.setChannel(rs.getString("channel_id"));
+            }
+            summary.setBatchCount(rs.getInt("batches"));
+            summary.setDataCount(rs.getInt("data"));
+            summary.setStatus(Status.valueOf(rs.getString("status")));
+            summary.setOldestBatchCreateTime(rs.getDateTime("oldest_batch_time"));
+            summary.setLastBatchUpdateTime(rs.getDateTime("last_update_time"));
+            summary.setTotalBytes(rs.getLong("total_bytes"));
+            summary.setTotalMillis(rs.getLong("total_millis"));
+            
+            summary.setErrorFlag(rs.getBoolean("error_flag"));
+            summary.setMinBatchId(rs.getLong("batch_id"));
+            summary.setInsertCount(rs.getInt("insert_event_count"));
+            summary.setUpdateCount(rs.getInt("update_event_count"));
+            summary.setDeleteCount(rs.getInt("delete_event_count"));
+            summary.setOtherCount(rs.getInt("other_event_count"));
+            summary.setOtherCount(rs.getInt("reload_event_count"));
+            
+            summary.setRouterMillis(rs.getLong("total_router_millis"));
+            summary.setExtractMillis(rs.getLong("total_extract_millis"));
+            summary.setTransferMillis(rs.getLong("total_network_millis"));
+            summary.setLoadMillis(rs.getLong("total_load_millis"));
+            
+            return summary;
+        }
+    }
 
 }

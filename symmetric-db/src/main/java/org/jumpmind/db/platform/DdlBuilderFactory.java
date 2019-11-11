@@ -87,8 +87,8 @@ final public class DdlBuilderFactory {
             return new MySqlDdlBuilder();
         } else if (DatabaseNamesConstants.ORACLE.equalsIgnoreCase(databaseName)) {
             return new OracleDdlBuilder();
-		} else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)
-				|| DatabaseNamesConstants.POSTGRESQL95.equalsIgnoreCase(databaseName)) {
+        } else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)
+                || DatabaseNamesConstants.POSTGRESQL95.equalsIgnoreCase(databaseName)) {
             return new PostgreSqlDdlBuilder();
         } else if (DatabaseNamesConstants.SQLITE.equalsIgnoreCase(databaseName)) {
             return new SqliteDdlBuilder();

@@ -112,7 +112,7 @@ public class StatisticManager implements IStatisticManager {
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         ProcessInfo process = new ProcessInfo(key);
         ProcessInfo old = processInfos.get(key);
-        if (old != null) {        	
+        if (old != null) {            
             if (old.getStatus() != ProcessStatus.OK && old.getStatus() != ProcessStatus.ERROR) {
                 log.warn(
                         "Starting a new process even though the previous '{}' process had not finished",
@@ -487,10 +487,10 @@ public class StatisticManager implements IStatisticManager {
     }
 
     protected void saveAdditionalStats(Date endTime, ChannelStats stats) {
-	    	if (baseChannelStatsInMemory.get(endTime) == null) {
-	    		baseChannelStatsInMemory.put(endTime, new HashMap<String, ChannelStats>());
-	    }
-	    baseChannelStatsInMemory.get(endTime).put(stats.getChannelId(), stats);
+            if (baseChannelStatsInMemory.get(endTime) == null) {
+                baseChannelStatsInMemory.put(endTime, new HashMap<String, ChannelStats>());
+        }
+        baseChannelStatsInMemory.get(endTime).put(stats.getChannelId(), stats);
     }
     
     public void flush() {

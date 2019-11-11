@@ -53,7 +53,7 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-    			TransformWriter transformWriter,
+                TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
@@ -66,8 +66,8 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
                 "||"));
 
         return new MsSqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-        		stagingManager,
-        		maxRowsBeforeFlush,
+                stagingManager,
+                maxRowsBeforeFlush,
                 fireTriggers, uncPath, fieldTerminator, rowTerminator, buildParameterDatabaseWritterSettings());
     }
 

@@ -206,8 +206,8 @@ public class ColumnMatchDataRouter extends AbstractDataRouter implements IDataRo
             
             String[] operators = { Expression.NOT_EQUALS, Expression.EQUALS, Expression.NOT_CONTAINS, Expression.CONTAINS};
             String[] expTokens = routerExpression.split("\\s*(\\s+or|\\s+OR)?(\r\n|\r|\n)(or\\s+|OR\\s+)?\\s*" +
-            		                                    "|\\s+or\\s+" +
-            		                                    "|\\s+OR\\s+");
+                                                        "|\\s+or\\s+" +
+                                                        "|\\s+OR\\s+");
             
             if (expTokens != null) {
                 for (String t : expTokens) {

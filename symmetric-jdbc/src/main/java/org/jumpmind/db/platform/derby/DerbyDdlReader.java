@@ -106,74 +106,74 @@ public class DerbyDdlReader extends AbstractJdbcDdlReader {
     }
     
     @Override
-	public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT "
-						+ "TRIG.TRIGGERNAME as TRIGGER_NAME, "
-						+ "TAB.TABLENAME as TABLE_NAME, "
-						+ "SC.SCHEMANAME as SCHEMA_NAME, "
-						+ "TRIG.CREATIONTIMESTAMP, "
-						+ "TRIG.EVENT as TRIGGER_TYPE, "
-						+ "TRIG.STATE, "
-						+ "TRIG.FIRINGTIME as TRIGGER_TIME, "
-						+ "TRIG.WHENSTMTID, "
-						+ "TRIG.ACTIONSTMTID, "
-						+ "TRIG.REFERENCEDCOLUMNS, "
-						+ "TRIG.TRIGGERDEFINITION as source, "
-						+ "TRIG.REFERENCINGOLD, "
-						+ "TRIG.REFERENCINGNEW, "
-						+ "TRIG.OLDREFERENCINGNAME, "
-						+ "TRIG.NEWREFERENCINGNAME, "
-						+ "TRIG.TYPE, "
-						+ "TRIG.TRIGGERID, "
-						+ "TRIG.TABLEID, "
-						+ "TRIG.SCHEMAID "
-					+ "FROM SYS.SYSTRIGGERS AS TRIG "
-					+ "INNER JOIN SYS.SYSTABLES AS TAB "
-						+ "ON TAB.TABLEID = TRIG.TABLEID "
-					+ "INNER JOIN SYS.SYSSCHEMAS AS SC "
-						+ "ON SC.SCHEMAID = TRIG.SCHEMAID "
-					+ "WHERE TABLENAME=? and SC.SCHEMANAME=? ";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setSchemaName(row.getString("SCHEMA_NAME"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				if (row.getString("STATE").equals("E")) {
-					row.put("STATE", "ENABLED");
-					trigger.setEnabled(true);
-				}
-				else if (row.getString("STATE").equals("D")) {
-					row.put("STATE", "DISABLED");
-					trigger.setEnabled(false);
-				}
-				String event = row.getString("TRIGGER_TYPE");
-				switch (event.charAt(0)) {
-				case ('I'): event = "INSERT"; break;
-				case ('D'): event = "DELETE"; break;
-				case ('U'): event = "UPDATE";
-				}
-				row.put("TRIGGER_TYPE", event);
-				trigger.setTriggerType(TriggerType.valueOf(event));
-				if (row.getString("TRIGGER_TIME").equals("A"))
-					row.put("TRIGGER_TIME", "AFTER");
-				else if (row.getString("TRIGGER_TIME").equals("B"))
-					row.put("TRIGGER_TIME", "BEFORE");
-				trigger.setMetaData(row);
-				trigger.setSource(row.getString("source"));
-				row.remove("source");
-				return trigger;
-			}
-		}, tableName, schema);
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT "
+                        + "TRIG.TRIGGERNAME as TRIGGER_NAME, "
+                        + "TAB.TABLENAME as TABLE_NAME, "
+                        + "SC.SCHEMANAME as SCHEMA_NAME, "
+                        + "TRIG.CREATIONTIMESTAMP, "
+                        + "TRIG.EVENT as TRIGGER_TYPE, "
+                        + "TRIG.STATE, "
+                        + "TRIG.FIRINGTIME as TRIGGER_TIME, "
+                        + "TRIG.WHENSTMTID, "
+                        + "TRIG.ACTIONSTMTID, "
+                        + "TRIG.REFERENCEDCOLUMNS, "
+                        + "TRIG.TRIGGERDEFINITION as source, "
+                        + "TRIG.REFERENCINGOLD, "
+                        + "TRIG.REFERENCINGNEW, "
+                        + "TRIG.OLDREFERENCINGNAME, "
+                        + "TRIG.NEWREFERENCINGNAME, "
+                        + "TRIG.TYPE, "
+                        + "TRIG.TRIGGERID, "
+                        + "TRIG.TABLEID, "
+                        + "TRIG.SCHEMAID "
+                    + "FROM SYS.SYSTRIGGERS AS TRIG "
+                    + "INNER JOIN SYS.SYSTABLES AS TAB "
+                        + "ON TAB.TABLEID = TRIG.TABLEID "
+                    + "INNER JOIN SYS.SYSSCHEMAS AS SC "
+                        + "ON SC.SCHEMAID = TRIG.SCHEMAID "
+                    + "WHERE TABLENAME=? and SC.SCHEMANAME=? ";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setSchemaName(row.getString("SCHEMA_NAME"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                if (row.getString("STATE").equals("E")) {
+                    row.put("STATE", "ENABLED");
+                    trigger.setEnabled(true);
+                }
+                else if (row.getString("STATE").equals("D")) {
+                    row.put("STATE", "DISABLED");
+                    trigger.setEnabled(false);
+                }
+                String event = row.getString("TRIGGER_TYPE");
+                switch (event.charAt(0)) {
+                case ('I'): event = "INSERT"; break;
+                case ('D'): event = "DELETE"; break;
+                case ('U'): event = "UPDATE";
+                }
+                row.put("TRIGGER_TYPE", event);
+                trigger.setTriggerType(TriggerType.valueOf(event));
+                if (row.getString("TRIGGER_TIME").equals("A"))
+                    row.put("TRIGGER_TIME", "AFTER");
+                else if (row.getString("TRIGGER_TIME").equals("B"))
+                    row.put("TRIGGER_TIME", "BEFORE");
+                trigger.setMetaData(row);
+                trigger.setSource(row.getString("source"));
+                row.remove("source");
+                return trigger;
+            }
+        }, tableName, schema);
 
-		return triggers;
-	}
+        return triggers;
+    }
 }

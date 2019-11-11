@@ -57,8 +57,8 @@ public class SqlAnywhereDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-	    		sqlScriptReplacementTokens = new HashMap<String, String>();
-	    }
+                sqlScriptReplacementTokens = new HashMap<String, String>();
+        }
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
     }
 

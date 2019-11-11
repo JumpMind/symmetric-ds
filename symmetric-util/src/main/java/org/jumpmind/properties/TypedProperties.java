@@ -46,11 +46,11 @@ public class TypedProperties extends Properties {
         } catch (IOException ex) {
             throw new IoException(ex);
         } finally {
-        	try {
-        		if(is != null) {
-        			is.close();
-        		}
-        	} catch(IOException e) { }
+            try {
+                if(is != null) {
+                    is.close();
+                }
+            } catch(IOException e) { }
         }
     }
     

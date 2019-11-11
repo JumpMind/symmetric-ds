@@ -60,7 +60,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         IRegistrationService registrationService = engine.getRegistrationService();
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
         BatchAckResult result = new BatchAckResult(batch);
-    	
+        
         for (IAcknowledgeEventListener listener : engine.getExtensionService().getExtensionPointList(IAcknowledgeEventListener.class)) {
             listener.onAcknowledgeEvent(batch);
         }
@@ -215,12 +215,12 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         }
     }
 
-	public List<BatchAckResult> ack(List<BatchAck> batches) {
-		
-		List<BatchAckResult> results = new ArrayList<BatchAckResult>();
-		for (BatchAck batch:batches) {
-			results.add(ack(batch));
-		}
-		return results;
-	}
+    public List<BatchAckResult> ack(List<BatchAck> batches) {
+        
+        List<BatchAckResult> results = new ArrayList<BatchAckResult>();
+        for (BatchAck batch:batches) {
+            results.add(ack(batch));
+        }
+        return results;
+    }
 }

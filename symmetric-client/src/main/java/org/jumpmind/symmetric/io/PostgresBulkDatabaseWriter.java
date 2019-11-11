@@ -58,8 +58,8 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected boolean needsBinaryConversion;
     
     public PostgresBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-			IDatabasePlatform targetPlatform, String tablePrefix, DatabaseWriterSettings settings,
-			int maxRowsBeforeFlush) {
+            IDatabasePlatform targetPlatform, String tablePrefix, DatabaseWriterSettings settings,
+            int maxRowsBeforeFlush) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         this.maxRowsBeforeFlush = maxRowsBeforeFlush;
     }
@@ -72,7 +72,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         DataEventType dataEventType = data.getDataEventType();
 
         if (targetTable != null || dataEventType.equals(DataEventType.CREATE)) {
-        	needsBinaryConversion = false;
+            needsBinaryConversion = false;
             if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE) && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
                     if (column.isOfBinaryType()) {
@@ -83,7 +83,7 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             }
             switch (dataEventType) {
                 case INSERT:
-                	startCopy();
+                    startCopy();
                     try {
                         String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                         if (needsBinaryConversion) {

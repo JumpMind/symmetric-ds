@@ -83,36 +83,36 @@ public class DbSqlCommand extends AbstractCommandLauncher {
             String sql = line.getOptionValue(OPTION_SQL);
             shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver, "-sql", sql);
         } else if(line.hasOption(OPTION_SQLFILE)) {
-        	File file = new File(line.getOptionValue(OPTION_SQLFILE));
-        	if(file.exists()) {
-        		BufferedReader br = null;
-        		try {
-        			br = new BufferedReader(new FileReader(file));
-	        		String sql = null;
-	        		while((sql = br.readLine()) != null) {
-	        			sql = sql.trim();
-	        			if(sql.endsWith(";")) {
-	        				sql = sql.substring(0,sql.length()-1);
-	        			}
-	        			if(sql.length() > 0) {
-		        			// Output the sql so the user knows the result of each sql statement
-		        			// The H2 shell tool outputs the result of the statement execution
-		        			System.out.println(sql);
-		        			shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver, "-sql", sql);
-	        			}
-	        		}
-        		} finally {
-        			if(br != null) {
-        				br.close();
-        			}
-        		}
-        	} else {
-        		// Notify user about missing file name
-        		System.err.println("-------------------------------------------------------------------------------");
-        		System.err.println("File does not exist: " + file.getPath());
-        		System.err.println("-------------------------------------------------------------------------------");
-        		printHelp(line, localOptions);
-        	}
+            File file = new File(line.getOptionValue(OPTION_SQLFILE));
+            if(file.exists()) {
+                BufferedReader br = null;
+                try {
+                    br = new BufferedReader(new FileReader(file));
+                    String sql = null;
+                    while((sql = br.readLine()) != null) {
+                        sql = sql.trim();
+                        if(sql.endsWith(";")) {
+                            sql = sql.substring(0,sql.length()-1);
+                        }
+                        if(sql.length() > 0) {
+                            // Output the sql so the user knows the result of each sql statement
+                            // The H2 shell tool outputs the result of the statement execution
+                            System.out.println(sql);
+                            shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver, "-sql", sql);
+                        }
+                    }
+                } finally {
+                    if(br != null) {
+                        br.close();
+                    }
+                }
+            } else {
+                // Notify user about missing file name
+                System.err.println("-------------------------------------------------------------------------------");
+                System.err.println("File does not exist: " + file.getPath());
+                System.err.println("-------------------------------------------------------------------------------");
+                printHelp(line, localOptions);
+            }
         } else {        
             shell.runTool("-url", url, "-user", user, "-password", password, "-driver", driver);
         }

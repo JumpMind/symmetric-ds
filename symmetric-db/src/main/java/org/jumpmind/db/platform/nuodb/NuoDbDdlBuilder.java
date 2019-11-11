@@ -305,30 +305,30 @@ public class NuoDbDdlBuilder extends AbstractDdlBuilder {
     
     @Override
     protected String getSqlType(Column column) {
-    	String sqlType = super.getSqlType(column);
-    	
-    	if("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
-        	PlatformColumn pc = column.getPlatformColumns().get(DatabaseNamesConstants.NUODB);
-        	if(pc != null) {
-	        	String[] enumValues = pc.getEnumValues();
-	        	if(enumValues != null && enumValues.length > 0) {
-		        	// Redo the enum, specifying the values returned from the database in the enumValues field
-		        	// instead of the size of the column
-		        	StringBuilder tmpSqlType = new StringBuilder();
-		        	tmpSqlType.append(column.getJdbcTypeName());
-		        	tmpSqlType.append("(");
-		        	boolean appendComma = false;
-		        	for(String s : enumValues) {
-		        		if(appendComma) {
-		        			tmpSqlType.append(",");
-		        		}
-		        		tmpSqlType.append("'").append(s).append("'");
-		        		appendComma = true;
-		        	}
-					tmpSqlType.append(")");
-					sqlType = tmpSqlType.toString();
-	        	}
-        	}
+        String sqlType = super.getSqlType(column);
+        
+        if("ENUM".equalsIgnoreCase(column.getJdbcTypeName())) {
+            PlatformColumn pc = column.getPlatformColumns().get(DatabaseNamesConstants.NUODB);
+            if(pc != null) {
+                String[] enumValues = pc.getEnumValues();
+                if(enumValues != null && enumValues.length > 0) {
+                    // Redo the enum, specifying the values returned from the database in the enumValues field
+                    // instead of the size of the column
+                    StringBuilder tmpSqlType = new StringBuilder();
+                    tmpSqlType.append(column.getJdbcTypeName());
+                    tmpSqlType.append("(");
+                    boolean appendComma = false;
+                    for(String s : enumValues) {
+                        if(appendComma) {
+                            tmpSqlType.append(",");
+                        }
+                        tmpSqlType.append("'").append(s).append("'");
+                        appendComma = true;
+                    }
+                    tmpSqlType.append(")");
+                    sqlType = tmpSqlType.toString();
+                }
+            }
         }
         return sqlType;
     }

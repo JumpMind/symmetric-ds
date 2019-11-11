@@ -121,7 +121,7 @@ public class SqliteSymmetricDialect extends AbstractSymmetricDialect {
 
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
-    	/* gets filled/replaced by trigger template as it will compare by each column */
+        /* gets filled/replaced by trigger template as it will compare by each column */
         return "$(anyColumnChanged)";
     }
     

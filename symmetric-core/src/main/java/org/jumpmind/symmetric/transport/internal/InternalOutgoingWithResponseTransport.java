@@ -54,30 +54,30 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
     }
 
     public BufferedReader readResponse() throws IOException {
-    	try {
-    		if(writer != null) {
-    			writer.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(writer != null) {
+                writer.close();
+            }
+        } catch(IOException e) { }
         return reader;
     }
 
     public void close() {
-    	try {
-    		if(os != null) {
-    			os.close();
-    		}
-    	} catch(IOException e) { }
-    	try {
-    		if(writer != null) {
-    			writer.close();
-    		}
-    	} catch(IOException e) { }
-    	try {
-    		if(reader != null) {
-    			reader.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(os != null) {
+                os.close();
+            }
+        } catch(IOException e) { }
+        try {
+            if(writer != null) {
+                writer.close();
+            }
+        } catch(IOException e) { }
+        try {
+            if(reader != null) {
+                reader.close();
+            }
+        } catch(IOException e) { }
         open = false;
     }
 

@@ -64,7 +64,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
 
     public MySqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-			IDatabasePlatform targetPlatform, String tablePrefix,
+            IDatabasePlatform targetPlatform, String tablePrefix,
             IStagingManager stagingManager,
             int maxRowsBeforeFlush, long maxBytesBeforeFlush, boolean isLocal, boolean isReplace, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
@@ -78,7 +78,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     public boolean start(Table table) {
-    	this.table = table;
+        this.table = table;
         if (super.start(table) && targetTable != null) {
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
@@ -103,9 +103,9 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     @Override
     public void end(Table table) {
         try {
-        	flush();
-        	this.stagedInputFile.close();
-        	this.stagedInputFile.delete();
+            flush();
+            this.stagedInputFile.close();
+            this.stagedInputFile.delete();
         } finally {
             super.end(table);
         }
@@ -183,35 +183,35 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         if (loadedRows > 0) {
                 this.stagedInputFile.close();
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-	        try {
-	            DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
-	            String quote = dbInfo.getDelimiterToken();
-	            String catalogSeparator = dbInfo.getCatalogSeparator();
-	            String schemaSeparator = dbInfo.getSchemaSeparator();
-	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
-	            Connection c = jdbcTransaction.getConnection();
-	            String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
-	            		"INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
-	            		(isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
-	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
+            try {
+                DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
+                String quote = dbInfo.getDelimiterToken();
+                String catalogSeparator = dbInfo.getCatalogSeparator();
+                String schemaSeparator = dbInfo.getSchemaSeparator();
+                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
+                Connection c = jdbcTransaction.getConnection();
+                String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
+                        "INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
+                        (isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
+                        this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
                                 " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY '' " +
                                 getCommaDeliminatedColumns(table.getColumns());
-	            Statement stmt = c.createStatement();
-	
-	            //TODO:  clean this up, deal with errors, etc.?
-	            log.debug(sql);
-	            stmt.execute(sql);
-	            stmt.close();
-	            getTargetTransaction().commit();
-	        } catch (SQLException ex) {
-	            throw getPlatform().getSqlTemplate().translate(ex);
-	        } finally {
-	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-	            this.stagedInputFile.delete();
-	            createStagingFile();
-	            loadedRows = 0;
-	            loadedBytes = 0;
-	        }
+                Statement stmt = c.createStatement();
+    
+                //TODO:  clean this up, deal with errors, etc.?
+                log.debug(sql);
+                stmt.execute(sql);
+                stmt.close();
+                getTargetTransaction().commit();
+            } catch (SQLException ex) {
+                throw getPlatform().getSqlTemplate().translate(ex);
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+                this.stagedInputFile.delete();
+                createStagingFile();
+                loadedRows = 0;
+                loadedBytes = 0;
+            }
         }
     }
 
@@ -306,8 +306,8 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected void createStagingFile() {
-    	//TODO: We should use constants for dir structure path, 
-    	//      but we don't want to depend on symmetric core.
+        //TODO: We should use constants for dir structure path, 
+        //      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create("bulkloaddir",
                 table.getName() + this.getBatch().getBatchId() + ".csv");
     }

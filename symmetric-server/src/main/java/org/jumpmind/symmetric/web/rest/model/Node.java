@@ -29,83 +29,83 @@ public class Node {
 
     private String nodeId;
     private String externalId;
-	private boolean registrationServer;
+    private boolean registrationServer;
     private String syncUrl;
     private String registrationUrl;
     private int batchToSendCount;    
     private int batchInErrorCount;
     private Date lastHeartbeat;
     private int heartbeatInterval;
-	private boolean registered;
+    private boolean registered;
     private boolean initialLoaded;
     private boolean reverseInitialLoaded;
     private String createdAtNodeId;
     
     public String getCreatedAtNodeId() {
-		return createdAtNodeId;
-	}
+        return createdAtNodeId;
+    }
 
-	public void setCreatedAtNodeId(String createdAtNodeId) {
-		this.createdAtNodeId = createdAtNodeId;
-	}
+    public void setCreatedAtNodeId(String createdAtNodeId) {
+        this.createdAtNodeId = createdAtNodeId;
+    }
 
-	public boolean isReverseInitialLoaded() {
-		return reverseInitialLoaded;
-	}
+    public boolean isReverseInitialLoaded() {
+        return reverseInitialLoaded;
+    }
 
-	public void setReverseInitialLoaded(boolean reverseInitialLoaded) {
-		this.reverseInitialLoaded = reverseInitialLoaded;
-	}
+    public void setReverseInitialLoaded(boolean reverseInitialLoaded) {
+        this.reverseInitialLoaded = reverseInitialLoaded;
+    }
 
-	public int getBatchToSendCount() {
-		return batchToSendCount;
-	}
+    public int getBatchToSendCount() {
+        return batchToSendCount;
+    }
 
-	public void setBatchToSendCount(int batchToSendCount) {
-		this.batchToSendCount = batchToSendCount;
-	}
+    public void setBatchToSendCount(int batchToSendCount) {
+        this.batchToSendCount = batchToSendCount;
+    }
 
-	public int getBatchInErrorCount() {
-		return batchInErrorCount;
-	}
+    public int getBatchInErrorCount() {
+        return batchInErrorCount;
+    }
 
-	public void setBatchInErrorCount(int batchInErrorCount) {
-		this.batchInErrorCount = batchInErrorCount;
-	}
+    public void setBatchInErrorCount(int batchInErrorCount) {
+        this.batchInErrorCount = batchInErrorCount;
+    }
 
-	public boolean isRegistered() {
-		return registered;
-	}
+    public boolean isRegistered() {
+        return registered;
+    }
 
-	public void setRegistered(boolean registered) {
-		this.registered = registered;
-	}
+    public void setRegistered(boolean registered) {
+        this.registered = registered;
+    }
 
-	public boolean isInitialLoaded() {
-		return initialLoaded;
-	}
+    public boolean isInitialLoaded() {
+        return initialLoaded;
+    }
 
-	public void setInitialLoaded(boolean initialLoaded) {
-		this.initialLoaded = initialLoaded;
-	}
+    public void setInitialLoaded(boolean initialLoaded) {
+        this.initialLoaded = initialLoaded;
+    }
 
-	public String getSyncUrl() {
-		return syncUrl;
-	}
+    public String getSyncUrl() {
+        return syncUrl;
+    }
 
-	public void setSyncUrl(String syncUrl) {
-		this.syncUrl = syncUrl;
-	}
+    public void setSyncUrl(String syncUrl) {
+        this.syncUrl = syncUrl;
+    }
 
-	public boolean isRegistrationServer() {
-		return registrationServer;
-	}
+    public boolean isRegistrationServer() {
+        return registrationServer;
+    }
 
-	public void setRegistrationServer(boolean registrationServer) {
-		this.registrationServer = registrationServer;
-	}
+    public void setRegistrationServer(boolean registrationServer) {
+        this.registrationServer = registrationServer;
+    }
 
-	public Node(String nodeId) {
+    public Node(String nodeId) {
         setNodeId(nodeId);
     }
 
@@ -114,43 +114,43 @@ public class Node {
     }
 
     public String getNodeId() {
-		return nodeId;
-	}
+        return nodeId;
+    }
 
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
 
-	public Date getLastHeartbeat() {
-		return lastHeartbeat;
-	}
+    public Date getLastHeartbeat() {
+        return lastHeartbeat;
+    }
 
-	public void setLastHeartbeat(Date lastHeartbeat) {
-		this.lastHeartbeat = lastHeartbeat;
-	}
-	
+    public void setLastHeartbeat(Date lastHeartbeat) {
+        this.lastHeartbeat = lastHeartbeat;
+    }
+    
     public String getExternalId() {
-		return externalId;
-	}
+        return externalId;
+    }
 
-	public void setExternalId(String externalId) {
-		this.externalId = externalId;
-	}
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
 
-	public String getRegistrationUrl() {
-		return registrationUrl;
-	}
+    public String getRegistrationUrl() {
+        return registrationUrl;
+    }
 
-	public void setRegistrationUrl(String registrationUrl) {
-		this.registrationUrl = registrationUrl;
-	}
+    public void setRegistrationUrl(String registrationUrl) {
+        this.registrationUrl = registrationUrl;
+    }
 
-	public int getHeartbeatInterval() {
-		return heartbeatInterval;
-	}
+    public int getHeartbeatInterval() {
+        return heartbeatInterval;
+    }
 
-	public void setHeartbeatInterval(int heartbeatInterval) {
-		this.heartbeatInterval = heartbeatInterval;
-	}	
-		
+    public void setHeartbeatInterval(int heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
+    }    
+        
 }

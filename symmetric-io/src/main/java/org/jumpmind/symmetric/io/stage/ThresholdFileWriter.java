@@ -101,7 +101,7 @@ public class ThresholdFileWriter extends Writer {
     }
     
     protected BufferedWriter getWriter() throws IOException {
-    	 return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
+         return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
     }
 
     public BufferedReader getReader() throws IOException {

@@ -172,7 +172,7 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
             // We're back-mapping the NUMBER columns returned by Oracle
             // Note that the JDBC driver returns DECIMAL for these NUMBER
             // columns for driver version 11 and before, but returns
-        	// NUMERIC for driver version 12 and later.
+            // NUMERIC for driver version 12 and later.
             if (column.getScale() <= -127 || column.getScale() >= 127) {
                 if (column.getSizeAsInt() == 0) {
                     /*
@@ -192,8 +192,8 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
                     column.setMappedTypeCode(Types.DOUBLE);
                 }
             } else {
-            	// Let's map DECIMAL to NUMERIC since DECIMAL doesn't really exist in Oracle
-            	column.setMappedTypeCode(Types.NUMERIC);
+                // Let's map DECIMAL to NUMERIC since DECIMAL doesn't really exist in Oracle
+                column.setMappedTypeCode(Types.NUMERIC);
             }
         } else if (column.getMappedTypeCode() == Types.FLOAT) {
             // Same for REAL, FLOAT, DOUBLE PRECISION, which all back-map to
@@ -415,25 +415,25 @@ public class OracleDdlReader extends AbstractJdbcDdlReader {
     }
     
     public List<String> getTableNames(final String catalog, final String schema,
-    		final String[] tableTypes) {
-    	
-    	List<String> tableNames = new ArrayList<String>();
-    	
-    	JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
-    	
-    	StringBuilder sql = new StringBuilder("select TABLE_NAME from ALL_TABLES");
-    	Object[] params = null;
-    	if (isNotBlank(schema)) {
-    	    sql.append(" where OWNER=?");
-    	    params = new Object[] { schema };
-    	}
-    	tableNames = sqlTemplate.query(sql.toString(), new ISqlRowMapper<String>() {
-    		public String mapRow(Row row) {
-    			return row.getString("TABLE_NAME");
-    		}
-    	}, params);
-    	
-    	return tableNames;
+            final String[] tableTypes) {
+        
+        List<String> tableNames = new ArrayList<String>();
+        
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplate();
+        
+        StringBuilder sql = new StringBuilder("select TABLE_NAME from ALL_TABLES");
+        Object[] params = null;
+        if (isNotBlank(schema)) {
+            sql.append(" where OWNER=?");
+            params = new Object[] { schema };
+        }
+        tableNames = sqlTemplate.query(sql.toString(), new ISqlRowMapper<String>() {
+            public String mapRow(Row row) {
+                return row.getString("TABLE_NAME");
+            }
+        }, params);
+        
+        return tableNames;
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,

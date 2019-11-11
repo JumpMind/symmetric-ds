@@ -64,13 +64,13 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
 
     protected AbstractDatabaseWriter create(){
         return new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
-        		10, 1000,true, true, null);
+                10, 1000,true, true, null);
     }
     
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
-        		10, 1000,
+                10, 1000,
                 true, true, null), new TableCsvData(table, data));
     }
 

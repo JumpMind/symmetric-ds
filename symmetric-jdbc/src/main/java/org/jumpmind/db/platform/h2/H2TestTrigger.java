@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import org.h2.api.Trigger;
 
 public class H2TestTrigger implements Trigger  {
-	
-	@Override
+    
+    @Override
     public void init(Connection conn, String schemaName, 
                      String triggerName, String tableName, boolean before, int type)
     throws SQLException {}

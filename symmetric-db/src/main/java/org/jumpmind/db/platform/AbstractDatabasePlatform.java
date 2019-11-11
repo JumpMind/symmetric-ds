@@ -444,7 +444,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             int size = column.getSizeAsInt();
             
             if(settings.isRightTrimCharValues()){
-            	stringValue = StringUtils.stripEnd(stringValue, null);
+                stringValue = StringUtils.stripEnd(stringValue, null);
             }
             
             if (fitToColumn && size > 0 && stringValue.length() > size) {
@@ -783,11 +783,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 throw new IoException("Could not find the file: %s", filePath);
             }
         } finally {
-        	if(is != null) {
-	        	try {
-	        		is.close();
-	        	} catch(IOException e) { }
-        	}
+            if(is != null) {
+                try {
+                    is.close();
+                } catch(IOException e) { }
+            }
         }
     }
 
@@ -930,9 +930,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         try {
             return Timestamp.valueOf(value);
         } catch (IllegalArgumentException ex) {
-        	if (!getDatabaseInfo().isZeroDateAllowed() && value != null && value.startsWith(ZERO_DATE_STRING)) {
-        		return null;
-        	}
+            if (!getDatabaseInfo().isZeroDateAllowed() && value != null && value.startsWith(ZERO_DATE_STRING)) {
+                return null;
+            }
             try {
                 return new Timestamp(FormatUtils.parseDate(value, FormatUtils.TIMESTAMP_PATTERNS).getTime());
             } catch (Exception e) {

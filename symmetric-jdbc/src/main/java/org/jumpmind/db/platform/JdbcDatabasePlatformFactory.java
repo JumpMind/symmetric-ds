@@ -148,14 +148,14 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(FirebirdDatabasePlatform.JDBC_SUBPROTOCOL,
                 FirebirdDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(NuoDbDatabasePlatform.JDBC_SUBPROTOCOL, NuoDbDatabasePlatform.class);
-    	jdbcSubProtocolToPlatform.put(TiberoDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
+        jdbcSubProtocolToPlatform.put(TiberoDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 TiberoDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(RaimaDatabasePlatform.JDBC_SUBPROTOCOL, RaimaDatabasePlatform.class);    
     }
 
     public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive)
             throws DdlException {
-    		return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false);
+            return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false);
     }
     
     /*
@@ -211,7 +211,7 @@ public class JdbcDatabasePlatformFactory {
     }
 
     public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
-    		return determineDatabaseNameVersionSubprotocol(dataSource, false);
+            return determineDatabaseNameVersionSubprotocol(dataSource, false);
     }
     
     public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
@@ -243,9 +243,9 @@ public class JdbcDatabasePlatformFactory {
                     nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
                 } else if (isRedshiftDatabase(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.REDSHIFT;
-				} else if (metaData.getDatabaseMajorVersion() > 9
-						|| (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() >= 5)) {
-					nameVersion[0] = DatabaseNamesConstants.POSTGRESQL95;
+                } else if (metaData.getDatabaseMajorVersion() > 9
+                        || (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() >= 5)) {
+                    nameVersion[0] = DatabaseNamesConstants.POSTGRESQL95;
                 }
             }
 
@@ -286,12 +286,12 @@ public class JdbcDatabasePlatformFactory {
 
             return nameVersion;
         } catch (Throwable ex) {
-        		if (!isLoadOnly) {
-	            throw new SqlException("Error while reading the database metadata: "
-	                    + ex.getMessage(), ex);
-        		} else {
-        			return nameVersion;
-        		}
+                if (!isLoadOnly) {
+                throw new SqlException("Error while reading the database metadata: "
+                        + ex.getMessage(), ex);
+                } else {
+                    return nameVersion;
+                }
         } finally {
             if (connection != null) {
                 try {
@@ -314,7 +314,7 @@ public class JdbcDatabasePlatformFactory {
                 greenplumCount = rs.getInt(1);
             }
         } catch (SQLException ex) {
-        	throw new RuntimeException(ex);
+            throw new RuntimeException(ex);
         } finally {
             try {
                 if (rs != null) {
@@ -335,7 +335,7 @@ public class JdbcDatabasePlatformFactory {
             DatabaseMetaData dmd = connection.getMetaData();
             dmd.getMaxColumnsInIndex();
             if (dmd.getDriverName().toUpperCase().contains("REDSHIFT")) {
-            	isRedshift = true;
+                isRedshift = true;
             }
         } catch (SQLException ex) {
             if (ex.getSQLState().equals("99999")) {

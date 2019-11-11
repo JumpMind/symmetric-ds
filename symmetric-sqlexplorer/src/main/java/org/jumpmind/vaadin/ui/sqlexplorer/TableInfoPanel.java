@@ -63,14 +63,14 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     String selectedCaption;
     
     public TableInfoPanel(final org.jumpmind.db.model.Table table, final String user, final IDb db,
-    		final Settings settings, String selectedTabCaption) {
-    	this(table, user, db, settings, null, selectedTabCaption);
+            final Settings settings, String selectedTabCaption) {
+        this(table, user, db, settings, null, selectedTabCaption);
     }
 
     public TableInfoPanel(final org.jumpmind.db.model.Table table, final String user, final IDb db,
-    		final Settings settings, SqlExplorer explorer, String selectedTabCaption) {
-    	this.explorer = explorer;
-    	
+            final Settings settings, SqlExplorer explorer, String selectedTabCaption) {
+        this.explorer = explorer;
+        
         setSizeFull();
 
         tabSheet = CommonUiUtils.createTabSheet();
@@ -83,15 +83,15 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                 selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
                 
                 if (tabSheet.getSelectedTab() instanceof AbstractLayout) {
-                	AbstractLayout layout = (AbstractLayout) tabSheet.getSelectedTab();
-                	if (selectedCaption.equals("Data") && layout.getData() != null && layout.getData().equals(true)) {
-                		refreshData(table, user, db, settings, false);
-    				} else if (layout.getData() != null && layout.getData() instanceof AbstractMetaDataTableCreator) {
-    					populate((VerticalLayout) layout);
-    				}
+                    AbstractLayout layout = (AbstractLayout) tabSheet.getSelectedTab();
+                    if (selectedCaption.equals("Data") && layout.getData() != null && layout.getData().equals(true)) {
+                        refreshData(table, user, db, settings, false);
+                    } else if (layout.getData() != null && layout.getData() instanceof AbstractMetaDataTableCreator) {
+                        populate((VerticalLayout) layout);
+                    }
                 } else if (tabSheet.getSelectedTab() instanceof AceEditor &&
-                		((AceEditor) tabSheet.getSelectedTab()).getData().equals(true)) {
-                	populateSource(table, db, (AceEditor) tabSheet.getSelectedTab());
+                        ((AceEditor) tabSheet.getSelectedTab()).getData().equals(true)) {
+                    populateSource(table, db, (AceEditor) tabSheet.getSelectedTab());
                 }
             }
         });
@@ -137,11 +137,11 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     protected void refreshData(final org.jumpmind.db.model.Table table, final String user, final IDb db,
             final Settings settings, boolean isInit) {
         
-    	if (!isInit) {
-        	tabSheet.removeTab(tabSheet.getTab(1));
+        if (!isInit) {
+            tabSheet.removeTab(tabSheet.getTab(1));
         }
-    	
-    	IDatabasePlatform platform = db.getPlatform();
+        
+        IDatabasePlatform platform = db.getPlatform();
         DmlStatement dml = platform.createDmlStatement(DmlType.SELECT_ALL, table, null);
 
         final HorizontalLayout executingLayout = new HorizontalLayout();
@@ -152,7 +152,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         executingLayout.setData(isInit);
         tabSheet.addTab(executingLayout, "Data", isInit ? null : FontAwesome.SPINNER, 1);
         if (!isInit) {
-        	tabSheet.setSelectedTab(executingLayout);
+            tabSheet.setSelectedTab(executingLayout);
         }
 
         SqlRunner runner = new SqlRunner(dml.getSql(), false, user, db, settings, explorer,
@@ -162,7 +162,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
 
                     @Override
                     public void writeSql(String sql) {
-                    	explorer.openQueryWindow(db).appendSql(sql);
+                        explorer.openQueryWindow(db).appendSql(sql);
                     }
 
                     @Override
@@ -194,7 +194,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         runner.setShowSqlOnResults(false);
         runner.setLogAtDebug(true);
         if (!isInit) {
-        	runner.start();
+            runner.start();
         }
         
     }
@@ -208,17 +208,17 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     }
     
     protected void populate(VerticalLayout layout) {
-    	AbstractMetaDataTableCreator creator = (AbstractMetaDataTableCreator) layout.getData();
+        AbstractMetaDataTableCreator creator = (AbstractMetaDataTableCreator) layout.getData();
         Table table = creator.create();
-    	layout.addComponent(table);
-    	layout.setExpandRatio(table, 1);
-    	layout.setData(null);
+        layout.addComponent(table);
+        layout.setExpandRatio(table, 1);
+        layout.setData(null);
     }
     
     protected void populateSource(org.jumpmind.db.model.Table table, IDb db, AceEditor oldTab) {
-    	try {
+        try {
             tabSheet.removeTab(tabSheet.getTab(oldTab));
-    		DbExport export = new DbExport(db.getPlatform());
+            DbExport export = new DbExport(db.getPlatform());
             export.setNoCreateInfo(false);
             export.setNoData(true);
             export.setCatalog(table.getCatalog());

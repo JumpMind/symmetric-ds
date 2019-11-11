@@ -94,7 +94,7 @@ public class FileSyncTest extends AbstractTest {
 
     protected void testInitialLoadFromServerToClient(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testInitialLoadFromServerToClient");
+        logStartOfTest("testInitialLoadFromServerToClient");
         assertFalse("The initial load file should not exist at the client",
                 allClntTargetInitialLoadFile.exists());
         assertTrue("The initial load file should exist at the server",
@@ -113,7 +113,7 @@ public class FileSyncTest extends AbstractTest {
 
     protected void testPullAllFromServerToClient(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testPullAllFromServerToClient");
+        logStartOfTest("testPullAllFromServerToClient");
         File allFile1 = new File(allSvrSourceDir, "subdir/1.txt");
         allFile1.getParentFile().mkdirs();
         String file1Contents = "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz";
@@ -127,7 +127,7 @@ public class FileSyncTest extends AbstractTest {
         
         // Check if target file exists. If not, run the pullFiles() again
         if(! allFile1Target.exists()) {
-        	pullFiles();
+            pullFiles();
         }
         assertTrue(allFile1Target.exists());
         assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -138,8 +138,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(! (file1Contents + file1Contents).equals(FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()))) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertEquals(file1Contents + file1Contents, FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -149,8 +149,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(allFile1Target.exists()) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
 
         assertFalse(allFile1Target.exists());
@@ -158,7 +158,7 @@ public class FileSyncTest extends AbstractTest {
     }
 
     protected void testPingback() throws Exception {
-    	logStartOfTest("testPingback");
+        logStartOfTest("testPingback");
         File serverFile = new File(pingbackServerDir, "ping.txt");
         assertFalse(serverFile.exists());
 
@@ -179,7 +179,7 @@ public class FileSyncTest extends AbstractTest {
 
     protected void testChooseTargetDirectory(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testChooseTargetDirectory");
+        logStartOfTest("testChooseTargetDirectory");
          File one = new File(chooseTargetServerDir, "1.txt");
          File two = new File(chooseTargetServerDir, "2.txt");
          File three = new File(chooseTargetServerDir, "3.txt");
@@ -202,8 +202,8 @@ public class FileSyncTest extends AbstractTest {
          pullFiles();
          
          if(! clientOneA.exists()) {
-        	 // Let's try again
-        	 pullFiles();
+             // Let's try again
+             pullFiles();
          }
          assertTrue(clientOneA.exists());
          assertFalse(clientOneB.exists());
@@ -213,8 +213,8 @@ public class FileSyncTest extends AbstractTest {
          pullFiles();
 
          if(! clientTwoB.exists()) {
-        	 // Let's try again
-        	 pullFiles();
+             // Let's try again
+             pullFiles();
          }
          assertFalse(clientTwoA.exists());
          assertTrue(clientTwoB.exists());
@@ -224,8 +224,8 @@ public class FileSyncTest extends AbstractTest {
          pullFiles();
          
          if(! clientThreeA.exists()) {
-        	 // Let's try again
-        	 pullFiles();
+             // Let's try again
+             pullFiles();
          }
          
          assertTrue(clientThreeA.exists());
@@ -236,7 +236,7 @@ public class FileSyncTest extends AbstractTest {
     
     protected void testChangeFileNameAndCreateTargetDir(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testChangeFileNameAndCreateTargetDir");
+        logStartOfTest("testChangeFileNameAndCreateTargetDir");
         if (changeNameClntTargetDir.exists()) {
             FileUtils.deleteDirectory(changeNameClntTargetDir);
         }
@@ -252,8 +252,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(! targetFile.exists()) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertTrue(targetFile.getParentFile().exists());
@@ -264,8 +264,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(targetFile.exists()) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertFalse(targetFile.exists());
@@ -287,8 +287,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(! file1Contents.equals(FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()))) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertEquals(file1Contents, FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -298,7 +298,7 @@ public class FileSyncTest extends AbstractTest {
     
     protected void testTargetWins(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testTargetWins");
+        logStartOfTest("testTargetWins");
         IFileSyncService fileSyncService = rootServer.getFileSyncService();
         FileTriggerRouter fileTriggerRouter = fileSyncService.getFileTriggerRouter("all","server_2_client",false);
         fileTriggerRouter.setConflictStrategy(FileConflictStrategy.TARGET_WINS);
@@ -317,8 +317,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if("client value".equals(FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()))) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertEquals("client value", FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -348,8 +348,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if("client value".equals(FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()))) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertEquals("client value", FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -362,9 +362,9 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if((! allFile1Target.exists())) {
-        	// Let's try again
-        	Thread.sleep(1000l);
-        	pullFiles();
+            // Let's try again
+            Thread.sleep(1000l);
+            pullFiles();
         }
 
         assertEquals("server value", FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -377,7 +377,7 @@ public class FileSyncTest extends AbstractTest {
     
     protected void testUpdateManual(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testUpdateManual");
+        logStartOfTest("testUpdateManual");
         OutgoingBatches batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
         List<OutgoingBatch> batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
         assertEquals(0, batches.size());
@@ -399,8 +399,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(!allFile1Target.exists()) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertEquals("base value", FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -413,8 +413,8 @@ public class FileSyncTest extends AbstractTest {
         pullFiles();
         
         if(! "base valuenew value".equals(FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()))) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         
         assertEquals("base valuenew value", FileUtils.readFileToString(allFile1Target, Charset.defaultCharset()));
@@ -426,7 +426,7 @@ public class FileSyncTest extends AbstractTest {
     
     protected void testCreateAndUpdateInSameBatch(ISymmetricEngine rootServer,
             ISymmetricEngine clientServer) throws Exception {
-    	logStartOfTest("testCreateAndUpdateInSameBatch");
+        logStartOfTest("testCreateAndUpdateInSameBatch");
         OutgoingBatches batchesInError = rootServer.getOutgoingBatchService().getOutgoingBatchErrors(10);
         List<OutgoingBatch> batches = batchesInError.getBatchesForChannel(Constants.CHANNEL_FILESYNC);
         assertEquals(0, batches.size());
@@ -451,8 +451,8 @@ public class FileSyncTest extends AbstractTest {
         assertEquals(0, batches.size());
 
         if(! allFile1Target.exists()) {
-        	// Let's try again
-        	pullFiles();
+            // Let's try again
+            pullFiles();
         }
         assertTrue(allFile1Target.exists());
         

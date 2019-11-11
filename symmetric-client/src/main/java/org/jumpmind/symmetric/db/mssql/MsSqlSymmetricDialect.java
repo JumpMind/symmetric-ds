@@ -103,10 +103,10 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();        
         String tablePrefix = getTablePrefix();
         try {
-        	String lockEscalationClause = "";
-        	if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
-        		lockEscalationClause = "or t.lock_escalation != 1  or i.allow_page_locks = 'true' ";
-        	}
+            String lockEscalationClause = "";
+            if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
+                lockEscalationClause = "or t.lock_escalation != 1  or i.allow_page_locks = 'true' ";
+            }
             if (parameterService.is(ParameterConstants.MSSQL_ROW_LEVEL_LOCKS_ONLY, true) && sqlTemplate
                     .queryForInt("select count(*) from sys.indexes i inner join sys.tables t on t.object_id=i.object_id where t.name in ('"
                             + tablePrefix.toLowerCase()
@@ -136,23 +136,23 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 
                 if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
-	                sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
-	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-	                sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
-	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-	                sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
-	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-	                sqlTemplate.update("ALTER INDEX ALL ON " + monitorEventTable
-	                        + " SET (ALLOW_PAGE_LOCKS = OFF)");
-	              
-	                sqlTemplate.update("ALTER TABLE " + dataTable
-	                        + " SET (LOCK_ESCALATION = DISABLE)");
-	                sqlTemplate.update("ALTER TABLE " + dataEventTable
-	                        + " SET (LOCK_ESCALATION = DISABLE)");
-	                sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
-	                        + " SET (LOCK_ESCALATION = DISABLE)");
-	                sqlTemplate.update("ALTER TABLE " + monitorEventTable
-	                        + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + dataEventTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + monitorEventTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                  
+                    sqlTemplate.update("ALTER TABLE " + dataTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + dataEventTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + monitorEventTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
                 }
                 return true;
             } else {
@@ -434,9 +434,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     public String getSyncTriggersExpression() {
-    	String catalog = parameterService.is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true) ? "$(defaultCatalog)" : "";
+        String catalog = parameterService.is(ParameterConstants.MSSQL_INCLUDE_CATALOG_IN_TRIGGERS, true) ? "$(defaultCatalog)" : "";
         return catalog + "dbo." + parameterService.getTablePrefix()
-        	+ "_triggers_disabled() = 0";
+            + "_triggers_disabled() = 0";
     }
 
     @Override
@@ -468,7 +468,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     
     @Override
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
-    	/* gets filled/replaced by trigger template as it will compare by each column */
+        /* gets filled/replaced by trigger template as it will compare by each column */
         return "$(anyNonBlobColumnChanged)";
     }
 

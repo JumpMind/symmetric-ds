@@ -60,14 +60,14 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
 
     protected AbstractDatabaseWriter create(){
         return new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(),
-        		1000);
+                1000);
     }
 
     @Override
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), 
-        		1000), new TableCsvData(table, data));
+                1000), new TableCsvData(table, data));
     }
    
 

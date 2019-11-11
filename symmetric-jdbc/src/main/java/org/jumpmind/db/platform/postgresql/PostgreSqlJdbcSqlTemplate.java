@@ -68,14 +68,14 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     
     @Override
     public boolean isDataTruncationViolation(Throwable ex) {
-    		boolean dataTruncationViolation = false;
-    		SQLException sqlEx = findSQLException(ex);
-    		if (sqlEx != null) {
-    			String sqlState = sqlEx.getSQLState();
-    			if (sqlState != null && sqlState.equals("22001")) {
-    				dataTruncationViolation = true;
-    			}
-    		}
+            boolean dataTruncationViolation = false;
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                String sqlState = sqlEx.getSQLState();
+                if (sqlState != null && sqlState.equals("22001")) {
+                    dataTruncationViolation = true;
+                }
+            }
         return dataTruncationViolation;
     }
 

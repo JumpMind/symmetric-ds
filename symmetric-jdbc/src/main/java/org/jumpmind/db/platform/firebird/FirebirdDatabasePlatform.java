@@ -77,22 +77,22 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
     
     @Override
-	public PermissionResult getCreateSymTriggerPermission() {
-    	String delimiter = getDatabaseInfo().getDelimiterToken();
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
         
-    	String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " AFTER UPDATE AS BEGIN END";	
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER FOR " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " AFTER UPDATE AS BEGIN END";    
 
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-		
-		try {
-			getSqlTemplate().update(triggerSql);
-			result.setStatus(Status.PASS);
-		} catch (SqlException e) {
-			result.setException(e);
-			result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-		}
-		
-		return result;
+           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+        
+        return result;
     }
 }

@@ -177,22 +177,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<Trigger> getTriggers() {
-    	return getTriggers(true);
+        return getTriggers(true);
     }
 
     public List<Trigger> getTriggers(boolean replaceTokens) {
-    	List<Trigger> triggers = sqlTemplate.query("select "
+        List<Trigger> triggers = sqlTemplate.query("select "
                 + getSql("selectTriggersColumnList", "selectTriggersSql"), new TriggerMapper());
-    	if (replaceTokens) {
-    		@SuppressWarnings({ "rawtypes", "unchecked" })
-			Map<String, String> replacements = (Map) parameterService.getAllParameters();
-    		for (Trigger trigger : triggers) {
-        		trigger.setSourceCatalogName(FormatUtils.replaceTokens(trigger.getSourceCatalogName(), replacements, true));
-        		trigger.setSourceSchemaName(FormatUtils.replaceTokens(trigger.getSourceSchemaName(), replacements, true));
-        		trigger.setSourceTableName(FormatUtils.replaceTokens(trigger.getSourceTableName(), replacements, true));
-    		}
-    	}
-    	return triggers;
+        if (replaceTokens) {
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            Map<String, String> replacements = (Map) parameterService.getAllParameters();
+            for (Trigger trigger : triggers) {
+                trigger.setSourceCatalogName(FormatUtils.replaceTokens(trigger.getSourceCatalogName(), replacements, true));
+                trigger.setSourceSchemaName(FormatUtils.replaceTokens(trigger.getSourceSchemaName(), replacements, true));
+                trigger.setSourceTableName(FormatUtils.replaceTokens(trigger.getSourceTableName(), replacements, true));
+            }
+        }
+        return triggers;
     }
 
     public boolean isTriggerBeingUsed(String triggerId) {
@@ -888,22 +888,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public List<Router> getRouters() {
-    	return getRouters(true);
+        return getRouters(true);
     }
     
     public List<Router> getRouters(boolean replaceVariables) {
-    	List<Router> routers = sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
+        List<Router> routers = sqlTemplate.query(getSql("select ", "selectRoutersColumnList", "selectRoutersSql"),
                 new RouterMapper(configurationService.getNodeGroupLinks(false)));
-    	if (replaceVariables) {
-    		@SuppressWarnings({ "rawtypes", "unchecked" })
-			Map<String, String> replacements = (Map) parameterService.getAllParameters();
-    		for (Router router : routers) {
-    			router.setTargetCatalogName(FormatUtils.replaceTokens(router.getTargetCatalogName(), replacements, true));
-    			router.setTargetSchemaName(FormatUtils.replaceTokens(router.getTargetSchemaName(), replacements, true));
-    			router.setTargetTableName(FormatUtils.replaceTokens(router.getTargetTableName(), replacements, true));
-    		}
-    	}
-    	return routers;
+        if (replaceVariables) {
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            Map<String, String> replacements = (Map) parameterService.getAllParameters();
+            for (Router router : routers) {
+                router.setTargetCatalogName(FormatUtils.replaceTokens(router.getTargetCatalogName(), replacements, true));
+                router.setTargetSchemaName(FormatUtils.replaceTokens(router.getTargetSchemaName(), replacements, true));
+                router.setTargetTableName(FormatUtils.replaceTokens(router.getTargetTableName(), replacements, true));
+            }
+        }
+        return routers;
     }
     
     private String getTriggerRouterSql(String sql) {
@@ -944,7 +944,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
     
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId){
-    	return findTriggerRouterById(triggerId, routerId, true);
+        return findTriggerRouterById(triggerId, routerId, true);
     }
 
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache) {
@@ -962,19 +962,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     private List<TriggerRouter> enhanceTriggerRouters(List<TriggerRouter> triggerRouters) {
-    	HashMap<String, Router> routersById = new HashMap<String, Router>();
-    	for (Router router : getRouters()) {
-    		routersById.put(router.getRouterId().trim().toUpperCase(), router);
-    	}
-    	HashMap<String, Trigger> triggersById = new HashMap<String, Trigger>();
-    	for (Trigger trigger : getTriggers()) {
-    		triggersById.put(trigger.getTriggerId().trim().toUpperCase(), trigger);
-    	}
-    	for (TriggerRouter triggerRouter : triggerRouters) {
-    		triggerRouter.setTrigger(triggersById.get(triggerRouter.getTrigger().getTriggerId().trim().toUpperCase()));
-    		triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId().trim().toUpperCase()));
-    	}
-    	return triggerRouters;
+        HashMap<String, Router> routersById = new HashMap<String, Router>();
+        for (Router router : getRouters()) {
+            routersById.put(router.getRouterId().trim().toUpperCase(), router);
+        }
+        HashMap<String, Trigger> triggersById = new HashMap<String, Trigger>();
+        for (Trigger trigger : getTriggers()) {
+            triggersById.put(trigger.getTriggerId().trim().toUpperCase(), trigger);
+        }
+        for (TriggerRouter triggerRouter : triggerRouters) {
+            triggerRouter.setTrigger(triggersById.get(triggerRouter.getTrigger().getTriggerId().trim().toUpperCase()));
+            triggerRouter.setRouter(routersById.get(triggerRouter.getRouter().getRouterId().trim().toUpperCase()));
+        }
+        return triggerRouters;
     }
 
     public Map<String, List<TriggerRouter>> getTriggerRoutersByChannel(String nodeGroupId) {
@@ -996,14 +996,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     final  Map<String, List<TriggerRouter>> newValue = new HashMap<String, List<TriggerRouter>>();
                     this.triggerRouterPerChannelCacheTime = System.currentTimeMillis();
                     List<TriggerRouter> triggerRouters = enhanceTriggerRouters(sqlTemplate.query(
-                    		getTriggerRouterSql("selectGroupTriggersSql"), new TriggerRouterMapper(), nodeGroupId, nodeGroupId));
+                            getTriggerRouterSql("selectGroupTriggersSql"), new TriggerRouterMapper(), nodeGroupId, nodeGroupId));
                     for (TriggerRouter triggerRouter : triggerRouters) {
                         List<TriggerRouter> list = newValue.get(triggerRouter.getTrigger().getChannelId());
                         if (list == null) {
                             list = new ArrayList<TriggerRouter>();
                             newValue.put(triggerRouter.getTrigger().getChannelId(), list);
                         }
-                        list.add(triggerRouter);                    	
+                        list.add(triggerRouter);                        
                     }
                     triggerRouterCacheByChannel = newValue;
                     testValue = newValue;
@@ -1543,15 +1543,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             boolean ignoreCase) {
         for (Trigger trigger : triggers) {
             if (!trigger.isSourceWildCarded()) {
-            	String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();        	
-            	String sourceSchemaName = trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() : platform.getDefaultSchema();
+                String sourceCatalogName = trigger.getSourceCatalogName() != null ? trigger.getSourceCatalogName() : platform.getDefaultCatalog();            
+                String sourceSchemaName = trigger.getSourceSchemaName() != null ? trigger.getSourceSchemaName() : platform.getDefaultSchema();
                 if (trigger.getSourceTableName().equals(table.getName()) 
-                		&& (sourceCatalogName == null || sourceCatalogName.equals(table.getCatalog())) && 
-                		(sourceSchemaName == null || sourceSchemaName.equals(table.getSchema()))) {
+                        && (sourceCatalogName == null || sourceCatalogName.equals(table.getCatalog())) && 
+                        (sourceSchemaName == null || sourceSchemaName.equals(table.getSchema()))) {
                     return true;
                 } else if (ignoreCase && trigger.getSourceTableName().equalsIgnoreCase(table.getName())
-                		&& (sourceCatalogName == null || sourceCatalogName.equalsIgnoreCase(table.getCatalog())) 
-                		&& (sourceSchemaName == null || sourceSchemaName.equalsIgnoreCase(table.getSchema()))) {
+                        && (sourceCatalogName == null || sourceCatalogName.equalsIgnoreCase(table.getCatalog())) 
+                        && (sourceSchemaName == null || sourceSchemaName.equalsIgnoreCase(table.getSchema()))) {
                     return true;
                 }
             }

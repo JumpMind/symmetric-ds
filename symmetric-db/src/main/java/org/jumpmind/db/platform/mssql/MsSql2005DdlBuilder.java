@@ -47,39 +47,39 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     }
     
     protected void dropColumnChangeDefaults(Table sourceTable, Column sourceColumn, StringBuilder ddl) {
-    	// we're dropping the old default
-	    String tableName = getTableName(sourceTable.getName());
-	    String columnName = getColumnName(sourceColumn);
-	    String tableNameVar = "tn" + createUniqueIdentifier();
-	    String constraintNameVar = "cn" + createUniqueIdentifier();
-	
-	    println("BEGIN", ddl);
-	    println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
-	            + " nvarchar(256)", ddl);
-	    println("  DECLARE refcursor CURSOR FOR", ddl);
-	    println("  SELECT object_name(cons.parent_object_id) tablename, cons.name constraintname FROM sys.default_constraints cons ",
-	            ddl);
-	    println("    WHERE  cons.parent_column_id = (SELECT colid FROM syscolumns WHERE id = object_id(", ddl);
-	    printAlwaysSingleQuotedIdentifier(tableName, ddl);
-	    ddl.append(") AND name = ");
-	    printAlwaysSingleQuotedIdentifier(columnName, ddl);
-	    println(") AND", ddl);
-	    ddl.append("          object_name(cons.parent_object_id) = ");
-	    printAlwaysSingleQuotedIdentifier(tableName, ddl);
-	    println("  OPEN refcursor", ddl);
-	    println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
-	            ddl);
-	    println("  WHILE @@FETCH_STATUS = 0", ddl);
-	    println("    BEGIN", ddl);
-	    println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
-	            + constraintNameVar + ")", ddl);
-	    println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @"
-	            + constraintNameVar, ddl);
-	    println("    END", ddl);
-	    println("  CLOSE refcursor", ddl);
-	    println("  DEALLOCATE refcursor", ddl);
-	    ddl.append("END");
-	    printEndOfStatement(ddl);
+        // we're dropping the old default
+        String tableName = getTableName(sourceTable.getName());
+        String columnName = getColumnName(sourceColumn);
+        String tableNameVar = "tn" + createUniqueIdentifier();
+        String constraintNameVar = "cn" + createUniqueIdentifier();
+    
+        println("BEGIN", ddl);
+        println("  DECLARE @" + tableNameVar + " nvarchar(256), @" + constraintNameVar
+                + " nvarchar(256)", ddl);
+        println("  DECLARE refcursor CURSOR FOR", ddl);
+        println("  SELECT object_name(cons.parent_object_id) tablename, cons.name constraintname FROM sys.default_constraints cons ",
+                ddl);
+        println("    WHERE  cons.parent_column_id = (SELECT colid FROM syscolumns WHERE id = object_id(", ddl);
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        ddl.append(") AND name = ");
+        printAlwaysSingleQuotedIdentifier(columnName, ddl);
+        println(") AND", ddl);
+        ddl.append("          object_name(cons.parent_object_id) = ");
+        printAlwaysSingleQuotedIdentifier(tableName, ddl);
+        println("  OPEN refcursor", ddl);
+        println("  FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @" + constraintNameVar,
+                ddl);
+        println("  WHILE @@FETCH_STATUS = 0", ddl);
+        println("    BEGIN", ddl);
+        println("      EXEC ('ALTER TABLE '+@" + tableNameVar + "+' DROP CONSTRAINT '+@"
+                + constraintNameVar + ")", ddl);
+        println("      FETCH NEXT FROM refcursor INTO @" + tableNameVar + ", @"
+                + constraintNameVar, ddl);
+        println("    END", ddl);
+        println("  CLOSE refcursor", ddl);
+        println("  DEALLOCATE refcursor", ddl);
+        ddl.append("END");
+        printEndOfStatement(ddl);
     }
 
 }

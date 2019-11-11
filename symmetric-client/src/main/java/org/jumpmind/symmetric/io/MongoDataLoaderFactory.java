@@ -67,7 +67,7 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
 
     @Override
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-    			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         try {

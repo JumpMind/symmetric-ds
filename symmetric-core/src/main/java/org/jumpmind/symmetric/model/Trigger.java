@@ -597,14 +597,14 @@ public class Trigger implements Serializable {
     }
 
     public boolean isUseHandleKeyUpdates() {
-		return useHandleKeyUpdates;
-	}
+        return useHandleKeyUpdates;
+    }
 
-	public void setUseHandleKeyUpdates(boolean useHandleKeyUpdates) {
-		this.useHandleKeyUpdates = useHandleKeyUpdates;
-	}
+    public void setUseHandleKeyUpdates(boolean useHandleKeyUpdates) {
+        this.useHandleKeyUpdates = useHandleKeyUpdates;
+    }
 
-	public void setUseCaptureOldData(boolean useCaptureOldData) {
+    public void setUseCaptureOldData(boolean useCaptureOldData) {
         this.useCaptureOldData = useCaptureOldData;
     }
 

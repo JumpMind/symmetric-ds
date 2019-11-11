@@ -167,7 +167,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
             dbFill.setContinueOnError(true);
         }
         if (line.hasOption(OPTION_PRINT)) {
-        	dbFill.setPrint(true);
+            dbFill.setPrint(true);
         }
         if (line.hasOption(OPTION_RAND)) {
             dbFill.setUseRandomCount(true);
@@ -206,14 +206,14 @@ public class DbFillCommand extends AbstractCommandLauncher {
         }
         
         if (!dbFill.getPrint()) {
-        	dbFill.fillTables(tableNames, tableProperties);
+            dbFill.fillTables(tableNames, tableProperties);
         } else {
-        	for (String tableName : tableNames) {
+            for (String tableName : tableNames) {
                 Table table = platform.readTableFromDatabase(dbFill.getCatalogToUse(), dbFill.getSchemaToUse(),
                         tableName);
                 if (table != null) {
-                	for (int i = 0; i < dbFill.getRecordCount(); i++) {
-                		for (int j = 0; j < dbFill.getInsertWeight(); j++) {
+                    for (int i = 0; i < dbFill.getRecordCount(); i++) {
+                        for (int j = 0; j < dbFill.getInsertWeight(); j++) {
                             String sql = dbFill.createDynamicRandomInsertSql(table);
                             System.out.println(sql);
                         }
@@ -225,9 +225,9 @@ public class DbFillCommand extends AbstractCommandLauncher {
                             String sql = dbFill.createDynamicRandomDeleteSql(table);
                             System.out.println(sql);
                         }        
-                	}
+                    }
                 }
-        	}
+            }
         }
 
         return true;

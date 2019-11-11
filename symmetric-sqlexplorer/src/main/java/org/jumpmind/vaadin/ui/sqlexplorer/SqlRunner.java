@@ -112,7 +112,7 @@ public class SqlRunner extends Thread {
     }
 
     public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, ISqlRunnerListener listener) {
-    	this(sqlText, runAsScript, user, db, settings, null, listener);
+        this(sqlText, runAsScript, user, db, settings, null, listener);
     }
     
     public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, SqlExplorer explorer) {
@@ -340,11 +340,11 @@ public class SqlRunner extends Thread {
 
             } catch (Throwable ex) {
                 if (isCanceled) {
-                	String canceledMessage = "Canceled successfully.\n\n"+sqlText;
-                	resultComponents.add(wrapTextInComponent(canceledMessage));
+                    String canceledMessage = "Canceled successfully.\n\n"+sqlText;
+                    resultComponents.add(wrapTextInComponent(canceledMessage));
                 } else {
-	            	icon = FontAwesome.BAN;
-	                resultComponents.add(wrapTextInComponent(buildErrorMessage(ex), "marked"));
+                    icon = FontAwesome.BAN;
+                    resultComponents.add(wrapTextInComponent(buildErrorMessage(ex), "marked"));
                 }
             } finally {
                 if (autoCommitBefore) {
@@ -511,12 +511,12 @@ public class SqlRunner extends Thread {
     }
     
     public void cancel() {
-    	try {
-			stmt.cancel();
-			isCanceled = true;
-		} catch (SQLException e) {
-			log.error("Failed to cancel", e);
-		}
+        try {
+            stmt.cancel();
+            isCanceled = true;
+        } catch (SQLException e) {
+            log.error("Failed to cancel", e);
+        }
     }
 
     interface ISqlRunnerListener extends Serializable {

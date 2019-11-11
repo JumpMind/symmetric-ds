@@ -61,7 +61,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     @Override
     public void createRequiredDatabaseObjects() {
 
-    	ISqlTransaction transaction = null;
+        ISqlTransaction transaction = null;
         try {
             transaction = platform.getSqlTemplate().startSqlTransaction();
             enableSyncTriggers(transaction);

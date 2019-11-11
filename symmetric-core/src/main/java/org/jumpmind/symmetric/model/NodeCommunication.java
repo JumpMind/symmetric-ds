@@ -77,14 +77,14 @@ public class NodeCommunication implements Serializable {
     }
     
     public String getQueue() {
-		return queue;
-	}
+        return queue;
+    }
 
-	public void setQueue(String queue) {
-		this.queue = queue;
-	}
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-	public CommunicationType getCommunicationType() {
+    public CommunicationType getCommunicationType() {
         return communicationType;
     }
 
@@ -217,7 +217,7 @@ public class NodeCommunication implements Serializable {
     }   
     
     public String getIdentifier() {
-    	return getNodeId() + "-" + getQueue();
+        return getNodeId() + "-" + getQueue();
     }
 
     @Override

@@ -118,29 +118,29 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         
         // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
         if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-	        // Drop triggers on sym tables
-	        List<IAlterDatabaseInterceptor> alterDatabaseInterceptors =
-	        		engine.getExtensionService().getExtensionPointList(IAlterDatabaseInterceptor.class);
-	        List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel,
-	        		desiredModel,
-	        		alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
-	        
-	        Predicate predicate = new MultiInstanceofPredicate(new Class[] {
-	        		RemovePrimaryKeyChange.class,
-	        		AddPrimaryKeyChange.class,
-	        		PrimaryKeyChange.class,
-	        		RemoveColumnChange.class,
-	        		AddColumnChange.class,
-	        		ColumnDataTypeChange.class,
-	        		ColumnSizeChange.class,
-	        		CopyColumnValueChange.class
-	        });
-	        Collection<TableChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
-	        Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
-	        for(TableChange change: modelChangesAffectingTriggers) {
-	        	setOfTableNamesToDropTriggersFor.add(change.getChangedTable().getName());
-	        }
-	        engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
+            // Drop triggers on sym tables
+            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors =
+                    engine.getExtensionService().getExtensionPointList(IAlterDatabaseInterceptor.class);
+            List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel,
+                    desiredModel,
+                    alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
+            
+            Predicate predicate = new MultiInstanceofPredicate(new Class[] {
+                    RemovePrimaryKeyChange.class,
+                    AddPrimaryKeyChange.class,
+                    PrimaryKeyChange.class,
+                    RemoveColumnChange.class,
+                    AddColumnChange.class,
+                    ColumnDataTypeChange.class,
+                    ColumnSizeChange.class,
+                    CopyColumnValueChange.class
+            });
+            Collection<TableChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
+            Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
+            for(TableChange change: modelChangesAffectingTriggers) {
+                setOfTableNamesToDropTriggersFor.add(change.getChangedTable().getName());
+            }
+            engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
         }
         
         return sb.toString();
@@ -155,17 +155,17 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     @Override
     public String afterUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database model) throws IOException {
-    	
-    	// Leave this first so triggers are put back in place before any DML is done against SymmetricDS tables
-    	// Reinstall triggers on sym tables
-    	engine.getTriggerRouterService().syncTriggers();
-    	
+        
+        // Leave this first so triggers are put back in place before any DML is done against SymmetricDS tables
+        // Reinstall triggers on sym tables
+        engine.getTriggerRouterService().syncTriggers();
+        
         StringBuilder sb = new StringBuilder();
         if (isUpgradeFromPre38) {
             engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_SEQUENCE +
                     " set cache_size = 10 where sequence_name = ?", Constants.SEQUENCE_OUTGOING_BATCH);
             engine.getSqlTemplate().update("update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL +
-            		" set max_batch_size = 10000 where reload_flag = 1 ");
+                    " set max_batch_size = 10000 where reload_flag = 1 ");
         }
 
         engine.getPullService().pullConfigData(false);

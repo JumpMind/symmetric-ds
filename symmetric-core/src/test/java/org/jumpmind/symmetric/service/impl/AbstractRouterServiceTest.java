@@ -419,9 +419,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
                     NODE_GROUP_NODE_3.getNodeId());
             transaction.commit();
         } finally {
-        	if (transaction != null) {
-        		transaction.close();
-        	}
+            if (transaction != null) {
+                transaction.close();
+            }
         }
 
         logger.info("Just recorded a change to " + count + " rows in " + TEST_TABLE_1 + " in " + (System.currentTimeMillis() - ts) + "ms");

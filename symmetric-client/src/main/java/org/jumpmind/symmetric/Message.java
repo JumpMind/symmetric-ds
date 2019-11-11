@@ -71,7 +71,7 @@ public class Message {
 
     public static boolean containsKey(String key) {
         try {
-    	    return bundle != null && bundle.getString(key) != null;
+            return bundle != null && bundle.getString(key) != null;
         } catch (MissingResourceException ex) {
             return false;
         }

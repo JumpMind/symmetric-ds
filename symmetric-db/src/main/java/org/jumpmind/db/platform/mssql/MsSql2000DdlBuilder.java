@@ -242,28 +242,28 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected String getNativeDefaultValue(Column column) {
         // Sql Server wants BIT default values as 0 or 1
-		if ((column.getMappedTypeCode() == Types.BIT)
-				|| (PlatformUtils.supportsJava14JdbcTypes() && (column
-						.getMappedTypeCode() == PlatformUtils
-						.determineBooleanTypeCode()))) {
-			return getDefaultValueHelper().convert(column.getDefaultValue(),
-					column.getMappedTypeCode(), Types.SMALLINT).toString();
-		}
-		if ((column.getMappedTypeCode() == Types.TIMESTAMP) || (column.getMappedTypeCode() == Types.TIME) || (column.getMappedTypeCode() == Types.DATE)) {
-		    String defaultValue = super.getNativeDefaultValue(column);
-		    if (defaultValue != null && (defaultValue.equalsIgnoreCase("CURRENT_DATE") || defaultValue.equalsIgnoreCase("CURRENT DATE"))) {
-		        return "CURRENT_TIMESTAMP";
-		    }
-		}
-		return super.getNativeDefaultValue(column);
+        if ((column.getMappedTypeCode() == Types.BIT)
+                || (PlatformUtils.supportsJava14JdbcTypes() && (column
+                        .getMappedTypeCode() == PlatformUtils
+                        .determineBooleanTypeCode()))) {
+            return getDefaultValueHelper().convert(column.getDefaultValue(),
+                    column.getMappedTypeCode(), Types.SMALLINT).toString();
+        }
+        if ((column.getMappedTypeCode() == Types.TIMESTAMP) || (column.getMappedTypeCode() == Types.TIME) || (column.getMappedTypeCode() == Types.DATE)) {
+            String defaultValue = super.getNativeDefaultValue(column);
+            if (defaultValue != null && (defaultValue.equalsIgnoreCase("CURRENT_DATE") || defaultValue.equalsIgnoreCase("CURRENT DATE"))) {
+                return "CURRENT_TIMESTAMP";
+            }
+        }
+        return super.getNativeDefaultValue(column);
     }
 
     @Override
     protected void writeColumnAutoIncrementStmt(Table table, Column column, StringBuilder ddl) {
         ddl.append("IDENTITY (1,1) ");
-	}
+    }
 
-	@Override
+    @Override
     protected void writeExternalForeignKeyDropStmt(Table table, ForeignKey foreignKey,
             StringBuilder ddl) {
         String constraintName = getForeignKeyName(table, foreignKey);
@@ -681,7 +681,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     }
 
     protected void dropColumnChangeDefaults(Table sourceTable, Column sourceColumn, StringBuilder ddl) {
-    	// we're dropping the old default
+        // we're dropping the old default
         String tableName = getTableName(sourceTable.getName());
         String columnName = getColumnName(sourceColumn);
         String tableNameVar = "tn" + createUniqueIdentifier();

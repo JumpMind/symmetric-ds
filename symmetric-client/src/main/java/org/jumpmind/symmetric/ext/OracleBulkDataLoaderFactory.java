@@ -53,30 +53,30 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-    			TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-    	
-    	IParameterService parmService = engine.getParameterService();
-    	String dbUrl = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL);
+        
+        IParameterService parmService = engine.getParameterService();
+        String dbUrl = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL);
         String dbUser = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_USER);
-		if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
-			dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
-		}
+        if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
+            dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
 
-		String dbPassword = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
-		if (dbPassword != null && dbPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
-			dbPassword = engine.getSecurityService().decrypt(dbPassword.substring(SecurityConstants.PREFIX_ENC.length()));
-		}
+        String dbPassword = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+        if (dbPassword != null && dbPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
+            dbPassword = engine.getSecurityService().decrypt(dbPassword.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
 
-		String sqlLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD);
-		String sqlLoaderOptions = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_OPTIONS);
+        String sqlLoaderCommand = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD);
+        String sqlLoaderOptions = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_OPTIONS);
         String ezConnectString = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT);
 
         return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
-        		engine.getStagingManager(), engine.getTablePrefix(), sqlLoaderCommand, sqlLoaderOptions,
-        		dbUser, dbPassword, dbUrl, ezConnectString,
-        		buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+                engine.getStagingManager(), engine.getTablePrefix(), sqlLoaderCommand, sqlLoaderOptions,
+                dbUser, dbPassword, dbUrl, ezConnectString,
+                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

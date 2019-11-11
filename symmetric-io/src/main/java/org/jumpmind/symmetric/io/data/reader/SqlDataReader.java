@@ -67,9 +67,9 @@ public class SqlDataReader extends AbstractTableDataReader {
 
     @Override
     protected void finish() {
-    	try {
-    		this.sqlScriptReader.close();
-    	} catch(IOException e) { }
+        try {
+            this.sqlScriptReader.close();
+        } catch(IOException e) { }
     }
 
 }

@@ -350,11 +350,11 @@ abstract public class AbstractTest {
     }
     
     protected void logStartOfTest(String testName) {
-    	log.info("Start of test " + testName);
+        log.info("Start of test " + testName);
     }
     
     protected void logEndOfTest(String testName) {
-    	log.info("End of test " + testName);
+        log.info("End of test " + testName);
     }
 
 }

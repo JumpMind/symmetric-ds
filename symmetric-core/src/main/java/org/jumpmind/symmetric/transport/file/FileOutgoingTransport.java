@@ -112,16 +112,16 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
 
     @Override
     public void close() {
-    	try {
-    		if(writer != null) {
-    			writer.close();
-    		}
-    	} catch(IOException e) { }
-    	try {
-    		if(out != null) {
-    			out.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(writer != null) {
+                writer.close();
+            }
+        } catch(IOException e) { }
+        try {
+            if(out != null) {
+                out.close();
+            }
+        } catch(IOException e) { }
         open = false;
     }
 

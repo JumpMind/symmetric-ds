@@ -22,10 +22,10 @@ public class GenericJdbcSqlTemplate extends JdbcSqlTemplate {
     
     @Override
     public boolean isUniqueKeyViolation(Throwable ex) {
-    		if (ex.getMessage() != null && ex.getMessage().contains("prime key") || ex.getMessage().contains("primary key")) {
-    			return true;
-    		}
-    	    SQLException sqlEx = findSQLException(ex);
+            if (ex.getMessage() != null && ex.getMessage().contains("prime key") || ex.getMessage().contains("primary key")) {
+                return true;
+            }
+            SQLException sqlEx = findSQLException(ex);
         return sqlEx.getClass().getName().equals("SQLIntegrityConstraintViolationException");
     }    
     

@@ -34,9 +34,9 @@ public class LookupTableDataRouterTest {
         boolean valid = true;
         try {
             router.parse("LOOKUP_TABLE=STORE\r\n" +
-                		 "KEY_COLUMN=BRAND_ID\r\n" +
-                		 "LOOKUP_KEY_COLUMN=BRAND_ID\r\n" +
-                		 "EXTERNAL_ID_COLUMN=STORE_ID");
+                         "KEY_COLUMN=BRAND_ID\r\n" +
+                         "LOOKUP_KEY_COLUMN=BRAND_ID\r\n" +
+                         "EXTERNAL_ID_COLUMN=STORE_ID");
         } catch(SyntaxParsingException ex) {
             valid = false;
         }

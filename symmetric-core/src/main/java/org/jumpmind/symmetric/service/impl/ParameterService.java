@@ -122,24 +122,24 @@ public class ParameterService extends AbstractParameterService implements IParam
     }
     
     public void deleteParameterWithUpdate(String externalId, String nodeGroupId, String key) {
-    	String oldSql = sql.getSql("deleteParameterSql");
-    	String newSql = "";
-    	int j = 0;
-    	for (int i = 0; i < oldSql.length(); i++) {
-    		if (oldSql.charAt(i) == '?') {
-    			if (j == 0) {
-    				newSql += "'" + externalId + "'";;
-    			} else if (j == 1) {
-    				newSql += "'" + nodeGroupId + "'";
-    			} else {
-    				newSql += "'" + key + "'";
-    			}
-    			j++;
-    		} else {
-    			newSql += oldSql.charAt(i);
-    		}
-    	}
-    	sqlTemplate.update(newSql);
+        String oldSql = sql.getSql("deleteParameterSql");
+        String newSql = "";
+        int j = 0;
+        for (int i = 0; i < oldSql.length(); i++) {
+            if (oldSql.charAt(i) == '?') {
+                if (j == 0) {
+                    newSql += "'" + externalId + "'";;
+                } else if (j == 1) {
+                    newSql += "'" + nodeGroupId + "'";
+                } else {
+                    newSql += "'" + key + "'";
+                }
+                j++;
+            } else {
+                newSql += oldSql.charAt(i);
+            }
+        }
+        sqlTemplate.update(newSql);
     }
     
 

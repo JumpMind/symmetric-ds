@@ -407,9 +407,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
                 boolean refreshCache = false;
                 if (routingContext.get(CTX_KEY_FLUSHED_TRIGGER_ROUTERS) == null) {
-            	    triggerRouterService.clearCache();
-            	    refreshCache = true;
-            	    routingContext.put(CTX_KEY_FLUSHED_TRIGGER_ROUTERS, true);
+                    triggerRouterService.clearCache();
+                    refreshCache = true;
+                    routingContext.put(CTX_KEY_FLUSHED_TRIGGER_ROUTERS, true);
                 }
                 
                 Trigger trigger = null;

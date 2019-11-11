@@ -277,7 +277,7 @@ public class DatabaseInfo {
     
     private boolean zeroDateAllowed;
 
-	/**
+    /**
      * Creates a new platform info object.
      */
     public DatabaseInfo() {
@@ -1302,13 +1302,13 @@ public class DatabaseInfo {
     }
     
     public int getMinIsolationLevelToPreventPhantomReads() {
-		return minIsolationLevelToPreventPhantomReads;
-	}
+        return minIsolationLevelToPreventPhantomReads;
+    }
 
-	public void setMinIsolationLevelToPreventPhantomReads(
-			int minIsolationLevelToPreventPhantomReads) {
-		this.minIsolationLevelToPreventPhantomReads = minIsolationLevelToPreventPhantomReads;
-	}
+    public void setMinIsolationLevelToPreventPhantomReads(
+            int minIsolationLevelToPreventPhantomReads) {
+        this.minIsolationLevelToPreventPhantomReads = minIsolationLevelToPreventPhantomReads;
+    }
 
     public boolean isRequiredCharColumnEmptyStringSameAsNull() {
         return requiredCharColumnEmptyStringSameAsNull;
@@ -1318,7 +1318,7 @@ public class DatabaseInfo {
             boolean requiredCharColumnEmptyStringSameAsNull) {
         this.requiredCharColumnEmptyStringSameAsNull = requiredCharColumnEmptyStringSameAsNull;
     }
-	
+    
     public String getBinaryQuoteStart() {
         return binaryQuoteStart;
     }
@@ -1351,20 +1351,20 @@ public class DatabaseInfo {
         return schemaSeparator;
     }
 
-	public boolean isNotNullColumnsSupported() {
-		return notNullColumnsSupported;
-	}
+    public boolean isNotNullColumnsSupported() {
+        return notNullColumnsSupported;
+    }
 
-	public void setNotNullColumnsSupported(boolean notNullColumnsSupported) {
-		this.notNullColumnsSupported = notNullColumnsSupported;
-	}
+    public void setNotNullColumnsSupported(boolean notNullColumnsSupported) {
+        this.notNullColumnsSupported = notNullColumnsSupported;
+    }
     
-	public boolean isZeroDateAllowed() {
-		return zeroDateAllowed;
-	}
+    public boolean isZeroDateAllowed() {
+        return zeroDateAllowed;
+    }
 
-	public void setZeroDateAllowed(boolean zeroDateAllowed) {
-		this.zeroDateAllowed = zeroDateAllowed;
-	}
-	
+    public void setZeroDateAllowed(boolean zeroDateAllowed) {
+        this.zeroDateAllowed = zeroDateAllowed;
+    }
+    
 }

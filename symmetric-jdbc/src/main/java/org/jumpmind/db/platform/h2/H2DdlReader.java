@@ -50,119 +50,119 @@ import org.jumpmind.db.sql.SqlException;
  */
 public class H2DdlReader extends AbstractJdbcDdlReader {
 
-	public H2DdlReader(IDatabasePlatform platform) {
-		super(platform);
-		setDefaultCatalogPattern(null);
-		setDefaultSchemaPattern(null);
-	}
+    public H2DdlReader(IDatabasePlatform platform) {
+        super(platform);
+        setDefaultCatalogPattern(null);
+        setDefaultSchemaPattern(null);
+    }
 
-	@Override
-	protected Column readColumn(DatabaseMetaDataWrapper metaData,
-			Map<String, Object> values) throws SQLException {
-		Column column = super.readColumn(metaData, values);
-		if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
-			String maxLength = (String) values.get("CHARACTER_MAXIMUM_LENGTH");
-			if (isNotBlank(maxLength)) {
-				Integer size = Integer.valueOf(maxLength);
-				column.setSize(size.toString());
-				column.findPlatformColumn(platform.getName()).setSize(size);
-			}
-		}
-		if (values.get("COLUMN_DEFAULT") != null) {
-			column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
-		}		
-		
-		if (values.get("NUMERIC_SCALE") != null && values.get("DECIMAL_DIGITS") != null && ((Integer)values.get("DECIMAL_DIGITS")) == 0 ) {
-			int scale = (Integer) values.get("NUMERIC_SCALE");
-			column.setScale(scale);
-			column.findPlatformColumn(platform.getName()).setDecimalDigits(
-					scale);
-		}
-		if (TypeMap.isTextType(column.getMappedTypeCode())
-				&& (column.getDefaultValue() != null)) {
-			column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
-		}
+    @Override
+    protected Column readColumn(DatabaseMetaDataWrapper metaData,
+            Map<String, Object> values) throws SQLException {
+        Column column = super.readColumn(metaData, values);
+        if (values.get("CHARACTER_MAXIMUM_LENGTH") != null) {
+            String maxLength = (String) values.get("CHARACTER_MAXIMUM_LENGTH");
+            if (isNotBlank(maxLength)) {
+                Integer size = Integer.valueOf(maxLength);
+                column.setSize(size.toString());
+                column.findPlatformColumn(platform.getName()).setSize(size);
+            }
+        }
+        if (values.get("COLUMN_DEFAULT") != null) {
+            column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
+        }        
+        
+        if (values.get("NUMERIC_SCALE") != null && values.get("DECIMAL_DIGITS") != null && ((Integer)values.get("DECIMAL_DIGITS")) == 0 ) {
+            int scale = (Integer) values.get("NUMERIC_SCALE");
+            column.setScale(scale);
+            column.findPlatformColumn(platform.getName()).setDecimalDigits(
+                    scale);
+        }
+        if (TypeMap.isTextType(column.getMappedTypeCode())
+                && (column.getDefaultValue() != null)) {
+            column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
+        }
 
-		String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
-		if (autoIncrement != null
-				&& "YES".equalsIgnoreCase(autoIncrement.trim())) {
-			column.setAutoIncrement(true);
-			column.setDefaultValue(null);
-		}
-		return column;
-	}
+        String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
+        if (autoIncrement != null
+                && "YES".equalsIgnoreCase(autoIncrement.trim())) {
+            column.setAutoIncrement(true);
+            column.setDefaultValue(null);
+        }
+        return column;
+    }
 
-	@Override
-	protected String getResultSetSchemaName() {
-		return "TABLE_SCHEMA";
-	}
+    @Override
+    protected String getResultSetSchemaName() {
+        return "TABLE_SCHEMA";
+    }
 
-	@Override
-	protected String getResultSetCatalogName() {
-		return "TABLE_CATALOG";
-	}
+    @Override
+    protected String getResultSetCatalogName() {
+        return "TABLE_CATALOG";
+    }
 
-	@Override
-	protected List<MetaDataColumnDescriptor> initColumnsForColumn() {
-		List<MetaDataColumnDescriptor> result = super.initColumnsForColumn();
-		result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));
-		result.add(new MetaDataColumnDescriptor("NUMERIC_SCALE", 4,
-				Integer.valueOf(0)));
-		result.add(new MetaDataColumnDescriptor("CHARACTER_MAXIMUM_LENGTH", 12));
-		return result;
-	}
+    @Override
+    protected List<MetaDataColumnDescriptor> initColumnsForColumn() {
+        List<MetaDataColumnDescriptor> result = super.initColumnsForColumn();
+        result.add(new MetaDataColumnDescriptor("COLUMN_DEFAULT", 12));
+        result.add(new MetaDataColumnDescriptor("NUMERIC_SCALE", 4,
+                Integer.valueOf(0)));
+        result.add(new MetaDataColumnDescriptor("CHARACTER_MAXIMUM_LENGTH", 12));
+        return result;
+    }
 
-	@Override
-	protected boolean isInternalForeignKeyIndex(Connection connection,
-			DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
-			IIndex index) {
-		String name = index.getName();
-		return name != null
-				&& (name.startsWith(fk.getName()) || name
-						.startsWith("CONSTRAINT_INDEX_"));
-	}
+    @Override
+    protected boolean isInternalForeignKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk,
+            IIndex index) {
+        String name = index.getName();
+        return name != null
+                && (name.startsWith(fk.getName()) || name
+                        .startsWith("CONSTRAINT_INDEX_"));
+    }
 
-	@Override
-	protected boolean isInternalPrimaryKeyIndex(Connection connection,
-			DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
-		String name = index.getName();
-		return name != null && name.startsWith("PRIMARY_KEY_");
-	}
-	
-	@Override
-	public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+    @Override
+    protected boolean isInternalPrimaryKeyIndex(Connection connection,
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
+        String name = index.getName();
+        return name != null && name.startsWith("PRIMARY_KEY_");
+    }
+    
+    @Override
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
-				+ "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
-				trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(true);
-				trigger.setSource(row.getString("SQL"));
-				row.remove("SQL");
-				String triggerType = row.getString("TRIGGER_TYPE");
-				if (triggerType.equals("DELETE")
-						|| triggerType.equals("INSERT")
-						|| triggerType.equals("UPDATE")) {
-					trigger.setTriggerType(TriggerType.valueOf(triggerType));
-				}
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema, catalog);
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
+                + "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
+                trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(true);
+                trigger.setSource(row.getString("SQL"));
+                row.remove("SQL");
+                String triggerType = row.getString("TRIGGER_TYPE");
+                if (triggerType.equals("DELETE")
+                        || triggerType.equals("INSERT")
+                        || triggerType.equals("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                }
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema, catalog);
 
-		return triggers;
-	}
+        return triggers;
+    }
 
 }

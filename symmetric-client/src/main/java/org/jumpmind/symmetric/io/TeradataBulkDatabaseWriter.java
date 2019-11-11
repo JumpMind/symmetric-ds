@@ -27,7 +27,7 @@ import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 
 public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-	protected IStagingManager stagingManager;
+    protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected String rowTerminator = "\r\n";
     protected String fieldTerminator = ",";
@@ -37,15 +37,15 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected Table table = null;
     protected int totalBytes;
     
-	public TeradataBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-			IDatabasePlatform tar, String tablePrefix,
-			IStagingManager stagingManager, DatabaseWriterSettings settings) {
-		super(symmetricPlatform, tar, tablePrefix);
-		this.stagingManager = stagingManager;
-		this.writerSettings = settings;
-	}
-	
-	public boolean start(Table table) {
+    public TeradataBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+            IDatabasePlatform tar, String tablePrefix,
+            IStagingManager stagingManager, DatabaseWriterSettings settings) {
+        super(symmetricPlatform, tar, tablePrefix);
+        this.stagingManager = stagingManager;
+        this.writerSettings = settings;
+    }
+    
+    public boolean start(Table table) {
         this.table = table;
         if (super.start(table)) {
             if (sourceTable != null && targetTable == null) {
@@ -74,17 +74,17 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             if (this.stagedInputFile == null) {
                 createStagingFile();
             }
-	        
-	        return true;
+            
+            return true;
         } else {
             return false;
         }
     }
-	
-	@Override
+    
+    @Override
     public void end(Table table) {
         try {
-        		flush();
+                flush();
             this.stagedInputFile.close();
             this.stagedInputFile.delete();
         } finally {
@@ -176,73 +176,73 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             String schemaSeparator = dbInfo.getSchemaSeparator();
             String tableName = this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator);
             
-	        try {
+            try {
                 cleanUpFastLoadTables(tableName, false);
 
                 IDatabasePlatform platform = getPlatform();
-	            ds = ((ResettableBasicDataSource) platform.getDataSource());
-	            
-	            boolean containsCommas = ds.getUrl().indexOf(",") > 0;
-	            boolean lastCharSlash = ds.getUrl().charAt(ds.getUrl().length() - 1) == '/';
-	            
-	            fastLoadConnectionString = (lastCharSlash && containsCommas ? "," : lastCharSlash ? "" : "/") + fastLoadConnectionString;
-	            
-	            if (ds.getUrl().indexOf(fastLoadConnectionString) < 0) {
+                ds = ((ResettableBasicDataSource) platform.getDataSource());
+                
+                boolean containsCommas = ds.getUrl().indexOf(",") > 0;
+                boolean lastCharSlash = ds.getUrl().charAt(ds.getUrl().length() - 1) == '/';
+                
+                fastLoadConnectionString = (lastCharSlash && containsCommas ? "," : lastCharSlash ? "" : "/") + fastLoadConnectionString;
+                
+                if (ds.getUrl().indexOf(fastLoadConnectionString) < 0) {
                     ds.setUrl(ds.getUrl() + fastLoadConnectionString);
-	            }
-	            
-	            c = DriverManager.getConnection(ds.getUrl(), ds.getUsername(), ds.getPassword());
-	            
-	            String sql = String.format("INSERT INTO " + tableName + " VALUES " + buildSql());
-	            
-	            ps = c.prepareStatement(sql);
-	            
-	            InputStream dataStream = new FileInputStream(this.stagedInputFile.getFile());
-	            ps.setAsciiStream(1, dataStream, -1);
-	            ps.executeUpdate();
-	            
-	            log.info("Fast load complete.");
-	        } catch (SQLException e) {
-	           while (e != null) {
-	                log.error("SQL State = "
-	                    + e.getSQLState()
-	                    + ", Error Code = "
-	                    + e.getErrorCode());
-	                e = e.getNextException();
-	                if (e.getErrorCode() == 2636) {
-	                		log.warn("In order to use the teradata bulk loader the target table " + tableName + " must me empty");
-	                }
-	            }
+                }
+                
+                c = DriverManager.getConnection(ds.getUrl(), ds.getUsername(), ds.getPassword());
+                
+                String sql = String.format("INSERT INTO " + tableName + " VALUES " + buildSql());
+                
+                ps = c.prepareStatement(sql);
+                
+                InputStream dataStream = new FileInputStream(this.stagedInputFile.getFile());
+                ps.setAsciiStream(1, dataStream, -1);
+                ps.executeUpdate();
+                
+                log.info("Fast load complete.");
+            } catch (SQLException e) {
+               while (e != null) {
+                    log.error("SQL State = "
+                        + e.getSQLState()
+                        + ", Error Code = "
+                        + e.getErrorCode());
+                    e = e.getNextException();
+                    if (e.getErrorCode() == 2636) {
+                            log.warn("In order to use the teradata bulk loader the target table " + tableName + " must me empty");
+                    }
+                }
 
-	            throw getPlatform().getSqlTemplate().translate(e);
-	        } catch (Exception ex) {
-	        		
-	        } finally {
-	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-	            totalBytes=0;
-	            
-	            cleanUpFastLoadTables(tableName, false);
+                throw getPlatform().getSqlTemplate().translate(e);
+            } catch (Exception ex) {
+                    
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+                totalBytes=0;
+                
+                cleanUpFastLoadTables(tableName, false);
 
-	            if (c != null) {
+                if (c != null) {
                     try {
                         c.close();
                     } catch (SQLException sqle) {
                         log.error("Unable to close teradata connection", sqle);
                     }
-	            }
-	            if (ps != null) {
+                }
+                if (ps != null) {
                     try {
                         ps.close();
                     } catch (SQLException sqle) {
                         log.error("Unable to close teradata prepared statement", sqle);
                     }
-	            }
-	        }
+                }
+            }
         }
     }
     
     protected void cleanUpFastLoadTables(String tableName, boolean clearTargetTable) {
-    		JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
+            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
         Connection normalConnection = jdbcTransaction.getConnection();
         Statement stmt = null;
 

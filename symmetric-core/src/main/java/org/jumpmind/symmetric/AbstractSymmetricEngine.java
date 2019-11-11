@@ -311,7 +311,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         String engineName = properties.get(ParameterConstants.ENGINE_NAME);
         if (!StringUtils.contains(engineName, '`') && !StringUtils.contains(engineName, '(')) {
-        	    MDC.put("engineName", engineName);
+                MDC.put("engineName", engineName);
         }
         this.platform = createDatabasePlatform(properties);
 
@@ -450,7 +450,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }    
 
     protected INodeCommunicationService buildNodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService, 
-    		IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
+            IConfigurationService configurationService, ISymmetricDialect symmetricDialect) {
         return new NodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
     }
 
@@ -479,7 +479,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String getEngineName() {
-    	return parameterService.getEngineName();
+        return parameterService.getEngineName();
     }
 
     public void setup() {
@@ -488,20 +488,20 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             parameterService.setDatabaseHasBeenInitialized(true);
             
             String databaseVersion = this.getNodeService().findIdentity() != null ? 
-            		this.getNodeService().findIdentity().getSymmetricVersion() : null;
-    		String softwareVersion = Version.version();
-    		
-    		log.info("SymmetricDS database version : " + databaseVersion);
-    		log.info("SymmetricDS software version : " + softwareVersion);
-    		
-    		if (databaseVersion != null && !softwareVersion.equals(databaseVersion)) {
-    			log.info("SymmetricDS database version does not match the current software version, running software upgrade listeners.");
-	            List<ISoftwareUpgradeListener> softwareUpgradeListeners = 
-	            		extensionService.getExtensionPointList(ISoftwareUpgradeListener.class);
-	            for (ISoftwareUpgradeListener listener : softwareUpgradeListeners) {
-	            	listener.upgrade(databaseVersion, softwareVersion);
-	            }
-    		}
+                    this.getNodeService().findIdentity().getSymmetricVersion() : null;
+            String softwareVersion = Version.version();
+            
+            log.info("SymmetricDS database version : " + databaseVersion);
+            log.info("SymmetricDS software version : " + softwareVersion);
+            
+            if (databaseVersion != null && !softwareVersion.equals(databaseVersion)) {
+                log.info("SymmetricDS database version does not match the current software version, running software upgrade listeners.");
+                List<ISoftwareUpgradeListener> softwareUpgradeListeners = 
+                        extensionService.getExtensionPointList(ISoftwareUpgradeListener.class);
+                for (ISoftwareUpgradeListener listener : softwareUpgradeListeners) {
+                    listener.upgrade(databaseVersion, softwareVersion);
+                }
+            }
             
             setup = true;
         }
@@ -753,15 +753,15 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             }
        }
         
-		boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
-		boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, true);
-		if (useExtractJob && !streamToFile) {
-			throw new SymmetricException(String.format(
-					"Node '%s' is configured with confilcting parameters which may result in replication stopping and/or empty load batches. "
-							+ "One of these two parameters needs to be changed: %s=%s and %s=%s",
-					node != null ? node.getNodeId() : "null", ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB,
-					useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
-		}
+        boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
+        boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, true);
+        if (useExtractJob && !streamToFile) {
+            throw new SymmetricException(String.format(
+                    "Node '%s' is configured with confilcting parameters which may result in replication stopping and/or empty load batches. "
+                            + "One of these two parameters needs to be changed: %s=%s and %s=%s",
+                    node != null ? node.getNodeId() : "null", ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB,
+                    useExtractJob, ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
+        }
     }
 
     public String getEngineDescription(String msg) {
@@ -858,10 +858,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             jobManager.stopJobs();
         }
         if (routerService != null) {
-        	routerService.stop();
+            routerService.stop();
         }
         if (nodeCommunicationService != null) {
-        	nodeCommunicationService.stop();
+            nodeCommunicationService.stop();
         }
         if (updateService != null) {
             updateService.stop();
@@ -1167,7 +1167,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
 
     public String getDeploymentSubType() {
-    		return deploymentSubType;
+            return deploymentSubType;
     }
     
     public ITransformService getTransformService() {
@@ -1299,7 +1299,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public IUpdateService getUpdateService() {
-    	return updateService;
+        return updateService;
     }
     
     @Override

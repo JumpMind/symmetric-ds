@@ -134,42 +134,42 @@ public class Db2zOsDdlReader extends Db2DdlReader {
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT * FROM SYSCAT.TRIGGERS "
-				+ "WHERE TABNAME=? and TABSCHEMA=?";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGNAME"));
-				trigger.setSchemaName(row.getString("TRIGSCHEMA"));
-				trigger.setTableName(row.getString("TABNAME"));
-				trigger.setEnabled(true);
-				trigger.setSource(row.getString("TEXT"));
-				row.remove("TEXT");
-				switch(row.getString("TRIGEVENT").charAt(0)) {
-					case('I'): row.put("TRIGEVENT", "INSERT"); break;
-					case('U'): row.put("TRIGEVENT", "UPDATE"); break;
-					case('D'): row.put("TRIGEVENT", "DELETE");
-				}
-				trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGEVENT")));				
-				switch(row.getString("TRIGTIME").charAt(0)) {
-					case ('A'): row.put("TRIGTIME", "AFTER"); break;
-					case ('B'): row.put("TRIGTIME", "BEFORE"); break;
-					case ('I'): row.put("TRIGTIME", "INSTEAD OF");
-				}
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-		
-		return triggers;
-	}
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT * FROM SYSCAT.TRIGGERS "
+                + "WHERE TABNAME=? and TABSCHEMA=?";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGNAME"));
+                trigger.setSchemaName(row.getString("TRIGSCHEMA"));
+                trigger.setTableName(row.getString("TABNAME"));
+                trigger.setEnabled(true);
+                trigger.setSource(row.getString("TEXT"));
+                row.remove("TEXT");
+                switch(row.getString("TRIGEVENT").charAt(0)) {
+                    case('I'): row.put("TRIGEVENT", "INSERT"); break;
+                    case('U'): row.put("TRIGEVENT", "UPDATE"); break;
+                    case('D'): row.put("TRIGEVENT", "DELETE");
+                }
+                trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGEVENT")));                
+                switch(row.getString("TRIGTIME").charAt(0)) {
+                    case ('A'): row.put("TRIGTIME", "AFTER"); break;
+                    case ('B'): row.put("TRIGTIME", "BEFORE"); break;
+                    case ('I'): row.put("TRIGTIME", "INSTEAD OF");
+                }
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+        
+        return triggers;
+    }
 
 }

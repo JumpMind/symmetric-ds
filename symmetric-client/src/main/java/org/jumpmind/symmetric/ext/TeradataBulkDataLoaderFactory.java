@@ -18,7 +18,7 @@ import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
 public class TeradataBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
-	private IStagingManager stagingManager;
+    private IStagingManager stagingManager;
     
     public TeradataBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
@@ -29,16 +29,16 @@ public class TeradataBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-			TransformWriter transformWriter,
+            TransformWriter transformWriter,
         List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
         List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
-	    return new TeradataBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-	    		stagingManager, buildParameterDatabaseWritterSettings());
-	}
-	
-	public boolean isPlatformSupported(IDatabasePlatform platform) {
-	    return (platform.getName() != null && platform.getName().startsWith(DatabaseNamesConstants.TERADATA));
-	}
+        return new TeradataBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
+                stagingManager, buildParameterDatabaseWritterSettings());
+    }
+    
+    public boolean isPlatformSupported(IDatabasePlatform platform) {
+        return (platform.getName() != null && platform.getName().startsWith(DatabaseNamesConstants.TERADATA));
+    }
 
 }

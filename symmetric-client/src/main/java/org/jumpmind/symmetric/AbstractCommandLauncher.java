@@ -368,7 +368,7 @@ public abstract class AbstractCommandLauncher {
 
         if (line.hasOption(OPTION_JCE_PROVIDER)) {
             Provider provider = (Provider) Class.forName(line.getOptionValue(OPTION_JCE_PROVIDER))
-            		.getDeclaredConstructor().newInstance();
+                    .getDeclaredConstructor().newInstance();
             Security.addProvider(provider);
         }
     }

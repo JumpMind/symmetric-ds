@@ -135,8 +135,8 @@ public class FileTriggerTracker {
 
         public void onCtlFile(File file) {
             if (snapshot.getFileTriggerRouter().getFileTrigger().isSyncOnCtlFile()) {
-            	File ctlFile = engine.getFileSyncService().getControleFile(file);
-            	
+                File ctlFile = engine.getFileSyncService().getControleFile(file);
+                
                 if (ctlFile.exists()) {
                     log.debug("Control file detected: {}", ctlFile.getAbsolutePath());
                     addSnapshot(file, LastEventType.CREATE);

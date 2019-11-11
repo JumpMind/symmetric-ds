@@ -258,79 +258,79 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
     }
     
     @Override
-	public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT "
-						+ "trig.name AS trigger_name, "
-						+ "trig.id AS trigger_id, "
-						+ "tab.name AS table_name, "
-						+ "tab.id AS table_id, "
-						+ "db.name AS catalog, "
-						+ "trig.crdate AS created_on, "
-						+ "tab.deltrig AS table_delete_trigger_id, "
-						+ "tab.instrig AS table_insert_trigger_id, "
-						+ "tab.updtrig AS table_update_trigger_id "
-				   + "FROM sysobjects AS trig "
-				   + "INNER JOIN sysobjects AS tab "
-				   		+ "ON trig.id = tab.deltrig "
-				   		+ "OR trig.id = tab.instrig "
-				   		+ "OR trig.id = tab.updtrig "
-			   		+ "INNER JOIN master.dbo.sysdatabases AS db "
-				   		+ "ON db.dbid = db_id() "
-				   + "WHERE tab.name = ? AND db.name = ? ";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("trigger_name"));
-				trigger.setTableName(row.getString("table_name"));
-				trigger.setCatalogName(row.getString("catalog"));
-				trigger.setEnabled(true);
-				trigger.setSource("");
-				if (row.getString("table_insert_trigger_id")
-						.equals(row.getString("trigger_id"))) {
-					trigger.setTriggerType(TriggerType.INSERT);
-					row.put("trigger_type", "insert");
-				} else if (row.getString("table_delete_trigger_id")
-						.equals(row.getString("trigger_id"))) {
-					trigger.setTriggerType(TriggerType.DELETE);
-					row.put("trigger_type", "delete");
-				} else if (row.getString("table_update_trigger_id")
-						.equals(row.getString("trigger_id"))) {
-					trigger.setTriggerType(TriggerType.UPDATE);
-					row.put("trigger_type", "update");
-				}
-				row.remove("table_insert_trigger_id");
-				row.remove("table_delete_trigger_id");
-				row.remove("table_update_trigger_id");
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, catalog);
-		
-		
-		for (final Trigger trigger : triggers) {
-			int id = (Integer) trigger.getMetaData().get("trigger_id");
-			String sourceSql = "SELECT text "
-							 + "FROM syscomments "
-							 + "WHERE id = ? "
-							 + "ORDER BY colid ";
-			sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
-				public Trigger mapRow(Row row) {
-					trigger.setSource(trigger.getSource()+"\n"+row.getString("text"));					
-					return trigger;
-				}
-			}, id);
-		}
-		
-		return triggers;
-	}
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT "
+                        + "trig.name AS trigger_name, "
+                        + "trig.id AS trigger_id, "
+                        + "tab.name AS table_name, "
+                        + "tab.id AS table_id, "
+                        + "db.name AS catalog, "
+                        + "trig.crdate AS created_on, "
+                        + "tab.deltrig AS table_delete_trigger_id, "
+                        + "tab.instrig AS table_insert_trigger_id, "
+                        + "tab.updtrig AS table_update_trigger_id "
+                   + "FROM sysobjects AS trig "
+                   + "INNER JOIN sysobjects AS tab "
+                           + "ON trig.id = tab.deltrig "
+                           + "OR trig.id = tab.instrig "
+                           + "OR trig.id = tab.updtrig "
+                       + "INNER JOIN master.dbo.sysdatabases AS db "
+                           + "ON db.dbid = db_id() "
+                   + "WHERE tab.name = ? AND db.name = ? ";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("trigger_name"));
+                trigger.setTableName(row.getString("table_name"));
+                trigger.setCatalogName(row.getString("catalog"));
+                trigger.setEnabled(true);
+                trigger.setSource("");
+                if (row.getString("table_insert_trigger_id")
+                        .equals(row.getString("trigger_id"))) {
+                    trigger.setTriggerType(TriggerType.INSERT);
+                    row.put("trigger_type", "insert");
+                } else if (row.getString("table_delete_trigger_id")
+                        .equals(row.getString("trigger_id"))) {
+                    trigger.setTriggerType(TriggerType.DELETE);
+                    row.put("trigger_type", "delete");
+                } else if (row.getString("table_update_trigger_id")
+                        .equals(row.getString("trigger_id"))) {
+                    trigger.setTriggerType(TriggerType.UPDATE);
+                    row.put("trigger_type", "update");
+                }
+                row.remove("table_insert_trigger_id");
+                row.remove("table_delete_trigger_id");
+                row.remove("table_update_trigger_id");
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, catalog);
+        
+        
+        for (final Trigger trigger : triggers) {
+            int id = (Integer) trigger.getMetaData().get("trigger_id");
+            String sourceSql = "SELECT text "
+                             + "FROM syscomments "
+                             + "WHERE id = ? "
+                             + "ORDER BY colid ";
+            sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
+                public Trigger mapRow(Row row) {
+                    trigger.setSource(trigger.getSource()+"\n"+row.getString("text"));                    
+                    return trigger;
+                }
+            }, id);
+        }
+        
+        return triggers;
+    }
 
     @Override
     protected String getTableNamePattern(String tableName) {

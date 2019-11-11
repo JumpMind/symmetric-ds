@@ -35,7 +35,7 @@ public class SqlAnywhereJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
     }
 
     public boolean supportsGetGeneratedKeys() {
-    	return false;
+        return false;
     }
     
     protected String getSelectLastInsertIdSql(String sequenceName) {

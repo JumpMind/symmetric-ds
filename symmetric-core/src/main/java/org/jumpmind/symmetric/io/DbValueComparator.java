@@ -100,26 +100,26 @@ public class DbValueComparator {
     }
 
     public int compareNumeric(Column sourceColumn, Column targetColumn, String sourceValue, String targetValue) {
-    	if (StringUtils.isBlank(sourceValue) && StringUtils.isBlank(targetValue)) {
-    		return 0;
-    	}
+        if (StringUtils.isBlank(sourceValue) && StringUtils.isBlank(targetValue)) {
+            return 0;
+        }
         if (!StringUtils.isBlank(sourceValue) && StringUtils.isBlank(targetValue)) {
             return 1;
         }
         if (StringUtils.isBlank(sourceValue) && !StringUtils.isBlank(targetValue)) {
-        	return -1;
+            return -1;
         }
         
         BigDecimal source = null;
         BigDecimal target = null;
         
-        try {        	
-        	source = NumberUtils.createBigDecimal(sourceValue);
+        try {            
+            source = NumberUtils.createBigDecimal(sourceValue);
         } catch (NumberFormatException ex) {
-        	log.debug("Failed to parse [" + sourceValue + "]", ex);
+            log.debug("Failed to parse [" + sourceValue + "]", ex);
         }
         
-        try {        	
+        try {            
             target = NumberUtils.createBigDecimal(targetValue);
         } catch (NumberFormatException ex) {
             log.debug("Failed to parse [" + targetValue + "]", ex);

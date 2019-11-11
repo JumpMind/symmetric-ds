@@ -62,12 +62,12 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
     private Pattern db2TimestampPattern = Pattern
             .compile("'(\\d{4}\\-\\d{2}\\-\\d{2})\\-(\\d{2}).(\\d{2}).(\\d{2})(\\.\\d{1,8})?'");
 
-	public Db2DdlReader(IDatabasePlatform platform) {
+    public Db2DdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
     }
-	
+    
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
@@ -237,67 +237,67 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) throws SQLException {
-    	return fk.getName().equalsIgnoreCase(index.getName());
+        return fk.getName().equalsIgnoreCase(index.getName());
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT "
-						+ "NAME as TRIGGER_NAME, "
-						+ "SCHEMA, "
-						+ "DEFINER, "
-						+ "TBNAME as TABLE_NAME, "
-						+ "TBCREATOR as TABLE_CREATOR, "
-						+ "TRIGEVENT as TRIGGER_TYPE, "
-						+ "TRIGTIME as TRIGGER_TIME, "
-						+ "GRANULARITY, "
-						+ "VALID, "
-						+ "TEXT, "
-						+ "ENABLED, "
-						+ "CREATE_TIME, "
-						+ "FUNC_PATH as FUNCTION_PATH, "
-						+ "ALTER_TIME as LAST_ALTERED "
-					+ "FROM SYSIBM.SYSTRIGGERS "
-					+ "WHERE TBNAME=? and SCHEMA=?";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setSchemaName(row.getString("SCHEMA"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(row.getString("ENABLED").equals("Y"));
-				trigger.setSource(row.getString("TEXT"));
-				row.remove("TEXT");
-				String trigEvent = row.getString("TRIGGER_TYPE");
-				switch(trigEvent.charAt(0)) {
-					case('I'): trigEvent = "INSERT"; break;
-					case('U'): trigEvent = "UPDATE"; break;
-					case('D'): trigEvent = "DELETE";
-				}
-				trigger.setTriggerType(TriggerType.valueOf(trigEvent));
-				row.put("TRIGGER_TYPE", trigEvent);
-				switch(row.getString("TRIGGER_TIME").charAt(0)) {
-					case ('A'): row.put("TRIGGER_TIME", "AFTER"); break;
-					case ('B'): row.put("TRIGGER_TIME", "BEFORE"); break;
-					case ('I'): row.put("TRIGGER_TIME", "INSTEAD OF");
-				}
-				if (row.getString("GRANULARITY").equals("S"))
-					row.put("GRANULARITY", "ONCE PER STATEMENT");
-				else if (row.getString("GRANULARITY").equals("R"))
-					row.put("GRANULARITY", "ONCE PER ROW");
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-		
-		return triggers;
-	}
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT "
+                        + "NAME as TRIGGER_NAME, "
+                        + "SCHEMA, "
+                        + "DEFINER, "
+                        + "TBNAME as TABLE_NAME, "
+                        + "TBCREATOR as TABLE_CREATOR, "
+                        + "TRIGEVENT as TRIGGER_TYPE, "
+                        + "TRIGTIME as TRIGGER_TIME, "
+                        + "GRANULARITY, "
+                        + "VALID, "
+                        + "TEXT, "
+                        + "ENABLED, "
+                        + "CREATE_TIME, "
+                        + "FUNC_PATH as FUNCTION_PATH, "
+                        + "ALTER_TIME as LAST_ALTERED "
+                    + "FROM SYSIBM.SYSTRIGGERS "
+                    + "WHERE TBNAME=? and SCHEMA=?";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setSchemaName(row.getString("SCHEMA"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(row.getString("ENABLED").equals("Y"));
+                trigger.setSource(row.getString("TEXT"));
+                row.remove("TEXT");
+                String trigEvent = row.getString("TRIGGER_TYPE");
+                switch(trigEvent.charAt(0)) {
+                    case('I'): trigEvent = "INSERT"; break;
+                    case('U'): trigEvent = "UPDATE"; break;
+                    case('D'): trigEvent = "DELETE";
+                }
+                trigger.setTriggerType(TriggerType.valueOf(trigEvent));
+                row.put("TRIGGER_TYPE", trigEvent);
+                switch(row.getString("TRIGGER_TIME").charAt(0)) {
+                    case ('A'): row.put("TRIGGER_TIME", "AFTER"); break;
+                    case ('B'): row.put("TRIGGER_TIME", "BEFORE"); break;
+                    case ('I'): row.put("TRIGGER_TIME", "INSTEAD OF");
+                }
+                if (row.getString("GRANULARITY").equals("S"))
+                    row.put("GRANULARITY", "ONCE PER STATEMENT");
+                else if (row.getString("GRANULARITY").equals("R"))
+                    row.put("GRANULARITY", "ONCE PER ROW");
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+        
+        return triggers;
+    }
 
 }

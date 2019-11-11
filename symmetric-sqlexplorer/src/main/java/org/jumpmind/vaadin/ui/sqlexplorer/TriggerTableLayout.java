@@ -26,30 +26,30 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public class TriggerTableLayout extends VerticalLayout{
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     
-	private Trigger trigger;
-	
-	private Grid grid;
-	
-	private Settings settings;
-	
-	private Refresher refresher;
-	
-	public TriggerTableLayout(Trigger trigger, Settings settings, Refresher refresher) {
-		this.trigger = trigger;
-		this.settings = settings;
-		this.refresher = refresher;
-		
-		createTabularLayout();
-	}
-	
-	public void createTabularLayout() {
-		this.setSizeFull();
-		this.setSpacing(false);
-		
-		HorizontalLayout bar = new HorizontalLayout();
-		bar.setWidth(100, Unit.PERCENTAGE);
+    private Trigger trigger;
+    
+    private Grid grid;
+    
+    private Settings settings;
+    
+    private Refresher refresher;
+    
+    public TriggerTableLayout(Trigger trigger, Settings settings, Refresher refresher) {
+        this.trigger = trigger;
+        this.settings = settings;
+        this.refresher = refresher;
+        
+        createTabularLayout();
+    }
+    
+    public void createTabularLayout() {
+        this.setSizeFull();
+        this.setSpacing(false);
+        
+        HorizontalLayout bar = new HorizontalLayout();
+        bar.setWidth(100, Unit.PERCENTAGE);
         bar.setMargin(new MarginInfo(false, true, false, true));
 
         HorizontalLayout leftBar = new HorizontalLayout();
@@ -119,27 +119,27 @@ public class TriggerTableLayout extends VerticalLayout{
 
         this.addComponent(grid);
         this.setExpandRatio(grid, 1);
-	}
-	
-	private Grid fillGrid(Settings settings) {
-		Grid grid = new Grid();
+    }
+    
+    private Grid fillGrid(Settings settings) {
+        Grid grid = new Grid();
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setColumnReorderingAllowed(false);
-		
+        
         Map<String, Object> metaData = trigger.getMetaData();  
         grid.addColumn("Property", String.class).setHeaderCaption("Property").setHidable(false);
         grid.addColumn("Value", String.class).setHeaderCaption("Value").setHidable(false);
         
         for (String key : metaData.keySet()) {
-        	Object[] row = new Object[2];
-        	row[0] = key;
-        	row[1] = String.valueOf(metaData.get(key));
-        	grid.addRow(row);
+            Object[] row = new Object[2];
+            row[0] = key;
+            row[1] = String.valueOf(metaData.get(key));
+            grid.addRow(row);
         }
         
         grid.getColumn("Property").setWidth(250);
         
-		return grid;
-	}    
+        return grid;
+    }    
     
 }

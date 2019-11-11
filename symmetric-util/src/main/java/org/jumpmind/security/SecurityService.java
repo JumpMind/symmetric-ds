@@ -174,7 +174,7 @@ public class SecurityService implements ISecurityService {
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
         log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(), 
-        		secretKey.getEncoded().length * 8, cipher.getProvider().getName());
+                secretKey.getEncoded().length * 8, cipher.getProvider().getName());
         return cipher;
     }
 
@@ -233,31 +233,31 @@ public class SecurityService implements ISecurityService {
     }
 
     protected SecretKey getDefaultSecretKey() throws Exception {
-    	for (int i = 0; i < SecurityConstants.CIPHERS.length; i++) {
+        for (int i = 0; i < SecurityConstants.CIPHERS.length; i++) {
             try {
-            	if (SecurityConstants.CIPHERS[i].startsWith("DESede")) {
-					SecretKeyFactory kf = SecretKeyFactory.getInstance(SecurityConstants.KEYSPECS[i]);
-					secretKey = kf.generateSecret(new DESedeKeySpec(getBytes(SecurityConstants.BYTESIZES[i])));            		
-            	} else {
-            		secretKey = new SecretKeySpec(getBytes(SecurityConstants.BYTESIZES[i]), SecurityConstants.KEYSPECS[i]);
-            	}
+                if (SecurityConstants.CIPHERS[i].startsWith("DESede")) {
+                    SecretKeyFactory kf = SecretKeyFactory.getInstance(SecurityConstants.KEYSPECS[i]);
+                    secretKey = kf.generateSecret(new DESedeKeySpec(getBytes(SecurityConstants.BYTESIZES[i])));                    
+                } else {
+                    secretKey = new SecretKeySpec(getBytes(SecurityConstants.BYTESIZES[i]), SecurityConstants.KEYSPECS[i]);
+                }
                 initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[i]), Cipher.ENCRYPT_MODE);
-				log.info("Generated secret key using {} {}", SecurityConstants.CIPHERS[i],
-						SecurityConstants.BYTESIZES[i] * 8);
+                log.info("Generated secret key using {} {}", SecurityConstants.CIPHERS[i],
+                        SecurityConstants.BYTESIZES[i] * 8);
                 break;
             } catch (Exception e) {
-            	log.debug("Cannot use {} {}-bit because: {}", SecurityConstants.CIPHERS[i],
-            			SecurityConstants.BYTESIZES[i] * 8, e.getMessage());
+                log.debug("Cannot use {} {}-bit because: {}", SecurityConstants.CIPHERS[i],
+                        SecurityConstants.BYTESIZES[i] * 8, e.getMessage());
             }
-    	} 
+        } 
         return secretKey;
     }
 
     protected byte[] getBytes(int byteSize) {
-    	SecureRandom random = new SecureRandom();
-    	byte[] bytes = new byte[byteSize];
-    	random.nextBytes(bytes);
-    	return bytes;    	
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[byteSize];
+        random.nextBytes(bytes);
+        return bytes;        
     }
     
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {

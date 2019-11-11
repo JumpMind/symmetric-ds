@@ -83,10 +83,10 @@ public interface IIncomingBatchService {
     public List<IncomingBatchSummary> findIncomingBatchSummary(Status... statuses);
     
     public List<IncomingBatchSummary> findIncomingBatchSummaryByNode(String nodeId,
-    		Date sinceCreateTime, Status... statuses);
+            Date sinceCreateTime, Status... statuses);
     
     public List<IncomingBatchSummary> findIncomingBatchSummaryByNodeAndChannel(String nodeId, String channelId,
-    		Date sinceCreateTime, Status... statuses);
+            Date sinceCreateTime, Status... statuses);
     
     public Map<String, Date> findLastUpdatedByChannel();
     

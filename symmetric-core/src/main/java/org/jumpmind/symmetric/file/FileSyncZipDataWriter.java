@@ -118,12 +118,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 return;
             }
             
-     		if (eventType == DataEventType.INSERT) {
-    			statistics.get(this.batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
-    		}
-    		else {
-    			statistics.get(this.batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
-    		}
+             if (eventType == DataEventType.INSERT) {
+                statistics.get(this.batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
+            }
+            else {
+                statistics.get(this.batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
+            }
             Map<String, String> columnData = data.toColumnNameValuePairs(
                     snapshotTable.getColumnNames(), CsvData.ROW_DATA);
             Map<String, String> oldColumnData = data.toColumnNameValuePairs(
@@ -281,7 +281,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             if (zos != null) {
                 zos.finish();
                 try {
-                	zos.close();
+                    zos.close();
                 } catch(IOException e) { }
             }
         } catch (IOException e) {

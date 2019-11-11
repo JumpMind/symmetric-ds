@@ -50,7 +50,7 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
     private String appendToCopyCommand;
     
     public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-			IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
+            IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings settings) {
         
         super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, settings);

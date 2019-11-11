@@ -217,9 +217,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             Options options = new Options();
 
             if (! Message.containsKey("SymAdmin.Usage." + cmd)) {
-            	System.err.println("ERROR: no help text for subcommand '" + cmd + "' was found.");
-            	System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
-            	return;
+                System.err.println("ERROR: no help text for subcommand '" + cmd + "' was found.");
+                System.err.println("For a list of subcommands, use " + app + " --" + HELP + "\n");
+                return;
             }
             format.printWrapped(writer, WIDTH,
                     "Usage: " + app + " " + cmd + " " + Message.get("SymAdmin.Usage." + cmd) + "\n");
@@ -245,7 +245,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, "r", OPTION_REVERSE, false);
             }
             if (cmd.equals(CMD_REMOVE_NODE)) {
-            	addOption(options, "n", OPTION_NODE, true);
+                addOption(options, "n", OPTION_NODE, true);
             }
 
             if (options.getOptions().size() > 0) {
@@ -310,8 +310,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             openRegistration(line, args);
             return true;
         } else if(cmd.equals(CMD_REMOVE_NODE)) {
-        	removeNode(line, args);
-        	return true;
+            removeNode(line, args);
+            return true;
         } else if (cmd.equals(CMD_RELOAD_NODE)) {
             reloadNode(line, args);
             return true;
@@ -473,9 +473,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
     
     private void removeNode(CommandLine line, List<String> args) {
-    	String node = line.getOptionValue(OPTION_NODE);
-    	getSymmetricEngine().removeAndCleanupNode(node);
-    	System.out.println(String.format("Removed node '%s' from engine '%s'", node, getSymmetricEngine().getEngineName()));
+        String node = line.getOptionValue(OPTION_NODE);
+        getSymmetricEngine().removeAndCleanupNode(node);
+        System.out.println(String.format("Removed node '%s' from engine '%s'", node, getSymmetricEngine().getEngineName()));
     }
 
     private void reloadNode(CommandLine line, List<String> args) {

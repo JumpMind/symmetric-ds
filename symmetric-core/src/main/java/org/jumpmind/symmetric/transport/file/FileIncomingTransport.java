@@ -99,16 +99,16 @@ public class FileIncomingTransport implements IIncomingTransport {
 
     @Override
     public void close() {
-    	try {
-    		if(reader != null) {
-    			reader.close();
-    		}
-    	} catch(IOException e) { }
-    	try {
-    		if(in != null) {
-    			in.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(reader != null) {
+                reader.close();
+            }
+        } catch(IOException e) { }
+        try {
+            if(in != null) {
+                in.close();
+            }
+        } catch(IOException e) { }
         open = false;
     }
 

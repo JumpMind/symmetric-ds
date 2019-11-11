@@ -579,9 +579,9 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 long totalTime = System.currentTimeMillis() - ts;
                 if (context != null) {
-	                context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
-	                context.logStats(log, totalTime);
-	                context.cleanup();
+                    context.incrementStat(totalTime, ChannelRouterContext.STAT_ROUTE_TOTAL_TIME);
+                    context.logStats(log, totalTime);
+                    context.cleanup();
                 }
             }
         }
@@ -802,7 +802,7 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);
         Table table = symmetricDialect.getTable(data.getTriggerHistory(), true);
         if (table == null) {
-        	table = buildTableFromTriggerHistory(data.getTriggerHistory());
+            table = buildTableFromTriggerHistory(data.getTriggerHistory());
         }
         if (triggerRouters != null && triggerRouters.size() > 0) {
             for (TriggerRouter triggerRouter : triggerRouters) {
@@ -1005,13 +1005,13 @@ public class RouterService extends AbstractService implements IRouterService {
                         .getTriggerRoutersForCurrentNode(false)
                         .get((data.getTriggerHistory().getTriggerId()));
                 if (triggerRouters == null && data.getTriggerHistory().getTriggerId() != null && data.getTriggerHistory().getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER)) {
-                	TriggerRouter dynamicTriggerRouter = new TriggerRouter();
-                	String routerId = AbstractFileParsingRouter.getRouterIdFromExternalData(data.getExternalData());
-                	dynamicTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(routerId));
-                	dynamicTriggerRouter.setTrigger(new Trigger());
-                	triggerRouters = new ArrayList<TriggerRouter>();
-                	triggerRouters.add(dynamicTriggerRouter);
-                	data.setDataEventType(DataEventType.INSERT);
+                    TriggerRouter dynamicTriggerRouter = new TriggerRouter();
+                    String routerId = AbstractFileParsingRouter.getRouterIdFromExternalData(data.getExternalData());
+                    dynamicTriggerRouter.setRouter(engine.getTriggerRouterService().getRouterById(routerId));
+                    dynamicTriggerRouter.setTrigger(new Trigger());
+                    triggerRouters = new ArrayList<TriggerRouter>();
+                    triggerRouters.add(dynamicTriggerRouter);
+                    data.setDataEventType(DataEventType.INSERT);
                 }
                 if (triggerRouters == null || triggerRouters.size() == 0) {
                     triggerRouters = engine.getTriggerRouterService()
@@ -1059,12 +1059,12 @@ public class RouterService extends AbstractService implements IRouterService {
     }
 
     protected Table buildTableFromTriggerHistory(TriggerHistory triggerHistory) {
-    	Table table = new Table(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName());
-    	String[] columnNames = triggerHistory.getColumnNames().split(",");
-    	for (String columnName : columnNames) {
-    		table.addColumn(new Column(columnName));
-    	}
-    	return table;
+        Table table = new Table(triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName());
+        String[] columnNames = triggerHistory.getColumnNames().split(",");
+        for (String columnName : columnNames) {
+            table.addColumn(new Column(columnName));
+        }
+        return table;
     }
 
 }

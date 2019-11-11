@@ -32,48 +32,48 @@ import org.slf4j.LoggerFactory;
 
 public class ValueMapColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
 
-	protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
-	public static final String NAME = "valueMap";
+    public static final String NAME = "valueMap";
 
-	public String getName() {
-		return NAME;
-	}
+    public String getName() {
+        return NAME;
+    }
 
-	public boolean isExtractColumnTransform() {
-		return true;
-	}
+    public boolean isExtractColumnTransform() {
+        return true;
+    }
 
-	public boolean isLoadColumnTransform() {
-		return true;
-	}
+    public boolean isLoadColumnTransform() {
+        return true;
+    }
 
-	private static String getValue(String value,String expression) {
-		if (expression==null) {
-			return null;
-		}
-		
-		StringTokenizer tokens = new StringTokenizer(expression);
-		String defaultValue = null;
+    private static String getValue(String value,String expression) {
+        if (expression==null) {
+            return null;
+        }
+        
+        StringTokenizer tokens = new StringTokenizer(expression);
+        String defaultValue = null;
 
-		while (tokens.hasMoreElements()) {
-			String keyValue = (String) tokens.nextElement();
-			int equalIndex = keyValue.indexOf("=");
-			if (equalIndex != -1) {
-				if (keyValue.substring(0, equalIndex).equals(value)) {
-					return keyValue.substring(equalIndex+1);
-				} else if (keyValue.substring(0, equalIndex).equals("*")) {
-				    String targetValue = keyValue.substring(equalIndex+1);
-				    if (targetValue.equals("*")) {
-				        defaultValue = value;
-				    } else {
-				        defaultValue = targetValue;
-				    }
-				}
-			}
-		}
-		return defaultValue;
-	}
+        while (tokens.hasMoreElements()) {
+            String keyValue = (String) tokens.nextElement();
+            int equalIndex = keyValue.indexOf("=");
+            if (equalIndex != -1) {
+                if (keyValue.substring(0, equalIndex).equals(value)) {
+                    return keyValue.substring(equalIndex+1);
+                } else if (keyValue.substring(0, equalIndex).equals("*")) {
+                    String targetValue = keyValue.substring(equalIndex+1);
+                    if (targetValue.equals("*")) {
+                        defaultValue = value;
+                    } else {
+                        defaultValue = targetValue;
+                    }
+                }
+            }
+        }
+        return defaultValue;
+    }
 
     public NewAndOldValue transform(IDatabasePlatform platform,
             DataContext context,
@@ -88,5 +88,5 @@ public class ValueMapColumnTransform implements ISingleNewAndOldValueColumnTrans
             return new NewAndOldValue(value, null);
         }
 
-	}
+    }
 }

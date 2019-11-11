@@ -100,30 +100,30 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     public IDatabasePlatform getPlatform() {
-		return platform;
-	}
+        return platform;
+    }
     
     public IDatabasePlatform getPlatform(Table table) {
-		return platform;
-	}
+        return platform;
+    }
     
     public IDatabasePlatform getPlatform(String table) {
-		return platform;
-	}
+        return platform;
+    }
 
-	public ISqlTransaction getTransaction() {
-		return transaction;
-	}
-	
-	public ISqlTransaction getTransaction(Table table) {
-		return transaction;
-	}
-	
-	public ISqlTransaction getTransaction(String table) {
-		return transaction;
-	}
+    public ISqlTransaction getTransaction() {
+        return transaction;
+    }
+    
+    public ISqlTransaction getTransaction(Table table) {
+        return transaction;
+    }
+    
+    public ISqlTransaction getTransaction(String table) {
+        return transaction;
+    }
 
-	@Override
+    @Override
     public void open(DataContext context) {
         super.open(context);
         this.transaction = this.platform.getSqlTemplate().startSqlTransaction();
@@ -200,7 +200,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
                 this.lastUseConflictDetection = true;
                 this.currentDmlStatement = getPlatform()
-                		.createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
+                        .createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
@@ -543,10 +543,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean create(CsvData data) {
         String xml = null;
         try {
-    		// Placeholder to ensure target platform and transaction is returned.  SYM_* tables are not created through this process.
-    		String tempNonSymTable = "NON_SYM_TABLE";
-    		
-    		getTransaction(tempNonSymTable).commit();
+            // Placeholder to ensure target platform and transaction is returned.  SYM_* tables are not created through this process.
+            String tempNonSymTable = "NON_SYM_TABLE";
+            
+            getTransaction(tempNonSymTable).commit();
 
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             xml = data.getParsedData(CsvData.ROW_DATA)[0];
@@ -554,15 +554,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             StringReader reader = new StringReader(xml);
             Database db = DatabaseXmlUtil.read(reader, false);
             if (writerSettings.isCreateTableAlterCaseToMatchDatabaseDefault()) {
-            		getPlatform().alterCaseToMatchDatabaseDefaultCase(db);
+                    getPlatform().alterCaseToMatchDatabaseDefaultCase(db);
             }
             
             getPlatform(tempNonSymTable).makePlatformSpecific(db);
            
             if (writerSettings.isAlterTable()) {
-            		getPlatform(tempNonSymTable).alterDatabase(db, !writerSettings.isCreateTableFailOnError());
+                    getPlatform(tempNonSymTable).alterDatabase(db, !writerSettings.isCreateTableFailOnError());
             } else {
-            		getPlatform(tempNonSymTable).createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
+                    getPlatform(tempNonSymTable).createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
             }
 
             getPlatform().resetCachedTableModel();
@@ -737,7 +737,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
 
         if (e instanceof DataTruncationException) {
-        		logDataTruncation(data, failureMessage);
+                logDataTruncation(data, failureMessage);
         }
         data.writeCsvDataDetails(failureMessage);
         
@@ -804,51 +804,51 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             String sql = scriptReader.readSqlStatement();
             
             while (sql != null) {
-            	if (StringUtils.startsWithIgnoreCase(sql,"delimiter")) {
-            		if (log.isDebugEnabled()) {
-            			log.debug("Found delimiter line: "+sql);
-            		}
-            		String delimiter = StringUtils.trimToNull(sql.substring("delimiter".length()));
-            		if (delimiter!=null) {
-            			scriptReader.setDelimiter(delimiter);
-            		}
-            	} else {
+                if (StringUtils.startsWithIgnoreCase(sql,"delimiter")) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found delimiter line: "+sql);
+                    }
+                    String delimiter = StringUtils.trimToNull(sql.substring("delimiter".length()));
+                    if (delimiter!=null) {
+                        scriptReader.setDelimiter(delimiter);
+                    }
+                } else {
                     sqlStatements.add(sql);
-            	}
-            	
+                }
+                
                 sql = scriptReader.readSqlStatement();
             }
             return sqlStatements;
         } finally {
-        	try {
-        		if(scriptReader != null) {
-        			scriptReader.close();
-        		}
-        	} catch(IOException e) { }
+            try {
+                if(scriptReader != null) {
+                    scriptReader.close();
+                }
+            } catch(IOException e) { }
         }
     }
 
     protected String preprocessSqlStatement(String sql) {
-		sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
-		if (targetTable != null) {
-			sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()), sql);
-			sql = FormatUtils.replace("schemaName", quoteString(targetTable.getSchema()), sql);
-			sql = FormatUtils.replace("tableName", quoteString(targetTable.getName()), sql);
-			if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)) {
-    			sql = getPlatform().getTruncateSql(targetTable);
-			}
+        sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
+        if (targetTable != null) {
+            sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()), sql);
+            sql = FormatUtils.replace("schemaName", quoteString(targetTable.getSchema()), sql);
+            sql = FormatUtils.replace("tableName", quoteString(targetTable.getName()), sql);
+            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)) {
+                sql = getPlatform().getTruncateSql(targetTable);
+            }
 
             else if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(DELETE_PATTERN)) {
                 sql = getPlatform().getDeleteSql(targetTable);
             }
-		} else if (sourceTable != null) {
-			sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()), sql);
-			sql = FormatUtils.replace("schemaName", quoteString(sourceTable.getSchema()), sql);
-			sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);
-		}
+        } else if (sourceTable != null) {
+            sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()), sql);
+            sql = FormatUtils.replace("schemaName", quoteString(sourceTable.getSchema()), sql);
+            sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);
+        }
 
-		sql = getPlatform().scrubSql(sql);
-		
+        sql = getPlatform().scrubSql(sql);
+        
         sql = FormatUtils.replace("sourceNodeId", (String) context.get("sourceNodeId"), sql);
         sql = FormatUtils.replace("sourceNodeExternalId",
                 (String) context.get("sourceNodeExternalId"), sql);
@@ -860,18 +860,18 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         sql = FormatUtils.replace("targetNodeGroupId", (String) context.get("targetNodeGroupId"),
                 sql);
 
-		return sql;
+        return sql;
     }
 
     protected String quoteString(String string) {
-    	if (!StringUtils.isEmpty(string)) {
-			String quote = getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() 
-					? getPlatform()
-					.getDatabaseInfo().getDelimiterToken() : "";
-			return String.format("%s%s%s", quote, string, quote);
-    	} else {
-    		return string;
-    	}
+        if (!StringUtils.isEmpty(string)) {
+            String quote = getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() 
+                    ? getPlatform()
+                    .getDatabaseInfo().getDelimiterToken() : "";
+            return String.format("%s%s%s", quote, string, quote);
+        } else {
+            return string;
+        }
 
     }
 
@@ -939,36 +939,36 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         String tableNameKey = sourceTable.getTableKey();
         Table table = targetTables.get(tableNameKey);
         if (table == null) {
-        		try {
-	            table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-	                    sourceTable.getName(), false);
-	            if (table != null) {
-	                table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
-	                        sourceTable.getPrimaryKeyColumnNames(),
-	                        this.writerSettings.isUsePrimaryKeysFromSource());
-	
-	                Column[] columns = table.getColumns();
-	                for (Column column : columns) {
-	                    if (column != null) {
-	                        int typeCode = column.getMappedTypeCode();
-	                        if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
-	                                && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-	                            column.setMappedTypeCode(Types.VARCHAR);
-	                        }
-	                    }
-	                }
-	
-	                targetTables.put(tableNameKey, table);
-	            }
-        		} 
-        		catch (SqlException sqle) { 
-        			log.warn("Unable to read target table." ,sqle.getMessage());
+                try {
+                table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+                        sourceTable.getName(), false);
+                if (table != null) {
+                    table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
+                            sourceTable.getPrimaryKeyColumnNames(),
+                            this.writerSettings.isUsePrimaryKeysFromSource());
+    
+                    Column[] columns = table.getColumns();
+                    for (Column column : columns) {
+                        if (column != null) {
+                            int typeCode = column.getMappedTypeCode();
+                            if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
+                                    && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+                                column.setMappedTypeCode(Types.VARCHAR);
+                            }
+                        }
+                    }
+    
+                    targetTables.put(tableNameKey, table);
+                }
+                } 
+                catch (SqlException sqle) { 
+                    log.warn("Unable to read target table." ,sqle.getMessage());
             }
             if (table == null && this instanceof DynamicDefaultDatabaseWriter) {
-        			if (((DynamicDefaultDatabaseWriter)this).isLoadOnly()) {
-        				table = sourceTable;
-        			}
-        		}
+                    if (((DynamicDefaultDatabaseWriter)this).isLoadOnly()) {
+                        table = sourceTable;
+                    }
+                }
         }
         return table;
     }
@@ -1005,7 +1005,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             Column[] columns = targetTable.getColumns();
 
             Object[] objectValues = getPlatform()
-            		.getObjectValues(context.getBatch().getBinaryEncoding(), data,
+                    .getObjectValues(context.getBatch().getBinaryEncoding(), data,
                     columns);
 
             Map<String, Object> columnDataMap = CollectionUtils

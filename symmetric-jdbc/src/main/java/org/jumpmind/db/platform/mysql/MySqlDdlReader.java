@@ -168,22 +168,22 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
                     (String) values.get("TABLE_SCHEMA"),
                     (String) values.get("TABLE_NAME"), column.getName());
             if(unParsedEnums == null) {
-            	// Query for version 8.0
-            	unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
+                // Query for version 8.0
+                unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
                         + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
                         //metaData.getCatalog(),
                         (String) values.get("TABLE_CAT"),
                         //(String) values.get("TABLE_SCHEMA"),
                         (String) values.get("TABLE_NAME"), column.getName());
-            	if(unParsedEnums == null) {
-            		// Query originally used
-            		unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
+                if(unParsedEnums == null) {
+                    // Query originally used
+                    unParsedEnums = template.queryForString("SELECT SUBSTRING(COLUMN_TYPE,5) FROM information_schema.COLUMNS"
                             + " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=?",
                             metaData.getCatalog(),
                             //(String) values.get("TABLE_CAT"),
                             //(String) values.get("TABLE_SCHEMA"),
                             (String) values.get("TABLE_NAME"), column.getName());
-            	}
+                }
             }
             if (unParsedEnums != null) {
                 unParsedEnums = unParsedEnums.trim();
@@ -278,80 +278,80 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) {
-    	
-    	List<Trigger> triggers = new ArrayList<Trigger>();
-    	
-    	log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT "
-						+ "TRIGGER_NAME, "
-						+ "TRIGGER_SCHEMA, "
-						+ "TRIGGER_CATALOG, "
-						+ "EVENT_MANIPULATION AS TRIGGER_TYPE, "
-						+ "EVENT_OBJECT_TABLE AS TABLE_NAME, "
-						+ "EVENT_OBJECT_SCHEMA AS TABLE_SCHEMA, "
-						+ "EVENT_OBJECT_CATALOG AS TABLE_CATALOG, "
-						+ "TRIG.* "
-					+ "FROM INFORMATION_SCHEMA.TRIGGERS AS TRIG "
-					+ "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=? ;";
-    	triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
-				trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(true);
-				String triggerType = row.getString("TRIGGER_TYPE");
-				if (triggerType.equals("DELETE")
-						|| triggerType.equals("INSERT")
-						|| triggerType.equals("UPDATE")) {
-					trigger.setTriggerType(TriggerType.valueOf(triggerType));
-				}
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, catalog);
-    	
-    	for (final Trigger trigger : triggers) {
-    		String name = trigger.getName();
-    		String sourceSql = "SHOW CREATE TRIGGER "+ catalog + "." + name;
-    		sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
-    			public Trigger mapRow(Row row) {
-    				trigger.setSource(row.getString("SQL Original Statement"));
-    				return trigger;
-    			}
-    		});
-    	}
-    	
-    	return triggers;
+            final String tableName) {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
+        
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT "
+                        + "TRIGGER_NAME, "
+                        + "TRIGGER_SCHEMA, "
+                        + "TRIGGER_CATALOG, "
+                        + "EVENT_MANIPULATION AS TRIGGER_TYPE, "
+                        + "EVENT_OBJECT_TABLE AS TABLE_NAME, "
+                        + "EVENT_OBJECT_SCHEMA AS TABLE_SCHEMA, "
+                        + "EVENT_OBJECT_CATALOG AS TABLE_CATALOG, "
+                        + "TRIG.* "
+                    + "FROM INFORMATION_SCHEMA.TRIGGERS AS TRIG "
+                    + "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=? ;";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
+                trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(true);
+                String triggerType = row.getString("TRIGGER_TYPE");
+                if (triggerType.equals("DELETE")
+                        || triggerType.equals("INSERT")
+                        || triggerType.equals("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                }
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, catalog);
+        
+        for (final Trigger trigger : triggers) {
+            String name = trigger.getName();
+            String sourceSql = "SHOW CREATE TRIGGER "+ catalog + "." + name;
+            sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
+                public Trigger mapRow(Row row) {
+                    trigger.setSource(row.getString("SQL Original Statement"));
+                    return trigger;
+                }
+            });
+        }
+        
+        return triggers;
     }
     
     public static void main(String[] args) throws SQLException {
-//    	mariadb.db.driver=org.mariadb.jdbc.Driver
-//		mariadb.db.user=root
-//		mariadb.db.password=admin
-//		mariadb.root.db.url=jdbc:mysql://localhost/SymmetricRoot?tinyInt1isBit=false
-//		mariadb.server.db.url=jdbc:mysql://localhost/SymmetricRoot?tinyInt1isBit=false
-//		mariadb.client.db.url=jdbc:mysql://localhost/SymmetricClient?tinyInt1isBit=false
-    	TypedProperties properties = new TypedProperties();
-    	properties.put("db.driver", "org.mariadb.jdbc.Driver");
-//    	properties.put("db.driver", "com.mysql.jdbc.Driver");
-    	properties.put("db.user", "root");
-    	properties.put("db.password", "my-secret-pw");
-    	properties.put("db.url", "jdbc:mysql://localhost:3306/phil?tinyInt1isBit=false");
-    	Connection connection = null;
-    	MySqlDdlReader reader = new MySqlDdlReader(
-    			new MySqlDatabasePlatform(BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
-    					new SqlTemplateSettings()));
-    	Database database = reader.getDatabase(connection);
-    	Table[] tables = database.getTables();
-    	Table table = tables[0];
-    	MySqlDdlBuilder ddlBuilder = new MySqlDdlBuilder();
-    	String ddl = ddlBuilder.createTable(table);
+//        mariadb.db.driver=org.mariadb.jdbc.Driver
+//        mariadb.db.user=root
+//        mariadb.db.password=admin
+//        mariadb.root.db.url=jdbc:mysql://localhost/SymmetricRoot?tinyInt1isBit=false
+//        mariadb.server.db.url=jdbc:mysql://localhost/SymmetricRoot?tinyInt1isBit=false
+//        mariadb.client.db.url=jdbc:mysql://localhost/SymmetricClient?tinyInt1isBit=false
+        TypedProperties properties = new TypedProperties();
+        properties.put("db.driver", "org.mariadb.jdbc.Driver");
+//        properties.put("db.driver", "com.mysql.jdbc.Driver");
+        properties.put("db.user", "root");
+        properties.put("db.password", "my-secret-pw");
+        properties.put("db.url", "jdbc:mysql://localhost:3306/phil?tinyInt1isBit=false");
+        Connection connection = null;
+        MySqlDdlReader reader = new MySqlDdlReader(
+                new MySqlDatabasePlatform(BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
+                        new SqlTemplateSettings()));
+        Database database = reader.getDatabase(connection);
+        Table[] tables = database.getTables();
+        Table table = tables[0];
+        MySqlDdlBuilder ddlBuilder = new MySqlDdlBuilder();
+        String ddl = ddlBuilder.createTable(table);
         System.out.println(ddl);
         OracleDdlBuilder oDdlBuilder = new OracleDdlBuilder();
         System.out.println(oDdlBuilder.createTable(table));

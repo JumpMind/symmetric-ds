@@ -49,8 +49,8 @@ import oracle.sql.TIMESTAMPTZ;
 
 public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
 
-	protected static IStagingManager stagingManager;
-	
+    protected static IStagingManager stagingManager;
+    
     @BeforeClass
     public static void setup() throws Exception {
         if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT)
@@ -70,20 +70,20 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
 
     @Override
     protected long writeData(TableCsvData... datas) {
-    	EnvironmentSpecificProperties prop = DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT);
-    	if(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.startsWith("oracle.")) {
-    	    // The oracle. gets stripped from the property keyname, need to add it back
+        EnvironmentSpecificProperties prop = DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT);
+        if(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.startsWith("oracle.")) {
+            // The oracle. gets stripped from the property keyname, need to add it back
             if(prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.replace("oracle.", "")) != null) {
                 prop.put(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD, prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.replace("oracle.", "")));
             }
 
-    	}
+        }
         return writeData(new OracleBulkDatabaseWriter(platform, platform, stagingManager, "sym_",
-        		prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD),
-        		"silent=(header,discards) direct=false readsize=4096000 bindsize=4096000 rows=1000 discardmax=1 errors=0",
-        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_USER),
-        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD), 
-        		prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, null), datas);
+                prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD),
+                "silent=(header,discards) direct=false readsize=4096000 bindsize=4096000 rows=1000 discardmax=1 errors=0",
+                prop.get(BasicDataSourcePropertyConstants.DB_POOL_USER),
+                prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD), 
+                prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, null), datas);
     }
 
     @Override

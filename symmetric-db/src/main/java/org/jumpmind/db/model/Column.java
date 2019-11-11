@@ -522,7 +522,7 @@ public class Column implements Cloneable, Serializable {
     }    
 
     private String getCleanDefaultValue() {
-    	return defaultValue.replace("'", "");
+        return defaultValue.replace("'", "");
     }
     
     public void removePlatformColumn(String databaseName) {

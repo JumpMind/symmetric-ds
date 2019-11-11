@@ -307,55 +307,55 @@ public class DatabasePlatformTest {
     
     @Test
     public void getPermissionsTest() {
-    	List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
-    	
-    	for (PermissionResult result : results) {
-    		assertTrue(!result.getStatus().equals(Status.FAIL));
-    	}
+        List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
+        
+        for (PermissionResult result : results) {
+            assertTrue(!result.getStatus().equals(Status.FAIL));
+        }
     }
     
     @Test
     public void testEnumType() {
-    	boolean enumSupported = (
-    			platform.getName().equals(DatabaseNamesConstants.MYSQL) ||
-    			platform.getName().equals(DatabaseNamesConstants.NUODB)
-    	);
-    	
-    	if(enumSupported) {
-    		Table table = new Table("table1");
-    		table.addColumn(new Column("col1", false));
-    		Column column = table.getColumnWithName("col1");
-    		column.setTypeCode(Types.VARCHAR);
-    		column.setJdbcTypeCode(Types.SMALLINT);
-    		column.setSizeAndScale(2, 0);
-    		column.setRequired(true);
-    		column.setJdbcTypeName("enum");
-    		PlatformColumn fc = new PlatformColumn();
-    		fc.setType("enum");
-    		fc.setSize(2);
-    		fc.setName(platform.getName());
-    		fc.setEnumValues(new String[] {"a","b","c","d"});
-    		column.addPlatformColumn(fc);
-    		
-    		Database database = new Database();
+        boolean enumSupported = (
+                platform.getName().equals(DatabaseNamesConstants.MYSQL) ||
+                platform.getName().equals(DatabaseNamesConstants.NUODB)
+        );
+        
+        if(enumSupported) {
+            Table table = new Table("table1");
+            table.addColumn(new Column("col1", false));
+            Column column = table.getColumnWithName("col1");
+            column.setTypeCode(Types.VARCHAR);
+            column.setJdbcTypeCode(Types.SMALLINT);
+            column.setSizeAndScale(2, 0);
+            column.setRequired(true);
+            column.setJdbcTypeName("enum");
+            PlatformColumn fc = new PlatformColumn();
+            fc.setType("enum");
+            fc.setSize(2);
+            fc.setName(platform.getName());
+            fc.setEnumValues(new String[] {"a","b","c","d"});
+            column.addPlatformColumn(fc);
+            
+            Database database = new Database();
             database.addTable(table);
             platform.createDatabase(database, true, false);
             
             Database readDatabase = platform.getDdlReader().readTables(null,null,null);
             Table[] readTables = readDatabase.getTables();
             for(Table t : readTables) {
-            	if(t.getName().equalsIgnoreCase("table1")) {
-                   	for(Column c : t.getColumns()) {
-                		assertTrue(c.getJdbcTypeName().equalsIgnoreCase("enum"));
-                		PlatformColumn readFc = c.getPlatformColumns().get(platform.getName());
-                		assertNotNull("Platform column not created for enum column type in platform " + platform.getName(), readFc);
-                		assertTrue("Platform column not created as an enum in platform " + platform.getName(), readFc.getType().equalsIgnoreCase("enum"));
-                	}
-                   	// Pick a database platform that does not implement enum, and check definition of column (should be varchar)
-                   	String ddl = new OracleDdlBuilder().createTable(table);
-                   	assertTrue("Non-implementing enum platform not defined as type varchar", ddl.contains("varchar") || ddl.contains("VARCHAR"));
-            	}
+                if(t.getName().equalsIgnoreCase("table1")) {
+                       for(Column c : t.getColumns()) {
+                        assertTrue(c.getJdbcTypeName().equalsIgnoreCase("enum"));
+                        PlatformColumn readFc = c.getPlatformColumns().get(platform.getName());
+                        assertNotNull("Platform column not created for enum column type in platform " + platform.getName(), readFc);
+                        assertTrue("Platform column not created as an enum in platform " + platform.getName(), readFc.getType().equalsIgnoreCase("enum"));
+                    }
+                       // Pick a database platform that does not implement enum, and check definition of column (should be varchar)
+                       String ddl = new OracleDdlBuilder().createTable(table);
+                       assertTrue("Non-implementing enum platform not defined as type varchar", ddl.contains("varchar") || ddl.contains("VARCHAR"));
+                }
             }
-    	}
+        }
     }
 }

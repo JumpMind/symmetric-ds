@@ -72,141 +72,141 @@ public class LoadFilter implements Serializable {
     
     private boolean failOnError=true;
 
-	public int getLoadFilterOrder() {
-		return loadFilterOrder;
-	}
+    public int getLoadFilterOrder() {
+        return loadFilterOrder;
+    }
 
-	public void setLoadFilterOrder(int loadFilterOrder) {
-		this.loadFilterOrder = loadFilterOrder;
-	}
+    public void setLoadFilterOrder(int loadFilterOrder) {
+        this.loadFilterOrder = loadFilterOrder;
+    }
 
-	public boolean isFailOnError() {
-		return failOnError;
-	}
+    public boolean isFailOnError() {
+        return failOnError;
+    }
 
-	public void setFailOnError(boolean failOnError) {
-		this.failOnError = failOnError;
-	}
+    public void setFailOnError(boolean failOnError) {
+        this.failOnError = failOnError;
+    }
 
-	public String getLoadFilterId() {
-		return loadFilterId;
-	}
+    public String getLoadFilterId() {
+        return loadFilterId;
+    }
 
-	public void setLoadFilterId(String loadFilterId) {
-		this.loadFilterId = loadFilterId;
-	}
+    public void setLoadFilterId(String loadFilterId) {
+        this.loadFilterId = loadFilterId;
+    }
 
-	public String getTargetCatalogName() {
-		return targetCatalogName;
-	}
+    public String getTargetCatalogName() {
+        return targetCatalogName;
+    }
 
-	public void setTargetCatalogName(String targetCatalogName) {
-		this.targetCatalogName = targetCatalogName;
-	}
+    public void setTargetCatalogName(String targetCatalogName) {
+        this.targetCatalogName = targetCatalogName;
+    }
 
-	public String getTargetSchemaName() {
-		return targetSchemaName;
-	}
+    public String getTargetSchemaName() {
+        return targetSchemaName;
+    }
 
-	public void setTargetSchemaName(String targetSchemaName) {
-		this.targetSchemaName = targetSchemaName;
-	}
+    public void setTargetSchemaName(String targetSchemaName) {
+        this.targetSchemaName = targetSchemaName;
+    }
 
-	public String getTargetTableName() {
-		return targetTableName;
-	}
+    public String getTargetTableName() {
+        return targetTableName;
+    }
 
-	public void setTargetTableName(String targetTableName) {
-		this.targetTableName = targetTableName;
-	}
+    public void setTargetTableName(String targetTableName) {
+        this.targetTableName = targetTableName;
+    }
 
-	public boolean isFilterOnUpdate() {
-		return filterOnUpdate;
-	}
+    public boolean isFilterOnUpdate() {
+        return filterOnUpdate;
+    }
 
-	public void setFilterOnUpdate(boolean filterOnUpdate) {
-		this.filterOnUpdate = filterOnUpdate;
-	}
+    public void setFilterOnUpdate(boolean filterOnUpdate) {
+        this.filterOnUpdate = filterOnUpdate;
+    }
 
-	public boolean isFilterOnInsert() {
-		return filterOnInsert;
-	}
+    public boolean isFilterOnInsert() {
+        return filterOnInsert;
+    }
 
-	public void setFilterOnInsert(boolean filterOnInsert) {
-		this.filterOnInsert = filterOnInsert;
-	}
+    public void setFilterOnInsert(boolean filterOnInsert) {
+        this.filterOnInsert = filterOnInsert;
+    }
 
-	public boolean isFilterOnDelete() {
-		return filterOnDelete;
-	}
+    public boolean isFilterOnDelete() {
+        return filterOnDelete;
+    }
 
-	public void setFilterOnDelete(boolean filterOnDelete) {
-		this.filterOnDelete = filterOnDelete;
-	}
+    public void setFilterOnDelete(boolean filterOnDelete) {
+        this.filterOnDelete = filterOnDelete;
+    }
 
-	public String getBeforeWriteScript() {
-		return beforeWriteScript;
-	}
+    public String getBeforeWriteScript() {
+        return beforeWriteScript;
+    }
 
-	public void setBeforeWriteScript(String beforeWriteScript) {
-		this.beforeWriteScript = beforeWriteScript;
-	}
+    public void setBeforeWriteScript(String beforeWriteScript) {
+        this.beforeWriteScript = beforeWriteScript;
+    }
 
-	public String getAfterWriteScript() {
-		return afterWriteScript;
-	}
+    public String getAfterWriteScript() {
+        return afterWriteScript;
+    }
 
-	public void setAfterWriteScript(String afterWriteScript) {
-		this.afterWriteScript = afterWriteScript;
-	}
+    public void setAfterWriteScript(String afterWriteScript) {
+        this.afterWriteScript = afterWriteScript;
+    }
 
-	public String getBatchCompleteScript() {
-		return batchCompleteScript;
-	}
+    public String getBatchCompleteScript() {
+        return batchCompleteScript;
+    }
 
-	public void setBatchCompleteScript(String batchCompleteScript) {
-		this.batchCompleteScript = batchCompleteScript;
-	}
+    public void setBatchCompleteScript(String batchCompleteScript) {
+        this.batchCompleteScript = batchCompleteScript;
+    }
 
-	public String getBatchCommitScript() {
-		return batchCommitScript;
-	}
+    public String getBatchCommitScript() {
+        return batchCommitScript;
+    }
 
-	public void setBatchCommitScript(String batchCommitScript) {
-		this.batchCommitScript = batchCommitScript;
-	}
+    public void setBatchCommitScript(String batchCommitScript) {
+        this.batchCommitScript = batchCommitScript;
+    }
 
-	public String getBatchRollbackScript() {
-		return batchRollbackScript;
-	}
+    public String getBatchRollbackScript() {
+        return batchRollbackScript;
+    }
 
-	public void setBatchRollbackScript(String batchRollbackScript) {
-		this.batchRollbackScript = batchRollbackScript;
-	}
+    public void setBatchRollbackScript(String batchRollbackScript) {
+        this.batchRollbackScript = batchRollbackScript;
+    }
 
-	public Date getCreateTime() {
-		return createTime;
-	}
+    public Date getCreateTime() {
+        return createTime;
+    }
 
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
 
-	public String getLastUpdateBy() {
-		return lastUpdateBy;
-	}
+    public String getLastUpdateBy() {
+        return lastUpdateBy;
+    }
 
-	public void setLastUpdateBy(String lastUpdateBy) {
-		this.lastUpdateBy = lastUpdateBy;
-	}
+    public void setLastUpdateBy(String lastUpdateBy) {
+        this.lastUpdateBy = lastUpdateBy;
+    }
 
-	public Date getLastUpdateTime() {
-		return lastUpdateTime;
-	}
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
+    }
 
-	public void setLastUpdateTime(Date lastUpdateTime) {  
-		this.lastUpdateTime = lastUpdateTime;
-	}
+    public void setLastUpdateTime(Date lastUpdateTime) {  
+        this.lastUpdateTime = lastUpdateTime;
+    }
 
     public LoadFilterType getLoadFilterType() {
         return loadFilterType;

@@ -102,39 +102,39 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
     }
     
     @Override
-	public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
-				+ "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
-				trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(true);
-				trigger.setSource(row.getString("SQL"));
-				row.remove("SQL");
-				String triggerType = row.getString("TRIGGER_TYPE");
-				if (triggerType.equals("DELETE")
-						|| triggerType.equals("INSERT")
-						|| triggerType.equals("UPDATE")) {
-					trigger.setTriggerType(TriggerType.valueOf(triggerType));
-				}
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema, catalog);
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
+                + "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setCatalogName(row.getString("TRIGGER_CATALOG"));
+                trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(true);
+                trigger.setSource(row.getString("SQL"));
+                row.remove("SQL");
+                String triggerType = row.getString("TRIGGER_TYPE");
+                if (triggerType.equals("DELETE")
+                        || triggerType.equals("INSERT")
+                        || triggerType.equals("UPDATE")) {
+                    trigger.setTriggerType(TriggerType.valueOf(triggerType));
+                }
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema, catalog);
 
-		return triggers;
-	}
+        return triggers;
+    }
 
 }

@@ -83,24 +83,24 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
     }
 
     @Override
-   	public PermissionResult getCreateSymTriggerPermission() {
-       	String delimiter = getDatabaseInfo().getDelimiterToken();
+       public PermissionResult getCreateSymTriggerPermission() {
+           String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
            
-       	String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
-       			+ "FOR EACH ROW CALL " + delimiter + "org.jumpmind.db.platform.h2.H2TestTrigger" + delimiter;
+           String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
+                   + "FOR EACH ROW CALL " + delimiter + "org.jumpmind.db.platform.h2.H2TestTrigger" + delimiter;
        
-       	PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-   		
-   		try {
-   			getSqlTemplate().update(triggerSql);
-   			result.setStatus(Status.PASS);
-   		} catch (SqlException e) {
-   			result.setException(e);
-   			result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-   		}
-   		
-   		return result;
+           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+           
+           try {
+               getSqlTemplate().update(triggerSql);
+               result.setStatus(Status.PASS);
+           } catch (SqlException e) {
+               result.setException(e);
+               result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+           }
+           
+           return result;
     }
     
     @Override

@@ -159,11 +159,11 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
     }
 
     public void close() {
-    	try {
-    		if(reader != null) {
-    			reader.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(reader != null) {
+                reader.close();
+            }
+        } catch(IOException e) { }
         finish();
     }
 

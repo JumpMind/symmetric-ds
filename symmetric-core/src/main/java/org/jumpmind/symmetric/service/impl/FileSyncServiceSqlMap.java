@@ -34,23 +34,23 @@ public class FileSyncServiceSqlMap extends AbstractSqlMap {
         putSql("selectFileTriggersSql",
                 " select trigger_id, base_dir, recurse,                                       " +
                 "        includes_files, excludes_files,                                      " +
-        		"        sync_on_create, sync_on_modified, sync_on_delete,                    " +
-        		"        sync_on_ctl_file, delete_after_sync,                                 " +
+                "        sync_on_create, sync_on_modified, sync_on_delete,                    " +
+                "        sync_on_ctl_file, delete_after_sync,                                 " +
                 "        before_copy_script,                                                  " +
                 "        after_copy_script,                                                   " +
-        		"        create_time, last_update_by,                                         " +
-        		"        last_update_time, channel_id, reload_channel_id                      " +
-        		" from $(file_trigger)                                                        ");
+                "        create_time, last_update_by,                                         " +
+                "        last_update_time, channel_id, reload_channel_id                      " +
+                " from $(file_trigger)                                                        ");
 
         putSql("triggerIdWhere", "where trigger_id=?");
 
         putSql("updateFileTriggerSql",
                 " update $(file_trigger) set base_dir=?, recurse=?, includes_files=?,         " +
-        		"  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,  " +
-        		"  sync_on_ctl_file=?, delete_after_sync=?,                                   " +
+                "  excludes_files=?, sync_on_create=?, sync_on_modified=?, sync_on_delete=?,  " +
+                "  sync_on_ctl_file=?, delete_after_sync=?,                                   " +
                 "  before_copy_script=?, after_copy_script=?,                                 " +
-        		"  last_update_by=?, last_update_time=?, channel_id=?, reload_channel_id=?    " +
-        		"where trigger_id=?                                                           ");
+                "  last_update_by=?, last_update_time=?, channel_id=?, reload_channel_id=?    " +
+                "where trigger_id=?                                                           ");
 
         putSql("insertFileTriggerSql",
                 " insert into $(file_trigger) (base_dir, recurse, includes_files,             " +

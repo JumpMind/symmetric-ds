@@ -56,13 +56,13 @@ abstract public class AbstractVersion {
             Enumeration<URL> resources = getClass().getClassLoader().getResources(
                     "META-INF/MANIFEST.MF");
             while (resources.hasMoreElements()) {
-            	try(InputStream is = resources.nextElement().openStream()) {
-	                Manifest manifest = new Manifest(is);
-	                Attributes attributes = manifest.getMainAttributes();
-	                if (getArtifactName().equals(attributes.getValue("Project-Artifact"))) {
-	                    return attributes;
-	                }
-            	}
+                try(InputStream is = resources.nextElement().openStream()) {
+                    Manifest manifest = new Manifest(is);
+                    Attributes attributes = manifest.getMainAttributes();
+                    if (getArtifactName().equals(attributes.getValue("Project-Artifact"))) {
+                        return attributes;
+                    }
+                }
             }
         } catch (IOException e) {
             // nothing to do, really

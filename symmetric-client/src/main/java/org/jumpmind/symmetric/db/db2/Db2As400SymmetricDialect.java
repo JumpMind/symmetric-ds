@@ -27,8 +27,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISymmetricDialect {
 
-	boolean supportsGlobalVariables = false;
-	
+    boolean supportsGlobalVariables = false;
+    
     public Db2As400SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new Db2As400TriggerTemplate(this);
@@ -47,33 +47,33 @@ public class Db2As400SymmetricDialect extends Db2SymmetricDialect implements ISy
     
     @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
-    		if (supportsGlobalVariables) {
-			super.enableSyncTriggers(transaction);
-    		}
+            if (supportsGlobalVariables) {
+            super.enableSyncTriggers(transaction);
+            }
     }
     
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
-    		if (supportsGlobalVariables) {
-    			super.disableSyncTriggers(transaction, nodeId);
-    		}
+            if (supportsGlobalVariables) {
+                super.disableSyncTriggers(transaction, nodeId);
+            }
     }
 
     @Override
     public String getSyncTriggersExpression() {
-    		return supportsGlobalVariables ? super.getSyncTriggersExpression() : "1=1";
+            return supportsGlobalVariables ? super.getSyncTriggersExpression() : "1=1";
     }
     
     @Override
     public String getSourceNodeExpression() {
-    		return supportsGlobalVariables ? super.getSourceNodeExpression() : "null";
+            return supportsGlobalVariables ? super.getSourceNodeExpression() : "null";
     }
     
     @Override
     public void createRequiredDatabaseObjects() {  
-    		if (supportsGlobalVariables) {
-    			super.createRequiredDatabaseObjects();
-    		}
+            if (supportsGlobalVariables) {
+                super.createRequiredDatabaseObjects();
+            }
     }
     
     @Override

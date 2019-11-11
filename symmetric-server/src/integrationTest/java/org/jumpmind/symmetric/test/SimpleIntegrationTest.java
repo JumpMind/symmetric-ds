@@ -202,13 +202,13 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                         .isInitialLoadEnabled());
 
         if (sendingLob1) {
-	        clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
-	                THIS_IS_A_TEST);
+            clientTestService.assertTestBlobIsInDatabase(100, "test_use_capture_lob",
+                    THIS_IS_A_TEST);
         }
         
         if (sendingLob2) {
-	        clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
-	                THIS_IS_A_TEST);
+            clientTestService.assertTestBlobIsInDatabase(100, "test_use_stream_lob",
+                    THIS_IS_A_TEST);
         }
     }
 
@@ -270,7 +270,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
                 "300 Grub Street \\o", "New Yorl", "NY", 90009, new Date(), new Date(), TEST_CLOB,
                 BIG_BINARY);
         if (serverTestService.getSymmetricDialect() instanceof NuoDbSymmetricDialect) {
-        	customer.setAddress("300 Grub Street");
+            customer.setAddress("300 Grub Street");
         }
         serverTestService.insertCustomer(customer);
 

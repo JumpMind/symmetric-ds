@@ -58,11 +58,11 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
     }
 
     public void close() {
-    	try {
-    		if(writer != null) {
-    			writer.close();
-    		}
-    	} catch(IOException e) { }
+        try {
+            if(writer != null) {
+                writer.close();
+            }
+        } catch(IOException e) { }
         open = false;
     }
 

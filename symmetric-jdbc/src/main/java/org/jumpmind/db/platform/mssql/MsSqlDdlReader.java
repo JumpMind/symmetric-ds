@@ -232,7 +232,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                     defaultValue = timestamp.toString();
                 }
             } else if (column.getMappedTypeCode() == Types.DECIMAL || 
-            		column.getMappedTypeCode() == Types.BIGINT) {
+                    column.getMappedTypeCode() == Types.BIGINT) {
                 // For some reason, Sql Server 2005 always returns DECIMAL
                 // default values with a dot
                 // even if the scale is 0, so we remove the dot
@@ -278,7 +278,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     
     @Override   
     public List<String> getTableNames(final String catalog, final String schema,
-    		final String[] tableTypes) {
+            final String[] tableTypes) {
         StringBuilder sql = new StringBuilder("select \"TABLE_NAME\" from \"INFORMATION_SCHEMA\".\"TABLES\" where \"TABLE_TYPE\"='BASE TABLE'");
         List<Object> args = new ArrayList<Object>(2);
         if (isNotBlank(catalog)) {
@@ -290,65 +290,65 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             args.add(schema);
         }
         
-    	return schema == null ? new ArrayList<String>() : platform.getSqlTemplateDirty().queryWithHandler(sql.toString(), new StringMapper(), 
-    	        new ChangeCatalogConnectionHandler(catalog) ,args.toArray(new Object[args.size()]));
+        return schema == null ? new ArrayList<String>() : platform.getSqlTemplateDirty().queryWithHandler(sql.toString(), new StringMapper(), 
+                new ChangeCatalogConnectionHandler(catalog) ,args.toArray(new Object[args.size()]));
     }
     
     @Override
-	public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
-		
-		String sql = "select "
-						+ "TRIG.name, "
-						+ "TAB.name as table_name, "
-						+ "SC.name as table_schema, "
-						+ "TRIG.is_disabled, "
-						+ "TRIG.is_ms_shipped, "
-						+ "TRIG.is_not_for_replication, "
-						+ "TRIG.is_instead_of_trigger, "
-						+ "TRIG.create_date, "
-						+ "TRIG.modify_date, "
-						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsUpdateTrigger') AS isupdate, "
-						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsDeleteTrigger') AS isdelete, "
-						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsInsertTrigger') AS isinsert, "
-						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsAfterTrigger') AS isafter, "
-						+ "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsInsteadOfTrigger') AS isinsteadof, "
-						+ "TRIG.object_id, "
-						+ "TRIG.parent_id, "
-						+ "TAB.schema_id, "
-						+ "OBJECT_DEFINITION(TRIG.OBJECT_ID) as trigger_source "
-					+ "from sys.triggers as TRIG "
-					+ "inner join sys.tables as TAB "
-						+ "on TRIG.parent_id = TAB.object_id "
-					+ "inner join sys.schemas as SC "
-						+ "on TAB.schema_id = SC.schema_id "
-					+ "where TAB.name=? and SC.name=? ";
-		return sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("name"));
-				trigger.setSchemaName(row.getString("table_schema"));
-				trigger.setTableName(row.getString("table_name"));
-				trigger.setEnabled(!Boolean.valueOf(row.getString("is_disabled")));
-				trigger.setSource(row.getString("trigger_source"));
-				row.remove("trigger_source");
-				
-				//replace 0 and 1s with true and false
-				for (String s : new String[]{"isupdate", "isdelete", "isinsert", "isafter", "isinsteadof"}) {
-					if (row.getString(s).equals("0")) row.put(s, false);
-					else row.put(s, true);
-				}
-				if (row.getBoolean("isupdate")) trigger.setTriggerType(TriggerType.UPDATE);
-				else if (row.getBoolean("isdelete")) trigger.setTriggerType(TriggerType.DELETE);
-				else if (row.getBoolean("isinsert")) trigger.setTriggerType(TriggerType.INSERT);
-				
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-	}
+    public List<Trigger> getTriggers(final String catalog, final String schema,
+            final String tableName) throws SqlException {
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+        
+        String sql = "select "
+                        + "TRIG.name, "
+                        + "TAB.name as table_name, "
+                        + "SC.name as table_schema, "
+                        + "TRIG.is_disabled, "
+                        + "TRIG.is_ms_shipped, "
+                        + "TRIG.is_not_for_replication, "
+                        + "TRIG.is_instead_of_trigger, "
+                        + "TRIG.create_date, "
+                        + "TRIG.modify_date, "
+                        + "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsUpdateTrigger') AS isupdate, "
+                        + "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsDeleteTrigger') AS isdelete, "
+                        + "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsInsertTrigger') AS isinsert, "
+                        + "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsAfterTrigger') AS isafter, "
+                        + "OBJECTPROPERTY(TRIG.OBJECT_ID, 'ExecIsInsteadOfTrigger') AS isinsteadof, "
+                        + "TRIG.object_id, "
+                        + "TRIG.parent_id, "
+                        + "TAB.schema_id, "
+                        + "OBJECT_DEFINITION(TRIG.OBJECT_ID) as trigger_source "
+                    + "from sys.triggers as TRIG "
+                    + "inner join sys.tables as TAB "
+                        + "on TRIG.parent_id = TAB.object_id "
+                    + "inner join sys.schemas as SC "
+                        + "on TAB.schema_id = SC.schema_id "
+                    + "where TAB.name=? and SC.name=? ";
+        return sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("name"));
+                trigger.setSchemaName(row.getString("table_schema"));
+                trigger.setTableName(row.getString("table_name"));
+                trigger.setEnabled(!Boolean.valueOf(row.getString("is_disabled")));
+                trigger.setSource(row.getString("trigger_source"));
+                row.remove("trigger_source");
+                
+                //replace 0 and 1s with true and false
+                for (String s : new String[]{"isupdate", "isdelete", "isinsert", "isafter", "isinsteadof"}) {
+                    if (row.getString(s).equals("0")) row.put(s, false);
+                    else row.put(s, true);
+                }
+                if (row.getBoolean("isupdate")) trigger.setTriggerType(TriggerType.UPDATE);
+                else if (row.getBoolean("isdelete")) trigger.setTriggerType(TriggerType.DELETE);
+                else if (row.getBoolean("isinsert")) trigger.setTriggerType(TriggerType.INSERT);
+                
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+    }
     
     protected IConnectionHandler getConnectionHandler(String catalog) {
         return new ChangeCatalogConnectionHandler(catalog == null ? platform.getDefaultCatalog() : catalog);

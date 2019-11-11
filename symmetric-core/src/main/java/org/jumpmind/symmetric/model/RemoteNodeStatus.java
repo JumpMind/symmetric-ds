@@ -74,14 +74,14 @@ public class RemoteNodeStatus implements Serializable {
     }
     
     public String getQueue() {
-		return queue;
-	}
+        return queue;
+    }
 
-	public void setQueue(String queue) {
-		this.queue = queue;
-	}
+    public void setQueue(String queue) {
+        this.queue = queue;
+    }
 
-	public Status getStatus() {
+    public Status getStatus() {
         return status;
     }
 

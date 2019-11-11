@@ -100,7 +100,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
         putSql("activeTriggerHistSql", "" + "where inactive_time is null   ");
 
         putSql("activeTriggerHistSqlByTriggerId", ""
-        		+ "where trigger_id=? and inactive_time is null   ");
+                + "where trigger_id=? and inactive_time is null   ");
              
         putSql("allTriggerHistSql",
                 ""

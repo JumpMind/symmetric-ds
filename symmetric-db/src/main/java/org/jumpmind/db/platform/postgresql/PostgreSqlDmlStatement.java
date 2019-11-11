@@ -126,7 +126,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
-        	sql.append("cast(? as tsvector)").append(",");
+            sql.append("cast(? as tsvector)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }

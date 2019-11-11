@@ -173,14 +173,14 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     protected boolean isFullTextIndex(IIndex index) {
-    		for (int idx = 0; idx < index.getColumnCount(); idx++) {
-    			 Column column = index.getColumn(idx).getColumn();
-    			 
+            for (int idx = 0; idx < index.getColumnCount(); idx++) {
+                 Column column = index.getColumn(idx).getColumn();
+                 
              if (column.getMappedTypeCode() == Types.LONGVARCHAR) {
-            	 	return true;
+                     return true;
              }
-    		}
-    		return false;
+            }
+            return false;
     }
     
     @Override
@@ -339,28 +339,28 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         
         PlatformColumn pc = column.getPlatformColumns() == null ? null : column.getPlatformColumns().get(DatabaseNamesConstants.MYSQL);
         if (pc != null && ("ENUM".equalsIgnoreCase(column.getJdbcTypeName()) || "ENUM".equalsIgnoreCase(pc.getType()))) {
-        	String[] enumValues = pc.getEnumValues();
-        	if (enumValues != null && enumValues.length > 0) {
-	        	// Redo the enum, specifying the values returned from the database in the enumValues field
-	        	// instead of the size of the column
-	        	StringBuilder tmpSqlType = new StringBuilder();
-	        	tmpSqlType.append("ENUM");
-	        	tmpSqlType.append("(");
-	        	boolean appendComma = false;
-	        	for(String s : enumValues) {
-	        		if(appendComma) {
-	        			tmpSqlType.append(",");
-	        		}
-	        		tmpSqlType.append("'").append(s).append("'");
-	        		appendComma = true;
-	        	}
-				tmpSqlType.append(")");
-				sqlType = tmpSqlType.toString();
-        	}
+            String[] enumValues = pc.getEnumValues();
+            if (enumValues != null && enumValues.length > 0) {
+                // Redo the enum, specifying the values returned from the database in the enumValues field
+                // instead of the size of the column
+                StringBuilder tmpSqlType = new StringBuilder();
+                tmpSqlType.append("ENUM");
+                tmpSqlType.append("(");
+                boolean appendComma = false;
+                for(String s : enumValues) {
+                    if(appendComma) {
+                        tmpSqlType.append(",");
+                    }
+                    tmpSqlType.append("'").append(s).append("'");
+                    appendComma = true;
+                }
+                tmpSqlType.append(")");
+                sqlType = tmpSqlType.toString();
+            }
         }
         if ("TINYBLOB".equalsIgnoreCase(column.getJdbcTypeName())) {
-        	// For some reason, MySql driver returns BINARY type for TINYBLOB instead of BLOB type
-        	sqlType = "TINYBLOB";
+            // For some reason, MySql driver returns BINARY type for TINYBLOB instead of BLOB type
+            sqlType = "TINYBLOB";
         }
         return sqlType;
     }

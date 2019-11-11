@@ -75,10 +75,10 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
             if (this.connectionHandler != null) {
                 this.connectionHandler.before(c);
             }
-        	originalIsolationLevel = c.getTransactionIsolation();            
+            originalIsolationLevel = c.getTransactionIsolation();            
             autoCommitFlag = c.getAutoCommit();
             if (c.getTransactionIsolation() != sqlTemplate.getIsolationLevel()) {
-            	c.setTransactionIsolation(sqlTemplate.getIsolationLevel());
+                c.setTransactionIsolation(sqlTemplate.getIsolationLevel());
             }
             if (sqlTemplate.isRequiresAutoCommitFalseToSetFetchSize()) {
                 c.setAutoCommit(false);
@@ -155,13 +155,13 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         return mapOfColValues;
     }
 
-	public void close() {
-	    if (this.connectionHandler != null) {
-	        this.connectionHandler.after(c);
-	    }
-		JdbcSqlTemplate.close(rs);
-		JdbcSqlTemplate.close(st);
-		JdbcSqlTemplate.close(autoCommitFlag, originalIsolationLevel, c);
-		SqlUtils.removeSqlReadCursor(this);
-	}
+    public void close() {
+        if (this.connectionHandler != null) {
+            this.connectionHandler.after(c);
+        }
+        JdbcSqlTemplate.close(rs);
+        JdbcSqlTemplate.close(st);
+        JdbcSqlTemplate.close(autoCommitFlag, originalIsolationLevel, c);
+        SqlUtils.removeSqlReadCursor(this);
+    }
 }

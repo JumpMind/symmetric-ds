@@ -25,7 +25,7 @@ import org.jumpmind.symmetric.transport.IAcknowledgeEventListener;
 
 public class MockAcknowledgeEventListener implements IAcknowledgeEventListener {
 
-	public void onAcknowledgeEvent(BatchAck batchInfo) {
-		
-	}
+    public void onAcknowledgeEvent(BatchAck batchInfo) {
+        
+    }
 }

@@ -34,8 +34,8 @@ import org.jumpmind.symmetric.wrapper.jna.WinsvcEx;
 
 public class WrapperConfig {
 
-	protected String configFile;
-	
+    protected String configFile;
+    
     protected Map<String, ArrayList<String>> prop;
     
     protected File workingDirectory;
@@ -50,11 +50,11 @@ public class WrapperConfig {
     }   
 
     public String getWrapperJarPath()  {
-    	return jarFile;
+        return jarFile;
     }
 
     public String getConfigFile() {
-    	return configFile;
+        return configFile;
     }
 
     public File getWorkingDirectory() {
@@ -150,7 +150,7 @@ public class WrapperConfig {
     }
     
     public String getRunAsUser() {
-    	return getProperty(prop, "wrapper.run.as.user", "");
+        return getProperty(prop, "wrapper.run.as.user", "");
     }
     
     public List<String> getApplicationParameters() {

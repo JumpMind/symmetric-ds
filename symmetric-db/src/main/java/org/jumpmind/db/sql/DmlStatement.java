@@ -526,17 +526,17 @@ public class DmlStatement {
         }
         
         newSql = newSql.replace(QUESTION_MARK, "?");
-        return newSql + databaseInfo.getSqlCommandDelimiter();	
+        return newSql + databaseInfo.getSqlCommandDelimiter();    
     }
     
     public String buildDynamicDeleteSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat) {
-    	return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, keys);
+        return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, keys);
     }
     
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat) {
-    	return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, (Column[]) ArrayUtils.addAll(columns, keys));
+        return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, (Column[]) ArrayUtils.addAll(columns, keys));
     }
     
     public boolean isUpsertSupported() {

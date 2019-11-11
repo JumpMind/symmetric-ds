@@ -79,12 +79,12 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     }
 
     public void onFileCreate(File file) {
-    	log.debug("onFileCreate: " + file);
+        log.debug("onFileCreate: " + file);
         if (isSyncOnCtlFile) {
             File ctlFile = engine.getFileSyncService().getControleFile(file);
             
             if (ctlFile.exists()) {
-            	log.debug("Control file detected: {}", file.getAbsolutePath());
+                log.debug("Control file detected: {}", file.getAbsolutePath());
                 addSnapshot(file, LastEventType.CREATE, false);
             }
         } else {
@@ -144,7 +144,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     }
 
     protected void addSnapshot(File file, LastEventType lastEventType, boolean isDir) {
-    	log.debug("addSnapshot: " + file);
+        log.debug("addSnapshot: " + file);
         fileCount++;
         processInfo.incrementCurrentDataCount();
         FileSnapshot fileSnapshot = new FileSnapshot(fileTriggerRouter, file, lastEventType, useCrc);
@@ -171,7 +171,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
                     }
                 }
             } else {
-            	log.debug("Not processing " + file + " fromDate: " + fromDate + " lastModified: " + lastModified + " fromDateTime: " + (fromDate != null ? fromDate.getTime() : 0l) + " toDateTime: " + (toDate != null ? toDate.getTime() : 0l));
+                log.debug("Not processing " + file + " fromDate: " + fromDate + " lastModified: " + lastModified + " fromDateTime: " + (fromDate != null ? fromDate.getTime() : 0l) + " toDateTime: " + (toDate != null ? toDate.getTime() : 0l));
             }
         }
 

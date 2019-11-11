@@ -446,7 +446,7 @@ public class PurgeService extends AbstractService implements IPurgeService {
                 ExtractRequest.ExtractStatus.OK.name(), retentionCutoff.getTime());
         if (count > 0) {
             log.info("Purged {} extract requests", count);
-        }        	
+        }            
         return count;
 
     }

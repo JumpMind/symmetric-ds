@@ -59,23 +59,23 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected Table table = null;
     protected Table databaseTable = null;
 
-	public MsSqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-			IDatabasePlatform tar, String tablePrefix,
-			IStagingManager stagingManager,
-			int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator, 
-			DatabaseWriterSettings writerSettings) {
-		super(symmetricPlatform, tar, tablePrefix, writerSettings);
-		this.maxRowsBeforeFlush = maxRowsBeforeFlush;
-		this.stagingManager = stagingManager;
-		this.fireTriggers = fireTriggers;
-		if (fieldTerminator != null && fieldTerminator.length() > 0) {
-		   this.fieldTerminator = fieldTerminator;
-		}
-		if (rowTerminator != null && rowTerminator.length() > 0) {
-		   this.rowTerminator = rowTerminator;
-		}
-		this.uncPath = uncPath;
-	}
+    public MsSqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
+            IDatabasePlatform tar, String tablePrefix,
+            IStagingManager stagingManager,
+            int maxRowsBeforeFlush, boolean fireTriggers, String uncPath, String fieldTerminator, String rowTerminator, 
+            DatabaseWriterSettings writerSettings) {
+        super(symmetricPlatform, tar, tablePrefix, writerSettings);
+        this.maxRowsBeforeFlush = maxRowsBeforeFlush;
+        this.stagingManager = stagingManager;
+        this.fireTriggers = fireTriggers;
+        if (fieldTerminator != null && fieldTerminator.length() > 0) {
+           this.fieldTerminator = fieldTerminator;
+        }
+        if (rowTerminator != null && rowTerminator.length() > 0) {
+           this.rowTerminator = rowTerminator;
+        }
+        this.uncPath = uncPath;
+    }
 
     public boolean start(Table table) {
         this.table = table;
@@ -115,11 +115,11 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-        	//TODO: Did this because start is getting called multiple times
-        	//      for the same table in a single batch before end is being called
-        	if (this.stagedInputFile == null) {
-        		createStagingFile();
-        	}
+            //TODO: Did this because start is getting called multiple times
+            //      for the same table in a single batch before end is being called
+            if (this.stagedInputFile == null) {
+                createStagingFile();
+            }
             return true;
         } else {
             return false;
@@ -129,7 +129,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     @Override
     public void end(Table table) {
         try {
-        	flush();
+            flush();
             this.stagedInputFile.close();
             this.stagedInputFile.delete();
         } finally {
@@ -204,8 +204,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
     protected void flush() {
         if (loadedRows > 0) {
-        	    this.stagedInputFile.close();
-        	    
+                this.stagedInputFile.close();
+                
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String filename;
             if (StringUtils.isEmpty(uncPath)) {
@@ -213,14 +213,14 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             } else {
                 filename = uncPath + "\\" + stagedInputFile.getFile().getName();
             }
-	        try {
-	            DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
-	            String quote = dbInfo.getDelimiterToken();
-	            String catalogSeparator = dbInfo.getCatalogSeparator();
-	            String schemaSeparator = dbInfo.getSchemaSeparator();
-	            JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
-	            Connection c = jdbcTransaction.getConnection();
-	            String rowTerminatorString = "";
+            try {
+                DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
+                String quote = dbInfo.getDelimiterToken();
+                String catalogSeparator = dbInfo.getCatalogSeparator();
+                String schemaSeparator = dbInfo.getSchemaSeparator();
+                JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
+                Connection c = jdbcTransaction.getConnection();
+                String rowTerminatorString = "";
                 /*
                  * There seems to be a bug with the SQL server bulk insert when
                  * you have one row with binary data at the end using \n as the
@@ -230,29 +230,29 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 if (!(rowTerminator.equals("\n") || rowTerminator.equals("\r\n"))) {
                     rowTerminatorString = ", ROWTERMINATOR='" + StringEscapeUtils.escapeJava(rowTerminator) + "'";
                 }
-	            String sql = String.format("BULK INSERT " + 
-	            		this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
-	            		" FROM '" + filename) + "'" +
-	            		" WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
-	            		(fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString +");";
-	            Statement stmt = c.createStatement();
-	
-	            //TODO:  clean this up, deal with errors, etc.?
-	            stmt.execute(sql);
-	            stmt.close();
-	            loadedRows = 0;
-	        } catch (SQLException ex) {
-	            throw getPlatform().getSqlTemplate().translate(ex);
-	        } finally {
-	            statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
-	            this.stagedInputFile.delete();
-	        }
+                String sql = String.format("BULK INSERT " + 
+                        this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
+                        " FROM '" + filename) + "'" +
+                        " WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
+                        (fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString +");";
+                Statement stmt = c.createStatement();
+    
+                //TODO:  clean this up, deal with errors, etc.?
+                stmt.execute(sql);
+                stmt.close();
+                loadedRows = 0;
+            } catch (SQLException ex) {
+                throw getPlatform().getSqlTemplate().translate(ex);
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+                this.stagedInputFile.delete();
+            }
         }
     }
     
     protected void createStagingFile() {
-    	//TODO: We should use constants for dir structure path, 
-    	//      but we don't want to depend on symmetric core.
+        //TODO: We should use constants for dir structure path, 
+        //      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create("bulkloaddir",
                 table.getName() + this.getBatch().getBatchId() + ".csv");
     }

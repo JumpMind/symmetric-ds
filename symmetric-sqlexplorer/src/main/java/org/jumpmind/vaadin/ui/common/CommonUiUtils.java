@@ -133,17 +133,17 @@ public final class CommonUiUtils {
         };
         
         table.setCellStyleGenerator(new CellStyleGenerator() {
-			
-			private static final long serialVersionUID = 1L;
+            
+            private static final long serialVersionUID = 1L;
 
-			@Override
-			public String getStyle(Table source, Object itemId, Object propertyId) {
-				if (propertyId != null && propertyId.equals("#")) {
-					return "rowheader";
-				}
-				return null;
-			}
-		});
+            @Override
+            public String getStyle(Table source, Object itemId, Object propertyId) {
+                if (propertyId != null && propertyId.equals("#")) {
+                    return "rowheader";
+                }
+                return null;
+            }
+        });
         
         return table;
     }
@@ -363,7 +363,7 @@ public final class CommonUiUtils {
         return headers.toArray(new String[headers.size()]);
     }
 
-	public static Grid putResultsInGrid(final ResultSet rs, org.jumpmind.db.model.Table resultTable, int maxResultSize, final boolean showRowNumbers, String... excludeValues)
+    public static Grid putResultsInGrid(final ResultSet rs, org.jumpmind.db.model.Table resultTable, int maxResultSize, final boolean showRowNumbers, String... excludeValues)
             throws SQLException {
 
         final Grid grid = new Grid();
@@ -444,36 +444,36 @@ public final class CommonUiUtils {
                         }
                     });
                 } else {
-                	column.setConverter(new Converter<String, Object>() {
-						private static final long serialVersionUID = 1L;
+                    column.setConverter(new Converter<String, Object>() {
+                        private static final long serialVersionUID = 1L;
 
-						@Override
-						public Object convertToModel(String value, Class<? extends Object> targetType, Locale locale)
-								throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-							return null;
-						}
+                        @Override
+                        public Object convertToModel(String value, Class<? extends Object> targetType, Locale locale)
+                                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
+                            return null;
+                        }
 
-						@Override
-						public String convertToPresentation(Object value, Class<? extends String> targetType, Locale locale)
-								throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-							if (value == null) {
-								return NULL_TEXT;
-							} else {
-								return value.toString();
-							}
-						}
+                        @Override
+                        public String convertToPresentation(Object value, Class<? extends String> targetType, Locale locale)
+                                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
+                            if (value == null) {
+                                return NULL_TEXT;
+                            } else {
+                                return value.toString();
+                            }
+                        }
 
-						@Override
-						public Class<Object> getModelType() {
-							return Object.class;
-						}
+                        @Override
+                        public Class<Object> getModelType() {
+                            return Object.class;
+                        }
 
-						@Override
-						public Class<String> getPresentationType() {
-							return String.class;
-						}
-                		
-                	});
+                        @Override
+                        public Class<String> getPresentationType() {
+                            return String.class;
+                        }
+                        
+                    });
                 }
             } else {
                 skipColumnIndexes.add(i - 1);

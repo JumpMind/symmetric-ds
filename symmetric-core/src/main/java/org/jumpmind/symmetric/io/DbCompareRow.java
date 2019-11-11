@@ -78,7 +78,7 @@ public class DbCompareRow {
 
             if (result != 0) {
                 deltas.put(targetColumn, rowValues.get(sourceColumn.getName()));
-            }                	
+            }                    
         }
 
         return deltas;

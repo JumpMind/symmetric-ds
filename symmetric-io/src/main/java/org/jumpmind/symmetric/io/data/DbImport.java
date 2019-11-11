@@ -202,7 +202,7 @@ public class DbImport {
     }
 
     protected void importTablesFromCsv(InputStream in, String tableName) {
-    		DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
+            DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         Table table = writer.getPlatform(tableName).readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");

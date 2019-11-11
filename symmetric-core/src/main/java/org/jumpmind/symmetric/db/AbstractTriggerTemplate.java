@@ -236,7 +236,7 @@ abstract public class AbstractTriggerTemplate {
         String initialLoadSelect = StringUtils.isBlank(triggerRouter.getInitialLoadSelect()) ? Constants.ALWAYS_TRUE_CONDITION
                 : triggerRouter.getInitialLoadSelect();
         if (StringUtils.isNotBlank(overrideSelectSql)) {
-        	initialLoadSelect = overrideSelectSql;
+            initialLoadSelect = overrideSelectSql;
         }
         sql = FormatUtils
                 .replace(
@@ -417,13 +417,13 @@ abstract public class AbstractTriggerTemplate {
         Table table = originalTable.copyAndFilterColumns(history.getParsedColumnNames(),
                 history.getParsedPkColumnNames(), true);
 
-		String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "TriggerTemplate");
-		if (trigger.isStreamRow()) {
-		    String reloadDdl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "ReloadTriggerTemplate");
-		    if (reloadDdl != null && reloadDdl.length() > 0) {
-		        ddl = reloadDdl;
-		    }
-		}
+        String ddl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "TriggerTemplate");
+        if (trigger.isStreamRow()) {
+            String reloadDdl = sqlTemplates.get(dml.name().toLowerCase(Locale.US) + "ReloadTriggerTemplate");
+            if (reloadDdl != null && reloadDdl.length() > 0) {
+                ddl = reloadDdl;
+            }
+        }
         if (ddl == null) {
             throw new NotImplementedException(dml.name() + " trigger is not implemented for "
                     + symmetricDialect.getPlatform().getName());
@@ -471,21 +471,21 @@ abstract public class AbstractTriggerTemplate {
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
             String defaultCatalog, String defaultSchema, String ddl) {
 
-    	// We have a special case for this special template variable.
-    	// We are replacing this template variable with other template variables
-    	// Only replace this special variable with a template variable for the following combined case
-    	// Otherwise, just replace with $(channelExpression) and let normal template variable replacement do its thing.
-    	if(trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)
-    			&& dml.getDmlType().equals(DmlType.UPDATE)
-    			&& TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(table.getName()))
-    	{
-    		ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(oldTriggerValue).$(oldColumnPrefix)" + symmetricDialect.getPlatform().alterCaseToMatchDatabaseDefaultCase("channel_id"), ddl);
-    	} else {
-    		ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(channelExpression)", ddl);
-    	}
-    	
-    	ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", getChannelExpression(), ddl);
-    	
+        // We have a special case for this special template variable.
+        // We are replacing this template variable with other template variables
+        // Only replace this special variable with a template variable for the following combined case
+        // Otherwise, just replace with $(channelExpression) and let normal template variable replacement do its thing.
+        if(trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)
+                && dml.getDmlType().equals(DmlType.UPDATE)
+                && TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT).equals(table.getName()))
+        {
+            ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(oldTriggerValue).$(oldColumnPrefix)" + symmetricDialect.getPlatform().alterCaseToMatchDatabaseDefaultCase("channel_id"), ddl);
+        } else {
+            ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", "$(channelExpression)", ddl);
+        }
+        
+        ddl = FormatUtils.replace("specialSqlServerSybaseChannelExpression", getChannelExpression(), ddl);
+        
         ddl = FormatUtils.replace("targetTableName", getDefaultTargetTableName(trigger, history),
                 ddl);
 
@@ -583,8 +583,8 @@ abstract public class AbstractTriggerTemplate {
         
         String oldddl = null;
         while(ddl != null && (! ddl.equals(oldddl))) {
-        	oldddl = ddl;
-        	ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
+            oldddl = ddl;
+            ddl = eval(columnString.isBlobClob, "containsBlobClobColumns", ddl);
         }
         oldddl = null;
 
@@ -675,8 +675,8 @@ abstract public class AbstractTriggerTemplate {
     }
     
     private String getChannelExpression() {
-    	
-    	return null;
+        
+        return null;
     }
     
     protected String toClobExpression(Table table) {
@@ -821,7 +821,7 @@ abstract public class AbstractTriggerTemplate {
                 }
                 columnsText.append(columnName);
             } else {
-            	columnsText.append("null");            	
+                columnsText.append("null");                
             }
             columnsText.append(",");
         }
@@ -1243,28 +1243,28 @@ abstract public class AbstractTriggerTemplate {
     }
     
     protected String getHasPrimaryKeysDefinedString(Table table) {
-    	return table.hasPrimaryKey() ? "1=1" : "1=2";
+        return table.hasPrimaryKey() ? "1=1" : "1=2";
     }
     
     protected String getPrimaryKeysUpdatedString(Table table) {
-    	StringBuffer sb = new StringBuffer();
-    	for(String primaryKey : table.getPrimaryKeyColumnNames()) {
-    		if(sb.length() > 0) {
-    			sb.append(" OR ");
-    		} else {
-    			sb.append("(");
-    		}
-    		sb.append(" UPDATE(").append(primaryKey).append(") ");
-    	}
-    	if(sb.length() > 0) {
-    		sb.append(")");
-    	}
-    	
-    	if(sb.length() > 0) {
-    		sb.insert(0, " AND ");
-    	}
-    	
-    	return sb.toString();
+        StringBuffer sb = new StringBuffer();
+        for(String primaryKey : table.getPrimaryKeyColumnNames()) {
+            if(sb.length() > 0) {
+                sb.append(" OR ");
+            } else {
+                sb.append("(");
+            }
+            sb.append(" UPDATE(").append(primaryKey).append(") ");
+        }
+        if(sb.length() > 0) {
+            sb.append(")");
+        }
+        
+        if(sb.length() > 0) {
+            sb.insert(0, " AND ");
+        }
+        
+        return sb.toString();
     }
     
 

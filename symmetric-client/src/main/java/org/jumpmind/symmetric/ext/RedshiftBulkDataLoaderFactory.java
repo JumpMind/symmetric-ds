@@ -55,7 +55,7 @@ public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-    			TransformWriter transformWriter,
+                TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 

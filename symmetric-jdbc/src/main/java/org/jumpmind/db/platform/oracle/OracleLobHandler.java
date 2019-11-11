@@ -11,7 +11,7 @@ public class OracleLobHandler extends SymmetricLobHandler {
     DefaultLobHandler longHandler = new DefaultLobHandler();
 
     public OracleLobHandler() {
-    	super(new DefaultLobHandler());
+        super(new DefaultLobHandler());
     }
 
     @Override

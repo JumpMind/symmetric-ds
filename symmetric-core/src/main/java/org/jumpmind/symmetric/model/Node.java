@@ -266,14 +266,14 @@ public class Node implements Serializable, Comparable<Node> {
     }
     
     public String getDeploymentSubType() {
-		return deploymentSubType;
-	}
+        return deploymentSubType;
+    }
 
-	public void setDeploymentSubType(String deploymentSubType) {
-		this.deploymentSubType = deploymentSubType;
-	}
+    public void setDeploymentSubType(String deploymentSubType) {
+        this.deploymentSubType = deploymentSubType;
+    }
 
-	public boolean requires13Compatiblity() {
+    public boolean requires13Compatiblity() {
         if (symmetricVersion != null) {
             if (symmetricVersion.equals("development")) {
                 return false;

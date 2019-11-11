@@ -26,11 +26,11 @@ import org.jumpmind.db.sql.SqlException;
 
 public class Db2As400DdlReader extends Db2DdlReader {
 
-	public Db2As400DdlReader(IDatabasePlatform platform) {
+    public Db2As400DdlReader(IDatabasePlatform platform) {
         super(platform);
     }
-	
-	@Override
+    
+    @Override
     public List<String> getSchemaNames(String catalog) {
         try {
             return super.getSchemaNames(catalog);
@@ -43,7 +43,7 @@ public class Db2As400DdlReader extends Db2DdlReader {
     }
 
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
-    		DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
+            DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         ResultSet pkData = null;
         HashSet<String> pkColNames = new HashSet<String>();
 
@@ -61,10 +61,10 @@ public class Db2As400DdlReader extends Db2DdlReader {
 
         boolean indexMatchesPk = true;
         for (int i = 0; i < index.getColumnCount(); i++) {
-        	if (!pkColNames.contains(index.getColumn(i).getName())) {
-        		indexMatchesPk = false;
-        		break;
-        	}
+            if (!pkColNames.contains(index.getColumn(i).getName())) {
+                indexMatchesPk = false;
+                break;
+            }
         }
 
         return indexMatchesPk;
@@ -121,8 +121,8 @@ public class Db2As400DdlReader extends Db2DdlReader {
     
     @Override
     protected Collection<IIndex> readIndices(Connection connection, DatabaseMetaDataWrapper metaData, String tableName)
-    		throws SQLException {
-    	Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
+            throws SQLException {
+        Map<String, IIndex> indices = new LinkedHashMap<String, IIndex>();
         if (getPlatformInfo().isIndicesSupported()) {
             ResultSet indexData = null;
     
@@ -136,7 +136,7 @@ public class Db2As400DdlReader extends Db2DdlReader {
     
                     String columnName = (String) values.get("COLUMN_NAME");
                     if (hasColumn(columns, columnName)) {
-                    	readIndex(metaData, values, indices);
+                        readIndex(metaData, values, indices);
                     }
                 }
             } finally {
@@ -147,50 +147,50 @@ public class Db2As400DdlReader extends Db2DdlReader {
     }
     
     private boolean hasColumn(Collection<Column> columns, String targetColumn) {
-    	if (targetColumn == null || columns == null || columns.size() == 0) {
-    		return false;
-    	}
-    	boolean found = false;
-    	for(Column column : columns) {
-    		if (targetColumn.equals(column.getName())) {
-    			found = true;
-    		}
-    	}
-    	return found;
+        if (targetColumn == null || columns == null || columns.size() == 0) {
+            return false;
+        }
+        boolean found = false;
+        for(Column column : columns) {
+            if (targetColumn.equals(column.getName())) {
+                found = true;
+            }
+        }
+        return found;
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT "
-						+ "TRIGGER_NAME, "
-						+ "TRIGGER_SCHEMA, "
-						+ "EVENT_OBJECT_TABLE as TABLE_NAME, "
-						+ "ACTION_TIMING as TRIGGER_TIME, "
-						+ "EVENT_MANIPULATION as TRIGGER_TYPE, "
-						+ "CREATED, "
-						+ "ENABLED "
-					+ "FROM QSYS2.SYSTRIGGERS "
-					+ "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=?";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("TRIGGER_NAME"));
-				trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
-				trigger.setTableName(row.getString("TABLE_NAME"));
-				trigger.setEnabled(row.getString("ENABLED").equals("Y"));
-				trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGGER_TYPE")));
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-		
-		return triggers;
-	}
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT "
+                        + "TRIGGER_NAME, "
+                        + "TRIGGER_SCHEMA, "
+                        + "EVENT_OBJECT_TABLE as TABLE_NAME, "
+                        + "ACTION_TIMING as TRIGGER_TIME, "
+                        + "EVENT_MANIPULATION as TRIGGER_TYPE, "
+                        + "CREATED, "
+                        + "ENABLED "
+                    + "FROM QSYS2.SYSTRIGGERS "
+                    + "WHERE EVENT_OBJECT_TABLE=? and EVENT_OBJECT_SCHEMA=?";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("TRIGGER_NAME"));
+                trigger.setSchemaName(row.getString("TRIGGER_SCHEMA"));
+                trigger.setTableName(row.getString("TABLE_NAME"));
+                trigger.setEnabled(row.getString("ENABLED").equals("Y"));
+                trigger.setTriggerType(TriggerType.valueOf(row.getString("TRIGGER_TYPE")));
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+        
+        return triggers;
+    }
 }

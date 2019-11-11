@@ -115,11 +115,11 @@ public class SqlScript {
                     commitRate, this.resultsListener, this.scriptReader);
             return count;
         } finally {
-        	try {
-        		if(scriptReader != null) {
-        			scriptReader.close();
-        		}
-        	} catch(IOException e) { }
+            try {
+                if(scriptReader != null) {
+                    scriptReader.close();
+                }
+            } catch(IOException e) { }
         }
 
     }

@@ -142,66 +142,66 @@ public class InformixDdlReader extends AbstractJdbcDdlReader {
     }
     
     public List<Trigger> getTriggers(final String catalog, final String schema,
-			final String tableName) throws SqlException {
-		
-		List<Trigger> triggers = new ArrayList<Trigger>();
+            final String tableName) throws SqlException {
+        
+        List<Trigger> triggers = new ArrayList<Trigger>();
 
-		log.debug("Reading triggers for: " + tableName);
-		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-				.getSqlTemplate();
-		
-		String sql = "SELECT "
-						+ "trigname AS trigger_name, "
-						+ "tab.owner AS schema_name, "
-						+ "tab.tabname AS table_name, "
-						+ "event AS trigger_type, "
-						+ "trigid, "
-						+ "tab.tabid, "
-						+ "old, "
-						+ "new, "
-						+ "collation "
-					+ "FROM systriggers AS trig "
-					+ "INNER JOIN systables AS tab "
-						+ "ON tab.tabid = trig.tabid "
-					+ "WHERE tab.tabname=? AND tab.owner=? ;";
-		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-			public Trigger mapRow(Row row) {
-				Trigger trigger = new Trigger();
-				trigger.setName(row.getString("trigger_name"));
-				trigger.setSchemaName(row.getString("schema_name"));
-				trigger.setTableName(row.getString("table_name"));
-				trigger.setEnabled(true);
-				trigger.setSource("");
-				String trigEvent = row.getString("trigger_type");
-				switch(trigEvent.toUpperCase().charAt(0)) {
-					case('I'): trigEvent = "INSERT"; break;
-					case('U'): trigEvent = "UPDATE"; break;
-					case('D'): trigEvent = "DELETE";
-				}
-				trigger.setTriggerType(TriggerType.valueOf(trigEvent));
-				row.put("trigger_type", trigEvent);
-				trigger.setMetaData(row);
-				return trigger;
-			}
-		}, tableName, schema);
-		
-		for (final Trigger trigger : triggers) {
-			String id = trigger.getMetaData().get("trigid").toString();
-			String sourceSql = "SELECT "
-								 + "data "
-							 + "FROM systrigbody "
-							 + "WHERE trigid=? AND (datakey='A' OR datakey='D') "
-							 + "ORDER BY datakey DESC, seqno ASC ;";
-			sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
-				public Trigger mapRow(Row row) {
-					trigger.setSource(trigger.getSource()+"\n"+row.getString("data"));
-					return trigger;
-				}
-			}, id);
-		}
+        log.debug("Reading triggers for: " + tableName);
+        JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                .getSqlTemplate();
+        
+        String sql = "SELECT "
+                        + "trigname AS trigger_name, "
+                        + "tab.owner AS schema_name, "
+                        + "tab.tabname AS table_name, "
+                        + "event AS trigger_type, "
+                        + "trigid, "
+                        + "tab.tabid, "
+                        + "old, "
+                        + "new, "
+                        + "collation "
+                    + "FROM systriggers AS trig "
+                    + "INNER JOIN systables AS tab "
+                        + "ON tab.tabid = trig.tabid "
+                    + "WHERE tab.tabname=? AND tab.owner=? ;";
+        triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+            public Trigger mapRow(Row row) {
+                Trigger trigger = new Trigger();
+                trigger.setName(row.getString("trigger_name"));
+                trigger.setSchemaName(row.getString("schema_name"));
+                trigger.setTableName(row.getString("table_name"));
+                trigger.setEnabled(true);
+                trigger.setSource("");
+                String trigEvent = row.getString("trigger_type");
+                switch(trigEvent.toUpperCase().charAt(0)) {
+                    case('I'): trigEvent = "INSERT"; break;
+                    case('U'): trigEvent = "UPDATE"; break;
+                    case('D'): trigEvent = "DELETE";
+                }
+                trigger.setTriggerType(TriggerType.valueOf(trigEvent));
+                row.put("trigger_type", trigEvent);
+                trigger.setMetaData(row);
+                return trigger;
+            }
+        }, tableName, schema);
+        
+        for (final Trigger trigger : triggers) {
+            String id = trigger.getMetaData().get("trigid").toString();
+            String sourceSql = "SELECT "
+                                 + "data "
+                             + "FROM systrigbody "
+                             + "WHERE trigid=? AND (datakey='A' OR datakey='D') "
+                             + "ORDER BY datakey DESC, seqno ASC ;";
+            sqlTemplate.query(sourceSql, new ISqlRowMapper<Trigger>() {
+                public Trigger mapRow(Row row) {
+                    trigger.setSource(trigger.getSource()+"\n"+row.getString("data"));
+                    return trigger;
+                }
+            }, id);
+        }
 
-		return triggers;
-	}
+        return triggers;
+    }
     
     @Override
     protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {

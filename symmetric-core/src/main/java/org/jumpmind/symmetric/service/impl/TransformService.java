@@ -297,16 +297,16 @@ public class TransformService extends AbstractService implements ITransformServi
             }
         }
         if (replaceTokens) {
-    		@SuppressWarnings({ "rawtypes", "unchecked" })
-			Map<String, String> replacements = (Map) parameterService.getAllParameters();
-        	for (TransformTableNodeGroupLink transform : transforms) {
-        		transform.setSourceCatalogName(FormatUtils.replaceTokens(transform.getSourceCatalogName(), replacements, true));
-        		transform.setSourceSchemaName(FormatUtils.replaceTokens(transform.getSourceSchemaName(), replacements, true));
-        		transform.setSourceTableName(FormatUtils.replaceTokens(transform.getSourceTableName(), replacements, true));
-        		transform.setTargetCatalogName(FormatUtils.replaceTokens(transform.getTargetCatalogName(), replacements, true));
-        		transform.setTargetSchemaName(FormatUtils.replaceTokens(transform.getTargetSchemaName(), replacements, true));
-        		transform.setTargetTableName(FormatUtils.replaceTokens(transform.getTargetTableName(), replacements, true));
-        	}
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            Map<String, String> replacements = (Map) parameterService.getAllParameters();
+            for (TransformTableNodeGroupLink transform : transforms) {
+                transform.setSourceCatalogName(FormatUtils.replaceTokens(transform.getSourceCatalogName(), replacements, true));
+                transform.setSourceSchemaName(FormatUtils.replaceTokens(transform.getSourceSchemaName(), replacements, true));
+                transform.setSourceTableName(FormatUtils.replaceTokens(transform.getSourceTableName(), replacements, true));
+                transform.setTargetCatalogName(FormatUtils.replaceTokens(transform.getTargetCatalogName(), replacements, true));
+                transform.setTargetSchemaName(FormatUtils.replaceTokens(transform.getTargetSchemaName(), replacements, true));
+                transform.setTargetTableName(FormatUtils.replaceTokens(transform.getTargetTableName(), replacements, true));
+            }
         }
         return transforms;
     }

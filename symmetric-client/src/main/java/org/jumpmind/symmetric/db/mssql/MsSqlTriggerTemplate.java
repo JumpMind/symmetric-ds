@@ -172,7 +172,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "           (table_name, event_type, trigger_hist_id, row_data, channel_id, transaction_id,                     \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
 "          select '$(targetTableName)','I', $(triggerHistoryId), $(columns),                                    \n" +
-"			$(channelExpression), $(txIdExpression),                                                            \n" +
+"            $(channelExpression), $(txIdExpression),                                                            \n" +
             defaultCatalog + "dbo.$(prefixName)_node_disabled(),                                                \n" +
 "           $(externalSelect), current_timestamp                                                                \n" +
 "       $(if:containsBlobClobColumns)                                                                           \n" +

@@ -888,7 +888,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             if (sqlEx != null) {
                 if (primaryKeyViolationCodes != null) {
                     int errorCode = sqlEx.getErrorCode();
-                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {                    	
+                    for (int primaryKeyViolationCode : primaryKeyViolationCodes) {                        
                         if (primaryKeyViolationCode == errorCode) {
                             primaryKeyViolation = true;
                             break;
@@ -1141,7 +1141,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     @Override
     public boolean isDataTruncationViolation(Throwable ex) {
-    		return false;
+            return false;
     }
 
     @Override

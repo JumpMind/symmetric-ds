@@ -219,15 +219,15 @@ public class DbCompare {
             }
         } finally {
             if (stream != null) {
-            	try {
-            		stream.close();
-            	} catch(IOException e) { }
+                try {
+                    stream.close();
+                } catch(IOException e) { }
             }
             if(sourceCursor != null) {
-            	sourceCursor.close();
+                sourceCursor.close();
             }
             if(targetCursor != null) {
-            	targetCursor.close();
+                targetCursor.close();
             }
         }
 
@@ -242,7 +242,7 @@ public class DbCompare {
             return 1;
         }
         if (sourceCompareRow == null) {
-        	return 0;
+            return 0;
         }
 
         return sourceCompareRow.comparePks(tables, targetCompareRow);
@@ -340,20 +340,20 @@ public class DbCompare {
         List<String> filteredTablesNames = filterTables(tableNames);
         
         if (!CollectionUtils.isEmpty(targetTableNames) && filteredTablesNames.size() != targetTableNames.size()) {
-        	StringBuilder sb = new StringBuilder("Source and target table lists do not match.");
-        	sb.append(System.lineSeparator()).append("SourceTable:TargetTable").append(System.lineSeparator());
-        	Iterator<String> ftn = filteredTablesNames.iterator();
-        	Iterator<String> ttn = targetTableNames.iterator();
-        	while(true) {
-        		if(ftn.hasNext() || ttn.hasNext()) {
-        			String filteredTableName = ftn.hasNext() ? ftn.next() : "<undefined>";
-        			String targetTableName = ttn.hasNext() ? ttn.next() : "<undefined>";
-        			sb.append(filteredTableName+":"+targetTableName).append(System.lineSeparator());
-        		} else {
-        			break;
-        		}
-        	}
-        	log.error(sb.toString());
+            StringBuilder sb = new StringBuilder("Source and target table lists do not match.");
+            sb.append(System.lineSeparator()).append("SourceTable:TargetTable").append(System.lineSeparator());
+            Iterator<String> ftn = filteredTablesNames.iterator();
+            Iterator<String> ttn = targetTableNames.iterator();
+            while(true) {
+                if(ftn.hasNext() || ttn.hasNext()) {
+                    String filteredTableName = ftn.hasNext() ? ftn.next() : "<undefined>";
+                    String targetTableName = ttn.hasNext() ? ttn.next() : "<undefined>";
+                    sb.append(filteredTableName+":"+targetTableName).append(System.lineSeparator());
+                } else {
+                    break;
+                }
+            }
+            log.error(sb.toString());
             throw new SymmetricException("Source table names must be the same length as the list of target "
                     + "table names.  Check your arguments. source table names = " 
                     + filteredTablesNames + " target table names = " + targetTableNames); 
@@ -545,7 +545,7 @@ public class DbCompare {
     }
 
     protected Table loadTargetTableUsingTransform(TransformTableNodeGroupLink transform) {
-        Table targetTable = targetEngine.getDatabasePlatform().	
+        Table targetTable = targetEngine.getDatabasePlatform().    
                 getTableFromCache(transform.getTargetCatalogName(), transform.getTargetSchemaName(), transform.getTargetTableName(), true); 
 
         return targetTable;

@@ -21,124 +21,124 @@
 package org.jumpmind.symmetric.web.rest.model;
 
 public class BatchResult {
-	
-	/**
-	 * The batch ID for the batch being acknowledged
-	 */
-	private Long batchId;
-	
-	/**
-	 * The status of the batch after it was loaded.  Either "OK" or "ER"
-	 */
-	private String status;
+    
+    /**
+     * The batch ID for the batch being acknowledged
+     */
+    private Long batchId;
+    
+    /**
+     * The status of the batch after it was loaded.  Either "OK" or "ER"
+     */
+    private String status;
 
-	/**
-	 * The sqlCode that resulted if the batch being loaded is in error  
-	 */
-	private int sqlCode;
-	
-	/**
-	 * The sqlState that resulted if the batch being loaded is in error
-	 */
-	private String sqlState;	
-	
-	/**
-	 * A description of the status. This is particularly important if the status is "ER". 
-	 * In error status the status description should contain relevant information about the 
-	 * error on the client including SQL Error Number and description
-	 */
-	private String statusDescription;	
-	
-	/**
-	 * The amount of time it took to load the batch into the target database.  This value will be recorded in the
-	 * outgoing batch table.
-	 */
-	private long loadTimeInMillis;
-	
-	public BatchResult(long batchId, boolean success) {
-	    this.status = success ? "OK" : "ER";
-	    this.batchId = batchId;
+    /**
+     * The sqlCode that resulted if the batch being loaded is in error  
+     */
+    private int sqlCode;
+    
+    /**
+     * The sqlState that resulted if the batch being loaded is in error
+     */
+    private String sqlState;    
+    
+    /**
+     * A description of the status. This is particularly important if the status is "ER". 
+     * In error status the status description should contain relevant information about the 
+     * error on the client including SQL Error Number and description
+     */
+    private String statusDescription;    
+    
+    /**
+     * The amount of time it took to load the batch into the target database.  This value will be recorded in the
+     * outgoing batch table.
+     */
+    private long loadTimeInMillis;
+    
+    public BatchResult(long batchId, boolean success) {
+        this.status = success ? "OK" : "ER";
+        this.batchId = batchId;
     }
-	
-	public BatchResult() {
+    
+    public BatchResult() {
     }
-		
-	/**
-	 * Gets the batch id for the given batch result
-	 * @return
-	 */
-	public Long getBatchId() {
-		return batchId;
-	}
-	
-	/**
-	 * Sets the batch id for the given batch result
-	 * @param batchId
-	 */
-	public void setBatchId(Long batchId) {
-		this.batchId = batchId;
-	}
-	
-	/**
-	 * Gets the status for the given batch result
-	 * @return
-	 */
-	public String getStatus() {
-		return status;
-	}
-	/**
-	 * Sets the status for the given batch result
-	 * @param status
-	 */
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	/**
-	 * Gets the status description for the given batch result
-	 * @return
-	 */
-	public String getStatusDescription() {
-		return statusDescription;
-	}
-	/**
-	 * Sets the status description for the given batch result
-	 * @param statusDescription
-	 */
-	public void setStatusDescription(String statusDescription) {
-		this.statusDescription = statusDescription;
-	}
+        
+    /**
+     * Gets the batch id for the given batch result
+     * @return
+     */
+    public Long getBatchId() {
+        return batchId;
+    }
+    
+    /**
+     * Sets the batch id for the given batch result
+     * @param batchId
+     */
+    public void setBatchId(Long batchId) {
+        this.batchId = batchId;
+    }
+    
+    /**
+     * Gets the status for the given batch result
+     * @return
+     */
+    public String getStatus() {
+        return status;
+    }
+    /**
+     * Sets the status for the given batch result
+     * @param status
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    /**
+     * Gets the status description for the given batch result
+     * @return
+     */
+    public String getStatusDescription() {
+        return statusDescription;
+    }
+    /**
+     * Sets the status description for the given batch result
+     * @param statusDescription
+     */
+    public void setStatusDescription(String statusDescription) {
+        this.statusDescription = statusDescription;
+    }
 
-	/**
-	 * Gets the sqlCode for the batch 
-	 * @return
-	 */
-	public int getSqlCode() {
-		return sqlCode;
-	}
+    /**
+     * Gets the sqlCode for the batch 
+     * @return
+     */
+    public int getSqlCode() {
+        return sqlCode;
+    }
 
-	/**
-	 * Sets the sqlCode for the batch
-	 * @param sqlCode
-	 */
-	public void setSqlCode(int sqlCode) {
-		this.sqlCode = sqlCode;
-	}
+    /**
+     * Sets the sqlCode for the batch
+     * @param sqlCode
+     */
+    public void setSqlCode(int sqlCode) {
+        this.sqlCode = sqlCode;
+    }
 
-	/**
-	 * gets the sqlState for the batch
-	 * @return
-	 */
-	public String getSqlState() {
-		return sqlState;
-	}
+    /**
+     * gets the sqlState for the batch
+     * @return
+     */
+    public String getSqlState() {
+        return sqlState;
+    }
 
-	/**
-	 * sets the sqlState for the batch
-	 * @param sqlState
-	 */
-	public void setSqlState(String sqlState) {
-		this.sqlState = sqlState;
-	}
+    /**
+     * sets the sqlState for the batch
+     * @param sqlState
+     */
+    public void setSqlState(String sqlState) {
+        this.sqlState = sqlState;
+    }
 
     public long getLoadTimeInMillis() {
         return loadTimeInMillis;

@@ -195,67 +195,67 @@ abstract public class AbstractParameterService {
 
    
     public synchronized String getExternalId() {
-    	if (externalId==null) {
-    		String value = getString(ParameterConstants.EXTERNAL_ID);
-    		value = substituteScripts(value);
-    		externalId = value;
-    		if (log.isDebugEnabled()) {
-        		log.debug("External Id eval results in: {}",externalId);
-        	}
-    	}
-    	return externalId;
+        if (externalId==null) {
+            String value = getString(ParameterConstants.EXTERNAL_ID);
+            value = substituteScripts(value);
+            externalId = value;
+            if (log.isDebugEnabled()) {
+                log.debug("External Id eval results in: {}",externalId);
+            }
+        }
+        return externalId;
     }
 
     public synchronized  String getSyncUrl() {
-    	if (syncUrl==null) {
-    		String value = getString(ParameterConstants.SYNC_URL);
-    		value = substituteScripts(value);
-    		if (value != null) {
-    			value = value.trim();
+        if (syncUrl==null) {
+            String value = getString(ParameterConstants.SYNC_URL);
+            value = substituteScripts(value);
+            if (value != null) {
+                value = value.trim();
             }
-    		syncUrl = value;
-    		if (log.isDebugEnabled()) {
-        		log.debug("Sync URL eval results in: {}",syncUrl);
-        	}
-    	}
-    	return syncUrl;
+            syncUrl = value;
+            if (log.isDebugEnabled()) {
+                log.debug("Sync URL eval results in: {}",syncUrl);
+            }
+        }
+        return syncUrl;
     }
 
     public synchronized String getNodeGroupId() {
-    	if (nodeGroupId==null) {
-    		String value = getString(ParameterConstants.NODE_GROUP_ID);
-    		value = substituteScripts(value);
-    		nodeGroupId = value;
-    		if (log.isDebugEnabled()) {
-        		log.debug("Node Group Id eval results in: {}",nodeGroupId);
-        	}
-    	}
-    	return nodeGroupId;
+        if (nodeGroupId==null) {
+            String value = getString(ParameterConstants.NODE_GROUP_ID);
+            value = substituteScripts(value);
+            nodeGroupId = value;
+            if (log.isDebugEnabled()) {
+                log.debug("Node Group Id eval results in: {}",nodeGroupId);
+            }
+        }
+        return nodeGroupId;
     }
 
     public synchronized  String getRegistrationUrl() {
-    	if (registrationUrl==null) {
-    		String value = getString(ParameterConstants.REGISTRATION_URL);
-    		value = substituteScripts(value);
-    		if (value != null) {
-    			value = value.trim();
+        if (registrationUrl==null) {
+            String value = getString(ParameterConstants.REGISTRATION_URL);
+            value = substituteScripts(value);
+            if (value != null) {
+                value = value.trim();
             }
-    		registrationUrl = value;
-    		if (log.isDebugEnabled()) {
-        		log.debug("Registration URL eval results in: {}",registrationUrl);
-        	}
-    	}
-    	return registrationUrl;
+            registrationUrl = value;
+            if (log.isDebugEnabled()) {
+                log.debug("Registration URL eval results in: {}",registrationUrl);
+            }
+        }
+        return registrationUrl;
     }
 
     public synchronized  String getEngineName() {
-    	if (engineName==null) {
-    		String value = getString(ParameterConstants.ENGINE_NAME,"SymmetricDS");
-    		value = substituteScripts(value);
-    		engineName = value;
-        	if (log.isDebugEnabled()) {
-        		log.debug("Engine Name eval results in: {}",engineName);
-        	}        	
+        if (engineName==null) {
+            String value = getString(ParameterConstants.ENGINE_NAME,"SymmetricDS");
+            value = substituteScripts(value);
+            engineName = value;
+            if (log.isDebugEnabled()) {
+                log.debug("Engine Name eval results in: {}",engineName);
+            }            
         }
         return engineName;
     }
@@ -293,7 +293,7 @@ abstract public class AbstractParameterService {
             return new TypedProperties();
         }
     }
-    	
+        
 
     public void setExtensionService(IExtensionService extensionService) {
         this.extensionService = extensionService;
@@ -301,50 +301,50 @@ abstract public class AbstractParameterService {
 
     
     protected  String substituteScripts(String value) {
-    	if (log.isDebugEnabled()) {
-			log.debug("substituteScripts starting value is: {}",value);
-		}
-		int startTick = StringUtils.indexOf(value, '`');
-		if (startTick!=-1) {
-    		int endTick = StringUtils.lastIndexOf(value, '`');
-    		if (endTick!=-1 && startTick!=endTick) {
-    			// there's a bean shell script present in this case
-    			String script = StringUtils.substring(value, startTick+1,endTick);
-    			if (log.isDebugEnabled()) {
-        			log.debug("Script found.  Script is is: {}",script);
-        		}
-    			
+        if (log.isDebugEnabled()) {
+            log.debug("substituteScripts starting value is: {}",value);
+        }
+        int startTick = StringUtils.indexOf(value, '`');
+        if (startTick!=-1) {
+            int endTick = StringUtils.lastIndexOf(value, '`');
+            if (endTick!=-1 && startTick!=endTick) {
+                // there's a bean shell script present in this case
+                String script = StringUtils.substring(value, startTick+1,endTick);
+                if (log.isDebugEnabled()) {
+                    log.debug("Script found.  Script is is: {}",script);
+                }
+                
                 Interpreter interpreter = new Interpreter();
                 try {
-					interpreter.set("hostName",  AppUtils.getHostName());
-	                interpreter.set("log", log);
-	                interpreter.set("nodeGroupId", nodeGroupId);
-	                interpreter.set("syncUrl", syncUrl);
-	                interpreter.set("registrationUrl", registrationUrl);
-	                interpreter.set("externalId", externalId);
-	                interpreter.set("engineName", engineName);
-	                
-	                Object scriptResult = interpreter.eval(script);
-	          
-	                if (scriptResult==null) {
-	                	scriptResult ="";
-	                }
-	                
-	                if (log.isDebugEnabled()) {
-	    	    		log.debug("Script output is: {}",scriptResult);
-	    	    	}
-	               	value = StringUtils.substring(value, 0,startTick) + scriptResult.toString() +
-	        					StringUtils.substring(value, endTick+1);
-				} catch (EvalError e) {
-					throw new RuntimeException(e.getMessage(),e);
-				}
-        		
-    			if (log.isDebugEnabled()) {
-        			log.debug("substituteScripts return value is {}",value);
-        		}
-       		}
-		}
-		return value;
+                    interpreter.set("hostName",  AppUtils.getHostName());
+                    interpreter.set("log", log);
+                    interpreter.set("nodeGroupId", nodeGroupId);
+                    interpreter.set("syncUrl", syncUrl);
+                    interpreter.set("registrationUrl", registrationUrl);
+                    interpreter.set("externalId", externalId);
+                    interpreter.set("engineName", engineName);
+                    
+                    Object scriptResult = interpreter.eval(script);
+              
+                    if (scriptResult==null) {
+                        scriptResult ="";
+                    }
+                    
+                    if (log.isDebugEnabled()) {
+                        log.debug("Script output is: {}",scriptResult);
+                    }
+                       value = StringUtils.substring(value, 0,startTick) + scriptResult.toString() +
+                                StringUtils.substring(value, endTick+1);
+                } catch (EvalError e) {
+                    throw new RuntimeException(e.getMessage(),e);
+                }
+                
+                if (log.isDebugEnabled()) {
+                    log.debug("substituteScripts return value is {}",value);
+                }
+               }
+        }
+        return value;
     }
 
 }

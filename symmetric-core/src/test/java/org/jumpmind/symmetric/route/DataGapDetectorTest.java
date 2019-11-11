@@ -162,7 +162,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
     }
 
-	@Test
+    @Test
     public void testNewGapFull() throws Exception {
         detector.setFullGapAnalysis(true);
         when(contextService.is(ContextConstants.ROUTING_FULL_GAP_ANALYSIS)).thenReturn(true);

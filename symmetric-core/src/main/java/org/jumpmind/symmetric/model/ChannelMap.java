@@ -92,13 +92,13 @@ public class ChannelMap {
         return map.get(CHANNELS_IGNORE);
     }
 
-	public String getChannelQueue() {
-		return channelQueue;
-	}
+    public String getChannelQueue() {
+        return channelQueue;
+    }
 
-	public void setChannelQueue(String threadChannel) {
-		this.channelQueue = threadChannel;
-	}
+    public void setChannelQueue(String threadChannel) {
+        this.channelQueue = threadChannel;
+    }
 
     
 }

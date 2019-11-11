@@ -30,7 +30,7 @@ import org.jumpmind.symmetric.io.data.transform.TransformTable;
 public class TransformDatabaseWriter extends TransformWriter {
 
     public TransformDatabaseWriter(IDatabasePlatform symmetricPlatform,
-    			IDatabasePlatform targetPlatform, String tablePrefix, 
+                IDatabasePlatform targetPlatform, String tablePrefix, 
             DatabaseWriterSettings defaultSettings, Map<String, IColumnTransform<?>> columnTransforms, 
             TransformTable[] transforms) {
         super(targetPlatform, TransformPoint.LOAD,

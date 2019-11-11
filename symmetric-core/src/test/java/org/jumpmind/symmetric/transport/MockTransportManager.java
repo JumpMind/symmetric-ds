@@ -122,11 +122,11 @@ public class MockTransportManager implements ITransportManager {
         return outgoingTransport;
     }
 
-	@Override
-	public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken,
-			Map<String, String> requestProperties, String registrationUrl) throws IOException {
-		return outgoingTransport;
-	}
+    @Override
+    public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local, String securityToken,
+            Map<String, String> requestProperties, String registrationUrl) throws IOException {
+        return outgoingTransport;
+    }
 
     @Override
     public IIncomingTransport getConfigTransport(Node remote, Node local, String securityToken,

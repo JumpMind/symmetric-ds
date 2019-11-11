@@ -442,53 +442,53 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     }
     
     @Override
-   	public List<Trigger> getTriggers(final String catalog, final String schema,
-   			final String tableName) throws SqlException {
-   		
-   		List<Trigger> triggers = new ArrayList<Trigger>();
+       public List<Trigger> getTriggers(final String catalog, final String schema,
+               final String tableName) throws SqlException {
+           
+           List<Trigger> triggers = new ArrayList<Trigger>();
 
-   		log.debug("Reading triggers for: " + tableName);
-   		JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
-   				.getSqlTemplate();
-   		
-   		String sql = "select "
-   						+ "TRIG.RDB$TRIGGER_NAME as TRIGGER_NAME, "
-   						+ "TRIG.RDB$RELATION_NAME as TABLE_NAME, "
-   						+ "TYPES1.RDB$TYPE_NAME as TRIGGER_TYPE, "
-   						+ "TRIG.RDB$TRIGGER_SEQUENCE as TRIGGER_SEQUENCE, "
-   						+ "TRIG.RDB$TRIGGER_BLR as TRIGGER_BLR, "
-   						+ "TRIG.RDB$DESCRIPTION as DESCRIPTION, "
-   						+ "TRIG.RDB$TRIGGER_INACTIVE as TRIGGER_INACTIVE, "
-   						+ "TYPES2.RDB$TYPE_NAME as SYSTEM_FLAG, "
-   						+ "TRIG.RDB$FLAGS as FLAGS, "
-   						+ "TRIG.RDB$VALID_BLR as VALID_BLR, "
-   						+ "TRIG.RDB$DEBUG_INFO as DEBUG_INFO,"
-   						+ "TRIG.RDB$TRIGGER_SOURCE as TRIGGER_SOURCE "
-   					+ "from RDB$TRIGGERS as TRIG "
-   					+ "inner join RDB$TYPES as TYPES1 "
-   						+ "on TYPES1.RDB$FIELD_NAME = 'RDB$TRIGGER_TYPE' "
-   						+ "and TYPES1.RDB$TYPE = TRIG.RDB$TRIGGER_TYPE "
-   					+ "inner join RDB$TYPES as TYPES2 "
-   						+ "on TYPES2.RDB$FIELD_NAME = 'RDB$SYSTEM_FLAG' "
-   						+ "and TYPES2.RDB$TYPE = TRIG.RDB$SYSTEM_FLAG "
-   					+ "where RDB$RELATION_NAME = ? ;";
-   		triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
-   			public Trigger mapRow(Row row) {
-   				Trigger trigger = new Trigger();
-   				trigger.setName(row.getString("TRIGGER_NAME"));
-   				trigger.setTableName(row.getString("TABLE_NAME"));
-   				trigger.setEnabled(true);
-   				trigger.setSource(row.getString("TRIGGER_SOURCE"));
-   				row.remove("TRIGGER_SOURCE");
-   				String triggerType = row.getString("TRIGGER_TYPE");
-   				if (triggerType.contains("STORE")) trigger.setTriggerType(TriggerType.INSERT);
-   				else if (triggerType.contains("ERASE")) trigger.setTriggerType(TriggerType.DELETE);
-   				else if (triggerType.contains("MODIFY")) trigger.setTriggerType(TriggerType.UPDATE);
-   				trigger.setMetaData(row);
-   				return trigger;
-   			}
-   		}, tableName);
+           log.debug("Reading triggers for: " + tableName);
+           JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
+                   .getSqlTemplate();
+           
+           String sql = "select "
+                           + "TRIG.RDB$TRIGGER_NAME as TRIGGER_NAME, "
+                           + "TRIG.RDB$RELATION_NAME as TABLE_NAME, "
+                           + "TYPES1.RDB$TYPE_NAME as TRIGGER_TYPE, "
+                           + "TRIG.RDB$TRIGGER_SEQUENCE as TRIGGER_SEQUENCE, "
+                           + "TRIG.RDB$TRIGGER_BLR as TRIGGER_BLR, "
+                           + "TRIG.RDB$DESCRIPTION as DESCRIPTION, "
+                           + "TRIG.RDB$TRIGGER_INACTIVE as TRIGGER_INACTIVE, "
+                           + "TYPES2.RDB$TYPE_NAME as SYSTEM_FLAG, "
+                           + "TRIG.RDB$FLAGS as FLAGS, "
+                           + "TRIG.RDB$VALID_BLR as VALID_BLR, "
+                           + "TRIG.RDB$DEBUG_INFO as DEBUG_INFO,"
+                           + "TRIG.RDB$TRIGGER_SOURCE as TRIGGER_SOURCE "
+                       + "from RDB$TRIGGERS as TRIG "
+                       + "inner join RDB$TYPES as TYPES1 "
+                           + "on TYPES1.RDB$FIELD_NAME = 'RDB$TRIGGER_TYPE' "
+                           + "and TYPES1.RDB$TYPE = TRIG.RDB$TRIGGER_TYPE "
+                       + "inner join RDB$TYPES as TYPES2 "
+                           + "on TYPES2.RDB$FIELD_NAME = 'RDB$SYSTEM_FLAG' "
+                           + "and TYPES2.RDB$TYPE = TRIG.RDB$SYSTEM_FLAG "
+                       + "where RDB$RELATION_NAME = ? ;";
+           triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+               public Trigger mapRow(Row row) {
+                   Trigger trigger = new Trigger();
+                   trigger.setName(row.getString("TRIGGER_NAME"));
+                   trigger.setTableName(row.getString("TABLE_NAME"));
+                   trigger.setEnabled(true);
+                   trigger.setSource(row.getString("TRIGGER_SOURCE"));
+                   row.remove("TRIGGER_SOURCE");
+                   String triggerType = row.getString("TRIGGER_TYPE");
+                   if (triggerType.contains("STORE")) trigger.setTriggerType(TriggerType.INSERT);
+                   else if (triggerType.contains("ERASE")) trigger.setTriggerType(TriggerType.DELETE);
+                   else if (triggerType.contains("MODIFY")) trigger.setTriggerType(TriggerType.UPDATE);
+                   trigger.setMetaData(row);
+                   return trigger;
+               }
+           }, tableName);
 
-   		return triggers;
-   	}
+           return triggers;
+       }
 }

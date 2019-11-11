@@ -139,8 +139,8 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
         }
         
         if (column.getJdbcTypeName().equalsIgnoreCase("enum")) {
-        	column.setMappedTypeCode(Types.VARCHAR);
-        	column.setMappedType(JDBCType.VARCHAR.name());
+            column.setMappedTypeCode(Types.VARCHAR);
+            column.setMappedType(JDBCType.VARCHAR.name());
             ISqlTemplate template = platform.getSqlTemplate();
             String unParsedEnums = template.queryForString("SELECT SUBSTRING(ENUMERATION, 2, LENGTH(ENUMERATION)-2) FROM SYSTEM.FIELDS"
                     + " WHERE SCHEMA=? AND TABLENAME=? AND FIELD=?", (String) values.get("SCHEMA"), (String) values.get("TABLENAME"), column.getName());
@@ -248,11 +248,11 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
     
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
-    	
+        
         Integer type = (Integer) values.get("DATA_TYPE");
         if (type != null && type.intValue() == Types.CLOB) {
-        	// XML longvarchar becoms longvarchar on Column but becomes clob in database
-        	return Types.LONGVARCHAR;
+            // XML longvarchar becoms longvarchar on Column but becomes clob in database
+            return Types.LONGVARCHAR;
         }else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }

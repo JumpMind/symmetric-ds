@@ -84,7 +84,7 @@ public class TableSelectionLayout extends VerticalLayout {
     
     public TableSelectionLayout(String titleKey, IDatabasePlatform databasePlatform,
             Set<org.jumpmind.db.model.Table> selectedSet) {
-    	this(titleKey, databasePlatform, selectedSet, null, null);
+        this(titleKey, databasePlatform, selectedSet, null, null);
     }
 
     public TableSelectionLayout(String titleKey, IDatabasePlatform databasePlatform,
@@ -342,11 +342,11 @@ public class TableSelectionLayout extends VerticalLayout {
     }
     
     public List<String> getExcludedTables() {
-    	return excludedTables;
+        return excludedTables;
     }
     
     public void setExcludedTables(List<String> excludedTables) {
-    	this.excludedTables = excludedTables;
+        this.excludedTables = excludedTables;
     }
 
     protected boolean display(String catalog, String schema, String table) {

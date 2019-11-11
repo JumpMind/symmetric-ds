@@ -4,9 +4,9 @@ import org.jumpmind.db.sql.AbstractJavaDriverSqlTemplate;
 
 public class KafkaSqlTemplate extends AbstractJavaDriverSqlTemplate{
 
-	@Override
-	public String getDatabaseProductName() {
-		return "kafka";
-	}
+    @Override
+    public String getDatabaseProductName() {
+        return "kafka";
+    }
 
 }

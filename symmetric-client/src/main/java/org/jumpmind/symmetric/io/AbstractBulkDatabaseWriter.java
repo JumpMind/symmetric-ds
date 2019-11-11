@@ -34,7 +34,7 @@ public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseW
     }
     
     public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
-    		String tablePrefix, DatabaseWriterSettings settings) {
+            String tablePrefix, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
     }
     

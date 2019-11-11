@@ -708,9 +708,9 @@ public class DbExport {
             }
 
             try {
-            	if(writer != null) {
-            		writer.close();
-            	}
+                if(writer != null) {
+                    writer.close();
+                }
             } catch(IOException e) { }
             writer = null;
         }

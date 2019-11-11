@@ -117,26 +117,26 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 createSqlReplacementTokens()));
     }
 
-	public Node registerPullOnlyNode(String externalId, String nodeGroupId,
-			String databaseType, String databaseVersion) 
-			throws IOException {
-		
-		Node node = new Node();
-		node.setExternalId(externalId);
-		node.setNodeGroupId(nodeGroupId);
-		node.setDatabaseType(databaseType);
-		node.setDatabaseVersion(databaseVersion);
-		node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
+    public Node registerPullOnlyNode(String externalId, String nodeGroupId,
+            String databaseType, String databaseVersion) 
+            throws IOException {
+        
+        Node node = new Node();
+        node.setExternalId(externalId);
+        node.setNodeGroupId(nodeGroupId);
+        node.setDatabaseType(databaseType);
+        node.setDatabaseVersion(databaseVersion);
+        node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
 
-		node = processRegistration(node, null, null, true);
-		
-		if (node.isSyncEnabled()) {
-			//set the node as registered as we have no 
-			//virtual batch for registration to be ok'd
-			markNodeAsRegistered(node.getNodeId());
-		}		
-		return node;
-	}    
+        node = processRegistration(node, null, null, true);
+        
+        if (node.isSyncEnabled()) {
+            //set the node as registered as we have no 
+            //virtual batch for registration to be ok'd
+            markNodeAsRegistered(node.getNodeId());
+        }        
+        return node;
+    }    
     
     public boolean registerNode(Node preRegisteredNode, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
@@ -151,15 +151,15 @@ public class RegistrationService extends AbstractService implements IRegistratio
             String remoteAddress, boolean isRequestedRegistration)
             throws IOException {
 
-    	Node processedNode = new Node();
-    	processedNode.setSyncEnabled(false);
+        Node processedNode = new Node();
+        processedNode.setSyncEnabled(false);
 
         if (!allowClientRegistration) {
             log.warn("Cannot register a client node until this node has synced triggers");
             return processedNode;
         }
-    	
-    	Node identity = nodeService.findIdentity();
+        
+        Node identity = nodeService.findIdentity();
         if (identity == null) {
             RegistrationRequest req = new RegistrationRequest(nodePriorToRegistration,
                     RegistrationStatus.ER, remoteHost, remoteAddress);

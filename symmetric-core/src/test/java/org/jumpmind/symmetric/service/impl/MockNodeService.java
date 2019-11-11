@@ -300,8 +300,8 @@ public class MockNodeService implements INodeService {
         return null;
     }
 
-	public void updateNodeHost(NodeHost nodeHost) {
-	}
+    public void updateNodeHost(NodeHost nodeHost) {
+    }
 
     public Map<String, Date> findLastHeartbeats() {
         return null;

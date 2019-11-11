@@ -168,10 +168,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
     
     protected void setDeploymentSubTypeByProperties(Properties properties) {
-    		if (properties != null) {
-	    		String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-	        setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
-    		}
+            if (properties != null) {
+                String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
+            setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
+            }
     }
 
     public ClientSymmetricEngine(Properties properties) {
@@ -331,7 +331,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
-    		return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, false);
+            return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, false);
     }
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly) {
@@ -533,5 +533,5 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public IMonitorService getMonitorService() {
         return monitorService;
     }
-	
+    
 }

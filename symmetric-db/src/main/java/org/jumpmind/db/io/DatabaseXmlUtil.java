@@ -546,7 +546,7 @@ public class DatabaseXmlUtil {
                         writeForeignKeyOnDeleteClause(fk)
                         +
                         ">\n");
-                        		
+                                
                 for (Reference ref : fk.getReferences()) {
                     output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml(ref.getLocalColumnName())
                             + "\" foreign=\"" + StringEscapeUtils.escapeXml(ref.getForeignColumnName()) + "\"/>\n");

@@ -80,7 +80,7 @@ public class DataGap implements Serializable, Comparable<DataGap> {
     }
 
     public long gapSize() {
-    	return endId-startId;
+        return endId-startId;
     }
 
     @Override

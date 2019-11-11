@@ -59,7 +59,7 @@ import org.jumpmind.util.AppUtils;
  */
 public class NodeService extends AbstractService implements INodeService {
 
-	private ISymmetricEngine engine;
+    private ISymmetricEngine engine;
 
     private IExtensionService extensionService;
 

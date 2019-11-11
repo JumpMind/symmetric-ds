@@ -86,8 +86,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
             return false;
         // Support for channel threading
         } else if (threadChannel != null) {
-        	if (concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD)) {
-        		try {
+            if (concurrentConnectionManager.reserveConnection(nodeId, threadChannel, poolId, ReservationType.HARD)) {
+                try {
                     buildSuspendIgnoreResponseHeaders(nodeId, resp);
                     return true;
                 } catch (Exception ex) {
@@ -96,7 +96,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                     return false;
                 }
-        	} else {
+            } else {
                 statisticManager.incrementNodesRejected(1);
                 if (isPush) {
                     log.warn("Missing reservation for push, so rejecting node {}", new Object[] { nodeId });
@@ -125,8 +125,8 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     protected String getNodeId(HttpServletRequest req) {
         String nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.NODE_ID));
         if (StringUtils.isBlank(nodeId)) {
-        	// if this is a registration request, we won't have a node id to use. 
-        	nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.EXTERNAL_ID));
+            // if this is a registration request, we won't have a node id to use. 
+            nodeId = StringUtils.trimToNull(req.getParameter(WebConstants.EXTERNAL_ID));
         }
         return nodeId;
     }

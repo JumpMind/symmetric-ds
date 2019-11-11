@@ -22,74 +22,74 @@ package org.jumpmind.symmetric.web.rest.model;
 
 public class RegistrationInfo {
 
-	/**
-	 * Whether the node was successfully registered
-	 */
-	boolean registered;
-	
+    /**
+     * Whether the node was successfully registered
+     */
+    boolean registered;
+    
     /**
      * The nodeId that was generated during the registration process for the given node
      * based on its external id
      */
-	String nodeId;
-	
-	/**
-	 * The URL that should be used to request (pull) data in the sycnronization scenario
-	 */
-	String syncUrl;
-	
-	/**
-	 * The password for the root node to use when doing a pull
-	 */
-	String nodePassword;	
-	
-	/**
-	 * Returns the node id that was generated during the registration process for the given node
-	 * based on the external id passed into the registration process.
-	 * @return
-	 */
-	public String getNodeId() {
-		return nodeId;
-	}
-	
-	/**
-	 * Setter for the node id field
-	 * @param nodeId
-	 */
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
-	
-	/**
-	 * Returns the root synchronization url that should be used for subsequent REST service requests such as /engine/pulldata
-	 * @return
-	 */
-	public String getSyncUrl() {
-		return syncUrl;
-	}
-	
-	/**
-	 * Setter for the sync url field
-	 * @param syncUrl
-	 */
-	public void setSyncUrl(String syncUrl) {
-		this.syncUrl = syncUrl;
-	}
+    String nodeId;
+    
+    /**
+     * The URL that should be used to request (pull) data in the sycnronization scenario
+     */
+    String syncUrl;
+    
+    /**
+     * The password for the root node to use when doing a pull
+     */
+    String nodePassword;    
+    
+    /**
+     * Returns the node id that was generated during the registration process for the given node
+     * based on the external id passed into the registration process.
+     * @return
+     */
+    public String getNodeId() {
+        return nodeId;
+    }
+    
+    /**
+     * Setter for the node id field
+     * @param nodeId
+     */
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+    
+    /**
+     * Returns the root synchronization url that should be used for subsequent REST service requests such as /engine/pulldata
+     * @return
+     */
+    public String getSyncUrl() {
+        return syncUrl;
+    }
+    
+    /**
+     * Setter for the sync url field
+     * @param syncUrl
+     */
+    public void setSyncUrl(String syncUrl) {
+        this.syncUrl = syncUrl;
+    }
 
-	public String getNodePassword() {
-		return nodePassword;
-	}
+    public String getNodePassword() {
+        return nodePassword;
+    }
 
-	public void setNodePassword(String nodePassword) {
-		this.nodePassword = nodePassword;
-	}
+    public void setNodePassword(String nodePassword) {
+        this.nodePassword = nodePassword;
+    }
 
-	public boolean isRegistered() {
-		return registered;
-	}
+    public boolean isRegistered() {
+        return registered;
+    }
 
-	public void setRegistered(boolean registered) {
-		this.registered = registered;
-	}
+    public void setRegistered(boolean registered) {
+        this.registered = registered;
+    }
 
 }

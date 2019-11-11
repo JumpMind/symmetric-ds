@@ -23,34 +23,34 @@ public class GenericJdbcSqlDdlReader extends AbstractJdbcDdlReader {
         return "PRIMARY".equals(index.getName());
     }
 
-	@Override
-	protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
-			throws SQLException {
-		try {
-			return super.readTable(connection, metaData, values);
-		}
-		catch (Exception e) {
-			return null;
-		}
-	}
-	
-	@Override
-	public Table readTable(String catalog, String schema, String table) {
-		try {
-			return super.readTable(catalog, schema, table);
-		}
-		catch (Exception e) {
-			return null;
-		}
-	}
-	
-	@Override
-	public Database readTables(String catalog, String schema, String[] tableTypes) {
-		try {
-			return super.readTables(catalog, schema, tableTypes);
-		}
-		catch (Exception e) {
-			return null;
-		}
-	}
+    @Override
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
+        try {
+            return super.readTable(connection, metaData, values);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public Table readTable(String catalog, String schema, String table) {
+        try {
+            return super.readTable(catalog, schema, table);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public Database readTables(String catalog, String schema, String[] tableTypes) {
+        try {
+            return super.readTables(catalog, schema, tableTypes);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
 }

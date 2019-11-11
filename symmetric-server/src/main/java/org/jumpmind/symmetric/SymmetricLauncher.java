@@ -201,7 +201,7 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                     maxIdleTime, propertiesFile != null ? propertiesFile.getCanonicalPath() : null,
                     true, noNio, noDirectBuffer);
             if (isNotBlank(host)) {
-            	webServer.setHost(host);
+                webServer.setHost(host);
             }
             
             if (jmxDisabledFlag) {                

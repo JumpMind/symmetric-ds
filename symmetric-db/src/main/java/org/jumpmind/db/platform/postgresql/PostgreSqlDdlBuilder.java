@@ -204,8 +204,8 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append("CREATE SEQUENCE ");
             if (StringUtils.isNotBlank(table.getSchema())) {
-            		printIdentifier(table.getSchema(), ddl);
-            		ddl.append(".");
+                    printIdentifier(table.getSchema(), ddl);
+                    ddl.append(".");
             }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             printEndOfStatement(ddl);
@@ -232,9 +232,9 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append("DROP SEQUENCE ");
             if (StringUtils.isNotBlank(table.getSchema())) {
-	        		printIdentifier(table.getSchema(), ddl);
-	        		ddl.append(".");
-	        }
+                    printIdentifier(table.getSchema(), ddl);
+                    ddl.append(".");
+            }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             printEndOfStatement(ddl);
         }
@@ -249,9 +249,9 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
         } else {
             ddl.append(" DEFAULT nextval('");
             if (StringUtils.isNotBlank(table.getSchema())) {
-	        		printIdentifier(table.getSchema(), ddl);
-	        		ddl.append(".");
-	        }
+                    printIdentifier(table.getSchema(), ddl);
+                    ddl.append(".");
+            }
             printIdentifier(getConstraintName(null, table, column.getName(), "seq"), ddl);
             ddl.append("')");
         }
@@ -283,14 +283,14 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     
     @Override
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
-    	if(sourceColumn != null && sourceColumn.getMappedTypeCode() == Types.TIME &&
-    			targetColumn != null && targetColumn.getMappedTypeCode() == Types.TIMESTAMP)
-    	{
-    		ddl.append("date_trunc('DAY', localtimestamp) + ");
-    		printIdentifier(getColumnName(sourceColumn), ddl);
-    	} else {
-    		super.writeCastExpression(sourceColumn, targetColumn, ddl);
-    	}
+        if(sourceColumn != null && sourceColumn.getMappedTypeCode() == Types.TIME &&
+                targetColumn != null && targetColumn.getMappedTypeCode() == Types.TIMESTAMP)
+        {
+            ddl.append("date_trunc('DAY', localtimestamp) + ");
+            printIdentifier(getColumnName(sourceColumn), ddl);
+        } else {
+            super.writeCastExpression(sourceColumn, targetColumn, ddl);
+        }
     }
 
     @Override
@@ -449,37 +449,37 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
                  (defaultValue.contains("::") && Types.ARRAY == typeCode))) {
             ddl.append(defaultValue);
         } else if (Types.BOOLEAN == typeCode || Types.BIT == typeCode) {
-        	boolean isNull = false;
+            boolean isNull = false;
             if (defaultValue==null || defaultValue.equalsIgnoreCase("null")) {
                 isNull = true;
             }
             if (!isNull) {
-            		ddl.append(databaseInfo.getValueQuoteToken());
+                    ddl.append(databaseInfo.getValueQuoteToken());
                 ddl.append(escapeStringValue(defaultValue));
                 ddl.append(databaseInfo.getValueQuoteToken());
             } else {
                 ddl.append(defaultValue);
             }
         } else {
-        		super.printDefaultValue(defaultValue, typeCode, ddl);
+                super.printDefaultValue(defaultValue, typeCode, ddl);
         }
     }
     
     
     @Override
     protected String getSqlType(Column column) {
-    		
-    		String type = super.getSqlType(column);
-    		if (type.startsWith("CHAR") && column.getPlatformColumns() != null) {
-    			if (isMapCharToJson()) {
-    				for (Map.Entry<String, PlatformColumn> platformColumn : column.getPlatformColumns().entrySet()) {
-		    			if (platformColumn.getValue() != null && platformColumn.getValue().getType() != null &&
-		    					platformColumn.getValue().getType().equals("JSON")) {
-		    				type = "JSONB";
-		    			}
-		    		}
-    			}
-    		}
-    		return type;
+            
+            String type = super.getSqlType(column);
+            if (type.startsWith("CHAR") && column.getPlatformColumns() != null) {
+                if (isMapCharToJson()) {
+                    for (Map.Entry<String, PlatformColumn> platformColumn : column.getPlatformColumns().entrySet()) {
+                        if (platformColumn.getValue() != null && platformColumn.getValue().getType() != null &&
+                                platformColumn.getValue().getType().equals("JSON")) {
+                            type = "JSONB";
+                        }
+                    }
+                }
+            }
+            return type;
     }
 }

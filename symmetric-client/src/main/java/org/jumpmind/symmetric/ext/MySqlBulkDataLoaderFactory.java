@@ -52,7 +52,7 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect, 
-    			TransformWriter transformWriter,
+                TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         
@@ -62,8 +62,8 @@ public class MySqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
         boolean isReplace = Boolean.parseBoolean(parameterService.getString(ParameterConstants.MYSQL_BULK_LOAD_REPLACE, "false"));
         
         return new MySqlBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(), 
-        		stagingManager,
-        		maxRowsBeforeFlush,
+                stagingManager,
+                maxRowsBeforeFlush,
                 maxBytesBeforeFlush, isLocal, isReplace, buildParameterDatabaseWritterSettings());
     }
 

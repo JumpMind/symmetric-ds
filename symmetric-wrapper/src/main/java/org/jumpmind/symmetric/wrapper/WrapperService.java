@@ -59,7 +59,7 @@ public abstract class WrapperService {
         if (Platform.isWindows()) {
             instance = new WindowsService();
         } else if(Platform.isMac()) {
-        	instance = new MacService();
+            instance = new MacService();
         } else {
             instance = new UnixService();
         }
@@ -211,7 +211,7 @@ public abstract class WrapperService {
                         restartDetected = false;
                         startProcess = true;
                     } else if (keepRunning) {
-                    	long tenminutesinms = 60 * 10 * 1000;
+                        long tenminutesinms = 60 * 10 * 1000;
                         long twelveminutesinms = 60 * 12 * 1000;
                         long tensecondsinms = 10 * 1000;
                         long now = System.currentTimeMillis();
@@ -445,15 +445,15 @@ public abstract class WrapperService {
     }
     
     protected String unobfuscate(String s) {
-    	if(s != null && s.startsWith(SecurityConstants.PREFIX_OBF)) {
-        	ISecurityService ss = SecurityServiceFactory.create();
-    		return ss.unobfuscate(s);
-    	}
-    	return s;
+        if(s != null && s.startsWith(SecurityConstants.PREFIX_OBF)) {
+            ISecurityService ss = SecurityServiceFactory.create();
+            return ss.unobfuscate(s);
+        }
+        return s;
     }
     
     protected String obfuscate(String s) {
-    	return SecurityServiceFactory.create().obfuscate(s);
+        return SecurityServiceFactory.create().obfuscate(s);
     }
     
     private static String getStackTrace(Throwable throwable) {

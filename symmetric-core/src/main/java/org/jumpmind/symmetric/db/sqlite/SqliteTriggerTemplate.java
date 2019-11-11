@@ -44,9 +44,9 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
 
         String sourceNodeExpression;
         if(isBlank(sqliteFunctionToOverride)){
-        	sourceNodeExpression = "(select context_value from $(prefixName)_context where name = 'sync_node_disabled')";
+            sourceNodeExpression = "(select context_value from $(prefixName)_context where name = 'sync_node_disabled')";
         }else{
-        	sourceNodeExpression = "(select substr(" + sqliteFunctionToOverride + "(), 10) from sqlite_master where " + sqliteFunctionToOverride + "() like 'DISABLED:%')";
+            sourceNodeExpression = "(select substr(" + sqliteFunctionToOverride + "(), 10) from sqlite_master where " + sqliteFunctionToOverride + "() like 'DISABLED:%')";
         }
         
         // formatter:off
@@ -147,15 +147,15 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
                 defaultCatalog, defaultSchema, ddl);
 
         ddl = FormatUtils.replace("anyColumnChanged",
-        		buildColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
+                buildColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
 
         return ddl;
     }
 
     private String buildColumnsAreNotEqualString(Table table, String table1Name, String table2Name){
-    	StringBuilder builder = new StringBuilder();
-    	
-    	for(Column column : table.getColumns()){
+        StringBuilder builder = new StringBuilder();
+        
+        for(Column column : table.getColumns()){
             if (builder.length() > 0) {
                 builder.append(" or ");
             }
@@ -163,10 +163,10 @@ public class SqliteTriggerTemplate extends AbstractTriggerTemplate {
             builder.append(String.format("((%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NOT NULL AND %1$s.\"%2$s\"<>%3$s.\"%2$s\") or "
                             + "(%1$s.\"%2$s\" IS NULL AND %3$s.\"%2$s\" IS NOT NULL) or "
                             + "(%1$s.\"%2$s\" IS NOT NULL AND %3$s.\"%2$s\" IS NULL))", table1Name, column.getName(), table2Name));
-    	}
-    	if (builder.length() == 0) {
-    	    builder.append("1=1");
-    	}
-    	return builder.toString();
+        }
+        if (builder.length() == 0) {
+            builder.append("1=1");
+        }
+        return builder.toString();
     }
 }

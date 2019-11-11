@@ -371,7 +371,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
     }
 
     @Deprecated
-	public void setUnicodeStream(int arg1, InputStream arg2, int arg3) throws SQLException {
+    public void setUnicodeStream(int arg1, InputStream arg2, int arg3) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("setUnicodeStream", arg1,arg2,arg3);
         if (preResult.isIntercepted()) {
             return;
