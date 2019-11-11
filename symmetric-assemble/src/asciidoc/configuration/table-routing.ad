@@ -78,43 +78,18 @@ endif::pro[]
 ifdef::pro[]
 .Required Fields
 endif::pro[]
-Table Trigger:: The table trigger to link.
-Router:: The router to link.
+Table Trigger:: The table trigger determines the source of data.
+Router:: The router determines where data will be sent.
 
-Initial Load Select:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to extract data from the source node
-of the router.  If blank all rows will be selected.  If you want no rows to load during initial load you can set the expression to 1=0 or 
-set Initial Load Order to a negative number.
+Initial Load Select:: A SQL expression used in the WHERE clause of the SELECT that extracts the table during initial load.  Leave blank to retrieve all rows. For correlated joins, reference the table using the "t" alias. Variables are substituted for `$(groupId)`, `$(nodeId)`, and `$(externalId)`. See <<Variables>> section for formatting and manipulation of variables.
 
 ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Initial Load Delete:: SQL used as part of the WHERE clause on a SQL statement during the initial load process to delete data on the target node
-of the router.  
-+
-Initial Load Delete SQL will only be used if the following parameter is true (default is false).  
-+   
-----
-initial.load.delete.first=true
-----
+Initial Load Delete:: If `initial.load.delete.first` parameter is enabled, this SQL expression is used in the WHERE clause of the DELETE that clears the table on the target node at the beginning of the initial load. 
 
-Initial Load Order:: Order sequence of this table when an initial load is sent to a node. If this value is the same for 
-multiple tables, then SymmetricDS will attempt to order the tables according to FK constraints.  If this value is set to 
-a negative number, then the table will be excluded from an initial load.
+Initial Load Order:: Numeric position for this table in the initial load, sent in ascending numeric order. When two numeric values are the same, the ordering is based on foreign key constraints. Use a negative number to exclude the table from initial load.
 
-Enabled:: Each individual trigger-router combination can be disabled or enabled if needed. By default, a trigger router is enabled, 
-but if you have a reason you wish to define a trigger router combination prior to it being active, 
-ifndef::pro[you can set the enabled flag to 0.]
-ifdef::pro[you can uncheck the enabled box.]
-This will cause the trigger-router mapping to be sent to all nodes, but the trigger-router mapping will not be considered 
-active or enabled for the purposes of capturing data changes or routing.
-
-Ping Back Enabled:: SymmetricDS, by default, avoids circular data changes. When a trigger fires as a result of SymmetricDS itself 
-(such as the case when sync on incoming batch is set), it records the originating source node of the data change in source_node_id. 
-During routing, if routing results in sending the data back to the originating source node, the data is not routed by default. 
-If instead you wish to route the data back to the originating node, 
-ifndef::pro[you can set the ping_back_enabled column for the needed particular trigger / router combination.]
-ifdef::pro[you can check the ping back enabled column.]
-This will cause the router to "ping" the data back to the originating node when it usually would not.
-
+Enabled:: When enabled, changes are captured and routed into batches for the table.  When disabled, changes are no longer captured for the table and any outstanding changes are placed into batches with a status of "unrouted". 
 

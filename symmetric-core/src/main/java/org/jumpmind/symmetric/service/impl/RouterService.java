@@ -853,7 +853,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
 
                     if (nodeIds != null) {
-                        if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null) {
+                        if (data.getSourceNodeId() != null) {
                             nodeIds.remove(data.getSourceNodeId());
                         }
 
