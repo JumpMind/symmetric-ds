@@ -287,12 +287,9 @@ public class SymmetricEngineHolder {
             engine.setDeploymentType(deploymentType);
             
             String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-            String extractOnly = properties.getProperty(ParameterConstants.NODE_EXTRACT_ONLY);
             String deploymentSubType = null;
             if (loadOnly != null && loadOnly.equals("true")) {
                 deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
-            } else if (extractOnly != null && extractOnly.equals("true")) {
-                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY;
             }
             engine.setDeploymentSubType(deploymentSubType);
             
@@ -353,19 +350,6 @@ public class SymmetricEngineHolder {
                 log.warn("Could not encrypt load only password", ex);
             }
         }
-
-        String extractOnlyPassword = properties.getProperty(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
-        
-        if (StringUtils.isNotBlank(extractOnlyPassword) && !extractOnlyPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
-            try {
-                ISecurityService service = SecurityServiceFactory.create(SecurityServiceType.CLIENT, properties);
-                properties.setProperty(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD,
-                        SecurityConstants.PREFIX_ENC + service.encrypt(extractOnlyPassword));
-            } catch (Exception ex) {
-                log.warn("Could not encrypt extract only password", ex);
-            }
-        }
-
 
         String engineName = validateRequiredProperties(properties);
         passedInProperties.setProperty(ParameterConstants.ENGINE_NAME, engineName);

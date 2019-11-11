@@ -59,7 +59,6 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Lock;
@@ -143,9 +142,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
      */
     private Map<Integer, TriggerHistory> historyMap = Collections.synchronizedMap(new HashMap<Integer, TriggerHistory>());
 
-    public TriggerRouterService(ISymmetricEngine engine, ISymmetricDialect extractSymmetricDialect) {
+    public TriggerRouterService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
-        setExtractSymmetricDialect(extractSymmetricDialect);
         this.clusterService = engine.getClusterService();
         this.configurationService = engine.getConfigurationService();
         this.statisticManager = engine.getStatisticManager();
@@ -1465,7 +1463,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected Set<Table> getTablesForTrigger(Trigger trigger, List<Trigger> triggers, boolean useTableCache) {
         Set<Table> tables = new HashSet<Table>();
         
-        IDatabasePlatform sourcePlatform = getExtractPlatform(trigger.getSourceTableName());
+        IDatabasePlatform sourcePlatform = getTargetPlatform(trigger.getSourceTableName());
         
         try {
             boolean ignoreCase = this.parameterService
@@ -1800,39 +1798,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
             boolean triggerIsActive, Table table, List<TriggerHistory> activeTriggerHistories) {
 
-        
-        
         boolean triggerExists = false;
         boolean triggerRemoved = false;
-        boolean isExtractOnlyTable = false;
+        boolean usingTargetDialect = false;
         
-        if (!getSymmetricDialect().equals(getExtractSymmetricDialect()) && !trigger.getSourceTableName().startsWith(getSymmetricDialect().getTablePrefix())) {
-            isExtractOnlyTable = true;
+        if (!getSymmetricDialect().equals(getTargetDialect()) &&
+                !trigger.getSourceTableName().startsWith(getSymmetricDialect().getTablePrefix())) {
+            usingTargetDialect = true;
         }
         
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, 
-                isExtractOnlyTable ? getExtractSymmetricDialect().getTriggerTemplate() : getSymmetricDialect().getTriggerTemplate(), 
-                reason);
+                usingTargetDialect ? getTargetDialect().getTriggerTemplate() : getSymmetricDialect().getTriggerTemplate(), reason);
         int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
-
-        if (!isExtractOnlyTable) {
-            if (trigger.isSyncOnInsert()) {
-                newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
-                        maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
-            }
-    
-            if (trigger.isSyncOnUpdate()) {
-                newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
-                        maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
-            }
-    
-            if (trigger.isSyncOnDelete()) {
-                newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
-                        maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
-            }
-        }
         
-        if (isExtractOnlyTable) {
+        if (usingTargetDialect) {
             if (hist == null && (oldhist == null || forceRebuild)) {
                 insert(newTriggerHist);
                 hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
@@ -1841,6 +1820,21 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
             }
             return hist;
+        }
+
+        if (trigger.isSyncOnInsert()) {
+            newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
+                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+        }
+
+        if (trigger.isSyncOnUpdate()) {
+            newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
+                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+        }
+
+        if (trigger.isSyncOnDelete()) {
+            newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
+                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
         }
 
         String oldTriggerName = null;

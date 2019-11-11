@@ -82,7 +82,6 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         this.databaseHelper = databaseHelper;
         this.androidContext = androidContext;
         init();
-        this.symmetricDialect.setTargetPlatform(this.symmetricDialect.getPlatform());
     }
 
     @Override
@@ -229,18 +228,4 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
         throw new NotImplementedException();
     }
 
-	@Override
-	public ISymmetricDialect getSymmetricDialect() {
-		return this.symmetricDialect;
-	}
-
-    @Override
-    protected ISymmetricDialect checkExtractOnly() {
-        return getSymmetricDialect();
-    }
-
-    @Override
-    public ISymmetricDialect getExtractSymmetricDialect() {
-        return this.symmetricDialect;
-    }
 }

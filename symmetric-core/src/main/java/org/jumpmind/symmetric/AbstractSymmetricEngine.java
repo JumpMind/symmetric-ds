@@ -171,8 +171,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     protected ISymmetricDialect symmetricDialect;
 
-    protected ISymmetricDialect extractSymmetricDialect;
-
     protected INodeService nodeService;
 
     protected IConfigurationService configurationService;
@@ -252,8 +250,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     abstract protected ITypedPropertiesFactory createTypedPropertiesFactory();
 
     abstract protected IDatabasePlatform createDatabasePlatform(TypedProperties properties);
-
-    abstract protected ISymmetricDialect checkExtractOnly();
     
     protected boolean registerEngine = true;
 
@@ -346,12 +342,11 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
         
         this.symmetricDialect = createSymmetricDialect();
-        this.extractSymmetricDialect = checkExtractOnly();
+        this.symmetricDialect.setTargetDialect(createTargetDialect());
         
         this.extensionService = createExtensionService();
         this.extensionService.refresh();
         this.symmetricDialect.setExtensionService(extensionService);
-        this.extractSymmetricDialect.setExtensionService(extensionService);
         this.parameterService.setExtensionService(extensionService);
         this.contextService = new ContextService(parameterService, symmetricDialect);
 
@@ -361,7 +356,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.nodeService = new NodeService(this);
         this.configurationService = new ConfigurationService(parameterService, symmetricDialect,
                 nodeService);
-        this.dataService = new DataService(this, extensionService, extractSymmetricDialect);
+        this.dataService = new DataService(this, extensionService);
         this.clusterService = createClusterService();
         this.statisticService = new StatisticService(parameterService, symmetricDialect);
         this.statisticManager = createStatisticManager();
@@ -374,14 +369,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.loadFilterService = new LoadFilterService(parameterService, symmetricDialect,
                 configurationService);
         this.groupletService = new GroupletService(this);
-        this.triggerRouterService = new TriggerRouterService(this, extractSymmetricDialect);
+        this.triggerRouterService = new TriggerRouterService(this);
         this.outgoingBatchService = new OutgoingBatchService(parameterService, symmetricDialect,
                 nodeService, configurationService, sequenceService, clusterService, extensionService);
         this.routerService = buildRouterService();
         this.nodeCommunicationService = buildNodeCommunicationService(clusterService, nodeService, parameterService, configurationService, symmetricDialect);
         this.incomingBatchService = new IncomingBatchService(parameterService, symmetricDialect, clusterService);
         this.initialLoadService = new InitialLoadService(this);
-        this.dataExtractorService = new DataExtractorService(this, extractSymmetricDialect);
+        this.dataExtractorService = new DataExtractorService(this);
         this.transportManager = new TransportManagerFactory(this).create();
         this.offlineTransportManager = new TransportManagerFactory(this).create(Constants.PROTOCOL_FILE);
         this.dataLoaderService = new DataLoaderService(this);
@@ -400,7 +395,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 nodeService, dataLoaderService, clusterService, nodeCommunicationService, 
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = buildFileSyncService();
-        this.fileSyncExtractorService = new FileSyncExtractorService(this, extractSymmetricDialect);
+        this.fileSyncExtractorService = new FileSyncExtractorService(this);
         this.mailService = new MailService(parameterService, symmetricDialect);
 
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
@@ -464,6 +459,10 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     abstract protected IStatisticManager createStatisticManager();
 
     abstract protected ISymmetricDialect createSymmetricDialect();
+
+    protected ISymmetricDialect createTargetDialect() {
+        return getSymmetricDialect();
+    }
 
     abstract protected IExtensionService createExtensionService();
 
@@ -1307,7 +1306,17 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     public String getNodeId() {
         return getNodeService().findIdentityNodeId();
     }
-    
+
+    @Override
+    public ISymmetricDialect getSymmetricDialect() {
+        return symmetricDialect;
+    }
+
+    @Override
+    public ISymmetricDialect getTargetDialect() {
+        return symmetricDialect.getTargetDialect();
+    }
+
     @Override 
     public String toString() {
         return "Engine " + getNodeId() + " " + super.toString();

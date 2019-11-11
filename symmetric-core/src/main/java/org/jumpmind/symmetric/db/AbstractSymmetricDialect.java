@@ -76,8 +76,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     public static final int MAX_SYMMETRIC_SUPPORTED_TRIGGER_SIZE = 50;
 
     protected IDatabasePlatform platform;
-
-    protected IDatabasePlatform targetPlatform;
+    
+    protected ISymmetricDialect targetDialect = this;
 
     protected AbstractTriggerTemplate triggerTemplate;
 
@@ -617,38 +617,41 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return this.platform;
     }
 
+    public IDatabasePlatform getTargetPlatform() {
+        return targetDialect.getPlatform();
+    }
+
     public String getName() {
-        if (targetPlatform != null && !targetPlatform.equals(platform)) {
-            return targetPlatform.getSqlTemplate().getDatabaseProductName();
+        if (!this.equals(targetDialect)) {
+            return targetDialect.getName();
         }
         return databaseName;
     }
 
     public String getVersion() {
-        if (targetPlatform != null && !targetPlatform.equals(platform)) {
-            return targetPlatform.getSqlTemplate().getDatabaseMajorVersion() + "."
-                    + targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
+        if (!this.equals(targetDialect)) {
+            return targetDialect.getVersion();
         }
         return databaseMajorVersion + "." + databaseMinorVersion;
     }
 
     public int getMajorVersion() {
-        if (targetPlatform != null && !targetPlatform.equals(platform)) {
-            return targetPlatform.getSqlTemplate().getDatabaseMajorVersion();
+        if (!this.equals(targetDialect)) {
+            return targetDialect.getMajorVersion();
         }
         return databaseMajorVersion;
     }
 
     public int getMinorVersion() {
-        if (targetPlatform != null && !targetPlatform.equals(platform)) {
-            return targetPlatform.getSqlTemplate().getDatabaseMinorVersion();
+        if (!this.equals(targetDialect)) {
+            return targetDialect.getMinorVersion();
         }
         return databaseMinorVersion;
     }
 
     public String getProductVersion() {
-        if (targetPlatform != null && !targetPlatform.equals(platform)) {
-            return targetPlatform.getSqlTemplate().getDatabaseProductVersion();
+        if (!this.equals(targetDialect)) {
+            return targetDialect.getProductVersion();
         }
         return databaseProductVersion;
     }
@@ -959,13 +962,12 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     @Override
-    public IDatabasePlatform getTargetPlatform() {
-        return targetPlatform;
+    public ISymmetricDialect getTargetDialect() {
+        return targetDialect;
     }
-
+    
     @Override
-    public void setTargetPlatform(IDatabasePlatform targetPlatform) {
-        this.targetPlatform = targetPlatform;
+    public void setTargetDialect(ISymmetricDialect targetDialect) {
+        this.targetDialect = targetDialect;
     }
-
 }

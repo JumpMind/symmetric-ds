@@ -396,7 +396,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             @SuppressWarnings("unchecked")
             Set<Table> tables = (Set<Table>)context.get(CTX_KEY_RESYNC_TABLE_NEEDED);
             for (Table table : tables) {
-        		if (engine.getSymmetricDialect().getPlatform().equals(engine.getSymmetricDialect().getTargetPlatform())) {
+        		if (engine.getSymmetricDialect().getPlatform().equals(engine.getTargetDialect().getPlatform())) {
         			engine.getTriggerRouterService().syncTriggers(table, false);
         		}
             }

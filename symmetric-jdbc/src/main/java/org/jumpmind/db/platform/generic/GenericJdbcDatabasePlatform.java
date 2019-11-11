@@ -6,24 +6,29 @@ import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.IDdlReader;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
-	private String name;
-	
+
+    private String name;
+
     public GenericJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        try {
+            String nameVersion[] = JdbcDatabasePlatformFactory.determineDatabaseNameVersionSubprotocol(dataSource);
+            name = String.format("%s%s", nameVersion[0], nameVersion[1]).toLowerCase();
+        } catch (Exception e) {
+            name = DatabaseNamesConstants.GENERIC;
+            log.info("Unable to determine database name and version, " + e.getMessage());
+        }
     }
 
-    public void setName(String name) {
-		this.name = name; 
-	}
-	
     @Override
     public String getName() {
-        return this.name == null ? DatabaseNamesConstants.GENERIC : this.name;
+        return this.name;
     }
 
     @Override
@@ -45,10 +50,10 @@ public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected IDdlReader createDdlReader() {
         return new GenericJdbcSqlDdlReader(this);
     }
-    
+
     @Override
     protected ISqlTemplate createSqlTemplate() {
-        return new GenericJdbcSqlTemplate(dataSource, settings,  new SymmetricLobHandler(), getDatabaseInfo());
+        return new GenericJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), getDatabaseInfo());
     }
 
 }

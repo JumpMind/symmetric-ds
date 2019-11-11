@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -69,8 +68,6 @@ abstract public class AbstractService implements IService {
     protected ISqlTemplate sqlTemplateDirty;
 
     protected IDatabasePlatform platform;
-
-    protected ISymmetricDialect extractSymmetricDialect;
 
     protected String tablePrefix;
 
@@ -373,30 +370,20 @@ abstract public class AbstractService implements IService {
         }
     }
 
+    protected ISymmetricDialect getTargetDialect() {
+        return symmetricDialect.getTargetDialect();
+    }
+
     protected boolean isSymmetricTable(String tableName) {
         return tableName.toUpperCase().startsWith(this.tablePrefix.toUpperCase());
     }
     
-    protected IDatabasePlatform getExtractPlatform(String tableName) {
-        return isSymmetricTable(tableName) ? symmetricDialect.getPlatform() : extractSymmetricDialect.getPlatform();
+    protected IDatabasePlatform getTargetPlatform(String tableName) {
+        return isSymmetricTable(tableName) ? symmetricDialect.getPlatform() : symmetricDialect.getTargetDialect().getPlatform();
     }
     
-    protected boolean isSymmetricTable(Table table) {
-        return table.getNameLowerCase().startsWith(this.tablePrefix.toLowerCase());
+    protected IDatabasePlatform getTargetPlatform() {
+        return symmetricDialect.getTargetDialect().getPlatform();
     }
-    
-    protected IDatabasePlatform getExtractPlatform(Table table) {
-        return isSymmetricTable(table) ? symmetricDialect.getPlatform() : extractSymmetricDialect.getPlatform();
-    }
-    
-    public ISymmetricDialect getExtractSymmetricDialect() {
-        return extractSymmetricDialect == null ? symmetricDialect : extractSymmetricDialect;
-    }
-
-    public void setExtractSymmetricDialect(ISymmetricDialect extractSymmetricDialect) {
-        this.extractSymmetricDialect = extractSymmetricDialect;
-    }
-
-    
 
 }

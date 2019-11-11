@@ -25,7 +25,6 @@ import java.util.List;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -58,8 +57,8 @@ public class FileSyncExtractorService extends DataExtractorService {
     private ITriggerRouterService triggerRouterService;
     private IExtensionService extensionService;
     
-    public FileSyncExtractorService(ISymmetricEngine engine, ISymmetricDialect extractSymmetricDialect) {
-        super(engine, extractSymmetricDialect);
+    public FileSyncExtractorService(ISymmetricEngine engine) {
+        super(engine);
         this.fileSyncService = engine.getFileSyncService();
         this.nodeService = engine.getNodeService();
         this.stagingManager = engine.getStagingManager();

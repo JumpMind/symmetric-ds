@@ -71,8 +71,8 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 me.setDeploymentType(engine.getDeploymentType());
                 me.setDeploymentSubType(engine.getDeploymentSubType());
                 me.setSymmetricVersion(Version.version());
-                me.setDatabaseType(engine.getExtractSymmetricDialect().getName());
-                me.setDatabaseVersion(engine.getExtractSymmetricDialect().getVersion());
+                me.setDatabaseType(engine.getTargetDialect().getName());
+                me.setDatabaseVersion(engine.getTargetDialect().getVersion());
                 me.setBatchInErrorCount(outgoingErrorCount);
                 me.setBatchToSendCount(outgoingUnsentCount);
                 me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));

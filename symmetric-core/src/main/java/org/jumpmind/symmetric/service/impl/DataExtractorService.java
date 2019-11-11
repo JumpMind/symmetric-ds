@@ -219,9 +219,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     
     private CustomizableThreadFactory threadPoolFactory;
 
-    public DataExtractorService(ISymmetricEngine engine, ISymmetricDialect extractSymmetricDialect) {
+    public DataExtractorService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
-        setExtractSymmetricDialect(extractSymmetricDialect);
         this.outgoingBatchService = engine.getOutgoingBatchService();
         this.routerService = engine.getRouterService();
         this.dataService = engine.getDataService();
@@ -1789,14 +1788,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         String tableName = triggerHistory.getSourceTableName();
         Table table = null;
         if (useDatabaseDefinition) {
-            table = getExtractPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, false);
+            table = getTargetPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, false);
             
             if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
                 /*
                  * If the column count is less than what trigger history reports, then
                  * chances are the table cache is out of date.
                  */
-                table = getExtractPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, true);
+                table = getTargetPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, true);
             }
 
             if (table != null) {
@@ -2618,7 +2617,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                              * event is usually sent after there is a change to the table so 
                              * we want to make sure that the cache is updated
                              */
-                            this.sourceTable = getExtractSymmetricDialect().getPlatform().getTableFromCache(sourceTable.getCatalog(), 
+                            this.sourceTable = getTargetPlatform().getTableFromCache(sourceTable.getCatalog(), 
                                     sourceTable.getSchema(), sourceTable.getName(), true);
                             
                             this.targetTable = columnsAccordingToTriggerHistory.lookup(
@@ -2916,7 +2915,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         
         public ISymmetricDialect getSymmetricDialect() {
-            return this.isConfiguration ? symmetricDialect : extractSymmetricDialect;
+            return this.isConfiguration ? symmetricDialect : symmetricDialect.getTargetDialect();
         }
 
         protected void startNewCursor(final TriggerHistory triggerHistory,

@@ -43,7 +43,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.db.platform.cassandra.CassandraPlatform;
@@ -250,7 +249,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                         "Failed to initialize the extension points.  Please fix the problem and restart the server.",
                         ex);
             }
-            checkLoadOnly();
         } catch (RuntimeException ex) {
             destroy();
             throw ex;
@@ -297,6 +295,34 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     }
 
     @Override
+    protected ISymmetricDialect createTargetDialect() {
+        if (parameterService.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
+            TypedProperties properties = new TypedProperties();
+            String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
+            copyProperties(properties, prefix, BasicDataSourcePropertyConstants.ALL_PROPS);
+            copyProperties(properties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
+            copyProperties(properties, "", ParameterConstants.ALL_KAFKA_PARAMS);
+            
+            IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true);
+
+            if (targetPlatform instanceof GenericJdbcDatabasePlatform) {
+                targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(prefix + 
+                        ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
+            }
+
+            return new JdbcSymmetricDialectFactory(parameterService, targetPlatform).create();
+        } else {
+            return getSymmetricDialect();
+        }
+    }
+
+    private void copyProperties(TypedProperties properties, String prefix, String[] parameterNames) {
+        for (String name : parameterNames) {
+            properties.put(name, parameterService.getString(prefix + name));
+        }
+    }
+
+    @Override
     protected IDatabasePlatform createDatabasePlatform(TypedProperties properties) {
         IDatabasePlatform platform = createDatabasePlatform(springContext, properties, dataSource, 
                 Boolean.parseBoolean(System.getProperty(SystemConstants.SYSPROP_WAIT_FOR_DATABASE, "true")));
@@ -311,15 +337,15 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly) {
         log.info("Initializing connection to database");
         if (dataSource == null) {
-        		if (isLoadOnly) {
-        			String dbUrl = properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL);
-        			String dbDriver = properties.get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
-        			if (dbUrl != null && dbUrl.startsWith("cassandra://")) {
-        				return new CassandraPlatform(createSqlTemplateSettings(properties), dbUrl.substring(12));
-        			} else if (dbDriver != null && dbDriver.contains("kafka")) {
-        				return new KafkaPlatform(createSqlTemplateSettings(properties));
-        			}
-        		}
+            if (isLoadOnly) {
+                String dbUrl = properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL);
+                String dbDriver = properties.get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
+                if (dbUrl != null && dbUrl.startsWith("cassandra://")) {
+                    return new CassandraPlatform(createSqlTemplateSettings(properties), dbUrl.substring(12));
+                } else if (dbDriver != null && dbDriver.contains("kafka")) {
+                    return new KafkaPlatform(createSqlTemplateSettings(properties));
+                }
+            }
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
             if (StringUtils.isNotBlank(jndiName)) {
                 try {
@@ -495,95 +521,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         });
         return files;
     }
-    
-    protected ISymmetricDialect checkExtractOnly() {
-        if (parameterService.is(ParameterConstants.NODE_EXTRACT_ONLY, false)) {
-            TypedProperties properties = new TypedProperties();
-            for (String prop : BasicDataSourcePropertyConstants.allProps ) {
-                properties.put(prop, parameterService.getString(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + prop));
-            }
-            
-            String[] sqlTemplateProperties = new String[] {
-                ParameterConstants.DB_FETCH_SIZE,
-                ParameterConstants.DB_QUERY_TIMEOUT_SECS,
-                ParameterConstants.JDBC_EXECUTE_BATCH_SIZE,
-                ParameterConstants.JDBC_ISOLATION_LEVEL,
-                ParameterConstants.JDBC_READ_STRINGS_AS_BYTES,
-                ParameterConstants.TREAT_BINARY_AS_LOB_ENABLED,
-                ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS,
-                ParameterConstants.LOG_SQL_PARAMETERS_INLINE
-            };
-            for (String prop : sqlTemplateProperties) {
-                properties.put(prop, parameterService.getString(ParameterConstants.EXTRACT_ONLY_PROPERTY_PREFIX + prop));
-            }
-            
-            IDatabasePlatform extractPlatform = createDatabasePlatform(null, properties, null, true, true);
-            JdbcSymmetricDialectFactory dialectFactory = new JdbcSymmetricDialectFactory(parameterService, extractPlatform);
-            return dialectFactory.create();
-        }
-        else {
-            return getSymmetricDialect();
-        }
-    }
-    
-    protected void checkLoadOnly() {
-     	if (parameterService.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
-     		
-     		TypedProperties properties = new TypedProperties();
-			for (String prop : BasicDataSourcePropertyConstants.allProps ) {
-				properties.put(prop, parameterService.getString(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + prop));
-			}
-			
-			String[] sqlTemplateProperties = new String[] {
-				ParameterConstants.DB_FETCH_SIZE,
-				ParameterConstants.DB_QUERY_TIMEOUT_SECS,
-				ParameterConstants.JDBC_EXECUTE_BATCH_SIZE,
-				ParameterConstants.JDBC_ISOLATION_LEVEL,
-				ParameterConstants.JDBC_READ_STRINGS_AS_BYTES,
-				ParameterConstants.TREAT_BINARY_AS_LOB_ENABLED,
-				ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS,
-				ParameterConstants.LOG_SQL_PARAMETERS_INLINE
-			};
-			for (String prop : sqlTemplateProperties) {
-				properties.put(prop, parameterService.getString(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + prop));
-			}
-			
-			String[] kafkaProperties = new String[] {
-				ParameterConstants.KAFKA_PRODUCER,
-				ParameterConstants.KAFKA_MESSAGE_BY,
-				ParameterConstants.KAFKA_TOPIC_BY,
-				ParameterConstants.KAFKA_FORMAT
-			};
-			
-			for (String prop : kafkaProperties) {
-				properties.put(prop, parameterService.getString(prop));
-			}
-
-			IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true);
-			DataSource loadDataSource = targetPlatform.getDataSource();
-		    if (targetPlatform instanceof GenericJdbcDatabasePlatform) {
-			    	if (targetPlatform.getName() == null || targetPlatform.getName().equals(DatabaseNamesConstants.GENERIC)) {
-			    		String name = null;
-			    		try {
-			    			String nameVersion[] = JdbcDatabasePlatformFactory.determineDatabaseNameVersionSubprotocol(loadDataSource);
-			    			name = (String.format("%s%s", nameVersion[0], nameVersion[1]).toLowerCase());
-			    		}
-			    		catch (Exception e) {
-			    			log.info("Unable to determine database name and version, " + e.getMessage());
-			    		}
-		            if (name == null) {
-			        		name = DatabaseNamesConstants.GENERIC;
-			        }
-			    		((GenericJdbcDatabasePlatform) targetPlatform).setName(name);
-			    	}
-			    	targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX + ParameterConstants.CREATE_TABLE_NOT_NULL_COLUMNS, true));
-		    }
-		    getSymmetricDialect().setTargetPlatform(targetPlatform);
-		}
-     	else {
-     		getSymmetricDialect().setTargetPlatform(getSymmetricDialect().getPlatform());
-     	}
-	}
 
     public ApplicationContext getSpringContext() {
         return springContext;
@@ -596,17 +533,5 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     public IMonitorService getMonitorService() {
         return monitorService;
     }
-
-	@Override
-	public ISymmetricDialect getSymmetricDialect() {
-		return this.symmetricDialect;
-	}
-	
-	@Override
-    public ISymmetricDialect getExtractSymmetricDialect() {
-        return this.extractSymmetricDialect;
-    }
-    
-    
 	
 }

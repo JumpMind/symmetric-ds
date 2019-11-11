@@ -52,7 +52,7 @@ public class DataServiceTest {
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
 
-        dataService = new DataService(engine, extensionService, symmetricDialect);
+        dataService = new DataService(engine, extensionService);
     }
     
     @Test

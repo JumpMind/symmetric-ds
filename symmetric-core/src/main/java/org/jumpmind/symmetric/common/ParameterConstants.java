@@ -39,11 +39,11 @@ final public class ParameterConstants {
 
     private static Map<String, ParameterMetaData> parameterMetaData = new DefaultParameterParser("/symmetric-default.properties").parse();
 
-    public final static String MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = "console.report.as.offline.minutes";
-    public final static int DEFAULT_MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = 24 * 60;
-
     private ParameterConstants() {
     }
+
+    public final static String MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = "console.report.as.offline.minutes";
+    public final static int DEFAULT_MINUTES_BEFORE_NODE_REPORTED_AS_OFFLINE = 24 * 60;
     
     public final static String AUTO_START_ENGINE = "auto.start.engine";
 
@@ -52,7 +52,7 @@ final public class ParameterConstants {
     public final static String JDBC_EXECUTE_BULK_BATCH_OVERRIDE = "db.jdbc.bulk.execute.batch.override";
     public final static String JDBC_READ_STRINGS_AS_BYTES = "db.read.strings.as.bytes";
     public final static String JDBC_ISOLATION_LEVEL = "db.jdbc.isolation.level";
-
+    
     public final static String DB_USER = "db.user";
     public final static String DB_PASSWORD = "db.password";
     
@@ -474,8 +474,6 @@ final public class ParameterConstants {
     
     public final static String NODE_LOAD_ONLY = "load.only";
     
-    public final static String NODE_EXTRACT_ONLY = "extract.only";
-    
     public final static String MYSQL_TINYINT_DDL_TO_BOOLEAN = "mysql.tinyint.ddl.to.boolean";
     public final static String MYSQL_BULK_LOAD_MAX_ROWS_BEFORE_FLUSH = "mysql.bulk.load.max.rows.before.flush";
     public final static String MYSQL_BULK_LOAD_MAX_BYTES_BEFORE_FLUSH = "mysql.bulk.load.max.bytes.before.flush";
@@ -484,14 +482,15 @@ final public class ParameterConstants {
 
     public static final String LOAD_ONLY_PROPERTY_PREFIX = "target.";
    
-    public static final String EXTRACT_ONLY_PROPERTY_PREFIX = "extract.";
-    
     public final static String KAFKA_PRODUCER = "kafka.producer";
     public final static String KAFKA_FORMAT = "kafka.format";
     public final static String KAFKA_MESSAGE_BY = "kafka.message.by";
     public final static String KAFKA_TOPIC_BY = "kafka.topic.by";
     public final static String KAFKA_CONFLUENT_REGISTRY_URL = "kafka.confluent.registry.url";
     public final static String KAFKA_AVRO_JAVA_PACKAGE = "kafka.avro.java.package";
+    
+    public final static String[] ALL_KAFKA_PARAMS = new String[] { KAFKA_PRODUCER, KAFKA_FORMAT, KAFKA_MESSAGE_BY,
+            KAFKA_TOPIC_BY, KAFKA_CONFLUENT_REGISTRY_URL, KAFKA_AVRO_JAVA_PACKAGE};
     
     public final static String SNOWFLAKE_STAGING_TYPE = "snowflake.staging.type";
     public final static String SNOWFLAKE_INTERNAL_STAGE_NAME = "snowflake.internal.stage.name";
@@ -519,7 +518,10 @@ final public class ParameterConstants {
     public final static String REDSHIFT_BULK_LOAD_S3_ENDPOINT = "redshift.bulk.load.s3.endpoint";
 
     public final static String POSTGRES_SECURITY_DEFINER = "postgres.security.definer";
-    
+
+    public final static String[] ALL_JDBC_PARAMS = new String[] { DB_FETCH_SIZE, DB_QUERY_TIMEOUT_SECS, JDBC_EXECUTE_BATCH_SIZE, JDBC_ISOLATION_LEVEL,
+            JDBC_READ_STRINGS_AS_BYTES, TREAT_BINARY_AS_LOB_ENABLED, LOG_SLOW_SQL_THRESHOLD_MILLIS, LOG_SQL_PARAMETERS_INLINE };
+
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

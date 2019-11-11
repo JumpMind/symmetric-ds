@@ -88,9 +88,7 @@ public interface ISymmetricDialect {
     public void createRequiredDatabaseObjects();    
 
     public IDatabasePlatform getPlatform();
-
-    public void setTargetPlatform(IDatabasePlatform platform);
-
+    
     public IDatabasePlatform getTargetPlatform();
 
     public String getName();
@@ -271,4 +269,9 @@ public interface ISymmetricDialect {
     public void setExtensionService(IExtensionService extensionService);
     
     public PermissionType[] getSymTablePermissions();
+
+    public ISymmetricDialect getTargetDialect();
+    
+    public void setTargetDialect(ISymmetricDialect targetDialect);
+    
 }

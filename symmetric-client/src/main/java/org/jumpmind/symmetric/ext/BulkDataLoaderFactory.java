@@ -39,43 +39,44 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
             dataLoaderFactories.put(factory.getTypeName(), factory);
         }
 
+        IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
+        String platformName = platform.getName();
+
         if (engine.getParameterService().is(ParameterConstants.JDBC_EXECUTE_BULK_BATCH_OVERRIDE, false)) {
-            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
+            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
                     symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
-        } else if (DatabaseNamesConstants.MYSQL.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+        } else if (DatabaseNamesConstants.MYSQL.equals(platformName)) {
             return new MySqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.MSSQL2000.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
-                || DatabaseNamesConstants.MSSQL2005.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
-                || DatabaseNamesConstants.MSSQL2008.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+        } else if (DatabaseNamesConstants.MSSQL2000.equals(platformName)
+                || DatabaseNamesConstants.MSSQL2005.equals(platformName)
+                || DatabaseNamesConstants.MSSQL2008.equals(platformName)) {
             return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.ORACLE.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+        } else if (DatabaseNamesConstants.ORACLE.equals(platformName)) {
             return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.TIBERO.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+        } else if (DatabaseNamesConstants.TIBERO.equals(platformName)) {
             return new TiberoBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.POSTGRESQL.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
-        		|| DatabaseNamesConstants.POSTGRESQL95.equals(engine.getSymmetricDialect().getTargetPlatform().getName())
-                || DatabaseNamesConstants.GREENPLUM.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+        } else if (DatabaseNamesConstants.POSTGRESQL.equals(platformName)
+                || DatabaseNamesConstants.POSTGRESQL95.equals(platformName)
+                || DatabaseNamesConstants.GREENPLUM.equals(platformName)) {
             return new PostgresBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.REDSHIFT.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+        } else if (DatabaseNamesConstants.REDSHIFT.equals(platformName)) {
             return new RedshiftBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (engine.getSymmetricDialect().getTargetPlatform().getName() != null &&
-        		engine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.TERADATA)) {
+        } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.TERADATA)) {
             return new TeradataBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (engine.getSymmetricDialect().getTargetPlatform().getName() != null &&
-                engine.getSymmetricDialect().getTargetPlatform().getName().startsWith(DatabaseNamesConstants.SNOWFLAKE)) {
+        } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.SNOWFLAKE)) {
             return new SnowflakeBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else {
-            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
+            return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
                     symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());
-         }
+        }
     }
 
     @Override

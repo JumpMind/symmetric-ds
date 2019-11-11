@@ -104,12 +104,9 @@ public class Node implements Serializable, Comparable<Node> {
         setSyncUrl(properties.getProperty(ParameterConstants.SYNC_URL));
         setSchemaVersion(properties.getProperty(ParameterConstants.SCHEMA_VERSION));
         String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-        String extractOnly = properties.getProperty(ParameterConstants.NODE_EXTRACT_ONLY);
         String deploymentSubType = null;
         if (loadOnly != null && loadOnly.equals("true")) {
             deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
-        } else if (extractOnly != null && extractOnly.equals("true")) {
-            deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_EXTRACT_ONLY;
         }
         this.deploymentSubType = deploymentSubType;
     }

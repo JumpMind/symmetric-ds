@@ -241,9 +241,9 @@ public interface ISymmetricEngine {
     public IDataService getDataService();
 
     public ISymmetricDialect getSymmetricDialect();
-
-    public ISymmetricDialect getExtractSymmetricDialect();
-
+    
+    public ISymmetricDialect getTargetDialect();
+    
     public IJobManager getJobManager();
     
     public IOutgoingBatchService getOutgoingBatchService();
