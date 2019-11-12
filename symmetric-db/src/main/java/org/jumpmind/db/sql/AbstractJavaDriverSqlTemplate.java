@@ -6,21 +6,11 @@ import java.util.Set;
 public abstract class AbstractJavaDriverSqlTemplate extends AbstractSqlTemplate {
 
     public abstract String getDatabaseProductName();
-    
-//    @Override
-//    public byte[] queryForBlob(String sql, Object... args) {
-//        return null;
-//    }
 
     @Override
     public byte[] queryForBlob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args) {
         return null;
     }
-
-//    @Override
-//    public String queryForClob(String sql, Object... args) {
-//        return null;
-//    }
 
     @Override
     public String queryForClob(String sql, int jdbcTypeCode, String jdbcTypeName, Object... args) {
@@ -39,6 +29,11 @@ public abstract class AbstractJavaDriverSqlTemplate extends AbstractSqlTemplate 
 
     @Override
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] params, int[] types) {
+        return null;
+    }
+
+    @Override
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
         return null;
     }
 

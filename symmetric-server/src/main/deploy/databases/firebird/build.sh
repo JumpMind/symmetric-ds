@@ -21,8 +21,21 @@
 #
 
 
-INTERBASE_HOME=/opt/interbase
+if [[ -z "${INTERBASE_HOME}" ]]; then
+        INTERBASE_HOME=/opt/interbase
+fi
+
+if [[ "${OSTYPE}" == "linux-gnu" ]]; then
+        SHARED_LIB_FILE=sym_udf.so
+        LD_OPTIONS="-G -lm -lc -lib_util"
+elif [[ "${OSTYPE}" == "darwin"* ]]; then
+        SHARED_LIB_FILE=sym_udf.dylib
+        LD_OPTIONS="-lm -lc -lib_util -dylib"
+else
+        SHARED_LIB_FILE=sym_udf.so
+        LD_OPTIONS="-G -lm -lc -lib_util"
+fi
 
 gcc -I "$INTERBASE_HOME"/include -c -O -fpic sym_udf.c
-ld -G sym_udf.o -lm -lc -lib_util -o sym_udf.so
-cp sym_udf.so "$INTERBASE_HOME_HOME"/UDF/
+ld ${LD_OPTIONS} sym_udf.o -o ${SHARED_LIB_FILE}
+cp ${SHARED_LIB_FILE} "$INTERBASE_HOME"/UDF/

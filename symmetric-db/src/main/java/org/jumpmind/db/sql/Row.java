@@ -23,21 +23,27 @@ package org.jumpmind.db.sql;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.exception.ParseException;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.LinkedCaseInsensitiveMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Row extends LinkedCaseInsensitiveMap<Object> {
 
     private static final long serialVersionUID = 1L;
+
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     public Row(int numberOfColumns) {
         super(numberOfColumns);
@@ -290,4 +296,23 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         return values;
     }
 
+    public long getLength() {
+        long length = 0;
+        
+        for (Map.Entry<String, Object> entry : this.entrySet()) {
+            try {
+                Object obj = entry.getValue();
+                if (obj instanceof Blob) {
+                    length += ((Blob) obj).length();
+                } else if (obj instanceof Clob) {
+                    length += ((Clob) obj).length();
+                } else {
+                    length += obj.toString().length();
+                }
+            } catch (SQLException se) {
+                log.warn("Unable to determine length of row, failure on column " + entry.getKey(), se);
+            }
+        }
+        return length;
+    }
 }

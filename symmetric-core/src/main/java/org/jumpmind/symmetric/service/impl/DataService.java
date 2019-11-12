@@ -1466,9 +1466,14 @@ public class DataService extends AbstractService implements IDataService {
 
                             firstBatchId = firstBatchId > 0 ? firstBatchId : startBatchId;
                             
-                            updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
-                                        loadId, firstBatchId, endBatchId, numberOfBatches, rowCount);
+                            if (table.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix() + "_" + TableConstants.SYM_FILE_SNAPSHOT)) {
+                                TableReloadStatus reloadStatus = getTableReloadStatusByLoadId(loadId);
+                                startBatchId = reloadStatus.getStartDataBatchId();
+                            }
                             
+                            updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                    loadId, firstBatchId, endBatchId, numberOfBatches, rowCount);
+                        
                             ExtractRequest request = engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
                                     triggerRouter, startBatchId, endBatchId, loadId, table.getName(), rowCount, parentRequestId);
                             if (parentRequestId == 0) {

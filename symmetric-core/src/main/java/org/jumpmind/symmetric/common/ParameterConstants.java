@@ -176,6 +176,9 @@ final public class ParameterConstants {
     public final static String INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS = "initial.load.defer.create.constraints";
     public final static String INITIAL_LOAD_RECURSION_SELF_FK = "initial.load.recursion.self.fk";
     
+    public final static String EXTRACT_CHECK_ROW_SIZE = "extract.check.row.size";
+    public final static String EXTRACT_ROW_MAX_LENGTH = "extract.row.max.length";
+    
     public final static String CREATE_TABLE_WITHOUT_DEFAULTS = "create.table.without.defaults";
     public final static String CREATE_TABLE_WITHOUT_FOREIGN_KEYS = "create.table.without.foreign.keys";
     public final static String CREATE_TABLE_WITHOUT_INDEXES = "create.table.without.indexes";

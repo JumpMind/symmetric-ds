@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 
 import org.jumpmind.db.model.Table;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -128,9 +127,11 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     @Override
     public void close() {
-        while (!inError && batches.size() > 0 && table != null) {
+    	while (!inError && batches.size() > 0) {
             startNewBatch();
-            end(this.table);
+            if(table != null) {
+            	end(this.table);
+            }
             end(this.batch, false);
             log.debug("Batch {} is empty", new Object[] { batch.getNodeBatchId() });
             Statistics stats = closeCurrentDataWriter();
@@ -336,11 +337,9 @@ public class MultiBatchStagingWriter implements IDataWriter {
         this.currentDataWriter.start(batch);
         processInfo.incrementBatchCount();
 
-        if (table == null) {
-            throw new SymmetricException(
-                    "'table' cannot null while starting new batch.  Batch: " + outgoingBatch + ". Check trigger/router configs.");
+        if(table != null) {
+        	this.currentDataWriter.start(table);
         }
-        this.currentDataWriter.start(table);
     }
 
 }

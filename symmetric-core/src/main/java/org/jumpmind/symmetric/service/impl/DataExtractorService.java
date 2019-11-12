@@ -1054,7 +1054,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         try {
                             new DataProcessor(dataReader, writer, listener, "extract").process(ctx);
                         } catch (Exception e) {
-                            if ((e instanceof ProtocolException || (e instanceof SQLException && ((SQLException) e).getErrorCode() == 6502)) && 
+                            if ((e instanceof ProtocolException || (e.getCause() != null && e.getCause() instanceof SQLException 
+                                    && ((SQLException) e.getCause()).getErrorCode() == 6502)) && 
                                     !configurationService.getNodeChannel(currentBatch.getChannelId(), false).getChannel().isContainsBigLob()) {
                                 log.warn(e.getMessage());
                                 log.info("Re-attempting extraction for batch {} with contains_big_lobs temporarily enabled for channel {}",
@@ -2263,16 +2264,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     List<TriggerHistory> histories = triggerRouterService.getActiveTriggerHistories(triggerRouterService.getTriggerById(request.getTriggerId()));
                     if (histories != null && histories.size() > 0) {
                         for (TriggerHistory history : histories) {
-                            Data data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
-                                    history, trigger.getChannelId(), null, null);
-                            data.setNodeList(targetNode.getNodeId());
-                            dataService.insertData(data);
-                            if (childRequests != null) {
-                                for (ExtractRequest childRequest : childRequests) {
-                                    data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
-                                            history, trigger.getChannelId(), null, null);
-                                    data.setNodeList(childRequest.getNodeId());
-                                    dataService.insertData(data);                                
+                            Channel channel = configurationService.getChannel(trigger.getReloadChannelId());
+                            if (!channel.isFileSyncFlag()) {
+                                Data data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(request.getLoadId()), 
+                                        history, trigger.getChannelId(), null, null);
+                                data.setNodeList(targetNode.getNodeId());
+                                dataService.insertData(data);
+                                if (childRequests != null) {
+                                    for (ExtractRequest childRequest : childRequests) {
+                                        data = new Data(history.getSourceTableName(), DataEventType.CREATE, null, String.valueOf(childRequest.getLoadId()), 
+                                                history, trigger.getChannelId(), null, null);
+                                        data.setNodeList(childRequest.getNodeId());
+                                        dataService.insertData(data);                                
+                                    }
                                 }
                             }
                         }
@@ -2971,10 +2975,31 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             final boolean objectValuesWillNeedEscaped = !getSymmetricDialect().getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
             final boolean[] isColumnPositionUsingTemplate = getSymmetricDialect().getColumnPositionUsingTemplate(sourceTable, triggerHistory);
+            final boolean checkRowLength = parameterService.is(ParameterConstants.EXTRACT_CHECK_ROW_SIZE, false);
+            final long rowMaxLength = parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000000);
             log.debug(sql);
             
             this.cursor = getSymmetricDialect().getPlatform().getSqlTemplate().queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
+                    if (checkRowLength) {
+                        // Account for double byte characters and encoding
+                        long rowSize = row.getLength() * 2;
+                        
+                        if (rowSize > rowMaxLength) {
+                            StringBuffer pkValues = new StringBuffer();
+                            int i = 0;
+                            Object[] rowValues = row.values().toArray();
+                            for (String name : sourceTable.getPrimaryKeyColumnNames()) {
+                                pkValues.append(name).append("=").append(rowValues[i]);
+                                i++;
+                            }
+                            log.warn("Extract row max size exceeded, keys [" + pkValues.toString() + "], size=" + rowSize);
+                            Data data = new Data(0, null, "", DataEventType.SQL, triggerHistory
+                                    .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
+                                    null, null);
+                            return data;
+                        }
+                    }
                     String csvRow = null;                    
                     if (selectedAsCsv) {
                         csvRow = row.stringValue();
@@ -2997,7 +3022,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             null, null);
                     return data;
                 }
-            });
+            }, checkRowLength && sourceTable.containsLobColumns(symmetricDialect.getPlatform()) && !sourceTable.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix()));
         }
 
         public boolean requiresLobsSelectedFromSource(CsvData data) {

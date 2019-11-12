@@ -141,14 +141,19 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Object[] args,
             int[] types) {
-        return queryForCursor(sql, mapper, null, args, types);
+        return queryForCursor(sql, mapper, null, args, types, false);
+    }
+    
+    @Override
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
+        return queryForCursor(sql, mapper, null, null, null, returnLobObjects);
     }
     
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
             IConnectionHandler connectionHandler, Object[] args,
-            int[] types) {
+            int[] types, boolean returnLobObjects) {
         long startTime = System.currentTimeMillis();
-        ISqlReadCursor<T> cursor = new JdbcSqlReadCursor<T>(this, mapper, sql, args, types, connectionHandler);
+        ISqlReadCursor<T> cursor = new JdbcSqlReadCursor<T>(this, mapper, sql, args, types, connectionHandler, returnLobObjects);
         long endTime = System.currentTimeMillis();
         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
 
@@ -547,7 +552,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     
     @Deprecated
     public static Object getResultSetValue(ResultSet rs, int index, boolean readStringsAsBytes) throws SQLException {
-        return getResultSetValue(rs, null, index, readStringsAsBytes);
+        return getResultSetValue(rs, null, index, readStringsAsBytes, false);
     }
 
     /**
@@ -576,7 +581,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
      * @see java.sql.Clob
      * @see java.sql.Timestamp
      */
-    public static Object getResultSetValue(ResultSet rs, ResultSetMetaData metaData, int index, boolean readStringsAsBytes) throws SQLException {
+    public static Object getResultSetValue(ResultSet rs, ResultSetMetaData metaData, int index, boolean readStringsAsBytes, boolean returnLobObjects) throws SQLException {
         if (metaData == null) {
             metaData = rs.getMetaData();
         }
@@ -595,14 +600,14 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         if (obj != null) {
             className = obj.getClass().getName();
         }
-        if (obj instanceof Blob) {
+        if (obj instanceof Blob && !returnLobObjects) {
             Blob blob = (Blob) obj;
             try(InputStream is = blob.getBinaryStream()) {
                 obj = IOUtils.toByteArray(is);
             } catch (IOException e) {
                 throw new SqlException(e);
             }
-        } else if (obj instanceof Clob) {
+        } else if (obj instanceof Clob && !returnLobObjects) {
             Clob clob = (Clob) obj;
             try(Reader reader = clob.getCharacterStream()) {
                 obj = IOUtils.toString(reader);

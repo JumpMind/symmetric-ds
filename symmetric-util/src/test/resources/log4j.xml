@@ -177,6 +177,13 @@
     </category>
      -->
 
+    <!-- In order to see DDL Changes enable this
+    <category name="org.jumpmind.db.alter.ModelComparator">
+        <priority value="DEBUG" />
+    </category>
+     -->
+    
+
     <!-- Change the "CONSOLE" to "ROLLING" to log to a file instead -->
     <root>
         <priority value="INFO" />
