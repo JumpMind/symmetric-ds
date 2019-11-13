@@ -609,7 +609,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         for (CommunicationType communicationType : services) {
             try {
                 ExecutorService service = executors.get(communicationType);
-                service.shutdownNow();
+                service.shutdown();
             } finally {
                 executors.remove(communicationType);
             }
