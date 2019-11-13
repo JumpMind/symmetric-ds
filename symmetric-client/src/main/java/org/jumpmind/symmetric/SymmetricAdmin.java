@@ -387,8 +387,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String jobName = popArg(args, "job name");
         if (jobName.equals("pull")) {
             getSymmetricEngine().pull();
+            getSymmetricEngine().getNodeCommunicationService().stop();
         } else if (jobName.equals("push")) {
             getSymmetricEngine().push();
+            getSymmetricEngine().getNodeCommunicationService().stop();
         } else if (jobName.equals("route")) {
             getSymmetricEngine().route();
         } else if (jobName.equals("purge")) {
