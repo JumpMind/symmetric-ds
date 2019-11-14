@@ -127,10 +127,10 @@ public class MultiBatchStagingWriter implements IDataWriter {
 
     @Override
     public void close() {
-    	while (!inError && batches.size() > 0) {
+        while (!inError && batches.size() > 0) {
             startNewBatch();
             if(table != null) {
-            	end(this.table);
+                end(this.table);
             }
             end(this.batch, false);
             log.debug("Batch {} is empty", new Object[] { batch.getNodeBatchId() });
@@ -338,7 +338,7 @@ public class MultiBatchStagingWriter implements IDataWriter {
         processInfo.incrementBatchCount();
 
         if(table != null) {
-        	this.currentDataWriter.start(table);
+            this.currentDataWriter.start(table);
         }
     }
 
