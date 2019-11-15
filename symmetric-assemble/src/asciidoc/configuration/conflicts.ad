@@ -113,9 +113,7 @@ endif::pro[]
 Detection Expression:: An expression that provides additional information about the detection mechanism.  If the detection 
 mechanism is use_timestamp or use_version then this expression will be the name of the timestamp or version column.
 The detect_expression is also used to exclude certain column names from being used.  For example, to exclude column1 and column2, 
-the expression is "`excluded_column_names=column1,column2`".
-
-----
+the expression is "excluded_column_names=column1,column2".
 
 Resolve Changes Only:: Indicates that when applying changes during an update that only data that has changed should be applied.  
 Otherwise, all the columns will be updated.  This really only applies to updates.
