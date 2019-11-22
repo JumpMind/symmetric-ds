@@ -1407,6 +1407,8 @@ public class DataService extends AbstractService implements IDataService {
             requests.putAll(extractRequests);
         }
 
+        long firstBatchId = 0;
+
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
@@ -1483,7 +1485,7 @@ public class DataService extends AbstractService implements IDataService {
                                 }
                             }
 
-                            long firstBatchId = startBatchId;
+                            firstBatchId = firstBatchId == 0 ? startBatchId : firstBatchId;
                             
                             if (table.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix() + "_" + TableConstants.SYM_FILE_SNAPSHOT)) {
                                 TableReloadStatus reloadStatus = getTableReloadStatusByLoadId(loadId);
