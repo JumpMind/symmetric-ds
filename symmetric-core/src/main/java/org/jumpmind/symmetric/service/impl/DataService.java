@@ -931,9 +931,8 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistories, triggerRoutersByHistoryId, 
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
-                        finalizeBatchCount += insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                        insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
                                 transaction, mapReloadRequests, isFullLoad, processInfo);
-                                
                         
                         if (isFullLoad) {
 
@@ -1386,8 +1385,6 @@ public class DataService extends AbstractService implements IDataService {
             requests.putAll(extractRequests);
         }
 
-        long firstBatchId = 0;
-        
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
@@ -1464,11 +1461,11 @@ public class DataService extends AbstractService implements IDataService {
                                 }
                             }
 
-                            firstBatchId = firstBatchId > 0 ? firstBatchId : startBatchId;
+                            long firstBatchId = startBatchId;
                             
                             if (table.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix() + "_" + TableConstants.SYM_FILE_SNAPSHOT)) {
                                 TableReloadStatus reloadStatus = getTableReloadStatusByLoadId(loadId);
-                                startBatchId = reloadStatus.getStartDataBatchId();
+                                firstBatchId = reloadStatus.getStartDataBatchId() > 0 ? reloadStatus.getStartDataBatchId() : firstBatchId;
                             }
                             
                             updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
