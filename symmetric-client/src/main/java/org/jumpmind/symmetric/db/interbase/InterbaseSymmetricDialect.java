@@ -20,9 +20,13 @@
  */
 package org.jumpmind.symmetric.db.interbase;
 
+import java.sql.Types;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.StringMapper;
@@ -227,5 +231,20 @@ public class InterbaseSymmetricDialect extends AbstractSymmetricDialect implemen
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
         return platform.getSqlTemplate().queryForLong("select gen_id(GEN_" + getSequenceName(identifier) + ", 0) from rdb$database");
+    }
+    
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database db = super.readSymmetricSchemaFromXml();
+        // Change sym_trigger table column description to only allow 1024 characters to make row width less than 64K characters
+        String prefix = parameterService.getTablePrefix();
+        if (StringUtils.isNotBlank(prefix) && !prefix.endsWith("_")) {
+            prefix = prefix + "_";
+        }
+        Column description = db.findTable(prefix+"trigger").findColumn("description");
+        description.setJdbcTypeCode(Types.VARCHAR);
+        description.setMappedType(TypeMap.VARCHAR);
+        description.setSize("1024");
+        return db;
     }
 }
