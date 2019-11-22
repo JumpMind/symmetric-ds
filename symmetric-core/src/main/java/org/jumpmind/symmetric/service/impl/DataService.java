@@ -931,8 +931,13 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistories, triggerRoutersByHistoryId, 
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
-                        insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                        int fileSyncBatches = insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
                                 transaction, mapReloadRequests, isFullLoad, processInfo);
+                        
+                        if (reloadRequests != null && reloadRequests.size() > 0) {
+                            updateTableReloadStatusTableCount(platform.supportsMultiThreadedTransactions() ? null : transaction, loadId,
+                                    totalTableCount + fileSyncBatches);
+                        }
                         
                         if (isFullLoad) {
 
