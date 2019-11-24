@@ -805,7 +805,8 @@ public class RouterService extends AbstractService implements IRouterService {
             table = buildTableFromTriggerHistory(data.getTriggerHistory());
         }
         if (triggerRouters != null && triggerRouters.size() > 0) {
-            boolean alreadyUnrouted = false;
+            boolean isUnrouted = false;
+            boolean alreadyInsertedUnrouted = false;
             for (TriggerRouter triggerRouter : triggerRouters) {
                 DataMetaData dataMetaData = new DataMetaData(data, table, triggerRouter.getRouter(),
                         context.getChannel());
@@ -863,10 +864,13 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                 }
 
-                if (!alreadyUnrouted) {
+                isUnrouted = (nodeIds == null || nodeIds.size() == 0);
+                if (!isUnrouted || !alreadyInsertedUnrouted) {
                     numberOfDataEventsInserted += insertDataEvents(processInfo, context, dataMetaData, nodeIds);
+                    if (isUnrouted) {
+                        alreadyInsertedUnrouted = true;
+                    }
                 }
-                alreadyUnrouted |= (nodeIds == null || nodeIds.size() == 0);
             }
 
         } else {
