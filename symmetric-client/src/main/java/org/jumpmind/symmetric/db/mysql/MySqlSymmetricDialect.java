@@ -28,6 +28,7 @@ import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -56,18 +57,30 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
 
     private String functionTemplateKeySuffix = null;
+    
+    private boolean isConvertZeroDateToNull;
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerTemplate = new MySqlTriggerTemplate(this);
         this.parameterService = parameterService;
-        
+
+        if (parameterService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL).contains("zeroDateTimeBehavior=convertToNull")) {
+            try {
+                String sqlMode = platform.getSqlTemplate().queryForString("select @@sql_mode");
+                isConvertZeroDateToNull = sqlMode == null || (!sqlMode.contains("NO_ZERO_DATE") && !sqlMode.contains("NO_ZERO_IN_DATE"));
+                if (isConvertZeroDateToNull) {
+                    log.info("Zero dates will be converted to null");
+                }
+            } catch (Exception e) {
+                log.warn("Cannot convert zero dates to null because unable to verify sql_mode: {}", e.getMessage());
+            }
+        }
+        this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull);
+
         int[] versions = Version.parseVersion(getProductVersion());        
-        if (getMajorVersion() == 5
-                && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
             this.functionTemplateKeySuffix = PRE_5_1_23;    
-        } else if (getMajorVersion() == 5
-                && (getMinorVersion() < 7 || (getMinorVersion() == 7 && versions[2] < 6))) {
+        } else if (getMajorVersion() == 5 && (getMinorVersion() < 7 || (getMinorVersion() == 7 && versions[2] < 6))) {
         	this.functionTemplateKeySuffix = PRE_5_7_6;
         } else {
             this.functionTemplateKeySuffix = POST_5_7_6;
