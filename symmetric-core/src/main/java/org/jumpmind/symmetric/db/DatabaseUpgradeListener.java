@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
@@ -44,6 +45,7 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.util.MultiInstanceofPredicate;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -90,6 +92,26 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
         
+        if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel)) {
+            long ts = System.currentTimeMillis();
+            int batchCount = 0, rowCount = 0;
+            log.info("Preparing data_event for upgrade by clearing unrouted batches");
+            List<Row> rows = engine.getSqlTemplate().query("select batch_id from " + tablePrefix + "_outgoing_batch where node_id = '-1'");
+            for (Row row : rows) {
+                long batchId = row.getLong("batch_id");
+                rowCount += engine.getSqlTemplate().update("delete from " + tablePrefix + "_data where data_id in (select data_id from " + tablePrefix
+                        + "_data_event where batch_id = " + batchId + ")");
+                rowCount += engine.getSqlTemplate().update("delete from " + tablePrefix + "_data_event where batch_id = " + batchId);
+                rowCount += engine.getSqlTemplate().update("delete from " + tablePrefix + "_outgoing_batch where batch_id = " + batchId);
+                batchCount++;
+                if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE) {
+                    log.info("Cleared {} batches and {} rows so far", batchCount, rowCount);
+                    ts = System.currentTimeMillis();
+                }
+            }
+            log.info("Done preparing data_event, cleared {} batches and {} rows", batchCount, rowCount);
+        }
+
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
             if (triggerTable != null) {
@@ -135,6 +157,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     ColumnSizeChange.class,
                     CopyColumnValueChange.class
             });
+            @SuppressWarnings("unchecked")
             Collection<TableChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
             Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
             for(TableChange change: modelChangesAffectingTriggers) {
@@ -144,13 +167,6 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
         
         return sb.toString();
-    }
-
-    private boolean isUpgradeFrom38(String tablePrefix, Database currentModel, Database desiredModel) {
-        
-        
-        
-        return false;
     }
 
     @Override
@@ -206,6 +222,15 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         if (currentModel.findTable(nodeTableName) != null && 
                 currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
             log.info("Detected upgrade from pre-3.8 version.");
+            return true;
+        } else {
+            return false;
+        }        
+    }
+    protected boolean isUpgradeFromPre311(String tablePrefix, Database currentModel, Database desiredModel) {
+        Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_DATA_EVENT);
+        if (eventTable != null && eventTable.findColumn("router_id") != null) {
+            log.info("Detected upgrade from pre-3.11 version.");
             return true;
         } else {
             return false;
