@@ -35,8 +35,11 @@ public class SecurityServiceFactory {
             if (properties == null) {
                 properties = new TypedProperties(System.getProperties());
             }
-            String className = properties.get(SecurityConstants.CLASS_NAME_SECURITY_SERVICE,
-                    serviceType == SecurityServiceType.SERVER ? "org.jumpmind.security.BouncyCastleSecurityService" : SecurityService.class.getName());
+            String className = properties.get(SecurityConstants.CLASS_NAME_SECURITY_SERVICE);
+            if (className == null || className.trim().equals("")) {
+                className = serviceType == SecurityServiceType.SERVER ? "org.jumpmind.security.BouncyCastleSecurityService" :
+                    SecurityService.class.getName();
+            }
             ISecurityService securityService = (ISecurityService) Class.forName(className).getDeclaredConstructor().newInstance();
             securityService.init();
             return securityService;

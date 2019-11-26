@@ -23,8 +23,13 @@ package org.jumpmind.security;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
@@ -37,7 +42,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NotImplementedException;
-import org.jumpmind.exception.IoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +82,7 @@ public class SecurityService implements ISecurityService {
     @Override
     public KeyStore getKeyStore() {
         try {
+            checkThatKeystoreFileExists();
             String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
                     SecurityConstants.KEYSTORE_TYPE);
             KeyStore ks = KeyStore.getInstance(keyStoreType);
@@ -93,19 +98,48 @@ public class SecurityService implements ISecurityService {
         }
     }
     
+    @Override
     public void installDefaultSslCert(String host) {
         throw new NotImplementedException();
     }
 
-    protected void checkThatKeystoreFileExists() {
+    @Override
+    public void installSslCert(KeyStore.PrivateKeyEntry entry) {
+        throw new NotImplementedException();
+    }
+    
+    @Override
+    public KeyStore.PrivateKeyEntry createDefaultSslCert(String host) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public KeyStore.PrivateKeyEntry createSslCert(byte[] content, String fileType, String alias, String password) {
+        throw new NotImplementedException();        
+    }
+
+    @Override
+    public X509Certificate getCurrentSslCert() {
+        throw new NotImplementedException();
+    }
+    
+    @Override
+    public String exportCurrentSslCert() {
+        throw new NotImplementedException();
+    }
+
+    protected void checkThatKeystoreFileExists() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         String keyStoreLocation = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
         if (keyStoreLocation == null) {
             throw new RuntimeException("System property '" + SecurityConstants.SYSPROP_KEYSTORE + "' is not defined.");
         }
         if (!new File(keyStoreLocation).exists()) {
-            throw new IoException(
-                    "Could not find the keystore file.  We expected it to exist here: "
-                            + keyStoreLocation);
+            String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
+                    SecurityConstants.KEYSTORE_TYPE);
+            KeyStore ks = KeyStore.getInstance(keyStoreType);
+            FileOutputStream os = new FileOutputStream(keyStoreLocation);
+            ks.store(os, getKeyStorePassword().toCharArray());
+            os.close();
         }
     }
 

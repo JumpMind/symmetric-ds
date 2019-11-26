@@ -21,6 +21,8 @@
 package org.jumpmind.security;
 
 import java.security.KeyStore;
+import java.security.KeyStore.PrivateKeyEntry;
+import java.security.cert.X509Certificate;
 
 import javax.crypto.Cipher;
 
@@ -30,8 +32,18 @@ import javax.crypto.Cipher;
 public interface ISecurityService {
 
     public void init();
-    
+
     public void installDefaultSslCert(String host);
+
+    public void installSslCert(KeyStore.PrivateKeyEntry entry);    
+
+    public PrivateKeyEntry createDefaultSslCert(String host);
+    
+    public PrivateKeyEntry createSslCert(byte[] content, String fileType, String alias, String password);
+    
+    public X509Certificate getCurrentSslCert();
+    
+    public String exportCurrentSslCert();
     
     public String nextSecureHexString(int len);
 
