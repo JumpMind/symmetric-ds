@@ -1,0 +1,9 @@
+
+=== Security
+
+The Security panel manages the SSL/TLS certificate for encrypting the HTTPS transport of data.
+  
+Import certificate from file:: Upload a file containing the certificate, which can then be imported.  If the file is a keystore with multiple entries, the user is prompted to select one from the list.  If the file is a protected keystore, the user is prompted for the password.  File types supported include PEM and PKCS12 (P12, PFX).
+Export certificate to file:: Export the current certificate and private key to a PEM-encoded text file.
+Generate self-signed certificate:: Generate a new key pair and self-signed certificate, which can then be be imported.  The signature cannot be verified by clients using a third-party Certifying Authority, but data will be encrypted. 
+  

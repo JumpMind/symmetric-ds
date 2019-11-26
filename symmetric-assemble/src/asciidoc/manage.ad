@@ -80,5 +80,9 @@ endif::pro[]
 
 include::manage/monitors.ad[]
 
+ifdef::pro[]
+include::manage/security.ad[]
+endif::pro[]
+
 include::manage/logging.ad[]
 
