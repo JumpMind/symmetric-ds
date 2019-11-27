@@ -15,7 +15,7 @@ Group Link:: The group link used for the source and target node groups of this r
 Router Type:: The type of router.  Standard router types are listed below.  Custom routers can be configured as extension points.
 
 .Router Types
-[cols="<2,^1,<9", options="header"]
+[cols="<2,<9", options="header"]
 |===
 |Type
 |Description
