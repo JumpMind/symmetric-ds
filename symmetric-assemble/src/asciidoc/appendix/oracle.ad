@@ -39,6 +39,8 @@ If using Oracle 12c with PDB, use the following permissions:
 grant create session, alter session, set container, select any dictionary, logmining, execute_catalog_role to c##symmetric CONTAINER=all;
 alter user c##symmetric set container_data = (cdb$root, <PDB name>) container=current;
 
+endif::pro[]
+
 ==== Known Limitations
 * The LONG data type is not supported with change capture, since LONG columns cannot be accessed from triggers.  The data in LONG columns can still be kept in sync by enabling the use_stream_lobs feature in <<TRIGGER>>.
 * The global precision of numeric columns is controlled by the oracle.template.precision parameter.  It defaults to a precision of 30,10
