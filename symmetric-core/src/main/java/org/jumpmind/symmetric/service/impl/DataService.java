@@ -331,6 +331,7 @@ public class DataService extends AbstractService implements IDataService {
                         request.setChannelId(rs.getString("channel_id"));
                         request.setTriggerId(rs.getString("trigger_id"));
                         request.setRouterId(rs.getString("router_id"));
+                        request.setLoadId(rs.getLong("load_id"));
                         request.setCreateTime(rs.getDateTime("create_time"));
                         request.setLastUpdateBy(rs.getString("last_update_by"));
                         request.setLastUpdateTime(rs.getDateTime("last_update_time"));
@@ -371,7 +372,7 @@ public class DataService extends AbstractService implements IDataService {
     public List<TableReloadRequest> collapseTableReloadRequestsByLoadId(List<TableReloadRequest> requests) {
         List<TableReloadRequest> collapsedRequests = new ArrayList<TableReloadRequest>();
         
-        int previousLoadId = -1;
+        long previousLoadId = -1;
         
         TableReloadRequest summary = null;
         for (TableReloadRequest request : requests) {
@@ -668,7 +669,42 @@ public class DataService extends AbstractService implements IDataService {
             return request;
         }
     }
-    
+
+    protected long insertRequestedOutgoingBatches(ISqlTransaction transaction, Node targetNode,
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory,
+            String overrideInitialLoadSelect, long loadId, String createBy,
+            String channelId, long rowsPerBatch, long batchCount) {
+
+        long startBatchId = engine.getSequenceService().nextRange(Constants.SEQUENCE_OUTGOING_BATCH, batchCount);
+        String tableName = triggerHistory.getSourceTableName().toLowerCase();
+        
+        for (int i = 0; i < batchCount; i++) {
+            long batchId = startBatchId + i;
+            OutgoingBatch batch = new OutgoingBatch(targetNode.getNodeId(), channelId, Status.RQ);
+            batch.setBatchId(batchId);
+            batch.setLoadId(loadId);
+            batch.setCreateBy(createBy);
+            batch.setLoadFlag(true);
+            batch.incrementRowCount(DataEventType.RELOAD);
+            batch.setDataRowCount(rowsPerBatch);
+            batch.incrementTableCount(tableName);
+            batch.setExtractJobFlag(true);
+            engine.getOutgoingBatchService().insertOutgoingBatch(transaction, batch);
+
+            if (i == 0) {
+                Data data = new Data(triggerHistory.getSourceTableName(), DataEventType.RELOAD,
+                        overrideInitialLoadSelect != null ? overrideInitialLoadSelect : triggerRouter.getInitialLoadSelect(), null, 
+                        triggerHistory, channelId, null, null);
+                data.setNodeList(targetNode.getNodeId());
+                data.setPreRouted(true);
+                long dataId = insertData(transaction, data);
+                insertDataEvent(transaction, new DataEvent(dataId, batchId));   
+            }
+        }
+
+        return startBatchId;
+    }
+
     /**
      * @return If isLoad then return the inserted batch id otherwise return the
      *         data id
@@ -1449,24 +1485,14 @@ public class DataService extends AbstractService implements IDataService {
                             
                             // calculate the number of batches needed for table.
                             long numberOfBatches = 1;
-                            long lastBatchSize = channel.getMaxBatchSize();
 
                             if (rowCount > 0) {
-                                numberOfBatches = (rowCount * transformMultiplier / channel.getMaxBatchSize()) + 1;
-                                lastBatchSize = rowCount % numberOfBatches;
+                                numberOfBatches = (long) Math.ceil((rowCount * transformMultiplier) / (channel.getMaxBatchSize() * 1f));
                             }
 
-                            long startBatchId = -1;
-                            long endBatchId = -1;
-                            for (int i = 0; i < numberOfBatches; i++) {
-                                long batchSize = i == numberOfBatches - 1 ? lastBatchSize : channel.getMaxBatchSize();
-                                // needs to grab the start and end batch id
-                                endBatchId = insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory, selectSql, true,
-                                        loadId, createBy, Status.RQ, null, batchSize);
-                                if (startBatchId == -1) {
-                                    startBatchId = endBatchId;
-                                }
-                            }
+                            long startBatchId = insertRequestedOutgoingBatches(transaction, targetNode, triggerRouter, triggerHistory, selectSql,
+                                    loadId, createBy, reloadChannel, channel.getMaxBatchSize(), numberOfBatches);
+                            long endBatchId = startBatchId + numberOfBatches - 1;
 
                             firstBatchId = firstBatchId == 0 ? startBatchId : firstBatchId;
                             

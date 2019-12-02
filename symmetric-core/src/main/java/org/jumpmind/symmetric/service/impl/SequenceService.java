@@ -89,7 +89,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(name).getCacheSize() > 0) {
             return nextValFromCache(null, name);
         }
-        return nextValFromDatabase(name);
+        return nextValFromDatabase(name, 1);
     }
 
     public synchronized long nextVal(ISqlTransaction transaction, final String name) {
@@ -104,7 +104,7 @@ public class SequenceService extends AbstractService implements ISequenceService
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && getSequenceDefinition(transaction, name).getCacheSize() > 0) {
             return nextValFromCache(transaction, name);
         }
-        return nextValFromDatabase(transaction, name);
+        return nextValFromDatabase(transaction, name, 1);
     }
 
     protected long nextValFromCache(ISqlTransaction transaction, String name) {
@@ -112,32 +112,33 @@ public class SequenceService extends AbstractService implements ISequenceService
         if (range != null) {
             long currentValue = range.getCurrentValue();
             if (currentValue < range.getEndValue()) {
-                range.setCurrentValue(++currentValue);
+                currentValue += range.getIncrementBy();
+                range.setCurrentValue(currentValue);
                 return currentValue;
             } else {
                 sequenceCache.remove(name);
             }
         }
-        return nextValFromDatabase(transaction, name);
+        return nextValFromDatabase(transaction, name, 1);
     }
     
-    protected long nextValFromDatabase(final String name) {
+    protected long nextValFromDatabase(final String name, long size) {
         return new DoTransaction<Long>() {
             public Long execute(ISqlTransaction transaction) {
-                return nextValFromDatabase(transaction, name);
+                return nextValFromDatabase(transaction, name, size);
             }            
         }.execute();
     }
 
-    protected long nextValFromDatabase(ISqlTransaction transaction, String name) {
+    protected long nextValFromDatabase(ISqlTransaction transaction, String name, long size) {
         if (transaction == null) {
-            return nextValFromDatabase(name);
+            return nextValFromDatabase(name, size);
         } else {
             long sequenceTimeoutInMs = parameterService.getLong(
                     ParameterConstants.SEQUENCE_TIMEOUT_MS, 5000);
             long ts = System.currentTimeMillis();
             do {
-                long nextVal = tryToGetNextVal(transaction, name);
+                long nextVal = tryToGetNextVal(transaction, name, size);
                 if (nextVal > 0) {
                     return nextVal;
                 }
@@ -149,32 +150,32 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
     }
 
-    protected long tryToGetNextVal(ISqlTransaction transaction, String name) {
+    protected long tryToGetNextVal(ISqlTransaction transaction, String name, long size) {
         long currVal = currVal(transaction, name);
         Sequence sequence = getSequenceDefinition(transaction, name);
-        long nextVal = currVal + sequence.getIncrementBy();
+        long nextVal = currVal + (sequence.getIncrementBy() * size);
         if (nextVal > sequence.getMaxValue()) {
             if (sequence.isCycle()) {
-                nextVal = sequence.getMinValue();
+                nextVal = sequence.getMinValue() + ((sequence.getIncrementBy() * size) - sequence.getIncrementBy());
             } else {
                 throw new IllegalStateException(String.format(
                         "The sequence named %s has reached it's max value.  "
-                                + "No more numbers can be handled out.", name));
+                                + "No more numbers can be handed out.", name));
             }
         } else if (nextVal < sequence.getMinValue()) {
             if (sequence.isCycle()) {
-                nextVal = sequence.getMaxValue();
+                nextVal = sequence.getMaxValue() + ((sequence.getIncrementBy() * size) - sequence.getIncrementBy());
             } else {
                 throw new IllegalStateException(String.format(
                         "The sequence named %s has reached it's min value.  "
-                                + "No more numbers can be handled out.", name));
+                                + "No more numbers can be handed out.", name));
             }
         }
 
         CachedRange range = null;
         if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && sequence.getCacheSize() > 0) {
             long endVal = nextVal + (sequence.getIncrementBy() * (sequence.getCacheSize() - 1));
-            range = new CachedRange(nextVal, endVal);
+            range = new CachedRange(nextVal, endVal, sequence.getIncrementBy());
             nextVal = endVal;
         }
 
@@ -187,6 +188,58 @@ public class SequenceService extends AbstractService implements ISequenceService
             nextVal = range.getCurrentValue();
         }
         return nextVal;
+    }
+
+    /**
+     * Obtain a contiguous range of sequence numbers.  The initial load extract in background needs an uninterrupted range
+     * of batch numbers.  As a bonus, it's more efficient to request the entire range in one call.
+     * 
+     *  @param name Sequence name to use
+     *  @param size Number of sequence numbers to obtain
+     *  @return Starting sequence number for the entire range that was obtained
+     */
+    public synchronized long nextRange(String name, long size) {
+        Sequence sequence = getSequenceDefinition(name);
+        if (size <= 0) {
+            throw new IllegalStateException("Size of range must be a positive integer");
+        }
+        if (sequence.getIncrementBy() <= 0) {
+            throw new IllegalStateException("Increment-by must be a positive integer");
+        }
+        long startingValue = 0;
+        long rangeNeeded = size * sequence.getIncrementBy();
+
+        if (!parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED) && sequence.getCacheSize() > 0) {
+            CachedRange range = sequenceCache.get(name);
+            if (range != null) {
+                long currentValue = range.getCurrentValue();
+                long endValue = range.getEndValue();
+                long rangeAvailable = endValue - currentValue;
+                long rangeEndValue = currentValue + rangeNeeded;
+                
+                if (currentValue < endValue && rangeEndValue <= sequence.getMaxValue()) {
+                    startingValue = currentValue + sequence.getIncrementBy();
+                    if (rangeNeeded <= rangeAvailable) {
+                        range.setCurrentValue(currentValue + rangeNeeded);
+                        rangeNeeded = 0;
+                    } else {
+                        rangeNeeded -= rangeAvailable;
+                        size = rangeNeeded / sequence.getIncrementBy();
+                        sequenceCache.remove(name);
+                    }
+                } else {
+                    sequenceCache.remove(name);
+                }
+            }
+        }
+        
+        if (rangeNeeded > 0) {
+            long databaseStartingValue = nextValFromDatabase(name, size) - (rangeNeeded - sequence.getIncrementBy());
+            if (startingValue == 0) {
+                startingValue = databaseStartingValue;
+            }
+        }
+        return startingValue;
     }
 
     protected Sequence getSequenceDefinition(final String name) {
@@ -269,10 +322,12 @@ public class SequenceService extends AbstractService implements ISequenceService
     static class CachedRange {
         long currentValue;
         long endValue;
+        int incrementBy;
         
-        public CachedRange(long currentValue, long endValue) {
+        public CachedRange(long currentValue, long endValue, int incrementBy) {
             this.currentValue = currentValue;
             this.endValue = endValue;
+            this.incrementBy = incrementBy;
         }
 
         public long getCurrentValue() {
@@ -285,7 +340,11 @@ public class SequenceService extends AbstractService implements ISequenceService
         
         public long getEndValue() {
             return endValue;
-        }        
+        }
+        
+        public int getIncrementBy() {
+            return incrementBy;
+        }
     }
     
     abstract class DoTransaction<T> {

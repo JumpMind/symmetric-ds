@@ -26,6 +26,8 @@ import org.jumpmind.symmetric.model.Sequence;
 public interface ISequenceService {
 
     public long nextVal(String name);
+    
+    public long nextRange(String name, long size);
 
     public long currVal(String name);
 

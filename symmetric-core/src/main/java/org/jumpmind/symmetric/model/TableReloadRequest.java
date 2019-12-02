@@ -40,7 +40,7 @@ public class TableReloadRequest {
     protected Date createTime = new Date();
     protected Date lastUpdateTime = new Date();
     protected String lastUpdateBy;
-    protected int loadId;
+    protected long loadId;
     protected boolean processed;
     
     public TableReloadRequest(TableReloadRequestKey key) {
@@ -170,11 +170,11 @@ public class TableReloadRequest {
         return getTriggerId() + getRouterId();
     }
     
-    public int getLoadId() {
+    public long getLoadId() {
         return loadId;
     }
 
-    public void setLoadId(int loadId) {
+    public void setLoadId(long loadId) {
         this.loadId = loadId;
     }
 

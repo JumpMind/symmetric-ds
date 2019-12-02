@@ -39,7 +39,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectTableReloadRequestToProcess", "select target_node_id, create_table, delete_first, reload_select, before_custom_sql, "
                 + " reload_time, channel_id, create_time, last_update_by, "
-                + " last_update_time, trigger_id, router_id "
+                + " last_update_time, trigger_id, router_id, load_id "
                 + " from $(table_reload_request) "
                 + " where source_node_id=? and processed = 0 "
                 + " order by create_time, target_node_id");
