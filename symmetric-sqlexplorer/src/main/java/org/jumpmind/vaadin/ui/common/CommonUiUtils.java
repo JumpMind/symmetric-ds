@@ -241,111 +241,119 @@ public final class CommonUiUtils {
             table.setColumnReorderingAllowed(true);
             table.setColumnCollapsingAllowed(true);
 
-            final ResultSetMetaData meta = rs.getMetaData();
-            int columnCount = meta.getColumnCount();
-            table.addContainerProperty("#", Integer.class, null);
-            Set<String> columnNames = new HashSet<String>();
-            Set<Integer> skipColumnIndexes = new HashSet<Integer>();
-            int[] types = new int[columnCount];
-            for (int i = 1; i <= columnCount; i++) {
-                String realColumnName = meta.getColumnName(i);
-                String columnName = realColumnName;
-                if (!Arrays.asList(excludeValues).contains(columnName)) {
-
-                    int index = 1;
-                    while (columnNames.contains(columnName)) {
-                        columnName = realColumnName + "_" + index++;
-                    }
-                    columnNames.add(columnName);
-
-                    Class<?> typeClass = Object.class;
-                    int type = meta.getColumnType(i);
-                    types[i - 1] = type;
-                    switch (type) {
-                        case Types.FLOAT:
-                        case Types.DOUBLE:
-                        case Types.NUMERIC:
-                        case Types.REAL:
-                        case Types.DECIMAL:
-                            typeClass = BigDecimal.class;
-                            break;
-                        case Types.TINYINT:
-                        case Types.SMALLINT:
-                        case Types.BIGINT:
-                        case Types.INTEGER:
-                            typeClass = Long.class;
-                            break;
-                        case Types.VARCHAR:
-                        case Types.CHAR:
-                        case Types.NVARCHAR:
-                        case Types.NCHAR:
-                        case Types.CLOB:
-                            typeClass = String.class;
-                        default:
-                            break;
-                    }
-                    table.addContainerProperty(i, typeClass, null);
-                    table.setColumnHeader(i, columnName);
-                } else {
-                    skipColumnIndexes.add(i - 1);
-                }
-
-            }
-            int rowNumber = 1;
-            while (rs.next() && rowNumber <= maxResultSize) {
-                Object[] row = new Object[columnNames.size() + 1];
-                row[0] = new Integer(rowNumber);
-                int rowIndex = 1;
-                for (int i = 0; i < columnCount; i++) {
-                    if (!skipColumnIndexes.contains(i)) {
-                        Object o = getObject(rs, i + 1);
-                        int type = types[i];
+            if(rs != null) {
+                final ResultSetMetaData meta = rs.getMetaData();
+                int columnCount = meta.getColumnCount();
+                table.addContainerProperty("#", Integer.class, null);
+                Set<String> columnNames = new HashSet<String>();
+                Set<Integer> skipColumnIndexes = new HashSet<Integer>();
+                int[] types = new int[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    String realColumnName = meta.getColumnName(i);
+                    String columnName = realColumnName;
+                    if (!Arrays.asList(excludeValues).contains(columnName)) {
+    
+                        int index = 1;
+                        while (columnNames.contains(columnName)) {
+                            columnName = realColumnName + "_" + index++;
+                        }
+                        columnNames.add(columnName);
+    
+                        Class<?> typeClass = Object.class;
+                        int type = meta.getColumnType(i);
+                        types[i - 1] = type;
                         switch (type) {
                             case Types.FLOAT:
                             case Types.DOUBLE:
-                            case Types.REAL:
                             case Types.NUMERIC:
+                            case Types.REAL:
                             case Types.DECIMAL:
-                                if (o == null) {
-                                    o = new BigDecimal(-1);
-                                }
-                                if (!(o instanceof BigDecimal)) {
-                                    o = new BigDecimal(castToNumber(o.toString()));
-                                }
+                                typeClass = BigDecimal.class;
                                 break;
                             case Types.TINYINT:
                             case Types.SMALLINT:
                             case Types.BIGINT:
                             case Types.INTEGER:
-                                if (o == null) {
-                                    o = new Long(-1);
-                                }
-
-                                if (!(o instanceof Long)) {
-                                    o = new Long(castToNumber(o.toString()));
-                                }
+                                typeClass = Long.class;
                                 break;
+                            case Types.VARCHAR:
+                            case Types.CHAR:
+                            case Types.NVARCHAR:
+                            case Types.NCHAR:
+                            case Types.CLOB:
+                                typeClass = String.class;
                             default:
                                 break;
                         }
-                        row[rowIndex] = o == null ? NULL_TEXT : o;
-                        rowIndex++;
+                        table.addContainerProperty(i, typeClass, null);
+                        table.setColumnHeader(i, columnName);
+                    } else {
+                        skipColumnIndexes.add(i - 1);
                     }
+    
                 }
-                table.addItem(row, rowNumber);
-                rowNumber++;
-            }
-
-            if (rowNumber < 100) {
-                table.setColumnWidth("#", 18);
-            } else if (rowNumber < 1000) {
-                table.setColumnWidth("#", 25);
+                int rowNumber = 1;
+                while (rs.next() && rowNumber <= maxResultSize) {
+                    Object[] row = new Object[columnNames.size() + 1];
+                    row[0] = new Integer(rowNumber);
+                    int rowIndex = 1;
+                    for (int i = 0; i < columnCount; i++) {
+                        if (!skipColumnIndexes.contains(i)) {
+                            Object o = getObject(rs, i + 1);
+                            int type = types[i];
+                            switch (type) {
+                                case Types.FLOAT:
+                                case Types.DOUBLE:
+                                case Types.REAL:
+                                case Types.NUMERIC:
+                                case Types.DECIMAL:
+                                    if (o == null) {
+                                        o = new BigDecimal(-1);
+                                    }
+                                    if (!(o instanceof BigDecimal)) {
+                                        o = new BigDecimal(castToNumber(o.toString()));
+                                    }
+                                    break;
+                                case Types.TINYINT:
+                                case Types.SMALLINT:
+                                case Types.BIGINT:
+                                case Types.INTEGER:
+                                    if (o == null) {
+                                        o = new Long(-1);
+                                    }
+    
+                                    if (!(o instanceof Long)) {
+                                        o = new Long(castToNumber(o.toString()));
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                            row[rowIndex] = o == null ? NULL_TEXT : o;
+                            rowIndex++;
+                        }
+                    }
+                    table.addItem(row, rowNumber);
+                    rowNumber++;
+                }
+    
+                if (rowNumber < 100) {
+                    table.setColumnWidth("#", 18);
+                } else if (rowNumber < 1000) {
+                    table.setColumnWidth("#", 25);
+                } else {
+                    table.setColumnWidth("#", 30);
+                }
+    
+                if (!showRowNumbers) {
+                    table.setColumnCollapsed("#", true);
+                }
             } else {
-                table.setColumnWidth("#", 30);
-            }
-
-            if (!showRowNumbers) {
-                table.setColumnCollapsed("#", true);
+                Object[] row = new Object[1];
+                row[0] = "Metadata unavailable";
+                table.addContainerProperty(1, String.class, null);
+                table.setColumnHeader(1, "Status");
+                table.addItem(row, 1);
             }
 
             return table;

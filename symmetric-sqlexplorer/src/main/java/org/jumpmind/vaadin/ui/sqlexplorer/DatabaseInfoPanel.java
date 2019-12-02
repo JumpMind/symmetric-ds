@@ -3,6 +3,7 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,8 +22,8 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.v7.ui.Table;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.v7.ui.Table;
 
 public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
 
@@ -65,7 +66,13 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             tabSheet.addTab(createTabData(createTableWithReflection(Connection.class, c)), "Connection");
             
             try{
-                Table clientInfoProperties = CommonUiUtils.putResultsInTable(metaData.getClientInfoProperties(), Integer.MAX_VALUE, false);
+                ResultSet rs = null;
+                try {
+                    rs = metaData.getClientInfoProperties();
+                } catch(SQLException e) {
+                    log.error("Could not create Client Info Properties tab", e);
+                }
+                Table clientInfoProperties = CommonUiUtils.putResultsInTable(rs, Integer.MAX_VALUE, false);
                 clientInfoProperties.setSizeFull();
                 tabSheet.addTab(createTabData(clientInfoProperties), "Client Info Properties");
             } catch (AbstractMethodError e) {
