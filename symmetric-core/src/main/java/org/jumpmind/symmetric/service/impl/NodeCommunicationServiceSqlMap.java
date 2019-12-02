@@ -34,7 +34,7 @@ public class NodeCommunicationServiceSqlMap extends AbstractSqlMap {
         
         putSql("clearLocksOnRestartSql", "update $(node_communication) set lock_time=null where locking_server_id=? and lock_time is not null");
         
-        putSql("selectNodeIdsWithUnsentBatchsSql", "select distinct(node_id) from $(outgoing_batch) where status <> 'OK'");
+        putSql("selectNodeIdsWithUnsentBatchsSql", "select distinct(node_id) from $(outgoing_batch) where status in (?,?,?,?,?,?,?)");
 
         putSql("selectNodeCommunicationSql",
                 "select * from $(node_communication) where communication_type=? order by node_priority DESC,last_lock_time");
