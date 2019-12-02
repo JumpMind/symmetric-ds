@@ -22,26 +22,20 @@ ifndef::pro[]
 ----
 insert into SYM_TRANSFORM_TABLE (
 	transform_id, source_node_group_id, target_node_group_id, transform_point, source_table_name,
-	target_table_name, update_action, delete_action, transform_order, column_policy, update_first,
-	last_update_by, last_update_time, create_time
-) values (
+	target_table_name, delete_action, transform_order, column_policy)
+values (
 	'extractStoreItemSellingPriceTransform', 'store', 'corp', 'EXTRACT', 'ITEM_SELLING_PRICE',
-	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED', 0,
-	'Documentation', current_timestamp, current_timestamp
-);
+	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED');
 ----
 
 [source, SQL]
 ----
 insert into SYM_TRANSFORM_TABLE (
 	transform_id, source_node_group_id, target_node_group_id, transform_point, source_table_name,
-	target_table_name, update_action, delete_action, transform_order, column_policy, update_first,
-	last_update_by, last_update_time, create_time
-) values (
+	target_table_name, delete_action, transform_order, column_policy)
+values (
 	'loadCorpItemSellingPriceTransform', 'corp', 'store', 'LOAD', 'ITEM_SELLING_PRICE',
-	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED', 0,
-	'Documentation', current_timestamp, current_timestamp
-);
+	'ITEM_SELLING_PRICE', 'DEL_ROW', 1, 'IMPLIED');
 ----
 endif::pro[]
 
@@ -58,14 +52,11 @@ ifndef::pro[]
 ----
 insert into SYM_TRANSFORM_COLUMN (
 	transform_id, include_on, target_column_name, source_column_name, pk,
-	transform_type, transform_expression, transform_order, last_update_time,
-	last_update_by, create_time
-) values (
+	transform_type, transform_expression, transform_order)
+values (
 	'extractStoreItemSellingPriceTransform', '*', 'VIRTUAL_COL', 'COST', 0,
 	'lookup', 'select max(price) from sale_return_line_item
-	where item_id = :ITEM_ID', 1, current_timestamp, 'Documentation',
-	current_timestamp
-);
+	where item_id = :ITEM_ID', 1);
 ----
 endif::pro[]
 
@@ -81,13 +72,10 @@ ifndef::pro[]
 ----
 insert into SYM_TRANSFORM_COLUMN (
 	transform_id, include_on, target_column_name, source_column_name, pk,
-	transform_type, transform_expression, transform_order, last_update_time,
-	last_update_by, create_time
-) values (
+	transform_type, transform_expression, transform_order)
+values (
 	'loadCorpItemSellingPriceTransform', '*', 'COST', 'VIRTUAL_COL', 0,
-	'copy', '', 1, current_timestamp, 'Documentation',
-	current_timestamp
-);
+	'copy', '', 1);
 ----
 endif::pro[]
 ====
