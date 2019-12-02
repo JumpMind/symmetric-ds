@@ -50,6 +50,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.NodeGroupLinkAction;
+import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
 import org.jumpmind.symmetric.service.IClusterService;
@@ -254,7 +255,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     
     protected List<String> getNodeIdsWithUnsentCount() {
         return sqlTemplate.query(getSql("selectNodeIdsWithUnsentBatchsSql"),
-                new StringMapper());        
+                new StringMapper(), OutgoingBatch.Status.ER, OutgoingBatch.Status.NE, OutgoingBatch.Status.QY,
+                OutgoingBatch.Status.SE, OutgoingBatch.Status.LD, OutgoingBatch.Status.IG, OutgoingBatch.Status.RS);
     }
 
     protected List<NodeCommunication> filterForChannelThreading(List<Node> nodesToCommunicateWith) {
