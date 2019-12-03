@@ -251,8 +251,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     
     protected List<String> getNodeIdsWithUnsentCount() {
         return sqlTemplate.query(getSql("selectNodeIdsWithUnsentBatchsSql"),
-                new StringMapper(), OutgoingBatch.Status.ER, OutgoingBatch.Status.NE, OutgoingBatch.Status.QY,
-                OutgoingBatch.Status.SE, OutgoingBatch.Status.LD, OutgoingBatch.Status.IG, OutgoingBatch.Status.RS);
+                new StringMapper(), OutgoingBatch.Status.ER.name(), OutgoingBatch.Status.NE.name(), OutgoingBatch.Status.QY.name(),
+                OutgoingBatch.Status.SE.name(), OutgoingBatch.Status.LD.name(), OutgoingBatch.Status.IG.name(), OutgoingBatch.Status.RS.name());
     }
 
     protected List<NodeCommunication> filterForChannelThreading(List<Node> nodesToCommunicateWith) {
