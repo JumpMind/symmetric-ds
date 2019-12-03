@@ -70,7 +70,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 try {
                     rs = metaData.getClientInfoProperties();
                 } catch(SQLException e) {
-                    log.error("Could not create Client Info Properties tab", e);
+                    log.error("Could not create Client Info Properties tab", e.getMessage());
                 }
                 Table clientInfoProperties = CommonUiUtils.putResultsInTable(rs, Integer.MAX_VALUE, false);
                 clientInfoProperties.setSizeFull();
