@@ -93,3 +93,6 @@ Initial Load Order:: Numeric position for this table in the initial load, sent i
 
 Enabled:: When enabled, changes are captured and routed into batches for the table.  When disabled, changes are no longer captured for the table and any outstanding changes are placed into batches with a status of "unrouted". 
 
+Ping Back Enabled:: When enabled, synchronized rows with the Sync On Incoming option set on a trigger will be routed back to the source node. By default,
+the data is not routed back to the source node (to prevent endless loops of data changes). A reason to turn this option on is when a transform changes
+some of the data and the transformed data needs to be returned to the source node.

@@ -59,6 +59,8 @@ public class TriggerRouter implements Serializable {
 
     private String lastUpdateBy;
     
+    private boolean pingBackEnabled = false;
+    
     public TriggerRouter() {
         this(new Trigger(), new Router());
     }
@@ -200,6 +202,14 @@ public class TriggerRouter implements Serializable {
             tableName = catalog + "." + tableName;
         }
         return tableName;
+    }
+    
+    public void setPingBackEnabled(boolean pingBackEnabled) {
+        this.pingBackEnabled = pingBackEnabled;
+    }
+    
+    public boolean isPingBackEnabled() {
+        return pingBackEnabled;
     }
     
     public boolean isSame(TriggerRouter triggerRouter) {
