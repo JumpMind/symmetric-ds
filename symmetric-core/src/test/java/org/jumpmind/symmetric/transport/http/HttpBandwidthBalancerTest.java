@@ -20,12 +20,16 @@
  */
 package org.jumpmind.symmetric.transport.http;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IBandwidthService;
+import org.jumpmind.symmetric.service.impl.BandwidthService;
 import org.jumpmind.symmetric.service.impl.MockNodeService;
 import org.junit.Test;
 
@@ -79,6 +83,16 @@ public class HttpBandwidthBalancerTest {
                     public double getDownloadKbpsFor(String url, long sampleSize,
                             long maxTestDuration) {
                         return sampleSize / Double.parseDouble(url);
+                    }
+                    public double getUploadKbpsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) {
+                        return -1.0d;
+                    }
+                    public List<BandwidthService.BandwidthResults> diagnoseDownloadBandwidth(Node localNode, Node remoteNode) {
+                        return null;
+                    }
+                    
+                    public List<BandwidthService.BandwidthResults> diagnoseUploadBandwidth(Node localNode, Node remoteNode) {
+                        return null;
                     }
                 });
         return ext;

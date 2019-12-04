@@ -50,7 +50,8 @@ package org.jumpmind.symmetric.transport;
 public class BandwidthTestResults {
     long start;
     long total = 0;
-    long duration = 0;
+    long elapsed = 0;
+    double kbps;
 
     /**
      * Starts the bandwidth measurement.
@@ -73,7 +74,13 @@ public class BandwidthTestResults {
      * Ends the bandwidth measurement.
      */
     public void stop() {
-        duration += System.currentTimeMillis() - start;
+        elapsed += System.currentTimeMillis() - start;
+        if (total == 0 || elapsed == 0) {
+            kbps = 0;
+        } else {
+            // convert to bits, then convert to kilobits, then divide by seconds
+            kbps = ((8.0d * total) / 1024.0d) / (elapsed / 1000.0d) ;
+        }
     }
 
     /**
@@ -82,11 +89,13 @@ public class BandwidthTestResults {
      * @return Bandwidth in Kbps.
      */
     public double getKbps() {
-        if (total == 0 || duration == 0) {
-            return 0;
-        } else {
-            return (8.0d * 1000.0d * total / 1024.0d) / duration;
-        }
+//        if (total == 0 || elapsed == 0) {
+//            return 0;
+//        } else {
+//            // convert to bits, then convert to kilobits, then divide by seconds
+//            return ((8.0d * total) / 1024.0d) / (elapsed / 1000.0d) ;
+//        }
+        return kbps;
     }
 
     /**
@@ -95,7 +104,16 @@ public class BandwidthTestResults {
      * @return Number of milliseconds elapsed between start() and stop().
      */
     public long getElapsed() {
-        return duration;
+        return elapsed;
+    }
+    
+    /**
+     * Returns the number of bytes sent between start() and stop().
+     * 
+     * @return Number of bytes sent between start() and stop().
+     */
+    public long getTotal() {
+        return total;
     }
     
 }

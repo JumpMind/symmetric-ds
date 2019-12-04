@@ -20,6 +20,11 @@
  */
 package org.jumpmind.symmetric.service;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.service.impl.BandwidthService;
 
 /**
  * A client service that determines bandwidth availability.
@@ -31,4 +36,9 @@ public interface IBandwidthService {
 
     public double getDownloadKbpsFor(String url, long sampleSize, long maxTestDuration);
     
+    public double getUploadKbpsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) throws IOException;
+    
+    public List<BandwidthService.BandwidthResults> diagnoseDownloadBandwidth(Node localNode, Node remoteNode);
+    
+    public List<BandwidthService.BandwidthResults> diagnoseUploadBandwidth(Node localNode, Node remoteNode);
 }

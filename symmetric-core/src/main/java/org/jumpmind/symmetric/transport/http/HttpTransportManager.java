@@ -302,6 +302,16 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
                 registrationUrl, node))), engine.getParameterService());
     }
+    
+    @Override
+    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken,
+            Map<String, String> requestProperties, String registrationUrl) throws IOException
+    {
+        URL url = new URL(resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + "bandwidth?direction=push");
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
+                getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
+                securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
+    }
 
     public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
         if (baseUrl == null) {

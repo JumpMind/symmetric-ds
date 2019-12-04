@@ -134,4 +134,10 @@ public class MockTransportManager implements ITransportManager {
         return null;
     }
 
+    @Override
+    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties, String registrationUrl)
+            throws IOException {
+        return null;
+    }
+
 }

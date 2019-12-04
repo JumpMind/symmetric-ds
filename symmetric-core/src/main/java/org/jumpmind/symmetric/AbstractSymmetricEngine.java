@@ -350,7 +350,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         this.parameterService.setExtensionService(extensionService);
         this.contextService = new ContextService(parameterService, symmetricDialect);
 
-        this.bandwidthService = new BandwidthService(parameterService);
+        this.bandwidthService = new BandwidthService(this);
         this.sequenceService = new SequenceService(parameterService, symmetricDialect);
         this.stagingManager = createStagingManager();
         this.nodeService = new NodeService(this);
