@@ -202,7 +202,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             default:
                 break;
         }
-        
+
+        writer.getContext().setLastError(null);
         logConflictResolution(conflict, data, writer, resolvedData, lineNumber);
     }
 
