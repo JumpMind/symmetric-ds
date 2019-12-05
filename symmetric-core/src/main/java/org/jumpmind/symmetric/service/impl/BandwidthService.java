@@ -217,7 +217,7 @@ public class BandwidthService implements IBandwidthService {
             double dlSpeed = 0d;
             if(isPushEnabled(localNode, remoteNode)) {
                 try {
-                    dlSpeed = engine.getBandwidthService().getDownloadKbpsFor(remoteNode.getSyncUrl(), payload, 5000);
+                    dlSpeed = engine.getBandwidthService().getUploadKbpsFor(remoteNode, localNode, payload, 5000);
                     bw.setKbps(dlSpeed);
                 } catch(Exception e) {
                     bw.setFailure(true);
