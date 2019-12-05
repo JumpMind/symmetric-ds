@@ -98,10 +98,12 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                         TimeZone.getTimeZone(existingStr.substring(split).trim()));
             }
             // Get the loadingTs with timezone
-            int split = loadingStr.lastIndexOf(" ");
-            loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),
-                    FormatUtils.TIMESTAMP_PATTERNS,
-                    TimeZone.getTimeZone(loadingStr.substring(split).trim()));
+            if (loadingStr != null) {
+                int split = loadingStr.lastIndexOf(" ");
+                loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),
+                        FormatUtils.TIMESTAMP_PATTERNS,
+                        TimeZone.getTimeZone(loadingStr.substring(split).trim()));
+            }
         } else {
             // Get the existingTs
             existingTs = databaseWriter.getTransaction().queryForObject(sql, Timestamp.class,
@@ -121,7 +123,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
 
-        return existingTs == null || loadingTs.compareTo(existingTs) > 0;
+        return existingTs == null || (loadingTs != null && loadingTs.compareTo(existingTs) > 0);
     }
 
     protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
