@@ -198,7 +198,7 @@ public class SequenceService extends AbstractService implements ISequenceService
      *  @param size Number of sequence numbers to obtain
      *  @return Starting sequence number for the entire range that was obtained
      */
-    public synchronized long nextRange(String name, long size) {
+    public synchronized long nextRange(ISqlTransaction transaction, String name, long size) {
         Sequence sequence = getSequenceDefinition(name);
         if (size <= 0) {
             throw new IllegalStateException("Size of range must be a positive integer");
@@ -234,12 +234,21 @@ public class SequenceService extends AbstractService implements ISequenceService
         }
         
         if (rangeNeeded > 0) {
-            long databaseStartingValue = nextValFromDatabase(name, size) - (rangeNeeded - sequence.getIncrementBy());
+            long databaseStartingValue = 0;
+            if (transaction == null) {
+                databaseStartingValue = nextValFromDatabase(name, size) - (rangeNeeded - sequence.getIncrementBy());
+            } else {
+                databaseStartingValue = nextValFromDatabase(transaction, name, size) - (rangeNeeded - sequence.getIncrementBy());
+            }
             if (startingValue == 0) {
                 startingValue = databaseStartingValue;
             }
         }
         return startingValue;
+    }
+
+    public synchronized long nextRange(String name, long size) {
+        return nextRange(null, name, size);
     }
 
     protected Sequence getSequenceDefinition(final String name) {

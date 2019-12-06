@@ -675,7 +675,12 @@ public class DataService extends AbstractService implements IDataService {
             String overrideInitialLoadSelect, long loadId, String createBy,
             String channelId, long rowsPerBatch, long batchCount) {
 
-        long startBatchId = engine.getSequenceService().nextRange(Constants.SEQUENCE_OUTGOING_BATCH, batchCount);
+        long startBatchId = 0;
+        if (platform.supportsMultiThreadedTransactions()) {
+            startBatchId = engine.getSequenceService().nextRange(Constants.SEQUENCE_OUTGOING_BATCH, batchCount);
+        } else {
+            startBatchId = engine.getSequenceService().nextRange(transaction, Constants.SEQUENCE_OUTGOING_BATCH, batchCount);
+        }
         String tableName = triggerHistory.getSourceTableName().toLowerCase();
         
         for (int i = 0; i < batchCount; i++) {
