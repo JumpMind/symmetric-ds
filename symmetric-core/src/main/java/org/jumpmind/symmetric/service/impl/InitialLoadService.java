@@ -187,15 +187,16 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
-            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
 
             int maxLoadCount = parameterService.getInt(ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER, 20);            
             int activeLoadCount = engine.getDataService().getActiveTableReloadStatus().size();
             String maxLoadsReachedMessage = "Max initial/partial loads of {} are already active";
             if (activeLoadCount >= maxLoadCount) {
-                log.info(maxLoadsReachedMessage, activeLoadCount);
+                log.debug(maxLoadsReachedMessage, activeLoadCount);
                 return;
             }
+
+            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
 
             boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
@@ -225,7 +226,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                 triggerRouters, extractRequests);
 
                         if (++activeLoadCount >= maxLoadCount) {
-                            log.info(maxLoadsReachedMessage, activeLoadCount);
+                            log.debug(maxLoadsReachedMessage, activeLoadCount);
                             return;
                         }
                     } else {
@@ -275,7 +276,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         triggerRouters, extractRequests);
 
                 if (++activeLoadCount >= maxLoadCount) {
-                    log.info(maxLoadsReachedMessage, activeLoadCount);
+                    log.debug(maxLoadsReachedMessage, activeLoadCount);
                     return;
                 }
             }
