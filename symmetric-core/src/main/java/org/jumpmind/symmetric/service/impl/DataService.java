@@ -953,9 +953,13 @@ public class DataService extends AbstractService implements IDataService {
                                 triggerHistories, triggerRoutersByHistoryId, 
                                 mapReloadRequests, isFullLoad, symNodeSecurityReloadChannel);
 
-                        finalizeBatchCount += insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
+                        int fileSyncBatches = insertFileSyncBatchForReload(targetNode, loadId, createBy, transactional,
                                 transaction, mapReloadRequests, isFullLoad, processInfo);
-                                
+                        
+                        if (reloadRequests != null && reloadRequests.size() > 0) {
+                            updateTableReloadStatusTableCount(platform.supportsMultiThreadedTransactions() ? null : transaction, loadId,
+                                    totalTableCount + fileSyncBatches);
+                        }
                         
                         if (isFullLoad) {
 
@@ -1409,7 +1413,7 @@ public class DataService extends AbstractService implements IDataService {
         }
 
         long firstBatchId = 0;
-        
+
         for (TriggerHistory triggerHistory : triggerHistories) {
             List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                     .getTriggerHistoryId());
@@ -1486,11 +1490,11 @@ public class DataService extends AbstractService implements IDataService {
                                 }
                             }
 
-                            firstBatchId = firstBatchId > 0 ? firstBatchId : startBatchId;
+                            firstBatchId = firstBatchId == 0 ? startBatchId : firstBatchId;
                             
                             if (table.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix() + "_" + TableConstants.SYM_FILE_SNAPSHOT)) {
                                 TableReloadStatus reloadStatus = getTableReloadStatusByLoadId(loadId);
-                                startBatchId = reloadStatus.getStartDataBatchId();
+                                firstBatchId = reloadStatus.getStartDataBatchId() > 0 ? reloadStatus.getStartDataBatchId() : firstBatchId;
                             }
                             
                             updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
