@@ -515,6 +515,11 @@ final public class ParameterConstants {
 
     public final static String POSTGRES_SECURITY_DEFINER = "postgres.security.definer";
     
+    public final static String GOOGLE_BIG_QUERY_MAX_ROWS_PER_RPC = "google.bigquery.max.rows.per.rpc";
+    public final static String GOOGLE_BIG_QUERY_LOCATION = "google.bigquery.location";
+    public final static String GOOGLE_BIG_QUERY_PROJECT_ID = "google.bigquery.project.id";
+    public final static String GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH = "google.bigquery.security.credentials.path";
+        
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

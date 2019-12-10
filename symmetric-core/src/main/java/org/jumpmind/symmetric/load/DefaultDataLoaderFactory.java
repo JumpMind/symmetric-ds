@@ -27,11 +27,13 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.bigquery.BigQueryPlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.BigQueryDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.CassandraDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
@@ -46,6 +48,8 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.cloud.bigquery.BigQuery;
 
 public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint {
 
@@ -86,6 +90,26 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             }
         }
 
+        if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("BigQueryPlatform")) {
+            try {
+                return new BigQueryDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+                        symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
+                        buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), 
+                        ((BigQueryPlatform) symmetricDialect.getTargetPlatform()).getBigQuery(), 
+                        parameterService.getInt(ParameterConstants.GOOGLE_BIG_QUERY_MAX_ROWS_PER_RPC, 100));
+
+            } catch (Exception e) {
+                log.warn(
+                        "Failed to create the big query database writer.",
+                        e);
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        
         if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("KafkaPlatform")) {
             try {
                 if (filters == null) {

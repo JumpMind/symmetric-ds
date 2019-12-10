@@ -314,7 +314,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                     default:
                         flush();
                         context.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
-                        super.write(data);
+                        writeDefault(data);
                         break;
                 }
         
