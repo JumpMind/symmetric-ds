@@ -64,6 +64,7 @@ public class BuiltInJobs {
         builtInJobs.add(new ReportStatusJob(engine, taskScheduler));
         builtInJobs.add(new LogMinerJob(engine, taskScheduler));
         builtInJobs.add(new InitialLoadJob(engine, taskScheduler));
+        builtInJobs.add(new NodeOnlineDetectorJob(engine, taskScheduler));
 
         for (IJob builtInJob : builtInJobs) {
             setBuiltInDefaults(builtInJob);

@@ -78,6 +78,8 @@ final public class ParameterConstants {
     public final static String START_FILE_SYNC_PUSH_JOB = "start.file.sync.push.job";
     public final static String START_FILE_SYNC_PULL_JOB = "start.file.sync.pull.job";
     public final static String START_LOG_MINER_JOB = "start.log.miner.job";
+    public final static String START_NODE_ONLINE_DETECTOR_JOB = "start.nodeonlinedetector.job";
+    public final static String STORE_NODE_ONLINE_HISTORY = "store.node.online.history";
     
     public final static String ROUTE_ON_EXTRACT = "route.on.extract";
 

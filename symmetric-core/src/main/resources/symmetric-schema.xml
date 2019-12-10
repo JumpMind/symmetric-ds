@@ -960,4 +960,11 @@
         </foreign-key>
     </table>
 
+    <table name="node_online_history" description="stores when nodes were online">
+        <column name="id" type="BIGINT" required="true" primaryKey="true" autoIncrement="true"  description="Unique identifier for a row." />
+        <column name="node_id" type="VARCHAR" size="50" required="true" description="A unique identifier for a node." />
+        <column name="went_online_time" type="TIMESTAMP" description="Timestamp when the node got online" />
+        <column name="went_offline_time" type="TIMESTAMP" description="Timestamp when the node got offline" />
+    </table>
+
 </database>

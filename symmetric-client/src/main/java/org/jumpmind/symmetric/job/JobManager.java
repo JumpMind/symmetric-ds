@@ -99,9 +99,11 @@ public class JobManager extends AbstractService implements IJobManager {
 
     @Override
     public IJob getJob(String name) {
-        for (IJob job : jobs) {
-            if (job.getName().equals(name)) {
-                return job;
+        if(jobs != null) {
+            for (IJob job : jobs) {
+                if (job.getName().equals(name)) {
+                    return job;
+                }
             }
         }
         return null;
