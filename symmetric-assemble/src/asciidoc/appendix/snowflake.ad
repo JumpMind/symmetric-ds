@@ -4,7 +4,7 @@ Send changes from your relational database to Snowflake.
 
 ==== Setup
 
-Snowflake is only support as a load only node in SymmetricDS.  See <<Load Only Node >> for details on setting up a load only node in SymmetricDS.
+Snowflake is only supported as a load only node in SymmetricDS.  See <<Load Only Node >> for details on setting up a load only node in SymmetricDS.
 
 
 ifdef::pro[]

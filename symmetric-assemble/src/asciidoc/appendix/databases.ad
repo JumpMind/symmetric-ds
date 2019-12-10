@@ -22,6 +22,17 @@ by database.
 |Transactional DDL
 |Load Only
 
+|Big Query
+|All
+|N
+|N
+|N
+|Y
+|N
+|N
+|N
+|Y
+
 |DB2
 |9.5
 |N
@@ -486,7 +497,7 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |select sys_context('USERENV', 'CURRENT_SCHEMA') from dual
 
 |===
-
+include::bigquery.ad[]
 include::db2.ad[]
 include::derby.ad[]
 include::firebird.ad[]
