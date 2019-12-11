@@ -89,6 +89,7 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
+        this.parameterService = engine.getParameterService();
     }
 
 }
