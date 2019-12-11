@@ -149,7 +149,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                             log.debug("Falied to close stmt", exClose);
                         }
                         if (catalogName != null) {                            
-                            log.info("Tried: select count(*) from dbo.sysobjects where type = 'TR' AND name ='{}' which failed, will try again with catalog.", triggerName);
+                            log.debug("Tried: select count(*) from dbo.sysobjects where type = 'TR' AND name ='{}' which failed, will try again with catalog.", triggerName);
                             // try again with the source catalog prefixed.
                             try {
                                 PreparedStatement stmt2 = con
