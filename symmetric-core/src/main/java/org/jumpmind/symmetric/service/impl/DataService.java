@@ -3024,7 +3024,7 @@ public class DataService extends AbstractService implements IDataService {
                         missingConfigTriggerHist.add(triggerHistId);
                     }
                     triggerHistory = new TriggerHistory(data.getTableName(), "", "");
-                    triggerHistory.setTriggerHistoryId(-1);
+                    triggerHistory.setTriggerHistoryId(triggerHistId);
                 }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
