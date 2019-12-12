@@ -129,7 +129,7 @@ public class DataGapRouteReaderTest {
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getStatisticManager()).thenReturn(statisticManager);
         when(engine.getNodeService()).thenReturn(nodeService);
-//        when(engine.getDataService()).thenReturn(dataService);
+        when(engine.getDataService()).thenReturn(dataService);
         when(engine.getSymmetricDialect()).thenReturn(symmetricDialect);
         when(engine.getExtensionService()).thenReturn(extensionService);
         IRouterService routerService = new RouterService(engine);
