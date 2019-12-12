@@ -3023,7 +3023,8 @@ public class DataService extends AbstractService implements IDataService {
                                 + "row and we could not find a matching trigger.  The data_id of {} (table {}) will be ignored", data.getDataId(), data.getTableName());
                         missingConfigTriggerHist.add(triggerHistId);
                     }
-                    triggerHistory = new TriggerHistory(-1);
+                    triggerHistory = new TriggerHistory(data.getTableName(), "", "");
+                    triggerHistory.setTriggerHistoryId(-1);
                 }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
