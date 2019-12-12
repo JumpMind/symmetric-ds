@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlReadCursor;
+import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
-import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -174,7 +174,7 @@ public interface IDataService {
     
     public Data createData(ISqlTransaction transaction, String catalogName, String schemaName, String tableName, String whereClause);
 
-    public Data mapData(Row row);
+    public ISqlRowMapper<Data> getDataMapper();
     
     public List<Number> listDataIds(long batchId, String nodeId);
     

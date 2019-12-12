@@ -169,6 +169,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
+import org.jumpmind.symmetric.util.CounterStat;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
@@ -2449,6 +2450,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         private Map<Integer, TriggerRouter> triggerRoutersByTriggerHist;
         
+        private Map<Integer, CounterStat> missingTriggerRoutersByTriggerHist = new HashMap<Integer, CounterStat>();
+        
         private boolean containsBigLob;
 
         public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
@@ -2509,11 +2512,17 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     TriggerRouter triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
 
                     if (triggerRouter == null) {
-                        triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(), 
-                                triggerHistory.getTriggerHistoryId(), true);
-                        if (triggerRouter == null) {
-                            log.warn("Could not find trigger router for trigger hist of {}.  Skipping event with the data id of {}",
-                                    triggerHistory.getTriggerHistoryId(), data.getDataId());
+                        CounterStat counterStat = missingTriggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
+                        if (counterStat == null) {
+                            triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(), 
+                                    triggerHistory.getTriggerHistoryId(), true);
+                            if (triggerRouter == null) {
+                                counterStat = new CounterStat(data.getDataId(), 1);
+                                missingTriggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), counterStat);
+                                return next();
+                            }
+                        } else {
+                            counterStat.incrementCount();
                             return next();
                         }
                         triggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), triggerRouter);
@@ -2700,6 +2709,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             closeCursor();
             if (reloadSource != null) {
                 reloadSource.close();
+            }
+            
+            for (Map.Entry<Integer, CounterStat> entry : missingTriggerRoutersByTriggerHist.entrySet()) {
+                log.warn("Could not find trigger router for trigger hist of {}.  Skipped {} events starting with data id of {}",
+                        entry.getKey(), entry.getValue().getCount(), entry.getValue().getObject());
             }
         }
 

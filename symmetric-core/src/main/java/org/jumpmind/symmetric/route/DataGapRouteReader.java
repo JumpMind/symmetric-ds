@@ -39,7 +39,6 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -413,12 +412,7 @@ public class DataGapRouteReader implements IDataToRouteReader {
             this.currentGap = dataGaps.remove(0);
         }
 
-        ISqlRowMapper<Data> dataMapper = new ISqlRowMapper<Data>() {
-            public Data mapRow(Row row) {
-                return engine.getDataService().mapData(row);
-            }
-        };
-
+        ISqlRowMapper<Data> dataMapper = engine.getDataService().getDataMapper();
         ISqlReadCursor<Data> cursor = null;
         try {
             cursor = sqlTemplate.queryForCursor(sql, dataMapper, args, types);

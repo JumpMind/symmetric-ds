@@ -109,12 +109,9 @@ public class DataService extends AbstractService implements IDataService {
 
     private IExtensionService extensionService;
 
-    private DataMapper dataMapper;
-
     public DataService(ISymmetricEngine engine, IExtensionService extensionService) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
-        this.dataMapper = new DataMapper();
         this.extensionService = extensionService;
         extensionService.addExtensionPoint(new PushHeartbeatListener(engine));
         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER)) {
@@ -2836,16 +2833,16 @@ public class DataService extends AbstractService implements IDataService {
     public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId,
             final int maxRowsToRetrieve) {
         return sqlTemplateDirty.query(getDataSelectSql(batchId, startDataId, channelId),
-                maxRowsToRetrieve, this.dataMapper, new Object[] {batchId, nodeId, startDataId}, 
+                maxRowsToRetrieve, new DataMapper(), new Object[] {batchId, nodeId, startDataId}, 
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, symmetricDialect.getSqlTypeForIds()});
     }
 
     public Data findData(long dataId) {
-        return sqlTemplateDirty.queryForObject(getSql("selectData"), dataMapper, dataId);       
+        return sqlTemplateDirty.queryForObject(getSql("selectData"), new DataMapper(), dataId);       
     }
     
-    public Data mapData(Row row) {
-        return dataMapper.mapRow(row);
+    public ISqlRowMapper<Data> getDataMapper() {
+        return new DataMapper();
     }
 
     public ISqlReadCursor<Data> selectDataFor(Batch batch) {
@@ -2856,13 +2853,13 @@ public class DataService extends AbstractService implements IDataService {
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String targetNodeId, boolean isContainsBigLob) {
         return sqlTemplateDirty.queryForCursor(
                 getDataSelectSql(batchId, -1l, isContainsBigLob),
-                dataMapper, new Object[] { batchId, targetNodeId },
+                new DataMapper(), new Object[] { batchId, targetNodeId },
                 new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId) {
         return sqlTemplateDirty.queryForCursor(getDataSelectByBatchSql(batchId, -1l, channelId),
-                dataMapper, new Object[] { batchId }, new int[] { symmetricDialect.getSqlTypeForIds() });
+                new DataMapper(), new Object[] { batchId }, new int[] { symmetricDialect.getSqlTypeForIds() });
     }
 
     protected String getDataSelectByBatchSql(long batchId, long startDataId, String channelId) {
@@ -2966,6 +2963,11 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public class DataMapper implements ISqlRowMapper<Data> {
+
+        private HashMap<String, TriggerHistory> mismatchedTableName;
+        
+        private HashSet<Integer> missingConfigTriggerHist; 
+
         public Data mapRow(Row row) {
             Data data = new Data();
             String rowData = row.getString("ROW_DATA", false);
@@ -3010,23 +3012,38 @@ public class DataService extends AbstractService implements IDataService {
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
                     triggerHistory.setNameForDeleteTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.DELETE,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
-                    engine.getTriggerRouterService().insert(triggerHistory);
                     log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
+                    engine.getTriggerRouterService().insert(triggerHistory);
                 } else {
+                    if (missingConfigTriggerHist == null) {
+                        missingConfigTriggerHist = new HashSet<Integer>();
+                    }
+                    if (!missingConfigTriggerHist.contains(triggerHistId)) {
+                        log.warn("A captured data row could not be matched with an existing trigger history "
+                                + "row and we could not find a matching trigger.  The data_id of {} (table {}) will be ignored", data.getDataId(), data.getTableName());
+                        missingConfigTriggerHist.add(triggerHistId);
+                    }
                     triggerHistory = new TriggerHistory(-1);
-                    log.warn("A captured data row could not be matched with an existing trigger history "
-                            + "row and we could not find a matching trigger.  The data_id of {} (table {}) will be ignored", data.getDataId(), data.getTableName());
                 }
             } else {
                 if (!triggerHistory.getSourceTableName().equals(data.getTableName())) {
-                    log.warn("There was a mismatch between the data table name {} and the trigger_hist "
-                            + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
-                            new Object[] { data.getTableName(),
-                                    triggerHistory.getSourceTableName(), data.getDataId() });
-                    List<TriggerHistory> list = engine.getTriggerRouterService()
-                            .getActiveTriggerHistories(data.getTableName());
-                    if (list.size() > 0) {
-                        triggerHistory = list.get(0);
+                    if (mismatchedTableName == null) {
+                        mismatchedTableName = new HashMap<String, TriggerHistory>();
+                    }
+                    TriggerHistory cachedTriggerHistory = mismatchedTableName.get(data.getTableName());
+                    if (cachedTriggerHistory == null) {
+                        log.warn("There was a mismatch between the data table name {} and the trigger_hist "
+                                + "table name {} for data_id {}.  Attempting to look up a valid trigger_hist row by table name",
+                                new Object[] { data.getTableName(),
+                                        triggerHistory.getSourceTableName(), data.getDataId() });
+                        List<TriggerHistory> list = engine.getTriggerRouterService()
+                                .getActiveTriggerHistories(data.getTableName());
+                        if (list.size() > 0) {
+                            triggerHistory = list.get(0);
+                        }
+                        mismatchedTableName.put(data.getTableName(), triggerHistory);
+                    } else {
+                        triggerHistory = cachedTriggerHistory;
                     }
                 }
             }

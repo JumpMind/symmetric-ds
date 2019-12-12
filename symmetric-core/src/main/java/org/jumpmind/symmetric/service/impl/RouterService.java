@@ -95,6 +95,7 @@ import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IRouterService;
 import org.jumpmind.symmetric.statistic.StatisticConstants;
+import org.jumpmind.symmetric.util.CounterStat;
 import org.jumpmind.util.FormatUtils;
 
 /**
@@ -103,6 +104,12 @@ import org.jumpmind.util.FormatUtils;
 public class RouterService extends AbstractService implements IRouterService {
     
     final int MAX_LOGGING_LENGTH = 512;
+
+    protected Map<Integer, CounterStat> missingTriggerRouter = new HashMap<Integer, CounterStat>();
+    
+    protected Map<String, CounterStat> invalidRouterType = new HashMap<String, CounterStat>();
+    
+    protected long triggerRouterCacheTime = 0;
 
     protected Map<String, Boolean> commonBatchesLastKnownState = new HashMap<String, Boolean>();
     
@@ -222,6 +229,22 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (!force) {
                         engine.getClusterService().unlock(ClusterConstants.ROUTE);
                     }
+                    
+                    for (CounterStat counterStat : invalidRouterType.values()) {
+                        Router router = (Router) counterStat.getObject();
+                        log.warn("Invalid router type of '{}' configured on router '{}'.  Using default router instead.",
+                                router.getRouterType(), router.getRouterId());
+                    }
+                    invalidRouterType.clear();
+
+                    for (CounterStat counterStat : missingTriggerRouter.values()) {
+                        Data data = (Data) counterStat.getObject();
+                        log.warn("Ignoring data captured for table '{}' because there is no trigger router configured for it.  "
+                                + "If you removed or disabled the trigger router, you can disregard this warning.  "
+                                + "Starting with data id {} and trigger hist id {}, there were {} occurrences.",
+                                data.getTableName(), data.getDataId(), data.getTriggerHistory().getTriggerHistoryId(), counterStat.getCount());
+                    }
+                    missingTriggerRouter.clear();
                 }
             }
         }
@@ -874,12 +897,13 @@ public class RouterService extends AbstractService implements IRouterService {
             }
 
         } else {
-            log.warn(
-                    "Could not find trigger routers for trigger history id of {} (table {}).  "
-                    + "Data with the id of {} and channel id {} will be assigned to an unrouted batch. "
-                    + "There is a good chance that data was captured and the trigger router link was removed before the data could be routed, or "
-                    + "that there is an orphaned symmetric trigger on the table.",
-                    data.getTriggerHistory().getTriggerHistoryId(), data.getTableName(), data.getDataId(), data.getChannelId());
+            Integer triggerHistId = data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1;
+            CounterStat counterStat = missingTriggerRouter.get(triggerHistId);
+            if (counterStat == null) {
+                counterStat = new CounterStat(data);
+                missingTriggerRouter.put(triggerHistId, counterStat);
+            }
+            counterStat.incrementCount();
             numberOfDataEventsInserted += insertDataEvents(processInfo, context, new DataMetaData(data, table,
                     null, context.getChannel()), new HashSet<String>(0));
         }
@@ -992,9 +1016,12 @@ public class RouterService extends AbstractService implements IRouterService {
         if (!StringUtils.isBlank(router.getRouterType())) {
             dataRouter = routers.get(router.getRouterType());
             if (dataRouter == null) {
-                log.warn(
-                        "Could not find configured router type of {} with the id of {}. Defaulting the router",
-                        router.getRouterType(), router.getRouterId());
+                CounterStat counterStat = invalidRouterType.get(router.getRouterId());
+                if (counterStat == null) {
+                    counterStat = new CounterStat(router);
+                    invalidRouterType.put(router.getRouterId(), counterStat);
+                }
+                counterStat.incrementCount();
             }
         }
 
@@ -1020,10 +1047,11 @@ public class RouterService extends AbstractService implements IRouterService {
                     triggerRouters.add(dynamicTriggerRouter);
                     data.setDataEventType(DataEventType.INSERT);
                 }
-                if (triggerRouters == null || triggerRouters.size() == 0) {
+                if ((triggerRouters == null || triggerRouters.size() == 0) && System.currentTimeMillis() - triggerRouterCacheTime > 10000) {
                     triggerRouters = engine.getTriggerRouterService()
                             .getTriggerRoutersForCurrentNode(true)
                             .get((data.getTriggerHistory().getTriggerId()));
+                    triggerRouterCacheTime = System.currentTimeMillis();
                 }
             } else {
                 log.warn(
