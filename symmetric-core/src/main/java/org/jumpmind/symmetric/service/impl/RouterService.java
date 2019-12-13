@@ -354,16 +354,34 @@ public class RouterService extends AbstractService implements IRouterService {
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
-            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
             
             boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
+
+            if (useExtractJob) {
+                Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
+                boolean isError = false;
+                for (Channel channel : channels.values()) {
+                    if (channel.isReloadFlag() && channel.getMaxBatchSize() == 1) {
+                        log.error("Max batch size must be greater than 1 for '{}' channel", channel.getChannelId());
+                        isError = true;
+                    }
+                }
+                if (isError) {
+                    log.error("Initial loads are disabled until max batch size is corrected or {} is set to false",
+                            ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB);
+                    return;
+                }
+            }
+
+            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
 
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             Map<Integer, ExtractRequest> extractRequests = null;
             
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
+                
                 if (!useExtractJob || streamToFile) {
                     if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
