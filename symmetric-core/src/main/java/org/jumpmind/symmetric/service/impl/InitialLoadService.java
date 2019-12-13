@@ -30,6 +30,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.load.IReloadGenerator;
+import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -196,9 +197,26 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 return;
             }
 
+            boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
+
+            if (useExtractJob) {
+                Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
+                boolean isError = false;
+                for (Channel channel : channels.values()) {
+                    if (channel.isReloadFlag() && channel.getMaxBatchSize() == 1) {
+                        log.error("Max batch size must be greater than 1 for '{}' channel", channel.getChannelId());
+                        isError = true;
+                    }
+                }
+                if (isError) {
+                    log.error("Initial loads are disabled until max batch size is corrected or {} is set to false",
+                            ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB);
+                    return;
+                }
+            }
+
             log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
 
-            boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup = new HashMap<String, List<TriggerRouter>>();
