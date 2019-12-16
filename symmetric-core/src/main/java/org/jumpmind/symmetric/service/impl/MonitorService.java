@@ -82,10 +82,14 @@ public class MonitorService extends AbstractService implements IMonitorService {
     
     protected long activeNotificationCacheTime;
 
+    protected String typeColumnName;
+
     public MonitorService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
             IExtensionService extensionService, IClusterService clusterService, IContextService contextService) {
         super(parameterService, symmetricDialect);
-        setSqlMap(new MonitorServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
+        MonitorServiceSqlMap sqlMap = new MonitorServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens());
+        typeColumnName = sqlMap.getTypeColumnName();
+        setSqlMap(sqlMap);
 
         this.nodeService = nodeService;
         this.extensionService = extensionService;
@@ -317,7 +321,7 @@ public class MonitorService extends AbstractService implements IMonitorService {
             args.add(isResolved ? 1 : 0);
         }
         if (type != null) {
-            sql += " and type = ?";
+            sql += " and " + typeColumnName + " = ?";
             args.add(type);
         }
         if (nodeId != null) {

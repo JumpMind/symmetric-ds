@@ -27,11 +27,12 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class MonitorServiceSqlMap extends AbstractSqlMap {
 
+    private String type = "type";
+
     public MonitorServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
 
         // Bug Fix for Interbase Keyword TYPE
-        String type = "type";
         if (platform.getName().equals(DatabaseNamesConstants.INTERBASE)) {
             String delimiter = platform.getDatabaseInfo().getDelimiterToken();
             delimiter = delimiter != null ? delimiter : "";
@@ -125,4 +126,9 @@ public class MonitorServiceSqlMap extends AbstractSqlMap {
                 "delete from $(notification) where notification_id = ?");
 
     }
+    
+    public String getTypeColumnName() {
+        return type;
+    }
+
 }
