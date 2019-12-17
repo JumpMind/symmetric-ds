@@ -500,7 +500,10 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                     index++;
                 }
                 if (column2.equals(column)) {
-                    return values[index];
+                    if (index < values.length) {
+                        return values[index];
+                    }
+                    return null;
                 }
             }
         } else {
