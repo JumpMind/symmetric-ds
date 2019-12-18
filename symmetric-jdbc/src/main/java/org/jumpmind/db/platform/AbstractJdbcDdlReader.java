@@ -1793,11 +1793,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
     private Table lookupForeignTable(IDatabasePlatform platform, ForeignKey fk, TableRow tableRow, boolean clearPrimaryKeys) {
         Table foreignTable = null;
-        Table table = platform.getTableFromCache(fk.getForeignTableName(), false);
+        Table table = platform.getTableFromCache(tableRow.getTable().getCatalog(), tableRow.getTable().getSchema(), fk.getForeignTableName(), false);
         if (table == null) {
             table = fk.getForeignTable();
             if (table == null) {
-                table = platform.getTableFromCache(tableRow.getTable().getCatalog(), tableRow.getTable().getSchema(), fk.getForeignTableName(), false);
+                table = platform.getTableFromCache(fk.getForeignTableName(), false);
             }
         }
         if (table != null) {
