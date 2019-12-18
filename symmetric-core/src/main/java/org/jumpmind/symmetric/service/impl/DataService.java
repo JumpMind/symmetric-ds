@@ -2463,9 +2463,9 @@ public class DataService extends AbstractService implements IDataService {
                     String schema = foreignTable.getSchema();
                     if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
                         catalog = null;
-                    }
-                    if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
-                        schema = null;
+                        if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                            schema = null;
+                        }
                     }
                 
                     log.info("Issuing foreign key correction reload "
