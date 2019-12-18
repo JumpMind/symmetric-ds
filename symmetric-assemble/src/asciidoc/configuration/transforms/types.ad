@@ -198,8 +198,8 @@ This transform copies the left most number of bytes specified.
 
 This transformation determines the target column value by using a query, contained in transform expression 
 to lookup the value in another table. The query must return a single row, and the first column of the query 
-is used as the value. Your query references source column names by prefixing with a colon (e.g., :MY_COLUMN).
-Additional you can reference old values with :OLD_COLUMN and previously transformed columns (see transform order) with
+is used as the value. Your query references source column values by prefixing with a colon (e.g., :MY_COLUMN).
+Also, you can reference old values with :OLD_COLUMN and previously transformed columns (see transform order) with
 :TRM_COLUMN.
 
 ifndef::pro[]
@@ -228,7 +228,7 @@ This transformation allows for the creation of multiple rows in the target table
 transform expression. This transform type can only be used on a primary key column. The transform expression 
 is a SQL statement, similar to the lookup transform, except it can return multiple rows that result in
 multiple rows for the target table.  The first column of the query is used as the value for the target
-column.  The query can reference source column names by prefixing them with a colon (e.g., :MY_COLUMN).
+column.  The query can reference source column values by prefixing them with a colon (e.g., :MY_COLUMN).
 
 ===== BeanShell Script Transform
 
