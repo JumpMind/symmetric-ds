@@ -95,12 +95,12 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
         }
 
         Table table = super.readTable(connection, metaData, values);
-        
-        if(StringUtils.equalsIgnoreCase(table.getSchema(),"sys")){
-            return null;
-        }
 
         if (table != null) {
+            if (StringUtils.equalsIgnoreCase(table.getSchema(), "sys")) {
+                return null;
+            }
+
             // Sql Server does not return the auto-increment status via the
             // database metadata
             determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
