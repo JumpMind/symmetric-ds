@@ -36,7 +36,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         emptyColumnTemplate = "''" ;
         stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
         geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then to_clob('') else '\"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"')||'\"' end";
-        numberColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
+        numberColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||" + getNumberConversionString() + "||'\"')" ;
         datetimeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF9')),'\"'))" ;
         dateTimeWithTimeZoneColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM')),'\"'))" ;
         dateTimeWithLocalTimeZoneColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char(cast($(tableAlias).\"$(columnName)\" as timestamp), 'YYYY-MM-DD HH24:MI:SS.FF9')),'\"'))" ;
@@ -259,6 +259,13 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "select $(oracleQueryHint) $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)");
     }
 
+    protected String getNumberConversionString() {
+        if (symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_TEMPLATE_NUMBER_TEXT_MINIMUM)) {
+            return "to_char($(tableAlias).\"$(columnName)\", 'TM')";
+        } else {
+            return "cast($(tableAlias).\"$(columnName)\" as number(" + symmetricDialect.getTemplateNumberPrecisionSpec() + "))";
+        }
+    }
     protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
         String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
         if (StringUtils.isEmpty(timezone)) {
