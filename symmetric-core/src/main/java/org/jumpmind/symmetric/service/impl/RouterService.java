@@ -41,6 +41,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -572,12 +573,11 @@ public class RouterService extends AbstractService implements IRouterService {
                     engine.getDataService().insertDataEvents(context.getSqlTransaction(),
                             context.getDataEventList());
                     context.clearDataEventsList();
+                    context.incrementStat(System.currentTimeMillis() - insertTs, ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
                     completeBatchesAndCommit(context);
                     gapDetector.addDataIds(context.getDataIds());
                     gapDetector.setIsAllDataRead(context.getDataIds().size() < context.getChannel().getMaxDataToRoute());
                     hasMaxDataRoutedOnChannel |= context.getDataIds().size() >= context.getChannel().getMaxDataToRoute();
-                    context.incrementStat(System.currentTimeMillis() - insertTs,
-                            ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
 
                     if (parameterService.is(ParameterConstants.ROUTING_COLLECT_STATS_UNROUTED)) {
                         Data lastDataProcessed = context.getLastDataProcessed();
@@ -625,8 +625,10 @@ public class RouterService extends AbstractService implements IRouterService {
             batches.addAll(groupBatches.values());
         }
 
+        long ts = System.currentTimeMillis();
         completeBatches(context, batches, usedRouters);
         context.commit();
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_UPDATE_BATCHES_MS);
 
         for (IDataRouter dataRouter : usedRouters) {
             dataRouter.contextCommitted(context);
@@ -762,14 +764,12 @@ public class RouterService extends AbstractService implements IRouterService {
                                 engine.getDataService().insertDataEvents(
                                         context.getSqlTransaction(), context.getDataEventList());
                                 context.clearDataEventsList();
+                                context.incrementStat(System.currentTimeMillis() - insertTs, ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
                             }
                             if (context.isNeedsCommitted()) {
                                 completeBatchesAndCommit(context);
                             }
                         } finally {
-                            context.incrementStat(System.currentTimeMillis() - insertTs,
-                                    ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
-
                             if (statsDataCount > StatisticConstants.FLUSH_SIZE_ROUTER_DATA) {
                                 engine.getStatisticManager().incrementDataRouted(
                                         context.getChannel().getChannelId(), statsDataCount);
@@ -931,6 +931,7 @@ public class RouterService extends AbstractService implements IRouterService {
         boolean useCommonMode = context.isProduceCommonBatches() || context.isProduceGroupBatches();
         boolean firstTimeForGroup = false;
         int numberOfDataEventsInserted = 0;
+        ISqlTransaction transaction = null;
 
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
@@ -971,53 +972,68 @@ public class RouterService extends AbstractService implements IRouterService {
         } else {
             context.setLastLoadId(-1);
         }
-        
-        for (String nodeId : nodeIds) {
-            if (nodeId != null) {
-                OutgoingBatch batch = batches.get(nodeId);
-                if (batch == null) {
-                    batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
-                    batch.setBatchId(batchIdToReuse);
-                    batch.setCommonFlag(useCommonMode);
-                    
-                    if (log.isDebugEnabled()) {
-                        log.debug("About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
-                                nodeId, batch.getChannelId(), batches.values());
+
+        try {
+            for (String nodeId : nodeIds) {
+                if (nodeId != null) {
+                    OutgoingBatch batch = batches.get(nodeId);
+                    if (batch == null) {
+                        batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
+                        batch.setBatchId(batchIdToReuse);
+                        batch.setCommonFlag(useCommonMode);
+                        
+                        if (log.isDebugEnabled()) {
+                            log.debug("About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
+                                    nodeId, batch.getChannelId(), batches.values());
+                        }
+                        
+                        if (useCommonMode && !firstTimeForGroup) {
+                            throw new CommonBatchCollisionException("Collision detected for common batch group");
+                        }
+
+                        if (transaction == null) {
+                            transaction = sqlTemplate.startSqlTransaction();
+                        }
+
+                        engine.getOutgoingBatchService().insertOutgoingBatch(transaction, batch);
+                        processInfo.incrementBatchCount();
+                        context.incrementStat(1, ChannelRouterContext.STAT_BATCHES_INSERTED);
+                        batches.put(nodeId, batch);
+    
+                        // if in reuse mode, then share the batch id
+                        if (useCommonMode) {
+                            batchIdToReuse = batch.getBatchId();
+                        }   
                     }
-                    
-                    if (useCommonMode && !firstTimeForGroup) {
-                        throw new CommonBatchCollisionException("Collision detected for common batch group");
+    
+                    batch.incrementRowCount(eventType);
+                    batch.incrementDataRowCount();
+                    batch.incrementTableCount(tableName);
+    
+                    if (loadId != -1) {
+                        batch.setLoadId(loadId);
                     }
-
-                    engine.getOutgoingBatchService().insertOutgoingBatch(batch);
-                    processInfo.incrementBatchCount();
-                    batches.put(nodeId, batch);
-
-                    // if in reuse mode, then share the batch id
-                    if (useCommonMode) {
-                        batchIdToReuse = batch.getBatchId();
-                    }   
+                    if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
+                        context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
+                        numberOfDataEventsInserted++;
+                        dataEventAdded = true;
+                    }
+                    if (context.isBatchComplete(batch, dataMetaData)) {
+                        context.setNeedsCommitted(true);
+                    }
                 }
-
-                batch.incrementRowCount(eventType);
-                batch.incrementDataRowCount();
-                batch.incrementTableCount(tableName);
-
-                if (loadId != -1) {
-                    batch.setLoadId(loadId);
-                }
-                if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
-                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
-                    numberOfDataEventsInserted++;
-                    dataEventAdded = true;
-                }
-                if (context.isBatchComplete(batch, dataMetaData)) {
-                    context.setNeedsCommitted(true);
-                }
+            }
+            if (transaction != null) {
+                transaction.commit();
+                transaction = null;
+            }
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
             }
         }
 
-        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_INSERT_DATA_EVENTS_MS);
+        context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_INSERT_BATCHES_MS);
         return numberOfDataEventsInserted;
     }
 

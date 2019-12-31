@@ -52,6 +52,9 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_ENQUEUE_EOD_MS = "data.enqueue.eod.time.ms";
     public static final String STAT_DATA_EVENTS_INSERTED = "data.events.insert.count";
     public static final String STAT_DATA_ROUTED_COUNT = "data.routed.count";
+    public static final String STAT_INSERT_BATCHES_MS = "batches.insert.time.ms";
+    public static final String STAT_BATCHES_INSERTED = "batches.insert.count";
+    public static final String STAT_UPDATE_BATCHES_MS = "batches.update.time.ms";
     public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
 
     private Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>();
@@ -179,8 +182,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
         super.logStats(log, totalTimeInMs);
         if (log.isDebugEnabled()) {
             log.debug(channel.getChannelId() + ", startDataId=" + startDataId + ", endDataId=" + endDataId + 
-                    ", dataReadCount=" + dataReadCount + ", peekAheadFillCount=" + peekAheadFillCount +
-                    ", dataGaps=" + dataGaps.toString()); 
+                    ", lastDataId=" + lastDataId + ", dataReadCount=" + dataReadCount + ", peekAheadFillCount=" + peekAheadFillCount +
+                    ", dataGaps=" + dataGaps.size()); 
         }
     }
 
