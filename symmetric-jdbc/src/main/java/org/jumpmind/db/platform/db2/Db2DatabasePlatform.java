@@ -119,11 +119,4 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         sql += " reuse storage immediate";
         return sql;
     }
-
-    @Override
-    public String getDeleteSql(Table table) {
-        String sql = super.getDeleteSql(table);
-        sql += " reuse storage immediate";
-        return sql;
-    }
 }
