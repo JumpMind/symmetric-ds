@@ -41,6 +41,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.DataTruncationException;
 import org.jumpmind.db.sql.DmlStatement;
@@ -586,6 +587,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             for (String sql : sqlStatements) {
                 try {
                     sql = preprocessSqlStatement(sql);
+                    if(isTruncate(sql) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
+                        commit(true);
+                    }
                     prepare(sql, data);
                     if (log.isDebugEnabled()) {
                         log.debug("About to run: {}", sql);
@@ -606,6 +610,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
+    }
+    
+    private boolean isTruncate(String sql) {
+        return sql.matches(TRUNCATE_PATTERN);
     }
     
     protected boolean requireNewStatement(DmlType currentType, CsvData data,
@@ -834,7 +842,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()), sql);
             sql = FormatUtils.replace("schemaName", quoteString(targetTable.getSchema()), sql);
             sql = FormatUtils.replace("tableName", quoteString(targetTable.getName()), sql);
-            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)) {
+            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && isTruncate(sql)) {
                 sql = getPlatform().getTruncateSql(targetTable);
             }
 
