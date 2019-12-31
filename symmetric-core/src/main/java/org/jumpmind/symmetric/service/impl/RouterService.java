@@ -934,6 +934,7 @@ public class RouterService extends AbstractService implements IRouterService {
         boolean firstTimeForGroup = false;
         int numberOfDataEventsInserted = 0;
         List<OutgoingBatch> batchesToInsert = new ArrayList<OutgoingBatch>();
+        List<OutgoingBatch> batchesToRoute = new ArrayList<OutgoingBatch>();
 
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
@@ -1004,7 +1005,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     batch.setLoadId(loadId);
                 }
                 if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
-                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
+                    batchesToRoute.add(batch);
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
                 }
@@ -1035,6 +1036,10 @@ public class RouterService extends AbstractService implements IRouterService {
             } finally {
                 close(transaction);
             }
+        }
+
+        for (OutgoingBatch batch : batchesToRoute) {
+            context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
         }
 
         context.incrementStat(System.currentTimeMillis() - ts, ChannelRouterContext.STAT_INSERT_BATCHES_MS);
