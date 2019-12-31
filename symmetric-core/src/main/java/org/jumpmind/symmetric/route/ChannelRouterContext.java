@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -114,6 +115,17 @@ public class ChannelRouterContext extends SimpleRouterContext {
         if (dataId != lastDataId) {
             uncommittedDataIds.add(dataId);
             lastDataId = dataId;
+        }
+    }
+    
+    public void removeLastData() {
+        uncommittedDataIds.remove(lastDataId);
+        ListIterator<DataEvent> iter = dataEventsToSend.listIterator();
+        while (iter.hasNext()) {
+            DataEvent dataEvent = iter.next();
+            if (dataEvent.getDataId() == lastDataId) {
+                iter.remove();
+            }            
         }
     }
 

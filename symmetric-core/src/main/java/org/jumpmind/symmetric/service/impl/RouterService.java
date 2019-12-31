@@ -556,7 +556,8 @@ public class RouterService extends AbstractService implements IRouterService {
             }
         } catch (CommonBatchCollisionException e) {
             gapDetector.setIsAllDataRead(false);
-            dataCount = 1; // we prevented writing the collision, so commit what we have
+            context.removeLastData();
+            dataCount = context.getDataEventList().size(); // we prevented writing the collision, so commit what we have
             throw e;
         } catch (Throwable ex) {
             log.error(
