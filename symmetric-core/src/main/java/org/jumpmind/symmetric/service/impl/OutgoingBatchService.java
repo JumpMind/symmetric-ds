@@ -225,6 +225,47 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                         symmetricDialect.getSqlTypeForIds(), Types.VARCHAR });
     }
 
+    public void updateOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize) {
+        int[] types = new int[] { Types.CHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.TIMESTAMP, Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.NUMERIC,
+                Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
+                symmetricDialect.getSqlTypeForIds(), Types.VARCHAR };
+        int count = 0;
+        transaction.prepare(getSql("updateOutgoingBatchSql"));
+
+        for (OutgoingBatch outgoingBatch : batches) {
+            outgoingBatch.setLastUpdatedTime(new Date());
+            outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
+            transaction.addRow(getSql("updateOutgoingBatchSql"),
+                    new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0,
+                            outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0, outgoingBatch.getByteCount(),
+                            outgoingBatch.getExtractCount(), outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
+                            outgoingBatch.getDataRowCount(), outgoingBatch.getReloadRowCount(), outgoingBatch.getDataInsertRowCount(),
+                            outgoingBatch.getDataUpdateRowCount(), outgoingBatch.getDataDeleteRowCount(), outgoingBatch.getOtherRowCount(),
+                            outgoingBatch.getIgnoreCount(), outgoingBatch.getRouterMillis(), outgoingBatch.getNetworkMillis(),
+                            outgoingBatch.getFilterMillis(), outgoingBatch.getLoadMillis(), outgoingBatch.getExtractMillis(),
+                            outgoingBatch.getExtractStartTime(), outgoingBatch.getTransferStartTime(), outgoingBatch.getLoadStartTime(),
+                            outgoingBatch.getSqlState(), outgoingBatch.getSqlCode(),
+                            FormatUtils.abbreviateForLogging(outgoingBatch.getSqlMessage()), outgoingBatch.getFailedDataId(),
+                            outgoingBatch.getLastUpdatedHostName(), outgoingBatch.getSummary(), outgoingBatch.getLoadRowCount(),
+                            outgoingBatch.getLoadInsertRowCount(), outgoingBatch.getLoadUpdateRowCount(), outgoingBatch.getLoadDeleteRowCount(),
+                            outgoingBatch.getFallbackInsertCount(), outgoingBatch.getFallbackUpdateCount(), outgoingBatch.getIgnoreRowCount(),
+                            outgoingBatch.getMissingDeleteCount(), outgoingBatch.getSkipCount(), outgoingBatch.getExtractRowCount(),
+                            outgoingBatch.getExtractInsertRowCount(), outgoingBatch.getExtractUpdateRowCount(),
+                            outgoingBatch.getExtractDeleteRowCount(), outgoingBatch.getTransformExtractMillis(), outgoingBatch.getTransformLoadMillis(),
+                            outgoingBatch.getBatchId(), outgoingBatch.getNodeId() }, types);
+            if (++count >= flushSize) {
+                transaction.flush();
+                count = 0;
+            }
+        }
+        transaction.flush();
+    }
+
     public void updateOutgoingBatchStatus(ISqlTransaction transaction, Status status, String nodeId, long startBatchId, long endBatchId) {
         transaction.prepareAndExecute(getSql("updateOutgoingBatchStatusSql"),
                 new Object[] { status.name(), new Date(), clusterService.getServerId(), nodeId, startBatchId, endBatchId },
@@ -273,6 +314,42 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setBatchId(batchId);
     }
 
+    public void insertOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize) {
+        long batchIdToReuse = 0;
+        int count = 0;
+        transaction.prepare(getSql("insertOutgoingBatchSql"));
+        for (OutgoingBatch batch : batches) {
+            batch.setLastUpdatedHostName(clusterService.getServerId());
+            if (batch.getBatchId() <= 0) {
+                if (batch.isCommonFlag() && batchIdToReuse > 0) {
+                    batch.setBatchId(batchIdToReuse);
+                } else {
+                    if (platform.supportsMultiThreadedTransactions()) {
+                        batch.setBatchId(sequenceService.nextVal(Constants.SEQUENCE_OUTGOING_BATCH));
+                    } else {
+                        batch.setBatchId(sequenceService.nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH));
+                    }
+                    if (batch.isCommonFlag()) {
+                        batchIdToReuse = batch.getBatchId();
+                    }
+                }
+            }
+            transaction.addRow(batch, new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(), batch.getStatus().name(),
+                    batch.getLoadId(), batch.isExtractJobFlag() ? 1 : 0, batch.isLoadFlag() ? 1 : 0, batch.isCommonFlag() ? 1 : 0,
+                    batch.getReloadRowCount(), batch.getOtherRowCount(), batch.getDataUpdateRowCount(), batch.getDataInsertRowCount(),
+                    batch.getDataDeleteRowCount(), batch.getLastUpdatedHostName(), batch.getCreateBy(), batch.getSummary(), 
+                    batch.getDataRowCount() },
+                    new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.NUMERIC, 
+                            Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, 
+                            Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC });
+            if (++count >= flushSize) {
+                transaction.flush();
+                count = 0;
+            }
+        }
+        transaction.flush();
+    }
+    
     public OutgoingBatch findOutgoingBatch(long batchId, String nodeId) {
         List<OutgoingBatch> list = null;
         if (StringUtils.isNotBlank(nodeId)) {

@@ -77,6 +77,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long dataReadCount;
     private long peekAheadFillCount;
     private long maxPeekAheadQueueSize;
+    private int maxBatchesJdbcFlushSize;
     private long dataRereadCount;
     private List<DataGap> dataGaps = new ArrayList<DataGap>();
     private long lastDataId = -1;
@@ -341,5 +342,13 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData) {
         return batchAlgorithms.get(channel.getBatchAlgorithm()).isBatchComplete(batch, dataMetaData, this);
+    }
+
+    public int getMaxBatchesJdbcFlushSize() {
+        return maxBatchesJdbcFlushSize;
+    }
+
+    public void setMaxBatchesJdbcFlushSize(int maxBatchesJdbcFlushSize) {
+        this.maxBatchesJdbcFlushSize = maxBatchesJdbcFlushSize;
     }
 }

@@ -493,6 +493,7 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
             context.setOverrideContainsBigLob(isOverrideContainsBigLob);
+            context.setMaxBatchesJdbcFlushSize(parameterService.getInt(ParameterConstants.ROUTING_FLUSH_BATCHES_JDBC_BATCH_SIZE, 5000));
             
             if (overrideBatchesByNodes != null) {
                 context.getBatchesByNodes().putAll(overrideBatchesByNodes);
@@ -654,8 +655,9 @@ public class RouterService extends AbstractService implements IRouterService {
                 batch.setStatus(Status.NE);
             }
             batch.setRouterMillis((System.currentTimeMillis() - batch.getCreateTime().getTime()) / batches.size());
-            engine.getOutgoingBatchService().updateOutgoingBatch(context.getSqlTransaction(), batch);
         }
+
+        engine.getOutgoingBatchService().updateOutgoingBatches(context.getSqlTransaction(), batches, context.getMaxBatchesJdbcFlushSize());
     }
 
     protected Set<Node> findAvailableNodes(TriggerRouter triggerRouter, ChannelRouterContext context) {
@@ -729,8 +731,8 @@ public class RouterService extends AbstractService implements IRouterService {
         long totalDataEventCount = 0;
         long statsDataCount = 0;
         long statsDataEventCount = 0;
-        final int maxNumberOfEventsBeforeFlush = parameterService
-                .getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
+        final int maxNumberOfEventsBeforeFlush = parameterService.getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
+        
         try {
             long ts = System.currentTimeMillis();
             long startTime = ts;
@@ -926,13 +928,12 @@ public class RouterService extends AbstractService implements IRouterService {
         final String tableName = dataMetaData.getTable().getNameLowerCase();
         final DataEventType eventType = dataMetaData.getData().getDataEventType();
         Map<String, OutgoingBatch> batches = null;
-        long batchIdToReuse = -1;
         long loadId = -1;
         boolean dataEventAdded = false;
         boolean useCommonMode = context.isProduceCommonBatches() || context.isProduceGroupBatches();
         boolean firstTimeForGroup = false;
         int numberOfDataEventsInserted = 0;
-        ISqlTransaction transaction = null;
+        List<OutgoingBatch> batchesToInsert = new ArrayList<OutgoingBatch>();
 
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
@@ -974,63 +975,65 @@ public class RouterService extends AbstractService implements IRouterService {
             context.setLastLoadId(-1);
         }
 
-        try {
-            for (String nodeId : nodeIds) {
-                if (nodeId != null) {
-                    OutgoingBatch batch = batches.get(nodeId);
-                    if (batch == null) {
-                        batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
-                        batch.setBatchId(batchIdToReuse);
-                        batch.setCommonFlag(useCommonMode);
-                        
-                        if (log.isDebugEnabled()) {
-                            log.debug("About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
-                                    nodeId, batch.getChannelId(), batches.values());
-                        }
-                        
-                        if (useCommonMode && !firstTimeForGroup) {
-                            throw new CommonBatchCollisionException("Collision detected for common batch group");
-                        }
+        for (String nodeId : nodeIds) {
+            if (nodeId != null) {
+                OutgoingBatch batch = batches.get(nodeId);
+                if (batch == null) {
+                    batch = new OutgoingBatch(nodeId, dataMetaData.getNodeChannel().getChannelId(), Status.RT);
+                    batch.setCommonFlag(useCommonMode);
+                    
+                    if (log.isDebugEnabled()) {
+                        log.debug("About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
+                                nodeId, batch.getChannelId(), batches.values());
+                    }
+                    
+                    if (useCommonMode && !firstTimeForGroup) {
+                        throw new CommonBatchCollisionException("Collision detected for common batch group");
+                    }
 
-                        if (transaction == null) {
-                            transaction = sqlTemplate.startSqlTransaction();
-                        }
+                    processInfo.incrementBatchCount();
+                    batchesToInsert.add(batch);
+                    batches.put(nodeId, batch);
+                }
 
-                        engine.getOutgoingBatchService().insertOutgoingBatch(transaction, batch);
-                        processInfo.incrementBatchCount();
-                        context.incrementStat(1, ChannelRouterContext.STAT_BATCHES_INSERTED);
-                        batches.put(nodeId, batch);
-    
-                        // if in reuse mode, then share the batch id
-                        if (useCommonMode) {
-                            batchIdToReuse = batch.getBatchId();
-                        }   
-                    }
-    
-                    batch.incrementRowCount(eventType);
-                    batch.incrementDataRowCount();
-                    batch.incrementTableCount(tableName);
-    
-                    if (loadId != -1) {
-                        batch.setLoadId(loadId);
-                    }
-                    if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
-                        context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
-                        numberOfDataEventsInserted++;
-                        dataEventAdded = true;
-                    }
-                    if (context.isBatchComplete(batch, dataMetaData)) {
-                        context.setNeedsCommitted(true);
-                    }
+                batch.incrementRowCount(eventType);
+                batch.incrementDataRowCount();
+                batch.incrementTableCount(tableName);
+
+                if (loadId != -1) {
+                    batch.setLoadId(loadId);
+                }
+                if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
+                    context.addDataEvent(dataMetaData.getData().getDataId(), batch.getBatchId());
+                    numberOfDataEventsInserted++;
+                    dataEventAdded = true;
+                }
+                if (context.isBatchComplete(batch, dataMetaData)) {
+                    context.setNeedsCommitted(true);
                 }
             }
-            if (transaction != null) {
+        }
+
+        if (batchesToInsert.size() > 0) {
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                transaction.setInBatchMode(true);
+                engine.getOutgoingBatchService().insertOutgoingBatches(transaction, batchesToInsert, context.getMaxBatchesJdbcFlushSize());
                 transaction.commit();
-                transaction = null;
-            }
-        } finally {
-            if (transaction != null) {
-                transaction.rollback();
+                context.incrementStat(batchesToInsert.size(), ChannelRouterContext.STAT_BATCHES_INSERTED);                
+            } catch (Error ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } catch (RuntimeException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw ex;
+            } finally {
+                close(transaction);
             }
         }
 

@@ -82,10 +82,14 @@ public interface IOutgoingBatchService {
     public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
 
     public void updateOutgoingBatches(List<OutgoingBatch> batches);
+    
+    public void updateOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize);
 
     public void insertOutgoingBatch(OutgoingBatch outgoingBatch);
     
     public void insertOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
+    
+    public void insertOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize);
 
     public int countOutgoingBatchesInError();
     
