@@ -72,6 +72,7 @@ import org.jumpmind.symmetric.route.BshDataRouter;
 import org.jumpmind.symmetric.route.CSVRouter;
 import org.jumpmind.symmetric.route.ChannelRouterContext;
 import org.jumpmind.symmetric.route.ColumnMatchDataRouter;
+import org.jumpmind.symmetric.route.CommonBatchCollisionException;
 import org.jumpmind.symmetric.route.ConfigurationChangedDataRouter;
 import org.jumpmind.symmetric.route.ConvertToReloadRouter;
 import org.jumpmind.symmetric.route.DBFRouter;
@@ -552,6 +553,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 long dataCountWithBigLob = routeDataForChannel(processInfo, nodeChannel, sourceNode, true, batchesByNodes, batchesByGroups);
                 return context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
+        } catch (CommonBatchCollisionException e) {
+            gapDetector.setIsAllDataRead(false);
+            dataCount = 1; // we prevented writing the collision, so commit what we have
+            throw e;
         } catch (Throwable ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -924,6 +929,7 @@ public class RouterService extends AbstractService implements IRouterService {
         long loadId = -1;
         boolean dataEventAdded = false;
         boolean useCommonMode = context.isProduceCommonBatches() || context.isProduceGroupBatches();
+        boolean firstTimeForGroup = false;
         int numberOfDataEventsInserted = 0;
 
         if (nodeIds == null || nodeIds.size() == 0) {
@@ -938,6 +944,7 @@ public class RouterService extends AbstractService implements IRouterService {
             if (batches == null) {
                 batches = new HashMap<String, OutgoingBatch>();
                 batchesByGroups.put(groupKey, batches);
+                firstTimeForGroup = true;
             }
             useCommonMode = nodeIds.size() > 1;
         } else {
@@ -976,6 +983,10 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (log.isDebugEnabled()) {
                         log.debug("About to insert a new batch for node {} on the '{}' channel.  Batches in progress are: {}.",
                                 nodeId, batch.getChannelId(), batches.values());
+                    }
+                    
+                    if (useCommonMode && !firstTimeForGroup) {
+                        throw new CommonBatchCollisionException("Collision detected for common batch group");
                     }
 
                     engine.getOutgoingBatchService().insertOutgoingBatch(batch);
