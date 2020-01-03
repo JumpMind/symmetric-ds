@@ -137,6 +137,7 @@ public class SecurityService implements ISecurityService {
             String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
                     SecurityConstants.KEYSTORE_TYPE);
             KeyStore ks = KeyStore.getInstance(keyStoreType);
+            ks.load(null, getKeyStorePassword().toCharArray());
             FileOutputStream os = new FileOutputStream(keyStoreLocation);
             ks.store(os, getKeyStorePassword().toCharArray());
             os.close();
