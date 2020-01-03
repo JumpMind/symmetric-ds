@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -183,8 +184,12 @@ public interface IDataService {
     public void insertDataGap(DataGap gap);
 
     public void insertDataGap(ISqlTransaction transaction, DataGap gap);
+    
+    public void insertDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps);
 
     public void deleteDataGap(ISqlTransaction transaction, DataGap gap);
+    
+    public void deleteDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps);
     
     public void deleteAllDataGaps(ISqlTransaction transaction);
     

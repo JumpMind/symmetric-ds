@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -292,7 +291,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 }
             }
 
-            printStats = saveDataGaps(ts, printStats);
+            saveDataGaps();
             if (gaps.size() > 0) {
                 lastGap = gaps.get(gaps.size() - 1);
             }
@@ -348,7 +347,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
         log.info(buff.toString());
     }
 
-    protected long saveDataGaps(long ts, long printStats) {
+    protected void saveDataGaps() {
         ISqlTemplate sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
         int totalGapChanges = gapsDeleted.size() + gapsAdded.size();
         if (totalGapChanges > 0) {
@@ -364,7 +363,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         log.info("There are {} data gap changes, which is within the max of {}, so switching to database", 
                                 totalGapChanges, maxGapChanges);
                         useInMemoryGaps = false;
-                        printStats = insertDataGaps(transaction, ts, printStats, gaps);
+                        dataService.insertDataGaps(transaction, gaps);
                     } else {
                         if (!useInMemoryGaps) {
                             log.info("There are {} data gap changes, which exceeds the max of {}, so switching to in-memory", 
@@ -375,8 +374,8 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                         dataService.insertDataGap(transaction, newGap);
                     }
                 } else {
-                    printStats = deleteDataGaps(transaction, ts, printStats);
-                    printStats = insertDataGaps(transaction, ts, printStats, gapsAdded);
+                    dataService.deleteDataGaps(transaction, gapsDeleted);
+                    dataService.insertDataGaps(transaction, gapsAdded);
                 }
                 transaction.commit();
             } catch (Error ex) {
@@ -395,35 +394,6 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 }
             }
         }
-        return printStats;
-    }
-
-    protected long deleteDataGaps(ISqlTransaction transaction, long ts, long printStats) {
-        int counter = 0;
-        for (DataGap dataGap : gapsDeleted) {
-            dataService.deleteDataGap(transaction, dataGap);
-            counter++;
-            if (System.currentTimeMillis() - printStats > 30000) {
-                log.info("The data gap detection has been running for {}ms, deleted {} of {} old gaps", new Object[] {
-                        System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
-                printStats = System.currentTimeMillis();
-            }
-        }
-        return printStats;
-    }
-    
-    protected long insertDataGaps(ISqlTransaction transaction, long ts, long printStats, Collection<DataGap> argGaps) {
-        int counter = 0;
-        for (DataGap dataGap : argGaps) {
-            dataService.insertDataGap(transaction, dataGap);
-            counter++;
-            if (System.currentTimeMillis() - printStats > 30000) {
-                log.info("The data gap detection has been running for {}ms, inserted {} of {} new gaps", new Object[] {
-                        System.currentTimeMillis() - ts, counter, gapsDeleted.size() });
-                printStats = System.currentTimeMillis();
-            }
-        }
-        return printStats;
     }
 
     protected void queryDataIdMap() {

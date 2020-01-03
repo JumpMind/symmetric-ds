@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -2717,7 +2718,33 @@ public class DataService extends AbstractService implements IDataService {
                     gap.getCreateTime() }, new int[] {
                         Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP });
     }
-    
+
+    @Override
+    public void insertDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps) {
+        if (gaps.size() > 0) {
+            int[] types = new int[] { Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP };
+            int maxRowsToFlush = engine.getParameterService().getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
+            long ts = System.currentTimeMillis();
+            int flushCount = 0, totalCount = 0;
+            transaction.setInBatchMode(true);
+            transaction.prepare(getSql("insertDataGapSql"));
+            for (DataGap gap : gaps) {
+                transaction.addRow(gap, new Object[] { engine.getClusterService().getServerId(), gap.getStartId(), gap.getEndId(),
+                            gap.getCreateTime() }, types);
+                totalCount++;
+                if (++flushCount >= maxRowsToFlush) {
+                    transaction.flush();
+                    flushCount = 0;
+                }
+                if (System.currentTimeMillis() - ts > 30000) {
+                    log.info("Inserted {} of {} new gaps", totalCount, gaps.size());
+                    ts = System.currentTimeMillis();
+                }
+            }
+            transaction.flush();
+        }
+    }
+
     @Override
     public void deleteDataGap(DataGap gap) {
         ISqlTransaction transaction = null;
@@ -2750,6 +2777,30 @@ public class DataService extends AbstractService implements IDataService {
                         symmetricDialect.getSqlTypeForIds() });
         if (count == 0) {
             log.error("Failed to delete data gap: {}", gap);
+        }
+    }
+
+    @Override
+    public void deleteDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps) {
+        if (gaps.size() > 0) {
+            int[] types = new int[] { symmetricDialect.getSqlTypeForIds(), symmetricDialect.getSqlTypeForIds() };
+            int maxRowsToFlush = engine.getParameterService().getInt(ParameterConstants.ROUTING_FLUSH_JDBC_BATCH_SIZE);
+            long ts = System.currentTimeMillis();
+            int flushCount = 0, totalCount = 0;
+            transaction.setInBatchMode(true);
+            transaction.prepare(getSql("deleteDataGapSql"));
+            for (DataGap gap : gaps) {
+                transaction.addRow(gap, new Object[] { gap.getStartId(), gap.getEndId() }, types);
+                if (++flushCount >= maxRowsToFlush) {
+                    transaction.flush();
+                    flushCount = 0;
+                }
+                if (System.currentTimeMillis() - ts > 30000) {
+                    log.info("Deleted {} of {} old gaps", totalCount, gaps.size());
+                    ts = System.currentTimeMillis();
+                }
+            }
+            transaction.flush();
         }
     }
 
