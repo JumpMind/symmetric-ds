@@ -1211,12 +1211,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         String sql = null;
         if (supportsTruncate) {
             sql = "truncate table ";
+            String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
+            sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
         } else {
             log.info("Truncate is not supported on " + getName() + ". Changing to equivalent delete statement");
-            sql = "delete from ";
+            sql = getDeleteSql(table);
         }
-        String quote = getDdlBuilder().isDelimitedIdentifierModeOn() ? getDatabaseInfo().getDelimiterToken() : "";
-        sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
         
         return sql;
     }
