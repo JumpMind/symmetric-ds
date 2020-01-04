@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -136,7 +135,7 @@ public class DataGapRouteReaderTest {
         when(engine.getRouterService()).thenReturn(routerService);
 
         ChannelRouterContext context = new ChannelRouterContext(NODE_ID, nodeChannel,
-                mock(ISqlTransaction.class), new HashMap<String, IBatchAlgorithm>());
+                mock(ISqlTransaction.class), null);
         context.setDataGaps(dataGaps);
 
         return new DataGapRouteReader(context, engine);
