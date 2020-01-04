@@ -484,10 +484,11 @@ public class RouterService extends AbstractService implements IRouterService {
                     triggerRouters);
             boolean onlyDefaultRoutersAssigned = onlyDefaultRoutersAssigned(nodeChannel.getChannel(),
                     parameterService.getNodeGroupId(), triggerRouters);
+            IBatchAlgorithm batchAlgorithm = extensionService.getExtensionPointMap(IBatchAlgorithm.class).get(nodeChannel.getBatchAlgorithm());
             
             context = new ChannelRouterContext(sourceNode.getNodeId(), nodeChannel,
                     symmetricDialect.getPlatform().getSqlTemplate().startSqlTransaction(),
-                    extensionService.getExtensionPointMap(IBatchAlgorithm.class));
+                    batchAlgorithm);
             context.setProduceCommonBatches(producesCommonBatches);
             context.setProduceGroupBatches(useCommonGroups);
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);

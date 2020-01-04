@@ -85,14 +85,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private List<Long> uncommittedDataIds = new ArrayList<Long>();
     private long uncommittedDataEventCount = 0;
     private long committedDataEventCount = 0;
-    private Map<String, IBatchAlgorithm> batchAlgorithms;
+    private IBatchAlgorithm batchAlgorithm;
 
-    public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction, Map<String, IBatchAlgorithm> batchAlgorithms)
+    public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction, IBatchAlgorithm batchAlgorithm)
             throws SQLException {
         super(nodeId, channel);
         this.sqlTransaction = transaction;
         this.sqlTransaction.setInBatchMode(true);
-        this.batchAlgorithms = batchAlgorithms;
+        this.batchAlgorithm = batchAlgorithm;
     }
 
     public List<DataEvent> getDataEventList() {
@@ -336,12 +336,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
         this.overrideContainsBigLob = overrideContainsBigLob;
     }
     
-    public Map<String, IBatchAlgorithm> getBatchAlgorithms() {
-        return batchAlgorithms;
-    }
-
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData) {
-        return batchAlgorithms.get(channel.getBatchAlgorithm()).isBatchComplete(batch, dataMetaData, this);
+        return batchAlgorithm.isBatchComplete(batch, dataMetaData, this);
     }
 
     public int getMaxBatchesJdbcFlushSize() {
