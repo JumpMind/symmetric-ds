@@ -46,8 +46,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -218,7 +216,7 @@ public class BouncyCastleSecurityService extends SecurityService {
         String line = null;
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("----")) {
-                bytes = DatatypeConverter.parseBase64Binary(sb.toString());
+                bytes = Base64.decodeBase64(sb.toString());
                 break;
             }
             sb.append(line);
