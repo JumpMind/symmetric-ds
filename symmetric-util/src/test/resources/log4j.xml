@@ -131,6 +131,10 @@
         <priority value="FATAL" />
     </category>
     
+    <category name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig">
+        <priority value="WARN" />
+    </category>
+    
     <!-- Uncomment to see CSV protocol from sending batches -->
     <!--
     <category name="org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter">
