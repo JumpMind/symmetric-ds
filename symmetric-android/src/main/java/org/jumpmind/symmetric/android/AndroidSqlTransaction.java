@@ -168,4 +168,16 @@ public class AndroidSqlTransaction implements ISqlTransaction {
         return sqlTemplate.insertWithGeneratedKey(database, sql, column, sequenceName, args, null);
     }
 
+    @Override
+    public boolean isAllowInsertIntoAutoIncrement() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void clearBatch() {
+        // TODO Auto-generated method stub
+        
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.jumpmind.symmetric.io;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
@@ -53,5 +54,11 @@ public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         super.end(batch, inError);
         getTransaction().flush();
     }
-    
+
+    @Override
+    public void end(Table table) {
+        super.end(table);
+        allowInsertIntoAutoIncrementColumns(true, this.targetTable);
+    }
 }
+
