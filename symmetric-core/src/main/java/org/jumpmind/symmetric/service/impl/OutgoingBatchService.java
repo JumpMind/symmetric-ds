@@ -314,26 +314,19 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         outgoingBatch.setBatchId(batchId);
     }
 
-    public void insertOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize) {
-        long batchIdToReuse = 0;
+    public void insertOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize, boolean isCommon) {
+        long batchId = 0;
         int count = 0;
+        int size = isCommon ? 1 : batches.size();
+        if (platform.supportsMultiThreadedTransactions()) {
+            batchId = sequenceService.nextRange(Constants.SEQUENCE_OUTGOING_BATCH, size);
+        } else {
+            batchId = sequenceService.nextRange(transaction, Constants.SEQUENCE_OUTGOING_BATCH, size);
+        }
         transaction.prepare(getSql("insertOutgoingBatchSql"));
         for (OutgoingBatch batch : batches) {
             batch.setLastUpdatedHostName(clusterService.getServerId());
-            if (batch.getBatchId() <= 0) {
-                if (batch.isCommonFlag() && batchIdToReuse > 0) {
-                    batch.setBatchId(batchIdToReuse);
-                } else {
-                    if (platform.supportsMultiThreadedTransactions()) {
-                        batch.setBatchId(sequenceService.nextVal(Constants.SEQUENCE_OUTGOING_BATCH));
-                    } else {
-                        batch.setBatchId(sequenceService.nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH));
-                    }
-                    if (batch.isCommonFlag()) {
-                        batchIdToReuse = batch.getBatchId();
-                    }
-                }
-            }
+            batch.setBatchId(batchId);
             transaction.addRow(batch, new Object[] { batch.getBatchId(), batch.getNodeId(), batch.getChannelId(), batch.getStatus().name(),
                     batch.getLoadId(), batch.isExtractJobFlag() ? 1 : 0, batch.isLoadFlag() ? 1 : 0, batch.isCommonFlag() ? 1 : 0,
                     batch.getReloadRowCount(), batch.getOtherRowCount(), batch.getDataUpdateRowCount(), batch.getDataInsertRowCount(),
@@ -342,6 +335,9 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                     new int[] { symmetricDialect.getSqlTypeForIds(), Types.VARCHAR, Types.VARCHAR, Types.CHAR, Types.NUMERIC, 
                             Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC, 
                             Types.NUMERIC, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC });
+            if (!isCommon) {
+                batchId++;
+            }
             if (++count >= flushSize) {
                 transaction.flush();
                 count = 0;

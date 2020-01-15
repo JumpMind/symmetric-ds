@@ -1039,7 +1039,8 @@ public class RouterService extends AbstractService implements IRouterService {
             try {
                 transaction = sqlTemplate.startSqlTransaction();
                 transaction.setInBatchMode(true);
-                engine.getOutgoingBatchService().insertOutgoingBatches(transaction, batchesToInsert, context.getMaxBatchesJdbcFlushSize());
+                engine.getOutgoingBatchService().insertOutgoingBatches(transaction, batchesToInsert, context.getMaxBatchesJdbcFlushSize(),
+                        useCommonMode);
                 transaction.commit();
                 context.incrementStat(batchesToInsert.size(), ChannelRouterContext.STAT_BATCHES_INSERTED);
                 

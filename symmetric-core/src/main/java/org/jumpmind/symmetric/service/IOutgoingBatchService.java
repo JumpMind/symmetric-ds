@@ -89,7 +89,7 @@ public interface IOutgoingBatchService {
     
     public void insertOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch);
     
-    public void insertOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize);
+    public void insertOutgoingBatches(ISqlTransaction transaction, List<OutgoingBatch> batches, int flushSize, boolean isCommon);
 
     public int countOutgoingBatchesInError();
     
