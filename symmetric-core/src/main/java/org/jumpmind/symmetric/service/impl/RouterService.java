@@ -491,6 +491,7 @@ public class RouterService extends AbstractService implements IRouterService {
                     batchAlgorithm);
             context.setProduceCommonBatches(producesCommonBatches);
             context.setProduceGroupBatches(useCommonGroups);
+            context.setNonCommonForIncoming(parameterService.is(ParameterConstants.ROUTING_USE_NON_COMMON_FOR_INCOMING));
             context.setOnlyDefaultRoutersAssigned(onlyDefaultRoutersAssigned);
             context.setDataGaps(gapDetector.getDataGaps());
             context.setOverrideContainsBigLob(isOverrideContainsBigLob);
@@ -787,13 +788,11 @@ public class RouterService extends AbstractService implements IRouterService {
                         long routeTs = System.currentTimeMillis() - ts;
                         if (routeTs > LOG_PROCESS_SUMMARY_THRESHOLD) {
                             engine.getClusterService().refreshLock(ClusterConstants.ROUTE);
-                            log.info(
-                                    "Routing for channel '{}' has been processing for {} seconds. The following stats have been gathered: "
-                                            + "totalDataRoutedCount={}, totalDataEventCount={}, startDataId={}, endDataId={}, dataReadCount={}, peekAheadFillCount={}, dataGaps={}",
-                                    new Object[] {  context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
+                            log.info("Routing channel '{}' for {} seconds, "
+                                            + "routedCount={}, dataEventCount={}, startDataId={}, endDataId={}, readCount={}, peekAheadFillCount={}, dataGaps={}",
+                                    context.getChannel().getChannelId(), ((System.currentTimeMillis()-startTime) / 1000), totalDataCount, totalDataEventCount, context.getStartDataId(),
                                             context.getEndDataId(), context.getDataReadCount(), context.getPeekAheadFillCount(), 
-                                            FormatUtils.abbreviateForLogging(context.getDataGaps(), MAX_LOGGING_LENGTH)
-                                            });
+                                            context.getDataGaps().size());
                             ts = System.currentTimeMillis();
                         }
 
@@ -809,6 +808,16 @@ public class RouterService extends AbstractService implements IRouterService {
                 log.info(
                         "Done routing for channel '{}' which took {} seconds",
                         new Object[] { context.getChannel().getChannelId(), ((System.currentTimeMillis() - startTime) / 1000) });
+                if (context.getTimesByRouter().size() < 10) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<String, Long> entry : context.getTimesByRouter().entrySet()) {
+                        if (sb.length() != 0) {
+                            sb.append(", ");
+                        }
+                        sb.append(entry.getKey()).append("=").append(entry.getValue());
+                    }
+                    log.info("Router times for channel '{}': {}", context.getChannel().getChannelId(), sb.toString());
+                }
                 ts = System.currentTimeMillis();
             }
 
@@ -836,6 +845,7 @@ public class RouterService extends AbstractService implements IRouterService {
         if (table == null) {
             table = buildTableFromTriggerHistory(data.getTriggerHistory());
         }
+
         if (triggerRouters != null && triggerRouters.size() > 0) {
             boolean isUnrouted = false;
             boolean alreadyInsertedUnrouted = false;
@@ -859,13 +869,14 @@ public class RouterService extends AbstractService implements IRouterService {
                     } else {
                         try {
                             IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
-                            context.addUsedDataRouter(dataRouter);
                             long ts = System.currentTimeMillis();
                             nodeIds = dataRouter.routeToNodes(context, dataMetaData,
                                     findAvailableNodes(triggerRouter, context), false, false,
                                     triggerRouter);
-                            context.incrementStat(System.currentTimeMillis() - ts,
-                                    ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                            ts = System.currentTimeMillis() - ts;
+                            context.incrementStat(ts, ChannelRouterContext.STAT_DATA_ROUTER_MS);
+                            context.addUsedDataRouter(dataRouter);
+                            context.addTimesByRouter(triggerRouter.getRouterId(), ts);
                         } catch (DelayRoutingException ex) {
                             throw ex;
                         } catch (RuntimeException ex) {
@@ -887,8 +898,11 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
 
                     if (nodeIds != null) {
-                        if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null) {
+                        if (!triggerRouter.isPingBackEnabled() && data.getSourceNodeId() != null && !data.getSourceNodeId().equals("")) {
                             nodeIds.remove(data.getSourceNodeId());
+                            if (context.isNonCommonForIncoming()) {
+                                context.setForceNonCommon(true);
+                            }
                         }
 
                         // should never route to self
@@ -902,6 +916,9 @@ public class RouterService extends AbstractService implements IRouterService {
                     if (isUnrouted) {
                         alreadyInsertedUnrouted = true;
                     }
+                }
+                if (context.isForceNonCommon()) {
+                    context.setForceNonCommon(false);
                 }
             }
 
@@ -931,18 +948,20 @@ public class RouterService extends AbstractService implements IRouterService {
         Map<String, OutgoingBatch> batches = null;
         long loadId = -1;
         boolean dataEventAdded = false;
-        boolean useCommonMode = context.isProduceCommonBatches() || context.isProduceGroupBatches();
         boolean firstTimeForGroup = false;
         int numberOfDataEventsInserted = 0;
-        List<OutgoingBatch> batchesToInsert = new ArrayList<OutgoingBatch>();
-        List<OutgoingBatch> batchesToRoute = new ArrayList<OutgoingBatch>();
+        final List<OutgoingBatch> batchesToInsert = new ArrayList<OutgoingBatch>();
+        final List<OutgoingBatch> batchesToRoute = new ArrayList<OutgoingBatch>();
 
         if (nodeIds == null || nodeIds.size() == 0) {
             nodeIds = new HashSet<String>(1);
             nodeIds.add(Constants.UNROUTED_NODE_ID);
         }
-        
-        if (context.isProduceGroupBatches()) {
+
+        final boolean useCommonMode = ((context.isProduceGroupBatches() && !context.isForceNonCommon()) || context.isProduceCommonBatches())
+                && nodeIds.size() > 1;
+
+        if (context.isProduceGroupBatches() && useCommonMode) {
             Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = context.getBatchesByGroups();
             int groupKey = nodeIds.hashCode();
             batches = batchesByGroups.get(groupKey);
@@ -951,7 +970,6 @@ public class RouterService extends AbstractService implements IRouterService {
                 batchesByGroups.put(groupKey, batches);
                 firstTimeForGroup = true;
             }
-            useCommonMode = nodeIds.size() > 1;
         } else {
             batches = context.getBatchesByNodes();
         }
@@ -1005,7 +1023,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 if (loadId != -1) {
                     batch.setLoadId(loadId);
                 }
-                if (!useCommonMode || (useCommonMode && !dataEventAdded)) {
+                if (!useCommonMode || !dataEventAdded) {
                     batchesToRoute.add(batch);
                     numberOfDataEventsInserted++;
                     dataEventAdded = true;
@@ -1023,7 +1041,13 @@ public class RouterService extends AbstractService implements IRouterService {
                 transaction.setInBatchMode(true);
                 engine.getOutgoingBatchService().insertOutgoingBatches(transaction, batchesToInsert, context.getMaxBatchesJdbcFlushSize());
                 transaction.commit();
-                context.incrementStat(batchesToInsert.size(), ChannelRouterContext.STAT_BATCHES_INSERTED);                
+                context.incrementStat(batchesToInsert.size(), ChannelRouterContext.STAT_BATCHES_INSERTED);
+                
+                if (useCommonMode) {
+                    context.incrementStat(batchesToInsert.size(), ChannelRouterContext.STAT_BATCHES_COMMON);
+                } else {
+                    context.incrementStat(batchesToInsert.size(), ChannelRouterContext.STAT_BATCHES_NONCOMMON);                    
+                }
             } catch (Error ex) {
                 if (transaction != null) {
                     transaction.rollback();

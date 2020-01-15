@@ -498,9 +498,9 @@ public class DataGapRouteReader implements IDataToRouteReader {
                 long totalTimeInMs = System.currentTimeMillis() - lastStatsPrintOutBaselineInMs;
                 if (totalTimeInMs > LOG_PROCESS_SUMMARY_THRESHOLD) {
                     log.info(
-                            "Reading data to route for channel '{}' has been processing for {} seconds. The following stats have been gathered: datdaRereadCount={}, dataCount={}",
+                            "Reading channel '{}' for {} seconds, dataCount={}, dataRereadCount={}",
                             context.getChannel().getChannelId(), (System.currentTimeMillis() - context.getCreatedTimeInMs()) / 1000,
-                            context.getDataRereadCount(), dataCount + context.getDataReadCount());
+                            dataCount + context.getDataReadCount(), context.getDataRereadCount());
                     lastStatsPrintOutBaselineInMs = System.currentTimeMillis();
                 }
             } else {

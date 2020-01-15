@@ -219,6 +219,7 @@ final public class ParameterConstants {
     public final static String ROUTING_QUERY_CHANNELS_FIRST = "routing.query.channels.first";
     public final static String ROUTING_MAX_GAP_CHANGES = "routing.max.gap.changes";
     public final static String ROUTING_USE_COMMON_GROUPS = "routing.use.common.groups";
+    public final static String ROUTING_USE_NON_COMMON_FOR_INCOMING = "routing.use.non.common.for.incoming";
 
     public final static String INCOMING_BATCH_SKIP_DUPLICATE_BATCHES_ENABLED = "incoming.batches.skip.duplicates";
     @Deprecated

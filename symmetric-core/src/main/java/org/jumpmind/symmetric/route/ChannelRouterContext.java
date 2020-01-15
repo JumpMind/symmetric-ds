@@ -55,6 +55,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public static final String STAT_DATA_ROUTED_COUNT = "data.routed.count";
     public static final String STAT_INSERT_BATCHES_MS = "batches.insert.time.ms";
     public static final String STAT_BATCHES_INSERTED = "batches.insert.count";
+    public static final String STAT_BATCHES_COMMON = "batches.common.count";
+    public static final String STAT_BATCHES_NONCOMMON = "batches.noncommon.count";
     public static final String STAT_UPDATE_BATCHES_MS = "batches.update.time.ms";
     public static final String STAT_ROUTE_TOTAL_TIME = "total.time.ms";
 
@@ -62,6 +64,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>();
     private Map<TriggerRouter, Set<Node>> availableNodes = new HashMap<TriggerRouter, Set<Node>>();
     private Set<IDataRouter> usedDataRouters = new HashSet<IDataRouter>();
+    private Map<String, Long> timesByRouter = new HashMap<String, Long>();
     private ISqlTransaction sqlTransaction;
     private boolean needsCommitted = false;
     private long createdTimeInMs = System.currentTimeMillis();
@@ -69,6 +72,8 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private List<DataEvent> dataEventsToSend = new ArrayList<DataEvent>();
     private boolean produceCommonBatches = false;
     private boolean produceGroupBatches = false;
+    private boolean nonCommonForIncoming = false;
+    private boolean forceNonCommon = false;
     private boolean onlyDefaultRoutersAssigned = false;
     private boolean overrideContainsBigLob = false;
     private long lastLoadId = -1;
@@ -158,10 +163,12 @@ public class ChannelRouterContext extends SimpleRouterContext {
 
     protected void clearState() {
         this.usedDataRouters.clear();
+        this.timesByRouter.clear();
         this.encountedTransactionBoundary = false;
         this.requestGapDetection = false;
         this.batchesByNodes.clear();
         this.batchesByGroups.clear();
+        this.forceNonCommon = false;
         this.availableNodes.clear();
         this.dataEventsToSend.clear();
         this.uncommittedDataIds.clear();
@@ -216,6 +223,19 @@ public class ChannelRouterContext extends SimpleRouterContext {
         this.usedDataRouters.add(dataRouter);
     }
 
+    public Map<String, Long> getTimesByRouter() {
+        return timesByRouter; 
+    }
+
+    public void addTimesByRouter(String routerId, long millis) {
+        Long totalMillis = timesByRouter.get(routerId);
+        if (totalMillis == null) {
+            timesByRouter.put(routerId, millis);    
+        } else {
+            timesByRouter.put(routerId, totalMillis + millis);
+        }
+    }
+
     public void resetForNextData() {
         this.needsCommitted = false;
     }
@@ -243,6 +263,22 @@ public class ChannelRouterContext extends SimpleRouterContext {
     public boolean isProduceCommonBatches() {
         return produceCommonBatches;
     }    
+
+    public boolean isNonCommonForIncoming() {
+        return nonCommonForIncoming;
+    }
+
+    public void setNonCommonForIncoming(boolean nonCommonForIncoming) {
+        this.nonCommonForIncoming = nonCommonForIncoming;
+    }
+
+    public boolean isForceNonCommon() {
+        return forceNonCommon;
+    }
+
+    public void setForceNonCommon(boolean forceNonCommon) {
+        this.forceNonCommon = forceNonCommon;
+    }
 
     public void setProduceGroupBatches(boolean produceGroupBatches) {
         this.produceGroupBatches = produceGroupBatches;
