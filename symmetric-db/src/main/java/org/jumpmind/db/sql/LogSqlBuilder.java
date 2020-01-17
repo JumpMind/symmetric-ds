@@ -33,7 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.util.AppUtils;
+import org.jumpmind.exception.ParseException;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,8 +173,13 @@ public class LogSqlBuilder {
                 date = FormatUtils.parseDate(object.toString(), 
                         (String[])ArrayUtils.addAll(FormatUtils.TIMESTAMP_PATTERNS, FormatUtils.TIME_PATTERNS));
             } catch (Exception ex) {
-                log.debug("Failed to parse argument as a date " + object + " " + ex);
-                return "'" + object + "'";
+                try {
+                    // Try Timestamp with time zone
+                    date = FormatUtils.parseTimestampWithTimezone(object == null ? "" : object.toString());
+                } catch(Exception e) {
+                    log.debug("Failed to parse argument as a date " + object + " " + ex);
+                    return "'" + object + "'";
+                }
             }
         }
         

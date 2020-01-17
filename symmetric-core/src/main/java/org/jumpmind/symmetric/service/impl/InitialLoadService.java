@@ -133,10 +133,10 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
                     if (activeHistories.size() > 0) {
                         boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
-                        boolean reverseLoadQueued = security.isRevInitialLoadEnabled();
-                        boolean initialLoadQueued = security.isInitialLoadEnabled();
+                        boolean reverseLoadEnabled = security.isRevInitialLoadEnabled();
+                        boolean initialLoadEnabled = security.isInitialLoadEnabled();
                         boolean registered = security.getRegistrationTime() != null;
-                        if (thisMySecurityRecord && reverseLoadQueued && (reverseLoadFirst || !initialLoadQueued)) {
+                        if (thisMySecurityRecord && reverseLoadEnabled && (reverseLoadFirst || !initialLoadEnabled)) {
                             sendReverseInitialLoad(processInfo, activeHistories, triggerRoutersByNodeGroup);
                             TableReloadRequest reloadRequest = new TableReloadRequest();
                             reloadRequest.setTriggerId(ParameterConstants.ALL);
@@ -149,7 +149,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                             log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
                             engine.getDataService().insertTableReloadRequest(reloadRequest);
                             processInfo.incrementCurrentDataCount();
-                        } else if (!thisMySecurityRecord && registered && initialLoadQueued && (!reverseLoadFirst || !reverseLoadQueued)) {
+                        } else if (!thisMySecurityRecord && registered && initialLoadEnabled && (!reverseLoadFirst || !reverseLoadEnabled)) {
                             TableReloadRequest reloadRequest = new TableReloadRequest();
                             reloadRequest.setTriggerId(ParameterConstants.ALL);
                             reloadRequest.setRouterId(ParameterConstants.ALL);

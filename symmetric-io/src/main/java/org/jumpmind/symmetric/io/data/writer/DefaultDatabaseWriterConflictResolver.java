@@ -92,17 +92,19 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             // If you are in this situation because of an instance where the conflict exists
             // because the row doesn't exist, then existing simply needs to be null
             if (existingStr != null) {
-                int split = existingStr.lastIndexOf(" ");
-                existingTs = FormatUtils.parseDate(existingStr.substring(0, split).trim(),
-                        FormatUtils.TIMESTAMP_PATTERNS,
-                        TimeZone.getTimeZone(existingStr.substring(split).trim()));
+//                int split = existingStr.lastIndexOf(" ");
+//                existingTs = FormatUtils.parseDate(existingStr.substring(0, split).trim(),
+//                        FormatUtils.TIMESTAMP_PATTERNS,
+//                        TimeZone.getTimeZone(existingStr.substring(split).trim()));
+                existingTs = FormatUtils.parseTimestampWithTimezone(existingStr, FormatUtils.TIMESTAMP_WITH_TIMEZONE_PATTERNS);
             }
             // Get the loadingTs with timezone
             if (loadingStr != null) {
-                int split = loadingStr.lastIndexOf(" ");
-                loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),
-                        FormatUtils.TIMESTAMP_PATTERNS,
-                        TimeZone.getTimeZone(loadingStr.substring(split).trim()));
+//                int split = loadingStr.lastIndexOf(" ");
+//                loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),
+//                        FormatUtils.TIMESTAMP_PATTERNS,
+//                        TimeZone.getTimeZone(loadingStr.substring(split).trim()));
+                loadingTs = FormatUtils.parseTimestampWithTimezone(loadingStr, FormatUtils.TIMESTAMP_WITH_TIMEZONE_PATTERNS);
             }
         } else {
             // Get the existingTs
