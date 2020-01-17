@@ -2894,7 +2894,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    if (this.routingContext.getChannel().isReloadFlag() && symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable)) {
+                    if (this.routingContext.getChannel().isReloadFlag() && getSymmetricDialect().isInitialLoadTwoPassLob(this.sourceTable)) {
                         this.isLobFirstPass = true;
                     }
 
@@ -2910,7 +2910,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         this.selfRefLevel++;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                         this.isFirstRow = true;
-                    } else if (symmetricDialect.isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
+                    } else if (getSymmetricDialect().isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
                         this.isLobFirstPass = false;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                     } else {
