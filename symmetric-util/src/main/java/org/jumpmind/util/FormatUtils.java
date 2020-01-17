@@ -20,8 +20,12 @@
  */
 package org.jumpmind.util;
 
+import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -49,6 +53,10 @@ public final class FormatUtils {
 
     public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
+
+    public static final String[] TIMESTAMP_WITH_TIMEZONE_PATTERNS = {
+            "yyyy-MM-dd HH:mm:ss.n xxx"
+    };
 
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
 
@@ -416,6 +424,27 @@ public final class FormatUtils {
             
         }
         
+        throw new ParseException("Unable to parse the date: " + str);
+    }
+    
+    public static Timestamp parseTimestampWithTimezone(String str) {
+        return parseTimestampWithTimezone(str, TIMESTAMP_WITH_TIMEZONE_PATTERNS);
+    }
+    
+    public static Timestamp parseTimestampWithTimezone(String str, String[] parsePatterns) {
+        Timestamp ret = null;
+        for(int i = 0; i < parsePatterns.length; i++) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(parsePatterns[i]);
+            ret = null;
+            try {
+                ret = Timestamp.from(ZonedDateTime.parse(str, formatter).toInstant());
+            } catch(DateTimeParseException e) {
+                
+            }
+            if(ret != null) {
+                return ret;
+            }
+        }
         throw new ParseException("Unable to parse the date: " + str);
     }
     
