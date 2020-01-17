@@ -2,6 +2,7 @@ package org.jumpmind.symmetric.io;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.common.ContextConstants;
@@ -11,6 +12,8 @@ import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 
 public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
+    private DmlStatement previousDmlStatement;
+    
     public JdbcBatchBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
             String tablePrefix, DatabaseWriterSettings writerSettings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, writerSettings);
@@ -48,17 +51,11 @@ public class JdbcBatchBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected void bulkWrite(CsvData data) {
         writeDefault(data);
     }
-
+    
     @Override
-    public void end(Batch batch, boolean inError) {
-        super.end(batch, inError);
+    protected void prepare() {
         getTransaction().flush();
-    }
-
-    @Override
-    public void end(Table table) {
-        super.end(table);
-        allowInsertIntoAutoIncrementColumns(true, this.targetTable);
+        super.prepare();
     }
 }
 
