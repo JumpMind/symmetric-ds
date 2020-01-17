@@ -153,6 +153,9 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     public void end(Batch batch, boolean inError) {
         this.currentDmlStatement = null;
+        if (inError) {
+            allowInsertIntoAutoIncrementColumns(false, targetTable);
+        }
         super.end(batch, inError);
     }
 
