@@ -781,7 +781,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
         
         for (int i = 0; i < dmlValues.length; i++) {
-            buff.append(logSqlBuilder.formatValue(dmlValues[i], types[i]));
+            int type = i < types.length ? types[i] : -9999;
+            buff.append(logSqlBuilder.formatValue(dmlValues[i], type));
             if (i < dmlValues.length-1) {
                 buff.append(", ");
             }
