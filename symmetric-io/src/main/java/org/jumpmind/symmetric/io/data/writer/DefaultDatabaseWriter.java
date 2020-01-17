@@ -143,12 +143,19 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     public void end(Table table) {
         super.end(table);
+        if (this.transaction.isAllowInsertIntoAutoIncrement()) {
+            // SQL Server using JDBC Batch loading requires a flush before turning off the identity insert.
+            this.transaction.flush();
+        }
         allowInsertIntoAutoIncrementColumns(false, this.targetTable);
     }
 
     @Override
     public void end(Batch batch, boolean inError) {
         this.currentDmlStatement = null;
+        if (inError) {
+            allowInsertIntoAutoIncrementColumns(false, targetTable);
+        }
         super.end(batch, inError);
     }
 

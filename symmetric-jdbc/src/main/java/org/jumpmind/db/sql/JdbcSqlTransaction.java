@@ -539,5 +539,19 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public void setLogSqlBuilder(LogSqlBuilder logSqlBuilder) {
         this.logSqlBuilder = logSqlBuilder;
     }
+    
+    public void clearBatch() {
+        if (this.inBatchMode && pstmt != null) {
+            try {
+                pstmt.clearBatch();
+            } catch (SQLException e) {
+                log.warn("Unable to clear batch mode for transaction. ", e);
+            }
+        }
+    }
 
+    @Override
+    public boolean isAllowInsertIntoAutoIncrement() {
+        return false;
+    }
 }

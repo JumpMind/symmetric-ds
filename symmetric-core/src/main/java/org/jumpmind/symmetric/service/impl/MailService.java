@@ -33,6 +33,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -55,23 +56,32 @@ public class MailService extends AbstractService implements IMailService {
         super(parameterService, symmetricDialect);
     }
     
-    public String sendEmail(String subject, String text, String recipients) {
-        return sendEmail(subject, text, recipients, getJavaMailProperties(),
+    public String sendEmail(String subject, String text, String toRecipients) {
+        return sendEmail(subject, text, toRecipients, null, null);
+    }
+    
+    public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients) {
+        return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(),
                 parameterService.getString(ParameterConstants.SMTP_TRANSPORT, "smtp"),
                 parameterService.is(ParameterConstants.SMTP_USE_AUTH, false),
                 parameterService.getString(ParameterConstants.SMTP_USER),
                 parameterService.getString(ParameterConstants.SMTP_PASSWORD));
     }
 
-    public String sendEmail(String subject, String text, String recipients, TypedProperties prop) {
-        return sendEmail(subject, text, recipients, getJavaMailProperties(prop),
+    public String sendEmail(String subject, String text, String toRecipients, TypedProperties prop) {
+        return sendEmail(subject, text, toRecipients, null, null, prop);        
+    }
+    
+    public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients, TypedProperties prop) {
+        return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(prop),
                 prop.get(ParameterConstants.SMTP_TRANSPORT, "smtp"),
                 prop.is(ParameterConstants.SMTP_USE_AUTH, false),
                 prop.get(ParameterConstants.SMTP_USER), prop.get(ParameterConstants.SMTP_PASSWORD));        
     }
 
-    protected String sendEmail(String subject, String text, String recipients, Properties prop, 
-            String transportType, boolean useAuth, String user, String password) {
+    protected String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients,
+            Properties prop, String transportType, boolean useAuth, String user, String password)
+    {
         Session session = Session.getInstance(prop);
         ByteArrayOutputStream ba = null;
         if (log.isDebugEnabled()) {
@@ -102,7 +112,15 @@ public class MailService extends AbstractService implements IMailService {
         try {
             MimeMessage message = new MimeMessage(session);
             message.setSentDate(new Date());
-            message.setRecipients(RecipientType.TO, recipients);
+            if(StringUtils.isNotEmpty(toRecipients)) {
+                message.setRecipients(RecipientType.TO, toRecipients);
+            }
+            if(StringUtils.isNotEmpty(ccRecipients)) {
+                message.setRecipients(RecipientType.CC, ccRecipients);
+            }
+            if(StringUtils.isNotEmpty(bccRecipients)) {
+                message.setRecipients(RecipientType.BCC, bccRecipients);
+            }
             message.setSubject(subject);
             message.setText(text);
             message.setFrom(new InternetAddress(prop.getProperty(JAVAMAIL_FROM)));

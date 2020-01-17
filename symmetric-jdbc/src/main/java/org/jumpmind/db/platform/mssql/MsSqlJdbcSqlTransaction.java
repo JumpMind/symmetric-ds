@@ -26,6 +26,8 @@ import org.jumpmind.db.sql.JdbcSqlTransaction;
 
 public class MsSqlJdbcSqlTransaction extends JdbcSqlTransaction {
 
+    private boolean allowsAutoIncrement;
+    
     public MsSqlJdbcSqlTransaction(JdbcSqlTemplate sqltemplate) {
         super(sqltemplate);
     }
@@ -36,11 +38,19 @@ public class MsSqlJdbcSqlTransaction extends JdbcSqlTransaction {
             if (allow) {
                 execute(String.format("SET IDENTITY_INSERT %s ON",
                         table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator)));
+                this.allowsAutoIncrement = true;
             } else {
                 execute(String.format("SET IDENTITY_INSERT %s OFF",
                         table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator)));
+                this.allowsAutoIncrement = false;
             }
         }
     }
+    
+    @Override
+    public boolean isAllowInsertIntoAutoIncrement() {
+        return this.allowsAutoIncrement;
+    }
+    
 
 }
