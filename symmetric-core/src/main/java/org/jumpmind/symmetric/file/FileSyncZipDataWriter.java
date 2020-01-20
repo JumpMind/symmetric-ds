@@ -131,8 +131,16 @@ public class FileSyncZipDataWriter implements IDataWriter {
             FileSnapshot snapshot = new FileSnapshot();
             snapshot.setTriggerId(columnData.get("TRIGGER_ID"));
             snapshot.setRouterId(columnData.get("ROUTER_ID"));
-            snapshot.setFileModifiedTime(Long.parseLong(columnData.get("FILE_MODIFIED_TIME")));
-            snapshot.setCrc32Checksum(Long.parseLong(columnData.get("CRC32_CHECKSUM")));
+            try {
+                snapshot.setFileModifiedTime(Long.parseLong(columnData.get("FILE_MODIFIED_TIME")));
+            } catch (NumberFormatException nfe) {
+                log.info("File modified time was not a number : " + columnData.get("FILE_MODIFIED_TIME") + " for file " + columnData.get("FILE_NAME"));
+            }
+            try {
+                snapshot.setCrc32Checksum(columnData.get("CRC32_CHECKSUM") == null ? 0 : Long.parseLong(columnData.get("CRC32_CHECKSUM")));
+            } catch (NumberFormatException nfe) {
+                log.info("Checksum was not a number : " + columnData.get("CRC32_CHECKSUM") + " for file " + columnData.get("FILE_NAME"));
+            }
             String oldChecksum = oldColumnData.get("CRC32_CHECKSUM");
             if (StringUtils.isNotBlank(oldChecksum)) {
                 snapshot.setOldCrc32Checksum(Long.parseLong(oldChecksum));
