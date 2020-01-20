@@ -46,6 +46,7 @@ public class DbCompareConfig {
     private Map<String, String> whereClauses = new LinkedHashMap<String, String>();
     private Map<String, List<String>> tablesToExcludedColumns = new LinkedHashMap<String, List<String>>();
     private String outputSql;
+    private boolean continueAfterError = false;
     
     private Map<String, String> configSources = new HashMap<String, String>();
     
@@ -60,6 +61,7 @@ public class DbCompareConfig {
         configSources.put("tablesToExcludedColumns", "default");
         configSources.put("sqlDiffFileName", "default");
         configSources.put("outputSql", "default");
+        configSources.put("continueAfterError", "default");
     }
     
     public String getSourceWhereClause(String tableName) {
@@ -182,6 +184,14 @@ public class DbCompareConfig {
     public void setOutputSql(String outputSql) {
         this.outputSql = outputSql;
     }
+    
+    public void setContinueAfterError(boolean continueAfterError) {
+        this.continueAfterError = continueAfterError;
+    }
+    
+    public boolean isContinueAfterError() {
+        return continueAfterError;
+    }
 
     public String report() {
         StringBuilder buff = new StringBuilder(128);
@@ -194,6 +204,7 @@ public class DbCompareConfig {
         buff.append("\twhereClauses=").append(whereClauses).append("@").append(configSources.get("whereClauses")).append("\n");
         buff.append("\ttablesToExcludedColumns=").append(tablesToExcludedColumns).append(" @").append(configSources.get("tablesToExcludedColumns")).append("\n");
         buff.append("\toutputSql=").append(outputSql).append(" @").append(configSources.get("outputSql")).append("\n");
+        buff.append("\tcontinueAfterError=").append(continueAfterError).append(" @").append(configSources.get("continueAfterError")).append("\n");
         
         return buff.toString();
     }

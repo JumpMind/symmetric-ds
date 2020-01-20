@@ -27,7 +27,7 @@ import java.util.List;
 public class DbCompareReport {
 
     private List<TableReport> tableReports;
-    private final String TABLE_FORMAT = " %-40s%-40s%-13d%-13d%-13d%-13d%-13d%-13d%n";
+    private final String TABLE_FORMAT = " %-40s%-40s%-13d%-13d%-13d%-13d%-13d%-13d%-13d%n";
 
     public List<TableReport> getTableReports() {
         return tableReports;
@@ -45,9 +45,9 @@ public class DbCompareReport {
     }
     
     public void printReportHeader(PrintStream stream) {
-        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+%n");
-        stream.format("+Source                                  Target                                  Source Rows  Target Rows  Matched      Different    Missing      Extra        %n");
-        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+%n");
+        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+------------+%n");
+        stream.format("+Source                                  Target                                  Source Rows  Target Rows  Matched      Different    Missing      Extra        Errors       %n");
+        stream.format("+---------------------------------------+---------------------------------------+------------+------------+------------+------------+------------+------------+------------+%n");
     }
     
     public void printTableReport(TableReport report, PrintStream stream) {
@@ -61,7 +61,8 @@ public class DbCompareReport {
         }
         
         stream.format(TABLE_FORMAT, sourceTable, targetTable, report.getSourceRows(),  
-                report.getTargetRows(), report.getMatchedRows(), report.getDifferentRows(), report.getMissingRows(), report.getExtraRows());        
+                report.getTargetRows(), report.getMatchedRows(), report.getDifferentRows(), report.getMissingRows(), report.getExtraRows(),
+                report.getErrorRows());        
     }
 
     public void printReportFooter(PrintStream stream) {
@@ -77,6 +78,8 @@ public class DbCompareReport {
         private int differentRows;
         private int missingRows;
         private int extraRows;
+        private int errorRows;
+        private Throwable throwable;
 
         public void countSourceRow() {
             sourceRows++;
@@ -95,6 +98,9 @@ public class DbCompareReport {
         }
         public void countExtraRow() {
             extraRows++;
+        }
+        public void countErrorRows() {
+            errorRows++;
         }
 
         public String getSourceTable() {
@@ -145,12 +151,24 @@ public class DbCompareReport {
         public void setExtraRows(int extraRows) {
             this.extraRows = extraRows;
         }
+        public int getErrorRows() {
+            return errorRows;
+        }
+        public void setErrorRows(int errorRows) {
+            this.errorRows = errorRows;
+        }
+        public Throwable getThrowable() {
+            return throwable;
+        }
+        public void setThrowable(Throwable throwable) {
+            this.throwable = throwable;
+        }
 
         @Override
         public String toString() {
             return "TableReport [sourceTable=" + sourceTable + ", targetTable=" + targetTable + ", sourceRows=" + sourceRows + ", targetRows="
                     + targetRows + ", matchedRows=" + matchedRows + ", differentRows=" + differentRows + ", missingRows=" + missingRows
-                    + ", extraRows=" + extraRows + "]";
+                    + ", extraRows=" + extraRows + ", errorRows=" + errorRows + "]";
 
         }
     }

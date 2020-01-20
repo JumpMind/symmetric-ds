@@ -38,6 +38,11 @@ public class DbCompareDiffWriter {
     
     final static Logger log = LoggerFactory.getLogger(DbCompareDiffWriter.class);
     
+    // Continue after parsing errors
+    private boolean continueAfterError = false;
+    private boolean error = false;
+    private Throwable throwable = null;
+    
     public DbCompareDiffWriter(ISymmetricEngine targetEngine, DbCompareTables tables, OutputStream stream) {
         super();
         this.targetEngine = targetEngine;
@@ -53,81 +58,114 @@ public class DbCompareDiffWriter {
         if (stream == null) {
             return;
         }
+        
+        try {
 
-        Table table = targetCompareRow.getTable();
-
-        DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.DELETE,
-                table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), null,
-                null, null);
-
-        Row row = new Row(targetCompareRow.getTable().getPrimaryKeyColumnCount());
-
-        for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
-            row.put(table.getColumn(i).getName(), 
-                    targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
+            Table table = targetCompareRow.getTable();
+    
+            DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.DELETE,
+                    table.getCatalog(), table.getSchema(), table.getName(),
+                    table.getPrimaryKeyColumns(), null,
+                    null, null);
+    
+            Row row = new Row(targetCompareRow.getTable().getPrimaryKeyColumnCount());
+    
+            for (int i = 0; i < targetCompareRow.getTable().getPrimaryKeyColumnCount(); i++) {
+                row.put(table.getColumn(i).getName(), 
+                        targetCompareRow.getRowValues().get(targetCompareRow.getTable().getColumn(i).getName()));
+            }
+    
+            String sql = statement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
+    
+            writeLine(sql);
+        
+        } catch(RuntimeException e) {
+            error = true;
+            throwable = e;
+            log.error(e.getMessage(),e);
+            if(! isContinueAfterError()) {
+                throw e;
+            }
         }
-
-        String sql = statement.buildDynamicDeleteSql(BinaryEncoding.HEX, row, false, true);
-
-        writeLine(sql);
     }
 
     public void writeInsert(DbCompareRow sourceCompareRow) { 
         if (stream == null) {
             return;
         }
+        
+        try {
 
-        Table targetTable = tables.getTargetTable();
-
-        DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.INSERT,
-                targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
-                targetTable.getPrimaryKeyColumns(), targetTable.getColumns(),
-                null, null);
-
-        Row row = new Row(targetTable.getColumnCount());
-
-        for (Column sourceColumn : tables.getSourceTable().getColumns()) {
-            Column targetColumn = tables.getColumnMapping().get(sourceColumn);
-            if (targetColumn == null) {
-                continue;
+            Table targetTable = tables.getTargetTable();
+    
+            DmlStatement statement =  targetEngine.getDatabasePlatform().createDmlStatement(DmlType.INSERT,
+                    targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
+                    targetTable.getPrimaryKeyColumns(), targetTable.getColumns(),
+                    null, null);
+    
+            Row row = new Row(targetTable.getColumnCount());
+    
+            for (Column sourceColumn : tables.getSourceTable().getColumns()) {
+                Column targetColumn = tables.getColumnMapping().get(sourceColumn);
+                if (targetColumn == null) {
+                    continue;
+                }
+    
+                row.put(targetColumn.getName(), sourceCompareRow.getRowValues().
+                        get(sourceColumn.getName()));
             }
-
-            row.put(targetColumn.getName(), sourceCompareRow.getRowValues().
-                    get(sourceColumn.getName()));
+    
+            String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, false);
+    
+            writeLine(sql);
+        
+        } catch(RuntimeException e) {
+            error = true;
+            throwable = e;
+            log.error(e.getMessage(),e);
+            if(! isContinueAfterError()) {
+                throw e;
+            }
         }
-
-        String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, false);
-
-        writeLine(sql);
     }
 
     public void writeUpdate(DbCompareRow targetCompareRow, Map<Column, String> deltas) { 
         if (stream == null) {
             return;
         }
+        
+        try {
 
-        Table table = targetCompareRow.getTable();
-
-        Column[] changedColumns = deltas.keySet().toArray(new Column[deltas.keySet().size()]);
-
-        DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.UPDATE,
-                table.getCatalog(), table.getSchema(), table.getName(),
-                table.getPrimaryKeyColumns(), changedColumns,
-                null, null);
-
-        Row row = new Row(changedColumns.length+table.getPrimaryKeyColumnCount());
-        for (Column changedColumn : deltas.keySet()) {
-            String value = deltas.get(changedColumn);
-            row.put(changedColumn.getName(), value);
+            Table table = targetCompareRow.getTable();
+    
+            Column[] changedColumns = deltas.keySet().toArray(new Column[deltas.keySet().size()]);
+    
+            DmlStatement statement = targetEngine.getDatabasePlatform().createDmlStatement(DmlType.UPDATE,
+                    table.getCatalog(), table.getSchema(), table.getName(),
+                    table.getPrimaryKeyColumns(), changedColumns,
+                    null, null);
+    
+            Row row = new Row(changedColumns.length+table.getPrimaryKeyColumnCount());
+            for (Column changedColumn : deltas.keySet()) {
+                String value = deltas.get(changedColumn);
+                row.put(changedColumn.getName(), value);
+            }
+            for (String pkColumnName : table.getPrimaryKeyColumnNames()) {
+                String value = targetCompareRow.getRow().getString(pkColumnName);
+                row.put(pkColumnName, value);
+            }
+            String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
+    
+            writeLine(sql);
+        
+        } catch(RuntimeException e) {
+            error = true;
+            throwable = e;
+            log.error(e.getMessage(),e);
+            if(! isContinueAfterError()) {
+                throw e;
+            }
         }
-        for (String pkColumnName : table.getPrimaryKeyColumnNames()) {
-            String value = targetCompareRow.getRow().getString(pkColumnName);
-            row.put(pkColumnName, value);
-        }
-        String sql = statement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
-
-        writeLine(sql);
     }
     
     public void close() {
@@ -148,5 +186,29 @@ public class DbCompareDiffWriter {
         } catch (Exception ex) {
             throw new RuntimeException("failed to write to stream '" + line + "'", ex);
         }
+    }
+    
+    public void setContinueAfterError(boolean continueAfterError) {
+        this.continueAfterError = continueAfterError;
+    }
+    
+    public boolean isContinueAfterError() {
+        return continueAfterError;
+    }
+    
+    public void setError(boolean error) {
+        this.error = error;
+    }
+    
+    public boolean isError() {
+        return error;
+    }
+    
+    public void setThrowable(Throwable throwable) {
+        this.throwable = throwable;
+    }
+    
+    public Throwable getThrowable() {
+        return throwable;
     }
 }

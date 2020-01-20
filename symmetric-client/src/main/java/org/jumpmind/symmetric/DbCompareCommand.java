@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.io.DbCompare;
 import org.jumpmind.symmetric.io.DbCompareConfig;
 import org.jumpmind.symmetric.io.DbCompareReport;
+import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class DbCompareCommand extends AbstractCommandLauncher {
@@ -128,12 +129,30 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                 throw new ParseException("Failed to parse arg [" + dateTimeFormatArg + "]" + ex);
             }
         }
+        
+        String continueAfterError = getOptionValue(OPTION_CONTINUE_AFTER_ERROR, "continueAfterError", line, config);
+        if(!StringUtils.isEmpty(continueAfterError)) {
+            try {
+                config.setContinueAfterError(Boolean.parseBoolean(continueAfterError));
+            } catch(Exception ex) {
+                throw new ParseException("Failed to parse arg [" + continueAfterError + "]" + ex);
+            }
+        }
 
         ISymmetricEngine sourceEngine = new ClientSymmetricEngine(sourceProperies);
         ISymmetricEngine targetEngine = new ClientSymmetricEngine(targetProperties);
 
         DbCompare dbCompare = new DbCompare(sourceEngine, targetEngine, config);
         DbCompareReport report = dbCompare.compare();
+        
+        for(TableReport tableReport : report.getTableReports()) {
+            if(tableReport.getErrorRows() > 0) {
+                if(tableReport.getThrowable() instanceof RuntimeException) {
+                    throw (RuntimeException) tableReport.getThrowable();
+                }
+                throw new RuntimeException(tableReport.getThrowable());
+            }
+        }
 
         return false;
     }
@@ -184,6 +203,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
     private static final String OPTION_DATE_TIME_FORMAT = "date-time-format";
 
     private static final String OPTION_CONFIG_PROPERTIES = "config";
+    
+    private static final String OPTION_CONTINUE_AFTER_ERROR = "continue-after-error";
 
     @Override
     protected void printHelp(CommandLine cmd, Options options) {
@@ -204,6 +225,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_NUMERIC_SCALE, true);
         addOption(options, null, OPTION_DATE_TIME_FORMAT, true);
         addOption(options, null, OPTION_CONFIG_PROPERTIES, true);
+        addOption(options, null, OPTION_CONTINUE_AFTER_ERROR, true);
     }
 
     protected Map<String, String> parseWhereClauses(CommandLine line) {

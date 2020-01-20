@@ -172,6 +172,8 @@ public class DbCompare {
             stream = getSqlDiffOutputStream(tables);
             diffWriter = new DbCompareDiffWriter(targetEngine, tables, stream);
         }
+        
+        diffWriter.setContinueAfterError(config.isContinueAfterError());
 
         try {        
             while (true) {  
@@ -190,32 +192,49 @@ public class DbCompare {
 
                 DbCompareRow sourceCompareRow = sourceRow != null ? 
                         new DbCompareRow(sourceEngine, dbValueComparator, tables.getSourceTable(), sourceRow) : null;
-                        DbCompareRow targetCompareRow = targetRow != null ? 
-                                new DbCompareRow(targetEngine, dbValueComparator,  tables.getTargetTable(), targetRow) : null;
+                DbCompareRow targetCompareRow = targetRow != null ? 
+                        new DbCompareRow(targetEngine, dbValueComparator,  tables.getTargetTable(), targetRow) : null;
 
-                                int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
-                                if (comparePk == 0) {
-                                    Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
-                                    if (deltas.isEmpty()) {
-                                        tableReport.countMatchedRow();                    
-                                    } else {
-                                        diffWriter.writeUpdate(targetCompareRow, deltas);
-                                        tableReport.countDifferentRow();
-                                    }
+                diffWriter.setError(false);
+                diffWriter.setThrowable(null);
+                int comparePk = comparePk(tables, sourceCompareRow, targetCompareRow);
+                if (comparePk == 0) {
+                    Map<Column, String> deltas = sourceCompareRow.compareTo(tables, targetCompareRow);
+                    if (deltas.isEmpty()) {
+                        tableReport.countMatchedRow();                    
+                    } else {
+                        diffWriter.writeUpdate(targetCompareRow, deltas);
+                        if(! diffWriter.isError()) {
+                            tableReport.countDifferentRow();
+                        } else {
+                            tableReport.countErrorRows();
+                            diffWriter.setThrowable(tableReport.getThrowable());
+                        }
+                    }
 
-                                    sourceRow = sourceCursor.next();
-                                    targetRow = targetCursor.next();
-                                } else if (comparePk < 0) {
-                                    diffWriter.writeInsert(sourceCompareRow);
-                                    tableReport.countMissingRow();
-                                    sourceRow = sourceCursor.next();
-                                } else {
-                                    diffWriter.writeDelete(targetCompareRow);
-                                    tableReport.countExtraRow();
-                                    targetRow = targetCursor.next();
-                                }
-                                tableReport.setSourceRows(sourceCursor.count);
-                                tableReport.setTargetRows(targetCursor.count);
+                    sourceRow = sourceCursor.next();
+                    targetRow = targetCursor.next();
+                } else if (comparePk < 0) {
+                    diffWriter.writeInsert(sourceCompareRow);
+                    if(! diffWriter.isError()) {
+                        tableReport.countMissingRow();
+                    } else {
+                        tableReport.countErrorRows();
+                        diffWriter.setThrowable(tableReport.getThrowable());
+                    }
+                    sourceRow = sourceCursor.next();
+                } else {
+                    diffWriter.writeDelete(targetCompareRow);
+                    if(! diffWriter.isError()) {
+                        tableReport.countExtraRow();
+                    } else {
+                        tableReport.countErrorRows();
+                        diffWriter.setThrowable(tableReport.getThrowable());
+                    }
+                    targetRow = targetCursor.next();
+                }
+                tableReport.setSourceRows(sourceCursor.count);
+                tableReport.setTargetRows(targetCursor.count);
             }
         } finally {
             if (stream != null) {
