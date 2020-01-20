@@ -146,7 +146,11 @@ public class FileSyncZipDataWriter implements IDataWriter {
             if (StringUtils.isNotBlank(oldChecksum)) {
                 snapshot.setOldCrc32Checksum(Long.parseLong(oldChecksum));
             }
-            snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
+            try {
+                snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
+            } catch (NumberFormatException nfe) {
+                log.info("Checksum was not a number : " + columnData.get("FILE_SIZE") + " for file " + columnData.get("FILE_NAME"));
+            }
             snapshot.setLastUpdateBy(columnData.get("LAST_UPDATE_BY"));
             snapshot.setFileName(columnData.get("FILE_NAME"));
             snapshot.setRelativeDir(columnData.get("RELATIVE_DIR"));
