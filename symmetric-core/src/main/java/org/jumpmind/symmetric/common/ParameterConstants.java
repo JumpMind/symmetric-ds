@@ -520,6 +520,8 @@ final public class ParameterConstants {
     public final static String GOOGLE_BIG_QUERY_PROJECT_ID = "google.bigquery.project.id";
     public final static String GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH = "google.bigquery.security.credentials.path";
         
+    public final static String HBASE_SITE_XML_PATH = "hbase.site.xml.path";
+    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

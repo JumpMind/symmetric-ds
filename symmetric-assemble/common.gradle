@@ -287,7 +287,9 @@ subprojects { subproject ->
             exclude group: 'org.slf4j'
         }
 		
-		provided 'com.google.cloud:google-cloud-bigquery:1.99.0'
+		provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+            exclude group: 'com.google.protobuf'
+        }
         
         
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
