@@ -294,6 +294,7 @@ subprojects { subproject ->
         provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
         provided ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
             exclude group: 'org.slf4j'
+            exclude group: 'com.google.guava'
         }
         provided ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
         	exclude group: 'commons-lang', module: 'commons-lang'
@@ -309,6 +310,11 @@ subprojects { subproject ->
             exclude group: 'org.slf4j'
         }
 		
+		provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+            exclude group: 'com.google.protobuf'
+        }
+        
+        
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"
         testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"

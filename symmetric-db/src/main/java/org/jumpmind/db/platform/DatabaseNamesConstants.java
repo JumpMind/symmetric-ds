@@ -59,6 +59,7 @@ final public class DatabaseNamesConstants {
     public final static String KAFKA = "kafka";
     public final static String SNOWFLAKE = "snowflake";
     public final static String HBASE = "hbase";
+    public final static String BIGQUERY = "bigquery";
     public final static String HANA = "hdb";
 
 }

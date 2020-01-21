@@ -18,6 +18,10 @@
         <property name="typeName" value="mongodb" />
     </bean>
 
+    <bean id="hbaseLoaderFactory" class="org.jumpmind.symmetric.io.HbaseDataLoaderFactory">
+        <property name="typeName" value="hbase" />
+    </bean>
+    
     <bean id="databaseUpgradeListener" class="org.jumpmind.symmetric.db.DatabaseUpgradeListener" />
     
     <bean id="softwareUpgradeListener" class="org.jumpmind.symmetric.db.SoftwareUpgradeListener" />

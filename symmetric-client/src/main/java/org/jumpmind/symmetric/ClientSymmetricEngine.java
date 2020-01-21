@@ -331,7 +331,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
-            return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, false);
+            return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, properties.is(ParameterConstants.NODE_LOAD_ONLY));
     }
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly) {
@@ -344,6 +344,23 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     return new CassandraPlatform(createSqlTemplateSettings(properties), dbUrl.substring(12));
                 } else if (dbDriver != null && dbDriver.contains("kafka")) {
                     return new KafkaPlatform(createSqlTemplateSettings(properties));
+                } else if (dbUrl != null && dbUrl.startsWith("bigquery://")) {
+                    try {
+                        HttpTransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions();
+                        transportOptions = transportOptions.toBuilder().setConnectTimeout(60000).setReadTimeout(60000)
+                            .build();
+                          
+                        BigQuery bigquery = BigQueryOptions.newBuilder()
+                                .setProjectId(properties.get(ParameterConstants.GOOGLE_BIG_QUERY_PROJECT_ID))
+                                .setLocation(properties.get(ParameterConstants.GOOGLE_BIG_QUERY_LOCATION, "US"))
+                                .setCredentials(ServiceAccountCredentials.fromStream(
+                                        new FileInputStream(properties.get(ParameterConstants.GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH))))
+                                .setTransportOptions(transportOptions)
+                                .build().getService();
+                        return new BigQueryPlatform(createSqlTemplateSettings(properties), bigquery);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);

@@ -1,7 +1,22 @@
 
 === HBase
 
-The HBase database is a load only database in SymmetricDS.  It does require the phoenix jdbc driver though to utilize it.   This driver should be downloaded and placed in the /lib folder of SymmetricDS and restarted.
+==== Empty HBase
 
-Tested with jar : phoenix-5.0.0-HBase-2.0-client.jar
+If you are setting up replication to HBase and the tables are not already present in Hbase SymmetricDS can create them through the phoenix JDBC driver.   This driver maintains some additional meta data about the tables so that they can be accessed using SQL through the JDBC driver.
 
+This configuration is setup as a <<Load Only Node>> in SymmetricDS.  It does require the phoenix jdbc driver though to utilize it.   This driver should be downloaded and placed in the /lib folder of SymmetricDS and restarted.
+
+==== Existing HBase
+
+If you are setting up replication to an HBase database that already has tables present you will need to follow the steps below. 
+
+Setup a new H2 node that will contain all the SymmetricDS runtime tables.   To do this go through the <<Add Node>> setup and select type H2 and provide a name for the database (it will create a new one locally if not present).   This will allow SymmetricDS to create tables such as incoming_batch etc to maintain the replication.
+
+Next you will need to setup a <<Channels, channel>> (or use the default channel) and set the `data_loader_type` to *hbase*.
+
+Finally setup a parameter that contains the path of your hbase-site.xml file.  
+
+hbase.site.xml.path
+
+All changes captured will now use the HBase data loader to load into an existing HBase table.

@@ -59,6 +59,10 @@ public final class FormatUtils {
     public static final FastDateFormat TIMESTAMP_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd HH:mm:ss.SSS");
 
+    public static final String[] TIMESTAMP_WITH_TIMEZONE_PATTERNS = {
+            "yyyy-MM-dd HH:mm:ss.n xxx"
+    };
+
     public static final FastDateFormat TIME_FORMATTER = FastDateFormat.getInstance("HH:mm:ss.SSS");
 
     /* special characters for wildcard triggers */

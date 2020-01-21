@@ -73,6 +73,9 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
         } else if (platformName != null && platformName.startsWith(DatabaseNamesConstants.SNOWFLAKE)) {
             return new SnowflakeBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
+        } else if (DatabaseNamesConstants.BIGQUERY.equals(engine.getSymmetricDialect().getTargetPlatform().getName())) {
+            return new BigQueryDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter, 
+                    filters, errorHandlers, conflictSettings, resolvedData);
         } else {
             return new JdbcBatchBulkDatabaseWriter(symmetricDialect.getPlatform(), platform, 
                     symmetricDialect.getTablePrefix(), buildParameterDatabaseWritterSettings());

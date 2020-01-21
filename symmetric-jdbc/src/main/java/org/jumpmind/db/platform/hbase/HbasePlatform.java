@@ -1,4 +1,4 @@
-package org.jumpmind.db.platform.hbase;
+ package org.jumpmind.db.platform.hbase;
 
 import javax.sql.DataSource;
 
