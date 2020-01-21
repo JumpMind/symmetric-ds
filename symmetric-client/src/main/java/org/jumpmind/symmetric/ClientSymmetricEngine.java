@@ -24,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
@@ -45,6 +46,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
+import org.jumpmind.db.platform.bigquery.BigQueryPlatform;
 import org.jumpmind.db.platform.cassandra.CassandraPlatform;
 import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.platform.kafka.KafkaPlatform;
@@ -82,6 +84,11 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.xml.sax.InputSource;
+
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.http.HttpTransportOptions;
 
 /**
  * Represents the client portion of a SymmetricDS engine. This class can be used
