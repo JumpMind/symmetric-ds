@@ -160,6 +160,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                             reloadRequest.setCreateTime(new Date());
                             log.info("Creating load request from node " + identity.getNodeId() + " to node " + security.getNodeId());
                             engine.getDataService().insertTableReloadRequest(reloadRequest);
+                            engine.getNodeService().setInitialLoadEnabled(security.getNodeId(), false, false, 0, security.getInitialLoadCreateBy());
                             processInfo.incrementCurrentDataCount();
                         }
                     } else {
