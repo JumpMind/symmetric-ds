@@ -204,9 +204,4 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 table.getSchema());
     }
 
-    @Override
-    public String getTruncateSql(Table table) {
-        return super.getTruncateSql(table);
-    }
-
 }

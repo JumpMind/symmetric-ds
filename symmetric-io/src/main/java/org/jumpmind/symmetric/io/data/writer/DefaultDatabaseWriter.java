@@ -69,7 +69,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
     
     public static final String CUR_DATA = "DatabaseWriter.CurData";
-    
+
     private final String ATTRIBUTE_CHANNEL_ID_RELOAD = "reload";
     
     private final String TRUNCATE_PATTERN = "^(truncate)( table)?.*";
@@ -594,7 +594,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             for (String sql : sqlStatements) {
                 try {
                     sql = preprocessSqlStatement(sql);
-                    if(isTruncate(sql) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
+                    if (sql.matches(TRUNCATE_PATTERN) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
                         commit(true);
                     }
                     prepare(sql, data);
@@ -617,10 +617,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
-    }
-    
-    private boolean isTruncate(String sql) {
-        return sql.matches(TRUNCATE_PATTERN);
     }
     
     protected boolean requireNewStatement(DmlType currentType, CsvData data,
@@ -845,22 +841,25 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     protected String preprocessSqlStatement(String sql) {
-        sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
-        if (targetTable != null) {
-            sql = FormatUtils.replace("catalogName", quoteString(targetTable.getCatalog()), sql);
-            sql = FormatUtils.replace("schemaName", quoteString(targetTable.getSchema()), sql);
-            sql = FormatUtils.replace("tableName", quoteString(targetTable.getName()), sql);
-            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && isTruncate(sql)) {
-                sql = getPlatform().getTruncateSql(targetTable);
-            }
+        Table table = targetTable != null ? targetTable : sourceTable;
 
-            else if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(DELETE_PATTERN)) {
-                sql = getPlatform().getDeleteSql(targetTable);
+        sql = FormatUtils.replace("nodeId", batch.getTargetNodeId(), sql);
+        if (table != null) {
+            sql = FormatUtils.replace("catalogName", quoteString(table.getCatalog()), sql);
+            sql = FormatUtils.replace("schemaName", quoteString(table.getSchema()), sql);
+            sql = FormatUtils.replace("tableName", quoteString(table.getName()), sql);
+
+            DatabaseInfo info = getPlatform().getDatabaseInfo();
+            String quote = getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? info.getDelimiterToken() : "";
+            sql = FormatUtils.replace("fullTableName", table.getQualifiedTableName(quote, info.getCatalogSeparator(), info.getSchemaSeparator()),
+                    sql);
+
+            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)) {
+                sql = getPlatform().getTruncateSql(table);
+            } else if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(DELETE_PATTERN)
+                    && !sql.toUpperCase().contains("WHERE")) {
+                sql = getPlatform().getDeleteSql(table);
             }
-        } else if (sourceTable != null) {
-            sql = FormatUtils.replace("catalogName", quoteString(sourceTable.getCatalog()), sql);
-            sql = FormatUtils.replace("schemaName", quoteString(sourceTable.getSchema()), sql);
-            sql = FormatUtils.replace("tableName", quoteString(sourceTable.getName()), sql);
         }
 
         sql = getPlatform().scrubSql(sql);
