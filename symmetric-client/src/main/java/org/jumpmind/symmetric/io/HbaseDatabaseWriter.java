@@ -31,7 +31,7 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
     protected void setup() {
         try {
             if (config == null) {
-                Configuration config = HBaseConfiguration.create();
+                config = HBaseConfiguration.create();
                 config.addResource(new Path(this.hbaseSiteXmlPath));
             }
             
