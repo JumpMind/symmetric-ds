@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Column;
@@ -86,31 +85,20 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         Date loadingTs = null;
         Date existingTs = null;
         if (column.isTimestampWithTimezone()) {
-            // Get the existingTs with timezone
             String existingStr = databaseWriter.getTransaction().queryForObject(sql, String.class,
                     objectValues);
-            // If you are in this situation because of an instance where the conflict exists
-            // because the row doesn't exist, then existing simply needs to be null
+
             if (existingStr != null) {
-//	            int split = existingStr.lastIndexOf(" ");
-//	            existingTs = FormatUtils.parseDate(existingStr.substring(0, split).trim(),
-//	                    FormatUtils.TIMESTAMP_PATTERNS,
-//	                    TimeZone.getTimeZone(existingStr.substring(split).trim()));
                 existingTs = FormatUtils.parseTimestampWithTimezone(existingStr, FormatUtils.TIMESTAMP_WITH_TIMEZONE_PATTERNS);
             }
-            // Get the loadingTs with timezone
+
             if (loadingStr != null) {
-//                int split = loadingStr.lastIndexOf(" ");
-//                loadingTs = FormatUtils.parseDate(loadingStr.substring(0, split).trim(),
-//                        FormatUtils.TIMESTAMP_PATTERNS,
-//                        TimeZone.getTimeZone(loadingStr.substring(split).trim()));
                 loadingTs = FormatUtils.parseTimestampWithTimezone(loadingStr, FormatUtils.TIMESTAMP_WITH_TIMEZONE_PATTERNS);
             }
         } else {
-            // Get the existingTs
             existingTs = databaseWriter.getTransaction().queryForObject(sql, Timestamp.class,
                     objectValues);
-            // Get the loadingTs
+
             Object[] values = platform.getObjectValues(writer.getBatch().getBinaryEncoding(),
                     new String[] { loadingStr }, new Column[] { column });
             if (values[0] instanceof Date) {
