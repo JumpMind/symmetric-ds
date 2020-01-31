@@ -73,12 +73,15 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected String dbUrl;
 
     protected String ezConnectString;
+    
+    protected String sqlLoaderInfileCharset;
 
     protected int rows = 0;
 
     public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
-            String dbUser, String dbPassword, String dbUrl, String ezConnectString, DatabaseWriterSettings settings) {
+            String dbUser, String dbPassword, String dbUrl, String ezConnectString, String sqlLoaderInfileCharset,
+            DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         logger = LoggerFactory.getLogger(getClass());
         this.stagingManager = stagingManager;
@@ -87,6 +90,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.dbPassword = dbPassword;
         this.dbUrl = dbUrl;
         this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getConnectString(dbUrl));
+        this.sqlLoaderInfileCharset = StringUtils.defaultIfBlank(sqlLoaderInfileCharset, null);
 
         this.sqlLoaderOptions = new ArrayList<String>();
         if (StringUtils.isNotBlank(sqlLoaderOptions)) {
@@ -137,6 +141,9 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
+            if(StringUtils.isNotEmpty(sqlLoaderInfileCharset)) {
+                out.write(("CHARACTERSET " + sqlLoaderInfileCharset + "\n").getBytes());
+            }
             out.write(getInfileControl().getBytes());
             out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes());
 
