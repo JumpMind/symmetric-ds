@@ -36,6 +36,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.IParameterFilter;
 import org.jumpmind.symmetric.config.IParameterSaveFilter;
 import org.jumpmind.symmetric.model.DatabaseParameter;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -172,6 +173,10 @@ public class ParameterService extends AbstractParameterService implements IParam
     public boolean isRegistrationServer() {
         return StringUtils.isBlank(getRegistrationUrl())
                 || getRegistrationUrl().equalsIgnoreCase(getSyncUrl());
+    }
+    
+    public boolean isRemoteNodeRegistrationServer(Node remoteNode) {
+        return getRegistrationUrl().equalsIgnoreCase(remoteNode.getSyncUrl());
     }
 
 
