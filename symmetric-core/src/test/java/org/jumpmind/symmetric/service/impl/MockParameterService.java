@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.model.DatabaseParameter;
+import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MockParameterService extends AbstractParameterService implements IParameterService {
@@ -106,6 +107,11 @@ public class MockParameterService extends AbstractParameterService implements IP
 
     @Override
     public void deleteParameter(String key) {
+    }
+
+    @Override
+    public boolean isRemoteNodeRegistrationServer(Node remoteNode) {
+        return getRegistrationUrl().equalsIgnoreCase(remoteNode.getSyncUrl());
     }
 
 }
