@@ -71,11 +71,6 @@ dependencies {
     compile "com.vaadin:vaadin-themes:$vaadinVersion"
     compile "org.vaadin.addons:aceeditor:0.8.15"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
-
-	compile "org.apache.poi:poi-ooxml:3.17"
-//    provided ("com.vaadin:vaadin-client-compiler:$vaadinVersion") {
-//       exclude group:'org.eclipse.jetty'
-//    }
     
     provided "javax.servlet:javax.servlet-api:$servletVersion"
     provided "javax.servlet.jsp:jsp-api:2.2"
