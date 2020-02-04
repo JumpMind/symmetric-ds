@@ -179,7 +179,6 @@ public class ParameterService extends AbstractParameterService implements IParam
         return getRegistrationUrl().equalsIgnoreCase(remoteNode.getSyncUrl());
     }
 
-
     protected TypedProperties rereadApplicationParameters() {
         TypedProperties p = this.factory.reload();
         p.putAll(systemProperties);
