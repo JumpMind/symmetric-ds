@@ -285,13 +285,43 @@ subprojects { subproject ->
 		provided ("io.confluent:kafka-avro-serializer:3.2.1") {
 			exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'org.slf4j'
+        }        
+
+        provided "org.mongodb:mongo-java-driver:2.12.3"
+        
+        provided ("com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.36.1060") {
+			exclude group: 'org.apache.httpcomponents'
+            exclude group: 'commons-logging'
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'commons-codec'
         }
-		
-		provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+        
+        provided ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
+			exclude group: 'org.apache.httpcomponents'
+            exclude group: 'commons-logging'
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'commons-codec'
+        }
+
+        provided ("com.microsoft.azure:azure-storage:8.1.0") {
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'org.slf4j'
+        }
+
+        provided ("net.snowflake:snowflake-jdbc:3.6.27") {
+            exclude group: 'com.fasterxml.jackson.core'
+        }
+        
+        provided 'org.apache.phoenix:phoenix:5.0.0-HBase-2.0'
+
+        provided "org.apache.hbase:hbase-client:1.3.6"
+        
+        provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
             exclude group: 'com.google.protobuf'
         }
-        
-        
+
+        provided 'org.apache.httpcomponents:httpclient:4.5.4' // This is required by com.amazonaws:aws-java-sdk.  It is called out here to upgrade the version because of a user's security concerns.
+
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"
         testCompile "org.hamcrest:hamcrest-all:$hamcrestVersion"
