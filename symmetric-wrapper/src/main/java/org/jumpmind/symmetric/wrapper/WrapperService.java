@@ -34,9 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.jumpmind.security.ISecurityService;
-import org.jumpmind.security.SecurityConstants;
-import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.wrapper.Constants.Status;
 
 import com.sun.jna.Platform;
@@ -442,18 +439,6 @@ public abstract class WrapperService {
     }
 
     protected void updateStatus(Status status) {
-    }
-    
-    protected String unobfuscate(String s) {
-    	if(s != null && s.startsWith(SecurityConstants.PREFIX_OBF)) {
-        	ISecurityService ss = SecurityServiceFactory.create();
-    		return ss.unobfuscate(s);
-    	}
-    	return s;
-    }
-    
-    protected String obfuscate(String s) {
-    	return SecurityServiceFactory.create().obfuscate(s);
     }
     
     private static String getStackTrace(Throwable throwable) {
