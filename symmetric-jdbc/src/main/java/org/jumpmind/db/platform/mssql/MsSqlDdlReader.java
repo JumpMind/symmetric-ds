@@ -279,7 +279,11 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     @Override   
     public List<String> getTableNames(final String catalog, final String schema,
     		final String[] tableTypes) {
-        StringBuilder sql = new StringBuilder("select \"TABLE_NAME\" from \"INFORMATION_SCHEMA\".\"TABLES\" where \"TABLE_TYPE\"='BASE TABLE'");
+        StringBuilder sql = new StringBuilder("select \"TABLE_NAME\" from ");
+        if (isNotBlank(catalog)) {
+            sql.append("\"").append(catalog).append("\"").append(".");
+        }
+        sql.append("\"INFORMATION_SCHEMA\".\"TABLES\" where \"TABLE_TYPE\"='BASE TABLE'");
         List<Object> args = new ArrayList<Object>(2);
         if (isNotBlank(catalog)) {
             sql.append(" and \"TABLE_CATALOG\"=?");
@@ -289,7 +293,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
             sql.append(" and \"TABLE_SCHEMA\"=?");
             args.add(schema);
         }
-        
+
     	return schema == null ? new ArrayList<String>() : platform.getSqlTemplateDirty().queryWithHandler(sql.toString(), new StringMapper(), 
     	        new ChangeCatalogConnectionHandler(catalog) ,args.toArray(new Object[args.size()]));
     }

@@ -433,6 +433,19 @@ public final class FormatUtils {
     
     public static Timestamp parseTimestampWithTimezone(String str, String[] parsePatterns) {
         Timestamp ret = null;
+        // Need to make sure that the fraction seconds has nine digits,
+        // because of a parse bug in Java version 8
+        String dateTime = str.substring(0, str.indexOf("."));
+        String fractionSeconds = str.substring(str.indexOf(".")+1, str.lastIndexOf(" "));
+        String timeZone = str.substring(str.lastIndexOf(" ")+1);
+        if(dateTime == null || dateTime.length() == 0 ||
+                fractionSeconds == null || fractionSeconds.length() == 0 ||
+                timeZone == null || timeZone.length() == 0)
+        {
+            throw new ParseException("Unable to parse the date: " + str);
+        }
+        fractionSeconds = StringUtils.rightPad(fractionSeconds, 9, '0');
+        str = dateTime + "." + fractionSeconds + " " + timeZone;
         for(int i = 0; i < parsePatterns.length; i++) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(parsePatterns[i]);
             ret = null;

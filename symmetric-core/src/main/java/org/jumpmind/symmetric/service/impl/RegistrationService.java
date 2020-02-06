@@ -257,15 +257,13 @@ public class RegistrationService extends AbstractService implements IRegistratio
              * Only send automatic initial load once or if the client is really
              * re-registering
              */
-            if ((security != null && security.getInitialLoadTime() == null)
-                    || isRequestedRegistration) {
+            if ((security != null && security.getInitialLoadTime() == null) || isRequestedRegistration) {
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_ENABLED)) {
                     nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
 
                 if (parameterService.is(ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED)) {
-                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1,
-                            "registration");
+                    nodeService.setReverseInitialLoadEnabled(nodeId, true, false, -1, "registration");
                 }
             }
             
@@ -289,6 +287,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#registerNode(Node, OutputStream, boolean)
      */
+    // Called when node connects using pull registration URL
     public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
             String remoteAddress, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
@@ -404,7 +403,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         ISqlTransaction transaction = null;
         try {
             transaction = sqlTemplate.startSqlTransaction();
-            symmetricDialect.disableSyncTriggers(transaction, nodeId);
+//            symmetricDialect.disableSyncTriggers(transaction, nodeId);
             transaction.prepareAndExecute(getSql("registerNodeSecuritySql"), nodeId);
             transaction.commit();
             nodeService.flushNodeAuthorizedCache();
@@ -423,7 +422,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             for (INodeRegistrationListener l : registrationListeners) {
                 l.registrationSyncTriggers();
             }
-            symmetricDialect.enableSyncTriggers(transaction);
+//            symmetricDialect.enableSyncTriggers(transaction);
             close(transaction);
         }
     }
@@ -678,7 +677,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 String password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
                 password = filterPasswordOnSaveIfNeeded(password);
                 sqlTemplate.update(getSql("openRegistrationNodeSecuritySql"), new Object[] {
-                        nodeId, password, masterToMasterOnly ? null : me.getNodeId() });
+                        nodeId, password, me.getNodeId() });
                 
                 if (isNotBlank(remoteHost)) {
                     NodeHost nodeHost = new NodeHost(node.getNodeId(), null);

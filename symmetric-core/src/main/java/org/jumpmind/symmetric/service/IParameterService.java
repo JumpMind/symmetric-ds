@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.model.DatabaseParameter;
+import org.jumpmind.symmetric.model.Node;
 
 /**
  * Get and set application wide configuration information.
@@ -79,6 +80,8 @@ public interface IParameterService {
     public TypedProperties getAllParameters();
 
     public boolean isRegistrationServer();
+    
+    public boolean isRemoteNodeRegistrationServer(Node remoteNode);
     
     public boolean refreshFromDatabase();
 

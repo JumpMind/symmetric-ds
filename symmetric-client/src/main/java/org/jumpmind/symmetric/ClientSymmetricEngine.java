@@ -24,7 +24,6 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
@@ -47,7 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
-import org.jumpmind.db.platform.bigquery.BigQueryPlatform;
+import org.jumpmind.db.platform.bigquery.BigQueryPlatformFactory;
 import org.jumpmind.db.platform.cassandra.CassandraPlatform;
 import org.jumpmind.db.platform.generic.GenericJdbcDatabasePlatform;
 import org.jumpmind.db.platform.kafka.KafkaPlatform;
@@ -85,11 +84,6 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.xml.sax.InputSource;
-
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.http.HttpTransportOptions;
 
 /**
  * Represents the client portion of a SymmetricDS engine. This class can be used
@@ -326,22 +320,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         			} else if (dbDriver != null && dbDriver.contains("kafka")) {
         				return new KafkaPlatform(createSqlTemplateSettings(properties));
         			} else if (dbUrl != null && dbUrl.startsWith("bigquery://")) {
-        			    try {
-        			        HttpTransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions();
-        			        transportOptions = transportOptions.toBuilder().setConnectTimeout(60000).setReadTimeout(60000)
-        			            .build();
-        			          
-            			    BigQuery bigquery = BigQueryOptions.newBuilder()
-            		                .setProjectId(properties.get(ParameterConstants.GOOGLE_BIG_QUERY_PROJECT_ID))
-            		                .setLocation(properties.get(ParameterConstants.GOOGLE_BIG_QUERY_LOCATION, "US"))
-            		                .setCredentials(ServiceAccountCredentials.fromStream(
-            		                        new FileInputStream(properties.get(ParameterConstants.GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH))))
-            		                .setTransportOptions(transportOptions)
-            		                .build().getService();
-            			    return new BigQueryPlatform(createSqlTemplateSettings(properties), bigquery);
-        			    } catch (Exception e) {
-        			        throw new RuntimeException(e);
-        			    }
+                        return new BigQueryPlatformFactory().createDatabasePlatform(createSqlTemplateSettings(properties),
+                                properties.get(ParameterConstants.GOOGLE_BIG_QUERY_PROJECT_ID),
+                                properties.get(ParameterConstants.GOOGLE_BIG_QUERY_LOCATION, "US"),
+                                properties.get(ParameterConstants.GOOGLE_BIG_QUERY_SECURITY_CREDENTIALS_PATH));
         			}
         		}
             String jndiName = properties.getProperty(ParameterConstants.DB_JNDI_NAME);
