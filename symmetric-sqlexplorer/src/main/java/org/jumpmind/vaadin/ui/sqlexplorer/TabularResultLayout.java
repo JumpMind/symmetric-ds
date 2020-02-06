@@ -54,8 +54,9 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ExportDialog;
+import org.jumpmind.vaadin.ui.common.CsvExport;
 import org.jumpmind.vaadin.ui.common.Grid7DataProvider;
+import org.jumpmind.vaadin.ui.common.IDataProvider;
 import org.jumpmind.vaadin.ui.common.NotifyDialog;
 import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
@@ -339,7 +340,15 @@ public class TabularResultLayout extends VerticalLayout {
             
             @Override
             public void menuSelected(MenuBar.MenuItem selectedItem) {
-                new ExportDialog(new Grid7DataProvider(grid), db.getName(), sql).show();
+                IDataProvider target = new Grid7DataProvider(grid);
+                CsvExport csvExport = null;
+                if (target instanceof IDataProvider) {
+                    csvExport = new CsvExport((IDataProvider) target);
+                    csvExport.setFileName(db.getName() + "-export.csv");
+                    csvExport.setTitle(sql);
+                    csvExport.export();
+                }
+
             }
         });
         exportButton.setIcon(FontAwesome.UPLOAD);

@@ -482,10 +482,17 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         boolean syncChanges = !TableConstants.getTablesThatDoNotSync(tablePrefix).contains(
                 tableName)
                 && parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION);
-        boolean syncOnIncoming = !configurationService.isMasterToMaster() && (parameterService.is(
-                ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
-                || tableName.equals(TableConstants.getTableName(tablePrefix,
-                        TableConstants.SYM_TABLE_RELOAD_REQUEST)));
+//      boolean syncOnIncoming = !configurationService.isMasterToMaster() && (parameterService.is(
+//          ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
+//          || tableName.equals(TableConstants.getTableName(tablePrefix,
+//                  TableConstants.SYM_TABLE_RELOAD_REQUEST)));
+        // sync on incoming for symmetric tables are blocked from being synchronized to other nodes when
+        // master to master is set up. We need to allow sync on incoming at the registration server so that
+        // tables like sym_node and sym_node_security are delivered to other nodes in the master to master
+        // and the other nodes will then be able to synchronize with non-registration nodes.
+        boolean syncOnIncoming = (!configurationService.isMasterToMaster() || nodeService.isRegistrationServer())
+              && (parameterService.is(ParameterConstants.AUTO_SYNC_CONFIGURATION_ON_INCOMING, true)
+                      || tableName.equals(TableConstants.getTableName(tablePrefix,TableConstants.SYM_TABLE_RELOAD_REQUEST)));
         Trigger trigger = new Trigger();
         trigger.setUseHandleKeyUpdates(false);
         trigger.setTriggerId(tableName);

@@ -34,7 +34,7 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
             IStagingManager stagingManager, String tablePrefix, String tbLoaderCommand, String tbLoaderOptions,
             String dbUser, String dbPassword, String dbUrl, String dbName, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, stagingManager, tablePrefix, tbLoaderCommand, tbLoaderOptions,
-                dbUser, dbPassword, dbUrl, dbName, settings);
+                dbUser, dbPassword, dbUrl, dbName, null, settings);
         logger = LoggerFactory.getLogger(getClass());
     }
 

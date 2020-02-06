@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -123,8 +124,6 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     activeHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
                 }
                 
-                Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup = new HashMap<String, List<TriggerRouter>>();
-
                 for (NodeSecurity security : nodeSecurities) {
                     if (reloadGenerator != null) {
                         Node targetNode = engine.getNodeService().findNode(security.getNodeId());
@@ -136,32 +135,44 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         boolean reverseLoadEnabled = security.isRevInitialLoadEnabled();
                         boolean initialLoadEnabled = security.isInitialLoadEnabled();
                         boolean registered = security.getRegistrationTime() != null;
-                        if (thisMySecurityRecord && reverseLoadEnabled && (reverseLoadFirst || !initialLoadEnabled)) {
-                            sendReverseInitialLoad(processInfo, activeHistories, triggerRoutersByNodeGroup);
-                            TableReloadRequest reloadRequest = new TableReloadRequest();
-                            reloadRequest.setTriggerId(ParameterConstants.ALL);
-                            reloadRequest.setRouterId(ParameterConstants.ALL);
-                            reloadRequest.setSourceNodeId(security.getNodeId());
-                            reloadRequest.setTargetNodeId(identity.getNodeId());
-                            reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
-                            reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
-                            reloadRequest.setCreateTime(new Date());
-                            log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
-                            engine.getDataService().insertTableReloadRequest(reloadRequest);
-                            processInfo.incrementCurrentDataCount();
+                        if (! thisMySecurityRecord && registered && reverseLoadEnabled && (reverseLoadFirst || !initialLoadEnabled)) {
+                            // If node is created by me then set up reverse initial load
+                            if(StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
+                                TableReloadRequest request = new TableReloadRequest();
+                                
+                                request.setTriggerId(ParameterConstants.ALL);
+                                request.setRouterId(ParameterConstants.ALL);
+                                request.setSourceNodeId(security.getNodeId());
+                                request.setTargetNodeId(identity.getNodeId());
+                                request.setCreateTime(new Date());
+                                
+                                log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
+                                engine.getDataService().insertTableReloadRequest(request);
+                                processInfo.incrementCurrentDataCount();
+                                
+                                // Reset reverse initial load flag to off
+                                engine.getNodeService().setReverseInitialLoadEnabled(security.getNodeId(), false, true, 0l, "initialLoadService");
+                                
+                            }
+                            
                         } else if (!thisMySecurityRecord && registered && initialLoadEnabled && (!reverseLoadFirst || !reverseLoadEnabled)) {
-                            TableReloadRequest reloadRequest = new TableReloadRequest();
-                            reloadRequest.setTriggerId(ParameterConstants.ALL);
-                            reloadRequest.setRouterId(ParameterConstants.ALL);
-                            reloadRequest.setSourceNodeId(identity.getNodeId());
-                            reloadRequest.setTargetNodeId(security.getNodeId());
-                            reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
-                            reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
-                            reloadRequest.setCreateTime(new Date());
-                            log.info("Creating load request from node " + identity.getNodeId() + " to node " + security.getNodeId());
-                            engine.getDataService().insertTableReloadRequest(reloadRequest);
-                            engine.getNodeService().setInitialLoadEnabled(security.getNodeId(), false, false, 0, security.getInitialLoadCreateBy());
-                            processInfo.incrementCurrentDataCount();
+                            // If node is created by me then set up initial load
+                            if(StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
+                                TableReloadRequest reloadRequest = new TableReloadRequest();
+                                reloadRequest.setTriggerId(ParameterConstants.ALL);
+                                reloadRequest.setRouterId(ParameterConstants.ALL);
+                                reloadRequest.setSourceNodeId(identity.getNodeId());
+                                reloadRequest.setTargetNodeId(security.getNodeId());
+                                reloadRequest.setCreateTable(parameterService.is(ParameterConstants.INITIAL_LOAD_CREATE_SCHEMA_BEFORE_RELOAD));
+                                reloadRequest.setDeleteFirst(parameterService.is(ParameterConstants.INITIAL_LOAD_DELETE_BEFORE_RELOAD));
+                                reloadRequest.setCreateTime(new Date());
+                                log.info("Creating load request from node " + identity.getNodeId() + " to node " + security.getNodeId());
+                                engine.getDataService().insertTableReloadRequest(reloadRequest);
+                                processInfo.incrementCurrentDataCount();
+                                
+                                // Reset initial load flag to off
+                                engine.getNodeService().setInitialLoadEnabled(security.getNodeId(), false, true, 0l, "initialLoadService");
+                            }
                         }
                     } else {
                         List<NodeGroupLink> links = engine.getConfigurationService().getNodeGroupLinksFor(parameterService.getNodeGroupId(),

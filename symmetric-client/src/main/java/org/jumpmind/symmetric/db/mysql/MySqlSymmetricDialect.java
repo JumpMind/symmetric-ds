@@ -82,7 +82,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
             this.functionTemplateKeySuffix = PRE_5_1_23;    
         } else if (getMajorVersion() == 5 && (getMinorVersion() < 7 || (getMinorVersion() == 7 && versions[2] < 6))) {
-        	this.functionTemplateKeySuffix = PRE_5_7_6;
+            this.functionTemplateKeySuffix = PRE_5_7_6;
         } else {
             this.functionTemplateKeySuffix = POST_5_7_6;
         }        

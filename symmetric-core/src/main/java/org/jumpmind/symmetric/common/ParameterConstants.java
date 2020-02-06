@@ -255,6 +255,7 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_SEQUENCE_NOORDER_NEXTVALUE_DB_URLS = "oracle.sequence.noorder.nextvalue.db.urls";
     public final static String DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD = "oracle.bulk.load.sqlldr.cmd";
     public final static String DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_OPTIONS = "oracle.bulk.load.sqlldr.options";
+    public final static String DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_INFILE_CHARSET = "oracle.bulk.load.sqlldr.infile.charset";
     public final static String DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT = "oracle.bulk.load.ezconnect";
     public final static String DBDIALECT_ORACLE_LOAD_QUERY_HINT_PARALLEL_COUNT = "oracle.load.query.hint.parallel.count";
     
