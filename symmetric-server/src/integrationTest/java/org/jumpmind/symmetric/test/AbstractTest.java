@@ -209,7 +209,6 @@ abstract public class AbstractTest {
                 engine.destroy();
 
                 SymmetricWebServer server = new SymmetricWebServer();
-                server.setJmxEnabled(false);
                 server.setHttpPort(port);
                 log.info("Starting " + name + " on port " + port);
                 server.setJoin(false);

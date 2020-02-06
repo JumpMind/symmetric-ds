@@ -9,5 +9,5 @@ apply from: symAssembleDir + '/common.gradle'
         compile "commons-collections:commons-collections:$commonsCollectionVersion"
         compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         compile "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+        compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
     }

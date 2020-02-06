@@ -226,8 +226,7 @@ subprojects { subproject ->
         commonsFileuploadVersion = '1.4'
         commonsIoVersion = '2.6'
         commonsLangVersion = '2.6'
-        commonsNetVersion = '3.6'
-        commonsCodecVersion = '1.12'
+        commonsCodecVersion = '1.14'
         commonsCollectionVersion = '3.2.2'
         hamcrestVersion = '1.3'
         h2Version = '1.3.176'
@@ -242,7 +241,7 @@ subprojects { subproject ->
         jdomVersion = '2.0.5'
         junitVersion = '4.11'
         log4jVersion = '1.2.17'
-        slf4jVersion = '1.7.26'
+        slf4jVersion = '1.7.29'
         mockitoVersion = '2.27.0'
         powerMockVersion = '2.0.2'
         mysqlVersion = '5.1.45'
@@ -267,83 +266,67 @@ subprojects { subproject ->
         compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
         compile "log4j:log4j:$log4jVersion"
         
-        provided "org.apache.derby:derby:$derbyVersion"
-        provided "org.apache.derby:derbytools:$derbyVersion"
         provided "mysql:mysql-connector-java:$mysqlVersion"
-        provided ("org.mariadb.jdbc:mariadb-java-client:$mariaDbVersion") { exclude group: 'net.java.dev.jna' }
         provided "org.postgresql:postgresql:$postgresqlVersion"
         provided "jdbc:ojdbc8:18.3.0.0"
         provided "net.sourceforge.jtds:jtds:$jtdsVersion"
-        provided "org.voltdb:voltdbclient:$voltDbVersion"
-        provided "org.hsqldb:hsqldb:$hsqldbVersion"
         provided "com.h2database:h2:$h2Version"
-        provided "org.xerial:sqlite-jdbc:$sqliteVersion"
-        provided ("org.firebirdsql.jdbc:jaybird:$firebirdVersion") { 
-            exclude group: 'geronimo-spec'
-            exclude group: 'log4j'
-            exclude group: 'junit'
-            exclude group: 'xalan'
-        }
-        provided "xalan:xalan:2.7.1" // Required by  org.firebirdsql.jdbc:jaybird, but a user's security requirement was for a newer version of xalan.
-        provided ("net.sf.jt400:jt400:$jt400Version")
-        provided "jdbc.nuodb:nuodb-jdbc:$nuodbVersion"
-        provided "jdbc.tibero:tibero:$tiberoVersion"
-        provided "com.sap.cloud.db.jdbc:ngdbc:$hanaVersion"
 
-        // javax.resource needed by jaybird
-        provided "org.apache.geronimo.specs:geronimo-j2ee-connector_1.6_spec:1.0"
-        provided ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
+        compileOnly "org.apache.derby:derby:$derbyVersion"
+        compileOnly "org.hsqldb:hsqldb:$hsqldbVersion"
+        compileOnly "org.xerial:sqlite-jdbc:$sqliteVersion"
+        compileOnly "jdbc.sybase:jconnect:7.7"
+
+        compileOnly ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
             exclude group: 'org.slf4j'
             exclude group: 'com.google.guava'
         }
-        provided ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
+        compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
         	exclude group: 'commons-lang', module: 'commons-lang'
         }
-        provided ("org.apache.kafka:kafka-clients:1.1.0") {
+        compileOnly ("org.apache.kafka:kafka-clients:1.1.0") {
             exclude group: 'org.slf4j'
         }
-        provided ("org.apache.avro:avro:1.8.2") {
+        compileOnly ("org.apache.avro:avro:1.8.2") {
             exclude group: 'org.slf4j'
         }
-		provided ("io.confluent:kafka-avro-serializer:3.2.1") {
+		compileOnly ("io.confluent:kafka-avro-serializer:3.2.1") {
 			exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'org.slf4j'
         }        
 
-        provided "org.mongodb:mongo-java-driver:2.12.3"
+        compileOnly "org.mongodb:mongo-java-driver:2.12.3"
         
-        provided ("com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.36.1060") {
+        compileOnly ("com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.36.1060") {
 			exclude group: 'org.apache.httpcomponents'
             exclude group: 'commons-logging'
             exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'commons-codec'
         }
         
-        provided ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
+        compileOnly ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
 			exclude group: 'org.apache.httpcomponents'
             exclude group: 'commons-logging'
             exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'commons-codec'
         }
 
-        provided ("com.microsoft.azure:azure-storage:8.1.0") {
+        compileOnly ("com.microsoft.azure:azure-storage:8.1.0") {
             exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'org.slf4j'
         }
 
-        provided ("net.snowflake:snowflake-jdbc:3.6.27") {
+        compileOnly ("net.snowflake:snowflake-jdbc:3.6.27") {
             exclude group: 'com.fasterxml.jackson.core'
         }
         
-        provided 'org.apache.phoenix:phoenix:5.0.0-HBase-2.0'
+        compileOnly 'org.apache.phoenix:phoenix:5.0.0-HBase-2.0'
 
-        provided "org.apache.hbase:hbase-client:1.3.6"
+        compileOnly "org.apache.hbase:hbase-client:1.3.6"
         
-        provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
             exclude group: 'com.google.protobuf'
         }
-
-        provided 'org.apache.httpcomponents:httpclient:4.5.4' // This is required by com.amazonaws:aws-java-sdk.  It is called out here to upgrade the version because of a user's security concerns.
 
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"

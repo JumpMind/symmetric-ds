@@ -9,7 +9,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile "commons-cli:commons-cli:$commonsCliVersion"
         compile "commons-vfs:commons-vfs:1.0"
 
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+        compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')

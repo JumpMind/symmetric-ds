@@ -86,11 +86,7 @@ task generateAppendixes {
 }
 
 ext.getDocDir = {
-    if (project.properties.containsKey('pro')) {
-        return file("$buildDir/../../../symmetric-pro/symmetric-pro/src/main/resources/VAADIN/doc")
-    } else {
-        return file("$buildDir/doc")
-    }
+    return file("$buildDir/doc")
 }
 
 task cleanDocs {

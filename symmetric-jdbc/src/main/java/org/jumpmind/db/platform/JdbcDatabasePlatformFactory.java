@@ -31,7 +31,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
-import org.h2.util.JdbcUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;
@@ -348,25 +347,18 @@ public class JdbcDatabasePlatformFactory {
 
     private static boolean isFirebirdDialect1(Connection connection) {
         boolean isDialect1 = false;
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = connection.createStatement();
-            rs = stmt.executeQuery("select current_time from rdb$database");
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("select current_time from rdb$database")) {
             rs.next();
         } catch (SQLException ex) {
             isDialect1 = true;
-            try {
-                JdbcUtils.closeSilently(rs);
-                rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database");
-                rs.next();
-            } catch (SQLException e) {
-                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
-            }
-        } finally {
-            JdbcUtils.closeSilently(rs);
-            JdbcUtils.closeSilently(stmt);
-        }        
+        }
+        if (isDialect1) {
+	        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database")) {
+	            rs.next();
+	        } catch (SQLException e) {
+	            log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
+	        }
+        }
         return isDialect1;
     }
 

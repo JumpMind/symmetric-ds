@@ -121,7 +121,6 @@ public abstract class AbstractIntegrationTest {
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
                 SymmetricWebServer server = new SymmetricWebServer();
-                server.setJmxEnabled(false);
                 server.setJoin(false);
                 server.start(Integer.parseInt(AppUtils.getPortNumber()));
 

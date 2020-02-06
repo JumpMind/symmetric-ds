@@ -44,9 +44,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.h2.util.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
@@ -203,7 +203,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     }
 
     private void printHelpLine(PrintWriter pw, String cmd) {
-        String text = StringUtils.pad("   " + cmd, 23, " ", true)
+        String text = StringUtils.rightPad("   " + cmd, 23, " ")
                 + Message.get("SymAdmin.Cmd." + cmd);
         new HelpFormatter().printWrapped(pw, 79, 25, text);
     }

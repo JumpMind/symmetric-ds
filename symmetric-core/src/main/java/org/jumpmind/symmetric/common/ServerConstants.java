@@ -36,9 +36,6 @@ public class ServerConstants {
     public final static String HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     public final static String HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";    
     
-    public final static String JMX_HTTP_ENABLE = "jmx.http.enable";
-    public final static String JMX_HTTP_PORT = "jmx.http.port";
-    
     public static final String SERVER_ALLOW_DIR_LISTING = "server.allow.dir.list";
     public static final String SERVER_ALLOW_HTTP_METHODS = "server.allow.http.methods";    
     public static final String SERVER_DISALLOW_HTTP_METHODS = "server.disallow.http.methods";

@@ -63,10 +63,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
     private static final String OPTION_NO_NIO = "no-nio";
 
     private static final String OPTION_NO_DIRECT_BUFFER = "no-directbuffer";
-
-    private static final String OPTION_JMX_DISABLE = "jmx-disable";
-    
-    private static final String OPTION_JMX_PORT = "jmx-port";
     
     private static final String OPTION_WINXP = "winxp";
     
@@ -110,8 +106,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         addOption(options, "I", OPTION_MAX_IDLE_TIME, true);
         addOption(options, "nnio", OPTION_NO_NIO, false);
         addOption(options, "ndb", OPTION_NO_DIRECT_BUFFER, false);
-        addOption(options, "JD", OPTION_JMX_DISABLE, false);
-        addOption(options, "J", OPTION_JMX_PORT, true);
         addOption(options, OPTION_WINXP, OPTION_WINXP, false);
     }
 
@@ -121,7 +115,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         String host = null;
         int httpPort = 0;
         int httpSecurePort = 0;
-        int jmxPort = 0;
         
         String webDir = SymmetricWebServer.DEFAULT_WEBAPP_DIR;
         int maxIdleTime = SymmetricWebServer.DEFAULT_MAX_IDLE_TIME;
@@ -155,24 +148,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
             noDirectBuffer = true;
         }
         
-        boolean jmxDisabledFlag = line.hasOption(OPTION_JMX_DISABLE); 
-        
-        if (!jmxDisabledFlag) {
-            if (line.hasOption(OPTION_JMX_PORT)) {
-                jmxPort = Integer.valueOf(line.getOptionValue(OPTION_JMX_PORT));
-            } else {
-                if (line.hasOption(OPTION_START_SECURE_SERVER)) {
-                    if (httpSecurePort > 0) {
-                        jmxPort = httpSecurePort + 1;
-                    }
-                } else {
-                    if (httpPort > 0) {
-                        jmxPort = httpPort + 1;
-                    }
-                }
-            }
-        }
-        
         if (line.hasOption(OPTION_WINXP)) {
             new Thread() {
                 {
@@ -202,13 +177,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
                     true, noNio, noDirectBuffer);
             if (isNotBlank(host)) {
                 webServer.setHost(host);
-            }
-            
-            if (jmxDisabledFlag) {                
-                webServer.setJmxEnabled(false);
-            }
-            if (jmxPort > 0) {
-                webServer.setJmxPort(jmxPort);
             }
             
             if (httpPort > 0) {

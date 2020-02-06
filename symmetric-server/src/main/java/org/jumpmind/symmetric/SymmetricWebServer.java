@@ -20,23 +20,17 @@
  */
 package org.jumpmind.symmetric;
 
-import java.lang.management.ManagementFactory;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
-import javax.management.Attribute;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -69,9 +63,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import mx4j.tools.adaptor.http.HttpAdaptor;
-import mx4j.tools.adaptor.http.XSLTProcessor;
-
 /**
  * Start up SymmetricDS through an embedded Jetty instance.
  *
@@ -84,8 +75,6 @@ public class SymmetricWebServer {
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(SystemConstants.SYSPROP_WEB_DIR, AppUtils.getSymHome() + "/web");
 
     public static final String DEFAULT_HTTP_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTP_PORT, "31415");
-
-    public static final String DEFAULT_JMX_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_JMX_PORT, "31416");
 
     public static final String DEFAULT_HTTPS_PORT = System.getProperty(SystemConstants.SYSPROP_DEFAULT_HTTPS_PORT, "31417");
 
@@ -115,10 +104,6 @@ public class SymmetricWebServer {
     protected boolean httpsEnabled = false;
 
     protected int httpsPort = -1;
-
-    protected boolean jmxEnabled = true;
-
-    protected int jmxPort = Integer.parseInt(DEFAULT_JMX_PORT);
 
     protected String basicAuthUsername = null;
 
@@ -185,14 +170,10 @@ public class SymmetricWebServer {
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTP_ENABLE, "true")));
         httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE,
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS_ENABLE, "true")));
-        jmxEnabled = serverProperties.is(ServerConstants.JMX_HTTP_ENABLE,
-                Boolean.parseBoolean(System.getProperty(ServerConstants.JMX_HTTP_ENABLE, "true")));
         httpPort = serverProperties.getInt(ServerConstants.HTTP_PORT,
                 Integer.parseInt(System.getProperty(ServerConstants.HTTP_PORT, "" + httpPort)));
         httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT,
                 Integer.parseInt(System.getProperty(ServerConstants.HTTPS_PORT, "" + httpsPort)));
-        jmxPort = serverProperties.getInt(ServerConstants.JMX_HTTP_PORT,
-                Integer.parseInt(System.getProperty(ServerConstants.JMX_HTTP_PORT, "" + jmxPort)));
         host = serverProperties.get(ServerConstants.HOST_BIND_NAME, System.getProperty(ServerConstants.HOST_BIND_NAME, host));
         httpSslVerifiedServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS,
                 System.getProperty(ServerConstants.HTTPS_VERIFIED_SERVERS, httpSslVerifiedServerNames));
@@ -209,40 +190,31 @@ public class SymmetricWebServer {
         }
     }
 
-    public SymmetricWebServer start(int httpPort, int jmxPort, String propertiesUrl) throws Exception {
-        this.propertiesFile = propertiesUrl;
-        return start(httpPort, jmxPort);
-    }
-
     public SymmetricWebServer start() throws Exception {
         if (httpPort > 0 && httpsPort > 0 && httpEnabled && httpsEnabled) {
-            return startMixed(httpPort, httpsPort, jmxPort);
+            return startMixed(httpPort, httpsPort);
         } else if (httpPort > 0 && httpEnabled) {
-            return start(httpPort, jmxPort);
+            return start(httpPort);
         } else if (httpsPort > 0 && httpsEnabled) {
-            return startSecure(httpsPort, jmxPort);
+            return startSecure(httpsPort);
         } else {
             throw new IllegalStateException("Either an http or https port needs to be set before starting the server.");
         }
     }
 
     public SymmetricWebServer start(int httpPort) throws Exception {
-        return start(httpPort, 0, httpPort + 1, Mode.HTTP);
+        return start(httpPort, 0, Mode.HTTP);
+    }
+    
+    public SymmetricWebServer startSecure(int httpsPort) throws Exception {
+        return start(0, httpsPort, Mode.HTTPS);
     }
 
-    public SymmetricWebServer start(int httpPort, int jmxPort) throws Exception {
-        return start(httpPort, 0, jmxPort, Mode.HTTP);
+    public SymmetricWebServer startMixed(int httpPort, int secureHttpPort) throws Exception {
+        return start(httpPort, secureHttpPort, Mode.MIXED);
     }
 
-    public SymmetricWebServer startSecure(int httpsPort, int jmxPort) throws Exception {
-        return start(0, httpsPort, jmxPort, Mode.HTTPS);
-    }
-
-    public SymmetricWebServer startMixed(int httpPort, int secureHttpPort, int jmxPort) throws Exception {
-        return start(httpPort, secureHttpPort, jmxPort, Mode.MIXED);
-    }
-
-    public SymmetricWebServer start(int httpPort, int securePort, int httpJmxPort, Mode mode) throws Exception {
+    public SymmetricWebServer start(int httpPort, int securePort, Mode mode) throws Exception {
         
         SymmetricUtils.logNotices();
 
@@ -305,10 +277,6 @@ public class SymmetricWebServer {
         }
 
         server.start();
-
-        if (httpJmxPort > 0) {
-            registerHttpJmxAdaptor(httpJmxPort);
-        }
 
         if (join) {
             log.info("Joining the web server main thread");
@@ -435,54 +403,14 @@ public class SymmetricWebServer {
         return connectors.toArray(new Connector[connectors.size()]);
     }
 
-    protected void registerHttpJmxAdaptor(int jmxPort) throws Exception {
-        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true) && jmxEnabled) {
-            log.info("Starting JMX HTTP console on port {}", jmxPort);
-            MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-            ObjectName name = getHttpJmxAdaptorName();
-            mbeanServer.createMBean(HttpAdaptor.class.getName(), name);
-            if (!AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_LOCALHOST_ENABLED, true)) {
-                mbeanServer.setAttribute(name, new Attribute("Host", "0.0.0.0"));
-            } else if (StringUtils.isNotBlank(host)) {
-                mbeanServer.setAttribute(name, new Attribute("Host", host));
-            }
-            mbeanServer.setAttribute(name, new Attribute("Port", Integer.valueOf(jmxPort)));
-            ObjectName processorName = getXslJmxAdaptorName();
-            mbeanServer.createMBean(XSLTProcessor.class.getName(), processorName);
-            mbeanServer.setAttribute(name, new Attribute("ProcessorName", processorName));
-            mbeanServer.invoke(name, "start", null, null);
-        }
-    }
-
-    protected ObjectName getHttpJmxAdaptorName() throws MalformedObjectNameException {
-        return new ObjectName("Server:name=HttpAdaptor");
-    }
-
-    protected ObjectName getXslJmxAdaptorName() throws MalformedObjectNameException {
-        return new ObjectName("Server:name=XSLTProcessor");
-    }
-
-    protected void removeHttpJmxAdaptor() {
-        if (AppUtils.isSystemPropertySet(SystemConstants.SYSPROP_JMX_HTTP_CONSOLE_ENABLED, true) && jmxEnabled) {
-            try {
-                MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-                mbeanServer.unregisterMBean(getHttpJmxAdaptorName());
-                mbeanServer.unregisterMBean(getXslJmxAdaptorName());
-            } catch (Exception e) {
-                log.warn("Could not unregister the JMX HTTP Adaptor");
-            }
-        }
-    }
-
     public void stop() throws Exception {
         if (server != null) {
-            removeHttpJmxAdaptor();
             server.stop();
         }
     }
 
     public static void main(String[] args) throws Exception {
-        new SymmetricWebServer().start(8080, 8081);
+        new SymmetricWebServer().start(8080);
     }
 
     public boolean isJoin() {
@@ -559,14 +487,6 @@ public class SymmetricWebServer {
         return name;
     }
 
-    public int getJmxPort() {
-        return jmxPort;
-    }
-
-    public void setJmxPort(int jmxPort) {
-        this.jmxPort = jmxPort;
-    }
-
     public void setHttpEnabled(boolean httpEnabled) {
         this.httpEnabled = httpEnabled;
     }
@@ -581,14 +501,6 @@ public class SymmetricWebServer {
 
     public boolean isHttpsEnabled() {
         return httpsEnabled;
-    }
-
-    public void setJmxEnabled(boolean jmxEnabled) {
-        this.jmxEnabled = jmxEnabled;
-    }
-
-    public boolean isJmxEnabled() {
-        return jmxEnabled;
     }
     
     protected Class<?> loadRemoteStatusEndpoint() {

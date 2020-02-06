@@ -17,20 +17,21 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile ("com.mangofactory:swagger-springmvc:0.6.5") {
             exclude group: 'asm'
         }
-        compile project(":symmetric-wrapper")
+        provided project(":symmetric-wrapper")
 
         provided "javax.jms:jms-api:1.1-rev-1"
-        provided "org.mongodb:mongo-java-driver:2.12.3"
-        provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
+        compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         
-        compile "javax.servlet:javax.servlet-api:$servletVersion"
-        provided "org.eclipse.jetty:jetty-annotations:$jettyVersion"
-        provided "org.eclipse.jetty:jetty-servlets:$jettyVersion"
+        provided "javax.servlet:javax.servlet-api:$servletVersion"
         provided "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-        provided "org.eclipse.jetty:jetty-jmx:$jettyVersion"
         provided "javax.websocket:javax.websocket-api:1.1"
-        provided "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"        
-        provided "mx4j:mx4j-tools:3.0.1"
+        provided ("org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion") {
+           exclude group: "org.eclipse.jetty", module: "jetty-annotations"
+           exclude group: "org.eclipse.jetty", module: "jetty-jmx"
+           exclude group: "org.eclipse.jetty", module: "jetty-jndi"
+           exclude group: "org.eclipse.jetty", module: "jetty-plus"
+           exclude group: "org.ow2.asm"
+        }
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
@@ -73,19 +74,12 @@ apply from: symAssembleDir + '/asciidoc.gradle'
                 }
                 into('doc') { from ("$symAssembleDir/build/doc") }
                 into('lib') {
-                    from project(":symmetric-wrapper").configurations.compile {
-                        include "*jna*"
-                    }
-                }
-                into('lib') {
                     from configurations.provided { exclude "*animal-sniffer*" }
-                    from project(":symmetric-wrapper").jar
                     rename 'symmetric-wrapper(.*).jar', 'symmetric-wrapper.jar'
                 }
                 into('web/WEB-INF/lib') {
                     from project(":symmetric-server").jar
                     from configurations.compile.filter {  a ->
-                        !a.path.contains("symmetric-wrapper") &&
                                 !configurations.provided.contains(a) &&
                                 !project(':symmetric-server').configurations.provided.contains(a)
                     }
