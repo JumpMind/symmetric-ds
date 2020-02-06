@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -65,7 +66,8 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
                     byte[] columnFamily = split[0].getBytes();
                     byte[] columnName = split[1].getBytes();
                     
-                    put.addColumn(columnFamily, columnName, values[i].getBytes());
+                    byte[] value = StringUtils.isEmpty(values[i]) ? new byte[0] : values[i].getBytes();
+                    put.addColumn(columnFamily, columnName, value);
                     putList.add(put);
                 }
             }
