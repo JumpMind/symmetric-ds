@@ -257,6 +257,8 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_OPTIONS = "oracle.bulk.load.sqlldr.options";
     public final static String DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_INFILE_CHARSET = "oracle.bulk.load.sqlldr.infile.charset";
     public final static String DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT = "oracle.bulk.load.ezconnect";
+    public final static String DBDIALECT_ORACLE_BULK_FIELD_TERMINATOR = "oracle.bulk.load.field.terminator";
+    public final static String DBDIALECT_ORACLE_BULK_LINE_TERMINATOR = "oracle.bulk.load.line.terminator";
     public final static String DBDIALECT_ORACLE_LOAD_QUERY_HINT_PARALLEL_COUNT = "oracle.load.query.hint.parallel.count";
     
     public final static String DBDIALECT_TIBERO_USE_TRANSACTION_VIEW = "tibero.use.transaction.view";
