@@ -337,7 +337,15 @@ subprojects { subproject ->
         
         provided 'org.apache.phoenix:phoenix:5.0.0-HBase-2.0'
 
-        provided "org.apache.hbase:hbase-client:1.3.6"
+        provided ("org.apache.hbase:hbase-client:1.3.6") {
+            exclude group: 'commons-cli'
+            exclude group: 'junit'
+            exclude group: 'javax.xml.bind'
+            exclude group: 'commons-beanutils'
+            exclude group: 'commons-codec'
+            exclude group: 'commons-io'
+            exclude group: 'org.apache.commons', module: 'commons-math3'
+        }
         
         provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
             exclude group: 'com.google.protobuf'
