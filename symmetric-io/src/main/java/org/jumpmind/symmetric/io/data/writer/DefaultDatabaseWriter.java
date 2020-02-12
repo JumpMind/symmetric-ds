@@ -840,11 +840,14 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             DatabaseInfo info = getPlatform().getDatabaseInfo();
             String quote = getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? info.getDelimiterToken() : "";
 			sql = FormatUtils.replace("fullTableName", table.getQualifiedTableName(quote, info.getCatalogSeparator(), info.getSchemaSeparator()), sql);
+
+			final String old38CompatibilityTable = "SYM_NODE";
 			
-            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)) {
+            if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)
+                    && !table.getNameLowerCase().equals(old38CompatibilityTable)) {
                 sql = getPlatform().getTruncateSql(table);
             } else if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(DELETE_PATTERN)
-                    && !sql.toUpperCase().contains("WHERE")) {
+                    && !sql.toUpperCase().contains("WHERE") && !table.getNameLowerCase().equals(old38CompatibilityTable)) {
                 sql = getPlatform().getDeleteSql(table);
             }
 		}
