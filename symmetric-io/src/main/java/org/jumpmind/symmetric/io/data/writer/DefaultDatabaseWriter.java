@@ -855,7 +855,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     sql);
 
             final String old38CompatibilityTable = "sym_node";
-
             if (ATTRIBUTE_CHANNEL_ID_RELOAD.equals(batch.getChannelId()) && sql.matches(TRUNCATE_PATTERN)
                     && !table.getNameLowerCase().equals(old38CompatibilityTable)) {
                 sql = getPlatform().getTruncateSql(table);
