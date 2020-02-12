@@ -32,9 +32,11 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
 
     public TiberoBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String tbLoaderCommand, String tbLoaderOptions,
-            String dbUser, String dbPassword, String dbUrl, String dbName, DatabaseWriterSettings settings) {
+            String dbUser, String dbPassword, String dbUrl, String dbName, String sqlLoaderInfileCharset,
+            String fieldTerminator, String lineTerminator,
+            DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, stagingManager, tablePrefix, tbLoaderCommand, tbLoaderOptions,
-                dbUser, dbPassword, dbUrl, dbName, null, settings);
+                dbUser, dbPassword, dbUrl, dbName, sqlLoaderInfileCharset, fieldTerminator, lineTerminator, settings);
         logger = LoggerFactory.getLogger(getClass());
     }
 
@@ -57,7 +59,7 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
 
     @Override
     protected String getLineTerminatedByControl() {
-        return "LINES TERMINATED BY '" + LINE_TERMINATOR + "'\n";
+        return "LINES TERMINATED BY '" + lineTerminator + "'\n";
     }
 
     @Override
