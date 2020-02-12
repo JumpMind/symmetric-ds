@@ -345,6 +345,7 @@ subprojects { subproject ->
             exclude group: 'commons-codec'
             exclude group: 'commons-io'
             exclude group: 'org.apache.commons', module: 'commons-math3'
+            exclude group: 'org.slf4j'
         }
         
         provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
