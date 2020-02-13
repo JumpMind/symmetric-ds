@@ -38,6 +38,7 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDdlBuilder;
@@ -173,14 +174,16 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
     }
 
     protected boolean isFullTextIndex(IIndex index) {
-            for (int idx = 0; idx < index.getColumnCount(); idx++) {
-                 Column column = index.getColumn(idx).getColumn();
-                 
-             if (column.getMappedTypeCode() == Types.LONGVARCHAR) {
-                     return true;
-             }
+        for (int idx = 0; idx < index.getColumnCount(); idx++) {
+            IndexColumn indexColumn = index.getColumn(idx);
+            if (indexColumn != null) {
+                Column column = indexColumn.getColumn();
+                if (column != null && column.getMappedTypeCode() == Types.LONGVARCHAR) {
+                    return true;
+                }
             }
-            return false;
+        }
+        return false;
     }
     
     @Override
