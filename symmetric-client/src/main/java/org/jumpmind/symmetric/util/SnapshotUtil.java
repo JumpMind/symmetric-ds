@@ -297,6 +297,10 @@ public class SnapshotUtil {
         if (engine.getSymmetricDialect() instanceof MySqlSymmetricDialect) {
             extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
                     "show processlist");
+            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-global-variables.csv",
+                    "show global variables");
+            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-session-variables.csv",
+                    "show session variables");
         }
 
         if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
