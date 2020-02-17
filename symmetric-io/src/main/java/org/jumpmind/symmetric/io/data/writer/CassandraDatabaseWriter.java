@@ -135,6 +135,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
     protected void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
     }
     
+    @SuppressWarnings("unchecked")
     protected void bindVariables(BoundStatement bstmt, Column[] columns, int[] types, String[] values) {
         // TODO data time mappings
 
@@ -184,7 +185,8 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
         }
     }
 
-    protected List<Object> parseList(Column c, String val) {
+    @SuppressWarnings("rawtypes")
+    protected List parseList(Column c, String val) {
         try {
             if (c.getDescription() != null) {
                 if (c.getDescription().toLowerCase().equals("text") || c.getDescription().toLowerCase().equals("varchar")) {
@@ -212,7 +214,8 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
         }
     }
 
-    protected Set<Object> parseSet(Column c, String val) {
+    @SuppressWarnings("rawtypes")
+    protected Set parseSet(Column c, String val) {
         try {
             if (c.getDescription() != null) {
                 if (c.getDescription().toLowerCase().equals("text") || c.getDescription().toLowerCase().equals("varchar")) {
@@ -240,7 +243,8 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
         }
     }
 
-    protected Map<Object, Object> parseMap(Column c, String val) {
+    @SuppressWarnings("rawtypes")
+    protected Map parseMap(Column c, String val) {
         try {
             if (c.getDescription() != null) {
                 // TODO find dynamic way to create map types based on column types

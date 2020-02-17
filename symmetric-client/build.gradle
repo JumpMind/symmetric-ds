@@ -7,7 +7,8 @@ apply from: symAssembleDir + '/common.gradle'
         compile project(":symmetric-jdbc")
         compile "org.springframework:spring-context:$springVersion"
         compile "commons-cli:commons-cli:$commonsCliVersion"
-        compile "commons-vfs:commons-vfs:1.0"
+        compile "commons-vfs:commons-vfs:$commonsVfs"
+        compile "org.jdom:jdom2:$jdomVersion"
 
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
 

@@ -7,13 +7,11 @@ apply from: symAssembleDir + '/asciidoc.gradle'
 
     dependencies {
         compile project(":symmetric-client")
-        compile "javax.mail:mail:1.4.5"
         compile "org.springframework:spring-jms:$springVersion"
         compile "org.springframework:spring-web:$springVersion"
-        compile "org.springframework:spring-webmvc:$springVersion" // This was is enture that swagger-springmvc picks up the matching Spring version.
-        compile "javax.xml.bind:jaxb-api:2.2.7"
-        compile "org.codehaus.jackson:jackson-mapper-asl:1.9.9"
-        compile "org.jdom:jdom:1.1"
+        compile "org.springframework:spring-webmvc:$springVersion" // This was is ensure that swagger-springmvc picks up the matching Spring version.
+        compile "javax.xml.bind:jaxb-api:$jaxbVersion"
+        compile "org.jdom:jdom2:$jdomVersion"
         compile ("com.mangofactory:swagger-springmvc:0.6.5") {
             exclude group: 'asm'
         }
@@ -24,7 +22,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         
         provided "javax.servlet:javax.servlet-api:$servletVersion"
         provided "org.eclipse.jetty:jetty-webapp:$jettyVersion"
-        provided "javax.websocket:javax.websocket-api:1.1"
+        provided "javax.websocket:javax.websocket-api:$websocketVersion"
         provided ("org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion") {
            exclude group: "org.eclipse.jetty", module: "jetty-annotations"
            exclude group: "org.eclipse.jetty", module: "jetty-jmx"

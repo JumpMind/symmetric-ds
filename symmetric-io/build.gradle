@@ -7,8 +7,8 @@ apply from: symAssembleDir + '/common.gradle'
         compile project(":symmetric-db")
         compile "org.apache-extras.beanshell:bsh:$bshVersion"
         compile "net.sourceforge.jeval:jeval:0.9.4"
-        provided "com.fasterxml.jackson.core:jackson-core:2.9.5"
-        provided "com.fasterxml.jackson.core:jackson-databind:2.9.5"
+        provided "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+        provided "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
         
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(":symmetric-jdbc")

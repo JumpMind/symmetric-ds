@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.integrate;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.CsvData;

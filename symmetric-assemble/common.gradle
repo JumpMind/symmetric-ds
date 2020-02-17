@@ -35,6 +35,7 @@ allprojects {
         maven { url 'https://plugins.gradle.org/m2' }
         maven { url "http://packages.confluent.io/maven/" }
         maven { url "https://repository.mulesoft.org/nexus/content/repositories/public/" }
+        maven { url "https://repo1.maven.org/maven2/" }
     }
         
     ext {
@@ -220,7 +221,7 @@ subprojects { subproject ->
 
     ext {
         bshVersion = '2.0b6'
-        commonsBeanUtilsVersion = '1.9.3'
+        commonsBeanUtilsVersion = '1.9.4'
         commonsCliVersion = '1.4'
         commonsDbcpVersion = '1.4'
         commonsFileuploadVersion = '1.4'
@@ -228,34 +229,31 @@ subprojects { subproject ->
         commonsLangVersion = '2.6'
         commonsCodecVersion = '1.14'
         commonsCollectionVersion = '3.2.2'
+        commonsVfs = '1.0'
         hamcrestVersion = '1.3'
         h2Version = '1.3.176'
         derbyVersion = '10.14.2.0'
-        mariaDbVersion = '2.4.0'
         postgresqlVersion =  '42.2.8'
         hsqldbVersion = '2.4.1'
         sqliteVersion = '3.25.2'
-        firebirdVersion = '3.0.5'
-        jt400Version = '9.7'
         javaMailVersion = '1.6.2'
-        jdomVersion = '2.0.5'
-        junitVersion = '4.11'
+        jdomVersion = '2.0.6'
+        jaxbVersion = '2.3.1'
+        jacksonVersion = '2.10.2'
+        junitVersion = '4.13'
         log4jVersion = '1.2.17'
-        slf4jVersion = '1.7.29'
-        mockitoVersion = '2.27.0'
-        powerMockVersion = '2.0.2'
+        slf4jVersion = '1.7.30'
+        mockitoVersion = '3.2.4'
+        powerMockVersion = '2.0.5'
         mysqlVersion = '5.1.45'
         servletVersion = '3.1.0'
-        springVersion = '5.1.7.RELEASE'
+        springVersion = '5.2.3.RELEASE'
         jtdsVersion = '1.3.1'
-        voltDbVersion = '8.4.1'
-        bouncyCastleVersion = '1.59'
-        animalSnifferVersion = '1.10'
-        jnaVersion = '4.5.0'
-        jettyVersion = project.property('jetty.version')
-        nuodbVersion = '3.3.1'
-        tiberoVersion = '6'
-        hanaVersion = '2.3.62'
+        bouncyCastleVersion = '1.64'
+        animalSnifferVersion = '1.18'
+        jnaVersion = '5.5.0'
+        jettyVersion = '9.4.26.v20200117'
+        websocketVersion = '1.1'
         env = System.getenv()
     }
 

@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.integrate;
 import java.util.List;
 import java.util.Set;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
