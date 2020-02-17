@@ -33,15 +33,15 @@ import com.amazonaws.regions.Regions;
  */
 public class AWSHelper {
 
-	public AWSHelper() {
-	}
-	
-	public List<Region> getRegions() {
-		return RegionUtils.getRegions();
-	}
-	
-	public Regions fromName(String regionName) {
-		return Regions.fromName(regionName);
-	}
+    public AWSHelper() {
+    }
+    
+    public List<Region> getRegions() {
+        return RegionUtils.getRegions();
+    }
+    
+    public Regions fromName(String regionName) {
+        return Regions.fromName(regionName);
+    }
 
 }
