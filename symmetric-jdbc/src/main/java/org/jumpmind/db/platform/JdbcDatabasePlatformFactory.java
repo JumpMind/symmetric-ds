@@ -353,11 +353,11 @@ public class JdbcDatabasePlatformFactory {
             isDialect1 = true;
         }
         if (isDialect1) {
-	        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database")) {
-	            rs.next();
-	        } catch (SQLException e) {
-	            log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
-	        }
+            try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("select cast(1 as numeric(10,0)) from rdb$database")) {
+                rs.next();
+            } catch (SQLException e) {
+                log.error("The client sql dialect does not match the database, which is not a supported mode.  You must add ?sql_dialect=1 to the end of the JDBC URL.");
+            }
         }
         return isDialect1;
     }
