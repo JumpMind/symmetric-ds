@@ -46,9 +46,9 @@ import org.slf4j.LoggerFactory;
 
 public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
-    protected final static String FIELD_TERMINATOR = "|}";
-
-    protected final static String LINE_TERMINATOR = "|>";
+//    protected final static String FIELD_TERMINATOR = "|}";
+//
+//    protected final static String LINE_TERMINATOR = "|>";
 
     protected Logger logger;
 
@@ -75,12 +75,17 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected String ezConnectString;
     
     protected String sqlLoaderInfileCharset;
+    
+    protected String fieldTerminator;
+    
+    protected String lineTerminator;
 
     protected int rows = 0;
 
     public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
             String dbUser, String dbPassword, String dbUrl, String ezConnectString, String sqlLoaderInfileCharset,
+            String fieldTerminator, String lineTerminator,
             DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         logger = LoggerFactory.getLogger(getClass());
@@ -91,6 +96,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.dbUrl = dbUrl;
         this.ezConnectString = StringUtils.defaultIfBlank(ezConnectString, getConnectString(dbUrl));
         this.sqlLoaderInfileCharset = StringUtils.defaultIfBlank(sqlLoaderInfileCharset, null);
+        this.fieldTerminator = fieldTerminator;
+        this.lineTerminator = lineTerminator;
 
         this.sqlLoaderOptions = new ArrayList<String>();
         if (StringUtils.isNotBlank(sqlLoaderOptions)) {
@@ -147,7 +154,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             out.write(getInfileControl().getBytes());
             out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes());
 
-            out.write(("FIELDS TERMINATED BY '" + FIELD_TERMINATOR + "'\n").getBytes());
+            out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes());
             out.write(getLineTerminatedByControl().getBytes());
             
             out.write("TRAILING NULLCOLS\n".getBytes());
@@ -182,7 +189,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
 
     protected String getInfileControl() {
-        return "INFILE '" + dataResource.getFile().getName() + "' \"str '" + LINE_TERMINATOR + "'\"\n";
+        return "INFILE '" + dataResource.getFile().getName() + "' \"str '" + lineTerminator + "'\"\n";
     }
 
     protected String getLineTerminatedByControl() {
@@ -222,11 +229,11 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         }
                     }
                     if (i + 1 < parsedData.length) {
-                        out.write(FIELD_TERMINATOR.getBytes());
+                        out.write(fieldTerminator.getBytes());
                     }
                 }
 
-                out.write(LINE_TERMINATOR.getBytes());
+                out.write(lineTerminator.getBytes());
                 rows++;
             } catch (Exception ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);
