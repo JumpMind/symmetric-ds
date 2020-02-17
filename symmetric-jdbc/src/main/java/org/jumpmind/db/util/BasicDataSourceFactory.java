@@ -78,7 +78,10 @@ public class BasicDataSourceFactory {
         try {
             prepareDriver(dataSource.getDriverClassName());
         } catch (Exception e) {
-            throw new IllegalStateException("Had trouble registering the jdbc driver: " + dataSource.getDriverClassName(),e);
+            if (e instanceof ClassNotFoundException) {
+                throw new IllegalStateException("Missing JDBC driver for '" + dataSource.getDriverClassName() + "'.  Either provide the JAR or use 'symadmin help module' command to find and install missing driver.");                
+            }
+            throw new IllegalStateException("Had trouble registering the JDBC driver: " + dataSource.getDriverClassName(), e);
         }
         dataSource.setUrl(properties.get(BasicDataSourcePropertyConstants.DB_POOL_URL, null));
         String user = properties.get(BasicDataSourcePropertyConstants.DB_POOL_USER, "");

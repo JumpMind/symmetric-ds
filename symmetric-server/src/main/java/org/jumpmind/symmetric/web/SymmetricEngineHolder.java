@@ -594,8 +594,10 @@ public class SymmetricEngineHolder {
 
         @Override
         public void run() {
-            engine = create(propertiesFile); 
-            enginesStartingNames.add(engine.getEngineName());
+            engine = create(propertiesFile);
+            if (engine != null) {
+                enginesStartingNames.add(engine.getEngineName());
+            }
             if (engine != null && autoStart &&
                     engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
                 boolean started = engine.start();
@@ -608,7 +610,9 @@ public class SymmetricEngineHolder {
                 }
             }
             enginesStarting.remove(this);
-            enginesStartingNames.remove(engine.getEngineName());
+            if (engine != null) {
+                enginesStartingNames.remove(engine.getEngineName());
+            }
         }
         
         public ISymmetricEngine getEngine() {
