@@ -47,13 +47,18 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.db.h2.H2SymmetricDialect;
+import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -62,6 +67,9 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+import org.jumpmind.symmetric.service.impl.ClientExtensionService;
+import org.jumpmind.symmetric.service.impl.ExtensionService;
+import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 
@@ -108,6 +116,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_EXPORT_PROPERTIES = "export-properties";
     
     private static final String CMD_UNINSTALL = "uninstall";
+    
+    private static final String CMD_MODULE = "module";
 
     private static final String CMD_SEND_SQL = "send-sql";
 
@@ -115,7 +125,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String CMD_SEND_SCHEMA = "send-schema";
 
-    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES };
+    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES, CMD_MODULE };
 
     private static final String OPTION_NODE = "node";
 
@@ -156,7 +166,17 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String[] args = line.getArgs();
         if (args.length >= 1) {
             String cmd = args[0];
-            return !ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd);
+            boolean isRequired = !ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd);
+            if (!isRequired) {
+                Logger.getLogger(SymmetricUtils.class).setLevel(Level.ERROR);
+                Logger.getLogger(AbstractSymmetricEngine.class).setLevel(Level.ERROR);
+                Logger.getLogger(JdbcDatabasePlatformFactory.class).setLevel(Level.ERROR);
+                Logger.getLogger(H2SymmetricDialect.class).setLevel(Level.ERROR);
+                Logger.getLogger(StagingManager.class).setLevel(Level.ERROR);
+                Logger.getLogger(ClientExtensionService.class).setLevel(Level.ERROR);
+                Logger.getLogger(ExtensionService.class).setLevel(Level.ERROR);
+            }
+            return isRequired;
         }
         return true;
     }
@@ -198,6 +218,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_SEND_SCHEMA);
             printHelpLine(pw, CMD_SEND_SCRIPT);
             printHelpLine(pw, CMD_UNINSTALL);
+            printHelpLine(pw, CMD_MODULE);
             pw.flush();
         }
     }
@@ -350,6 +371,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             return true;
         } else if (cmd.equals(CMD_SEND_SCRIPT)) {
             sendScript(line, args);
+            return true;
+        } else if (cmd.equals(CMD_MODULE)) {
+            module(line, args);
             return true;
         } else {
             throw new ParseException("ERROR: no subcommand '" + cmd + "' was found.");
@@ -683,4 +707,37 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         }
         return os;
     }
+    
+    private void module(CommandLine line, List<String> args) throws Exception {
+        final String action = popArg(args, "Action");
+        final String moduleArgName = "Module";
+
+        if (action.equals("install")) {
+            getSymmetricEngine(false).getModuleService().install(popArg(args, moduleArgName));
+        } else if (action.equals("remove")) {
+            getSymmetricEngine(false).getModuleService().remove(popArg(args, moduleArgName));
+        } else if (action.equals("list-files")) {
+            String module = popArg(args, moduleArgName);
+            System.out.println("Files associated with module " + module + ":");
+            for (String file : getSymmetricEngine(false).getModuleService().listFiles(module)) {
+                System.out.println(file);    
+            }
+        } else if (action.equals("list")) {
+            System.out.println("Installed modules:");
+            List<String> modules = getSymmetricEngine(false).getModuleService().list();
+            if (modules.size() == 0) {
+                System.out.println("<none>");
+            } else {
+                for (String module : modules) {
+                    System.out.println(module);    
+                }
+            }
+        } else if (action.equals("list-all")) {
+            System.out.println("Available modules:");
+            for (String module : getSymmetricEngine(false).getModuleService().listAll()) {
+                System.out.println(module);    
+            }
+        }        
+    }
+
 }

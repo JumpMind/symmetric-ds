@@ -45,9 +45,10 @@ import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.IGroupletService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
-import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
+import org.jumpmind.symmetric.service.ILoadFilterService;
 import org.jumpmind.symmetric.service.IMailService;
+import org.jumpmind.symmetric.service.IModuleService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -317,6 +318,8 @@ public interface ISymmetricEngine {
     public IContextService getContextService();
     
     public IUpdateService getUpdateService();
+    
+    public IModuleService getModuleService();
     
     public Date getLastRestartTime();
     
