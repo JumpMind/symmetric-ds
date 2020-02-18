@@ -1,6 +1,8 @@
 
 === Firebird
 
+Use `symadmin module install firebird` to install driver files, or copy your own files into the `lib` sub-directory.
+
 The Firebird Dialect may require the installation of a User Defined Function (UDF) library in order to provide functionality 
 needed by the database triggers.  SymmetricDS includes the required UDF library, called SYM_UDF, in both source form (as a C program) 
 and as pre-compiled libraries for both Windows and Linux.  For Firebird 2.0 and earlier, the UDF is needed for capturing character

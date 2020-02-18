@@ -1,6 +1,8 @@
 
 === Derby
 
+Use `symadmin module install derby` to install driver files, or copy your own files into the `lib` sub-directory.
+
 The Apache Derby database can be run as an embedded database that is accessed by an application or 
 a standalone server that can be accessed from the network. This dialect implementation creates 
 database triggers that make method calls into Java classes. This means that the supporting JAR 

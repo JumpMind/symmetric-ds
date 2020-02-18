@@ -1,5 +1,7 @@
 === Google Big Query
 
+Use `symadmin module install bigquery` to install driver files, or copy your own files into the `lib` sub-directory.
+
 Send changes from your relational database to Google's Big Query.  
 
 ==== Setup

@@ -1,5 +1,8 @@
 
 === Tibero
+
+Use `symadmin module install tibero` to install driver files, or copy your own files into the `lib` sub-directory.
+
 This section describes Tibero specific SymmetricDS details.
 
 ==== Database Permissions

@@ -1,5 +1,8 @@
 
 === DB2
+
+Use `symadmin module install db2` to install driver files, or copy your own files into the `lib` sub-directory.
+
 The IBM DB2 Dialect uses global variables to enable and disable node and trigger synchronization. 
 These variables are created automatically during the first startup. The DB2 JDBC driver should be placed in the "lib" folder.
 
@@ -55,6 +58,9 @@ db2.capture.transaction.id=false
 ----
   
 === DB2 for IBM i
+
+Use `symadmin module install db2` to install driver files, or copy your own files into the `lib` sub-directory.
+
 The DB2 for IBM i dialect can connect to a database on IBM iSeries (AS/400) machines.  It was tested with the
 http://jt400.sourceforge.net/[jt400 JDBC driver], which is already included in the SymmetricDS download.
 Here is an example JDBC URL:

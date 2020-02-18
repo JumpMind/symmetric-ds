@@ -1,6 +1,8 @@
 
 === Redshift
 
+Use `symadmin module install redshift` to install driver files, or copy your own files into the `lib` sub-directory.
+
 Redshift is a managed data warehouse in the cloud from Amazon. Version 1.0 of Redshift is based on PostgreSQL 8.0, 
 with some features modified or removed. SymmetricDS supports Redshift as a target platform where data can be loaded, 
 but it does not support data capture. However, the initial load and reload functions are implemented, so it is 

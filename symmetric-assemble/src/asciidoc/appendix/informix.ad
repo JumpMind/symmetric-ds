@@ -1,6 +1,8 @@
 
 === Informix
 
+Use `symadmin module install informix` to install driver files, or copy your own files into the `lib` sub-directory.
+
 The Informix Dialect was tested against Informix Dynamic Server 11.50, but older versions may also work. You need to download the Informix 
 JDBC Driver (from the IBM Download Site) and put the ifxjdbc.jar and ifxlang.jar files in the SymmetricDS lib folder.
 

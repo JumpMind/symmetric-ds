@@ -1,6 +1,8 @@
 
 === SQLite
 
+Use `symadmin module install sqlite` to install driver files, or copy your own files into the `lib` sub-directory.
+
 For SQLite, the implementation of sync-on-incoming back and the population of a source node if in the sym data rows relies on use of a
 context table (by default, called sym_context) to hold a boolean and node id in place of the more common methods of using temp tables 
 (which are inaccessible from triggers) or functions (which are not available).

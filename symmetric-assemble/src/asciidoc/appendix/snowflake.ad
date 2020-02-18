@@ -1,5 +1,7 @@
 === Snowflake
 
+Use `symadmin module install snowflake` to install driver files, or copy your own files into the `lib` sub-directory.
+
 Send changes from your relational database to Snowflake.  
 
 ==== Setup

@@ -1,6 +1,8 @@
 
 === MariaDB
 
+Use `symadmin module install mariadb` to install driver files, or copy your own files into the `lib` sub-directory.
+
 See MySQL notes.  You can use either the MySQL or MariaDB driver for this dialect.
 
 .Supported Data Types

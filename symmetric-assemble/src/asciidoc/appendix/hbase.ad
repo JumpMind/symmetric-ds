@@ -1,6 +1,8 @@
 
 === HBase
 
+Use `symadmin module install hbase` to install driver files, or copy your own files into the `lib` sub-directory.
+
 ==== Empty HBase
 
 If you are setting up replication to HBase and the tables are not already present in Hbase SymmetricDS can create them through the phoenix JDBC driver.   This driver maintains some additional meta data about the tables so that they can be accessed using SQL through the JDBC driver.

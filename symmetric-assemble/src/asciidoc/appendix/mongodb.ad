@@ -1,6 +1,8 @@
 
 === MongoDB
-        
+
+Use `symadmin module install mongodb` to install driver files, or copy your own files into the `lib` sub-directory.
+
 Since SymmetricDS is trigger based and there are not triggers in MongoDB data can only synchronized to a MongoDB instance.  The runtime SymmetricDS 
 tables will also need to be installed in a full relational database to support integration with MongoDB.
 

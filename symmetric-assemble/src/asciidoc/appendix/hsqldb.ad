@@ -1,6 +1,8 @@
 
 === HSQLDB
 
+Use `symadmin module install hsqldb` to install driver files, or copy your own files into the `lib` sub-directory.
+
 HSQLDB was implemented with the intention that the database be run embedded in the same JVM process as SymmetricDS. 
 Instead of dynamically generating static SQL-based triggers like the other databases, HSQLDB triggers are Java classes 
 that re-use existing SymmetricDS services to read the configuration and insert data events accordingly.

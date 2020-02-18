@@ -1,6 +1,8 @@
 
 === Sybase ASE
 
+Use `symadmin module install sybase` to install driver files, or copy your own files into the `lib` sub-directory.
+
 Sybase Adaptive Server Enterprise (ASE) was tested using the jConnect 7 JDBC driver. The jConnect 7 JDBC driver should be placed in the "lib" folder.
 
 ----
