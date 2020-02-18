@@ -18,20 +18,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.service;
+package org.jumpmind.symmetric.util;
 
-import java.util.List;
+public class ModuleException extends Exception {
 
-public interface IModuleService {
+    private static final long serialVersionUID = 1L;
+    
+    private boolean isLogged;
 
-    public boolean install(String moduleId);
-    
-    public boolean remove(String moduleId);
-    
-    public List<String> list();
-    
-    public List<String> listFiles(String moduleId);
-    
-    public List<String> listAll();
-    
+    public ModuleException(String message) {
+        super(message);
+    }
+
+    public ModuleException(String message, boolean isLogged) {
+        super(message);
+        this.isLogged = isLogged;
+    }
+
+    public ModuleException(String message, Exception e) {
+        super(message, e);
+    }
+
+    public boolean isLogged() {
+        return isLogged;
+    }
+
 }

@@ -47,18 +47,13 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.db.h2.H2SymmetricDialect;
-import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -67,9 +62,8 @@ import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.IPurgeService;
 import org.jumpmind.symmetric.service.IRegistrationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-import org.jumpmind.symmetric.service.impl.ClientExtensionService;
-import org.jumpmind.symmetric.service.impl.ExtensionService;
-import org.jumpmind.symmetric.util.SymmetricUtils;
+import org.jumpmind.symmetric.util.ModuleException;
+import org.jumpmind.symmetric.util.ModuleManager;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
 
@@ -143,7 +137,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
 
     private static final String OPTION_REVERSE = "reverse";
 
-    private static final int WIDTH = 80;
+    private static final int WIDTH = 120;
 
     private static final int PAD = 3;
 
@@ -166,17 +160,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String[] args = line.getArgs();
         if (args.length >= 1) {
             String cmd = args[0];
-            boolean isRequired = !ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd);
-            if (!isRequired) {
-                Logger.getLogger(SymmetricUtils.class).setLevel(Level.ERROR);
-                Logger.getLogger(AbstractSymmetricEngine.class).setLevel(Level.ERROR);
-                Logger.getLogger(JdbcDatabasePlatformFactory.class).setLevel(Level.ERROR);
-                Logger.getLogger(H2SymmetricDialect.class).setLevel(Level.ERROR);
-                Logger.getLogger(StagingManager.class).setLevel(Level.ERROR);
-                Logger.getLogger(ClientExtensionService.class).setLevel(Level.ERROR);
-                Logger.getLogger(ExtensionService.class).setLevel(Level.ERROR);
-            }
-            return isRequired;
+            return !ArrayUtils.contains(NO_ENGINE_REQUIRED, cmd);
         }
         return true;
     }
@@ -711,33 +695,53 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private void module(CommandLine line, List<String> args) throws Exception {
         final String action = popArg(args, "Action");
         final String moduleArgName = "Module";
-
-        if (action.equals("install")) {
-            getSymmetricEngine(false).getModuleService().install(popArg(args, moduleArgName));
-        } else if (action.equals("remove")) {
-            getSymmetricEngine(false).getModuleService().remove(popArg(args, moduleArgName));
-        } else if (action.equals("list-files")) {
-            String module = popArg(args, moduleArgName);
-            System.out.println("Files associated with module " + module + ":");
-            for (String file : getSymmetricEngine(false).getModuleService().listFiles(module)) {
-                System.out.println(file);    
-            }
-        } else if (action.equals("list")) {
-            System.out.println("Installed modules:");
-            List<String> modules = getSymmetricEngine(false).getModuleService().list();
-            if (modules.size() == 0) {
-                System.out.println("<none>");
-            } else {
+        try {
+            ModuleManager mgr = ModuleManager.getInstance();
+    
+            if (action.equals("install")) {
+                mgr.install(popArg(args, moduleArgName));
+            } else if (action.equals("remove")) {
+                mgr.remove(popArg(args, moduleArgName));
+            } else if (action.equals("list-files")) {
+                String module = popArg(args, moduleArgName);
+                List<String> files = mgr.listFiles(module);
+                System.out.println("Files associated with module " + module + ":");
+                for (String file : files) {
+                    System.out.println(file);    
+                }
+            } else if (action.equals("list-deps")) {
+                String module = popArg(args, moduleArgName);
+                List<String> files = mgr.listDependencies(module);
+                System.out.println("Files associated with module " + module + ":");
+                for (String file : files) {
+                    System.out.println(file);    
+                }
+            } else if (action.equals("list")) {
+                List<String> modules = mgr.list();
+                System.out.println("Installed modules:");
+                if (modules.size() == 0) {
+                    System.out.println("<none>");
+                } else {
+                    for (String module : modules) {
+                        System.out.println(module);    
+                    }
+                }
+            } else if (action.equals("list-all")) {
+                List<String> modules = mgr.listAll();
+                System.out.println("Available modules:");
                 for (String module : modules) {
                     System.out.println(module);    
                 }
+            } else if (action.equals("upgrade")) {
+                System.out.println("Upgrading modules");
+                mgr.upgradeAll();
             }
-        } else if (action.equals("list-all")) {
-            System.out.println("Available modules:");
-            for (String module : getSymmetricEngine(false).getModuleService().listAll()) {
-                System.out.println(module);    
+        } catch (ModuleException e) {
+            if (!e.isLogged()) {
+                System.err.println("ERROR: " + e.getMessage());
             }
-        }        
+            System.exit(1);
+        }
     }
 
 }

@@ -4,6 +4,8 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.util.ModuleException;
+import org.jumpmind.symmetric.util.ModuleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,11 @@ public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymme
                     + "_" + TableConstants.SYM_CHANNEL +
                     " set max_batch_size = 10000 where reload_flag = 1 and max_batch_size = 1";
             engine.getSqlTemplate().update(sql);
+        }
+        try {
+            ModuleManager.getInstance().upgradeAll();
+        } catch (ModuleException e) {
+            throw new RuntimeException(e);
         }
     }
 

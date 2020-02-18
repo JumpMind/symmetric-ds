@@ -23,9 +23,11 @@ package org.jumpmind.symmetric.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jumpmind.symmetric.service.impl.ModuleService;
-
 public class MavenArtifact {
+
+    public static final String REGEX_LIST = "\\s*,\\s*";
+    
+    public static final String REGEX_COMPONENTS = "\\s*:\\s*";
     
     private String groupId;
     
@@ -41,7 +43,7 @@ public class MavenArtifact {
 
     public MavenArtifact(String dependency) {
         if (dependency != null) {
-            String[] array = dependency.trim().split("\\s*:\\s*");
+            String[] array = dependency.trim().split(REGEX_COMPONENTS);
             if (array.length >= 1) {
                 this.groupId = array[0];
             }
@@ -103,7 +105,7 @@ public class MavenArtifact {
     public static List<MavenArtifact> parseCsv(String dependencies) {
         List<MavenArtifact> list = new ArrayList<MavenArtifact>();
         if (dependencies != null) {
-            for (String dependency : dependencies.split(ModuleService.REGEX_CSV)) {
+            for (String dependency : dependencies.split(REGEX_LIST)) {
                 MavenArtifact artifact = new MavenArtifact(dependency);
                 if (artifact != null) {
                     list.add(artifact);

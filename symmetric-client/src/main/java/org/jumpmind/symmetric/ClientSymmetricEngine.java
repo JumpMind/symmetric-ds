@@ -67,10 +67,8 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
 import org.jumpmind.symmetric.service.IExtensionService;
-import org.jumpmind.symmetric.service.IModuleService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.impl.ClientExtensionService;
-import org.jumpmind.symmetric.service.impl.ModuleService;
 import org.jumpmind.symmetric.service.impl.MonitorService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
@@ -105,8 +103,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected ApplicationContext springContext;
     
     protected IMonitorService monitorService;
-
-    protected IModuleService moduleService;
 
     /**
      * @param dataSource
@@ -208,7 +204,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
             this.monitorService = new MonitorService(parameterService, symmetricDialect, nodeService, extensionService, 
                     clusterService, contextService);
-            this.moduleService = new ModuleService(parameterService, symmetricDialect);
             this.dataSource = platform.getDataSource();
             
             PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
@@ -543,11 +538,6 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public IMonitorService getMonitorService() {
         return monitorService;
-    }
-
-    @Override
-    public IModuleService getModuleService() {
-        return moduleService;
     }
 
 }
