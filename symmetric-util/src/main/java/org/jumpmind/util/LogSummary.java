@@ -25,25 +25,33 @@ import java.io.StringWriter;
 
 import org.apache.log4j.Level;
 
+import com.google.gson.annotations.Expose;
+
 public class LogSummary implements Comparable<LogSummary> {
 
-    
     private Level level;
 
+    @Expose
     private String mostRecentThreadName;
 
     private Throwable throwable;
 
+    @Expose
     private long firstOccurranceTime;
 
+    @Expose
     private long mostRecentTime;
 
+    @Expose
     private int count;
 
+    @Expose
     private String message;
 
+    @Expose
     private String stackTrace;
     
+    @Expose
     private Integer levelInt;
     
     public void setLevel(Level level) {

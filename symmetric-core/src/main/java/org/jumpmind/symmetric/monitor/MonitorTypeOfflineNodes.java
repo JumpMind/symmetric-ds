@@ -33,8 +33,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -71,13 +70,11 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
     }
     
     protected String serializeDetails(List<String> offlineNodes) {
-        ObjectMapper mapper = new ObjectMapper();
-        
         String result = null;
         try {
-            result = mapper.writeValueAsString(offlineNodes);
-        } catch(JsonProcessingException jpe) {
-            log.warn("Unable to convert list of offline nodes to JSON", jpe);
+            new Gson().toJson(offlineNodes);
+        } catch(Exception e) {
+            log.warn("Unable to convert list of offline nodes to JSON", e);
         }
        
         return result;

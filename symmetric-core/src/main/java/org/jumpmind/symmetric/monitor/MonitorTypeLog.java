@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Level;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
@@ -15,9 +14,7 @@ import org.jumpmind.util.LogSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -55,14 +52,11 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
     }
 
     protected String serializeDetails(List<LogSummary> logs) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.addMixIn(LogSummary.class, LogSummaryMixIn.class);
-
         String result = null;
         try {
-            result = mapper.writeValueAsString(logs);
-        } catch(JsonProcessingException jpe) {
-            log.warn("Unable to convert list of logs to JSON", jpe);
+            result = new Gson().toJson(logs);
+        } catch(Exception e) {
+            log.warn("Unable to convert list of logs to JSON", e);
         }
        
         return result;
@@ -76,13 +70,5 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
     @Override
     public String getName() {
         return "log";
-    }
-    
-    public interface LogSummaryMixIn {
-        @JsonIgnore 
-        Level getLevel();
-        
-        @JsonIgnore 
-        Level getThrowable();
     }
 }

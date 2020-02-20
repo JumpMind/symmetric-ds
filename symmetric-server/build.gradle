@@ -9,9 +9,10 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile project(":symmetric-client")
         compile "org.springframework:spring-jms:$springVersion"
         compile "org.springframework:spring-web:$springVersion"
-        compile "org.springframework:spring-webmvc:$springVersion" // This was is ensure that swagger-springmvc picks up the matching Spring version.
+        compile "org.springframework:spring-webmvc:$springVersion"
         compile "javax.xml.bind:jaxb-api:$jaxbVersion"
         compile "org.jdom:jdom2:$jdomVersion"
+        compile "com.fasterxml.jackson.core:jackson-databind:2.9.8"
         compile ("com.mangofactory:swagger-springmvc:0.6.5") {
             exclude group: 'asm'
         }

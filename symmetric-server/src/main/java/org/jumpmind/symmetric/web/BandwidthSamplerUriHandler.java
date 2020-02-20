@@ -35,7 +35,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 import org.jumpmind.util.AppUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 /**
  * This uri handler streams the number of bytes requested by the sampleSize
@@ -47,7 +47,7 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
 
     protected long defaultTestSlowBandwidthDelay = 0;
     
-    ObjectMapper objectMapper = new ObjectMapper();
+    protected Gson gson = new Gson();
 
     public BandwidthSamplerUriHandler(IParameterService parameterService, IInterceptor[] interceptors) {
         super("/bandwidth/*", parameterService, interceptors);
@@ -97,8 +97,8 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
             bwtr.transmitted(count);;
         }
         bwtr.stop();
-        log.debug(objectMapper.writeValueAsString(bwtr));
-        outputStream.write(objectMapper.writeValueAsString(bwtr).getBytes());
+        log.debug(gson.toJson(bwtr));
+        outputStream.write(gson.toJson(bwtr).getBytes());
     }
     
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {

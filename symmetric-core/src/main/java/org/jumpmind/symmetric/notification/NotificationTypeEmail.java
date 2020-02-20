@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Level;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
@@ -44,12 +43,8 @@ import org.jumpmind.util.LogSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class NotificationTypeEmail implements INotificationType, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
@@ -135,7 +130,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         }
     }
     
-    protected static StringBuilder getOfflineDetails(MonitorEvent event) throws JsonParseException, JsonMappingException, IOException {
+    protected static StringBuilder getOfflineDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         stackTrace.append("\n");
         for(String node: deserializeOfflineNodes(event)) {
@@ -144,7 +139,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         return stackTrace;
     }
     
-    protected static StringBuilder getBatchDetails(MonitorEvent event) throws JsonParseException, JsonMappingException, IOException {
+    protected static StringBuilder getBatchDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         BatchErrorWrapper errors = deserializeBatches(event);
         if(errors != null) {
@@ -162,7 +157,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         return stackTrace;
     }
     
-    protected static StringBuilder getLogDetails(MonitorEvent event) throws JsonParseException, JsonMappingException, IOException {
+    protected static StringBuilder getLogDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         int count = 0;
         for (LogSummary summary : deserializeLogSummary(event)) {
@@ -181,12 +176,10 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         return stackTrace;
     }
     
-    protected static List<String> deserializeOfflineNodes(MonitorEvent event) throws JsonParseException, JsonMappingException, IOException {
+    protected static List<String> deserializeOfflineNodes(MonitorEvent event) throws IOException {
         List<String> nodes = null;
         if(event.getDetails() != null) {
-            ObjectMapper mapper= new ObjectMapper();
-            nodes = mapper.readValue(event.getDetails(), new TypeReference<List<String>>() {
-            });
+            new Gson().fromJson(event.getDetails(), new TypeToken<List<String>>(){}.getType());
         }
         if(nodes == null) {
             nodes = Collections.emptyList();
@@ -194,39 +187,24 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         return nodes;
     }
     
-    protected static BatchErrorWrapper deserializeBatches(MonitorEvent event) throws JsonParseException, JsonMappingException, IOException {
+    protected static BatchErrorWrapper deserializeBatches(MonitorEvent event) throws IOException {
         BatchErrorWrapper batches = null;
         if(event.getDetails() != null) {
-            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            batches = mapper.readValue(event.getDetails(), BatchErrorWrapper.class);
+            batches = new Gson().fromJson(event.getDetails(), BatchErrorWrapper.class);
         }
         return batches;
     }
     
-    protected static List<LogSummary> deserializeLogSummary(MonitorEvent event) throws JsonParseException, JsonMappingException, IOException {
+    protected static List<LogSummary> deserializeLogSummary(MonitorEvent event) throws IOException {
         List<LogSummary> summaries = null;
         if (event.getDetails() != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.addMixIn(Throwable.class, ThrowableMixIn.class);
-            mapper.addMixIn(LogSummary.class, LogSummaryMixIn.class);
-            summaries = mapper.readValue(event.getDetails(), new TypeReference<List<LogSummary>>() {
-            });
+            summaries = new Gson().fromJson(event.getDetails(), new TypeToken<List<LogSummary>>(){}.getType());
         }
 
         if (summaries == null) {
             summaries = Collections.emptyList();
         }
         return summaries;
-    }
-
-    protected interface ThrowableMixIn {
-        @JsonIgnore
-        Throwable getCause();
-    }
-    
-    protected interface LogSummaryMixIn {
-        @JsonIgnore
-        Level getLevel();
     }
     
     @Override

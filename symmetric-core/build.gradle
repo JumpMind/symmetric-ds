@@ -7,8 +7,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile project(":symmetric-util")
         compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         compile "javax.mail:javax.mail-api:$javaMailVersion"
-        compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-        compile "com.google.code.gson:gson:2.8.6"
+        compile "com.google.code.gson:gson:$gsonVersion"
         compile "org.springframework:spring-core:$springVersion"
         
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
