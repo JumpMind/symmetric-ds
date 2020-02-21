@@ -452,103 +452,106 @@ public class DbFill {
         }
 
         ISqlTransaction tran = platform.getSqlTemplate().startSqlTransaction();
-        DatabaseInfo dbInfo = platform.getDatabaseInfo();
-        String quote = dbInfo.getDelimiterToken();
-        String catalogSeparator = dbInfo.getCatalogSeparator();
-        String schemaSeparator = dbInfo.getSchemaSeparator();
-
-        int rowsInTransaction = 0;
-        int rowsTotal = 0;
-
-        for (int x = 0; x < repeat; x++) {
-            int numRowsToGenerate = inputLength;
-            int numRowsToCommit = maxRowsCommit;
-            if (useRandomCount) {
-                numRowsToGenerate = getRand().nextInt(inputLength);
-                numRowsToGenerate = numRowsToGenerate > 0 ? numRowsToGenerate : 1;
-                numRowsToCommit = getRand().nextInt(maxRowsCommit);
-                numRowsToCommit = numRowsToCommit > 0 ? numRowsToCommit : 1;
-            }
-            
-            for (int i = 0; i < numRowsToGenerate; i++) {
-
-                for (Table table : orderedTables) {
-                    if (table.hasAutoIncrementColumn()) {
-                        log.info("Turning on identity insert for table " + table.getName());
-                        tran.allowInsertIntoAutoIncrementColumns(true, table, quote, catalogSeparator, schemaSeparator);
-                    }
-                    
-                    int dmlType = INSERT;
-                    if (tableProperties != null && tableProperties.containsKey(table.getName())) {
-                        dmlType = randomIUD(tableProperties.get(table.getName()));
-                    } else if (dmlWeight != null) {
-                        dmlType = randomIUD(dmlWeight);
-                    }
-
-                    if (cascadingSelect && dmlType == INSERT && !tablesToFill.contains(table)) {
-                        if (currentRowValues.get(table.getName()) == null) {
-                            selectRandomRecord(tran, table);
-                        }
-                        continue;
-                    }
-                    
-                    switch (dmlType) {
-                    case INSERT:
-                        if (verbose) {
-                            log.info("Inserting into table " + table.getName());
-                        }
-                        insertRandomRecord(tran, table);
-                        break;
-                    case UPDATE:
-                        if (verbose) {
-                            log.info("Updating record in table " + table.getName());
-                        }
-                        updateRandomRecord(tran, table);
-                        break;
-                    case DELETE:
-                        if (verbose) {
-                            log.info("Deleting record in table " + table.getName());
-                        }
-                        deleteRandomRecord(tran, table);
-                        selectRandomRecord(tran, table);
-                        break;
-                    }
-
-                    if (++rowsInTransaction >= numRowsToCommit) {
-                        if (commitDelay > 0) {
-                            AppUtils.sleep(commitDelay);
-                        }
-                        if (percentRollback > 0 && getRand().nextInt(100) <= percentRollback) {
-                            log.info("Rollback " + rowsInTransaction + " rows");
-                            tran.rollback();
-                        } else {
-                            rowsTotal += rowsInTransaction;
-                            log.info("Commit " + rowsInTransaction + " rows, total " + rowsTotal + " rows");
-                            tran.commit();
-                        }
-                        rowsInTransaction = 0;
-                        AppUtils.sleep(interval);
-                    }
-                    if (table.hasAutoIncrementColumn()) {
-                        log.info("Turning off identity insert for table " + table.getName());
-                        tran.allowInsertIntoAutoIncrementColumns(false, table, quote, catalogSeparator, schemaSeparator);
-                    }
+        try {
+            DatabaseInfo dbInfo = platform.getDatabaseInfo();
+            String quote = dbInfo.getDelimiterToken();
+            String catalogSeparator = dbInfo.getCatalogSeparator();
+            String schemaSeparator = dbInfo.getSchemaSeparator();
+    
+            int rowsInTransaction = 0;
+            int rowsTotal = 0;
+    
+            for (int x = 0; x < repeat; x++) {
+                int numRowsToGenerate = inputLength;
+                int numRowsToCommit = maxRowsCommit;
+                if (useRandomCount) {
+                    numRowsToGenerate = getRand().nextInt(inputLength);
+                    numRowsToGenerate = numRowsToGenerate > 0 ? numRowsToGenerate : 1;
+                    numRowsToCommit = getRand().nextInt(maxRowsCommit);
+                    numRowsToCommit = numRowsToCommit > 0 ? numRowsToCommit : 1;
                 }
                 
+                for (int i = 0; i < numRowsToGenerate; i++) {
+    
+                    for (Table table : orderedTables) {
+                        if (table.hasAutoIncrementColumn()) {
+                            log.info("Turning on identity insert for table " + table.getName());
+                            tran.allowInsertIntoAutoIncrementColumns(true, table, quote, catalogSeparator, schemaSeparator);
+                        }
+                        
+                        int dmlType = INSERT;
+                        if (tableProperties != null && tableProperties.containsKey(table.getName())) {
+                            dmlType = randomIUD(tableProperties.get(table.getName()));
+                        } else if (dmlWeight != null) {
+                            dmlType = randomIUD(dmlWeight);
+                        }
+    
+                        if (cascadingSelect && dmlType == INSERT && !tablesToFill.contains(table)) {
+                            if (currentRowValues.get(table.getName()) == null) {
+                                selectRandomRecord(tran, table);
+                            }
+                            continue;
+                        }
+                        
+                        switch (dmlType) {
+                        case INSERT:
+                            if (verbose) {
+                                log.info("Inserting into table " + table.getName());
+                            }
+                            insertRandomRecord(tran, table);
+                            break;
+                        case UPDATE:
+                            if (verbose) {
+                                log.info("Updating record in table " + table.getName());
+                            }
+                            updateRandomRecord(tran, table);
+                            break;
+                        case DELETE:
+                            if (verbose) {
+                                log.info("Deleting record in table " + table.getName());
+                            }
+                            deleteRandomRecord(tran, table);
+                            selectRandomRecord(tran, table);
+                            break;
+                        }
+    
+                        if (++rowsInTransaction >= numRowsToCommit) {
+                            if (commitDelay > 0) {
+                                AppUtils.sleep(commitDelay);
+                            }
+                            if (percentRollback > 0 && getRand().nextInt(100) <= percentRollback) {
+                                log.info("Rollback " + rowsInTransaction + " rows");
+                                tran.rollback();
+                            } else {
+                                rowsTotal += rowsInTransaction;
+                                log.info("Commit " + rowsInTransaction + " rows, total " + rowsTotal + " rows");
+                                tran.commit();
+                            }
+                            rowsInTransaction = 0;
+                            AppUtils.sleep(interval);
+                        }
+                        if (table.hasAutoIncrementColumn()) {
+                            log.info("Turning off identity insert for table " + table.getName());
+                            tran.allowInsertIntoAutoIncrementColumns(false, table, quote, catalogSeparator, schemaSeparator);
+                        }
+                    }
+                    
+                }
+                
+                clearDependentColumnValues();
+                currentRowValues.clear();
             }
             
-            clearDependentColumnValues();
-            currentRowValues.clear();
-        }
-        
-        if (rowsInTransaction > 0) {
-            if (commitDelay > 0) {
-                AppUtils.sleep(commitDelay);
+            if (rowsInTransaction > 0) {
+                if (commitDelay > 0) {
+                    AppUtils.sleep(commitDelay);
+                }
+                log.info("Commit " + rowsInTransaction + " rows, total " + rowsTotal + " rows");
+                tran.commit();                
             }
-            log.info("Commit " + rowsInTransaction + " rows, total " + rowsTotal + " rows");
-            tran.commit();                
+        } finally {
+            tran.close();
         }
-
     }
 
     private void truncateTable(Table table) {
@@ -930,7 +933,11 @@ public class DbFill {
                 || type == Types.VARBINARY ||
                 // SQLServer text type
                 type == -10) {
-            objectValue = randomBytes();
+            int maxLength = 32768;
+            if (type == Types.BINARY || type == Types.VARBINARY) {
+                maxLength = column.getSizeAsInt();
+            }
+            objectValue = randomBytes(maxLength);
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
@@ -939,6 +946,8 @@ public class DbFill {
                 objectValue = "{\"jumpmind\":\"symmetricds\"}";
             } else if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomUUID();
+            } else if ("TIME".equalsIgnoreCase(column.getJdbcTypeName())) {
+                objectValue = randomTimestamp();
             } else {
                 int size = 0;
                 // Assume if the size is 0 there is no max size configured.
@@ -1003,8 +1012,7 @@ public class DbFill {
         return str.toString();
     }
 
-    private byte[] randomBytes() {
-        int length = getRand().nextInt(32768);
+    private byte[] randomBytes(int length) {        
         byte array[] = new byte[length];
         for (int i = 0; i < length; i++) {
             array[i] = (byte) getRand().nextInt(256);
