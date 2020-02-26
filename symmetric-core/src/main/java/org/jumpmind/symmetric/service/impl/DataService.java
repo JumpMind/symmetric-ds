@@ -46,6 +46,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -2366,6 +2367,7 @@ public class DataService extends AbstractService implements IDataService {
 
     public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers) {
         try {
+            IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
             Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
             List<TableRow> tableRows = new ArrayList<TableRow>();
             Row row = new Row(dataMap.size());
@@ -2436,10 +2438,15 @@ public class DataService extends AbstractService implements IDataService {
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
         try {
+            IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
             Data data = findData(dataId);
             log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
             TriggerHistory hist = data.getTriggerHistory();
             Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            if (table == null) {
+                log.info("Unable to lookup table " + hist.getFullyQualifiedSourceTableName());
+                return;
+            }
             table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
             Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
     
