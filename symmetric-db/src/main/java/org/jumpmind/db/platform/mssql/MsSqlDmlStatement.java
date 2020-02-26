@@ -35,6 +35,8 @@ public class MsSqlDmlStatement extends DmlStatement {
     protected void appendColumnParameter(StringBuilder sql, Column column) {
         if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("datetime2") && column.getMappedTypeCode() == Types.VARCHAR) {
             sql.append("cast(? AS datetime2(6))").append(",");
+        } else if ("datetimeoffset".equalsIgnoreCase(column.getJdbcTypeName())) {
+            sql.append("cast(? AS time(7))").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
@@ -45,6 +47,8 @@ public class MsSqlDmlStatement extends DmlStatement {
         if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("datetime2") && column.getMappedTypeCode() == Types.VARCHAR) {
             sql.append(quote).append(column.getName()).append(quote)
             .append(" = cast(? AS datetime2(6))");
+        } else if ("datetimeoffset".equalsIgnoreCase(column.getJdbcTypeName())) {
+            sql.append(quote).append(column.getName()).append(quote).append(" = cast(? AS time(7))");
         } else {
             super.appendColumnEquals(sql, column);
         }

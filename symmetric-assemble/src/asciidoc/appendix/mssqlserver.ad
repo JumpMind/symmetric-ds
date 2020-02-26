@@ -94,7 +94,7 @@ GRANT INSERT, EXECUTE ON DATABASE::SYM_DATABASE to APP_USER;
 |Money, SmallMoney|Yes
 |Float, Real|Yes
 |Date, DateTime, Datetime2, SmallDatetime, Time|Yes
-|Datetimeoffset|No
+|Datetimeoffset|Yes
 |Char, Varchar, Text, Nchar, Nvarchar, Ntext|Yes
 |Binary, Varbinary|Yes
 |Image|Yes
