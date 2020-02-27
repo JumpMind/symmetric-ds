@@ -279,10 +279,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
     protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable, CsvData data) {        
         Map<String, String> values = null;
-        if (data.getDataEventType().equals(DataEventType.UPDATE)) {
-            values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
-        } else {
+        if (data.getDataEventType().equals(DataEventType.INSERT)) {
             values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
+        } else {
+            values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.OLD_DATA);
+            if (values == null || values.size() == 0) {
+                values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+            }
         }
         
         List<TableRow> tableRows = new ArrayList<TableRow>();
