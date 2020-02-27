@@ -58,13 +58,17 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         
         IParameterService parmService = engine.getParameterService();
-        String dbUrl = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL);
-        String dbUser = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_USER);
+        String prefix = "";
+        if (parmService.is(ParameterConstants.NODE_LOAD_ONLY)) {
+            prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
+        }
+        String dbUrl = parmService.getString(prefix + BasicDataSourcePropertyConstants.DB_POOL_URL);
+        String dbUser = parmService.getString(prefix + BasicDataSourcePropertyConstants.DB_POOL_USER);
         if (dbUser != null && dbUser.startsWith(SecurityConstants.PREFIX_ENC)) {
             dbUser = engine.getSecurityService().decrypt(dbUser.substring(SecurityConstants.PREFIX_ENC.length()));
         }
 
-        String dbPassword = parmService.getString(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+        String dbPassword = parmService.getString(prefix + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (dbPassword != null && dbPassword.startsWith(SecurityConstants.PREFIX_ENC)) {
             dbPassword = engine.getSecurityService().decrypt(dbPassword.substring(SecurityConstants.PREFIX_ENC.length()));
         }

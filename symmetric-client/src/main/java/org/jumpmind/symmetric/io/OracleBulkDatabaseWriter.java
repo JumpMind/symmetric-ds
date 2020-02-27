@@ -26,6 +26,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -49,6 +51,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 //    protected final static String FIELD_TERMINATOR = "|}";
 //
 //    protected final static String LINE_TERMINATOR = "|>";
+    
+    private IDatabasePlatform targetPlatform;
 
     protected Logger logger;
 
@@ -81,6 +85,8 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected String lineTerminator;
 
     protected int rows = 0;
+    
+    protected Map<String, Integer> columnLengthsMap = new HashMap<String, Integer>();
 
     public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
@@ -88,6 +94,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             String fieldTerminator, String lineTerminator,
             DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
+        this.targetPlatform = targetPlatform;
         logger = LoggerFactory.getLogger(getClass());
         this.stagingManager = stagingManager;
         this.sqlLoaderCommand = sqlLoaderCommand;
@@ -132,8 +139,9 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
             }
             if (dataResource == null && !isFallBackToDefault()) {
-                createStagingFile();
+                dataResource = stagingManager.create("bulkloaddir", getBatch().getBatchId());
             }
+            columnLengthsMap.clear();
             return true;
         } else {
             return false;
@@ -143,8 +151,6 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected void createStagingFile() {
         long batchId = getBatch().getBatchId();
         controlResource = stagingManager.create("bulkloaddir", StringUtils.leftPad(batchId + "-ctl", 14, "0"));
-        dataResource = stagingManager.create("bulkloaddir", batchId);
-
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
@@ -167,8 +173,9 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
                 columns.append(column.getName());
                 int type = column.getMappedTypeCode();
-                if (type == Types.CLOB || type == Types.NCLOB) {
-                    columns.append(" CLOB");
+                
+                if (targetPlatform.isLob(type)) {
+                    columns.append(" CHAR(" + columnLengthsMap.get(column.getName()) + ")");
                 } else if (column.isOfTextType() && column.getSizeAsInt() > 0) {
                     columns.append(" CHAR(" + column.getSize() + ")");
                 } else if (type == Types.TIMESTAMP || type == Types.DATE) {
@@ -218,14 +225,24 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
                 for (int i = 0; i < parsedData.length; i++) {
                     if (parsedData[i] != null) {
+                        byte[] bytesToWrite = null;
                         if (hasBinaryType && columns[i].isOfBinaryType()) {
                             if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
-                                out.write(Base64.decodeBase64(parsedData[i].getBytes()));
+                                bytesToWrite = Base64.decodeBase64(parsedData[i].getBytes());
                             } else if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                                out.write(Hex.decodeHex(parsedData[i].toCharArray()));
+                                bytesToWrite = Hex.decodeHex(parsedData[i].toCharArray());
                             }
                         } else {
-                            out.write(parsedData[i].getBytes());
+                            bytesToWrite = parsedData[i].getBytes();
+                        }
+                        if(bytesToWrite != null) {
+                            out.write(bytesToWrite);
+                            int newLength = bytesToWrite.length;
+                            Integer o = columnLengthsMap.get(columns[i].getName());
+                            int oldLength = (o == null ? 0 : o.intValue());
+                            if(newLength > oldLength) {
+                                this.columnLengthsMap.put(columns[i].getName(), newLength);
+                            }
                         }
                     }
                     if (i + 1 < parsedData.length) {
@@ -257,6 +274,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         boolean inError = false;
         if (rows > 0) {
             dataResource.close();
+            createStagingFile();
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             try {
                 File parentDir = controlResource.getFile().getParentFile();

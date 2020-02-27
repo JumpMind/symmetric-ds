@@ -1776,10 +1776,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                 fkDepList.add(foreignTableRow);
                                 log.debug("Add foreign table reference '{}' whereSql='{}'", foreignTable.getName(), whereSql);
                             } else {
-                                log.debug("The foreign table reference was null for {}", foreignTable.getName());
+                                log.warn("The foreign table reference was null for {}", foreignTable.getName());
                             }
                         } else {
-                            log.debug("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
+                            log.warn("Foreign table '{}' not found for foreign key '{}'", fk.getForeignTableName(), fk.getName());
                         }
                         if (fkDepList.size() > 0) {
                             fkDepList.addAll(getImportedForeignTableRows(fkDepList, visited, encoding));
