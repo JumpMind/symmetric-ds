@@ -150,4 +150,13 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return result;
     }
+    
+    @Override
+    protected PermissionResult getLogMinePermission() {
+        final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
+        result.setSolution("Change Tracking not available");
+        result.setStatus(Status.FAIL);
+        return result;
+    }
+
 }

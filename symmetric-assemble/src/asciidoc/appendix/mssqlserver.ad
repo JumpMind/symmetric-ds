@@ -84,6 +84,22 @@ GRANT INSERT, EXECUTE ON DATABASE::SYM_DATABASE to APP_USER;
 ----
 ====
 
+ifdef::pro[]
+.Log Miner Permissions
+When using Log Miner instead of triggers, SymmetricDS will alter the database to enable change tracking,
+if it's not already enabled, which requires ALTER ANY DATABASE permission.
+
+[source, SQL]
+alter database mydb set change_tracking = on (change_retention = 2 days, auto_cleanup = on);
+
+For each table configured for replication, SymmetricDS will alter the table to enable change tracking,
+if it's not already enabled, which requires ALTER TABLE permission.
+
+[source, SQL]
+alter table mytable enable change_tracking;
+
+endif::pro[]
+
 .Supported Data Types
 |===
 |Data Type|Supported?

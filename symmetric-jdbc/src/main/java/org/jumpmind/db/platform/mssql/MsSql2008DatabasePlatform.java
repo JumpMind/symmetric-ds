@@ -26,6 +26,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -66,4 +69,11 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
                 table.getName(), table.getSchema());
     }
     
+    @Override
+    protected PermissionResult getLogMinePermission() {
+        final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
+        result.setStatus(Status.PASS);
+        return result;
+    }
+
 }
