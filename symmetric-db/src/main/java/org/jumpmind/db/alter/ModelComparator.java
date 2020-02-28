@@ -275,7 +275,7 @@ public class ModelComparator {
                         Column srcPk = sourcePK[sourceIdx];
                         Column tgtPk = targetPK[targetIdx];
                         if ((caseSensitive && srcPk.getName().equals(tgtPk.getName())) ||
-                                (!caseSensitive && !srcPk.getName()
+                                (!caseSensitive && srcPk.getName()
                                         .equalsIgnoreCase(tgtPk.getName()))) {
                             foundMatch = true;
                         }
