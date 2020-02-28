@@ -266,13 +266,21 @@ public class ModelComparator {
             if (sourcePK.length != targetPK.length) {
                 changePK = true;
             } else {
-                for (int pkColumnIdx = 0; (pkColumnIdx < sourcePK.length) && !changePK; pkColumnIdx++) {
-                    if ((caseSensitive && !sourcePK[pkColumnIdx].getName().equals(
-                            targetPK[pkColumnIdx].getName()))
-                            || (!caseSensitive && !sourcePK[pkColumnIdx].getName()
-                                    .equalsIgnoreCase(targetPK[pkColumnIdx].getName()))) {
-                        changePK = true;
+                /* Check that the PK is the same set of columns regardless of order.  The ddl reader code
+                 * that reads primary keys currently does not order them.
+                 */
+                for (int sourceIdx = 0; (sourceIdx < sourcePK.length) && !changePK; sourceIdx++) {
+                    boolean foundMatch = false;
+                    for (int targetIdx = 0; (targetIdx < targetPK.length) && !changePK && !foundMatch; targetIdx++) {
+                        Column srcPk = sourcePK[sourceIdx];
+                        Column tgtPk = targetPK[targetIdx];
+                        if ((caseSensitive && srcPk.getName().equals(tgtPk.getName())) ||
+                                (!caseSensitive && !srcPk.getName()
+                                        .equalsIgnoreCase(tgtPk.getName()))) {
+                            foundMatch = true;
+                        }
                     }
+                    changePK |= !foundMatch;
                 }
             }
             if (changePK) {
