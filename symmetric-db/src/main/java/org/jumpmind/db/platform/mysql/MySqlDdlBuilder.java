@@ -253,7 +253,7 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         for (Iterator<Column> columnIt = changedColumns.iterator(); columnIt.hasNext();) {
             Column sourceColumn = columnIt.next();
             Column targetColumn = targetTable.findColumn(sourceColumn.getName(),
-                    delimitedIdentifierModeOn);
+                    false);
 
             processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
         }
