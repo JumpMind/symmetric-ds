@@ -94,7 +94,6 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
 
         if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel)) {
-<<<<<<< HEAD
             log.info("Checking data_event for upgrade");
             
             List<Row> rows = engine.getDatabasePlatform().getSqlTemplateDirty().query("select batch_id, data_id, max(router_id) router_id " + 
@@ -141,22 +140,6 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     if (transaction != null) {
                         transaction.close();
                     }
-=======
-            long ts = System.currentTimeMillis();
-            int batchCount = 0, rowCount = 0;
-            log.info("Preparing data_event for upgrade by clearing unrouted batches");
-            List<Row> rows = engine.getSqlTemplate().query("select batch_id from " + tablePrefix + "_outgoing_batch where node_id = '-1'");
-            for (Row row : rows) {
-                long batchId = row.getLong("batch_id");
-                rowCount += engine.getSqlTemplate().update("delete from " + tablePrefix + "_data where data_id in (select data_id from "
-                        + tablePrefix + "_data_event where batch_id = " + batchId + ")");
-                rowCount += engine.getSqlTemplate().update("delete from " + tablePrefix + "_data_event where batch_id = " + batchId);
-                rowCount += engine.getSqlTemplate().update("delete from " + tablePrefix + "_outgoing_batch where batch_id = " + batchId);
-                batchCount++;
-                if (System.currentTimeMillis() - ts > DateUtils.MILLIS_PER_MINUTE) {
-                    log.info("Cleared {} batches and {} rows so far", batchCount, rowCount);
-                    ts = System.currentTimeMillis();
->>>>>>> stash
                 }
             }
 
