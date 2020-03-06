@@ -120,7 +120,8 @@ public class SnapshotUtil {
             engine.getDataExtractorService().extractConfigurationStandalone(engine.getNodeService().findIdentity(),
                     fwriter, TableConstants.SYM_NODE, TableConstants.SYM_NODE_SECURITY,
                     TableConstants.SYM_NODE_IDENTITY, TableConstants.SYM_NODE_HOST,
-                    TableConstants.SYM_NODE_CHANNEL_CTL, TableConstants.SYM_CONSOLE_USER,
+                    TableConstants.SYM_NODE_CHANNEL_CTL,TableConstants.SYM_CONSOLE_ROLE,
+                    TableConstants.SYM_CONSOLE_USER,TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE,
                     TableConstants.SYM_MONITOR_EVENT, TableConstants.SYM_CONSOLE_EVENT,
                     TableConstants.SYM_CONSOLE_USER_HIST);
         } catch (Exception e) {

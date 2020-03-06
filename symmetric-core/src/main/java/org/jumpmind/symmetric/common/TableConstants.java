@@ -72,6 +72,8 @@ public class TableConstants {
     public static final String SYM_FILE_SNAPSHOT = "file_snapshot";
     public static final String SYM_FILE_INCOMING = "file_incoming";
     public static final String SYM_CONSOLE_USER = "console_user";
+    public static final String SYM_CONSOLE_ROLE = "console_role";
+    public static final String SYM_CONSOLE_ROLE_PRIVILEGE = "console_role_privilege";
     public static final String SYM_CONSOLE_USER_HIST = "console_user_hist";
     public static final String SYM_CONSOLE_EVENT = "console_event";
     public static final String SYM_EXTENSION = "extension";
@@ -187,6 +189,8 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
         tables.add(getTableName(tablePrefix, TableConstants.SYM_FILE_INCOMING));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_USER));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_ROLE));
+        tables.add(getTableName(tablePrefix, SYM_CONSOLE_ROLE_PRIVILEGE));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_USER_HIST));
         tables.add(getTableName(tablePrefix, SYM_CONSOLE_EVENT));
         tables.add(getTableName(tablePrefix, SYM_EXTENSION));
@@ -196,7 +200,7 @@ public class TableConstants {
         tables.add(getTableName(tablePrefix, SYM_CONTEXT));
         tables.add(getTableName(tablePrefix, SYM_JOB));
         tables.add(getTableName(tablePrefix, SYM_TABLE_RELOAD_STATUS));
-        
+
         return tables;
     }
 
@@ -216,7 +220,6 @@ public class TableConstants {
     }
 
     public static String getTableName(String tablePrefix, String tableSuffix) {
-        return String.format("%s%s%s", tablePrefix, StringUtils.isNotBlank(tablePrefix) ? "_" : "",
-                tableSuffix);
+        return String.format("%s%s%s", tablePrefix, StringUtils.isNotBlank(tablePrefix) ? "_" : "", tableSuffix);
     }
 }

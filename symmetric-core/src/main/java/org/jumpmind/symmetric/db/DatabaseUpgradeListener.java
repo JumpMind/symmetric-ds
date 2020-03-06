@@ -67,32 +67,32 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     protected boolean isUpgradeFromPre38;
     protected boolean isUpgradeFrom38;
-    
+
     @Override
-    public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel,
-            Database desiredModel) throws IOException {
+    public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel, Database desiredModel)
+            throws IOException {
         StringBuilder sb = new StringBuilder();
-        
+
         isUpgradeFromPre38 = isUpgradeFromPre38(tablePrefix, currentModel, desiredModel);
 
         if (isUpgradeFromPre38) {
             Table transformTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE);
             if (transformTable != null && transformTable.findColumn("update_action") != null) {
-                engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE +
-                        " set update_action = 'UPD_ROW' where update_action is null");
+                engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_TRANSFORM_TABLE
+                        + " set update_action = 'UPD_ROW' where update_action is null");
             }
 
             String dataGapTableName = tablePrefix + "_" + TableConstants.SYM_DATA_GAP;
-            if (currentModel.findTable(dataGapTableName) != null) { 
+            if (currentModel.findTable(dataGapTableName) != null) {
                 engine.getSqlTemplate().update("delete from " + dataGapTableName);
             }
-            
+
             String nodeCommunicationTable = tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION;
             if (currentModel.findTable(nodeCommunicationTable) != null) {
                 engine.getSqlTemplate().update("delete from " + tablePrefix + "_" + TableConstants.SYM_NODE_COMMUNICATION);
             }
         }
-        
+
         if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel)) {
             log.info("Checking data_event for upgrade");
             
@@ -159,11 +159,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 }
             }
         }
-        
+
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.MYSQL)) {
             String function = tablePrefix + "_transaction_id_post_5_7_6";
-            String select = "select count(*) from information_schema.routines where routine_name='"
-                    + function + "' and routine_schema in (select database())";
+            String select = "select count(*) from information_schema.routines where routine_name='" + function
+                    + "' and routine_schema in (select database())";
 
             if (engine.getDatabasePlatform().getSqlTemplate().queryForInt(select) > 0) {
                 String drop = "drop function " + function;
@@ -171,51 +171,46 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                 log.info("Just uninstalled {}", function);
             }
         }
-        
-        // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
+
+        // Leave this last in the sequence of steps to make sure to capture any
+        // DML changes done before this
         if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             // Drop triggers on sym tables
-            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors =
-                    engine.getExtensionService().getExtensionPointList(IAlterDatabaseInterceptor.class);
-            List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel,
-                    desiredModel,
+            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
+                    .getExtensionPointList(IAlterDatabaseInterceptor.class);
+            List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel, desiredModel,
                     alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
-            
-            Predicate predicate = new MultiInstanceofPredicate(new Class[] {
-                    RemovePrimaryKeyChange.class,
-                    AddPrimaryKeyChange.class,
-                    PrimaryKeyChange.class,
-                    RemoveColumnChange.class,
-                    AddColumnChange.class,
-                    ColumnDataTypeChange.class,
-                    ColumnSizeChange.class,
-                    CopyColumnValueChange.class
-            });
+
+            Predicate predicate = new MultiInstanceofPredicate(
+                    new Class[] { RemovePrimaryKeyChange.class, AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class,
+                            AddColumnChange.class, ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
             @SuppressWarnings("unchecked")
             Collection<TableChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
             Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
-            for(TableChange change: modelChangesAffectingTriggers) {
+            for (TableChange change : modelChangesAffectingTriggers) {
                 setOfTableNamesToDropTriggersFor.add(change.getChangedTable().getName());
             }
             engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
         }
-        
+
         return sb.toString();
     }
 
     @Override
     public String afterUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database model) throws IOException {
-        
-        // Leave this first so triggers are put back in place before any DML is done against SymmetricDS tables
+
+        // Leave this first so triggers are put back in place before any DML is
+        // done against SymmetricDS tables
         // Reinstall triggers on sym tables
         engine.getTriggerRouterService().syncTriggers();
-        
+
         StringBuilder sb = new StringBuilder();
         if (isUpgradeFromPre38) {
-            engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_SEQUENCE +
-                    " set cache_size = 10 where sequence_name = ?", Constants.SEQUENCE_OUTGOING_BATCH);
-            engine.getSqlTemplate().update("update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL +
-                    " set max_batch_size = 10000 where reload_flag = 1 ");
+            engine.getSqlTemplate().update(
+                    "update " + tablePrefix + "_" + TableConstants.SYM_SEQUENCE + " set cache_size = 10 where sequence_name = ?",
+                    Constants.SEQUENCE_OUTGOING_BATCH);
+            engine.getSqlTemplate().update(
+                    "update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL + " set max_batch_size = 10000 where reload_flag = 1 ");
         }
 
         engine.getPullService().pullConfigData(false);
@@ -248,19 +243,19 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
     }
-    
-    protected boolean isUpgradeFromPre38(String tablePrefix, Database currentModel,
-            Database desiredModel) {
+
+    protected boolean isUpgradeFromPre38(String tablePrefix, Database currentModel, Database desiredModel) {
         String monitorTableName = tablePrefix + "_" + TableConstants.SYM_MONITOR;
         String nodeTableName = tablePrefix + "_" + TableConstants.SYM_NODE;
-        if (currentModel.findTable(nodeTableName) != null && 
-                currentModel.findTable(monitorTableName) == null && desiredModel.findTable(monitorTableName) != null) {
+        if (currentModel.findTable(nodeTableName) != null && currentModel.findTable(monitorTableName) == null
+                && desiredModel.findTable(monitorTableName) != null) {
             log.info("Detected upgrade from pre-3.8 version.");
             return true;
         } else {
             return false;
-        }        
+        }
     }
+
     protected boolean isUpgradeFromPre311(String tablePrefix, Database currentModel, Database desiredModel) {
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_DATA_EVENT);
         if (eventTable != null && eventTable.findColumn("router_id") != null) {
@@ -268,9 +263,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             return true;
         } else {
             return false;
-        }        
+        }
     }
-    
+
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
