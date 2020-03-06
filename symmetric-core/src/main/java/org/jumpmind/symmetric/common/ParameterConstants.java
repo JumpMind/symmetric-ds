@@ -178,6 +178,7 @@ final public class ParameterConstants {
     
     public final static String EXTRACT_CHECK_ROW_SIZE = "extract.check.row.size";
     public final static String EXTRACT_ROW_MAX_LENGTH = "extract.row.max.length";
+    public final static String EXTRACT_ROW_CAPTURE_TIME = "extract.row.capture.time";
     
     public final static String CREATE_TABLE_WITHOUT_DEFAULTS = "create.table.without.defaults";
     public final static String CREATE_TABLE_WITHOUT_FOREIGN_KEYS = "create.table.without.foreign.keys";

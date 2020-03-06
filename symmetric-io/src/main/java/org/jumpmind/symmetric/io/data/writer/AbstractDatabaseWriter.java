@@ -39,7 +39,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
-import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -239,7 +239,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
                         statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
                     } else if (conflictResolver != null && resolvedData != null) {
                         Conflict conflict = new Conflict();
-                        conflict.setPingBack(PingBack.REMAINING_ROWS);
+                        conflict.setDetectType(DetectConflict.USE_PK_DATA);
+                        conflict.setResolveType(ResolveConflict.FALLBACK);
                         conflictResolver.attemptToResolve(resolvedData, data, this, conflict);
                     } else {
                        if (filterError(data, ex)) {

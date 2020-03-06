@@ -31,11 +31,11 @@ public class Conflict implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum DetectConflict {
-        USE_PK_DATA, USE_OLD_DATA, USE_CHANGED_DATA, USE_TIMESTAMP, USE_VERSION
+        USE_CHANGED_DATA, USE_OLD_DATA, USE_PK_DATA, USE_TIMESTAMP, USE_VERSION
     };
 
     public enum ResolveConflict {
-        NEWER_WINS, MANUAL, IGNORE, FALLBACK
+        NEWER_WINS, FALLBACK, MANUAL, IGNORE
     };
 
     public enum PingBack {
@@ -51,9 +51,9 @@ public class Conflict implements Serializable {
     private String targetCatalogName;
     private String targetSchemaName;
     private String targetTableName;
-    private DetectConflict detectType = DetectConflict.USE_PK_DATA;
+    private DetectConflict detectType = DetectConflict.USE_CHANGED_DATA;
     private String detectExpression;
-    private ResolveConflict resolveType = ResolveConflict.FALLBACK;
+    private ResolveConflict resolveType = ResolveConflict.NEWER_WINS;
     private boolean resolveChangesOnly = true;
     private boolean resolveRowOnly = true;
     private Date createTime = new Date();

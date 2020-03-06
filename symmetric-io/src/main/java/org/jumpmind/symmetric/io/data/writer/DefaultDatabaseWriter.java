@@ -276,7 +276,11 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 } else {
                     switch (conflict.getDetectType()) {
                         case USE_OLD_DATA:
-                            lookupKeys = targetTable.getColumnsAsList();
+                            if (data.contains(CsvData.OLD_DATA)) {
+                                lookupKeys = targetTable.getColumnsAsList();
+                            } else {
+                                lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
+                            }
                             break;
                         case USE_VERSION:
                         case USE_TIMESTAMP:
@@ -411,25 +415,34 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     } else {
                         switch (conflict.getDetectType()) {
                             case USE_CHANGED_DATA:
-                                ArrayList<Column> lookupColumns = new ArrayList<Column>(
-                                        changedColumnsList);
-                                Column[] pks = targetTable.getPrimaryKeyColumns();
-                                for (Column column : pks) {
-                                    // make sure all of the PK keys are in the
-                                    // list only once and are always at the end
-                                    // of the list
-                                    lookupColumns.remove(column);
-                                    lookupColumns.add(column);
+                                if (data.contains(CsvData.OLD_DATA)) {
+                                    ArrayList<Column> lookupColumns = new ArrayList<Column>(
+                                            changedColumnsList);
+                                    Column[] pks = targetTable.getPrimaryKeyColumns();
+                                    for (Column column : pks) {
+                                        // make sure all of the PK keys are in the
+                                        // list only once and are always at the end
+                                        // of the list
+                                        lookupColumns.remove(column);
+                                        lookupColumns.add(column);
+                                    }
+                                    removeExcludedColumns(conflict, lookupColumns);
+                                    lookupKeys = lookupColumns;
+                                } else {
+                                    lookupKeys = targetTable.getPrimaryKeyColumnsAsList();    
                                 }
-                                removeExcludedColumns(conflict, lookupColumns);
-                                lookupKeys = lookupColumns;
                                 break;
                             case USE_OLD_DATA:
-                                lookupKeys = targetTable.getColumnsAsList();
+                                if (data.contains(CsvData.OLD_DATA)) {
+                                    lookupKeys = targetTable.getColumnsAsList();
+                                    removeExcludedColumns(conflict, lookupKeys);
+                                } else {
+                                    lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
+                                }
                                 break;
                             case USE_VERSION:
                             case USE_TIMESTAMP:
-                                lookupColumns = new ArrayList<Column>();
+                                ArrayList<Column> lookupColumns = new ArrayList<Column>();
                                 Column versionColumn = targetTable.getColumnWithName(conflict
                                         .getDetectExpression());
                                 if (versionColumn != null) {
@@ -439,7 +452,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                             "Could not find the timestamp/version column with the name {} on table {}.  Defaulting to using primary keys for the lookup.",
                                             conflict.getDetectExpression(), targetTable.getName());
                                 }
-                                pks = targetTable.getPrimaryKeyColumns();
+                                Column[] pks = targetTable.getPrimaryKeyColumns();
                                 for (Column column : pks) {
                                     // make sure all of the PK keys are in the
                                     // list only once and are always at the end
@@ -687,7 +700,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     private void removeExcludedColumns(Conflict conflict,
-            ArrayList<Column> lookupColumns) {
+            List<Column> lookupColumns) {
         String excludedString = conflict.getDetectExpressionValue(
                 DetectExpressionKey.EXCLUDED_COLUMN_NAMES);
         if (!StringUtils.isBlank(excludedString)) {

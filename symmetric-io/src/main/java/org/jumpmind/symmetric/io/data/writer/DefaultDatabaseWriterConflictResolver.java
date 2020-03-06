@@ -49,6 +49,7 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -114,6 +115,36 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         }
 
         return existingTs == null || (loadingTs != null && loadingTs.compareTo(existingTs) > 0);
+    }
+
+    protected boolean isCaptureTimeNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {
+        DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
+        Table targetTable = writer.getTargetTable();
+        String[] pkData = data.getPkData(targetTable);
+        String pkCsv = CsvUtils.escapeCsvData(pkData);
+        Timestamp loadingTs = data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
+        Timestamp existingTs = null;
+
+        if (loadingTs != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
+            }
+
+            String sql = "select max(create_time) from " + databaseWriter.getTablePrefix() + 
+                    "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
+                    "(event_type in ('U', 'D') and pk_data = ?))";
+
+            existingTs = databaseWriter.getTransaction().queryForObject(sql, Timestamp.class, targetTable.getName(),
+                    pkCsv + "%", pkCsv);
+        }
+
+        boolean isWinner = existingTs == null || (loadingTs != null && loadingTs.compareTo(existingTs) > 0);
+        
+        if (log.isDebugEnabled()) {
+            log.debug("{} row with local time of {} and remote time of {} for table {} and pk of {}",
+                    isWinner ? "Winning" : "Losing", existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(pkData));
+        }
+        return isWinner;
     }
 
     protected boolean isVersionNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {

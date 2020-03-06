@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,16 +64,27 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     protected boolean noBinaryOldData = false;
     
     protected boolean backwardsCompatible = false;
+    
+    protected boolean sendCaptureTime = false;
+    
+    protected boolean sendRowCaptureTime = false;
+    
+    protected long baseTime;
+    
+    protected long lastTime;
 
     public AbstractProtocolDataWriter(String sourceNodeId,
-            List<IProtocolDataWriterListener> listeners, boolean backwardsCompatible) {
+            List<IProtocolDataWriterListener> listeners, boolean backwardsCompatible, boolean sendCaptureTime, boolean sendRowCaptureTime) {
         this.listeners = listeners;
         this.sourceNodeId = sourceNodeId;
         this.backwardsCompatible = backwardsCompatible;
+        this.sendCaptureTime = sendCaptureTime;
+        this.sendRowCaptureTime = sendRowCaptureTime;
     }
 
     public void open(DataContext context) {
         this.context = context;
+        this.baseTime = 0;
     }
 
     public void close() {
@@ -159,11 +171,13 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             statistics.get(batch).increment(DataWriterStatisticConstants.LINENUMBER);
             switch (data.getDataEventType()) {
                 case INSERT:
+                    printTime(data);
                     println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
                     break;
 
                 case UPDATE:
+                    printTime(data);
                     if (!backwardsCompatible) {
                         String oldData = data.getCsvData(CsvData.OLD_DATA);
                         if (StringUtils.isNotBlank(oldData)) {
@@ -176,6 +190,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     break;
 
                 case DELETE:
+                    printTime(data);
                     if (!backwardsCompatible) {
                         String oldData = data.getCsvData(CsvData.OLD_DATA);
                         if (StringUtils.isNotBlank(oldData)) {
@@ -201,6 +216,21 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 case RELOAD:
                 default:
                     break;                      
+            }
+        }
+    }
+
+    protected void printTime(CsvData data) {
+        Date createTime = (Date) data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
+        if (sendCaptureTime && baseTime == 0 && createTime != null) {
+            baseTime = createTime.getTime();
+            println(CsvConstants.BASETIME, String.valueOf(baseTime));            
+        }
+        if (sendRowCaptureTime && createTime != null) {
+            long thisTime = baseTime - createTime.getTime();
+            if (thisTime != lastTime) {
+                println(CsvConstants.TIME, String.valueOf(thisTime));
+                lastTime = thisTime;
             }
         }
     }

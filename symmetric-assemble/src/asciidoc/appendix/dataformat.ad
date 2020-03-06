@@ -15,6 +15,12 @@ Identifies which channel a batch belongs to. The SymmetricDS data loader expects
 batch, {batch_id}::
 Uniquely identifies a batch. Used to track whether a batch has been loaded before. A batch of -9999 is considered a virtual batch and will be loaded, but will not be recorded in incoming_batch.
 
+basetime, {unix_timestamp}::
+Base create time (as a unix timestamp integer) of first row (insert, update, delete) in batch.
+
+ts, {unix_timestamp}::
+Offset create time (as a unix timestamp integer) for the current row (insert, update, delete).  This is a small offset integer that is added to the base time.
+
 schema, {schema name}::
 The name of the schema that is being targeted.
 

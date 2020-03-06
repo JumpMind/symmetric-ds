@@ -401,7 +401,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.symmetricDialect.getPlatform(), source);
 
             ProtocolDataWriter dataWriter = new ProtocolDataWriter(
-                    nodeService.findIdentityNodeId(), writer, targetNode.requires13Compatiblity());
+                    nodeService.findIdentityNodeId(), writer, targetNode.requires13Compatiblity(), false, false);
             DataProcessor processor = new DataProcessor(dataReader, dataWriter,
                     "configuration extract");
             DataContext ctx = new DataContext();
@@ -561,7 +561,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (activeBatches.size() > 0) {
                 BufferedWriter writer = transport.openWriter();
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                        writer, targetNode.requires13Compatiblity());
+                        writer, targetNode.requires13Compatiblity(), targetNode.allowCaptureTimeInProtocol(),
+                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME));
 
                 return extract(extractInfo, targetNode, activeBatches, dataWriter, writer, ExtractMode.FOR_SYM_CLIENT);
             }
@@ -649,7 +650,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(batchId, nodeId);
             if (batch != null) {
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                        writer, targetNode.requires13Compatiblity());
+                        writer, targetNode.requires13Compatiblity(), targetNode.allowCaptureTimeInProtocol(),
+                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME));
                 List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(1);
                 batches.add(batch);
                 batches = extract(new ProcessInfo(), targetNode, batches, dataWriter, null,
@@ -1294,7 +1296,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     targetNode,
                     new ProcessInfoDataWriter(new StagingDataWriter(memoryThresholdInBytes, true, nodeService
                             .findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING,
-                            stagingManager), processInfo));
+                            stagingManager, targetNode.allowCaptureTimeInProtocol(),
+                            parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME)), processInfo));
         } else {
             transformExtractWriter = createTransformDataWriter(sourceNode, targetNode,
                     new ProcessInfoDataWriter(dataWriter, processInfo));
@@ -1731,7 +1734,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     new DataProcessor(dataReader, createTransformDataWriter(
                             nodeService.findIdentity(), targetNode,
                             new ProtocolDataWriter(nodeService.findIdentityNodeId(), writer,
-                                    targetNode.requires13Compatiblity())), "extract range").process(ctx);
+                                    targetNode.requires13Compatiblity(), false, false)), "extract range").process(ctx);
                     foundBatch = true;
                 }
             }
@@ -1760,7 +1763,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
                 new DataProcessor(dataReader, createTransformDataWriter(nodeService.findIdentity(),
                         targetNode, new ProtocolDataWriter(nodeService.findIdentityNodeId(),
-                                writer, targetNode.requires13Compatiblity())), "extract range").process(ctx);
+                                writer, targetNode.requires13Compatiblity(), false, false)), "extract range").process(ctx);
                 foundBatch = true;
             }
         }

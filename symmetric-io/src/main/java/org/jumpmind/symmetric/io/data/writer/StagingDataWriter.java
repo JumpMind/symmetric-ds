@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,15 +47,15 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
     private boolean acquireReference = false;
 
     public StagingDataWriter(long memoryThresholdInBytes, boolean acquireReference, String sourceNodeId, String category, IStagingManager stagingManager,
-            IProtocolDataWriterListener... listeners) {
-        this(sourceNodeId, category, stagingManager, toList(listeners));
+            boolean sendCaptureTime, boolean sendRowCaptureTime, IProtocolDataWriterListener... listeners) {
+        this(sourceNodeId, category, stagingManager, sendCaptureTime, sendRowCaptureTime, toList(listeners));
         this.memoryThresholdInBytes = memoryThresholdInBytes;
         this.acquireReference = acquireReference;
     }
 
     public StagingDataWriter(String sourceNodeId, String category, IStagingManager stagingManager,
-            List<IProtocolDataWriterListener> listeners) {
-        super(sourceNodeId, listeners, false);
+            boolean sendCaptureTime, boolean sendRowCaptureTime, List<IProtocolDataWriterListener> listeners) {
+        super(sourceNodeId, listeners, false, sendCaptureTime, sendRowCaptureTime);
         this.category = category;
         this.stagingManager = stagingManager;
     }

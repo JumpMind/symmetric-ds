@@ -33,12 +33,13 @@ public class ProtocolDataWriter extends AbstractProtocolDataWriter {
 
     private BufferedWriter writer;
     
-    public ProtocolDataWriter(String sourceNodeId, Writer writer, boolean backwardsCompatible) {
-        this(sourceNodeId, null, writer, backwardsCompatible);
+    public ProtocolDataWriter(String sourceNodeId, Writer writer, boolean backwardsCompatible, boolean sendCaptureTime, boolean sendRowCaptureTime) {
+        this(sourceNodeId, null, writer, backwardsCompatible, sendCaptureTime, sendRowCaptureTime);
     }
 
-    public ProtocolDataWriter(String sourceNodeId, List<IProtocolDataWriterListener> listeners, Writer writer, boolean backwardsCompatible) {
-        super(sourceNodeId, listeners, backwardsCompatible);
+    public ProtocolDataWriter(String sourceNodeId, List<IProtocolDataWriterListener> listeners, Writer writer, boolean backwardsCompatible,
+            boolean sendCaptureTime, boolean sendRowCaptureTime) {
+        super(sourceNodeId, listeners, backwardsCompatible, sendCaptureTime, sendRowCaptureTime);
         if (writer instanceof BufferedWriter) {
             this.writer = (BufferedWriter) writer;
         } else {

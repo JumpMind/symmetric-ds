@@ -52,14 +52,16 @@ then no conflict is detected during an update or a delete. If a row already exis
 |USE_TIMESTAMP|Indicates that the primary key plus a timestamp column (as configured in detect_expression ) will indicate whether 
 a conflict has occurred. If the target timestamp column is not equal to the old source timestamp column, then a conflict has been detected. 
 If a row already exists during an insert then a conflict has been detected.
-
+ifndef::pro[]
 _You must specify the name of the column containing a timestamp to use in the detect_expression._
+endif::pro[]
 
 |USE_VERSION|Indicates that the primary key plus a version column (as configured in detect_expression ) will indicate whether a conflict 
 has occurred. If the target version column is not equal to the old source version column, then a conflict has been detected. If a row already 
 exists during an insert then a conflict has been detected.
-
+ifndef::pro[]
 _You must specify the name of the column containing a version number to use in the detect_expression._
+endif::pro[]
 
 |===
 
@@ -69,29 +71,28 @@ Resolution Type:: The choice of how to resolve a detected conflict is configured
 [cols=".^2,8"] 
 |===
 
-|FALLBACK|Indicates that when a conflict is detected the system should automatically apply the changes anyways. If the source 
+|NEWER_WINS|Indicates that when a conflict is detected that the either the source or the target will win 
+based on which side has the newer timestamp or higher version number.  With USE_TIMESTAMP detection, the column specified
+in detect_expression is used, otherwise the time of capture is used.
+
+|FALLBACK|Indicates that when a conflict is detected the system should automatically apply the changes anyway. If the source 
 operation was an insert, then an update will be attempted. If the source operation was an update and the row does not exist, then 
-an insert will be attempted. If the source operation was a delete and the row does not exist, then the delete will be ignored. The 
-resolve_changes_only flag controls whether all columns will be updated or only columns that have changed will be updated during a fallback operation.
+an insert will be attempted. If the source operation was a delete and the row does not exist, then the delete will be ignored.
 
-|IGNORE|Indicates that when a conflict is detected the system should automatically ignore the incoming change. The resolve_row_only 
-column controls whether the entire batch should be ignore or just the row in conflict.
+|IGNORE|Indicates that when a conflict is detected the system should automatically ignore the incoming change.  Use IGNORE between two node groups
+in one direction, and FALLBACK in the other direction to establish which group wins a conflict.
 
-|MANUAL|Indicates that when a conflict is detected the batch will remain in error until manual intervention occurs. A row in error 
-is inserted into the INCOMING_ERROR table. The conflict detection id that detected the conflict is recorded (i.e., the conflict_id value from CONFLICT), 
-along with the old data, new data, and the "current data" (by current data, we mean the unexpected data at the target which doesn't match the old data as expected) 
-in columns old_data, new_data, and cur_data. In order to resolve, the resolve_data column can be manually filled out which will be used on 
-the next load attempt instead of the original source data. The resolve_ignore flag can also be used to indicate that the row should be ignored on the next load attempt.
-
-|NEWER_WINS|Indicates that when a conflict is detected by USE_TIMESTAMP or USE_VERSION that the either the source or the target will win 
-based on the which side has the newer timestamp or higher version number. The resolve_row_only column controls whether the entire batch 
-should be ignore or just the row in conflict.
+|MANUAL|Indicates that when a conflict is detected, the batch will remain in error until manual intervention occurs. A row in error 
+is inserted into the INCOMING_ERROR table, which includes the conflict ID, old data, new data, and current data at the target.
+The user can specify the resolve data to use on the next load attempt.  
+The resolve_ignore flag can also be used to indicate that the row should be ignored.
 
 |===
 
 TIP: To make a primary node group always win a conflict, use a "fallback" resolution on group links where primary is the source
 and an "ignore" resolution on group links where primary is the target.
 
+ifndef::pro[]
 Ping Back:: For each configured conflict, you also have the ability to control if and how much "resolved" data is sent back to the 
 node whose data change is in conflict. This "ping back" behavior is specified by the following options.
 
@@ -101,24 +102,28 @@ node whose data change is in conflict. This "ping back" behavior is specified by
 
 |REMAINING_ROWS|The resolved data of the single row in the batch in conflict, along with the entire remainder of the batch, is sent back to the originating node.
 
-|SINGLE_ROW|The resolved data of the single row in the batch that caused the conflict is sent back to the originating node.
+|SINGLE_ROW|The resolved data of the single row in the batch that caused the conflict is sent back to the originating node.  Recommended use with MANUAL resolution, so the resolved data is sent back to the originating node.
 
-|OFF|No data is sent back to the originating node, even if the resolved data doesn't match the data the node sent.
+|OFF|No data is sent back to the originating node, even if the resolved data doesn't match the data the node sent.  Recommended use with resolution types that choose a winning row, including NEWER_WINS and when IGNORE and FALLBACK are used on opposing group links.
 
 |===
-
-ifdef::pro[]
-.Advanced Options
 endif::pro[]
+
 Detection Expression:: An expression that provides additional information about the detection mechanism.  If the detection 
 mechanism is use_timestamp or use_version then this expression will be the name of the timestamp or version column.
 The detect_expression is also used to exclude certain column names from being used.  For example, to exclude column1 and column2, 
 the expression is "excluded_column_names=column1,column2".
 
+ifdef::pro[]
+.Advanced Options
+endif::pro[]
+
+ifndef::pro[]
 Resolve Changes Only:: Indicates that when applying changes during an update that only data that has changed should be applied.  
 Otherwise, all the columns will be updated.  This really only applies to updates.
-Resolve Row Only:: When 'resolve row only' is set to true, the system will ignore only the rows in conflict.  When 'resolve row only' is set to false, the system will ignore the entire batch.
-This applies to a resolve type of 'ignore'.  
+Resolve Row Only:: Ignore only the row in conflict when true, or ignore the entire batch when false.  Used by IGNORE and NEWER_WINS resolvers.  Recommended setting is true.
+endif::pro[]
+
 Channel:: Optional channel that this setting will be applied to.
 Target Catalog:: Optional database catalog that the target table belongs to. Only use this if the target table is not in the default catalog.
 Target Schema:: Optional database schema that the target table belongs to. Only use this if the target table is not in the default schema.
@@ -129,15 +134,4 @@ In addition, some databases do not allow comparisons of binary columns whether u
 
 WARNING: Some platforms do not support comparisons of binary columns. Conflicts in binary column values will not be detected on the 
 following platforms: DB2, DERBY, ORACLE, and SQLSERVER.
-
-
-
-
-
-
-
-
-
-
-
 

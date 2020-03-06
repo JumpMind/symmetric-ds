@@ -290,7 +290,11 @@ public class Node implements Serializable, Comparable<Node> {
         }
         return false;
     }
-    
+
+    public boolean allowCaptureTimeInProtocol() {
+        return isVersionGreaterThanOrEqualTo(3, 12);
+    }
+
     public boolean isVersionGreaterThanOrEqualTo(int... targetVersion) {
         if (symmetricVersion != null) {
             if (symmetricVersion.equals("development")) {

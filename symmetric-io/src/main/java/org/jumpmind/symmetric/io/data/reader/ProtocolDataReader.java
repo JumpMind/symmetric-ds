@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,6 +75,8 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected int lineNumber = 0;
     protected String[] tokens;
     protected boolean streamToFile = true;
+    protected long baseTime;
+    protected Timestamp createTime;
     
     public ProtocolDataReader(BatchType batchType, String targetNodeId, StringBuilder input) {
         this(batchType, targetNodeId, new BufferedReader(new StringReader(input.toString())));
@@ -172,6 +175,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.INSERT);
                     data.putParsedData(CsvData.ROW_DATA, CollectionUtils.copyOfRange(tokens, 1, tokens.length));
+                    if (createTime != null) {
+                        data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, createTime);
+                    }
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.OLD)) {
@@ -193,6 +199,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.putParsedData(CsvData.ROW_DATA, CollectionUtils.copyOfRange(tokens, 1, columnCount + 1));
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens, columnCount + 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
+                    if (createTime != null) {
+                        data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, createTime);
+                    }
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
@@ -201,9 +210,13 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     data.setDataEventType(DataEventType.DELETE);
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens, 1, tokens.length));
                     data.putParsedData(CsvData.OLD_DATA, parsedOldData);
+                    if (createTime != null) {
+                        data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, createTime);
+                    }
                     tokens = null;
                     return data;
-
+                } else if (tokens[0].equals(CsvConstants.TIME)) {
+                    createTime = new Timestamp(Long.parseLong(tokens[1]) + baseTime);
                 } else if (tokens[0].equals(CsvConstants.BATCH) || tokens[0].equals(CsvConstants.RETRY)) {
                     
                     Batch batch = new Batch(batchType, Long.parseLong(tokens[1]), channelId, binaryEncoding, sourceNodeId, targetNodeId,
@@ -298,6 +311,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     statsValues = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
                     stats = stats != null ? stats : new DataReaderStatistics();
                     putStats(stats, statsColumns, statsValues);
+                } else if (tokens[0].equals(CsvConstants.BASETIME)) {
+                    baseTime = Long.parseLong(tokens[1]);
+                    createTime = new Timestamp(baseTime);
                 } else {
                     log.info("Unable to handle unknown csv values: " + Arrays.toString(tokens));
                 }

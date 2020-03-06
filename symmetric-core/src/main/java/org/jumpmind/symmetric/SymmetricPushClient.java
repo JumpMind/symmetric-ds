@@ -51,7 +51,7 @@ public class SymmetricPushClient {
         try {
             transport = new HttpOutgoingTransport(new HttpTransportManager(), new URL(buildUrl()), 30000, true, 0, -1, null,
                     null, false, -1, false);
-            writer = new ProtocolDataWriter(nodeId, transport.openWriter(), false);
+            writer = new ProtocolDataWriter(nodeId, transport.openWriter(), false, false, false);
             writer.start(batch);
         } catch (Exception ex) {
             throw new IoException(ex);
