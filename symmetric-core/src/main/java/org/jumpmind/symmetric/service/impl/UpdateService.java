@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -56,9 +55,9 @@ import org.jumpmind.symmetric.service.IContextService;
 import org.jumpmind.symmetric.service.IUpdateService;
 import org.jumpmind.util.AppUtils;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 public class UpdateService extends AbstractService implements IUpdateService {
 
@@ -163,25 +162,27 @@ public class UpdateService extends AbstractService implements IUpdateService {
     }
 
     protected void parseResponse(HttpURLConnection conn) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line = in.readLine();
-        in.close();
-
-        JsonFactory factory = new JsonFactory();
-        JsonParser parser = factory.createParser(line);
-        while (!parser.isClosed()) {
-            JsonToken jsonToken = parser.nextToken();
-            if (JsonToken.FIELD_NAME.equals(jsonToken)) {
-                String fieldName = parser.getCurrentName();
-                jsonToken = parser.nextToken();
-
+        Gson gson = new Gson();
+        JsonReader reader = gson.newJsonReader(new InputStreamReader(conn.getInputStream()));
+        String fieldName = "";
+        while (reader.hasNext()) {
+            JsonToken jsonToken = reader.peek();
+            if (JsonToken.BEGIN_OBJECT.equals(jsonToken)) {
+                reader.beginObject();
+            } else if (JsonToken.NAME.equals(jsonToken)) {
+                fieldName = reader.nextName();
+            } else if (JsonToken.STRING.equals(jsonToken)) {
+                String value = reader.nextString();
                 if ("version".equals(fieldName)) {
-                    latestVersion = parser.getValueAsString();
+                    latestVersion = value;
                 } else if ("link".equals(fieldName)) {
-                    downloadUrl = parser.getValueAsString();
+                    downloadUrl = value;
                 }
+            } else if (JsonToken.NUMBER.equals(jsonToken)) {
+                reader.nextLong();
             }
         }
+        reader.close();
     }
 
     protected Properties getProperties() {

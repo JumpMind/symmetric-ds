@@ -36,8 +36,7 @@ import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -104,13 +103,11 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
     }
     
     protected String serializeDetails(BatchErrorWrapper details) {
-        ObjectMapper mapper = new ObjectMapper();
-        
         String result = null;
         try {
-            result = mapper.writeValueAsString(details);
-        } catch(JsonProcessingException jpe) {
-            log.warn("Unable to convert batch errors to JSON", jpe);
+            result = new Gson().toJson(details);
+        } catch(Exception e) {
+            log.warn("Unable to convert batch errors to JSON", e);
         }
        
         return result;
