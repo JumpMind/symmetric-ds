@@ -645,6 +645,9 @@ INodeCommunicationExecutor {
                     } catch (IOException e) {
                         throw new IoException(e);
                     }
+                } else {
+                    log.error("Missing staged ZIP file for target node {}: {}", targetNode.toString(), 
+                            stagedResource == null ? "<null>" : stagedResource.toString());
                 }
 
                 for (int i = 0; i < batchesToProcess.size(); i++) {
@@ -890,9 +893,11 @@ INodeCommunicationExecutor {
                 if (transport instanceof FileOutgoingTransport) {
                     ((FileOutgoingTransport) transport).setProcessedBatches(batches);
                 }
-                List<BatchAck> batchAcks = readAcks(batches, transport,
-                        transportManager, engine.getAcknowledgeService(), null);
-                status.updateOutgoingStatus(batches, batchAcks);
+                if (transport.isOpen()) {
+                    List<BatchAck> batchAcks = readAcks(batches, transport,
+                            transportManager, engine.getAcknowledgeService(), null);
+                    status.updateOutgoingStatus(batches, batchAcks);
+                }
             }
             if (!status.failed() && batches.size() > 0) {
                 log.info("Pushed files to {}. {} files and {} batches were processed",

@@ -149,7 +149,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             try {
                 snapshot.setFileSize(Long.parseLong(columnData.get("FILE_SIZE")));
             } catch (NumberFormatException nfe) {
-                log.info("Checksum was not a number : " + columnData.get("FILE_SIZE") + " for file " + columnData.get("FILE_NAME"));
+                log.info("File size was not a number : " + columnData.get("FILE_SIZE") + " for file " + columnData.get("FILE_NAME"));
             }
             snapshot.setLastUpdateBy(columnData.get("LAST_UPDATE_BY"));
             snapshot.setFileName(columnData.get("FILE_NAME"));
