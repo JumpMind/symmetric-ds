@@ -42,7 +42,7 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 /**
  * @see IBandwidthService
@@ -148,8 +148,7 @@ public class BandwidthService implements IBandwidthService {
                 }
             }
             String response = outgoing.readResponse().readLine();
-            ObjectMapper mapper = new ObjectMapper();
-            BandwidthTestResults results = mapper.readValue(response, BandwidthTestResults.class);
+            BandwidthTestResults results = new Gson().fromJson(response, BandwidthTestResults.class);
             log.info("{} was calculated to have a upload bandwidth of {} kbps", remoteNode.getSyncUrl(), results.getKbps());
             return results;
         } finally {
