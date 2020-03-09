@@ -13,6 +13,9 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile "org.springframework:spring-webmvc:$springVersion" // This was is enture that swagger-springmvc picks up the matching Spring version.
         compile "javax.xml.bind:jaxb-api:2.2.7"
         compile "org.codehaus.jackson:jackson-mapper-asl:1.9.9"
+        compile "com.fasterxml.jackson.core:jackson-databind:2.10.3"
+        compile "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.10.3"
+        
         compile "org.jdom:jdom:1.1"
         compile ("com.mangofactory:swagger-springmvc:0.6.5") {
             exclude group: 'asm'

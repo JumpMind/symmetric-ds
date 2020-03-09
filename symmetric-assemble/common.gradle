@@ -220,7 +220,7 @@ subprojects { subproject ->
 
     ext {
         bshVersion = '2.0b6'
-        commonsBeanUtilsVersion = '1.9.3'
+        commonsBeanUtilsVersion = '1.9.4'
         commonsCliVersion = '1.4'
         commonsDbcpVersion = '1.4'
         commonsFileuploadVersion = '1.4'
@@ -247,10 +247,10 @@ subprojects { subproject ->
         powerMockVersion = '2.0.2'
         mysqlVersion = '5.1.45'
         servletVersion = '3.1.0'
-        springVersion = '5.1.7.RELEASE'
+        springVersion = '5.2.3.RELEASE'
         jtdsVersion = '1.3.1'
         voltDbVersion = '8.4.1'
-        bouncyCastleVersion = '1.59'
+        bouncyCastleVersion = '1.64'
         animalSnifferVersion = '1.10'
         jnaVersion = '4.5.0'
         jettyVersion = project.property('jetty.version')
@@ -350,6 +350,7 @@ subprojects { subproject ->
         
         provided ('com.google.cloud:google-cloud-bigquery:1.99.0') {
             exclude group: 'com.google.protobuf'
+            exclude group: 'com.fasterxml.jackson.core'
         }
 
         provided 'org.apache.httpcomponents:httpclient:4.5.4' // This is required by com.amazonaws:aws-java-sdk.  It is called out here to upgrade the version because of a user's security concerns.

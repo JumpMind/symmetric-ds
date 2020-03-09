@@ -26,16 +26,18 @@ import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
+    protected Gson gson = new Gson();
+
     protected Session session;
 
-    Map<String, Map<String, Table>> metaData = new HashMap<String, Map<String, Table>>();
+    protected Map<String, Map<String, Table>> metaData = new HashMap<String, Map<String, Table>>();
 
-    PreparedStatement pstmt;
+    protected PreparedStatement pstmt;
 
     SimpleDateFormat tsFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -135,6 +137,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
     protected void allowInsertIntoAutoIncrementColumns(boolean value, Table table) {
     }
     
+    @SuppressWarnings("unchecked")
     protected void bindVariables(BoundStatement bstmt, Column[] columns, int[] types, String[] values) {
         // TODO data time mappings
 
@@ -184,76 +187,79 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
         }
     }
 
-    protected List<Object> parseList(Column c, String val) {
+    @SuppressWarnings("rawtypes")
+    protected List parseList(Column c, String val) {
         try {
             if (c.getDescription() != null) {
                 if (c.getDescription().toLowerCase().equals("text") || c.getDescription().toLowerCase().equals("varchar")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<String>>(){});
+                    return gson.fromJson(val, new TypeToken<List<String>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("int")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("bigint")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("smallint")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("tinyint")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("double")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<Double>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Double>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("decimal")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<BigDecimal>>(){});
+                    return gson.fromJson(val, new TypeToken<List<BigDecimal>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("float")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<List<Float>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Float>>(){}.getType());
                 }
             }
-            return new ObjectMapper().readValue(val, new TypeReference<List<Object>>(){});
+            return gson.fromJson(val, new TypeToken<List<Object>>(){}.getType());
             
         } catch (Exception e) {
             throw new RuntimeException("Unable to convert value to list, value=" + val,e);
         }
     }
 
-    protected Set<Object> parseSet(Column c, String val) {
+    @SuppressWarnings("rawtypes")
+    protected Set parseSet(Column c, String val) {
         try {
             if (c.getDescription() != null) {
                 if (c.getDescription().toLowerCase().equals("text") || c.getDescription().toLowerCase().equals("varchar")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<String>>(){});
+                    return gson.fromJson(val, new TypeToken<List<String>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("int")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("bigint")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("smallint")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("tinyint")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<Integer>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Integer>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("double")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<Double>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Double>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("decimal")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<BigDecimal>>(){});
+                    return gson.fromJson(val, new TypeToken<List<BigDecimal>>(){}.getType());
                 } else if (c.getDescription().toLowerCase().equals("float")) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Set<Float>>(){});
+                    return gson.fromJson(val, new TypeToken<List<Float>>(){}.getType());
                 }
             }
-            return new ObjectMapper().readValue(val, new TypeReference<Set<Object>>(){});
+            return gson.fromJson(val, new TypeToken<List<Object>>(){}.getType());
             
         } catch (Exception e) {
             throw new RuntimeException("Unable to convert value to set, value=" + val,e);
         }
     }
 
-    protected Map<Object, Object> parseMap(Column c, String val) {
+    @SuppressWarnings("rawtypes")
+    protected Map parseMap(Column c, String val) {
         try {
             if (c.getDescription() != null) {
                 // TODO find dynamic way to create map types based on column types
                 String[] parts = c.getDescription().split(",");
                 if (parts[0].equals(DataType.Name.INT.name()) && 
                         (parts[1].equals(DataType.Name.TEXT.name()) || parts[1].equals(DataType.Name.VARCHAR.name()))) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Map<Integer, String>>(){});
+                    return gson.fromJson(val, new TypeToken<Map<Integer, String>>(){}.getType());
                 } else if ((parts[0].equals(DataType.Name.TEXT.name()) || parts[0].equals(DataType.Name.VARCHAR.name())) && 
                         (parts[1].equals(DataType.Name.TEXT.name()) || parts[1].equals(DataType.Name.VARCHAR.name()))) {
-                    return new ObjectMapper().readValue(val, new TypeReference<Map<String, String>>(){});
+                    return gson.fromJson(val, new TypeToken<Map<String, String>>(){}.getType());
                 }
             }
-            return new ObjectMapper().readValue(val, new TypeReference<Map<Object, Object>>(){});
+            return gson.fromJson(val, new TypeToken<Map<Object, Object>>(){}.getType());
         } catch (Exception e) {
             throw new RuntimeException("Unable to convert value to map, expecting JSON, value=" + val,e);
         }
