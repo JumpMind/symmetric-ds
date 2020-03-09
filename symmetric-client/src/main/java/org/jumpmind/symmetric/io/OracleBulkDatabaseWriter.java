@@ -353,19 +353,40 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 ezConnect = "@//" + getTnsVariable(dbUrl, "HOST") + ":" + getTnsVariable(dbUrl, "PORT") + "/"
                         + database;
             } else {
-                index = dbUrl.indexOf("@");
-                if (index != -1) {
-                    ezConnect = dbUrl.substring(index).replace("@", "@//");
-                    index = ezConnect.lastIndexOf(":");
-                    if (index != -1) {
-                        ezConnect = ezConnect.substring(0, index) + "/" + ezConnect.substring(index + 1);
-                    }
-                }
+                ezConnect = parseDbUrl(dbUrl);
             }
         }
         return ezConnect;
     }
-
+    
+    protected static String parseDbUrl(String dbUrl) {
+        // jdbc:oracle:thin:@10.10.10.10:1521/SERVICE_NAME_PROD
+        // jdbc:oracle:thin:@10.10.10.10:1521:DBNAME
+        String ret = null;
+        int index = dbUrl.indexOf("@");
+        if (index != -1) {
+            ret = dbUrl.substring(index).replace("@", "@//");
+            // Split on the first occurrence of :
+            String[] array = ret.split(":", 2);
+            StringBuilder sb = new StringBuilder(array[0]).append(":");
+            int indexOfColon = array[1].indexOf(":");
+            int indexOfSlash = array[1].indexOf("/");
+            if(indexOfSlash > -1  && indexOfColon > -1 && indexOfSlash < indexOfColon) {
+                // Found a / before a colon, use the / and the rest of the string as is
+                sb.append(array[1]);
+            } else if(indexOfSlash > -1) {
+                // Found a / and no colon, use the / and the rest of the string as is
+                sb.append(array[1]);
+            } else if(indexOfColon > -1) {
+                // Found a : and no /, use up top the :, then append a /, then the rest of the string as is
+                sb.append(array[1].substring(0, indexOfColon)).append("/").append(array[1].substring(indexOfColon + 1));
+            }
+            index = ret.lastIndexOf(":");
+            ret = sb.toString();
+        }
+        return ret;
+    }
+    
     protected String getTnsVariable(String dbUrl, String name) {
         String value = "";
         int startIndex = dbUrl.toUpperCase().indexOf(name + "=");
