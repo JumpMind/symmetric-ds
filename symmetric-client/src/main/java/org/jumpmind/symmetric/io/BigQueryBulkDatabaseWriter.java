@@ -9,6 +9,7 @@ import java.nio.channels.Channels;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
@@ -21,11 +22,9 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobStatistics.LoadStatistics;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
-import com.google.common.io.Files;
 
 
 public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
@@ -57,13 +56,12 @@ public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             TableDataWriteChannel writer = bigquery.writer(jobId, writeChannelConfiguration);
             // Write data to writer
             OutputStream stream = Channels.newOutputStream(writer);
-            Files.copy(csvPath, stream);
+            FileUtils.copyFile(csvPath, stream);
             stream.close();
             
             // Get load job
             Job job = writer.getJob();
             job = job.waitFor();
-            LoadStatistics stats = job.getStatistics();
         } catch (Exception ex) {
             throw getPlatform().getSqlTemplate().translate(ex);
         } 
