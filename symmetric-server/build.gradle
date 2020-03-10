@@ -12,7 +12,9 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile "org.springframework:spring-webmvc:$springVersion"
         compile "javax.xml.bind:jaxb-api:$jaxbVersion"
         compile "org.jdom:jdom2:$jdomVersion"
-        compile "com.fasterxml.jackson.core:jackson-databind:2.9.8"
+        
+        compile "com.fasterxml.jackson.core:jackson-databind:2.10.3"
+        compile "com.google.guava:guava:28.2-android"
         compile ("com.mangofactory:swagger-springmvc:0.6.5") {
             exclude group: 'asm'
         }

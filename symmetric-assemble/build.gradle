@@ -10,10 +10,9 @@ buildscript {
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
         classpath ("com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2") {
-            // guava 21 requires Java 8, setting up for a clean build with only Java 1.7 tools.
             exclude group: 'com.google.guava', module: 'guava'
         }
-        classpath 'com.google.guava:guava:27.0.1-android'
+        classpath 'com.google.guava:guava:28.2-android'
     }
 }
 
