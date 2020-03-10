@@ -100,7 +100,6 @@ public class SecurityService implements ISecurityService {
     
     @Override
     public void installDefaultSslCert(String host) {
-        throw new NotImplementedException();
     }
 
     @Override
