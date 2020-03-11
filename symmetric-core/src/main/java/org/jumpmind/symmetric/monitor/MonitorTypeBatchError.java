@@ -60,21 +60,15 @@ public class MonitorTypeBatchError implements IMonitorType, ISymmetricEngineAwar
         
         OutgoingBatches outgoingBatches = outgoingBatchService.getOutgoingBatchErrors(1000);
         for (OutgoingBatch batch : outgoingBatches.getBatches()) {
-            int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
-            if (batchErrorMinutes >= monitor.getThreshold()) {
-                outgoingErrorCount++;
-                outgoingErrors.add(batch);
-            }
+            outgoingErrorCount++;
+            outgoingErrors.add(batch);
         }
 
         int incomingErrorCount = 0;
         List<IncomingBatch> incomingBatches = incomingBatchService.findIncomingBatchErrors(1000);
         for (IncomingBatch batch : incomingBatches) {
-            int batchErrorMinutes = (int) (System.currentTimeMillis() - batch.getCreateTime().getTime()) / 60000;
-            if (batchErrorMinutes >= monitor.getThreshold()) {
-                incomingErrorCount++;
-                incomingErrors.add(batch);
-            }
+            incomingErrorCount++;
+            incomingErrors.add(batch);
         }
 
         event.setValue(outgoingErrorCount + incomingErrorCount);
