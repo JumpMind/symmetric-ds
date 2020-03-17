@@ -386,6 +386,7 @@
         <column name="config_version" type="VARCHAR" size="50"  description="The version of configuration running at this node." />
         <column name="database_type" type="VARCHAR" size="50"  description="The database product name at this node as reported by JDBC."  />
         <column name="database_version" type="VARCHAR" size="50"  description="The database product version at this node as reported by JDBC." />
+        <column name="database_name" type="VARCHAR" size="50"  description="The database product name identified by SymmetricDS." />
         <column name="batch_to_send_count" type="INTEGER" default="0" description="The number of outgoing batches that have not yet been sent.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="batch_in_error_count" type="INTEGER" default="0" description="The number of outgoing batches that are in error at this node.  This field is updated as part of the heartbeat job if the heartbeat.update.node.with.batch.status property is set to true." />
         <column name="created_at_node_id" type="VARCHAR" size="50"  description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />

@@ -546,7 +546,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 && parameterService.is(ParameterConstants.AUTO_INSERT_REG_SVR_IF_NOT_FOUND, false)) {
             log.info("Inserting rows for node, security, identity and group for registration server");
             String nodeId = parameterService.getExternalId();
-            node = new Node(parameterService, symmetricDialect);
+            node = new Node(parameterService, symmetricDialect, platform.getName());
             node.setNodeId(node.getExternalId());
             nodeService.save(node);
             nodeService.insertNodeIdentity(nodeId);

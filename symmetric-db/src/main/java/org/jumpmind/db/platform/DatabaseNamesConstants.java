@@ -36,6 +36,7 @@ final public class DatabaseNamesConstants {
     public final static String FIREBIRD_DIALECT1 = "firebird_dialect1";
     public final static String SQLITE = "sqlite";
     public final static String INTERBASE = "interbase";
+    public final static String MSSQL = "mssql";
     public final static String MSSQL2000 = "mssql2000";
     public final static String MSSQL2005 = "mssql2005";
     public final static String MSSQL2008 = "mssql2008";

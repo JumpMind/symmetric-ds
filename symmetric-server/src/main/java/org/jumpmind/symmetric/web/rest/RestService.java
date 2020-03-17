@@ -867,7 +867,7 @@ public class RestService {
 
         try {
             org.jumpmind.symmetric.model.Node processedNode = registrationService
-                    .registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion);
+                    .registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion, engine.getDatabasePlatform().getName());
             regInfo.setRegistered(processedNode.isSyncEnabled());
             if (regInfo.isRegistered()) {
                 regInfo.setNodeId(processedNode.getNodeId());

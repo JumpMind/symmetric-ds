@@ -50,13 +50,14 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
                 + "  (node_id,channel_id,ignore_enabled,suspend_enabled) values(?,?,?,?)   ");
 
         putSql("insertNodeSql",
-                "insert into $(node) (node_group_id, external_id, database_type, database_version, schema_version, symmetric_version, sync_url," +
+                "insert into $(node) (node_group_id, external_id, database_type, database_version, database_name, " +
+                "schema_version, symmetric_version, sync_url," +
                 "sync_enabled, batch_to_send_count, batch_in_error_count, created_at_node_id, " +
-                "deployment_type, deployment_sub_type, config_version, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                "deployment_type, deployment_sub_type, config_version, node_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
         putSql("updateNodeSql",
                 "update $(node) set node_group_id=?, external_id=?, database_type=?,                                                                       "
-                        + "  database_version=?, schema_version=?, symmetric_version=?, sync_url=?, "
+                        + "  database_version=?, database_name=?, schema_version=?, symmetric_version=?, sync_url=?, "
                         + "  sync_enabled=?, batch_to_send_count=?, batch_in_error_count=?, "
                         + "  created_at_node_id=?, deployment_type=?, deployment_sub_type=?, config_version = ? where node_id = ?");
 
@@ -155,7 +156,9 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectNodePrefixSql",
                           "select c.node_id, c.node_group_id, c.external_id, c.sync_enabled, c.sync_url,                                                                                                                                    "
-                        + "  c.schema_version, c.database_type, c.database_version, c.symmetric_version, c.created_at_node_id, c.batch_to_send_count, c.batch_in_error_count, c.deployment_type, c.deployment_sub_type, c.config_version from   "
+                        + " c.schema_version, c.database_type, c.database_version, c.database_name, "
+                        + " c.symmetric_version, c.created_at_node_id, c.batch_to_send_count, c.batch_in_error_count, "
+                        + " c.deployment_type, c.deployment_sub_type, c.config_version from   "
                         + "  $(node) c                                                                                                                                                                                                ");
 
         putSql("updateNodeSecuritySql",

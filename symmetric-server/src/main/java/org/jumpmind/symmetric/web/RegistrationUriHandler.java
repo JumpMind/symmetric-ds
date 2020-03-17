@@ -75,6 +75,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         node.setDatabaseType(ServletUtils.getParameter(req, WebConstants.DATABASE_TYPE));
         node.setDatabaseVersion(ServletUtils.getParameter(req, WebConstants.DATABASE_VERSION));
         node.setDeploymentType(ServletUtils.getParameter(req, WebConstants.DEPLOYMENT_TYPE));
+        node.setDatabaseName(ServletUtils.getParameter(req, WebConstants.DATABASE_NAME));
         return node;
     }
     

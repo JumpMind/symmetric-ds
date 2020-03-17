@@ -68,6 +68,8 @@ public class Node implements Serializable, Comparable<Node> {
      */
     private String databaseType;
 
+    private String databaseName;
+    
     private String symmetricVersion = Version.version();
 
     /**
@@ -111,11 +113,12 @@ public class Node implements Serializable, Comparable<Node> {
         this.deploymentSubType = deploymentSubType;
     }
 
-    public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+    public Node(IParameterService parameterService, ISymmetricDialect symmetricDialect, String databaseName) {
         setNodeGroupId(parameterService.getNodeGroupId());
         setExternalId(parameterService.getExternalId());
         setDatabaseType(symmetricDialect.getName());
         setDatabaseVersion(symmetricDialect.getVersion());
+        setDatabaseName(databaseName);
         setSyncUrl(parameterService.getSyncUrl());
         setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
         setConfigVersion(Version.version());
@@ -183,6 +186,14 @@ public class Node implements Serializable, Comparable<Node> {
 
     public void setDatabaseType(String databaseType) {
         this.databaseType = databaseType;
+    }
+    
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getDatabaseVersion() {

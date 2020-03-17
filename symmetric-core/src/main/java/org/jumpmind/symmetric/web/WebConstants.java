@@ -137,6 +137,8 @@ public class WebConstants {
 
     public static final String DATABASE_VERSION = "databaseVersion";
     
+    public static final String DATABASE_NAME = "databaseName";
+
     public static final String DEPLOYMENT_TYPE = "deploymentType";
 
     public static final String SECURITY_TOKEN = "securityToken";

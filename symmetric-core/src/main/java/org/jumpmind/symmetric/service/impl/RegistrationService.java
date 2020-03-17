@@ -118,7 +118,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
 
     public Node registerPullOnlyNode(String externalId, String nodeGroupId,
-            String databaseType, String databaseVersion) 
+            String databaseType, String databaseVersion, String databaseName) 
             throws IOException {
         
         Node node = new Node();
@@ -126,6 +126,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         node.setNodeGroupId(nodeGroupId);
         node.setDatabaseType(databaseType);
         node.setDatabaseVersion(databaseVersion);
+        node.setDatabaseName(databaseName);
         node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
 
         node = processRegistration(node, null, null, true);
@@ -250,6 +251,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setDatabaseVersion(nodePriorToRegistration.getDatabaseVersion());
             foundNode.setSymmetricVersion(nodePriorToRegistration.getSymmetricVersion());
             foundNode.setDeploymentType(nodePriorToRegistration.getDeploymentType());
+            foundNode.setDatabaseName(nodePriorToRegistration.getDatabaseName());
             nodeService.save(foundNode);
             log.info("Completed registration of node " + foundNode.toString());
             

@@ -42,7 +42,7 @@ public interface IRegistrationService {
      * @param databaseType
      * @param databaseVersion
      */
-    public Node registerPullOnlyNode(String externalId, String nodeGroupId, String databaseType, String databaseVersion) throws IOException;
+    public Node registerPullOnlyNode(String externalId, String nodeGroupId, String databaseType, String databaseVersion, String databseName) throws IOException;
     
     /**
      * Register a node for the given group name and external id if the

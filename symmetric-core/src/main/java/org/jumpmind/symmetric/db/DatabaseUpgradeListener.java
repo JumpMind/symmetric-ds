@@ -174,7 +174,8 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
         // Leave this last in the sequence of steps to make sure to capture any
         // DML changes done before this
-        if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        if (currentModel.findTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST)) != null &&
+                engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             // Drop triggers on sym tables
             List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
                     .getExtensionPointList(IAlterDatabaseInterceptor.class);

@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
@@ -81,6 +82,11 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
         }
 
         return result;
+    }
+    
+    @Override
+    public String getName() {
+        return DatabaseNamesConstants.DB2AS400;
     }
 
 }

@@ -200,4 +200,5 @@ public interface IDatabasePlatform {
     public String getTruncateSql(Table table);
 
     public String getDeleteSql(Table table);
+    
 }

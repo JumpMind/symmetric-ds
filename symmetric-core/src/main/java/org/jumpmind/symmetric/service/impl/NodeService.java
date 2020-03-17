@@ -283,7 +283,7 @@ public class NodeService extends AbstractService implements INodeService {
             sqlTemplate.update(
                     getSql("insertNodeSql"),
                     new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
-                            node.getDatabaseVersion(), node.getSchemaVersion(),
+                            node.getDatabaseVersion(), node.getDatabaseName(), node.getSchemaVersion(),
                             node.getSymmetricVersion(), node.getSyncUrl(),
                             node.isSyncEnabled() ? 1 : 0,
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
@@ -291,7 +291,7 @@ public class NodeService extends AbstractService implements INodeService {
                             node.getDeploymentSubType(), node.getConfigVersion(), 
                             node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
 
@@ -305,14 +305,14 @@ public class NodeService extends AbstractService implements INodeService {
         boolean updated = sqlTemplate.update(
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
-                        node.getDatabaseVersion(), node.getSchemaVersion(),
+                        node.getDatabaseVersion(), node.getDatabaseName(), node.getSchemaVersion(),
                         node.getSymmetricVersion(), node.getSyncUrl(),
                         node.isSyncEnabled() ? 1 : 0,
                         node.getBatchToSendCount(), node.getBatchInErrorCount(),
                         node.getCreatedAtNodeId(), node.getDeploymentType(), node.getDeploymentSubType(),
                         node.getConfigVersion(), node.getNodeId() },
                 new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
 
@@ -871,6 +871,7 @@ public class NodeService extends AbstractService implements INodeService {
             node.setSchemaVersion(rs.getString("schema_version"));
             node.setDatabaseType(rs.getString("database_type"));
             node.setDatabaseVersion(rs.getString("database_version"));
+            node.setDatabaseName(rs.getString("database_name"));
             node.setSymmetricVersion(rs.getString("symmetric_version"));
             node.setCreatedAtNodeId(rs.getString("created_at_node_id"));
             node.setBatchToSendCount(rs.getInt("batch_to_send_count"));

@@ -262,7 +262,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void loadDataFromPull(Node remote, RemoteNodeStatus status) throws IOException {
         Node local = nodeService.findIdentity();
         if (local == null) {
-            local = new Node(this.parameterService, symmetricDialect);
+            local = new Node(this.parameterService, symmetricDialect, this.engine.getDatabasePlatform().getName());
             local.setDeploymentType(engine.getDeploymentType());
         }
         try {
