@@ -6,5 +6,6 @@ apply from: symAssembleDir + '/common.gradle'
         compile project(":symmetric-db")
         compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
         compile "org.springframework:spring-jdbc:$springVersion"
+        compile "jdbc.sybase:jconnect:7.7"
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }

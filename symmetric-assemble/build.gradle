@@ -8,7 +8,7 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.16'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
-        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.0'
+        classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
         classpath ("com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2") {
             // guava 21 requires Java 8, setting up for a clean build with only Java 1.7 tools.
             exclude group: 'com.google.guava', module: 'guava'
