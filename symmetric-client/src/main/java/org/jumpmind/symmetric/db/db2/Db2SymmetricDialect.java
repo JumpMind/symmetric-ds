@@ -87,15 +87,14 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public void createRequiredDatabaseObjects() {
-        String sql = "select " + getSourceNodeExpression() + " from " + parameterService.getTablePrefix() + "_node_identity";
+        String sql = "select " + getSourceNodeExpression() + " from sysibm.sysdummy1";
         try {
             platform.getSqlTemplate().query(sql);
         } catch (Exception e) {
             log.debug("Failed checking for variable (usually means it doesn't exist yet) '" + sql + "'", e);
             platform.getSqlTemplate().update("create variable " + getSourceNodeExpression() + " varchar(50)");
         }
-        sql = "select " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " from " + parameterService.getTablePrefix()
-                + "_node_identity";
+        sql = "select " + parameterService.getTablePrefix() + VAR_TRIGGER_DISABLED + " from sysibm.sysdummy1";
         try {
             platform.getSqlTemplate().query(sql);
         } catch (Exception e) {

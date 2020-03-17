@@ -156,8 +156,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public void initTablesAndDatabaseObjects() {
-        createOrAlterTablesIfNecessary();
         createRequiredDatabaseObjects();
+        createOrAlterTablesIfNecessary();
         platform.resetCachedTableModel();
     }
 
