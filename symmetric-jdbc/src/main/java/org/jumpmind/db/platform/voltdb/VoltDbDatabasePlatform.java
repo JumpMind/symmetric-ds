@@ -26,7 +26,7 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.apache.commons.codec.DecoderException;
-import org.bouncycastle.util.encoders.Hex;
+import org.apache.commons.codec.binary.Hex;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -80,7 +80,7 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (objectValue instanceof byte[]
                 && (column.getJdbcTypeCode() == Types.VARBINARY
                     || column.getJdbcTypeCode() == Types.CLOB)) {
-            objectValue = new String(Hex.encode((byte[])objectValue));
+            objectValue = new String(Hex.encodeHex((byte[])objectValue));
         }
         return objectValue;
     }

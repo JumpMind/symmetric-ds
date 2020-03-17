@@ -71,6 +71,7 @@ dependencies {
     compile "org.vaadin.addons:aceeditor:0.8.15"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
     
+    testCompile "com.h2database:h2:$h2Version"
     testCompile "javax.websocket:javax.websocket-api:$websocketVersion"    
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    

@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.bigquery.BigQueryPlatform;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -16,7 +17,6 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.InsertAllRequest.RowToInsert;
-import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.TableId;
 
 public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
@@ -30,11 +30,11 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
     int deleteCount;
    
     public BigQueryDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String prefix,
-            IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings, BigQuery bq, int maxRowsPerRpc) 
+            IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings, int maxRowsPerRpc) 
                     throws FileNotFoundException, IOException {
         super(symmetricPlatform, targetPlatform, prefix, conflictResolver, settings);
         this.maxRowsToInsertPerRPC = maxRowsPerRpc;
-        bigquery = bq;
+        bigquery = ((BigQueryPlatform) targetPlatform).getBigQuery();
     }
 
 
@@ -92,8 +92,7 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
             }
             
             if (rowsAdded == maxRowsToInsertPerRPC) {
-                InsertAllResponse response =
-                        bigquery.insertAll(insertAllRequestBuilder.build());
+                bigquery.insertAll(insertAllRequestBuilder.build());
                 rowsAdded = 0;
                 insertAllRequestBuilder = null;
             }
@@ -118,8 +117,7 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
         super.end(table);
         
         if (!isSymmetricTable(this.targetTable != null ? this.targetTable.getName() : "") && insertAllRequestBuilder != null) {
-            InsertAllResponse response =
-                    bigquery.insertAll(insertAllRequestBuilder.build());
+            bigquery.insertAll(insertAllRequestBuilder.build());
             rowsAdded = 0;
             insertAllRequestBuilder = null;
             currentTableId = null;

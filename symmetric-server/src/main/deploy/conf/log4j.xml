@@ -103,6 +103,10 @@
     <category name="org.springframework">
         <priority value="ERROR" />
     </category>
+
+    <category name="springfox.documentation">
+        <priority value="WARN" />
+    </category>
     
     <category name="com.vaadin.server.DefaultDeploymentConfiguration">
         <priority value="ERROR" />

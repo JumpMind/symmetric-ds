@@ -9,6 +9,16 @@ apply from: symAssembleDir + '/common.gradle'
         compile "net.sourceforge.jeval:jeval:0.9.4"
         compile "com.google.code.gson:gson:$gsonVersion"
         
+        compileOnly ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
+            exclude group: 'org.slf4j'
+            exclude group: 'com.google.guava'
+        }
+
+        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+            exclude group: 'com.google.protobuf'
+            exclude group: 'com.fasterxml.jackson.core'
+        }
+
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(":symmetric-jdbc")
         integrationTestImplementation project(':symmetric-jdbc').sourceSets.integrationTest.output

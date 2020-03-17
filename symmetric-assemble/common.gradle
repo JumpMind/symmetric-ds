@@ -240,6 +240,8 @@ subprojects { subproject ->
         jdomVersion = '2.0.6'
         jaxbVersion = '2.3.1'
         gsonVersion = '2.8.6'
+        jacksonVersion = '2.10.3'
+        guavaVersion = '28.2-android'
         junitVersion = '4.13'
         log4jVersion = '1.2.17'
         slf4jVersion = '1.7.30'
@@ -259,72 +261,10 @@ subprojects { subproject ->
 
     dependencies {
         compile "org.slf4j:slf4j-api:$slf4jVersion"
-        compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
-        compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-        compile "org.slf4j:slf4j-log4j12:$slf4jVersion"
+        runtime "org.slf4j:jul-to-slf4j:$slf4jVersion"
+        runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+        runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
         compile "log4j:log4j:$log4jVersion"
-        
-        provided "mysql:mysql-connector-java:$mysqlVersion"
-        provided "org.postgresql:postgresql:$postgresqlVersion"
-        provided "jdbc:ojdbc8:18.3.0.0"
-        provided "net.sourceforge.jtds:jtds:$jtdsVersion"
-        provided "com.h2database:h2:$h2Version"
-
-        compileOnly "org.apache.derby:derby:$derbyVersion"
-        compileOnly "org.hsqldb:hsqldb:$hsqldbVersion"
-        compileOnly "org.xerial:sqlite-jdbc:$sqliteVersion"
-        compileOnly "jdbc.sybase:jconnect:7.7"
-
-        compileOnly ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
-            exclude group: 'org.slf4j'
-            exclude group: 'com.google.guava'
-        }
-        compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
-        	exclude group: 'commons-lang', module: 'commons-lang'
-        }
-        compileOnly ("org.apache.kafka:kafka-clients:1.1.0") {
-            exclude group: 'org.slf4j'
-        }
-        compileOnly ("org.apache.avro:avro:1.8.2") {
-            exclude group: 'org.slf4j'
-        }
-		compileOnly ("io.confluent:kafka-avro-serializer:3.2.1") {
-			exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'org.slf4j'
-        }        
-
-        compileOnly "org.mongodb:mongo-java-driver:2.12.3"
-        
-        compileOnly ("com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.36.1060") {
-			exclude group: 'org.apache.httpcomponents'
-            exclude group: 'commons-logging'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'commons-codec'
-        }
-        
-        compileOnly ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
-			exclude group: 'org.apache.httpcomponents'
-            exclude group: 'commons-logging'
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'commons-codec'
-        }
-
-        compileOnly ("com.microsoft.azure:azure-storage:8.1.0") {
-            exclude group: 'com.fasterxml.jackson.core'
-            exclude group: 'org.slf4j'
-        }
-
-        compileOnly ("net.snowflake:snowflake-jdbc:3.6.27") {
-            exclude group: 'com.fasterxml.jackson.core'
-        }
-        
-        compileOnly 'org.apache.phoenix:phoenix:5.0.0-HBase-2.0'
-
-        compileOnly "org.apache.hbase:hbase-client:1.3.6"
-        
-        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
-            exclude group: 'com.google.protobuf'
-        }
 
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"
@@ -333,8 +273,7 @@ subprojects { subproject ->
         testCompile "org.powermock:powermock-api-mockito2:$powerMockVersion"
         testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
         
-        deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
-        
+        deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"        
     }    
 
     task develop {

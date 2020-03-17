@@ -7,20 +7,28 @@ apply from: symAssembleDir + '/asciidoc.gradle'
 
     dependencies {
         compile project(":symmetric-client")
+        compileOnly project(":symmetric-swagger-ui")
         compile "org.springframework:spring-jms:$springVersion"
         compile "org.springframework:spring-web:$springVersion"
         compile "org.springframework:spring-webmvc:$springVersion"
         compile "javax.xml.bind:jaxb-api:$jaxbVersion"
         compile "org.jdom:jdom2:$jdomVersion"
+        compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         
-        compile "com.fasterxml.jackson.core:jackson-databind:2.10.3"
-        compile "com.google.guava:guava:28.2-android"
-        compile ("com.mangofactory:swagger-springmvc:0.6.5") {
-            exclude group: 'asm'
-        }
-        provided project(":symmetric-wrapper")
+        compile "io.swagger:swagger-annotations:1.5.20"
 
+        provided project(":symmetric-wrapper")
         provided "javax.jms:jms-api:1.1-rev-1"
+        
+        provided "com.h2database:h2:$h2Version"
+        provided "mysql:mysql-connector-java:$mysqlVersion"
+        provided "org.postgresql:postgresql:$postgresqlVersion"
+        provided "jdbc:ojdbc8:18.3.0.0"
+        provided "net.sourceforge.jtds:jtds:$jtdsVersion"
+
+        compile "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
+        compile "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"        
+                
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         
         provided "javax.servlet:javax.servlet-api:$servletVersion"

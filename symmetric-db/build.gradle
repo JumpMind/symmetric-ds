@@ -6,5 +6,16 @@ apply from: symAssembleDir + '/common.gradle'
         compile project(":symmetric-util")
         compile "net.sf.kxml:kxml2:2.3.0" // Used by ddlutils / DatabaseXmlUtil
         compile "commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion"
+        
+        compileOnly ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {
+            exclude group: 'org.slf4j'
+            exclude group: 'com.google.guava'
+        }
+        
+        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+            exclude group: 'com.google.protobuf'
+            exclude group: 'com.fasterxml.jackson.core'
+        }
+
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
     }

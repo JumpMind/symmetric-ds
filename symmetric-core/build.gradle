@@ -5,10 +5,23 @@ apply from: symAssembleDir + '/common.gradle'
     dependencies {
         compile project(":symmetric-io")
         compile project(":symmetric-util")
-        compile "commons-fileupload:commons-fileupload:$commonsFileuploadVersion"
         compile "javax.mail:javax.mail-api:$javaMailVersion"
         compile "com.google.code.gson:gson:$gsonVersion"
         compile "org.springframework:spring-core:$springVersion"
+
+        compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
+            exclude group: 'commons-lang', module: 'commons-lang'
+        }
+        compileOnly ("org.apache.kafka:kafka-clients:1.1.0") {
+            exclude group: 'org.slf4j'
+        }
+        compileOnly ("io.confluent:kafka-avro-serializer:3.2.1") {
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'org.slf4j'
+        }
+        compileOnly ("org.apache.avro:avro:1.8.2") {
+            exclude group: 'org.slf4j'
+        }
         
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
