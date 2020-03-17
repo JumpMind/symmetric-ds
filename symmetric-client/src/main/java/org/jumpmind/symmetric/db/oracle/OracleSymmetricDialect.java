@@ -213,6 +213,11 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
                     + "    END $(functionName);                           \r\n";
             install(sql, wkt2geom);
         }
+    }
+
+    @Override
+    public boolean createOrAlterTablesIfNecessary(String... tableNames) {
+        boolean isAltered = super.createOrAlterTablesIfNecessary(tableNames);
 
         boolean isNoOrder = parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false);
         String seqName = getSequenceName(SequenceIdentifier.DATA).toUpperCase();
@@ -228,8 +233,9 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             log.info("DDL applied: " + sql);
             platform.getSqlTemplate().update(sql);
         }
+        return isAltered;
     }
-
+    
     @Override
     public void dropRequiredDatabaseObjects() {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
