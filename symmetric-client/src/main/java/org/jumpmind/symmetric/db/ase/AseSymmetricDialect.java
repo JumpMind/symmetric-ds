@@ -53,7 +53,11 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     public AseSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
-        this.triggerTemplate = new AseTriggerTemplate(this);
+        if (getMajorVersion() >= 16) {
+            this.triggerTemplate = new Ase16TriggerTemplate(this);
+        } else {
+            this.triggerTemplate = new AseTriggerTemplate(this);
+        }
     }
 
     @Override
