@@ -60,7 +60,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for insert as                                                                                                                               \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for insert " + getOrderClause() + " as\n" +
 "                                begin                                                                                                                                                                  \n" +
 "                                  set nocount on      \n" +
 "                                  declare @clientapplname varchar(50)  \n" +
@@ -100,7 +100,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 
 
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                               \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for update " + getOrderClause() + " as\n" +
 "                                begin                                                                                                                                                                  \n" +
 "                                  set nocount on      \n" +
 "                                  declare @DataRow varchar(16384)                                                                                                                                      \n" +
@@ -140,7 +140,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  end                                                                                                                                                                  " );
 
         sqlTemplates.put("updateHandleKeyUpdatesTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for update as                                                                                                                             \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for update " + getOrderClause() + " as\n" +
 "   begin                                                                                                                                                                  \n" +
 "     set nocount on                                                                                                                                                       \n" +
 "     declare @TransactionId varchar(1000)                                                                                                                                 \n" +
@@ -192,7 +192,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) for delete as                                                                                                                               \n" +
+"create trigger $(triggerName) on $(schemaName)$(tableName) for delete " + getOrderClause() + " as\n" +
 "                                begin                                                                                                                                                                  \n" +
 "                                  set nocount on      \n" +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
@@ -229,6 +229,10 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause)                                                                                                                                " );
     }
 
+    protected String getOrderClause() {
+        return "";
+    }
+    
     @Override
     protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
