@@ -42,7 +42,7 @@ public class RandomTimeSlot {
     }
 
     private long fromExternalId(String externalId) {
-        if (externalId != null) {
+        if (externalId != null && externalId.hashCode() != Integer.MIN_VALUE) {
             return Math.abs(externalId.hashCode());
         } else {
             return Integer.MAX_VALUE;

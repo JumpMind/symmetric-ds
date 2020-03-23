@@ -80,28 +80,28 @@ public class JarBuilder {
     }
 
     private void add(File source, JarOutputStream target) throws IOException {
-        BufferedInputStream in = null;
-        try {
-            if (source.isDirectory()) {
-                String name = massageJarEntryName(source);
-                if (name.trim().length() != 0) {
-                    if (!name.endsWith("/")) {
-                        name += "/";
-                    }
-                    JarEntry entry = new JarEntry(name);
-                    entry.setTime(source.lastModified());
-                    target.putNextEntry(entry);
-                    target.closeEntry();
+        if (source.isDirectory()) {
+            String name = massageJarEntryName(source);
+            if (name.trim().length() != 0) {
+                if (!name.endsWith("/")) {
+                    name += "/";
                 }
-                for (File nestedFile : source.listFiles()) {
-                    add(nestedFile, target);
-                }
-            } else {
-                JarEntry entry = new JarEntry(massageJarEntryName(source));
+                JarEntry entry = new JarEntry(name);
                 entry.setTime(source.lastModified());
                 target.putNextEntry(entry);
-                in = new BufferedInputStream(new FileInputStream(source));
-
+                target.closeEntry();
+            }
+            File[] files = source.listFiles();
+            if (files != null) {
+                for (File nestedFile : files) {
+                    add(nestedFile, target);
+                }
+            }
+        } else {
+            JarEntry entry = new JarEntry(massageJarEntryName(source));
+            entry.setTime(source.lastModified());
+            target.putNextEntry(entry);
+            try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(source))) {    
                 byte[] buffer = new byte[1024];
                 while (true) {
                     int count = in.read(buffer);
@@ -112,12 +112,6 @@ public class JarBuilder {
                 }
                 target.closeEntry();
             }
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (Exception ex) {}
         }
     }
 
