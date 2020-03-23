@@ -31,18 +31,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
 
-public class LogSummaryAppender extends AppenderSkeleton {
+public class LogSummaryAppender extends AbstractAppender {
+
+    public LogSummaryAppender(String name, Filter filter) {
+        super(name, filter, null, false, null);
+    }
 
     Map<String, Map<String, LogSummary>> errorsByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
 
     Map<String, Map<String, LogSummary>> warningByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
 
     @Override
-    protected void append(LoggingEvent event) {
+    public void append(LogEvent event) {
         Map<String, Map<String, LogSummary>> summaries = null;
         if (event.getLevel() == Level.ERROR) {
             summaries = errorsByEngineByMessage;
@@ -51,7 +56,7 @@ public class LogSummaryAppender extends AppenderSkeleton {
         }
 
         if (summaries != null) {
-            String engineName = (String) event.getMDC("engineName");
+            String engineName = (String) event.getContextData().getValue("engineName");
             if (isNotBlank(engineName)) {
                 Map<String, LogSummary> byMessage = summaries.get(engineName);
                 if (byMessage == null) {
@@ -60,34 +65,31 @@ public class LogSummaryAppender extends AppenderSkeleton {
                 }
 
                 String message = null;
-                if (event.getMessage() != null) {
+                if (event.getMessage() != null && !event.getMessage().toString().equals("") &&
+                        !event.getMessage().toString().equals("null")) {
                     message = event.getMessage().toString();
                 } else {
-                    message = "No Message";
+                    if (event.getThrown() != null) {
+                        Throwable t = event.getThrown();
+                        message = t.getClass().getName() + ": " + t.getMessage();
+                    } else {
+                        message = "Unhandled error";
+                    }
                 }
                 LogSummary summary = byMessage.get(message);
                 if (summary == null) {
                     summary = new LogSummary();
                     summary.setMessage(message);
-                    summary.setFirstOccurranceTime(event.getTimeStamp());
+                    summary.setFirstOccurranceTime(event.getInstant().getEpochMillisecond());
                     byMessage.put(message, summary);
                 }
                 summary.setLevel(event.getLevel());
-                summary.setMostRecentTime(event.getTimeStamp());
+                summary.setMostRecentTime(event.getInstant().getEpochMillisecond());
                 summary.setCount(summary.getCount() + 1);
-                summary.setThrowable(event.getThrowableInformation() != null ? event
-                        .getThrowableInformation().getThrowable() : null);
+                summary.setThrowable(event.getThrown());
                 summary.setMostRecentThreadName(event.getThreadName());
             }
         }
-    }
-
-    public void close() {
-    }
-
-    @Override
-    public boolean requiresLayout() {
-        return false;
     }
 
     public List<LogSummary> getLogSummaries(String engineName, Level level) {

@@ -60,6 +60,7 @@ import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
+import org.slf4j.MDC;
 
 public class NodeCommunicationService extends AbstractService implements INodeCommunicationService {
 
@@ -514,6 +515,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                         long ts = System.currentTimeMillis();
                         boolean failed = false;
                         try {
+                            MDC.put("engineName", parameterService.getEngineName());
                             executor.execute(nodeCommunication, status);
                             failed = status.failed();
                         } catch (Throwable ex) {

@@ -28,7 +28,9 @@ import java.io.FileOutputStream;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.exception.InterruptedException;
@@ -180,9 +182,8 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected Level setLoggingLevelForTest(Level level) {
-        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
-        Level old = logger.getLevel();
-        logger.setLevel(level);
+        Level old = LogManager.getLogger("org.jumpmind").getLevel();
+        Configurator.setLevel("org.jumpmind", level);
         return old;
     }
 

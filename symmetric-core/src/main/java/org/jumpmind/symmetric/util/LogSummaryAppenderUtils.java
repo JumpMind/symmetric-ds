@@ -21,19 +21,24 @@
 package org.jumpmind.symmetric.util;
 
 import java.util.Collections;
-
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Filter.Result;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.jumpmind.util.LogSummary;
 import org.jumpmind.util.LogSummaryAppender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LogSummaryAppenderUtils {
 
     private static final String LOG_SUMMARY_APPENDER_NAME = "SUMMARY";
     
-    private static final Logger log = Logger.getLogger(LogSummaryAppenderUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(LogSummaryAppenderUtils.class);
 
     private LogSummaryAppenderUtils() {
     }
@@ -47,14 +52,13 @@ public class LogSummaryAppenderUtils {
     
     public static LogSummaryAppender getLogSummaryAppender() {
         try {            
-            LogSummaryAppender appender = (LogSummaryAppender) org.apache.log4j.Logger.getRootLogger().getAppender(
-                    LOG_SUMMARY_APPENDER_NAME);
+            LogSummaryAppender appender = (LogSummaryAppender) getAppender(LOG_SUMMARY_APPENDER_NAME);
             return appender;
         } catch (Exception ex) {
             // Can get ClassCastException if if the app has been recycled in the same container.
             log.debug("Failed to load appender " + LOG_SUMMARY_APPENDER_NAME, ex);
             try {                
-                org.apache.log4j.Logger.getRootLogger().removeAppender(LOG_SUMMARY_APPENDER_NAME);
+                removeAppender(LOG_SUMMARY_APPENDER_NAME);
             } catch (Exception ex2) {
                 log.debug("Failed to remove appender " + LOG_SUMMARY_APPENDER_NAME, ex2);    
             }
@@ -63,10 +67,9 @@ public class LogSummaryAppenderUtils {
     }
     
     private static LogSummaryAppender registerLogSummaryAppenderInternal() {
-        LogSummaryAppender appender = new LogSummaryAppender();
-        appender.setName(LOG_SUMMARY_APPENDER_NAME);
-        appender.setThreshold(Level.WARN);
-        org.apache.log4j.Logger.getRootLogger().addAppender(appender);
+        LogSummaryAppender appender = new LogSummaryAppender(LOG_SUMMARY_APPENDER_NAME,
+                ThresholdFilter.createFilter(Level.WARN, Result.ACCEPT, Result.DENY));
+        addAppender(appender);
         return appender;
     }
 
@@ -94,4 +97,25 @@ public class LogSummaryAppenderUtils {
             return Collections.EMPTY_LIST;
         }
     }
+
+    public static void addAppender(Appender appender) {
+        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
+        appender.start();
+        lc.getRootLogger().addAppender(appender);
+        lc.updateLoggers();
+    }
+
+    public static void removeAppender(String name) {
+        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
+        Appender appender = lc.getRootLogger().getAppenders().get(name);
+        if (appender != null) {
+            lc.getRootLogger().removeAppender(appender);
+        }
+    }
+
+    public static Appender getAppender(String name) {
+        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
+        return lc.getRootLogger().getAppenders().get(name);
+    }
+
 }

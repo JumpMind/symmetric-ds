@@ -243,7 +243,7 @@ subprojects { subproject ->
         jacksonVersion = '2.10.3'
         guavaVersion = '28.2-android'
         junitVersion = '4.13'
-        log4jVersion = '1.2.17'
+        log4jVersion = '2.13.1'
         slf4jVersion = '1.7.30'
         mockitoVersion = '3.2.4'
         powerMockVersion = '2.0.5'
@@ -260,11 +260,12 @@ subprojects { subproject ->
     }
 
     dependencies {
+        compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
+        compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
+        compile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
         compile "org.slf4j:slf4j-api:$slf4jVersion"
-        runtime "org.slf4j:jul-to-slf4j:$slf4jVersion"
-        runtime "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-        runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
-        compile "log4j:log4j:$log4jVersion"
+        compile "org.apache.logging.log4j:log4j-jcl:$log4jVersion"
+        compile "org.apache.logging.log4j:log4j-jul:$log4jVersion"
 
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"

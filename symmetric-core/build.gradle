@@ -13,13 +13,16 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'commons-lang', module: 'commons-lang'
         }
         compileOnly ("org.apache.kafka:kafka-clients:1.1.0") {
+            exclude group: 'log4j'
             exclude group: 'org.slf4j'
         }
         compileOnly ("io.confluent:kafka-avro-serializer:3.2.1") {
             exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'log4j'
             exclude group: 'org.slf4j'
         }
         compileOnly ("org.apache.avro:avro:1.8.2") {
+            exclude group: 'log4j'
             exclude group: 'org.slf4j'
         }
         

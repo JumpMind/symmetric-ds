@@ -32,13 +32,14 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LogRequestResponseFilter implements Filter {
     
     private boolean enabled = false;
     
-    private static final Logger LOG = Logger.getLogger(LogRequestResponseFilter.class);
+    private static Logger LOG = LoggerFactory.getLogger(LogRequestResponseFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
