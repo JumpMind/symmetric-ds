@@ -121,7 +121,7 @@ public class MySqlTriggerTemplate extends AbstractTriggerTemplate {
 "                                       insert into $(defaultCatalog)$(prefixName)_data (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id, source_node_id, external_data, create_time)\n" +
 "                                       values(                                                                                                                                                           \n" +
 "                                         '$(targetTableName)',                                                                                                                                           \n" +
-"                                         'U',                                                                                                                                                            \n" +
+"                                         'R',                                                                                                                                                            \n" +
 "                                         $(triggerHistoryId),                                                                                                                                            \n" +
 "                                         concat($(oldKeys)                                                                                                                                               \n" + 
 "                                          ),                                                                                                                                            \n" +

@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.db.postgresql;
 
 import java.sql.Types;
+import java.util.Date;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -51,11 +52,23 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         " select count(*) from information_schema.routines " + 
         " where routine_name = '$(functionName)' and specific_schema = '$(defaultSchema)'" ;    
 
+    static final String SQL_SELECT_TRANSACTIONS = "select min(a.xact_start) from pg_stat_activity a join pg_catalog.pg_locks l on l.pid = a.pid  where l.mode = 'RowExclusiveLock'";
+
     private Boolean supportsTransactionId = null;
         
     public PostgreSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new PostgreSqlTriggerTemplate(this);
+
+        if (parameterService.is(ParameterConstants.ROUTING_GAPS_USE_TRANSACTION_VIEW)) {
+            try {
+                getEarliestTransactionStartTime();
+                supportsTransactionViews = true;
+                log.info("Enabling use of transaction views for data gap detection.");
+            } catch (Exception ex) {
+                log.warn("Cannot enable use of transaction views for data gap detection.", ex);
+            }
+        }
     }
     
     @Override
@@ -228,6 +241,21 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
             }
         }
         return supportsTransactionId;
+    }
+
+    @Override
+    public Date getEarliestTransactionStartTime() {
+        Date minStartTime = platform.getSqlTemplate().queryForObject(SQL_SELECT_TRANSACTIONS, Date.class);
+        if (minStartTime == null) {
+            minStartTime = new Date();
+        }
+        return minStartTime;
+    }
+
+    @Override
+    public boolean supportsTransactionViews() {
+        return supportsTransactionViews
+                && parameterService.is(ParameterConstants.ROUTING_GAPS_USE_TRANSACTION_VIEW);
     }
 
     public void cleanDatabase() {
