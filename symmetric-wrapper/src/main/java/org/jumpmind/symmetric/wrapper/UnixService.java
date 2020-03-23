@@ -392,18 +392,20 @@ public class UnixService extends WrapperService {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
-        ArrayList<String> cmdOutput = new ArrayList<String>();
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                cmdOutput.add(line);
+        if (process != null) {
+            ArrayList<String> cmdOutput = new ArrayList<String>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    cmdOutput.add(line);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new WrapperException(Constants.RC_FAIL_EXECUTION, 0, "Unable to read from command: " + cmd, e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new WrapperException(Constants.RC_FAIL_EXECUTION, 0, "Unable to read from command: " + cmd, e);
-        }
-        if(cmdOutput != null && cmdOutput.size() > 0) {
-            ret = Integer.parseInt(cmdOutput.get(0));
+            if (cmdOutput != null && cmdOutput.size() > 0) {
+                ret = Integer.parseInt(cmdOutput.get(0));
+            }
         }
         return ret;
     }
@@ -444,7 +446,6 @@ public class UnixService extends WrapperService {
     
     private boolean runServiceCommand(ArrayList<String> cmd) {
         int ret = -1;
-        // Run command
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
         System.out.println("Running " + pb.command());
@@ -456,21 +457,23 @@ public class UnixService extends WrapperService {
             System.err.println(e.getMessage());
         }
         
-        // Get standard out and error
-        ArrayList<String> cmdOutput = new ArrayList<String>();
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                cmdOutput.add(line);
+        if (process != null) {
+            ArrayList<String> cmdOutput = new ArrayList<String>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    cmdOutput.add(line);
+                }
+            } catch (Exception e) {
+                throw new WrapperException(Constants.RC_FAIL_EXECUTION, 0,
+                        "Unable to read from service command: " + cmd, e);
             }
-        } catch (Exception e) {
-            throw new WrapperException(Constants.RC_FAIL_EXECUTION, 0, "Unable to read from service command: " + cmd, e);
-        }
-        
-        if(cmdOutput.size() > 0) {
-            System.err.println(commandToString(cmd));
-            for(String line : cmdOutput) {
-                System.err.println(line);
+
+            if (cmdOutput.size() > 0) {
+                System.err.println(commandToString(cmd));
+                for (String line : cmdOutput) {
+                    System.err.println(line);
+                }
             }
         }
         return ret == 0;

@@ -222,11 +222,13 @@ public class WrapperConfig {
                 }
             });
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < files.length; i++) {
-                if (i > 0) {
-                    sb.append(File.pathSeparator);
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (i > 0) {
+                        sb.append(File.pathSeparator);
+                    }
+                    sb.append(dirName).append(files[i].getName());
                 }
-                sb.append(dirName).append(files[i].getName());
             }
             classPath = sb.toString();
         }

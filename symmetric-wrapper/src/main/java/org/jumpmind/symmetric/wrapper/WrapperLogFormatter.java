@@ -27,7 +27,7 @@ import java.util.logging.LogRecord;
 
 public class WrapperLogFormatter extends Formatter {
 
-    protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    protected final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected static final String NEWLINE = System.getProperty("line.separator");
 

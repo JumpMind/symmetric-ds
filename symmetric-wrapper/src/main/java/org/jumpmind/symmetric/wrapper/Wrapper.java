@@ -114,9 +114,12 @@ public class Wrapper {
     protected static String findConfigFile(String dirpath) {
         File dir = new File(dirpath);
         if (dir.exists() && dir.isDirectory()) {
-            for (String name : dir.list()) {
-                if (name.endsWith("_service.conf")) {
-                    return dirpath + File.separator + name;
+            String[] files = dir.list();
+            if (files != null) {
+                for (String name : files) {
+                    if (name.endsWith("_service.conf")) {
+                        return dirpath + File.separator + name;
+                    }
                 }
             }
         }

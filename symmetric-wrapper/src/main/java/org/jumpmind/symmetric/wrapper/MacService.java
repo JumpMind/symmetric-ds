@@ -105,7 +105,6 @@ public class MacService extends UnixService {
     
     private boolean runLaunchCtlCmd(ArrayList<String> cmd) {
         int ret = -1;
-        // Run command
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
         System.out.println("Running " + pb.command());
@@ -113,24 +112,25 @@ public class MacService extends UnixService {
         try {
             process = pb.start();
             ret = process.waitFor();
-        } catch(IOException|InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             System.err.println(e.getMessage());
         }
-        
-        // Get standard out and error
-        ArrayList<String> cmdOutput = new ArrayList<String>();
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                cmdOutput.add(line);
+
+        if (process != null) {
+            ArrayList<String> cmdOutput = new ArrayList<String>();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    cmdOutput.add(line);
+                }
+            } catch (Exception e) {
             }
-        } catch (Exception e) {
-        }
-        
-        if(cmdOutput.size() > 0) {
-            System.err.println(commandToString(cmd));
-            for(String line : cmdOutput) {
-                System.err.println(line);
+
+            if (cmdOutput.size() > 0) {
+                System.err.println(commandToString(cmd));
+                for (String line : cmdOutput) {
+                    System.err.println(line);
+                }
             }
         }
         return ret == 0;
@@ -140,65 +140,51 @@ public class MacService extends UnixService {
     protected boolean isPidRunning(int pid) {
         boolean ret = false;
         
-        if(pid != 0) {
-        
-            // Find process using ps command
+        if (pid != 0) {
             ArrayList<String> cmd = getPsCommand(pid);
-            // System.out.println("Running ps command: " + cmd);
-            
-            // Run ps command
             ProcessBuilder pb = new ProcessBuilder(cmd);
             Process process = null;
             try {
                 process = pb.start();
                 process.waitFor();
-                // int retCode = process.waitFor();
-                // System.out.println("Return code from ps command: " + retCode);
-            } catch(IOException|InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 System.err.println(e.getMessage());
             }
-            
-            // Get standard out and error
-            ArrayList<String> cmdOutput = new ArrayList<String>();
-            ArrayList<String> cmdError = new ArrayList<String>();
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    cmdOutput.add(line);
+
+            if (process != null) {
+                ArrayList<String> cmdOutput = new ArrayList<String>();
+                ArrayList<String> cmdError = new ArrayList<String>();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        cmdOutput.add(line);
+                    }
+                } catch (Exception e) {
                 }
-                reader.close();
-                reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                while ((line = reader.readLine()) != null) {
-                    cmdError.add(line);
+                
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        cmdError.add(line);
+                    }
+                } catch (Exception e) {
                 }
-            } catch (Exception e) {
-            } finally {
-                if(reader != null) {
-                    try {
-                        reader.close();
-                    } catch(Exception e) { }
+    
+                for (String line : cmdOutput) {
+                    if (line.contains(config.getJavaCommand())) {
+                        ret = true;
+                        break;
+                    }
                 }
-            }
-            
-            // System.out.println("Output: " + cmdOutput);
-            
-            for(String line : cmdOutput) {
-                if(line.contains(config.getJavaCommand())) {
-                    ret = true;
-                    break;
+                if (cmdError.size() > 0) {
+                    System.err.println(commandToString(cmd));
+                    for (String line : cmdError) {
+                        System.err.println(line);
+                    }
+                    throw new WrapperException(Constants.RC_FAIL_EXECUTION, 8, "Failed isPidRunning");
                 }
-            }
-            if(cmdError.size() > 0) {
-                System.err.println(commandToString(cmd));
-                for(String line : cmdError) {
-                    System.err.println(line);
-                }
-                throw new WrapperException(Constants.RC_FAIL_EXECUTION, 8, "Failed isPidRunning");
             }
         }
-        // System.out.println("PID " + pid + (ret ? " is " : " is not " ) + "running.");
         return ret;
     }
     
