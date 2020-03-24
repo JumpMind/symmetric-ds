@@ -251,6 +251,7 @@ public abstract class AbstractCommandLauncher {
             Appender appender = LogSummaryAppenderUtils.getAppender("ROLLING");
             if (appender instanceof RollingFileAppender) {
                 RollingFileAppender fa = (RollingFileAppender) appender;
+                String fileName = fa.getFileName();
                 
                 if (line.hasOption(OPTION_PROPERTIES_FILE)) {
                     File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
@@ -259,17 +260,18 @@ public abstract class AbstractCommandLauncher {
                     if (index > 0) {
                         name = name.substring(0, index);
                     }
+                    fileName = fileName.replace("symmetric.log", name + ".log");
                     LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
                     Configuration config = ctx.getConfiguration();
                     RollingFileAppender rolling = RollingFileAppender.newBuilder().setConfiguration(config).setName("ROLLING")
-                        .withFileName(fa.getFileName().replace("symmetric.log", name + ".log"))
+                        .withFileName(fileName)
                         .withFilePattern(fa.getFilePattern().replace("symmetric.log", name + ".log"))
                         .setLayout(fa.getLayout()).withPolicy(fa.getTriggeringPolicy())
                         .withStrategy(fa.getManager().getRolloverStrategy()).build();
                     LogSummaryAppenderUtils.removeAppender("ROLLING");
                     LogSummaryAppenderUtils.addAppender(rolling);
                 }
-                System.err.println(String.format("Log output will be written to %s", fa.getFileName()));
+                System.err.println(String.format("Log output will be written to %s", fileName));
             }
         }
     }

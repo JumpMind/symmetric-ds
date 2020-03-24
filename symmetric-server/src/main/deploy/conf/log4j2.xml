@@ -5,7 +5,7 @@
             <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY" />
             <PatternLayout pattern="[%X{engineName}] - %c{1} - %m%n" />
         </Console>
-        <RollingFile name="ROLLING" fileName="${env:SYM_HOME:-.}/logs/symmetric.log" filePattern="${sys:log4j.sym.home}/logs/symmetric.log.%i">
+        <RollingFile name="ROLLING" fileName="${env:SYM_HOME:-.}/logs/symmetric.log" filePattern="${env:SYM_HOME:-.}/logs/symmetric.log.%i" createOnDemand="true">
             <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
             <Policies>
                 <SizeBasedTriggeringPolicy size="20 MB" />
