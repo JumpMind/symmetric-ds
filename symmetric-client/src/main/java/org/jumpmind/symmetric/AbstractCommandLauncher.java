@@ -61,6 +61,7 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.SymRollingFileAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,8 +250,8 @@ public abstract class AbstractCommandLauncher {
             LogSummaryAppenderUtils.removeAppender("ROLLING");
         } else {
             Appender appender = LogSummaryAppenderUtils.getAppender("ROLLING");
-            if (appender instanceof RollingFileAppender) {
-                RollingFileAppender fa = (RollingFileAppender) appender;
+            if (appender instanceof SymRollingFileAppender) {
+                SymRollingFileAppender fa = (SymRollingFileAppender) appender;
                 String fileName = fa.getFileName();
                 
                 if (line.hasOption(OPTION_PROPERTIES_FILE)) {
