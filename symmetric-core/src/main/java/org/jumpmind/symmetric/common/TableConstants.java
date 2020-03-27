@@ -76,6 +76,9 @@ public class TableConstants {
     public static final String SYM_CONSOLE_ROLE_PRIVILEGE = "console_role_privilege";
     public static final String SYM_CONSOLE_USER_HIST = "console_user_hist";
     public static final String SYM_CONSOLE_EVENT = "console_event";
+    public static final String SYM_DESIGN_DIAGRAM = "design_diagram";
+    public static final String SYM_DIAGRAM_GROUP = "diagram_group";
+    public static final String SYM_DIAGRAM_GROUP_LINK = "diagram_group_link";
     public static final String SYM_EXTENSION = "extension";
     public static final String SYM_MONITOR = "monitor";
     public static final String SYM_MONITOR_EVENT = "monitor_event";
