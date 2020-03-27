@@ -10,6 +10,41 @@ apply from: symAssembleDir + '/common.gradle'
         compile "commons-vfs:commons-vfs:$commonsVfs"
         compile "org.jdom:jdom2:$jdomVersion"
 
+        provided "com.h2database:h2:$h2Version"
+        provided "mysql:mysql-connector-java:$mysqlVersion"
+        provided "org.postgresql:postgresql:$postgresqlVersion"
+        provided "jdbc:ojdbc8:18.3.0.0"
+        provided "net.sourceforge.jtds:jtds:$jtdsVersion"
+
+        compileOnly "org.apache.derby:derby:$derbyVersion"
+        compileOnly "org.hsqldb:hsqldb:$hsqldbVersion"
+        compileOnly "org.xerial:sqlite-jdbc:$sqliteVersion"
+        compileOnly "org.mongodb:mongo-java-driver:2.12.3"
+
+        compileOnly ("org.apache.hbase:hbase-client:1.3.6") {
+            exclude group: 'log4j'
+            exclude group: 'org.slf4j'
+        }
+
+        compileOnly ("com.amazonaws:aws-java-sdk-s3:1.11.510") {
+            exclude group: 'org.apache.httpcomponents'
+            exclude group: 'commons-logging'
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'com.fasterxml.jackson.dataformat'
+            exclude group: 'commons-codec'
+        }
+
+        compileOnly ('com.google.cloud:google-cloud-bigquery:1.99.0') {
+            exclude group: 'com.google.protobuf'
+            exclude group: 'com.fasterxml.jackson.core'
+        }
+        
+        compileOnly ("com.microsoft.azure:azure-storage:8.1.0") {
+            exclude group: 'com.fasterxml.jackson.core'
+            exclude group: 'log4j'
+            exclude group: 'org.slf4j'
+        }
+
         compileOnly "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')

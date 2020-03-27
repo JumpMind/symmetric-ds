@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.symmetric.Version;
+
 public class MavenArtifact {
 
     public static final String REGEX_LIST = "\\s*,\\s*";
@@ -51,7 +53,7 @@ public class MavenArtifact {
                 this.artifactId = array[1];
             }
             if (array.length >= 3) {
-                this.version = array[2];
+                this.version = array[2].replace("$version", Version.version());
             }
         }
     }

@@ -23,7 +23,9 @@ package org.jumpmind.symmetric.service.impl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -79,9 +81,8 @@ public abstract class AbstractServiceTest {
     }
 
     protected static Level setLoggingLevelForTest(Level level) {
-        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger("org.jumpmind");
-        Level old = logger.getLevel();
-        logger.setLevel(level);
+        Level old = LogManager.getLogger("org.jumpmind").getLevel();
+        Configurator.setLevel("org.jumpmind", level);
         return old;
     }
 

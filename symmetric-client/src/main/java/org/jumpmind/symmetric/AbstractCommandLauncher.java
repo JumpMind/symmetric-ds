@@ -44,11 +44,14 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.xml.DOMConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
@@ -56,10 +59,11 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
+import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.SymRollingFileAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public abstract class AbstractCommandLauncher {
 
@@ -108,7 +112,6 @@ public abstract class AbstractCommandLauncher {
         if (symHome == null) {
             symHome = ".";
         }
-        System.setProperty("log4j.sym.home", symHome);
         if (isBlank(System.getProperty("h2.baseDir.disable")) && isBlank(System.getProperty("h2.baseDir"))) {
            System.setProperty("h2.baseDir", symHome + "/db/h2");
         }
@@ -221,50 +224,36 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected void configureLogging(CommandLine line) throws MalformedURLException {
-        
-        /* Optionally remove existing handlers attached to j.u.l root logger */
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-
-        /*
-         * Add SLF4JBridgeHandler to j.u.l's root logger, should be done once
-         * during the initialization phase of your application
-         */
-        SLF4JBridgeHandler.install();
-
-        URL log4jUrl = new URL(System.getProperty("log4j.configuration",
-                "file:" + AppUtils.getSymHome() + "/conf/log4j-blank.xml"));
-        File log4jFile = new File(new File(log4jUrl.getFile()).getParent(), "log4j.xml");
+        URL log4jUrl = new URL(System.getProperty("log4j2.configurationFile", "file:" + AppUtils.getSymHome() + "/conf/log4j2-blank.xml"));
+        File log4jFile = new File(new File(log4jUrl.getFile()).getParent(), "log4j2.xml");
 
         if (line.hasOption(OPTION_DEBUG)) {
-            log4jFile = new File(log4jFile.getParent(), "log4j-debug.xml");
+            log4jFile = new File(log4jFile.getParent(), "log4j2-debug.xml");
         }
 
         if (log4jFile.exists()) {
-            DOMConfigurator.configure(log4jFile.getAbsolutePath());
+            Configurator.initialize("SYM", log4jFile.getAbsolutePath());
         }
-
+        
         if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
-            Appender consoleAppender = org.apache.log4j.Logger.getRootLogger().getAppender(
-                    "CONSOLE");
-            if (consoleAppender != null) {
-                Layout layout = consoleAppender.getLayout();
-                if (layout instanceof PatternLayout) {
-                    ((PatternLayout) layout).setConversionPattern("%d %-5p [%c{2}] [%t] %m%n");
-                }
-            }
+            LogSummaryAppenderUtils.removeAppender("CONSOLE");
+            PatternLayout layout = PatternLayout.newBuilder().withPattern("%d %-5p [%c{2}] [%t] %m%n").build();
+            Appender appender = ConsoleAppender.newBuilder().setName("CONSOLE").setTarget(ConsoleAppender.Target.SYSTEM_ERR)
+                    .setLayout(layout).build();
+            LogSummaryAppenderUtils.addAppender(appender);
         }
-
         if (line.hasOption(OPTION_NO_LOG_CONSOLE)) {
-            org.apache.log4j.Logger.getRootLogger().removeAppender("CONSOLE");
+            LogSummaryAppenderUtils.removeAppender("CONSOLE");
         }
 
         if (line.hasOption(OPTION_NO_LOG_FILE)) {
-            org.apache.log4j.Logger.getRootLogger().removeAppender("ROLLING");
+            LogSummaryAppenderUtils.removeAppender("ROLLING");
         } else {
-            Appender appender = org.apache.log4j.Logger.getRootLogger().getAppender("ROLLING");
-            if (appender instanceof FileAppender) {
-                FileAppender fileAppender = (FileAppender) appender;
-
+            Appender appender = LogSummaryAppenderUtils.getAppender("ROLLING");
+            if (appender instanceof SymRollingFileAppender) {
+                SymRollingFileAppender fa = (SymRollingFileAppender) appender;
+                String fileName = fa.getFileName();
+                
                 if (line.hasOption(OPTION_PROPERTIES_FILE)) {
                     File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
                     String name = file.getName();
@@ -272,13 +261,18 @@ public abstract class AbstractCommandLauncher {
                     if (index > 0) {
                         name = name.substring(0, index);
                     }
-                    fileAppender.setFile(fileAppender.getFile().replace("symmetric.log",
-                            name + ".log"));
-                    fileAppender.activateOptions();
+                    fileName = fileName.replace("symmetric.log", name + ".log");
+                    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+                    Configuration config = ctx.getConfiguration();
+                    RollingFileAppender rolling = RollingFileAppender.newBuilder().setConfiguration(config).setName("ROLLING")
+                        .withFileName(fileName)
+                        .withFilePattern(fa.getFilePattern().replace("symmetric.log", name + ".log"))
+                        .setLayout(fa.getLayout()).withPolicy(fa.getTriggeringPolicy())
+                        .withStrategy(fa.getManager().getRolloverStrategy()).build();
+                    LogSummaryAppenderUtils.removeAppender("ROLLING");
+                    LogSummaryAppenderUtils.addAppender(rolling);
                 }
-
-                System.err.println(String.format("Log output will be written to %s",
-                        fileAppender.getFile()));
+                System.err.println(String.format("Log output will be written to %s", fileName));
             }
         }
     }

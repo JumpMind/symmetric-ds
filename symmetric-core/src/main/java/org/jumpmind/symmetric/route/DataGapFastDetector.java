@@ -163,6 +163,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
             if (date != null) {
                 earliestTransactionTime = date.getTime() - parameterService.getLong(
                         ParameterConstants.DBDIALECT_ORACLE_TRANSACTION_VIEW_CLOCK_SYNC_THRESHOLD_MS, 60000);
+                log.debug("Earliest transaction time is {}", earliestTransactionTime);
             }
             routingStartTime = symmetricDialect.getDatabaseTime();
         }

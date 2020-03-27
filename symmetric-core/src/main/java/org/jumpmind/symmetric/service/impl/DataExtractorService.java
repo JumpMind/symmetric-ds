@@ -2542,8 +2542,22 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
                                     .getRouter().getRouterId(), triggerHistory, false, true);
                             Column[] columns = sourceTable.getPrimaryKeyColumns();
-                            DmlStatement dmlStmt = platform.createDmlStatement(DmlType.WHERE, sourceTable, null);
                             String[] pkData = data.getParsedData(CsvData.PK_DATA);
+                            boolean[] nullKeyValues = new boolean[columns.length];
+                            for (int i = 0; i < columns.length; i++) {
+                                Column column = columns[i];
+                                nullKeyValues[i] = !column.isRequired()
+                                        && pkData[i] == null;
+                            }
+                            DmlStatement dmlStmt = platform.createDmlStatement(
+                                    DmlType.WHERE,
+                                    sourceTable.getCatalog(),
+                                    sourceTable.getSchema(),
+                                    sourceTable.getName(),
+                                    sourceTable.getPrimaryKeyColumns(),
+                                    sourceTable.getColumns(),
+                                    nullKeyValues,
+                                    null);
                             Row row = new Row(columns.length);
                             
                             for (int i = 0; i < columns.length; i++) {

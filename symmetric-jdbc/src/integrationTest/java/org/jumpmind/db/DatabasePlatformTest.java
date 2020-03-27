@@ -30,8 +30,9 @@ import java.io.InputStreamReader;
 import java.sql.Types;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
@@ -71,15 +72,13 @@ public class DatabasePlatformTest {
 
     @Before
     public void turnOnDebug() {
-        Logger logger = Logger.getLogger("org.jumpmind.db");
-        originalLevel = logger.getLevel();
-        logger.setLevel(Level.TRACE);
+        originalLevel = LogManager.getLogger("org.jumpmind.db").getLevel();
+        Configurator.setLevel("org.jumpmind.db", Level.TRACE);
     }
 
     // @After
     public void turnOffDebug() {
-        Logger logger = Logger.getLogger("org.jumpmind.db");
-        logger.setLevel(originalLevel);
+        Configurator.setLevel("org.jumpmind.db", originalLevel);
     }    
     
     @Test

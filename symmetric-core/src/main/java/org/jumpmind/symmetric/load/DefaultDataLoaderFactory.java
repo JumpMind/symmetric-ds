@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.platform.bigquery.BigQueryPlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -71,7 +70,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
 
         if (symmetricDialect.getTargetPlatform().getClass().getSimpleName().equals("CassandraPlatform")) {
             try {
-                // TODO: Evalaute if ConflictResolver will work for Cassandra and if so remove duplicate code.
+                // TODO: Evaluate if ConflictResolver will work for Cassandra and if so remove duplicate code.
                 return new CassandraDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
@@ -93,7 +92,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 return new BigQueryDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                         symmetricDialect.getTablePrefix(), new DefaultTransformWriterConflictResolver(transformWriter),
                         buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData), 
-                        ((BigQueryPlatform) symmetricDialect.getTargetPlatform()).getBigQuery(), 
                         parameterService.getInt(ParameterConstants.GOOGLE_BIG_QUERY_MAX_ROWS_PER_RPC, 100));
 
             } catch (Exception e) {

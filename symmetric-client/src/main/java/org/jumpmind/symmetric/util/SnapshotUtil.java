@@ -57,9 +57,12 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Layout;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.CatalogSchema;
 import org.jumpmind.db.model.Table;
@@ -90,6 +93,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.impl.UpdateService;
 import org.jumpmind.util.AppUtils;
+import org.jumpmind.util.SymRollingFileAppender;
 import org.jumpmind.util.ZipBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -423,7 +427,7 @@ public class SnapshotUtil {
             logDir = new File("logs");
         }
 
-        Map<File, Layout> matches = null;
+        Map<File, Layout<?>> matches = null;
         if (!logDir.exists()) {
             matches = findSymmetricLogFile();
             if (matches != null && matches.size() == 1) {
@@ -478,7 +482,7 @@ public class SnapshotUtil {
         return jarFile;
     }
     
-    private static boolean compareLogFileName(String fileName, Map<File, Layout> matches) {
+    private static boolean compareLogFileName(String fileName, Map<File, Layout<?>> matches) {
         boolean ret = false;
         if(fileName != null && fileName.length() > 0 && matches != null && matches.size() > 0) {
             for(File f : matches.keySet()) {
@@ -752,20 +756,28 @@ public class SnapshotUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static Map<File, Layout> findSymmetricLogFile() {
-        Enumeration<Appender> appenders = org.apache.log4j.Logger.getRootLogger().getAllAppenders();
-        while (appenders.hasMoreElements()) {
-            Appender appender = appenders.nextElement();
+    public static Map<File, Layout<?>> findSymmetricLogFile() {
+        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
+        Map<String, Appender> appenderMap = lc.getRootLogger().getAppenders();
+        for (Appender appender : appenderMap.values()) {
+            String fileName = null;
+            Layout<?> layout = null;
             if (appender instanceof FileAppender) {
-                FileAppender fileAppender = (FileAppender) appender;
-                if (fileAppender != null) {
-                    File file = new File(fileAppender.getFile());
-                    if (file != null && file.exists()) {
-                        Map<File, Layout> matches = new HashMap<File, Layout>();
-                        matches.put(file, fileAppender.getLayout());
-                        return matches;
-                    }
+                fileName = ((FileAppender) appender).getFileName();
+                layout = ((FileAppender) appender).getLayout();
+            } else if (appender instanceof RollingFileAppender) {
+                fileName = ((RollingFileAppender) appender).getFileName();
+                layout = ((RollingFileAppender) appender).getLayout();
+            } else if (appender instanceof SymRollingFileAppender) {
+                fileName = ((SymRollingFileAppender) appender).getFileName();
+                layout = ((SymRollingFileAppender) appender).getLayout();
+            }
+            if (fileName != null) {
+                File file = new File(fileName);
+                if (file.exists()) {
+                    Map<File, Layout<?>> matches = new HashMap<File, Layout<?>>();
+                    matches.put(file, layout);
+                    return matches;
                 }
             }
         }

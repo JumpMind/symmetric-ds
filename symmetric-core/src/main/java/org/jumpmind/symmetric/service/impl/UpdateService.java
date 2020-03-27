@@ -149,9 +149,9 @@ public class UpdateService extends AbstractService implements IUpdateService {
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         conn.connect();
 
-        OutputStream os = conn.getOutputStream();
-        os.write(postData);
-        os.close();
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(postData);
+        }
 
         parseHeaders(conn);
         parseResponse(conn);

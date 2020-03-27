@@ -11,7 +11,7 @@ buildscript {
     dependencies { 
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'     
-        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.2.2'    
+        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.2.5'    
         classpath 'com.vaadin:vaadin-compatibility-server:8.1.2'
         classpath 'com.vaadin:vaadin-compatibility-client-compiled:8.1.2'
     }    
@@ -71,15 +71,13 @@ dependencies {
     compile "org.vaadin.addons:aceeditor:0.8.15"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
     
+    testCompile "com.h2database:h2:$h2Version"
     testCompile "javax.websocket:javax.websocket-api:$websocketVersion"    
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"    
 
-    testCompile "org.slf4j:slf4j-api:$slf4jVersion"
-    testCompile "org.slf4j:jul-to-slf4j:$slf4jVersion"
-    testCompile "org.slf4j:slf4j-log4j12:$slf4jVersion"
-    testCompile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
-    testCompile "log4j:log4j:$log4jVersion"
+    testCompile "org.apache.logging.log4j:log4j-api:$log4jVersion"
+    testCompile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
 }
 
 assemble.dependsOn jar

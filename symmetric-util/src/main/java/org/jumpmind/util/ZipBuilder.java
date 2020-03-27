@@ -74,28 +74,28 @@ public class ZipBuilder {
     }
 
     private void add(File source, ZipOutputStream target) throws IOException {
-        BufferedInputStream in = null;
-        try {
-            if (source.isDirectory()) {
-                String name = massageEntryName(source);
-                if (name.trim().length() != 0) {
-                    if (!name.endsWith("/")) {
-                        name += "/";
-                    }
-                    JarEntry entry = new JarEntry(name);
-                    entry.setTime(source.lastModified());
-                    target.putNextEntry(entry);
-                    target.closeEntry();
+        if (source.isDirectory()) {
+            String name = massageEntryName(source);
+            if (name.trim().length() != 0) {
+                if (!name.endsWith("/")) {
+                    name += "/";
                 }
-                for (File nestedFile : source.listFiles()) {
-                    add(nestedFile, target);
-                }
-            } else {
-                ZipEntry entry = new ZipEntry(massageEntryName(source));
+                JarEntry entry = new JarEntry(name);
                 entry.setTime(source.lastModified());
                 target.putNextEntry(entry);
-                in = new BufferedInputStream(new FileInputStream(source));
-
+                target.closeEntry();
+            }
+            File[] files = source.listFiles();
+            if (files != null) {
+                for (File nestedFile : files) {
+                    add(nestedFile, target);
+                }
+            }
+        } else {
+            ZipEntry entry = new ZipEntry(massageEntryName(source));
+            entry.setTime(source.lastModified());
+            target.putNextEntry(entry);
+            try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(source))) {
                 byte[] buffer = new byte[1024];
                 while (true) {
                     int count = in.read(buffer);
@@ -106,12 +106,6 @@ public class ZipBuilder {
                 }
                 target.closeEntry();
             }
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (Exception ex) {}
         }
     }
 

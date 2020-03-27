@@ -34,7 +34,6 @@ import java.security.KeyStore.Entry;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -53,7 +52,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -76,7 +74,7 @@ public class BouncyCastleSecurityService extends SecurityService {
         host = host == null ? AppUtils.getHostName() : host;
         String certString = String.format("CN=%s, OU=SymmetricDS, O=JumpMind", host);
 
-        SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(pair.getPublic().getEncoded());
+        SubjectPublicKeyInfo publicKeyInfo = new BouncyCastleHelper().getInstance(pair.getPublic());
         X509v1CertificateBuilder builder = new X509v1CertificateBuilder(new X500Name(certString), BigInteger.valueOf(System.currentTimeMillis()),
                 new Date(System.currentTimeMillis() - 86400000), new Date(System.currentTimeMillis() + 788400000000l), new X500Name(certString),
                 publicKeyInfo);
@@ -84,27 +82,21 @@ public class BouncyCastleSecurityService extends SecurityService {
         AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption"); 
         AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId); 
         ContentSigner signer = new BcRSAContentSignerBuilder(sigAlgId, digAlgId)
-                .build(PrivateKeyFactory.createKey(pair.getPrivate().getEncoded()));
+                .build(new BouncyCastleHelper().createKey(pair.getPrivate()));
 
         X509CertificateHolder holder = builder.build(signer);
         return new JcaX509CertificateConverter().getCertificate(holder);
     }
 
-    protected synchronized void checkProviderInstalled() {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
-
     @Override
     public synchronized void installDefaultSslCert(String host) {
         try {
-            checkProviderInstalled();
             KeyStore keyStore = getKeyStore();
             KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(getKeyStorePassword().toCharArray());
             String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY);
             Entry entry = keyStore.getEntry(alias, param);
             if (entry == null) {
+                new BouncyCastleHelper().checkProviderInstalled();
                 PrivateKeyEntry privateEntry = createDefaultSslCert(host);
                 log.info("Installing a default SSL certificate: {}", 
                         ((X509Certificate) privateEntry.getCertificate()).getSubjectX500Principal().getName());
@@ -121,6 +113,7 @@ public class BouncyCastleSecurityService extends SecurityService {
     @Override
     public PrivateKeyEntry createDefaultSslCert(String host) {
         PrivateKeyEntry entry = null;
+        new BouncyCastleHelper().checkProviderInstalled();
         try {
             KeyPair pair = generateRSAKeyPair();
             X509Certificate cert = generateV1Certificate(host, pair);
@@ -137,7 +130,7 @@ public class BouncyCastleSecurityService extends SecurityService {
     @Override
     public synchronized void installSslCert(PrivateKeyEntry entry) {
         try {
-            checkProviderInstalled();
+            new BouncyCastleHelper().checkProviderInstalled();
             KeyStore keyStore = getKeyStore();
             KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(getKeyStorePassword().toCharArray());
             String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY);
@@ -273,5 +266,4 @@ public class BouncyCastleSecurityService extends SecurityService {
         }
         return pem;
     }
-    
 }

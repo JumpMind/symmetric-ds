@@ -33,8 +33,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.symmetric.TestConstants;
@@ -457,7 +457,7 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
 
     @Test
     public void test09ErrorThenSuccessBatch() throws Exception {
-        Logger.getLogger(AbstractDataLoaderServiceTest.class).warn("testErrorThenSuccessBatch");
+        LogManager.getLogger(AbstractDataLoaderServiceTest.class).warn("testErrorThenSuccessBatch");
         Level old = setLoggingLevelForTest(Level.OFF);
         String[] values = { getNextId(),
                 "This string is too large and will cause the statement to fail",

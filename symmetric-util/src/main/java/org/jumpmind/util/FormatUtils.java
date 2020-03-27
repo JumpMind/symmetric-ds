@@ -298,7 +298,8 @@ public final class FormatUtils {
                 }
             }
             
-            if (countWildCard % 2 == 1 || countCommas % 2 == 1 || countNegates % 2 == 1) {
+            if ((countWildCard > 0 && countWildCard % 2 == 1 )|| (countCommas > 0 && countCommas % 2 == 1)
+                    || (countNegates > 0 && countNegates % 2 == 1)) {
                 hasWildCard = true;
             }
         }
