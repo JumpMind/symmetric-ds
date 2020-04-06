@@ -23,6 +23,7 @@ package org.jumpmind.symmetric;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,13 +31,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -48,6 +53,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.exception.IoException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
@@ -66,6 +72,7 @@ import org.jumpmind.symmetric.util.ModuleException;
 import org.jumpmind.symmetric.util.ModuleManager;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.JarBuilder;
+import org.jumpmind.util.ZipBuilder;
 
 /**
  * Perform administration tasks with SymmetricDS.
@@ -118,8 +125,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_SEND_SCRIPT = "send-script";
 
     private static final String CMD_SEND_SCHEMA = "send-schema";
+    
+    private static final String CMD_BACKUP_FILE_CONFIGURATION = "backup-config";
+    
+    private static final String CMD_RESTORE_FILE_CONFIGURATION = "restore-config";
 
-    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES, CMD_MODULE };
+    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES, CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION };
 
     private static final String OPTION_NODE = "node";
 
@@ -136,7 +147,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_NODE_GROUP = "node-group";
 
     private static final String OPTION_REVERSE = "reverse";
-
+    
+    private static final String OPTION_IN = "in";
+    
     private static final int WIDTH = 120;
 
     private static final int PAD = 3;
@@ -201,6 +214,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             printHelpLine(pw, CMD_SEND_SQL);
             printHelpLine(pw, CMD_SEND_SCHEMA);
             printHelpLine(pw, CMD_SEND_SCRIPT);
+            printHelpLine(pw, CMD_BACKUP_FILE_CONFIGURATION);
+            printHelpLine(pw, CMD_RESTORE_FILE_CONFIGURATION);
             printHelpLine(pw, CMD_UNINSTALL);
             printHelpLine(pw, CMD_MODULE);
             pw.flush();
@@ -243,7 +258,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, "w", OPTION_WHERE, true);
             }
             if (cmd.equals(CMD_SYNC_TRIGGERS)) {
-                addOption(options, "o", OPTION_OUT, false);
+                addOption(options, "o", OPTION_OUT, true);
                 addOption(options, "f", OPTION_FORCE, false);
             }
             if (cmd.equals(CMD_RELOAD_NODE)) {
@@ -251,6 +266,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             }
             if (cmd.equals(CMD_REMOVE_NODE)) {
                 addOption(options, "n", OPTION_NODE, true);
+            }
+            if(cmd.equals(CMD_BACKUP_FILE_CONFIGURATION)) {
+                addOption(options, "o", OPTION_OUT, true);
+            }
+            if(cmd.equals(CMD_RESTORE_FILE_CONFIGURATION)) {
+                addOption(options, "i", OPTION_IN, true);
             }
 
             if (options.getOptions().size() > 0) {
@@ -284,6 +305,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, "f", OPTION_FORCE, false);
         addOption(options, "o", OPTION_OUT, true);
         addOption(options, "r", OPTION_REVERSE, false);
+        addOption(options, "i", OPTION_IN, true);
         buildCryptoOptions(options);
     }
 
@@ -358,6 +380,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             return true;
         } else if (cmd.equals(CMD_MODULE)) {
             module(line, args);
+            return true;
+        } else if (cmd.equals(CMD_BACKUP_FILE_CONFIGURATION)) {
+            backup(line, args);
+            return true;
+        } else if (cmd.equals(CMD_RESTORE_FILE_CONFIGURATION)) {
+            restore(line, args);
             return true;
         } else {
             throw new ParseException("ERROR: no subcommand '" + cmd + "' was found.");
@@ -494,6 +522,79 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         IDataService dataService = getSymmetricEngine().getDataService();
         String message = dataService.reloadNode(nodeId, reverse, "symadmin");
         System.out.println(message);
+    }
+    
+    private void backup(CommandLine line, List<String> args) throws IOException {
+        String filename = line.getOptionValue(OPTION_OUT);
+        if(filename == null) {
+            filename = "symmetric-file-configuration-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()) + ".zip";
+        }
+        File jarFile = null;
+        if(filename != null) {
+            jarFile = new File(filename);
+            if (jarFile.getParentFile() != null) {
+                jarFile.getParentFile().mkdirs();
+            }
+        }
+        List<String> listOfDirs = new ArrayList<String>();
+        listOfDirs.add(AbstractCommandLauncher.getEnginesDir());
+        listOfDirs.add(AppUtils.getSymHome() + "/conf");
+        listOfDirs.add(AppUtils.getSymHome() + "/patches");
+        listOfDirs.add(AppUtils.getSymHome() + "/security");
+        
+        String parentDir = new File(DEFAULT_SERVER_PROPERTIES).getParent();
+        if(parentDir != null) {
+            if(listOfDirs.indexOf(parentDir) < 0) {
+                // Need to add DEFAULT_SERVER_PROPERTIES to list of files to back up
+                // because the file is specified outside of the SymmetricDS installation
+                listOfDirs.add(DEFAULT_SERVER_PROPERTIES);
+            }
+        }
+        
+        File[] arrayOfFile = new File[listOfDirs.size()];
+        for(int i = 0; i < listOfDirs.size(); i++) {
+            arrayOfFile[i] = new File(listOfDirs.get(i));
+        }
+        
+        System.out.println("Backing up files to " + filename);
+        try {
+            ZipBuilder builder = new ZipBuilder(new File(AppUtils.getSymHome()), jarFile, arrayOfFile);
+            builder.build();
+        } catch (Exception e) {
+            throw new IoException("Failed to backup configuration files into archive", e);
+        }
+    }
+    
+    private void restore(CommandLine line, List<String> args) throws IOException {
+        String filename = line.getOptionValue(OPTION_IN);
+        if(filename == null) {
+            throw new IoException("Input filename must be specified");
+        }
+        try(FileInputStream finput = new FileInputStream(filename);ZipInputStream zip = new ZipInputStream(finput)) {
+            ZipEntry entry = null;
+            for (entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
+                if(entry.isDirectory()) {
+                    continue;
+                }
+                System.out.println("Restoring " + entry.getName());
+                
+                File fileToOpen = null;
+                File f = new File(entry.getName());
+                if(f.isAbsolute()) {
+                    f.getParentFile().mkdirs();
+                    fileToOpen = f;
+                } else {
+                    fileToOpen = new File(AppUtils.getSymHome(), entry.getName());
+                }
+                try(FileOutputStream foutput = new FileOutputStream(fileToOpen)) {
+                    final byte buffer[] = new byte[4096];
+                    int readCount;
+                    while ((readCount = zip.read(buffer, 0, buffer.length)) > 0) {
+                        foutput.write(buffer, 0, readCount);
+                    }
+                }
+            }
+        }
     }
 
     private void syncTrigger(CommandLine line, List<String> args) throws IOException {
