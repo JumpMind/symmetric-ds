@@ -108,10 +108,7 @@ public abstract class AbstractCommandLauncher {
     private static boolean serverPropertiesInitialized = false;
 
     static {
-        String symHome = System.getenv("SYM_HOME");
-        if (symHome == null) {
-            symHome = ".";
-        }
+        String symHome = AppUtils.getSymHome();
         if (isBlank(System.getProperty("h2.baseDir.disable")) && isBlank(System.getProperty("h2.baseDir"))) {
            System.setProperty("h2.baseDir", symHome + "/db/h2");
         }
