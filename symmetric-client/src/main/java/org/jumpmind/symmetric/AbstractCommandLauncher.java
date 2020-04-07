@@ -129,8 +129,9 @@ public abstract class AbstractCommandLauncher {
         this.messageKeyPrefix = messageKeyPrefix;
         TypedProperties serverProperties = new TypedProperties(System.getProperties());
         boolean allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, true);
-        String allowServerNames = serverProperties.get(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, "all");
-        TransportManagerFactory.initHttps(allowServerNames, allowSelfSignedCerts);
+        String allowServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS, "all");
+        boolean https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE, true);
+        TransportManagerFactory.initHttps(allowServerNames, allowSelfSignedCerts, https2Enabled);
     }
     
     protected static void initFromServerProperties() {

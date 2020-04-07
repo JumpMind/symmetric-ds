@@ -23,14 +23,13 @@ package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.transport.http.HttpIncomingTransport;
+import org.jumpmind.symmetric.web.WebConstants;
 
 public class MockTransportManager implements ITransportManager {
 
@@ -67,7 +66,7 @@ public class MockTransportManager implements ITransportManager {
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list,
                 Node local, String securityToken, String registrationUrl) throws IOException {
-        return HttpURLConnection.HTTP_OK;
+        return WebConstants.SC_OK;
     }
     
     @Override

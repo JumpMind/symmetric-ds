@@ -102,7 +102,8 @@ public class PushUriHandler extends AbstractUriHandler {
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {
         InputStream is = null;
         String contentType = req.getHeader("Content-Type");
-        boolean useCompression = contentType != null && contentType.equalsIgnoreCase("gzip");
+        boolean useCompression = contentType != null && (contentType.equalsIgnoreCase("gzip")
+                || contentType.equalsIgnoreCase("application/gzip"));
         is = req.getInputStream();
         if (useCompression) {
             is = new GZIPInputStream(is);

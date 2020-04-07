@@ -24,7 +24,6 @@ package org.jumpmind.symmetric.transport.http;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
     
     private HttpTransportManager httpTransportManager;
 
-    private HttpURLConnection connection;
+    private HttpConnection connection;
 
     private BufferedReader reader;
     
@@ -64,14 +63,14 @@ public class HttpIncomingTransport implements IIncomingTransport {
     
     private String securityToken;
 
-    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpURLConnection connection, IParameterService parameterService) {
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpConnection connection, IParameterService parameterService) {
         this.httpTransportManager = httpTransportManager;
         this.connection = connection;
         this.parameterService = parameterService;
         this.httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
 
-    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpURLConnection connection, IParameterService parameterService,
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpConnection connection, IParameterService parameterService,
             String nodeId, String securityToken) {
         this(httpTransportManager, connection, parameterService);
         this.nodeId = nodeId;
@@ -179,7 +178,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
      * @return
      * @throws IOException
      */
-    private HttpURLConnection openConnectionCheckRedirects(HttpURLConnection connection) throws IOException
+    private HttpConnection openConnectionCheckRedirects(HttpConnection connection) throws IOException
     {      
        boolean redir;
        int redirects = 0;
@@ -187,7 +186,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
           connection.setInstanceFollowRedirects(false);         
           redir = false;
              int stat = connection.getResponseCode();
-             if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpURLConnection.HTTP_NOT_MODIFIED) {
+             if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpConnection.HTTP_NOT_MODIFIED) {
                 URL base = connection.getURL();
                 redirectionUrl = connection.getHeaderField("Location");
 
@@ -215,7 +214,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
        return connection;
     }
     
-    public HttpURLConnection getConnection() {
+    public HttpConnection getConnection() {
         return connection;
     }
 }

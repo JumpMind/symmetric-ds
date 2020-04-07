@@ -31,7 +31,10 @@ import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang.ClassUtils;
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.http2.HTTP2Cipher;
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -103,6 +106,8 @@ public class SymmetricWebServer {
 
     protected boolean httpsEnabled = false;
 
+    protected boolean https2Enabled = false;
+    
     protected int httpsPort = -1;
 
     protected String basicAuthUsername = null;
@@ -170,6 +175,8 @@ public class SymmetricWebServer {
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTP_ENABLE, "true")));
         httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE,
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS_ENABLE, "true")));
+        https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE,
+                Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS2_ENABLE, "true")));
         httpPort = serverProperties.getInt(ServerConstants.HTTP_PORT,
                 Integer.parseInt(System.getProperty(ServerConstants.HTTP_PORT, "" + httpPort)));
         httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT,
@@ -218,7 +225,7 @@ public class SymmetricWebServer {
         
         SymmetricUtils.logNotices();
 
-        TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
+        TransportManagerFactory.initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts, https2Enabled);
 
         // indicate to the app that we are in stand alone mode
         System.setProperty(SystemConstants.SYSPROP_STANDALONE_WEB, "true");
@@ -266,7 +273,7 @@ public class SymmetricWebServer {
 
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
         if (remoteStatusEndpoint != null) {            
-            ServerContainer container = WebSocketServerContainerInitializer.configureContext(webapp);
+            ServerContainer container = WebSocketServerContainerInitializer.initialize(webapp);
             container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
             container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
             ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
@@ -348,6 +355,7 @@ public class SymmetricWebServer {
             httpConfig.setSecurePort(securePort);
         }
 
+        httpConfig.setSendServerVersion(false);
         httpConfig.setOutputBufferSize(32768);
 
         if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
@@ -356,7 +364,7 @@ public class SymmetricWebServer {
             http.setHost(host);
             http.setIdleTimeout(maxIdleTime);
             connectors.add(http);
-            log.info(String.format("About to start %s web server on host:port %s:%s", name, host == null ? "default" : host, port));
+            log.info(String.format("About to start %s web server on %s:%s:%s", name, host == null ? "default" : host, port, "HTTP/1.1"));
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER,
@@ -364,41 +372,54 @@ public class SymmetricWebServer {
             securityService.installDefaultSslCert(host);
             String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
-            SslContextFactory sslConnectorFactory = new SslContextFactory();
-            sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
-            /* Prevent POODLE attack */
+
+            SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
+            sslContextFactory.setKeyStore(securityService.getKeyStore());
+            sslContextFactory.setTrustStore(securityService.getTrustStore());
+            sslContextFactory.setKeyManagerPassword(keyStorePassword);
+            sslContextFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
+                    SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
+
             String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
             if (ignoredProtocols != null && ignoredProtocols.length() > 0) {
                 String[] protocols = ignoredProtocols.split(",");
-                sslConnectorFactory.addExcludeProtocols(protocols);
-            }
-            else {
-                sslConnectorFactory.addExcludeProtocols("SSLv3");
+                sslContextFactory.addExcludeProtocols(protocols);
+            } else {
+                sslContextFactory.addExcludeProtocols("SSLv3");
             }
 
             String ignoredCiphers = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_CIPHERS);
             if (ignoredCiphers != null && ignoredCiphers.length() > 0) {
                 String[] ciphers = ignoredCiphers.split(",");
-                sslConnectorFactory.addExcludeCipherSuites(ciphers);
+                sslContextFactory.addExcludeCipherSuites(ciphers);
             }
-
-            sslConnectorFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
-                    SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
-            sslConnectorFactory.setKeyStore(securityService.getKeyStore());
-            sslConnectorFactory.setTrustStore(securityService.getTrustStore());
-
             
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             httpsConfig.addCustomizer(new SecureRequestCustomizer());
+            String protocolName = null;
+            ServerConnector https = null;
 
-            ServerConnector https = new ServerConnector(server,
-                    new SslConnectionFactory(sslConnectorFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(httpsConfig));
+            if (https2Enabled) {
+                sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+                sslContextFactory.setProvider("Conscrypt");
+                HTTP2ServerConnectionFactory h2 = new HTTP2ServerConnectionFactory(httpsConfig);
+                ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+                alpn.setDefaultProtocol("h2");
+                SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+                https = new ServerConnector(server, ssl, alpn, h2, new HttpConnectionFactory(httpsConfig));
+                protocolName = "HTTPS/2";
+            } else {
+                SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString());
+                https = new ServerConnector(server, ssl, new HttpConnectionFactory(httpsConfig));
+                protocolName = "HTTPS/1.1";
+            }
+
             https.setPort(securePort);
             https.setIdleTimeout(maxIdleTime);
             https.setHost(host);
             connectors.add(https);
-            log.info(String.format("About to start %s web server on secure host:port %s:%s", name, host == null ? "default" : host,
-                    securePort));
+            log.info(String.format("About to start %s web server on %s:%s:%s", name, host == null ? "default" : host,
+                    securePort, protocolName));
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
@@ -502,7 +523,15 @@ public class SymmetricWebServer {
     public boolean isHttpsEnabled() {
         return httpsEnabled;
     }
-    
+
+    public void setHttps2Enabled(boolean https2Enabled) {
+        this.https2Enabled = https2Enabled;
+    }
+
+    public boolean isHttps2Enabled() {
+        return https2Enabled;
+    }
+
     protected Class<?> loadRemoteStatusEndpoint() {
         try {            
             Class<?> clazz = ClassUtils.getClass("com.jumpmind.symmetric.console.remote.ServerEndpoint");

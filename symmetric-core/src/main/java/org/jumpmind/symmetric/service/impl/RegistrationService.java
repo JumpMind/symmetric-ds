@@ -25,7 +25,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.UnknownHostException;
 import java.sql.Types;
 import java.util.Collection;
@@ -68,6 +67,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
 
@@ -738,7 +738,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             
             try {
                 log.info("Detected that node '{}' should be copied to a new node id.  Attempting to contact server to accomplish this", copyFrom.getNodeId());
-                 copied = transportManager.sendCopyRequest(copyFrom) == HttpURLConnection.HTTP_OK;   
+                 copied = transportManager.sendCopyRequest(copyFrom) == WebConstants.SC_OK;   
                  if (copied) {
                      nodeService.deleteIdentity();
                  }

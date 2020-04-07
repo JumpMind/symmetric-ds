@@ -9,6 +9,9 @@ apply from: symAssembleDir + '/common.gradle'
         compile "com.google.code.gson:gson:$gsonVersion"
         compile "org.springframework:spring-core:$springVersion"
 
+        compileOnly "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
+        compile "com.squareup.okhttp3:okhttp:4.4.1"
+        
         compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
             exclude group: 'commons-lang', module: 'commons-lang'
         }

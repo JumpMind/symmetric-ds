@@ -33,6 +33,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -43,6 +44,8 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.transport.file.FileTransportManager;
+import org.jumpmind.symmetric.transport.http.ConscryptHelper;
+import org.jumpmind.symmetric.transport.http.Http2Connection;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
@@ -56,10 +59,10 @@ public class TransportManagerFactory {
     }
 
     public static void initHttps(final String httpSslVerifiedServerNames,
-            boolean allowSelfSignedCerts) {
+            boolean allowSelfSignedCerts, boolean enableHttps2) {
         try {
             if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
-                HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                HostnameVerifier hostnameVerifier = new HostnameVerifier() {
                     public boolean verify(String s, SSLSession sslsession) {
                         boolean verified = false;
                         if (!StringUtils.isBlank(httpSslVerifiedServerNames)) {
@@ -78,11 +81,15 @@ public class TransportManagerFactory {
                         }
                         return verified;
                     }
-                });
+                };
+                HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+                if (enableHttps2) {
+                    Http2Connection.setHostnameVerifier(hostnameVerifier);
+                }
             }
 
             if (allowSelfSignedCerts) {
-                HttpsURLConnection.setDefaultSSLSocketFactory(createSelfSignedSocketFactory());
+                initSelfSignedSocketFactory(enableHttps2);
             }
 
         } catch (GeneralSecurityException ex) {
@@ -103,7 +110,8 @@ public class TransportManagerFactory {
             // Allow self signed certs based on the parameter value.
             boolean allowSelfSignedCerts = symmetricEngine.getParameterService().is(
                     ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
-            initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts);
+            boolean https2Enabled = symmetricEngine.getParameterService().is(ServerConstants.HTTPS2_ENABLE, true);
+            initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts, https2Enabled);
             return createHttpTransportManager(symmetricEngine);
         } else if (Constants.PROTOCOL_FILE.equalsIgnoreCase(transport)) {
             return new FileTransportManager(symmetricEngine);
@@ -148,16 +156,20 @@ public class TransportManagerFactory {
      * @throws KeyManagementException
      * @throws KeyStoreException
      */
-    private static SSLSocketFactory createSelfSignedSocketFactory()
+    private static void initSelfSignedSocketFactory(boolean enableHttps2)
             throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
-        SSLSocketFactory factory = null;
 
+        if (enableHttps2) {
+            new ConscryptHelper().checkProviderInstalled();
+        }
+        X509TrustManager trustManager = new SelfSignedX509TrustManager(null);
         SSLContext context = SSLContext.getInstance("TLS");
-        context.init(null, new TrustManager[] { new SelfSignedX509TrustManager(null) },
-                new SecureRandom());
-        factory = context.getSocketFactory();
-
-        return factory;
+        context.init(null, new TrustManager[] { trustManager }, new SecureRandom());
+        SSLSocketFactory sslSocketFactory = context.getSocketFactory();
+        
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
+        Http2Connection.setSslSocketFactory(sslSocketFactory);
+        Http2Connection.setTrustManager(trustManager);
     }
 
 }

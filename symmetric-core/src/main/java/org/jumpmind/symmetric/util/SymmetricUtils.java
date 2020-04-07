@@ -116,6 +116,9 @@ final public class SymmetricUtils {
                 if (value.contains("portNumber")) {
                     value = FormatUtils.replace("portNumber", AppUtils.getPortNumber(), value);
                 }
+                if (value.contains("protocol")) {
+                    value = FormatUtils.replace("protocol", AppUtils.getProtocol(), value);
+                }
                 if (value.contains("ipAddress")) {
                     value = FormatUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
                 }
