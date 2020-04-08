@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.oracle;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -265,6 +266,14 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
             return "CURRENT_TIMESTAMP";
         } else {
             return String.format("CURRENT_TIMESTAMP AT TIME ZONE '%s'", timezone);
+        }
+    }
+
+    protected String toClobExpression(Table table) {
+        if (table.hasNTypeColumns() || symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC)) {
+            return "to_nclob('')||";
+        } else {
+            return "to_clob('')||";
         }
     }
 
