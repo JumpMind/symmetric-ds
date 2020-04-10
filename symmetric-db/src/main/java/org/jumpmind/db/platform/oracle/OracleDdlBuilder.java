@@ -108,7 +108,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(true);
-
+        databaseInfo.setTriggersCreateOrReplaceSupported(true);
     }
     
     @Override
