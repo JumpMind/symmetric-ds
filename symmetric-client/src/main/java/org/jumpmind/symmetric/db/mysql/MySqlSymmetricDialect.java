@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.db.mysql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -38,6 +39,7 @@ import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.util.SymmetricUtils;
+import org.jumpmind.util.FormatUtils;
 
 public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
 
@@ -57,6 +59,9 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
 
+    static final String SQL_FUNCTION_EQUALS = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())"
+            + " and trim(routine_definition)=trim('$(functionBody)')";
+    
     private String functionTemplateKeySuffix = null;
     
     private boolean isConvertZeroDateToNull;
@@ -95,59 +100,79 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public void createRequiredDatabaseObjects() {
+        String function = null;
+        String functionBody = null;
+        String sql = null;
         if (this.functionTemplateKeySuffix.equals(PRE_5_1_23)) {
-            String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
-            if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-                String sql = "create function $(functionName)()                                                        " + 
-                        " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                        " + 
-                        " begin                                                        " +
-                        " declare comm_name varchar(50);                                                        " + 
-                        " declare comm_value varchar(50);                                                        " + 
-                        " declare comm_cur cursor for show status like 'Com_commit';                                                        " + 
-                        " if @@autocommit = 0 then                                                        " + 
-                        " open comm_cur;                                                        " + 
-                        " fetch comm_cur into comm_name, comm_value;                                                        " + 
-                        " close comm_cur;                                                        " + 
-                        " return concat(concat(connection_id(), '.'), comm_value);                                                        " + 
-                        " else                                                        " + 
-                        " return null;                                                        " + 
-                        " end if;                                                          " + 
-                        " end                                                             ";
-                install(sql, function);
-            }        
+            function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
+            functionBody =
+                    " begin                                                        " +
+                    " declare comm_name varchar(50);                                                        " + 
+                    " declare comm_value varchar(50);                                                        " + 
+                    " declare comm_cur cursor for show status like 'Com_commit';                                                        " + 
+                    " if @@autocommit = 0 then                                                        " + 
+                    " open comm_cur;                                                        " + 
+                    " fetch comm_cur into comm_name, comm_value;                                                        " + 
+                    " close comm_cur;                                                        " + 
+                    " return concat(concat(connection_id(), '.'), comm_value);                                                        " + 
+                    " else                                                        " + 
+                    " return null;                                                        " + 
+                    " end if;                                                          " + 
+                    " end                                                             ";
+
+            sql = "create function $(functionName)()                                                        " + 
+                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                        " + 
+                    functionBody;
         } else if (this.functionTemplateKeySuffix.equals(PRE_5_7_6)){
-            String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
-            if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-                 String sql = "create function $(functionName)()                                                                                          \n" + 
-                         " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                           \n" + 
-                         " begin                                                                                                                          \n" + 
-                         "    declare comm_value varchar(50);                                                                                             \n" + 
-                         "    declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';  \n" + 
-                         "    open comm_cur;                                                                                                              \n" + 
-                         "    fetch comm_cur into comm_value;                                                                                             \n" + 
-                         "    close comm_cur;                                                                                                             \n" + 
-                         "    return concat(concat(connection_id(), '.'), comm_value);                                                                    \n" + 
-                         " end                                                                                                                            \n";
-                install(sql, function);
-            }                    
+            function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
+            functionBody = 
+                    " begin                                                                                                                          \n" + 
+                    "    declare comm_value varchar(50);                                                                                             \n" + 
+                    "    declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';  \n" + 
+                    "    open comm_cur;                                                                                                              \n" + 
+                    "    fetch comm_cur into comm_value;                                                                                             \n" + 
+                    "    close comm_cur;                                                                                                             \n" + 
+                    "    return concat(concat(connection_id(), '.'), comm_value);                                                                    \n" + 
+                    " end                                                                                                                            ";
+                    
+            sql = "create function $(functionName)()                                                                                          \n" + 
+                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                           \n" + 
+                    functionBody;
         } else {
-            String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
-            if (!installed(SQL_FUNCTION_INSTALLED, function)) {
-                String sql = "create function $(functionName)()                                                                                           \n" + 
-                        " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                            \n" + 
-                        " begin                                                                                                                           \n" + 
-                        "    declare done int default 0;                                                                                                  \n" +
-                        "    declare comm_value varchar(50);                                                                                              \n" + 
-                        "    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();    \n" + 
-                        "    declare continue handler for not found set done = 1;                                                                         \n" +
-                        "    open comm_cur;                                                                                                               \n" + 
-                        "    fetch comm_cur into comm_value;                                                                                              \n" + 
-                        "    close comm_cur;                                                                                                              \n" + 
-                        "    return concat(concat(connection_id(), '.'), comm_value);                                                                     \n" + 
-                        " end                                                                                                                             \n";
-                install(sql, function);
-            }                    
+            function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
+            functionBody = 
+                    " begin                                                                                                                           \n" + 
+                    "    declare done int default 0;                                                                                                  \n" +
+                    "    declare comm_value varchar(50);                                                                                              \n" + 
+                    "    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();    \n" + 
+                    "    declare continue handler for not found set done = 1;                                                                         \n" +
+                    "    open comm_cur;                                                                                                               \n" + 
+                    "    fetch comm_cur into comm_value;                                                                                              \n" + 
+                    "    close comm_cur;                                                                                                              \n" + 
+                    "    return concat(concat(connection_id(), '.'), comm_value);                                                                     \n" + 
+                    " end                                                                                                                             ";
+            
+            sql = "create function $(functionName)()                                                                                           \n" + 
+                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                            \n" + 
+                    functionBody;
         }
+        if (!functionEquals(SQL_FUNCTION_EQUALS, function, functionBody)) {
+            if (installed(SQL_FUNCTION_INSTALLED, function)) {
+                uninstall(SQL_DROP_FUNCTION, function);
+            }
+            install(sql, function);
+        }                    
+
+    }
+    
+    private boolean functionEquals(String sqlFunctionEquals, String functionName, String functionBody) {
+        return platform.getSqlTemplate().queryForInt(replaceTokens(sqlFunctionEquals, functionName, functionBody)) > 0;
+    }
+    
+    private String replaceTokens(String sql, String objectName, String functionBody) {
+        String ddl = super.replaceTokens(sql,  objectName);
+        ddl = FormatUtils.replace("functionBody", StringUtils.replace(functionBody, "'", "''"), ddl);
+        return ddl;
     }
     
     @Override
