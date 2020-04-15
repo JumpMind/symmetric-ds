@@ -166,6 +166,7 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       close DataCursor                                                                                                                                                \n" +
 "                                       deallocate cursor DataCursor                                                                                                                                           \n" +
 "                                    end                                                                                                                                                                \n" +
+"                                   end                                                                                                                                                                  \n" +
 "                                   $(custom_on_update_text)                                                                                                                                             \n" +
 "                                   set nocount off                                                                                                                                        \n" +
 "                                  end                                                                                                                                                                    \n"
