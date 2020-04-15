@@ -558,10 +558,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 return context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
         } catch (CommonBatchCollisionException e) {
+            log.info(e.getMessage());
             gapDetector.setIsAllDataRead(false);
-            context.removeLastData();
             dataCount = context.getDataEventList().size(); // we prevented writing the collision, so commit what we have
-            throw e;
+            return dataCount;
         } catch (Throwable ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -1008,7 +1008,8 @@ public class RouterService extends AbstractService implements IRouterService {
                     }
                     
                     if (useCommonMode && !firstTimeForGroup) {
-                        throw new CommonBatchCollisionException("Collision detected for common batch group");
+                        throw new CommonBatchCollisionException("Collision detected for group " + nodeIds.hashCode()
+                            + " when routing nodes " + nodeIds);
                     }
 
                     processInfo.incrementBatchCount();
