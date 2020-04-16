@@ -309,7 +309,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
         return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
-                registrationUrl, node))), engine.getParameterService());
+                registrationUrl, node))), engine.getParameterService(), buildRegistrationRequestProperties(node));
     }
     
     @Override
@@ -327,18 +327,23 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             baseUrl = "";
         }
         StringBuilder builder = new StringBuilder(baseUrl);
-        builder.append("/registration?");
-        append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
-        append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
-        append(builder, WebConstants.SYNC_URL, node.getSyncUrl());
-        append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
-        append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
-        append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
-        append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
-        append(builder, WebConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
-        append(builder, WebConstants.HOST_NAME, AppUtils.getHostName());
-        append(builder, WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
+        builder.append("/registration");
         return builder.toString();
+    }
+
+    public static Map<String, String> buildRegistrationRequestProperties(Node node) {
+        Map<String, String> prop = new HashMap<String, String>();
+        prop.put(WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
+        prop.put(WebConstants.EXTERNAL_ID, node.getExternalId());
+        prop.put(WebConstants.SYNC_URL, node.getSyncUrl());
+        prop.put(WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
+        prop.put(WebConstants.DATABASE_TYPE, node.getDatabaseType());
+        prop.put(WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
+        prop.put(WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+        prop.put(WebConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
+        prop.put(WebConstants.HOST_NAME, AppUtils.getHostName());
+        prop.put(WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
+        return prop;
     }
 
     protected HttpConnection createGetConnectionFor(URL url, String nodeId, String securityToken) throws IOException {
