@@ -1868,11 +1868,14 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             transaction = sqlTemplate.startSqlTransaction(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
             
             if ((forceRebuild || !triggerIsActive) && triggerExists) {
-                symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
-                        oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
-                                : trigger.getSourceTableNameUnescaped(), transaction);
+                if (!triggerIsActive || !platform.getDatabaseInfo().isTriggersCreateOrReplaceSupported() ||
+                        !oldTriggerName.equalsIgnoreCase(newTriggerHist.getTriggerNameForDmlType(dmlType))) {
+                    symmetricDialect.removeTrigger(sqlBuffer, oldCatalogName, oldSourceSchema,
+                            oldTriggerName, trigger.isSourceTableNameWildCarded() ? table.getName()
+                                    : trigger.getSourceTableNameUnescaped(), transaction);
+                    triggerRemoved = true;
+                }
                 triggerExists = false;
-                triggerRemoved = true;
             }
 
             boolean isDeadTrigger = !trigger.isSyncOnInsert() && !trigger.isSyncOnUpdate() && !trigger.isSyncOnDelete();

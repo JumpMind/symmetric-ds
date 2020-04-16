@@ -28,7 +28,9 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -72,7 +74,20 @@ public class OracleSymmetricDialect extends AbstractSymmetricDialect implements 
             }
         }
     }
-    
+
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database db = super.readSymmetricSchemaFromXml();
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC)) {
+            Table table = db.findTable(TableConstants.getTableName(getTablePrefix(),
+                    TableConstants.SYM_DATA));
+            table.getColumnWithName("row_data").setMappedType(TypeMap.NCLOB);
+            table.getColumnWithName("old_data").setMappedType(TypeMap.NCLOB);
+            table.getColumnWithName("pk_data").setMappedType(TypeMap.NCLOB);
+        }
+        return db;
+    } 
+
     @Override
     protected void buildSqlReplacementTokens() {
         super.buildSqlReplacementTokens();

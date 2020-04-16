@@ -37,6 +37,7 @@ import org.jumpmind.db.platform.mssql.MsSql2005DdlBuilder;
 import org.jumpmind.db.platform.mssql.MsSql2008DdlBuilder;
 import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
 import org.jumpmind.db.platform.nuodb.NuoDbDdlBuilder;
+import org.jumpmind.db.platform.oracle.Oracle122DdlBuilder;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
 import org.jumpmind.db.platform.redshift.RedshiftDdlBuilder;
@@ -87,6 +88,8 @@ final public class DdlBuilderFactory {
             return new MySqlDdlBuilder();
         } else if (DatabaseNamesConstants.ORACLE.equalsIgnoreCase(databaseName)) {
             return new OracleDdlBuilder();
+        } else if (DatabaseNamesConstants.ORACLE122.equalsIgnoreCase(databaseName)) {
+            return new Oracle122DdlBuilder();
         } else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)
                 || DatabaseNamesConstants.POSTGRESQL95.equalsIgnoreCase(databaseName)) {
             return new PostgreSqlDdlBuilder();

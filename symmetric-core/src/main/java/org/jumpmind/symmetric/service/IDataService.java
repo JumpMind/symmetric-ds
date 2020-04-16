@@ -74,6 +74,8 @@ public interface IDataService {
     
     public int updateTableReloadRequestsCancelled(long loadId);
     
+    public int cancelTableReloadRequest(TableReloadRequest request);
+    
     public String reloadNode(String nodeId, boolean reverseLoad, String createBy);
     
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
