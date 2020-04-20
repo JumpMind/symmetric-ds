@@ -308,10 +308,14 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
-        return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
-                registrationUrl, node))), engine.getParameterService(), buildRegistrationRequestProperties(node));
+        return getRegisterTransport(node, registrationUrl, null);
     }
-    
+
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl, Map<String, String> requestProperties) throws IOException {
+        return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
+                registrationUrl, node))), engine.getParameterService(), buildRegistrationRequestProperties(node, requestProperties));
+    }
+
     @Override
     public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException
@@ -331,8 +335,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return builder.toString();
     }
 
-    public static Map<String, String> buildRegistrationRequestProperties(Node node) {
-        Map<String, String> prop = new HashMap<String, String>();
+    public static Map<String, String> buildRegistrationRequestProperties(Node node, Map<String, String> prop) {
+        if (prop == null) {
+            prop = new HashMap<String, String>();
+        }
         prop.put(WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
         prop.put(WebConstants.EXTERNAL_ID, node.getExternalId());
         prop.put(WebConstants.SYNC_URL, node.getSyncUrl());

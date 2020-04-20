@@ -118,7 +118,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                 if (nodeSecurity.isRegistrationEnabled() && 
                         (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
                     registrationService.registerNode(nodeService.findNode(nodeId), remoteHost,
-                            remoteAddress, outputStream, false);
+                            remoteAddress, outputStream, null, null, false);
                 } else {
                     IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding, 
                             map);

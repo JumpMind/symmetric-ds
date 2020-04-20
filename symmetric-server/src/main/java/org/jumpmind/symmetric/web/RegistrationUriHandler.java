@@ -52,7 +52,9 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         Node node = transform(req);
         try {
             OutputStream outputStream = res.getOutputStream();
-            if (!registerNode(node, getHostName(req), getIpAddress(req), outputStream)) {
+            String userId = ServletUtils.getParameter(req, WebConstants.REG_USER_ID);
+            String password = ServletUtils.getParameter(req, WebConstants.REG_PASSWORD);
+            if (!registerNode(node, getHostName(req), getIpAddress(req), outputStream, userId, password)) {
                 log.warn("{} was not allowed to register.", node);
                 ServletUtils.sendError(res, WebConstants.REGISTRATION_NOT_OPEN, String.format("%s was not allowed to register.",
                         node));
@@ -94,8 +96,9 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         return ipAdddress;
     }
 
-    protected boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream outputStream) throws IOException {
-        return registrationService.registerNode(node, remoteHost, remoteAddress, outputStream, true);
+    protected boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream outputStream,
+            String userId, String password) throws IOException {
+        return registrationService.registerNode(node, remoteHost, remoteAddress, outputStream, userId, password, true);
     }
     
 }

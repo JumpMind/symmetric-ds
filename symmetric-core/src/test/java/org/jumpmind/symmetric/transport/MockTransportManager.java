@@ -104,6 +104,10 @@ public class MockTransportManager implements ITransportManager {
         return incomingTransport;
     }
 
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl, Map<String, String> requestProperties) throws IOException {
+        return incomingTransport;
+    }
+
     public List<BatchAck> readAcknowledgement(String parameterString) throws IOException {
         return null;
     }

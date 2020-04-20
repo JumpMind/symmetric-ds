@@ -20,24 +20,14 @@
  */
 package org.jumpmind.symmetric.ext;
 
-import java.util.Map;
-
 import org.jumpmind.extension.IExtensionPoint;
 
-public interface INodeRegistrationListener extends IExtensionPoint {
-    
-    public void registrationUrlUpdated(String url);
-    
-    public void registrationNextAttemptUpdated(int seconds);
-    
-    public void registrationStarting(Thread thread);
-    
-    public void registrationFailed(String message);
-    
-    public void registrationSyncTriggers();
-    
-    public void registrationSuccessful();
-    
-    public Map<String, String> getRequestProperties();
+/**
+ * When a node registers, it may include a userId and password to authorize opening and allowing registration.
+ * 
+ */
+public interface INodeRegistrationAuthenticator extends IExtensionPoint {
+
+    public boolean authenticate(String userId, String password);
 
 }

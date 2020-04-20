@@ -165,7 +165,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
     }    
 
-    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl)
+    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl) throws IOException {
+        return getRegisterTransport(client, registrationUrl, null);
+    }
+
+    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl, Map<String, String> requestProperties)
             throws IOException {
 
         final PipedOutputStream respOs = new PipedOutputStream();
