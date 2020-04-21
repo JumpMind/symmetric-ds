@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.symmetric.io.data.Batch;
 
 public class DatabaseWriterSettings {
@@ -70,6 +71,16 @@ public class DatabaseWriterSettings {
     protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;        
 
     protected List<ResolvedData> resolvedData;
+
+    protected IAlterDatabaseInterceptor[] alterDatabaseInterceptors;
+    
+    public void setAlterDatabaseInterceptors(IAlterDatabaseInterceptor[] alterDatabaseInterceptors) {
+        this.alterDatabaseInterceptors = alterDatabaseInterceptors;
+    }
+
+    public IAlterDatabaseInterceptor[] getAlterDatabaseInterceptors() {
+        return alterDatabaseInterceptors;
+    }
 
     public boolean isAlterTable() {
         return alterTable;

@@ -210,11 +210,20 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 .execute(getDatabaseInfo().isRequiresAutoCommitForDdl());
     }
 
+    public void alterDatabase(Database desiredDatabase, boolean continueOnError, IAlterDatabaseInterceptor[] interceptors) {
+        alterTables(continueOnError, interceptors, desiredDatabase.getTables());
+    }
+    
     public void alterDatabase(Database desiredDatabase, boolean continueOnError) {
-        alterTables(continueOnError, desiredDatabase.getTables());
+        alterDatabase(desiredDatabase, continueOnError, null);
     }
 
     public void alterTables(boolean continueOnError, Table... desiredTables) {
+        alterTables(continueOnError, null, desiredTables);
+    }
+       
+    public void alterTables(boolean continueOnError, IAlterDatabaseInterceptor[] interceptors, Table... desiredTables) {
+        
         Database currentDatabase = new Database();
         Database desiredDatabase = new Database();
         StringBuilder tablesProcessed = new StringBuilder();
@@ -232,7 +241,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             tablesProcessed.replace(tablesProcessed.length() - 2, tablesProcessed.length(), "");
         }
 
-        String alterSql = ddlBuilder.alterDatabase(currentDatabase, desiredDatabase);
+        String alterSql = ddlBuilder.alterDatabase(currentDatabase, desiredDatabase, interceptors);
 
         if (StringUtils.isNotBlank(alterSql.trim())) {
             log.info("Running alter sql:\n{}", alterSql);
