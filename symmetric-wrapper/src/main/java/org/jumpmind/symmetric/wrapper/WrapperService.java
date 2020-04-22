@@ -156,6 +156,7 @@ public abstract class WrapperService {
                     startTime = System.currentTimeMillis();
                     ProcessBuilder pb = new ProcessBuilder(cmd);
                     pb.redirectErrorStream(true);
+                    initEnvironment(pb);
     
                     try {
                         child = pb.start();
@@ -250,6 +251,9 @@ public abstract class WrapperService {
                 ex2.printStackTrace();
             }
         }
+    }
+
+    protected void initEnvironment(ProcessBuilder pb) {
     }
 
     public void stop() {
