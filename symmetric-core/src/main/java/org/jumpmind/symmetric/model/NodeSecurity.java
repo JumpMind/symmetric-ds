@@ -54,7 +54,9 @@ public class NodeSecurity implements Serializable {
     private long revInitialLoadId;
     
     private String revInitialLoadCreateBy;
-    
+
+    private int failedLogins;
+
     private String createdAtNodeId;
 
     public String getNodeId() {
@@ -171,6 +173,14 @@ public class NodeSecurity implements Serializable {
     
     public long getRevInitialLoadId() {
         return revInitialLoadId;
+    }
+
+    public int getFailedLogins() {
+        return failedLogins;
+    }
+
+    public void setFailedLogins(int failedLogins) {
+        this.failedLogins = failedLogins;
     }
 
 }

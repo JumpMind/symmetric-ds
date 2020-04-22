@@ -106,6 +106,7 @@ public class AuthenticationInterceptor implements IInterceptor {
         
         if (AuthenticationStatus.ACCEPTED.equals(status)) {
             log.debug("Node '{}' successfully authenticated", nodeId);
+            nodeService.resetNodeFailedLogins(nodeId);
             return true;
         } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
             log.debug("Node '{}' failed to authenticate.  It was not registered", nodeId);
@@ -116,7 +117,12 @@ public class AuthenticationInterceptor implements IInterceptor {
             ServletUtils.sendError(resp, WebConstants.SYNC_DISABLED);
             return false;
         } else {
-            log.warn("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
+            if (AuthenticationStatus.LOCKED.equals(status)) {
+                log.warn("Node '{}' failed to authenticate.  It had too many login attempts", nodeId);
+            } else {
+                log.warn("Node '{}' failed to authenticate.  It had the wrong password", nodeId);
+                nodeService.incrementNodeFailedLogins(nodeId);
+            }
             ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN);
             return false;
         }

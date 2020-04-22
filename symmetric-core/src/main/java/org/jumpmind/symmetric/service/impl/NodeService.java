@@ -547,12 +547,24 @@ public class NodeService extends AbstractService implements INodeService {
      * A node must authenticate before it's allowed to sync data.
      */
     public boolean isNodeAuthorized(String nodeId, String password) {
+        int maxFailedLogins = parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS);
         Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
         NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
         if (nodeSecurity != null && !nodeId.equals(findIdentityNodeId())
                 && ((nodeSecurity.getNodePassword() != null && !nodeSecurity.getNodePassword().equals("")
-                        && nodeSecurity.getNodePassword().equals(password)) || nodeSecurity.isRegistrationEnabled())) {
+                        && nodeSecurity.getNodePassword().equals(password)) || nodeSecurity.isRegistrationEnabled())
+                && (maxFailedLogins <= 0 || nodeSecurity.getFailedLogins() <= maxFailedLogins) || nodeSecurity.isRegistrationEnabled()) {
             return true;
+        }
+        return false;
+    }
+
+    protected boolean isNodeAuthorizationLocked(String nodeId) {
+        int maxFailedLogins = parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS);
+        if (maxFailedLogins > 0) {
+            Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
+            NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
+            return nodeSecurity != null && nodeSecurity.getFailedLogins() > maxFailedLogins;
         }
         return false;
     }
@@ -597,10 +609,11 @@ public class NodeService extends AbstractService implements INodeService {
                         security.getInitialLoadCreateBy(),
                         security.getRevInitialLoadId(),
                         security.getRevInitialLoadCreateBy(),
+                        security.getFailedLogins(),
                         security.getNodeId() }, new int[] {
                         Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
                         Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-                        Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR,
+                        Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
                         Types.VARCHAR });
         boolean updated = (updateCount == 1);
         flushNodeAuthorizedCache();
@@ -898,6 +911,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setInitialLoadCreateBy(rs.getString("initial_load_create_by"));
             nodeSecurity.setRevInitialLoadId(rs.getLong("rev_initial_load_id"));
             nodeSecurity.setRevInitialLoadCreateBy(rs.getString("rev_initial_load_create_by"));
+            nodeSecurity.setFailedLogins(rs.getInt("failed_logins"));
             return nodeSecurity;
         }
     }
@@ -941,9 +955,44 @@ public class NodeService extends AbstractService implements INodeService {
                 retVal = AuthenticationStatus.SYNC_DISABLED;
             }
         } else if (!isNodeAuthorized(nodeId, securityToken)) {
-            retVal = AuthenticationStatus.FORBIDDEN;
+            if (isNodeAuthorizationLocked(nodeId) ) {
+                retVal = AuthenticationStatus.LOCKED;
+            } else {
+                retVal = AuthenticationStatus.FORBIDDEN;
+            }
         }
         return retVal;
+    }
+
+    public void resetNodeFailedLogins(String nodeId) {
+        if (parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS) >= 0) {
+            Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
+            NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
+            if (nodeSecurity != null && nodeSecurity.getFailedLogins() > 0) {
+                nodeSecurity.setFailedLogins(0);
+                nodeSecurity = findNodeSecurity(nodeId);
+                if (nodeSecurity != null && nodeSecurity.getFailedLogins() > 0) {
+                    nodeSecurity.setFailedLogins(0);
+                    updateNodeSecurity(nodeSecurity);
+                }
+            }
+        }
+    }
+
+    public void incrementNodeFailedLogins(String nodeId) {
+        if (parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS) >= 0) {
+            NodeSecurity nodeSecurity = findNodeSecurity(nodeId);
+            if (nodeSecurity != null) {
+                nodeSecurity.setFailedLogins(nodeSecurity.getFailedLogins() + 1);
+                updateNodeSecurity(nodeSecurity);
+            }
+    
+            Map<String, NodeSecurity> cache = findAllNodeSecurity(true);
+            NodeSecurity cacheSecurity = cache.get(nodeId);
+            if (cacheSecurity != null) {
+                cacheSecurity.setFailedLogins(nodeSecurity.getFailedLogins());
+            }
+        }
     }
 
     protected boolean syncEnabled(Node node) {
