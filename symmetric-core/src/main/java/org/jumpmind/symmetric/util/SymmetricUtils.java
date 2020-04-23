@@ -153,6 +153,7 @@ final public class SymmetricUtils {
         String notices = null;
         try {            
             notices = String.format("%n%s%n", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart"), Charset.defaultCharset()));
+            notices = notices.replaceAll("\n", String.format("%n"));
         } catch (Exception ex) {
             notices = String.format("SymmetricDS Start%n");
         }
