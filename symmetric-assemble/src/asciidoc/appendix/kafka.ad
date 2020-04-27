@@ -18,7 +18,7 @@ endif::pro[]
 
 .Set the output message format with the following property
 ----
-kafka.format
+kafka.format=JSON|XML|AVRO|CSV
 ----
 
 
@@ -95,7 +95,7 @@ TABLE,table name,EVENT,INSERT|UPDATE|DELETE,column name,value, ...
 
 .Set the topic using the following property
 ----
-kafka.topic.by
+kafka.topic.by=CHANNEL|TABLE
 ----
 
 
@@ -108,7 +108,7 @@ TABLE:: This will send to a topic based on the table name of the change.
 
 .Set following property to determine how messages will be sent.
 ----
-kafka.message.by
+kafka.message.by=BATCH|ROW
 ----
 
 
@@ -121,7 +121,7 @@ ROW:: This will send one messsage for each change captured.
 
 .Set following property to specify the producer of the messages.
 ----
-kafka.producer
+kafka.producer=myapplication
 ----
 
 
@@ -149,3 +149,14 @@ kafka.avro.java.package
 ====
 NOTE: The jar file containing the AVRO generated POJO java beans must be placed in the /lib or /patches folder of SymmetricDS and then a restart is required.
 ====
+
+==== Using Authentication
+
+Any engine property prefixed with `kafkaclient` will be passed through to the Kafka client producer.
+Here is an example of authentication over SSL.
+
+----
+kafkaclient.security.protocol=SASL_SSL
+kafkaclient.sasl.mechanism=PLAIN
+kafkaclient.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="myuser" password="mypassword";
+----
