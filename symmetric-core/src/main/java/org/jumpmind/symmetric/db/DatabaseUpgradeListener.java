@@ -160,20 +160,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
 
-        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.MYSQL)) {
-            String function = tablePrefix + "_transaction_id_post_5_7_6";
-            String select = "select count(*) from information_schema.routines where routine_name='" + function
-                    + "' and routine_schema in (select database())";
-
-            if (engine.getDatabasePlatform().getSqlTemplate().queryForInt(select) > 0) {
-                String drop = "drop function " + function;
-                engine.getDatabasePlatform().getSqlTemplate().update(drop);
-                log.info("Just uninstalled {}", function);
-            }
-        }
-
-        // Leave this last in the sequence of steps to make sure to capture any
-        // DML changes done before this
+        // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
         if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             // Drop triggers on sym tables
             List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()

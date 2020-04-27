@@ -226,6 +226,14 @@ public class DataService extends AbstractService implements IDataService {
 
     }
 
+    public int cancelTableReloadRequest(TableReloadRequest request) {
+        return sqlTemplate.update(
+                getSql("cancelTableReloadRequest"),
+                new Object[] { new Date(), request.getSourceNodeId(), request.getTargetNodeId(),
+                        request.getTriggerId(), request.getRouterId(), request.getCreateTime() },
+                new int[] { Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP });
+    }
+
     protected void deleteTableReloadRequest(ISqlTransaction sqlTransaction,
             TableReloadRequest request) {
         sqlTransaction.prepareAndExecute(

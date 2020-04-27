@@ -26,11 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.BigQueryDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.CassandraDatabaseWriter;
@@ -48,10 +51,12 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint {
+public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory, IBuiltInExtensionPoint, ISymmetricEngineAware {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    protected ISymmetricEngine engine;
+    
     public DefaultDataLoaderFactory() {
     }
 
@@ -196,6 +201,20 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);
         settings.setResolvedData(resolvedDatas);
+        
+        List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
+                .getExtensionPointList(IAlterDatabaseInterceptor.class);
+        IAlterDatabaseInterceptor[] interceptors = alterDatabaseInterceptors
+                .toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]);
+        settings.setAlterDatabaseInterceptors(interceptors);
+        
         return settings;
     }
+
+    @Override
+    public void setSymmetricEngine(ISymmetricEngine engine) {
+        this.engine = engine;
+    }
+    
+    
 }

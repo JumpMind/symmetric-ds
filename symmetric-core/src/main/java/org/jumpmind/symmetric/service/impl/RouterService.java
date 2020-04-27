@@ -558,10 +558,10 @@ public class RouterService extends AbstractService implements IRouterService {
                 return context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
         } catch (CommonBatchCollisionException e) {
+            log.info(e.getMessage());
             gapDetector.setIsAllDataRead(false);
-            context.removeLastData();
             dataCount = context.getDataEventList().size(); // we prevented writing the collision, so commit what we have
-            throw e;
+            return dataCount;
         } catch (Throwable ex) {
             log.error(
                     String.format("Failed to route and batch data on '%s' channel",
@@ -948,7 +948,7 @@ public class RouterService extends AbstractService implements IRouterService {
         Map<String, OutgoingBatch> batches = null;
         long loadId = -1;
         boolean dataEventAdded = false;
-        boolean firstTimeForGroup = false;
+        boolean detectGroupCollision = false;
         int numberOfDataEventsInserted = 0;
         final List<OutgoingBatch> batchesToInsert = new ArrayList<OutgoingBatch>();
         final List<OutgoingBatch> batchesToRoute = new ArrayList<OutgoingBatch>();
@@ -968,7 +968,8 @@ public class RouterService extends AbstractService implements IRouterService {
             if (batches == null) {
                 batches = new HashMap<String, OutgoingBatch>();
                 batchesByGroups.put(groupKey, batches);
-                firstTimeForGroup = true;
+            } else {
+                detectGroupCollision = true;
             }
         } else {
             batches = context.getBatchesByNodes();
@@ -1007,8 +1008,9 @@ public class RouterService extends AbstractService implements IRouterService {
                                 nodeId, batch.getChannelId(), batches.values());
                     }
                     
-                    if (useCommonMode && !firstTimeForGroup) {
-                        throw new CommonBatchCollisionException("Collision detected for common batch group");
+                    if (detectGroupCollision) {
+                        throw new CommonBatchCollisionException("Collision detected for group " + nodeIds.hashCode()
+                            + " when routing nodes " + nodeIds);
                     }
 
                     processInfo.incrementBatchCount();
