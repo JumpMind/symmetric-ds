@@ -147,6 +147,9 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
         
         if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
+            /*
+             * Workarounds for missing features (bugs) in ddl-utils
+             */
             String name = engine.getDatabasePlatform().getName();
             if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122)) {
                 log.info("Before upgrade, dropping PK constraint for data table");
@@ -155,6 +158,24 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                             + " drop constraint " + tablePrefix + "_" + TableConstants.SYM_DATA + "_pk");
                 } catch (Exception e) {
                     log.info("Unable to drop PK for data table: {}", e.getMessage());
+                }
+            }
+            if (name.equals(DatabaseNamesConstants.ASE)) {
+                log.info("Before upgrade, dropping index on data table");
+                try {
+                    engine.getSqlTemplate().update("drop index " + tablePrefix + "_" + TableConstants.SYM_DATA + "."
+                            + tablePrefix + "_idx_d_channel_id");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
+                }
+                log.info("Before upgrade, dropping FK constraints to router table");
+                try {
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_TRIGGER_ROUTER
+                            + " drop constraint " + tablePrefix + "_fk_tr_2_rtr");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_FILE_TRIGGER_ROUTER
+                            + " drop constraint " + tablePrefix + "_fk_ftr_2_rtr");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
                 }
             }
         }
