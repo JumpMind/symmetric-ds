@@ -145,6 +145,19 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
             log.info("Done preparing data_event for upgrade");
         }
+        
+        if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
+            String name = engine.getDatabasePlatform().getName();
+            if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122)) {
+                log.info("Before upgrade, dropping PK constraint for data table");
+                try {
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_DATA
+                            + " drop constraint " + tablePrefix + "_" + TableConstants.SYM_DATA + "_pk");
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for data table: {}", e.getMessage());
+                }
+            }
+        }
 
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
@@ -247,6 +260,16 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_DATA_EVENT);
         if (eventTable != null && eventTable.findColumn("router_id") != null) {
             log.info("Detected upgrade from pre-3.11 version.");
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    protected boolean isUpgradeFromPre312(String tablePrefix, Database currentModel, Database desiredModel) {
+        Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
+        if (eventTable != null && eventTable.findColumn("failed_logins") == null) {
+            log.info("Detected upgrade from pre-3.12 version.");
             return true;
         } else {
             return false;

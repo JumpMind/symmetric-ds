@@ -95,10 +95,10 @@
         <column name="node_list" type="VARCHAR" size="255"  description="A field that can be populated with a comma separated subset of node ids which will be the only nodes available to the router" />
         <column name="is_prerouted" type="BOOLEANINT" size="1" required="true" default="0" description="Set to true when routing should ignore this row because data_event and outgoing_batch rows are manually entered." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
-        <index name="idx_d_channel_id">
+        <unique name="idx_d_channel_id">
             <index-column name="data_id"/>
             <index-column name="channel_id"/>
-        </index>
+        </unique>
     </table>
 
     <table name="data_event" description="Each row represents the mapping between a data change that was captured and the batch that contains it. Entries in data_event are created as part of the routing process. ">
