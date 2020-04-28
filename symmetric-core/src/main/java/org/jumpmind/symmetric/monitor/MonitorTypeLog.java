@@ -75,7 +75,7 @@ public class MonitorTypeLog implements IMonitorType, ISymmetricEngineAware, IBui
     protected String serializeDetails(List<LogSummary> logs) {
         String result = null;
         try {
-            GsonBuilder builder = new GsonBuilder();
+            GsonBuilder builder = new GsonBuilder().excludeFieldsWithoutExposeAnnotation();
             builder.addSerializationExclusionStrategy(new SuperClassExclusion());
             builder.addDeserializationExclusionStrategy(new SuperClassExclusion());
             result = builder.create().toJson(logs);
