@@ -25,15 +25,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
+import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -61,13 +65,58 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
     }
 
     @Override
-    public void createRequiredDatabaseObjects() {
+    public boolean createOrAlterTablesIfNecessary(String... tableNames) {
+        boolean altered = super.createOrAlterTablesIfNecessary(tableNames);
+        ISqlTemplate sqlTemplate = platform.getSqlTemplate();
+        String prefix = getTablePrefix();
 
+        try {
+            int changeIdentityGap = parameterService.getInt(ParameterConstants.SYBASE_CHANGE_IDENTITY_GAP, 1000);
+            if (changeIdentityGap > 0) {
+                String dataTable = TableConstants.getTableName(prefix, TableConstants.SYM_DATA).toLowerCase();
+                String sql = "select max(i.identitygap) from sysindexes i inner join sysobjects t on t.id = i.id where t.name = ?";
+                long identityGap = sqlTemplate.queryForLong(sql, dataTable);
+                if (identityGap != changeIdentityGap) {
+                    log.info("Changing identity gap for {} to {}", dataTable, changeIdentityGap);
+                    sqlTemplate.update("sp_chgattribute " + dataTable + ", 'identity_gap', " + changeIdentityGap);
+                    altered = true;
+                }
+            }
+        } catch (Exception e) {            
+            log.warn("Failed to alter identity gap: {}", e.getMessage());
+            log.debug("", e);
+        }
+
+        try {
+            if (parameterService.is(ParameterConstants.SYBASE_ROW_LEVEL_LOCKS_ONLY, true)) {
+                List<String> tables = new ArrayList<String>();
+                tables.add(TableConstants.getTableName(prefix, TableConstants.SYM_DATA).toLowerCase());
+                tables.add(TableConstants.getTableName(prefix, TableConstants.SYM_DATA_EVENT).toLowerCase());
+                tables.add(TableConstants.getTableName(prefix, TableConstants.SYM_OUTGOING_BATCH).toLowerCase());
+                tables.add(TableConstants.getTableName(prefix, TableConstants.SYM_MONITOR_EVENT).toLowerCase());
+                String sql = "select case (sysstat2 & 57344) when 32768 then 1 else 0 end from sysobjects where name = ?";
+
+                for (String table : tables) {
+                    if (sqlTemplate.queryForInt(sql, table) == 0) {
+                        log.info("Altering {} for row-level locking", table);
+                        sqlTemplate.update("alter table " + table + " lock datarows");
+                        altered = true;
+                    }
+                }
+            }
+        } catch (Exception e) {            
+            log.warn("Failed to alter row-level locking: {}", e.getMessage());
+            log.debug("", e);
+        }
+        return altered;
+    }
+
+    @Override
+    public void createRequiredDatabaseObjects() {
     }
 
     @Override
     public void dropRequiredDatabaseObjects() {
-
     }
 
     @Override
