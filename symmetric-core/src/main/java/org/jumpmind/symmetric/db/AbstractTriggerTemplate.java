@@ -910,6 +910,7 @@ abstract public class AbstractTriggerTemplate {
                         break;
                     }
                 case Types.CLOB:
+                case Types.NCLOB:
                     if (isOld && symmetricDialect.needsToSelectLobData()) {
                         templateToUse = emptyColumnTemplate;
                     } else {
