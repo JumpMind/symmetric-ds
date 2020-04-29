@@ -147,6 +147,11 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
         
         if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
+            log.info("Before upgrade, fixing router_type");
+            if (engine.getParameterService().isRegistrationServer()) {
+                engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_ROUTER
+                        + " set router_type = 'default' where router_type is null");
+            }
             /*
              * Workarounds for missing features (bugs) in ddl-utils
              */
