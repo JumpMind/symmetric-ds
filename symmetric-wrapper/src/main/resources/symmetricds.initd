@@ -17,7 +17,7 @@
 
 JAVA="${wrapper.java.command}"
 JARFILE="${wrapper.jarfile}"
-SYM_OPTIONS="${wrapper.home}/tmp"
+SYM_OPTIONS="-Djava.io.tmpdir=${wrapper.home}/tmp"
 SYM_HOME="${wrapper.home}"
 export SYM_HOME
 RUN_AS_USER="${wrapper.run.as.user}"
