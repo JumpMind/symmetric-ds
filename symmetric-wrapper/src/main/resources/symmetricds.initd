@@ -17,6 +17,7 @@
 
 JAVA="${wrapper.java.command}"
 JARFILE="${wrapper.jarfile}"
+SYM_OPTIONS="${wrapper.home}/tmp"
 SYM_HOME="${wrapper.home}"
 export SYM_HOME
 RUN_AS_USER="${wrapper.run.as.user}"
@@ -47,16 +48,16 @@ cd "$SYM_HOME"
 
 case "$1" in
    start)
-      "$JAVA" -jar "$JARFILE" start
+      "$JAVA" "$SYM_OPTIONS" -jar "$JARFILE" start
       ;;
    stop)
-      "$JAVA" -jar "$JARFILE" stop
+      "$JAVA" "$SYM_OPTIONS" -jar "$JARFILE" stop
       ;;
    restart)
-      "$JAVA" -jar "$JARFILE" restart
+      "$JAVA" "$SYM_OPTIONS" -jar "$JARFILE" restart
       ;;
    status)
-      "$JAVA" -jar "$JARFILE" status
+      "$JAVA" "$SYM_OPTIONS" -jar "$JARFILE" status
       ;;
    *)
       echo "Usage: `basename $0` {start|stop|restart|status}"
