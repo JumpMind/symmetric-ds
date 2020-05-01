@@ -544,9 +544,9 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("sourceNodeExpression",
                 symmetricDialect.getSourceNodeExpression(), ddl);
 
-        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? "clob" : "long",
+        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? getClobType(table) : "long",
                 ddl);
-        ddl = FormatUtils.replace("oracleLobTypeClobAlways", "clob", ddl);
+        ddl = FormatUtils.replace("oracleLobTypeClobAlways", getClobType(table), ddl);
 
         String syncTriggersExpression = symmetricDialect.getSyncTriggersExpression();
         ddl = FormatUtils.replace("syncOnIncomingBatchCondition",
@@ -686,7 +686,11 @@ abstract public class AbstractTriggerTemplate {
             return "to_clob('')||";
         }
     }
-    
+
+    protected String getClobType(Table table) {
+        return table.hasNTypeColumns() ? "nclob" : "clob";
+    }
+
     protected String getChannelExpression(Trigger trigger, TriggerHistory history, Table originalTable) {
         if (trigger.getChannelId().equals(Constants.CHANNEL_DYNAMIC)) {
             if (StringUtils.isNotBlank(trigger.getChannelExpression())) {
