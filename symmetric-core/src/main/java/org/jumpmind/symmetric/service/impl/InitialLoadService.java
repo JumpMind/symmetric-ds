@@ -62,6 +62,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
     
+    protected int lastLoadCountToProcess;
+    
     public InitialLoadService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
 
@@ -203,9 +205,10 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
             int maxLoadCount = parameterService.getInt(ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER, 20);            
             int activeLoadCount = engine.getDataService().getActiveTableReloadStatus().size();
-            String maxLoadsReachedMessage = "Max initial/partial loads of {} are already active";
+            int loadCountToProcess = loadsToProcess.size(); 
+
             if (activeLoadCount >= maxLoadCount) {
-                log.debug(maxLoadsReachedMessage, activeLoadCount);
+                logActiveLoadCount(activeLoadCount, loadCountToProcess);
                 return;
             }
 
@@ -227,7 +230,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 }
             }
 
-            log.info("Found " + loadsToProcess.size() + " table reload requests to process.");
+            log.info("Found {} table reload requests to process.", loadCountToProcess);
 
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
@@ -255,8 +258,9 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories,
                                 triggerRouters, extractRequests);
 
+                        loadCountToProcess--;
                         if (++activeLoadCount >= maxLoadCount) {
-                            log.debug(maxLoadsReachedMessage, activeLoadCount);
+                            logActiveLoadCount(activeLoadCount, loadCountToProcess);
                             return;
                         }
                     } else {
@@ -305,12 +309,23 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories,
                         triggerRouters, extractRequests);
 
+                loadCountToProcess--;
                 if (++activeLoadCount >= maxLoadCount) {
-                    log.debug(maxLoadsReachedMessage, activeLoadCount);
+                    logActiveLoadCount(activeLoadCount, loadCountToProcess);
                     return;
                 }
             }
         }
+    }
+
+    protected void logActiveLoadCount(int activeLoadCount, int loadCountToProcess) {
+        String message = "Max outgoing loads of {} are active, while {} outgoing loads are pending";
+        if (loadCountToProcess != lastLoadCountToProcess) {
+            log.warn(message, activeLoadCount, loadCountToProcess);
+        } else {
+            log.debug(message, activeLoadCount, loadCountToProcess);
+        }
+        lastLoadCountToProcess = loadCountToProcess;
     }
 
     protected List<TriggerRouter> getTriggerRoutersForNodeGroup(Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup, String nodeGroupId) {
