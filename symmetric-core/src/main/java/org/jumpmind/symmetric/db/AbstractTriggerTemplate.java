@@ -680,7 +680,7 @@ abstract public class AbstractTriggerTemplate {
     }
     
     protected String toClobExpression(Table table) {
-        if (table.hasNTypeColumns()) {
+        if (symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC)) {
             return "to_nclob('')||";
         } else {
             return "to_clob('')||";
@@ -688,7 +688,7 @@ abstract public class AbstractTriggerTemplate {
     }
 
     protected String getClobType(Table table) {
-        return table.hasNTypeColumns() ? "nclob" : "clob";
+        return symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC) ? "nclob" : "clob";
     }
 
     protected String getChannelExpression(Trigger trigger, TriggerHistory history, Table originalTable) {

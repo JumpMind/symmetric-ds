@@ -270,7 +270,7 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
     }
 
     protected String toClobExpression(Table table) {
-        if (table.hasNTypeColumns() || symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC)) {
+        if (symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC)) {
             return "to_nclob('')||";
         } else {
             return "to_clob('')||";
