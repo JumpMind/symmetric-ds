@@ -227,7 +227,7 @@ subprojects { subproject ->
         commonsIoVersion = '2.6'
         commonsLangVersion = '2.6'
         commonsNetVersion = '3.6'
-        commonsCodecVersion = '1.12'
+        commonsCodecVersion = '1.14'
         commonsCollectionVersion = '3.2.2'
         hamcrestVersion = '1.3'
         h2Version = '1.3.176'
