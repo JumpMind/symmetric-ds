@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -75,7 +76,10 @@ public class StagingPerf {
         log.info("Starting staging test, duration of {} seconds", seconds);
         
         try {
-            for (long batchId = 1; batchId < seconds * 500; batchId++) {
+            Random random = new Random();
+            long startBatchId = random.nextInt(999999) + 1;
+            long endBatchId = startBatchId + (seconds * 500);
+            for (long batchId = startBatchId; batchId < endBatchId; batchId++) {
                 Batch batch = new Batch(BatchType.EXTRACT, 0, "default", BinaryEncoding.HEX, "master", "1", true);
                 batch.setBatchId(1);
                 testBatch(batch, results);
@@ -191,11 +195,11 @@ public class StagingPerf {
     protected List<StagingPerfResult> getResultsAsList(Map<String, StagingPerfResult> results) {
         List<StagingPerfResult> list = new ArrayList<StagingPerfResult>();
         updateRating(STAT_LOCK_ACQUIRE, results, list, 50, 8000);
-        updateRating(STAT_BATCH_CREATE, results, list, 150, 25000);
-        updateRating(STAT_BATCH_WRITE, results, list, 10, 400);
-        updateRating(STAT_BATCH_RENAME, results, list, 150, 25000);
-        updateRating(STAT_BATCH_FIND, results, list, 300, 45000);
-        updateRating(STAT_BATCH_READ, results, list, 20, 800);
+        updateRating(STAT_BATCH_CREATE, results, list, 100, 12000);
+        updateRating(STAT_BATCH_WRITE, results, list, 5, 200);
+        updateRating(STAT_BATCH_RENAME, results, list, 150, 18000);
+        updateRating(STAT_BATCH_FIND, results, list, 150, 18000);
+        updateRating(STAT_BATCH_READ, results, list, 10, 400);
         return list;
     }
     
