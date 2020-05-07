@@ -106,7 +106,11 @@ public interface IDatabasePlatform {
 
     public void alterDatabase(Database desiredDatabase, boolean continueOnError);
 
+    public void alterDatabase(Database desiredDatabase, boolean continueOnError, IAlterDatabaseInterceptor[] interceptors);
+
     public void alterTables(boolean continueOnError, Table... desiredTables);
+
+    public void alterTables(boolean continueOnError, IAlterDatabaseInterceptor[] interceptors, Table... desiredTables);
 
     public void dropDatabase(Database database, boolean continueOnError);
     

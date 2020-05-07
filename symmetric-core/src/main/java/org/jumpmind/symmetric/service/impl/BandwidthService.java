@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IBandwidthService;
 import org.jumpmind.symmetric.transport.BandwidthTestResults;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
+import org.jumpmind.symmetric.transport.http.Http2Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,31 +78,20 @@ public class BandwidthService implements IBandwidthService {
     protected BandwidthTestResults getDownloadResultsFor(String syncUrl, long sampleSize,
             long maxTestDuration) throws IOException {
         byte[] buffer = new byte[1024];
-        InputStream is = null;
-        try {
-            BandwidthTestResults bw = new BandwidthTestResults();
-            URL u = new URL(String.format("%s/bandwidth?direction=pull&sampleSize=%s", syncUrl, sampleSize));
-            bw.start();
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-
-            conn.connect();
-            is = conn.getInputStream();
-            int r;
-            while (-1 != (r = is.read(buffer)) && bw.getElapsed() <= maxTestDuration) {
-                bw.transmitted(r);
-            }
-            is.close();
-            bw.stop();
-            log.info("{} was calculated to have a download bandwidth of {} kbps", syncUrl, bw.getKbps());
-            return bw;
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
+        BandwidthTestResults bw = new BandwidthTestResults();
+        URL u = new URL(String.format("%s/bandwidth?direction=pull&sampleSize=%s", syncUrl, sampleSize));
+        bw.start();
+        try (Http2Connection conn = new Http2Connection(u)) {
+            try (InputStream is = conn.getInputStream()) {
+                int r;
+                while (-1 != (r = is.read(buffer)) && bw.getElapsed() <= maxTestDuration) {
+                    bw.transmitted(r);
                 }
             }
         }
+        bw.stop();
+        log.info("{} was calculated to have a download bandwidth of {} kbps", syncUrl, bw.getKbps());
+        return bw;
     }
     
     public double getUploadKbpsFor(Node remoteNode, Node localNode, long sampleSize, long maxTestDuration) throws IOException {

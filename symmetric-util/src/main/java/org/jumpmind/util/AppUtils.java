@@ -111,16 +111,25 @@ public class AppUtils {
     }
 
     public static String getPortNumber() {
-        String portNumber = System.getProperty(SYSPROP_PORT_NUMBER,
-                System.getProperty("http.port", System.getProperty("https.port", UNKNOWN)));
-        if (UNKNOWN.equals(portNumber)) {
-            try {
-                portNumber = "31415";
-            } catch (Exception ex) {
-                log.warn("", ex);
-            }
+        String httpPort = System.getProperty(SYSPROP_PORT_NUMBER, System.getProperty("http.port"));
+        String port = httpPort == null ? "31415" : httpPort;
+        String httpsEnable = System.getProperty("https.enable");
+
+        if (httpsEnable != null && httpsEnable.equalsIgnoreCase("true")) {
+            String httpsPort = System.getProperty("https.port");
+            port = httpsPort == null ? "31417" : httpsPort;
         }
-        return portNumber;
+        return port;
+    }
+
+    public static String getProtocol() {
+        String protocol = "http";
+        String httpsEnable = System.getProperty("https.enable");
+
+        if (httpsEnable != null && httpsEnable.equalsIgnoreCase("true")) {
+            protocol = "https";
+        }
+        return protocol;
     }
 
     public static String getIpAddress() {

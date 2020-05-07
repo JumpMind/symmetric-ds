@@ -52,7 +52,8 @@ public interface IRegistrationService {
      *            An indicator that registration has been requested by the
      *            remote client
      */
-    public boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream out, boolean isRequestedRegistration) throws IOException;
+    public boolean registerNode(Node node, String remoteHost, String remoteAddress, OutputStream out, 
+            String userId, String password, boolean isRequestedRegistration) throws IOException;
 
     /**
      * Register a node for the given group name and external id if the

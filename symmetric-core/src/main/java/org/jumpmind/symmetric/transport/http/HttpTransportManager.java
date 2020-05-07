@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -71,6 +71,8 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected boolean useHeaderSecurityToken;
     
     protected boolean useSessionAuth;
+    
+    protected boolean isHttp2Enabled;
 
     public HttpTransportManager() {
     }
@@ -80,6 +82,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         this.engine = engine;
         useHeaderSecurityToken = engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_HEADER_SECURITY_TOKEN);
         useSessionAuth = engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_SESSION_AUTH);
+        isHttp2Enabled = engine.getParameterService().is(ServerConstants.HTTPS2_ENABLE);
     }
 
     public int sendCopyRequest(Node local) throws IOException {
@@ -123,7 +126,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             log.debug("Sending ack: {}", data);
             return sendMessage("ack", remote, local, data, securityToken, registrationUrl);
         }
-        return HttpURLConnection.HTTP_OK;
+        return HttpConnection.HTTP_OK;
     }
 
     public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local,
@@ -139,32 +142,38 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected int sendMessage(URL url, String nodeId, String securityToken, String data) throws IOException {
-        HttpURLConnection conn = openConnection(url, nodeId, securityToken);
-        conn.setRequestMethod("POST");
-        conn.setAllowUserInteraction(false);
-        conn.setDoOutput(true);
-        conn.setConnectTimeout(getHttpTimeOutInMs());
-        conn.setReadTimeout(getHttpTimeOutInMs());
-        try(OutputStream os = conn.getOutputStream()) {
-            writeMessage(os, data);
-            checkForConnectionUpgrade(conn);
-
-            try (InputStream is = conn.getInputStream()) {
-                byte[] bytes = new byte[32];
-                while (is.read(bytes) != -1) {
-                    log.debug("Read keep-alive");
+        try (HttpConnection conn = openConnection(url, nodeId, securityToken)) {
+            conn.setRequestMethod("POST");
+            conn.setAllowUserInteraction(false);
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(getHttpTimeOutInMs());
+            conn.setReadTimeout(getHttpTimeOutInMs());
+            try (OutputStream os = conn.getOutputStream()) {
+                writeMessage(os, data);
+                checkForConnectionUpgrade(conn);
+    
+                try (InputStream is = conn.getInputStream()) {
+                    byte[] bytes = new byte[32];
+                    while (is.read(bytes) != -1) {
+                        log.debug("Read keep-alive");
+                    }
                 }
+                return conn.getResponseCode();
             }
-            return conn.getResponseCode();
         }
     }
 
-    protected void checkForConnectionUpgrade(HttpURLConnection conn) {
+    protected void checkForConnectionUpgrade(HttpConnection conn) {
     }
 
-    public HttpURLConnection openConnection(URL url, String nodeId, String securityToken)
+    public HttpConnection openConnection(URL url, String nodeId, String securityToken)
             throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpConnection conn = null;
+        if (isHttp2Enabled) {
+            conn = new Http2Connection(url);
+        } else {
+            conn = new HttpConnection(url);
+        }
         conn.setRequestProperty(WebConstants.HEADER_ACCEPT_CHARSET, IoConstants.ENCODING);
 
         boolean hasSession = false;
@@ -177,12 +186,12 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         }
 
         if (securityToken != null && useHeaderSecurityToken && !hasSession) {
-            conn.addRequestProperty(WebConstants.HEADER_SECURITY_TOKEN, securityToken);
+            conn.setRequestProperty(WebConstants.HEADER_SECURITY_TOKEN, securityToken);
         }
         return conn;
     }
 
-    public void updateSession(HttpURLConnection conn) {
+    public void updateSession(HttpConnection conn) {
         if (useSessionAuth) {
             String sessionId = conn.getHeaderField(WebConstants.HEADER_SET_SESSION_ID);
             if (sessionId != null) {
@@ -191,13 +200,13 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         }        
     }
     
-    public void clearSession(HttpURLConnection conn) {
+    public void clearSession(HttpConnection conn) {
         if (useSessionAuth) {
             sessionIdByUri.remove(getUri(conn));
         }
     }
 
-    protected String getUri(HttpURLConnection conn) {
+    protected String getUri(HttpConnection conn) {
         String uri = conn.getURL().toString();
         uri = uri.substring(0, uri.lastIndexOf("/"));
         return uri;
@@ -237,7 +246,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     
     public IIncomingTransport getFilePullTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
-        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("filesync/pull", remote, local, securityToken, registrationUrl)),
+        HttpConnection conn = createGetConnectionFor(new URL(buildURL("filesync/pull", remote, local, securityToken, registrationUrl)),
                 local.getNodeId(), securityToken);
         if (requestProperties != null) {
             for (String key : requestProperties.keySet()) {
@@ -249,7 +258,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
 
     public IIncomingTransport getPullTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
-        HttpURLConnection conn = createGetConnectionFor(new URL(buildURL("pull", remote, local, securityToken, registrationUrl)),
+        HttpConnection conn = createGetConnectionFor(new URL(buildURL("pull", remote, local, securityToken, registrationUrl)),
                 local.getNodeId(), securityToken);
         if (requestProperties != null) {
             for (String key : requestProperties.keySet()) {
@@ -260,7 +269,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
-        HttpURLConnection conn = createGetConnectionFor(new URL(resolveURL(remote.getSyncUrl(), registrationUrl) + "/ping"));
+        HttpConnection conn = createGetConnectionFor(new URL(resolveURL(remote.getSyncUrl(), registrationUrl) + "/ping"));
         return new HttpIncomingTransport(this, conn, engine.getParameterService());
     }
 
@@ -294,15 +303,19 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         StringBuilder builder = new StringBuilder(buildURL("config", remote, local, securityToken, registrationUrl));
         append(builder, WebConstants.SYMMETRIC_VERSION, symmetricVersion);
         append(builder, WebConstants.CONFIG_VERSION, configVersion);
-        HttpURLConnection conn = createGetConnectionFor(new URL(builder.toString()), local.getNodeId(), securityToken);
+        HttpConnection conn = createGetConnectionFor(new URL(builder.toString()), local.getNodeId(), securityToken);
         return new HttpIncomingTransport(this, conn, engine.getParameterService());
     }
 
     public IIncomingTransport getRegisterTransport(Node node, String registrationUrl) throws IOException {
-        return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
-                registrationUrl, node))), engine.getParameterService());
+        return getRegisterTransport(node, registrationUrl, null);
     }
-    
+
+    public IIncomingTransport getRegisterTransport(Node node, String registrationUrl, Map<String, String> requestProperties) throws IOException {
+        return new HttpIncomingTransport(this, createGetConnectionFor(new URL(buildRegistrationUrl(
+                registrationUrl, node))), engine.getParameterService(), buildRegistrationRequestProperties(node, requestProperties));
+    }
+
     @Override
     public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException
@@ -318,23 +331,30 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             baseUrl = "";
         }
         StringBuilder builder = new StringBuilder(baseUrl);
-        builder.append("/registration?");
-        append(builder, WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
-        append(builder, WebConstants.EXTERNAL_ID, node.getExternalId());
-        append(builder, WebConstants.SYNC_URL, node.getSyncUrl());
-        append(builder, WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
-        append(builder, WebConstants.DATABASE_TYPE, node.getDatabaseType());
-        append(builder, WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
-        append(builder, WebConstants.DATABASE_NAME, node.getDatabaseName());
-        append(builder, WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
-        append(builder, WebConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
-        append(builder, WebConstants.HOST_NAME, AppUtils.getHostName());
-        append(builder, WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
+        builder.append("/registration");
         return builder.toString();
     }
 
-    protected HttpURLConnection createGetConnectionFor(URL url, String nodeId, String securityToken) throws IOException {
-        HttpURLConnection conn = openConnection(url, nodeId, securityToken);
+    public static Map<String, String> buildRegistrationRequestProperties(Node node, Map<String, String> prop) {
+        if (prop == null) {
+            prop = new HashMap<String, String>();
+        }
+        prop.put(WebConstants.NODE_GROUP_ID, node.getNodeGroupId());
+        prop.put(WebConstants.EXTERNAL_ID, node.getExternalId());
+        prop.put(WebConstants.SYNC_URL, node.getSyncUrl());
+        prop.put(WebConstants.SCHEMA_VERSION, node.getSchemaVersion());
+        prop.put(WebConstants.DATABASE_TYPE, node.getDatabaseType());
+        prop.put(WebConstants.DATABASE_VERSION, node.getDatabaseVersion());
+        prop.put(WebConstants.DATABASE_NAME, node.getDatabaseName());
+        prop.put(WebConstants.SYMMETRIC_VERSION, node.getSymmetricVersion());
+        prop.put(WebConstants.DEPLOYMENT_TYPE, node.getDeploymentType());
+        prop.put(WebConstants.HOST_NAME, AppUtils.getHostName());
+        prop.put(WebConstants.IP_ADDRESS, AppUtils.getIpAddress());
+        return prop;
+    }
+
+    protected HttpConnection createGetConnectionFor(URL url, String nodeId, String securityToken) throws IOException {
+        HttpConnection conn = openConnection(url, nodeId, securityToken);
         conn.setRequestProperty("accept-encoding", "gzip");
         conn.setConnectTimeout(getHttpTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
@@ -342,11 +362,11 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         return conn;
     }
 
-    protected HttpURLConnection createGetConnectionFor(URL url) throws IOException {
+    protected HttpConnection createGetConnectionFor(URL url) throws IOException {
         return createGetConnectionFor(url, null, null);
     }
 
-    protected static InputStream getInputStreamFrom(HttpURLConnection connection) throws IOException {
+    protected static InputStream getInputStreamFrom(HttpConnection connection) throws IOException {
         String type = connection.getContentEncoding();
         InputStream in = connection.getInputStream();
         if (!StringUtils.isBlank(type) && type.equals("gzip")) {
@@ -358,7 +378,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     /**
      * If the content is gzip'd, then uncompress.
      */
-    protected static BufferedReader getReaderFrom(HttpURLConnection connection) throws IOException {
+    protected static BufferedReader getReaderFrom(HttpConnection connection) throws IOException {
         String type = connection.getContentEncoding();
         InputStream in = connection.getInputStream();
         if (!StringUtils.isBlank(type) && type.equals("gzip")) {

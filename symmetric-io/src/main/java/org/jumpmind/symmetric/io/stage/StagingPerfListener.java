@@ -1,5 +1,5 @@
 /**
- * Licensed to JumpMind Inc under one or more contributor
+ * Licensed to JumpMind Inc under one or more contributor 
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
@@ -18,26 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.io.stage;
 
-import java.util.Map;
+import java.util.List;
 
-import org.jumpmind.extension.IExtensionPoint;
+public interface StagingPerfListener {
 
-public interface INodeRegistrationListener extends IExtensionPoint {
-    
-    public void registrationUrlUpdated(String url);
-    
-    public void registrationNextAttemptUpdated(int seconds);
-    
-    public void registrationStarting(Thread thread);
-    
-    public void registrationFailed(String message);
-    
-    public void registrationSyncTriggers();
-    
-    public void registrationSuccessful();
-    
-    public Map<String, String> getRequestProperties();
+    public void update(List<StagingPerfResult> results, float percentComplete);
 
 }

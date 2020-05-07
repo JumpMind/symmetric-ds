@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,6 +90,15 @@ public class WindowsService extends WrapperService {
             logger.log(Level.SEVERE, "Error " + Native.getLastError());
             System.exit(Native.getLastError());
         }
+    }
+
+    @Override
+    protected void initEnvironment(ProcessBuilder pb) {
+        Map<String, String> env = pb.environment();
+        String path = env.get("PATH");
+        path = System.getProperty("user.dir") + "\\lib;" + (path != null ? path : "");
+        env.put("PATH", path);
+        logger.log(Level.INFO, "PATH is " + path);
     }
 
     @Override

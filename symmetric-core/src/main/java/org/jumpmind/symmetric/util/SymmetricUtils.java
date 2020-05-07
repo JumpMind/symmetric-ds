@@ -116,6 +116,9 @@ final public class SymmetricUtils {
                 if (value.contains("portNumber")) {
                     value = FormatUtils.replace("portNumber", AppUtils.getPortNumber(), value);
                 }
+                if (value.contains("protocol")) {
+                    value = FormatUtils.replace("protocol", AppUtils.getProtocol(), value);
+                }
                 if (value.contains("ipAddress")) {
                     value = FormatUtils.replace("ipAddress", AppUtils.getIpAddress(), value);
                 }
@@ -150,6 +153,7 @@ final public class SymmetricUtils {
         String notices = null;
         try {            
             notices = String.format("%n%s%n", IOUtils.toString(Thread.currentThread().getContextClassLoader().getResource("symmetricds.asciiart"), Charset.defaultCharset()));
+            notices = notices.replaceAll("\n", String.format("%n"));
         } catch (Exception ex) {
             notices = String.format("SymmetricDS Start%n");
         }

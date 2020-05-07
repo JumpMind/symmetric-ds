@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.transport.file;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +36,7 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class FileTransportManager extends HttpTransportManager implements ITrans
     @Override
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl)
             throws IOException {
-        return HttpURLConnection.HTTP_OK;
+        return WebConstants.SC_OK;
     }
 
     @Override

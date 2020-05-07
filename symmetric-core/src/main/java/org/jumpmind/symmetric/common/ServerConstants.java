@@ -33,6 +33,8 @@ public class ServerConstants {
     public final static String HTTPS_ENABLE = "https.enable";
     public final static String HTTPS_PORT = "https.port";
     
+    public final static String HTTPS2_ENABLE = "https2.enable";
+    
     public final static String HTTPS_VERIFIED_SERVERS = "https.verified.server.names";
     public final static String HTTPS_ALLOW_SELF_SIGNED_CERTS = "https.allow.self.signed.certs";    
     

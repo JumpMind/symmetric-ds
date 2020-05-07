@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +50,7 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.IService;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,15 +253,16 @@ abstract public class AbstractService implements IService {
         int statusCode = -1;
         int numberOfStatusSendRetries = parameterService.getInt(ParameterConstants.DATA_LOADER_NUM_OF_ACK_RETRIES);
 
-        for (int i = 0; i < numberOfStatusSendRetries && statusCode != HttpURLConnection.HTTP_OK; i++) {
+        for (int i = 0; i < numberOfStatusSendRetries && statusCode != WebConstants.SC_OK; i++) {
             try {
                 statusCode = transportManager.sendAcknowledgement(remote, list, local,
                         localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
                 exception = null;
             } catch (Exception e) {
+                e.printStackTrace();
                 exception = e;
             }
-            if (statusCode != HttpURLConnection.HTTP_OK) {
+            if (statusCode != WebConstants.SC_OK) {
                 String message = String.format("Ack was not sent successfully on try number %s of %s.", i+1, numberOfStatusSendRetries);
                 if (statusCode > 0) {
                     message += String.format(" statusCode=%s", statusCode);

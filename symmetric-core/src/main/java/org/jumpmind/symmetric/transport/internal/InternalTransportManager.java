@@ -27,7 +27,6 @@ import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +46,7 @@ import org.jumpmind.symmetric.transport.IIncomingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.ITransportManager;
-import org.jumpmind.symmetric.transport.http.HttpIncomingTransport;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,7 +165,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
     }    
 
-    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl)
+    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl) throws IOException {
+        return getRegisterTransport(client, registrationUrl, null);
+    }
+
+    public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl, Map<String, String> requestProperties)
             throws IOException {
 
         final PipedOutputStream respOs = new PipedOutputStream();
@@ -205,7 +208,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
                     remoteEngine.getAcknowledgeService().ack(batchInfo);
                 }
             }
-            return HttpURLConnection.HTTP_OK;
+            return WebConstants.SC_OK;
         } catch (Exception ex) {
             log.error("", ex);
             return -1;

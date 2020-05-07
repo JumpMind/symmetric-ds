@@ -66,10 +66,12 @@ import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.job.JobManager;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IMonitorService;
 import org.jumpmind.symmetric.service.impl.ClientExtensionService;
 import org.jumpmind.symmetric.service.impl.MonitorService;
+import org.jumpmind.symmetric.service.impl.NodeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
@@ -77,10 +79,10 @@ import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
 import org.jumpmind.util.AppUtils;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jndi.JndiObjectFactoryBean;
 import org.xml.sax.InputSource;
 
@@ -206,7 +208,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     clusterService, contextService);
             this.dataSource = platform.getDataSource();
             
-            PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+            PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
             configurer.setProperties(parameterService.getAllParameters());
             
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(springContext);
@@ -249,6 +251,10 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 log.error(
                         "Failed to initialize the extension points.  Please fix the problem and restart the server.",
                         ex);
+            }
+            
+            if (nodeService instanceof NodeService) {
+                ((NodeService)nodeService).setNodePasswordFilter(extensionService.getExtensionPoint(INodePasswordFilter.class));
             }
         } catch (RuntimeException ex) {
             destroy();

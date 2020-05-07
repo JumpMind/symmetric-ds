@@ -339,4 +339,12 @@ public class MockNodeService implements INodeService {
     public Node findRootNode() {
         return null;
     }
+
+    @Override
+    public void resetNodeFailedLogins(String nodeId) {
+    }
+
+    @Override
+    public void incrementNodeFailedLogins(String nodeId) {
+    }
 }

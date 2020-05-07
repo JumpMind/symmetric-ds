@@ -42,6 +42,11 @@ apply from: symAssembleDir + '/asciidoc.gradle'
            exclude group: "org.ow2.asm"
         }
 
+        provided "org.eclipse.jetty.http2:http2-server:$jettyVersion"
+        provided "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
+        provided "org.mortbay.jetty.alpn:alpn-boot:$alpnBootVersion"
+        compileOnly "org.eclipse.jetty.alpn:alpn-api:$alpnApiVersion"
+    
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
         testCompile project(path: ':symmetric-io', configuration: 'testArtifacts')
         integrationTestCompile project(':symmetric-jdbc').sourceSets.integrationTest.output

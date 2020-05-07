@@ -25,13 +25,13 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.UnknownHostException;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
+import org.jumpmind.symmetric.ext.INodeRegistrationAuthenticator;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
 import org.jumpmind.symmetric.ext.IRegistrationRedirect;
 import org.jumpmind.symmetric.model.Node;
@@ -68,6 +69,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.ConnectionRejectedException;
 import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.ServiceUnavailableException;
+import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.RandomTimeSlot;
 
@@ -129,7 +131,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         node.setDatabaseName(databaseName);
         node.setDeploymentType(Constants.DEPLOYMENT_TYPE_REST);
 
-        node = processRegistration(node, null, null, true);
+        node = processRegistration(node, null, null, null, null, true);
         
         if (node.isSyncEnabled()) {
             //set the node as registered as we have no 
@@ -141,7 +143,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     
     public boolean registerNode(Node preRegisteredNode, OutputStream out, boolean isRequestedRegistration)
             throws IOException {
-        return registerNode(preRegisteredNode, null, null, out, isRequestedRegistration);
+        return registerNode(preRegisteredNode, null, null, out, null, null, isRequestedRegistration);
     }
 
     protected void extractConfiguration(OutputStream out, Node registeredNode) {
@@ -149,7 +151,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
     }
     
     protected Node processRegistration(Node nodePriorToRegistration, String remoteHost,
-            String remoteAddress, boolean isRequestedRegistration)
+            String remoteAddress, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
 
         Node processedNode = new Node();
@@ -229,9 +231,17 @@ public class RegistrationService extends AbstractService implements IRegistratio
             
             Node foundNode = nodeService.findNode(nodeId);
             NodeSecurity security = nodeService.findNodeSecurity(nodeId);
+            boolean isRegistrationAuthenticated = false;
+            
+            if (userId != null) {
+                List<INodeRegistrationAuthenticator> listeners = extensionService.getExtensionPointList(INodeRegistrationAuthenticator.class);
+                for (INodeRegistrationAuthenticator listener : listeners) {
+                    isRegistrationAuthenticated |= listener.authenticate(userId, password);
+                }                
+            }
             
             if ((foundNode == null || security == null || !security.isRegistrationEnabled())
-                    && parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED)) {
+                    && (parameterService.is(ParameterConstants.AUTO_REGISTER_ENABLED) || isRegistrationAuthenticated)) {
                 openRegistration(nodePriorToRegistration, remoteHost, remoteAddress);
                 nodeId = StringUtils.isBlank(nodePriorToRegistration.getNodeId()) ? extensionService.
                         getExtensionPoint(INodeIdCreator.class).selectNodeId(nodePriorToRegistration, remoteHost,
@@ -291,11 +301,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
      */
     // Called when node connects using pull registration URL
     public boolean registerNode(Node nodePriorToRegistration, String remoteHost,
-            String remoteAddress, OutputStream out, boolean isRequestedRegistration)
+            String remoteAddress, OutputStream out, String userId, String password, boolean isRequestedRegistration)
             throws IOException {
 
         Node processedNode = processRegistration(nodePriorToRegistration, remoteHost,
-                remoteAddress, isRequestedRegistration);
+                remoteAddress, userId, password, isRequestedRegistration);
 
         if (processedNode.isSyncEnabled()) {
             /*
@@ -501,7 +511,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
         if (!registered) {
             try {
                 for (INodeRegistrationListener l : registrationListeners) {
-                    l.registrationStarting();
+                    l.registrationStarting(Thread.currentThread());
                 }
                 log.info("This node is unregistered.  It will attempt to register using the registration.url");
                 registered = dataLoaderService.loadDataFromPull(null, (String)null).getStatus() == Status.DATA_PROCESSED;
@@ -529,8 +539,19 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 }
             } catch (RegistrationNotOpenException e) {
                 log.warn("Waiting for registration to be accepted by the server. Registration is not open.");
+                boolean authWasAttempted = false;
                 for (INodeRegistrationListener l : registrationListeners) {
-                    l.registrationFailed("Waiting for registration to be accepted by the server. Registration is not open.");
+                    Map<String, String> prop = l.getRequestProperties();
+                    if (prop != null && prop.containsKey(WebConstants.REG_USER_ID))  {
+                        authWasAttempted = true;
+                    }
+                }
+                for (INodeRegistrationListener l : registrationListeners) {
+                    if (authWasAttempted) {
+                        l.registrationFailed("User is not authorized.  Registration is not open.");
+                    } else {
+                        l.registrationFailed("Waiting for registration to be accepted by the server. Registration is not open.");
+                    }
                 }
             } catch (ServiceUnavailableException e) {
                 log.warn("Unable to register with server because the service is not available.  It may be starting up.");
@@ -740,7 +761,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             
             try {
                 log.info("Detected that node '{}' should be copied to a new node id.  Attempting to contact server to accomplish this", copyFrom.getNodeId());
-                 copied = transportManager.sendCopyRequest(copyFrom) == HttpURLConnection.HTTP_OK;   
+                 copied = transportManager.sendCopyRequest(copyFrom) == WebConstants.SC_OK;   
                  if (copied) {
                      nodeService.deleteIdentity();
                  }

@@ -33,7 +33,7 @@ set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Dsym.keystore.file="%SYM_HOME%\security\keystore" ^
 -Djavax.net.ssl.trustStore="%SYM_HOME%\security\cacerts" ^
 -Djavax.net.ssl.keyStorePassword=changeit ^
--Dlog4j2.configurationFile="file:%SYM_HOME%\conf\log4j2.xml" ^
+-Dlog4j2.configurationFile="file:/%SYM_HOME%\conf\log4j2.xml" ^
 -Djava.util.logging.config.file=conf/logging.properties ^
 -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager ^
 -Dsun.net.client.defaultReadTimeout=300000 ^
@@ -48,3 +48,4 @@ set SYM_JAVA=java
 if /i NOT "%JAVA_HOME%" == "" set SYM_JAVA=%JAVA_HOME%\bin\java
 
 set CLASSPATH=%SYM_HOME%\patches;%SYM_HOME%\patches\*;%SYM_HOME%\lib\*;%SYM_HOME%\web\WEB-INF\lib\*
+set PATH=%PATH%;%SYM_HOME%\lib

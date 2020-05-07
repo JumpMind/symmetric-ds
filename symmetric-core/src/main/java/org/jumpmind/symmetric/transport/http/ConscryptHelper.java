@@ -18,26 +18,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.ext;
+package org.jumpmind.symmetric.transport.http;
 
-import java.util.Map;
+import java.security.Provider;
+import java.security.Security;
 
-import org.jumpmind.extension.IExtensionPoint;
+import org.conscrypt.Conscrypt;
 
-public interface INodeRegistrationListener extends IExtensionPoint {
-    
-    public void registrationUrlUpdated(String url);
-    
-    public void registrationNextAttemptUpdated(int seconds);
-    
-    public void registrationStarting(Thread thread);
-    
-    public void registrationFailed(String message);
-    
-    public void registrationSyncTriggers();
-    
-    public void registrationSuccessful();
-    
-    public Map<String, String> getRequestProperties();
+public class ConscryptHelper {
+
+    protected final static String PROVIDER_NAME = "Conscrypt";
+
+    public void checkProviderInstalled() {
+        if (Security.getProvider(PROVIDER_NAME) == null) {
+            Security.insertProviderAt(Conscrypt.newProvider(), 1);
+        } else {
+            Provider[] providers = Security.getProviders();
+            if (providers.length > 0 && !providers[0].getName().equals(PROVIDER_NAME)) {
+                Security.removeProvider(PROVIDER_NAME);
+                Security.insertProviderAt(Conscrypt.newProvider(), 1);    
+            }
+        }
+    }
 
 }

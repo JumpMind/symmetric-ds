@@ -25,7 +25,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -65,7 +64,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private BufferedReader reader;
 
-    private HttpURLConnection connection;
+    private HttpConnection connection;
 
     private int httpTimeout;
 
@@ -197,7 +196,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link ConnectionRejectedException}
      * @throws {@link AuthenticationException}
      */
-    private HttpURLConnection requestReservation(String queue) {
+    private HttpConnection requestReservation(String queue) {
         try {
             connection = httpTransportManager.openConnection(url, nodeId, securityToken);
             connection.setUseCaches(false);
@@ -239,6 +238,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
                     connection.addRequestProperty("Content-Type", "gzip"); // application/x-gzip?
                 }
             } else {
+                connection.setRequestMethod("POST");
                 boundary = Long.toHexString(System.currentTimeMillis());
                 connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             }
@@ -328,28 +328,27 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
-
-        HttpURLConnection connection = requestReservation(queue);
-
-        // Connection contains remote suspend/ignore channels list if
-        // reservation was successful.
-
         ChannelMap suspendIgnoreChannelsList = new ChannelMap();
 
-        String suspends = connection.getHeaderField(WebConstants.SUSPENDED_CHANNELS);
-        String ignores = connection.getHeaderField(WebConstants.IGNORED_CHANNELS);
-
-        suspendIgnoreChannelsList.addSuspendChannels(suspends);
-        suspendIgnoreChannelsList.addIgnoreChannels(ignores);
-
-        ChannelMap localSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists(targetNode.getNodeId());
-        suspendIgnoreChannelsList.addSuspendChannels(localSuspendIgnoreChannelsList.getSuspendChannels());
-        suspendIgnoreChannelsList.addIgnoreChannels(localSuspendIgnoreChannelsList.getIgnoreChannels());
+        try (HttpConnection connection = requestReservation(queue)) {
+            // Connection contains remote suspend/ignore channels list if
+            // reservation was successful.
+    
+            String suspends = connection.getHeaderField(WebConstants.SUSPENDED_CHANNELS);
+            String ignores = connection.getHeaderField(WebConstants.IGNORED_CHANNELS);
+    
+            suspendIgnoreChannelsList.addSuspendChannels(suspends);
+            suspendIgnoreChannelsList.addIgnoreChannels(ignores);
+    
+            ChannelMap localSuspendIgnoreChannelsList = configurationService.getSuspendIgnoreChannelLists(targetNode.getNodeId());
+            suspendIgnoreChannelsList.addSuspendChannels(localSuspendIgnoreChannelsList.getSuspendChannels());
+            suspendIgnoreChannelsList.addIgnoreChannels(localSuspendIgnoreChannelsList.getIgnoreChannels());
+        }        
 
         return suspendIgnoreChannelsList;
     }
     
-    public HttpURLConnection getConnection() {
+    public HttpConnection getConnection() {
         return connection;
     }
 

@@ -581,7 +581,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             getPlatform(tempNonSymTable).makePlatformSpecific(db);
            
             if (writerSettings.isAlterTable()) {
-                    getPlatform(tempNonSymTable).alterDatabase(db, !writerSettings.isCreateTableFailOnError());
+                    getPlatform(tempNonSymTable).alterDatabase(db, !writerSettings.isCreateTableFailOnError(), writerSettings.getAlterDatabaseInterceptors());
             } else {
                     getPlatform(tempNonSymTable).createDatabase(db, writerSettings.isCreateTableDropFirst(), !writerSettings.isCreateTableFailOnError());
             }

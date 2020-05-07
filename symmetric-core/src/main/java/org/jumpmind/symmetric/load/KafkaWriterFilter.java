@@ -1,3 +1,23 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.jumpmind.symmetric.load;
 
 import java.beans.PropertyDescriptor;
@@ -28,6 +48,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -54,7 +75,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     protected Map<String, List<String>> kafkaDataMap = new HashMap<String, List<String>>();
     protected String kafkaDataKey;
 
-    private final Logger log = LoggerFactory.getLogger(IDatabaseWriterFilter.class);
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private String url;
 
@@ -137,6 +158,13 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
 
             configs.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, confluentUrl);
         }
+        
+        TypedProperties props = parameterService.getAllParameters();
+        for (Object key : props.keySet()) {
+            if (key.toString().startsWith("kafkaclient.")) {
+                configs.put(key.toString().substring(12), props.get(key));
+            }
+        }
     }
 
     public boolean beforeWrite(DataContext context, Table table, CsvData data) {
@@ -144,8 +172,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         if (table.getNameLowerCase().startsWith("sym_")) {
             return true;
         } else {
-            log.debug("Processing table " + table + " for Kafka");
-
             String[] rowData = data.getParsedData(CsvData.ROW_DATA);
             if (data.getDataEventType() == DataEventType.DELETE) {
                 rowData = data.getParsedData(CsvData.OLD_DATA);
@@ -158,6 +184,8 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             } else {
                 kafkaDataKey = table.getNameLowerCase();
             }
+
+            log.debug("Processing table {} for Kafka on topic {}", table, kafkaDataKey);
 
             if (kafkaDataMap.get(kafkaDataKey) == null) {
                 kafkaDataMap.put(kafkaDataKey, new ArrayList<String>());
@@ -212,7 +240,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                             for (int i = 0; i < table.getColumnNames().length; i++) {
                                 String colName = getColumnName(table.getName(), table.getColumnNames()[i], pojo);
                                 if (colName != null) {
-                                    Class propertyTypeClass = PropertyUtils.getPropertyType(pojo, colName);
+                                    Class<?> propertyTypeClass = PropertyUtils.getPropertyType(pojo, colName);
                                     if (CharSequence.class.equals(propertyTypeClass)) {
                                         PropertyUtils.setSimpleProperty(pojo, colName, rowData[i]);
                                     }
@@ -397,6 +425,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         if (!context.getBatch().getChannelId().equals("heartbeat") && !context.getBatch().getChannelId().equals("config")) {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
             
+            log.debug("Kafka client config: {}", configs);
             KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
             try {
                 if (confluentUrl == null && kafkaDataMap.size() > 0) {
@@ -436,11 +465,12 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public void sendKafkaMessage(KafkaProducer<String, String> producer, String kafkaText, String topic) {
+        log.debug("Sending message (topic={}) {}", topic, kafkaText);
         producer.send(new ProducerRecord<String, String>(topic, kafkaText));
-        log.debug("Data to be sent to Kafka-" + kafkaText);
     }
 
     public void sendKafkaMessageByObject(Object bean, String topic) {
+        log.debug("Sending object (topic={}) {}", topic, bean);
         KafkaProducer<String, Object> producer = new KafkaProducer<String, Object>(configs);
         producer.send(new ProducerRecord<String, Object>(topic, bean));
         producer.close();

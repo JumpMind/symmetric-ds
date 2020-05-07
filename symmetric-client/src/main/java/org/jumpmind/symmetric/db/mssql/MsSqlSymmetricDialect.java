@@ -375,35 +375,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     }
 
     @Override
-    public boolean doesDdlTriggerExist(final String catalogName, final String schema, final String triggerName) {
-        return ((JdbcSqlTemplate) platform.getSqlTemplate())
-                .execute(new IConnectionCallback<Boolean>() {
-                    public Boolean execute(Connection con) throws SQLException {
-                        String previousCatalog = con.getCatalog();
-                        PreparedStatement stmt = con
-                                .prepareStatement("select count(*) from sys.triggers where name = ?");
-                        try {
-                            if (catalogName != null) {
-                                con.setCatalog(catalogName);
-                            }
-                            stmt.setString(1, triggerName);
-                            ResultSet rs = stmt.executeQuery();
-                            if (rs.next()) {
-                                int count = rs.getInt(1);
-                                return count > 0;
-                            }
-                        } finally {
-                            if (catalogName != null) {
-                                con.setCatalog(previousCatalog);
-                            }
-                            stmt.close();
-                        }
-                        return Boolean.FALSE;
-                    }
-                });        
-    }
-
-    @Override
     public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName) {
         String sql = "drop trigger " + triggerName + " on database";
         logSql(sql, sqlBuffer);

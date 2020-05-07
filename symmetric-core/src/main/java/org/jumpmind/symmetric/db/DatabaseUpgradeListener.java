@@ -145,6 +145,45 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
             log.info("Done preparing data_event for upgrade");
         }
+        
+        if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
+            log.info("Before upgrade, fixing router_type");
+            if (engine.getParameterService().isRegistrationServer()) {
+                engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_ROUTER
+                        + " set router_type = 'default' where router_type is null");
+            }
+            /*
+             * Workarounds for missing features (bugs) in ddl-utils
+             */
+            String name = engine.getDatabasePlatform().getName();
+            if (name.equals(DatabaseNamesConstants.ORACLE) || name.equals(DatabaseNamesConstants.ORACLE122)) {
+                log.info("Before upgrade, dropping PK constraint for data table");
+                try {
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_DATA
+                            + " drop constraint " + tablePrefix + "_" + TableConstants.SYM_DATA + "_pk");
+                } catch (Exception e) {
+                    log.info("Unable to drop PK for data table: {}", e.getMessage());
+                }
+            }
+            if (name.equals(DatabaseNamesConstants.ASE)) {
+                log.info("Before upgrade, dropping index on data table");
+                try {
+                    engine.getSqlTemplate().update("drop index " + tablePrefix + "_" + TableConstants.SYM_DATA + "."
+                            + tablePrefix + "_idx_d_channel_id");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
+                }
+                log.info("Before upgrade, dropping FK constraints to router table");
+                try {
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_TRIGGER_ROUTER
+                            + " drop constraint " + tablePrefix + "_fk_tr_2_rtr");
+                    engine.getSqlTemplate().update("alter table " + tablePrefix + "_" + TableConstants.SYM_FILE_TRIGGER_ROUTER
+                            + " drop constraint " + tablePrefix + "_fk_ftr_2_rtr");
+                } catch (Exception e) {
+                    log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
+                }
+            }
+        }
 
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
             Table triggerTable = desiredModel.findTable(tablePrefix + "_" + TableConstants.SYM_TRIGGER);
@@ -160,22 +199,8 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
 
-        if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.MYSQL)) {
-            String function = tablePrefix + "_transaction_id_post_5_7_6";
-            String select = "select count(*) from information_schema.routines where routine_name='" + function
-                    + "' and routine_schema in (select database())";
-
-            if (engine.getDatabasePlatform().getSqlTemplate().queryForInt(select) > 0) {
-                String drop = "drop function " + function;
-                engine.getDatabasePlatform().getSqlTemplate().update(drop);
-                log.info("Just uninstalled {}", function);
-            }
-        }
-
-        // Leave this last in the sequence of steps to make sure to capture any
-        // DML changes done before this
-        if (currentModel.findTable(TableConstants.getTableName(tablePrefix, TableConstants.SYM_TRIGGER_HIST)) != null &&
-                engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
+        if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             // Drop triggers on sym tables
             List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
                     .getExtensionPointList(IAlterDatabaseInterceptor.class);
@@ -261,6 +286,16 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_DATA_EVENT);
         if (eventTable != null && eventTable.findColumn("router_id") != null) {
             log.info("Detected upgrade from pre-3.11 version.");
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    protected boolean isUpgradeFromPre312(String tablePrefix, Database currentModel, Database desiredModel) {
+        Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
+        if (eventTable != null && eventTable.findColumn("failed_logins") == null) {
+            log.info("Detected upgrade from pre-3.12 version.");
             return true;
         } else {
             return false;

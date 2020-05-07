@@ -68,6 +68,10 @@ public class ModuleManager {
 
     private ModuleManager() throws ModuleException {
         modulesDir = joinDirName(AppUtils.getSymHome(), "lib");
+        File dir = new File(modulesDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
         try (InputStream in = getClass().getResourceAsStream("/symmetric-modules.properties")) {
             properties.load(in);

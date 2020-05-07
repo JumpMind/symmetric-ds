@@ -282,11 +282,19 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                         localSecurity.getNodePassword(), requestProperties,
                         parameterService.getRegistrationUrl());
             } else {
+                List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+                Map<String, String> requestProps = new HashMap<String, String>();
+                for (INodeRegistrationListener l : registrationListeners) {
+                    Map<String, String> props = l.getRequestProperties();
+                    if (props != null) {
+                        requestProps.putAll(props);
+                    }
+                }
+
                 transport = transportManager.getRegisterTransport(local,
-                        parameterService.getRegistrationUrl());
+                        parameterService.getRegistrationUrl(), requestProps);
                 log.info("Using registration URL of {}", transport.getUrl());
                 
-                List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
                 for (INodeRegistrationListener l : registrationListeners) {
                     l.registrationUrlUpdated(transport.getUrl());
                 }

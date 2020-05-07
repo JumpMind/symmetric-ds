@@ -95,10 +95,10 @@
         <column name="node_list" type="VARCHAR" size="255"  description="A field that can be populated with a comma separated subset of node ids which will be the only nodes available to the router" />
         <column name="is_prerouted" type="BOOLEANINT" size="1" required="true" default="0" description="Set to true when routing should ignore this row because data_event and outgoing_batch rows are manually entered." />
         <column name="create_time" type="TIMESTAMP"  description="Timestamp when this entry was created." />
-        <index name="idx_d_channel_id">
+        <unique name="idx_d_channel_id">
             <index-column name="data_id"/>
             <index-column name="channel_id"/>
-        </index>
+        </unique>
     </table>
 
     <table name="data_event" description="Each row represents the mapping between a data change that was captured and the batch that contains it. Entries in data_event are created as part of the routing process. ">
@@ -574,6 +574,7 @@
         <column name="rev_initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when this node last sent an initial load." />
         <column name="rev_initial_load_id" type="BIGINT" description="A reference to the load_id in outgoing_batch for the last reverse load that occurred." />
         <column name="rev_initial_load_create_by" type="VARCHAR" size="255" description="The user that created the reverse initial load.  A null value means that the system created the batch." />
+        <column name="failed_logins" type="TINYINT" default="0" description="Number of failed login attempts" />
         <column name="created_at_node_id" type="VARCHAR" size="50" description="The node_id of the node where this node was created. This is typically filled automatically with the node_id found in node_identity where registration was opened for the node. " />
         <foreign-key foreignTable="node" name="fk_sec_2_node">
             <reference local="node_id" foreign="node_id" />
@@ -739,7 +740,7 @@
         <column name="target_table_name" type="VARCHAR" size="255"  description="Optional name for a target table.  Only use this if the target table name is different than the source." />
         <column name="source_node_group_id" type="VARCHAR" size="50" required="true"  description="Routers with this node_group_id will install triggers that are mapped to this router." />
         <column name="target_node_group_id" type="VARCHAR" size="50" required="true"  description="The node_group_id for nodes to route data to.  Note that routing can be further narrowed down by the configured router_type and router_expression." />
-        <column name="router_type" type="VARCHAR" size="50"  description="The name of a specific type of router.  Out of the box routers are 'default','column','bsh', 'subselect' and 'audit.'  Custom routers can be configured as extension points." />
+        <column name="router_type" type="VARCHAR" size="50" required="true" default="default" description="The name of a specific type of router.  Out of the box routers are 'default','column','bsh', 'subselect' and 'audit.'  Custom routers can be configured as extension points." />
         <column name="router_expression" type="LONGVARCHAR"  description="An expression that is specific to the type of router that is configured in router_type.  See the documentation for each router for more details." />
         <column name="sync_on_update" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route updates." />
         <column name="sync_on_insert" type="BOOLEANINT" size="1" required="true" default="1"  description="Flag that indicates that this router should route inserts." />

@@ -53,6 +53,7 @@ import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
+import org.jumpmind.db.platform.oracle.Oracle122DatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSql95DatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -106,6 +107,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "microsoft sql server", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.ORACLE122, Oracle122DatabasePlatform.class);
         addPlatform(platforms, "PostgreSql", PostgreSqlDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.POSTGRESQL95, PostgreSql95DatabasePlatform.class);
         addPlatform(platforms, "Adaptive Server Enterprise", AseDatabasePlatform.class);
@@ -278,6 +280,14 @@ public class JdbcDatabasePlatformFactory {
             if (nameVersion[0].toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
                 if (isFirebirdDialect1(connection)) {
                     nameVersion[0] = DatabaseNamesConstants.FIREBIRD_DIALECT1;
+                }
+            }
+            
+            if(nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
+                int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
+                int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
+                if(majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
+                    nameVersion[0] = DatabaseNamesConstants.ORACLE122;
                 }
             }
             

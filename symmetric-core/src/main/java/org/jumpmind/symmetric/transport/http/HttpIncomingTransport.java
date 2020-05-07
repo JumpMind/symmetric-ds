@@ -24,13 +24,17 @@ package org.jumpmind.symmetric.transport.http;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
@@ -48,7 +52,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
     
     private HttpTransportManager httpTransportManager;
 
-    private HttpURLConnection connection;
+    private HttpConnection connection;
 
     private BufferedReader reader;
     
@@ -64,14 +68,22 @@ public class HttpIncomingTransport implements IIncomingTransport {
     
     private String securityToken;
 
-    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpURLConnection connection, IParameterService parameterService) {
+    private Map<String, String> requestProperties;
+
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpConnection connection, IParameterService parameterService) {
         this.httpTransportManager = httpTransportManager;
         this.connection = connection;
         this.parameterService = parameterService;
         this.httpTimeout = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
 
-    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpURLConnection connection, IParameterService parameterService,
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpConnection connection, IParameterService parameterService,
+            Map<String, String> requestProperties) {
+        this(httpTransportManager, connection, parameterService);
+        this.requestProperties = requestProperties;
+    }
+
+    public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpConnection connection, IParameterService parameterService,
             String nodeId, String securityToken) {
         this(httpTransportManager, connection, parameterService);
         this.nodeId = nodeId;
@@ -115,9 +127,10 @@ public class HttpIncomingTransport implements IIncomingTransport {
     @Override
     public InputStream openStream() throws IOException {
         
+        applyRequestProperties();
         boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, true);
         if (manualRedirects) {
-            connection = this.openConnectionCheckRedirects(connection);
+            connection = openConnectionCheckRedirects();
         }
         
         int code = connection.getResponseCode();
@@ -179,7 +192,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
      * @return
      * @throws IOException
      */
-    private HttpURLConnection openConnectionCheckRedirects(HttpURLConnection connection) throws IOException
+    private HttpConnection openConnectionCheckRedirects() throws IOException
     {      
        boolean redir;
        int redirects = 0;
@@ -187,7 +200,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
           connection.setInstanceFollowRedirects(false);         
           redir = false;
              int stat = connection.getResponseCode();
-             if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpURLConnection.HTTP_NOT_MODIFIED) {
+             if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpConnection.HTTP_NOT_MODIFIED) {
                 URL base = connection.getURL();
                 redirectionUrl = connection.getHeaderField("Location");
 
@@ -207,6 +220,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 connection = httpTransportManager.openConnection(target, nodeId, securityToken);
                 connection.setConnectTimeout(httpTimeout);
                 connection.setReadTimeout(httpTimeout);
+                applyRequestProperties();
 
                 redirects++;
              }
@@ -214,8 +228,38 @@ public class HttpIncomingTransport implements IIncomingTransport {
        
        return connection;
     }
-    
-    public HttpURLConnection getConnection() {
+
+    protected void applyRequestProperties() throws IOException {
+        if (requestProperties != null) {
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, String> requestProperty : requestProperties.entrySet()) {
+                if (sb.length() != 0) {
+                    sb.append("&");
+                }
+                sb.append(requestProperty.getKey()).append("=");
+                sb.append(URLEncoder.encode(requestProperty.getValue(), IoConstants.ENCODING));
+            }
+
+            try (OutputStream os = connection.getOutputStream()) {
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, IoConstants.ENCODING), true);
+                pw.println(sb.toString());
+                pw.flush();
+            }
+        }
+    }
+
+    public HttpConnection getConnection() {
         return connection;
     }
+    
+    public Map<String, String> getRequestProperties() {
+        return requestProperties;
+    }
+
+    public void setRequestProperties(Map<String, String> requestProperties) {
+        this.requestProperties = requestProperties;
+    }
+
 }

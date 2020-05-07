@@ -85,6 +85,8 @@ public class DatabaseInfo {
     private boolean uniqueEmbedded = true;
 
     private boolean triggersSupported = true;
+    
+    private boolean triggersCreateOrReplaceSupported = false;
 
     /** Whether identity specification is supported for non-primary key columns. */
     private boolean nonPKIdentityColumnsSupported = true;
@@ -1366,5 +1368,13 @@ public class DatabaseInfo {
     public void setZeroDateAllowed(boolean zeroDateAllowed) {
         this.zeroDateAllowed = zeroDateAllowed;
     }
-    
+
+    public boolean isTriggersCreateOrReplaceSupported() {
+        return triggersCreateOrReplaceSupported;
+    }
+
+    public void setTriggersCreateOrReplaceSupported(boolean triggersCreateOrReplaceSupported) {
+        this.triggersCreateOrReplaceSupported = triggersCreateOrReplaceSupported;
+    }
+
 }

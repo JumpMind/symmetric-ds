@@ -262,6 +262,7 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_BULK_FIELD_TERMINATOR = "oracle.bulk.load.field.terminator";
     public final static String DBDIALECT_ORACLE_BULK_LINE_TERMINATOR = "oracle.bulk.load.line.terminator";
     public final static String DBDIALECT_ORACLE_LOAD_QUERY_HINT_PARALLEL_COUNT = "oracle.load.query.hint.parallel.count";
+    public final static String DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC = "oracle.use.ntypes.for.sync";
     
     public final static String DBDIALECT_TIBERO_USE_TRANSACTION_VIEW = "tibero.use.transaction.view";
     public final static String DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC = "tibero.template.precision";
@@ -353,6 +354,7 @@ final public class ParameterConstants {
     public final static String WEB_BATCH_URI_HANDLER_ENABLE = "web.batch.servlet.enable";
 
     public final static String NODE_COPY_MODE_ENABLED = "node.copy.mode.enabled";
+    public final static String NODE_PASSWORD_FAILED_ATTEMPTS = "node.password.failed.attempts";
 
     public final static String NODE_OFFLINE = "node.offline";
     public final static String NODE_OFFLINE_INCOMING_DIR = "node.offline.incoming.dir";
@@ -418,6 +420,9 @@ final public class ParameterConstants {
     public final static String MSSQL_BULK_LOAD_UNC_PATH = "mssql.bulk.load.unc.path";
     public final static String MSSQL_BULK_LOAD_ROW_TERMINATOR = "mssql.bulk.load.row.terminator";
     public final static String MSSQL_BULK_LOAD_FIELD_TERMINATOR = "mssql.bulk.load.field.terminator";
+
+    public final static String SYBASE_ROW_LEVEL_LOCKS_ONLY = "sybase.allow.only.row.level.locks.on.runtime.tables";
+    public final static String SYBASE_CHANGE_IDENTITY_GAP = "sybase.change.identity.gap.on.runtime.tables";
 
     public final static String SQLITE_TRIGGER_FUNCTION_TO_USE = "sqlite.trigger.function.to.use";
     
