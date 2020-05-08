@@ -2,7 +2,8 @@
 === Conflicts
 
 Conflict detection is the act of determining if an insert, update or delete is in "conflict" due to the target data row not 
-being consistent with the data at the source prior to the insert/update/delete. 
+being consistent with the data at the source prior to the insert/update/delete.
+Without any overriding configuration, the system uses a detection of USE_CHANGED_DATA and a resolution of NEWER_WINS by default.
 
 ifdef::pro[]
 image::conflict.png[]
