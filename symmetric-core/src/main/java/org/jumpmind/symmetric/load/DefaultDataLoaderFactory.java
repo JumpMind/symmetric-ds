@@ -48,7 +48,6 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.KafkaWriter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
-import org.jumpmind.symmetric.service.IParameterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +60,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
     public DefaultDataLoaderFactory() {
     }
 
-    public DefaultDataLoaderFactory(IParameterService parameterService) {
-        this.parameterService = parameterService;
+    public DefaultDataLoaderFactory(ISymmetricEngine engine) {
+        this.engine = engine;
+        this.parameterService = engine.getParameterService();
     }
 
     public String getTypeName() {
@@ -216,7 +216,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
+        this.parameterService = engine.getParameterService();
     }
-    
     
 }
