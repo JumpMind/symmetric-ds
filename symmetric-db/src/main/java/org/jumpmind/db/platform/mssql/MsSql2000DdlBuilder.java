@@ -100,7 +100,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         //databaseInfo.addNativeTypeMapping(Types.BIGINT, "DECIMAL(19,0)");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "BIGINT", Types.BIGINT);
         databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.LONGVARBINARY);
-        databaseInfo.addNativeTypeMapping(Types.CLOB, "TEXT", Types.LONGVARCHAR);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME", Types.TIMESTAMP);
         databaseInfo.addNativeTypeMapping(Types.DISTINCT, "IMAGE", Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT", Types.FLOAT);
@@ -251,9 +251,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         }
         if ((column.getMappedTypeCode() == Types.TIMESTAMP) || (column.getMappedTypeCode() == Types.TIME) || (column.getMappedTypeCode() == Types.DATE)) {
             String defaultValue = super.getNativeDefaultValue(column);
-            if (defaultValue != null && defaultValue.equalsIgnoreCase("SYSDATE")) {
-                return "GETDATE()";
-            }else if (defaultValue != null && (defaultValue.equalsIgnoreCase("CURRENT_DATE") || defaultValue.equalsIgnoreCase("CURRENT DATE"))) {
+            if (defaultValue != null && (defaultValue.equalsIgnoreCase("CURRENT_DATE") || defaultValue.equalsIgnoreCase("CURRENT DATE") || defaultValue.equalsIgnoreCase("SYSDATE"))) {
                 return "CURRENT_TIMESTAMP";
             }
         }
