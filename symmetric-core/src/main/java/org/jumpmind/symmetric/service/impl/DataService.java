@@ -680,7 +680,7 @@ public class DataService extends AbstractService implements IDataService {
     protected long insertRequestedOutgoingBatches(ISqlTransaction transaction, Node targetNode,
             TriggerRouter triggerRouter, TriggerHistory triggerHistory,
             String overrideInitialLoadSelect, long loadId, String createBy,
-            String channelId, long rowsPerBatch, long batchCount) {
+            String channelId, long totalRows, long maxRowsPerBatch, long batchCount) {
 
         long startBatchId = 0;
         if (platform.supportsMultiThreadedTransactions()) {
@@ -692,13 +692,17 @@ public class DataService extends AbstractService implements IDataService {
         
         for (int i = 0; i < batchCount; i++) {
             long batchId = startBatchId + i;
+            long rowCount = totalRows;
+            if (rowCount > maxRowsPerBatch) {
+                rowCount = maxRowsPerBatch;
+            }
             OutgoingBatch batch = new OutgoingBatch(targetNode.getNodeId(), channelId, Status.RQ);
             batch.setBatchId(batchId);
             batch.setLoadId(loadId);
             batch.setCreateBy(createBy);
             batch.setLoadFlag(true);
             batch.incrementRowCount(DataEventType.RELOAD);
-            batch.setDataRowCount(rowsPerBatch);
+            batch.setDataRowCount(rowCount);
             batch.incrementTableCount(tableName);
             batch.setExtractJobFlag(true);
             engine.getOutgoingBatchService().insertOutgoingBatch(transaction, batch);
@@ -712,6 +716,7 @@ public class DataService extends AbstractService implements IDataService {
                 long dataId = insertData(transaction, data);
                 insertDataEvent(transaction, new DataEvent(dataId, batchId));   
             }
+            totalRows -= rowCount;
         }
 
         return startBatchId;
@@ -1464,72 +1469,67 @@ public class DataService extends AbstractService implements IDataService {
                                             : triggerRouter.getInitialLoadSelect();
                         }
                     }
+
+                    Table table = getTargetPlatform(triggerHistory.getSourceTableName()).getTableFromCache(
+                            triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
+                            triggerHistory.getSourceTableName(), false);  
                     
-                    if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+                    if (table != null) {
+                        processInfo.setCurrentTableName(table.getName());
                         Trigger trigger = triggerRouter.getTrigger();
                         String reloadChannel = getReloadChannelIdForTrigger(trigger, channels);
                         Channel channel = channels.get(reloadChannel);
-                                                   
-                        Table table = getTargetPlatform(triggerHistory.getSourceTableName()).getTableFromCache(
-                                triggerHistory.getSourceCatalogName(), triggerHistory.getSourceSchemaName(),
-                                triggerHistory.getSourceTableName(), false);  
-                        
-                        if (table != null) {
-                            processInfo.setCurrentTableName(table.getName());
+                        long rowCount = -1;
+                        long parentRequestId = 0;
+                        ExtractRequest parentRequest = requests.get(triggerHistory.getTriggerHistoryId());
 
-                            long rowCount = -1;
-                            long parentRequestId = 0;
-                            ExtractRequest parentRequest = requests.get(triggerHistory.getTriggerHistoryId());
+                        if (parentRequest != null) {
+                            Router router = engine.getTriggerRouterService().getRouterById(triggerRouter.getRouterId(), false);
+                            if (router != null && router.getRouterType().equals("default")) {
+                                parentRequestId = parentRequest.getRequestId();
+                                rowCount = parentRequest.getRows();
+                            }                                
+                        }
 
-                            if (parentRequest != null) {
-                                Router router = engine.getTriggerRouterService().getRouterById(triggerRouter.getRouterId(), false);
-                                if (router != null && router.getRouterType().equals("default")) {
-                                    parentRequestId = parentRequest.getRequestId();
-                                    rowCount = parentRequest.getRows();
-                                }                                
-                            }
+                        if (rowCount == -1) {
+                            rowCount = getDataCountForReload(table, targetNode, selectSql);
+                        }
 
-                            if (rowCount == -1) {
-                                rowCount = getDataCountForReload(table, targetNode, selectSql);
-                            }
+                        long transformMultiplier = getTransformMultiplier(table, triggerRouter);
+                        long startBatchId = 0;
+                        long numberOfBatches = 1;
 
-                            long transformMultiplier = getTransformMultiplier(table, triggerRouter);
-                            
-                            // calculate the number of batches needed for table.
-                            long numberOfBatches = 1;
-
+                        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
                             if (rowCount > 0) {
                                 numberOfBatches = (long) Math.ceil((rowCount * transformMultiplier) / (channel.getMaxBatchSize() * 1f));
                             }
 
-                            long startBatchId = insertRequestedOutgoingBatches(transaction, targetNode, triggerRouter, triggerHistory, selectSql,
-                                    loadId, createBy, reloadChannel, channel.getMaxBatchSize(), numberOfBatches);
-                            long endBatchId = startBatchId + numberOfBatches - 1;
-
-                            firstBatchId = firstBatchId == 0 ? startBatchId : firstBatchId;
-                            
-                            if (table.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix() + "_" + TableConstants.SYM_FILE_SNAPSHOT)) {
-                                TableReloadStatus reloadStatus = getTableReloadStatusByLoadId(loadId);
-                                firstBatchId = reloadStatus.getStartDataBatchId() > 0 ? reloadStatus.getStartDataBatchId() : firstBatchId;
-                            }
-                            
-                            updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
-                                    loadId, firstBatchId, endBatchId, numberOfBatches, rowCount);
-                        
-                            ExtractRequest request = engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
-                                    triggerRouter, startBatchId, endBatchId, loadId, table.getName(), rowCount, parentRequestId);
-                            if (parentRequestId == 0) {
-                                requests.put(triggerHistory.getTriggerHistoryId(), request);
-                            }
+                            startBatchId = insertRequestedOutgoingBatches(transaction, targetNode, triggerRouter, triggerHistory, selectSql,
+                                    loadId, createBy, reloadChannel, rowCount, channel.getMaxBatchSize(), numberOfBatches);
                         } else {
-                            log.warn("The table defined by trigger_hist row %d no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());
-                            
+                            startBatchId = insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
+                                    selectSql, true, loadId, createBy, Status.NE, null, -1);
+                        }
+
+                        long endBatchId = startBatchId + numberOfBatches - 1;
+                        firstBatchId = firstBatchId == 0 ? startBatchId : firstBatchId;
+                        
+                        if (table.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix() + "_" + TableConstants.SYM_FILE_SNAPSHOT)) {
+                            TableReloadStatus reloadStatus = getTableReloadStatusByLoadId(loadId);
+                            firstBatchId = reloadStatus.getStartDataBatchId() > 0 ? reloadStatus.getStartDataBatchId() : firstBatchId;
+                        }
+                        
+                        updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                                loadId, firstBatchId, endBatchId, numberOfBatches, rowCount);
+                    
+                        ExtractRequest request = engine.getDataExtractorService().requestExtractRequest(transaction, targetNode.getNodeId(), channel.getQueue(),
+                                triggerRouter, startBatchId, endBatchId, loadId, table.getName(), rowCount, parentRequestId);
+                        if (parentRequestId == 0) {
+                            requests.put(triggerHistory.getTriggerHistoryId(), request);
                         }
                     } else {
-                        insertReloadEvent(transaction, targetNode, triggerRouter, triggerHistory,
-                                selectSql, true, loadId, createBy, Status.NE, null, -1);
+                        log.warn("The table defined by trigger_hist row %d no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());                            
                     }
-
                     if (!transactional) {
                         transaction.commit();
                     }

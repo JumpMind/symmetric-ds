@@ -38,7 +38,7 @@ import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 public class PostgresBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
     public PostgresBulkDataLoaderFactory(ISymmetricEngine engine) {
-        super(engine.getParameterService());
+        super(engine);
     }
 
     public String getTypeName() {

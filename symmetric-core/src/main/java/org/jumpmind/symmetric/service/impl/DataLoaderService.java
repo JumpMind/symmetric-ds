@@ -189,7 +189,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
         this.stagingManager = engine.getStagingManager();
         this.setSqlMap(new DataLoaderServiceSqlMap(platform, createSqlReplacementTokens()));
         extensionService = engine.getExtensionService();
-        extensionService.addExtensionPoint(new DefaultDataLoaderFactory(parameterService));
+        extensionService.addExtensionPoint(new DefaultDataLoaderFactory(engine));
         extensionService.addExtensionPoint(new ConfigurationChangedDatabaseWriterFilter(engine));
         this.nodeCommunicationService = engine.getNodeCommunicationService();
         this.engine = engine;

@@ -29,6 +29,7 @@ import com.google.gson.annotations.Expose;
 
 public class LogSummary implements Comparable<LogSummary> {
 
+    @Expose
     private Level level;
 
     @Expose
