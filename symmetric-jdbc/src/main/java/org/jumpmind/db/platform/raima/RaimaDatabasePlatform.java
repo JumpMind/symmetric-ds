@@ -37,6 +37,7 @@ public class RaimaDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public RaimaDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         supportsTruncate = false;
+        getDatabaseInfo().setRequiresAutoCommitForDdl(true);
     }
 
     @Override

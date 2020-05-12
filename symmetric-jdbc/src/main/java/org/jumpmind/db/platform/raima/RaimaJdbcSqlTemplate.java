@@ -26,7 +26,9 @@ import java.sql.Types;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
@@ -51,6 +53,11 @@ public class RaimaJdbcSqlTemplate extends JdbcSqlTemplate {
     @Override
     public String getSelectLastInsertIdSql(String sequenceName) {
         return "select last_insert_id()";
+    }
+    
+    @Override
+    public ISqlTransaction startSqlTransaction() {
+        return new JdbcSqlTransaction(this, true);
     }
 
 }
