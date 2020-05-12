@@ -113,7 +113,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " from $(table_reload_status) "
                 + " where target_node_id = ?");
         
-        putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, processed = 1 where load_id = ?");
+        putSql("updateProcessedTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, processed = 1 where load_id = ? and processed = 0");
         
         putSql("cancelTableReloadRequest", "update $(table_reload_request) set last_update_time = ?, processed = 1 where source_node_id=? and target_node_id=? and trigger_id=? and router_id=? and create_time=?");
         
@@ -138,14 +138,14 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         
         putSql("updateTableReloadStatusDataLoaded", "update $(table_reload_status) "
                 + " set completed = case when ("
-                + "    data_batch_count = (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
-                + "    setup_batch_count = (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
-                + "    finalize_batch_count = (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
+                + "    data_batch_count <= (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
+                + "    setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
+                + "    finalize_batch_count <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
                 + "    then 1 else 0 end, "
                 + " end_time = case when ("
-                + "    data_batch_count = (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
-                + "    setup_batch_count = (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
-                + "    finalize_batch_loaded = (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
+                + "    data_batch_count <= (case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end) and "
+                + "    setup_batch_count <= (case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end) and "
+                + "    finalize_batch_loaded <= (case when ? > end_data_batch_id then finalize_batch_loaded + ? else finalize_batch_loaded end)) "
                 + "    then ? else end_time end, "
                 + " data_batch_loaded = case when ? between start_data_batch_id and end_data_batch_id then data_batch_loaded + ? else data_batch_loaded end, "
                 + " setup_batch_loaded = case when ? < start_data_batch_id then setup_batch_loaded + ? else setup_batch_loaded end, "
@@ -160,7 +160,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         
         putSql("updateTableReloadStatusCancelled", "update $(table_reload_status) set "
                 + " cancelled = 1, completed = 1, end_time = ?, last_update_time = ? "
-                + " where load_id = ?");
+                + " where load_id = ? and cancelled = 0 and completed = 0");
         
         putSql("updateTableReloadStatusError", "update $(table_reload_status) set "
                 + " error_flag = 1, sql_code = ?, sql_state = ?, sql_message = ? where load_id = ?");

@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -998,8 +999,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
      */
     final protected OutgoingBatch requeryIfEnoughTimeHasPassed(long ts, OutgoingBatch currentBatch) {
         if (System.currentTimeMillis() - ts > MS_PASSED_BEFORE_BATCH_REQUERIED) {
-            currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch.getBatchId(),
+            OutgoingBatch batch = outgoingBatchService.findOutgoingBatch(currentBatch.getBatchId(),
                     currentBatch.getNodeId());
+            if (batch != null && !batch.getStatus().equals(currentBatch.getStatus())) {
+                currentBatch.setStatus(batch.getStatus());
+            }
         }
         return currentBatch;
     }
@@ -1075,7 +1079,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             }
                         }
                         extractTimeInMs = System.currentTimeMillis() - ts;
-                        Statistics stats = getExtractStats(writer);
+                        Statistics stats = getExtractStats(writer, currentBatch);
                         if (stats != null) {
                             transformTimeInMs = stats.get(DataWriterStatisticConstants.TRANSFORMMILLIS);                            
                             currentBatch.setDataRowCount(stats.get(DataWriterStatisticConstants.ROWCOUNT));
@@ -1117,23 +1121,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
 
             if (updateBatchStatistics) {
-                long dataEventCount = currentBatch.getDataRowCount();
-                long insertEventCount = currentBatch.getDataInsertRowCount();
-                
                 currentBatch = requeryIfEnoughTimeHasPassed(ts, currentBatch);
 
-                // preserve in the case of a reload event
-                if (dataEventCount > currentBatch.getDataRowCount()) {
-                    currentBatch.setDataRowCount(dataEventCount);
-                }
-
-                // preserve in the case of a reload event
-                if (insertEventCount > currentBatch.getDataInsertRowCount()) {
-                    currentBatch.setDataInsertRowCount(insertEventCount);
-                }
-
-                // only update the current batch after we have possibly
-                // "re-queried"
                 if (extractTimeInMs > 0) {
                     currentBatch.setExtractMillis(extractTimeInMs);
                 }
@@ -1146,8 +1135,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     currentBatch.setTransformExtractMillis(transformTimeInMs);
                 }
 
-            }
-
+                if (currentBatch.getLoadId() > 0 && (currentBatch.getSummary() == null || !currentBatch.getSummary().startsWith(symmetricDialect.getTablePrefix()))) {                    
+                    if (currentBatch.getExtractRowCount() != currentBatch.getDataRowCount()) {
+                        currentBatch.setDataRowCount(currentBatch.getExtractRowCount());
+                        currentBatch.setDataInsertRowCount(currentBatch.getExtractInsertRowCount());
+                    }
+                    ExtractRequest extractRequest = getExtractRequestForBatch(currentBatch);
+                    if (extractRequest != null) {
+                        sqlTemplate.update(getSql("updateExtractRequestStatus"), ExtractStatus.OK.name(), currentBatch.getExtractRowCount(),
+                                currentBatch.getExtractMillis(), extractRequest.getRequestId());
+                        checkSendDeferredConstraints(extractRequest, null, targetNode);
+                    }
+                }
+            }            
         }
         return currentBatch;
     }
@@ -1269,7 +1269,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo, containsBigLob));
     }
 
-    protected Statistics getExtractStats(IDataWriter writer) {
+    protected Statistics getExtractStats(IDataWriter writer, OutgoingBatch currentBatch) {
         Map<Batch, Statistics> statisticsMap = null;
         if (writer instanceof TransformWriter) {
             statisticsMap = ((TransformWriter) writer).getNestedWriter().getStatistics();
@@ -1277,10 +1277,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             statisticsMap = writer.getStatistics();
         }
         if (statisticsMap.size() > 0) {
-            return statisticsMap.values().iterator().next();
-        } else {
-            return null;
+            for (Entry<Batch, Statistics> entry : statisticsMap.entrySet()) {
+                if (entry.getKey().getBatchId() == currentBatch.getBatchId()) {
+                    return entry.getValue();
+                }
+            }
         }
+        return null;
     }
 
     protected IDataWriter wrapWithTransformWriter(Node sourceNode, Node targetNode, ProcessInfo processInfo, IDataWriter dataWriter,
@@ -2088,7 +2091,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     extractOutgoingBatch(processInfo, targetNode, multiBatchStagingWriter, 
                             firstBatch, false, false, ExtractMode.FOR_SYM_CLIENT, new ClusterLockRefreshListener(clusterService));
 
-                    checkSendDeferredConstraints(request, childRequests, targetNode, firstBatch);
+                    checkSendDeferredConstraints(request, childRequests, targetNode);
                 } else {
                     log.info("Batches already had an OK status for request {} to extract table {} for batches {} through {} for node {}.  Not extracting.", 
                             new Object[] { request.getRequestId(), request.getTableName(), request.getStartBatchId(), request.getEndBatchId(), request.getNodeId() });
@@ -2254,7 +2257,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
     }
     
-    protected void checkSendDeferredConstraints(ExtractRequest request, List<ExtractRequest> childRequests, Node targetNode, OutgoingBatch batch) {
+    protected void checkSendDeferredConstraints(ExtractRequest request, List<ExtractRequest> childRequests, Node targetNode) {
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false)) {
             TableReloadRequest reloadRequest = dataService.getTableReloadRequest(request.getLoadId(), request.getTriggerId(), request.getRouterId());
             if ((reloadRequest != null && reloadRequest.isCreateTable()) ||

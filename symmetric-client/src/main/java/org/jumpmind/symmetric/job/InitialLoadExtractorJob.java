@@ -42,9 +42,13 @@ public class InitialLoadExtractorJob extends AbstractJob {
 
     @Override
     public void doJob(boolean force) throws Exception {
-        if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)) {
-            engine.getFileSyncExtractorService().queueWork(force);
+        if (engine.getParameterService().is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+            
+            if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_ENABLE)) {
+                engine.getFileSyncExtractorService().queueWork(force);
+            }
+        
+            engine.getDataExtractorService().queueWork(force);
         }
-        engine.getDataExtractorService().queueWork(force);
     }
 }
