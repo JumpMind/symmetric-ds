@@ -239,7 +239,9 @@ public class HttpIncomingTransport implements IIncomingTransport {
                     sb.append("&");
                 }
                 sb.append(requestProperty.getKey()).append("=");
-                sb.append(URLEncoder.encode(requestProperty.getValue(), IoConstants.ENCODING));
+                if (requestProperty.getValue() != null && !requestProperty.getValue().equals("")) {
+                    sb.append(URLEncoder.encode(requestProperty.getValue(), IoConstants.ENCODING));
+                }
             }
 
             try (OutputStream os = connection.getOutputStream()) {
