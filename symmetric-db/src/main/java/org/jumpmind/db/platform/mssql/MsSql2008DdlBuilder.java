@@ -30,7 +30,7 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
     public MsSql2008DdlBuilder() {
         this.databaseName = DatabaseNamesConstants.MSSQL2008;
     
-        databaseInfo.addNativeTypeMapping(Types.DATE, "DATE", Types.DATE);
+        databaseInfo.addNativeTypeMapping(Types.DATE, "DATETIME");
         databaseInfo.addNativeTypeMapping(Types.TIME, "TIME", Types.TIME);
         databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_SQL_VARIANT, "SQL_VARIANT", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME2");
