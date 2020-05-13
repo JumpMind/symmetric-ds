@@ -132,7 +132,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
             String sql = "select max(create_time) from " + databaseWriter.getTablePrefix() + 
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
-                    "(event_type in ('U', 'D') and pk_data = ?))";
+                    "(event_type in ('U', 'D') and pk_data like ?))";
 
             existingTs = databaseWriter.getTransaction().queryForObject(sql, Timestamp.class, targetTable.getName(),
                     pkCsv + "%", pkCsv);
