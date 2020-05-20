@@ -544,7 +544,8 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("sourceNodeExpression",
                 symmetricDialect.getSourceNodeExpression(), ddl);
 
-        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? getClobType(table) : "long",
+        ddl = FormatUtils.replace("oracleLobType", trigger.isUseCaptureLobs() ? getClobType(table) :
+            symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC) ? "NVARCHAR2(4000)" : "VARCHAR2(4000)",
                 ddl);
         ddl = FormatUtils.replace("oracleLobTypeClobAlways", getClobType(table), ddl);
 
