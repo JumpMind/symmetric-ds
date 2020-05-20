@@ -21,8 +21,9 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.security.ISecurityService;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.INodeService.AuthenticationStatus;
 import org.slf4j.Logger;
@@ -46,18 +48,23 @@ public class AuthenticationInterceptor implements IInterceptor {
     
     private ISecurityService securityService;
     
-    private Map<String, AuthenticationSession> sessions = new HashMap<String, AuthenticationSession>();
+    private Map<String, AuthenticationSession> sessions = new ConcurrentHashMap<String, AuthenticationSession>();
 
     private boolean useSessionAuth;
     
     private int sessionExpireMillis;
     
+    private int maxSessions;
+    
+    private long maxSessionsLastTime;
+    
     public AuthenticationInterceptor(INodeService nodeService, ISecurityService securityService, 
-            boolean useSessionAuth, int sessionExpireSeconds) {
+            boolean useSessionAuth, int sessionExpireSeconds, int maxSessions) {
         this.nodeService = nodeService;
         this.securityService = securityService;
         this.useSessionAuth = useSessionAuth;
         this.sessionExpireMillis = sessionExpireSeconds * 1000;
+        this.maxSessions = maxSessions;
     }
 
     public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -124,13 +131,42 @@ public class AuthenticationInterceptor implements IInterceptor {
  
     protected AuthenticationSession getSession(HttpServletRequest req, boolean create) {
         String sessionId = req.getHeader(WebConstants.HEADER_SESSION_ID);
-        AuthenticationSession session = sessions.get(sessionId);
+        AuthenticationSession session = null;
+        if (sessionId != null) {
+            session = sessions.get(sessionId);
+        }
         if (session == null && create) {
+            if (sessions.size() >= maxSessions) {
+                removeOldSessions();
+            }
             String id = securityService.nextSecureHexString(30);
             session = new AuthenticationSession(id);
             sessions.put(id, session);
         }
         return session;
+    }
+    
+    protected void removeOldSessions() {
+        long now = System.currentTimeMillis();
+        int removedSessions = 0;
+        AuthenticationSession oldestSession = null;
+        Iterator<AuthenticationSession> iter = sessions.values().iterator();
+        while (iter.hasNext()) {
+            AuthenticationSession session = iter.next();
+            if (now - session.getCreationTime() > sessionExpireMillis) {
+                iter.remove();
+                removedSessions++;
+            } else if (oldestSession == null || session.getCreationTime() < oldestSession.getCreationTime()) {
+                oldestSession = session;
+            }
+        }
+        if (removedSessions == 0 && oldestSession != null) {
+            sessions.remove(oldestSession.getId());
+        }
+        if (maxSessionsLastTime == 0 || now - maxSessionsLastTime > 60000) {
+            maxSessionsLastTime = now;
+            log.warn("Max node authentication sessions reached, removing old sessions. See parameter " + ParameterConstants.TRANSPORT_HTTP_SESSION_MAX_COUNT);
+        }
     }
 
     public void after(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {

@@ -81,7 +81,8 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
 
         boolean useSessionAuth = parameterService.is(ParameterConstants.TRANSPORT_HTTP_USE_SESSION_AUTH);
         int sessionExpireSeconds = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_SESSION_EXPIRE_SECONDS);
-        AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService, securityService, useSessionAuth, sessionExpireSeconds);
+        int maxSessions = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_SESSION_MAX_COUNT, 1000);
+        AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService, securityService, useSessionAuth, sessionExpireSeconds, maxSessions);
         NodeConcurrencyInterceptor concurrencyInterceptor = new NodeConcurrencyInterceptor(
                 concurrentConnectionManager, configurationService, statisticManager);
         IInterceptor[] customInterceptors = buildCustomInterceptors();
