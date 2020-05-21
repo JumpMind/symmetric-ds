@@ -75,9 +75,11 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
             String s = rs.getString(1);
             Date d = null;
             
-            d = FormatUtils.parseDate(s,FormatUtils.TIMESTAMP_PATTERNS);
+            if (s != null) {
+                d = FormatUtils.parseDate(s, FormatUtils.TIMESTAMP_PATTERNS);
+            }
               
-            if (Timestamp.class.isAssignableFrom(clazz)) {
+            if (d != null && Timestamp.class.isAssignableFrom(clazz)) {
                 return (T) new Timestamp(d.getTime());
             } else {
                 return (T) d;
