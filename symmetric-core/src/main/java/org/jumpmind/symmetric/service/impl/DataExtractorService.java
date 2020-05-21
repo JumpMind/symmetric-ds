@@ -1025,13 +1025,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             if (currentBatch.getStatus() == Status.IG) {
                 cleanupIgnoredBatch(sourceNode, targetNode, currentBatch, writer);
-            } else if (!isPreviouslyExtracted(currentBatch, false)) {
+            } else if (currentBatch.getStatus() == Status.RQ || !isPreviouslyExtracted(currentBatch, false)) {
                 BatchLock lock = null;
                 try {
                     log.debug("{} attempting to acquire lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                     lock = acquireLock(currentBatch, useStagingDataWriter);
                     log.debug("{} acquired lock for batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
-                    if (!isPreviouslyExtracted(currentBatch, true)) {
+                    if (currentBatch.getStatus() == Status.RQ || !isPreviouslyExtracted(currentBatch, true)) {
                         log.debug("{} extracting batch {}", targetNode.getNodeId(), currentBatch.getBatchId());
                         currentBatch.setExtractCount(currentBatch.getExtractCount() + 1);
                         
