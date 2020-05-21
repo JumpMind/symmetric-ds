@@ -55,19 +55,19 @@ ifdef::pro[]
 .Advanced Options
 endif::pro[]
 
-Sync On Insert:: Determines if changes will be captured for inserts.
-Sync On Update:: Determines if changes will be captured for updates.
-Sync On Delete:: Determines if changes will be captured for deletes.
+Sync On Insert:: Flag for installing an insert trigger.
+Sync On Update:: Flag for installing an update trigger.
+Sync On Delete:: Flag for installing a delete trigger.
 Reload Channel Id:: The channel_id of the channel that will be used for initial loads.
-Sync On Insert Condition:: Specify a condition for the insert trigger firing using an expression specific to the database.   On most platforms, it is added to an "IF" statement in the trigger text.  On SQL-Server it is added to the "WHERE" clause of a query for inserted/deleted logical tables. See Sync Condition Example.
-Sync On Update Condition:: Specify a condition for the update trigger firing using an expression specific to the database.   On most platforms, it is added to an "IF" statement in the trigger text.  On SQL-Server it is added to the "WHERE" clause of a query for inserted/deleted logical tables. See Sync Condition Example.
-Sync On Delete Condition:: Specify a condition for the delete trigger firing using an expression specific to the database.   On most platforms, it is added to an "IF" statement in the trigger text.  On SQL-Server it is added to the "WHERE" clause of a query for inserted/deleted logical tables. See Sync Condition Example.
-Sync Condition Example:: Sync Conditions can access both old values and new values of a field/column using "old_" and "new_" respectively. For example, if your column is id and your condition checks the value coming in to be 'test', your condition will be:
+Sync Conditions:: A procedure language expression included in the trigger text to determine whether a change is captured or not.  Most platforms include the condition inside an "IF" statement, while SQL-Server includes the condition in a "WHERE" clause.  Old and new values of a column can be referenced using "$(oldTriggerValue)" and "$(newTriggerValue)" aliases respectively.  See <<Trigger Variables>>.  For example, if a character column is named "STATUS" and the row should be captured when the value is "2", then the condition would be:
 +
 ----
- new_id = 'test'   
+ $(newTriggerValue).status = '2'
 ----
 
+Sync On Insert Condition:: Conditional expression for the insert trigger to determine if a change is captured or not.  See Sync Conditions.
+Sync On Update Condition:: Conditional expression for the update trigger to determine if a change is captured or not.  See Sync Conditions.
+Sync On Delete Condition:: Conditional expression for the delete trigger to determine if a change is captured or not.  See Sync Conditions.
 Custom Insert Trigger Text:: Specify insert trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
 Custom Update Trigger Text:: Specify update trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
 Custom Delete Trigger Text:: Specify delete trigger text (SQL) to execute after the SymmetricDS trigger fires.  This field is not applicable for H2, HSQLDB 1.x or Apache Derby.
@@ -129,4 +129,5 @@ This property is currently only supported on MySQL, DB2, SQL Server, and Oracle.
 
 include::table-triggers/wildcards.ad[]
 include::table-triggers/external-select.ad[]
+include::table-triggers/trigger-variables.ad[]
 include::table-triggers/load-only.ad[]

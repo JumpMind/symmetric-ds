@@ -1,0 +1,21 @@
+
+==== Trigger Variables
+
+The Sync Condition, External Select, and Custom Trigger Text configurations allow the user to provide
+procedure language text that is included inside the trigger.
+Variables can be used for configuration that works across different database platforms.
+When triggers are created, the variables are replaced with the syntax needed for that specific database.
+
+.Trigger Template Variables
+[cols=".^2,8"]
+|===
+
+|$(newTriggerValue)|New row alias for inserts and updates.  For example, "$(newTriggerValue).MYCOLUMN" becomes ":new.MYCOLUMN" for an insert/update trigger on Oracle.
+
+|$(oldTriggerValue)|Old row alias for updates and deletes.  For example, "$(oldTriggerValue).MYCOLUMN" becomes ":old.MYCOLUMN" for an update/delete trigger on Oracle.
+
+|$(curTriggerValue)|Current row alias for insert, updates, and deletes.  This variable acts like $(newTriggerValue) for inserts and updates, and it acts like $(oldTriggerValue) for deletes.
+
+|$(curColumnPrefix)|Column prefix only used by H2 database.  It is replaced with the NEW_ or OLD_ column prefix needed by H2.  All other platforms will replace the variable with an empty string
+
+|===

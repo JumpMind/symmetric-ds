@@ -6,7 +6,8 @@ This data is typically needed for the purposes of determining where to 'route' t
 definition contains an optional "external select" field which can be used to specify the data to be captured. Once captured, this 
 data is available during routing in DATA 's external_data field. 
 
-For these cases, place a SQL select statement which returns the data item you need for routing in external_select. 
+For these cases, place a SQL select statement which returns the data item you need for routing in external_select.
+See <<Trigger Variables>> for a list of variables available for use.
 
 IMPORTANT: The external select SQL must return a single row, single column 
 
@@ -31,20 +32,6 @@ values ('orderlineitem', 'orderlineitem','orderlineitem',
 	current_timestamp, current_timestamp);
 ====
 endif::pro[]
-
-.The following variables can be used with the external select
-[cols=".^2,8"]
-|===
-
-|$(curTriggerValue)|Variable to be replaced with the NEW or OLD column alias provided by the trigger context, which is platform specific. 
-For insert and update triggers, the NEW alias is used; for delete triggers, the OLD alias is used. For example, "$(curTriggerValue).COLUMN" 
-becomes ":new.COLUMN" for an insert trigger on Oracle.
-
-|$(curColumnPrefix)|Variable to be replaced with the NEW_ or OLD_ column prefix for platforms that don't support column aliases. This is 
-currently only used by the H2 database. All other platforms will replace the variable with an empty string. For example "$(curColumnPrefix)COLUMN" 
-becomes "NEW_COLUMN" on H2 and "COLUMN" on Oracle.
-
-|===
 
 WARNING: External select SQL statements should be used carefully as they will cause the trigger to run the additional SQL each time the trigger fires.
 
