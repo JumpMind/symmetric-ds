@@ -45,7 +45,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
  * Reads a database model from a PostgreSql database.
@@ -123,7 +122,10 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             return Types.BLOB;
         } else if (type != null && (type == Types.STRUCT || type == Types.OTHER)) {
             return Types.LONGVARCHAR;
-        } else {
+        } else if (typeName != null && typeName.equalsIgnoreCase("BIT")) {
+            return Types.VARCHAR;
+        }
+        else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
