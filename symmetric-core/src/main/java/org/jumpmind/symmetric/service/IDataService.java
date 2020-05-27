@@ -32,6 +32,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Data;
 import org.jumpmind.symmetric.model.DataEvent;
@@ -103,8 +104,11 @@ public interface IDataService {
     
     public String sendSQL(String nodeId, String sql);
 
-    public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
-            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests);
+    public Map<Integer, ExtractRequest> insertReloadEvents(
+    		Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests,
+    		ProcessInfo processInfo, List<TriggerRouter> triggerRouters,
+    		Map<Integer, ExtractRequest> extractRequests,
+    		IReloadGenerator reloadGenerator);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     

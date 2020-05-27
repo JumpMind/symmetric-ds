@@ -72,7 +72,7 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
     protected String serializeDetails(List<String> offlineNodes) {
         String result = null;
         try {
-            new Gson().toJson(offlineNodes);
+            result = new Gson().toJson(offlineNodes);
         } catch(Exception e) {
             log.warn("Unable to convert list of offline nodes to JSON", e);
         }

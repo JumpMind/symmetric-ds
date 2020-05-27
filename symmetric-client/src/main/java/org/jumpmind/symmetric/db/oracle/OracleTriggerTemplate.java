@@ -35,19 +35,19 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
         // @formatter:off
 
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, $(oracleToClob)'', '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"')" ;
-        geometryColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then to_clob('') else '\"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"')||'\"' end";
-        numberColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||" + getNumberConversionString() + "||'\"')" ;
-        datetimeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF9')),'\"'))" ;
-        dateTimeWithTimeZoneColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM')),'\"'))" ;
-        dateTimeWithLocalTimeZoneColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char(cast($(tableAlias).\"$(columnName)\" as timestamp), 'YYYY-MM-DD HH24:MI:SS.FF9')),'\"'))" ;
-        timeColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'))" ;
-        dateColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'))" ;
-        clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then null else '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"' end" ;
-        blobColumnTemplate = "decode(dbms_lob.getlength($(tableAlias).\"$(columnName)\"), null, to_clob(''), '\"'||$(prefixName)_blob2clob($(tableAlias).\"$(columnName)\")||'\"')" ;
+        stringColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", '\"'||replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"', '')";
+        geometryColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", '\"'||replace(replace(SDO_UTIL.TO_WKTGEOMETRY($(tableAlias).\"$(columnName)\"),'\\','\\\\'),'\"','\\\"')||'\"', '')";
+        numberColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", $(oracleToClob)'\"'||" + getNumberConversionString() + "||'\"', '')";
+        datetimeColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", $(oracleToClob)concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF9')),'\"'), '')";
+        dateTimeWithTimeZoneColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", $(oracleToClob)concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS.FF9 TZH:TZM')),'\"'), '')";
+        dateTimeWithLocalTimeZoneColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", $(oracleToClob)concat(concat('\"',to_char(cast($(tableAlias).\"$(columnName)\" as timestamp), 'YYYY-MM-DD HH24:MI:SS.FF9')),'\"'), '')";
+        timeColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", $(oracleToClob)concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'), '')";
+        dateColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", $(oracleToClob)concat(concat('\"',to_char($(tableAlias).\"$(columnName)\", 'YYYY-MM-DD HH24:MI:SS','NLS_CALENDAR=''GREGORIAN''')),'\"'), '')";
+        clobColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", '\"'||replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"')||'\"', '')";
+        blobColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", '\"'||$(prefixName)_blob2clob($(tableAlias).\"$(columnName)\")||'\"', '')";
         longColumnTemplate = "$(oracleToClob)'\"\\b\"'";
-        booleanColumnTemplate = "decode($(tableAlias).\"$(columnName)\", null, '', '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"')" ;
-        xmlColumnTemplate = "decode(dbms_lob.getlength(extract($(tableAlias).\"$(columnName)\", '/').getclobval()), null, to_clob(''), '\"'||replace(replace(extract($(tableAlias).\"$(columnName)\", '/').getclobval(),'\\','\\\\'),'\"','\\\"')||'\"')" ;
+        booleanColumnTemplate = "nvl2($(tableAlias).\"$(columnName)\", '\"'||cast($(tableAlias).\"$(columnName)\" as number("+symmetricDialect.getTemplateNumberPrecisionSpec()+"))||'\"', '')";
+        xmlColumnTemplate = "nvl2(extract($(tableAlias).\"$(columnName)\", '/').getclobval(), '\"'||replace(replace(extract($(tableAlias).\"$(columnName)\", '/').getclobval(),'\\','\\\\'),'\"','\\\"')||'\"', '')";
         binaryColumnTemplate = blobColumnTemplate;
         triggerConcatCharacter = "||" ;
         newTriggerValue = ":new" ;
