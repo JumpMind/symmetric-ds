@@ -6,6 +6,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile project(":symmetric-io")
         compile project(":symmetric-util")
         compile "javax.mail:javax.mail-api:$javaMailVersion"
+        compile "com.sun.mail:javax.mail:$javaMailVersion"
         compile "com.google.code.gson:gson:$gsonVersion"
         compile "org.springframework:spring-core:$springVersion"
 
