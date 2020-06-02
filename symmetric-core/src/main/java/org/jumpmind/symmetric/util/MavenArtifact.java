@@ -53,7 +53,7 @@ public class MavenArtifact {
                 this.artifactId = array[1];
             }
             if (array.length >= 3) {
-                this.version = array[2].replace("$version", Version.version());
+                this.version = array[2].replace("$version", Version.version().replaceAll("x-SNAPSHOT", "0"));
             }
         }
     }
