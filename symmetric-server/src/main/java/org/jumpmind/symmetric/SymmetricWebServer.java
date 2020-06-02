@@ -396,7 +396,7 @@ public class SymmetricWebServer {
             securityService.installDefaultSslCert(host);
             String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
-            SslContextFactory sslConnectorFactory = new SslContextFactory();
+            SslContextFactory sslConnectorFactory = new SslContextFactory.Server();
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
             /* Prevent POODLE attack */
             String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
