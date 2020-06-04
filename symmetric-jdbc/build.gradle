@@ -12,4 +12,5 @@ apply from: symAssembleDir + '/common.gradle'
         compileOnly "jdbc.sybase:jconnect:7.7"
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
+        testCompile "com.h2database:h2:$h2Version"
     }
