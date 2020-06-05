@@ -157,6 +157,10 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
     public void testLookupTableRouting() {
 
         getDbDialect().truncateTable("test_lookup_table");
+        
+        long oldValue = getParameterService().getLong(ParameterConstants.CACHE_CHANNEL_DEFAULT_ROUTER_IN_MS);
+        getParameterService().saveParameter(ParameterConstants.CACHE_CHANNEL_DEFAULT_ROUTER_IN_MS, 1l, "test");
+        getParameterService().refreshFromDatabase();
 
         getSqlTemplate().update("insert into test_lookup_table values ('A',?)", NODE_GROUP_NODE_1.getExternalId());
         getSqlTemplate().update("insert into test_lookup_table values ('B',?)", NODE_GROUP_NODE_1.getExternalId());
@@ -229,6 +233,9 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         Assert.assertEquals(1, countUnroutedBatches() - unroutedCount);
 
         resetBatches();
+        
+        getParameterService().saveParameter(ParameterConstants.CACHE_CHANNEL_DEFAULT_ROUTER_IN_MS, oldValue, "test");
+        getParameterService().refreshFromDatabase();
 
     }
 
@@ -327,7 +334,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         TriggerRouter trigger1 = getTestRoutingTableTrigger(TEST_TABLE_1);
         trigger1.getTrigger().setSyncOnIncomingBatch(true);
         trigger1.getRouter().setRouterExpression(null);
-        trigger1.getRouter().setRouterType(null);
+        trigger1.getRouter().setRouterType("default");
         getTriggerRouterService().saveTriggerRouter(trigger1);
 
         NodeChannel testChannel = getConfigurationService().getNodeChannel(TestConstants.TEST_CHANNEL_ID, false);
@@ -494,7 +501,8 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         String name = getPlatform().getName();
         if (name.equals(DatabaseNamesConstants.DERBY) || name.equals(DatabaseNamesConstants.MSSQL2000)
                 || name.equals(DatabaseNamesConstants.MSSQL2005) || name.equals(DatabaseNamesConstants.MSSQL2008)
-                || name.equals(DatabaseNamesConstants.ASE) || name.equals(DatabaseNamesConstants.SQLANYWHERE)) {
+                || name.equals(DatabaseNamesConstants.ASE) || name.equals(DatabaseNamesConstants.SQLANYWHERE)
+                || name.equals(DatabaseNamesConstants.INGRES)) {
             // TODO could not get subselect to work in trigger text for derby or
             // mssql. probably need to work on derby's support of
             // external_select a bit more

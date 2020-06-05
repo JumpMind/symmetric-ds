@@ -1012,7 +1012,7 @@ abstract public class AbstractTriggerTemplate {
         if (templateToUse != null) {
             templateToUse = templateToUse.trim();
         } else {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Table " + table + " column " + column);
         }
 
         String formattedColumnText = FormatUtils.replace("columnName",

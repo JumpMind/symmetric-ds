@@ -33,6 +33,7 @@ import org.jumpmind.db.platform.hana.HanaDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.ingres.IngresDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
@@ -63,6 +64,7 @@ import org.jumpmind.symmetric.db.hana.HanaSymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbSymmetricDialect;
 import org.jumpmind.symmetric.db.hsqldb2.HsqlDb2SymmetricDialect;
 import org.jumpmind.symmetric.db.informix.InformixSymmetricDialect;
+import org.jumpmind.symmetric.db.ingres.IngresSymmetricDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseSymmetricDialect;
 import org.jumpmind.symmetric.db.mariadb.MariaDBSymmetricDialect;
 import org.jumpmind.symmetric.db.mssql.MsSql2008SymmetricDialect;
@@ -172,6 +174,8 @@ public class JdbcSymmetricDialectFactory {
             dialect = new RaimaSymmetricDialect(parameterService, platform);
         } else if (platform instanceof HanaDatabasePlatform){
             dialect = new HanaSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof IngresDatabasePlatform) {
+            dialect = new IngresSymmetricDialect(parameterService, platform);
         }else{
             dialect = new GenericSymmetricDialect(parameterService, platform);
         }
