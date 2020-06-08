@@ -36,6 +36,7 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -615,9 +616,10 @@ public class SnapshotUtil {
             }
 
             Runtime rt = Runtime.getRuntime();
-            runtimeProperties.setProperty("memory.free", String.valueOf(rt.freeMemory()));
-            runtimeProperties.setProperty("memory.used", String.valueOf(rt.totalMemory() - rt.freeMemory()));
-            runtimeProperties.setProperty("memory.max", String.valueOf(rt.maxMemory()));
+            DecimalFormat df = new DecimalFormat("#,###");
+            runtimeProperties.setProperty("memory.free", df.format(rt.freeMemory()));
+            runtimeProperties.setProperty("memory.used", df.format(rt.totalMemory() - rt.freeMemory()));
+            runtimeProperties.setProperty("memory.max", df.format(rt.maxMemory()));
 
             List<MemoryPoolMXBean> memoryPools = new ArrayList<MemoryPoolMXBean>(ManagementFactory.getMemoryPoolMXBeans());
             long usedHeapMemory = 0;
@@ -625,11 +627,11 @@ public class SnapshotUtil {
                 if (memoryPool.getType().equals(MemoryType.HEAP)) {
                     MemoryUsage memoryUsage = memoryPool.getCollectionUsage();
                     runtimeProperties.setProperty("memory.heap." + memoryPool.getName().toLowerCase().replaceAll(" ", "."),
-                            Long.toString(memoryUsage.getUsed()));
+                            df.format(memoryUsage.getUsed()));
                     usedHeapMemory += memoryUsage.getUsed();
                 }
             }
-            runtimeProperties.setProperty("memory.heap.total", Long.toString(usedHeapMemory));
+            runtimeProperties.setProperty("memory.heap.total", df.format(usedHeapMemory));
 
             OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
             runtimeProperties.setProperty("os.name", System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ")");
@@ -642,23 +644,23 @@ public class SnapshotUtil {
 
             runtimeProperties.setProperty("time.server", new Date().toString());
             runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
-            runtimeProperties.setProperty("batch.unrouted.data.count", Long.toString(engine.getRouterService().getUnroutedDataCount()));
+            runtimeProperties.setProperty("batch.unrouted.data.count", df.format(engine.getRouterService().getUnroutedDataCount()));
             runtimeProperties.setProperty("batch.outgoing.errors.count",
-                    Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
+                    df.format(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
             runtimeProperties.setProperty("batch.outgoing.tosend.count",
-                    Long.toString(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
+                    df.format(engine.getOutgoingBatchService().countOutgoingBatchesUnsent()));
             runtimeProperties.setProperty("batch.incoming.errors.count",
-                    Long.toString(engine.getIncomingBatchService().countIncomingBatchesInError()));
+                    df.format(engine.getIncomingBatchService().countIncomingBatchesInError()));
 
             List<DataGap> gaps = engine.getDataService().findDataGapsUnchecked();
-            runtimeProperties.setProperty("data.gap.count", Long.toString(gaps.size()));
+            runtimeProperties.setProperty("data.gap.count", df.format(gaps.size()));
             if (gaps.size() > 0) {
-                runtimeProperties.setProperty("data.gap.start.id", Long.toString(gaps.get(0).getStartId()));
-                runtimeProperties.setProperty("data.gap.end.id", Long.toString(gaps.get(gaps.size() - 1).getEndId()));
+                runtimeProperties.setProperty("data.gap.start.id", df.format(gaps.get(0).getStartId()));
+                runtimeProperties.setProperty("data.gap.end.id", df.format(gaps.get(gaps.size() - 1).getEndId()));
             }
 
-            runtimeProperties.setProperty("data.id.min", Long.toString(engine.getDataService().findMinDataId()));
-            runtimeProperties.setProperty("data.id.max", Long.toString(engine.getDataService().findMaxDataId()));
+            runtimeProperties.setProperty("data.id.min", df.format(engine.getDataService().findMinDataId()));
+            runtimeProperties.setProperty("data.id.max", df.format(engine.getDataService().findMaxDataId()));
 
             String jvmTitle = Runtime.class.getPackage().getImplementationTitle();
             runtimeProperties.put("jvm.title", jvmTitle != null ? jvmTitle : "Unknown");
