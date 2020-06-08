@@ -1094,6 +1094,11 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     stats.get(DataWriterStatisticConstants.ROWCOUNT));
                             currentBatch.setByteCount(byteCount);
                             
+                            if (!useStagingDataWriter) {
+                                statisticManager.incrementDataBytesSent(currentBatch.getChannelId(), byteCount);
+                                statisticManager.incrementDataSent(currentBatch.getChannelId(), stats.get(DataWriterStatisticConstants.ROWCOUNT));                
+                            }
+                            
                             if (currentBatch.isCommonFlag()) {
                                 outgoingBatchService.updateCommonBatchExtractStatistics(currentBatch);
                             }
