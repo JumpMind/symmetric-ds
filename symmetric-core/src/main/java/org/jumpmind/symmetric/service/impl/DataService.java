@@ -824,6 +824,33 @@ public class DataService extends AbstractService implements IDataService {
                 
                 synchronized (triggerRouterService) {
                 	
+                    boolean transactional = parameterService
+                            .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
+                    long loadId = 0;
+                    if (reloadRequests != null && reloadRequests.size() > 0) {
+                        loadId = reloadRequests.get(0).getLoadId();
+                    }
+                    
+                    if(loadId != 0) {
+                    	// Cancel the load
+                    	TableReloadStatus status = new TableReloadStatus();
+                    	status.setTargetNodeId(targetNode.getNodeId());
+                    	status.setLoadId((int) loadId);
+                    	engine.getInitialLoadService().cancelLoad(status);
+                    	
+                    	// Get original table reload request
+                    	TableReloadRequest tableReloadRequest = reloadRequests.get(0);
+                    	// Insert new table reload request
+                    	tableReloadRequest.setLoadId(0l);
+                    	tableReloadRequest.setProcessed(false);
+                    	tableReloadRequest.setCreateTime(new Date());
+                    	insertTableReloadRequest(tableReloadRequest);
+                    	
+                    	// Start a new load
+                    	loadId = 0l;
+                    }
+
+
                 	List<TriggerHistory> activeHistories = null;
                 	if (reloadGenerator == null) {
                 		activeHistories = triggerRouterService.getActiveTriggerHistories();
@@ -860,23 +887,15 @@ public class DataService extends AbstractService implements IDataService {
 
                     Node sourceNode = nodeService.findIdentity();
 
-                    boolean transactional = parameterService
-                            .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
-
                     String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode
                             .getNodeId();
                     NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
 
                     ISqlTransaction transaction = null;
-                    long loadId = 0;
 
                     try {
 
                         transaction = platform.getSqlTemplate().startSqlTransaction();
-
-                        if (reloadRequests != null && reloadRequests.size() > 0) {
-                            loadId = reloadRequests.get(0).getLoadId();
-                        }
 
                         if (loadId == 0) {
                             loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
