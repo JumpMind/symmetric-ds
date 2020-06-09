@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.TableReloadRequest;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -47,6 +48,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +109,27 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 }
             }
         }
+    }
+    
+    @Override
+    public void cancelLoad(TableReloadStatus status) {
+    	List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
+        for (ProcessInfo info : infos) {
+            if (info.getCurrentLoadId() == status.getLoadId()) {
+                log.info("Sending interrupt to " + info.getKey().toString());
+                info.getThread().interrupt();
+            }
+        }
+        
+        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+        log.info("Cancelling load {} for node {}", status.getLoadId(), status.getTargetNodeId());
+        int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
+        log.info("Marked {} load requests as OK for node {}", count, status.getTargetNodeId());
+        count = engine.getDataExtractorService().cancelExtractRequests(status.getLoadId());
+        log.info("Marked {} extract requests as OK for node {}", count, status.getTargetNodeId());
+        count = outgoingBatchService.cancelLoadBatches(status.getLoadId());
+        log.info("Marked {} batches as OK for node {}", count, status.getTargetNodeId());
+        engine.getDataExtractorService().releaseMissedExtractRequests();
     }
 
     /**
