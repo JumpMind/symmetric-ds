@@ -97,6 +97,12 @@ public class HttpIncomingTransport implements IIncomingTransport {
 
     @Override
     public void close() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (Exception e) {
+            }
+        }
         if (reader != null) {
             try {
                 reader.close();
