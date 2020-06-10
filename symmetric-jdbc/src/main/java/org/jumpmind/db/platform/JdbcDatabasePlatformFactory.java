@@ -46,6 +46,7 @@ import org.jumpmind.db.platform.hbase.HbasePlatform;
 import org.jumpmind.db.platform.hsqldb.HsqlDbDatabasePlatform;
 import org.jumpmind.db.platform.hsqldb2.HsqlDb2DatabasePlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.ingres.IngresDatabasePlatform;
 import org.jumpmind.db.platform.interbase.InterbaseDatabasePlatform;
 import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
@@ -124,6 +125,7 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, DatabaseNamesConstants.RAIMA, RaimaDatabasePlatform.class);
         addPlatform(platforms, "phoenix", HbasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.HANA, HanaDatabasePlatform.class);
+        addPlatform(platforms, DatabaseNamesConstants.INGRES, IngresDatabasePlatform.class);;
 
         jdbcSubProtocolToPlatform.put(Db2DatabasePlatform.JDBC_SUBPROTOCOL, Db2DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(DerbyDatabasePlatform.JDBC_SUBPROTOCOL, DerbyDatabasePlatform.class);

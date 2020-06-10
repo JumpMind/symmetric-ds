@@ -20,8 +20,12 @@
  */
 package org.jumpmind.symmetric.service;
 
+import org.jumpmind.symmetric.model.TableReloadStatus;
+
 public interface IInitialLoadService {
 
     public void queueLoads(boolean force);
+    
+    public void cancelLoad(TableReloadStatus status);
 
 }
