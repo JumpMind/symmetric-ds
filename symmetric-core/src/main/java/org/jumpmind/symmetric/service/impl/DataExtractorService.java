@@ -189,6 +189,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
     protected enum ExtractMode { FOR_SYM_CLIENT, FOR_PAYLOAD_CLIENT, EXTRACT_ONLY };
 
+    private ISymmetricEngine engine;
+    
     IOutgoingBatchService outgoingBatchService;
 
     private IRouterService routerService;
@@ -223,6 +225,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     public DataExtractorService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
+        this.engine = engine;
         this.outgoingBatchService = engine.getOutgoingBatchService();
         this.routerService = engine.getRouterService();
         this.dataService = engine.getDataService();
@@ -404,11 +407,15 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             ProtocolDataWriter dataWriter = new ProtocolDataWriter(
                     nodeService.findIdentityNodeId(), writer, targetNode.requires13Compatiblity(), false, false);
-            DataProcessor processor = new DataProcessor(dataReader, dataWriter,
-                    "configuration extract");
+            List<TransformTableNodeGroupLink> transformsList = transformService.getConfigExtractTransforms(nodeGroupLink);
+            TransformTable[] transforms = transformsList.toArray(new TransformTable[transformsList.size()]);
+            TransformWriter transformWriter = new TransformWriter(symmetricDialect.getTargetPlatform(), TransformPoint.EXTRACT, dataWriter, 
+                    transformService.getColumnTransforms(), transforms);
             DataContext ctx = new DataContext();
+            DataProcessor processor = new DataProcessor(dataReader, transformWriter, "configuration extract");
             ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
             ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+            ctx.put(Constants.DATA_CONTEXT_ENGINE, engine);
             processor.process(ctx);
 
             if (triggerRouters.size() == 0) {
@@ -1054,6 +1061,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
                         ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
                         ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
+                        ctx.put(Constants.DATA_CONTEXT_ENGINE, engine);
 
                         extractInfo.setTotalDataCount(currentBatch.getDataRowCount());
                         currentBatch.resetStats();

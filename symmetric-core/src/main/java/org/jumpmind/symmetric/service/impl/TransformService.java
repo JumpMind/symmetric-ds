@@ -68,6 +68,7 @@ import org.jumpmind.symmetric.io.data.transform.TrimColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.ValueMapColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.VariableColumnTransform;
 import org.jumpmind.symmetric.model.NodeGroupLink;
+import org.jumpmind.symmetric.security.INodePasswordFilter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -256,7 +257,8 @@ public class TransformService extends AbstractService implements ITransformServi
     }
 
     private void addBuiltInTableTransforms(Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> byLinkByTransformPoint) {
-        List<NodeGroupLink> nodeGroupLinks = configurationService.getNodeGroupLinks(true);
+        List<NodeGroupLink> nodeGroupLinks = new ArrayList<NodeGroupLink>(configurationService.getNodeGroupLinks(true));
+        nodeGroupLinks.add(null);
         for (NodeGroupLink nodeGroupLink : nodeGroupLinks) {
             Map<TransformPoint, List<TransformTableNodeGroupLink>> byTransformPoint = byLinkByTransformPoint.get(nodeGroupLink);
             if (byTransformPoint == null) {
@@ -268,18 +270,63 @@ public class TransformService extends AbstractService implements ITransformServi
                 transforms = new ArrayList<TransformTableNodeGroupLink>();
                 byTransformPoint.put(TransformPoint.LOAD, transforms);
             }
-            TransformColumn column = new TransformColumn("heartbeat_time", "heartbeat_time", false);
-            column.setTransformType("variable");
-            column.setTransformExpression("system_timestamp");
-            String tableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE_HOST);
+            transforms.addAll(getConfigLoadTransforms(nodeGroupLink));
+
+            transforms = byTransformPoint.get(TransformPoint.EXTRACT);
+            if (transforms == null) {
+                transforms = new ArrayList<TransformTableNodeGroupLink>();
+                byTransformPoint.put(TransformPoint.EXTRACT, transforms);
+            }
+            transforms.addAll(getConfigExtractTransforms(nodeGroupLink));
+        }
+    }
+
+    public List<TransformTableNodeGroupLink> getConfigExtractTransforms(NodeGroupLink nodeGroupLink) {
+        List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+        if (extensionService.getExtensionPoint(INodePasswordFilter.class) != null) {
+            String tableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE_SECURITY);
             TransformTableNodeGroupLink transform = new TransformTableNodeGroupLink();
             transform.setSourceTableName(tableName);
             transform.setTargetTableName(tableName);
-            transform.setTransformPoint(TransformPoint.LOAD);
+            transform.setTransformPoint(TransformPoint.EXTRACT);
+            TransformColumn column = new TransformColumn("node_password", "node_password", false);
+            column.setTransformType("bsh");
+            column.setTransformExpression("return engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class).onNodeSecurityRender(currentValue);");
             transform.addTransformColumn(column);
             transform.setNodeGroupLink(nodeGroupLink);
             transforms.add(transform);
         }
+        return transforms;
+    }
+
+    public List<TransformTableNodeGroupLink> getConfigLoadTransforms(NodeGroupLink nodeGroupLink) {
+        List<TransformTableNodeGroupLink> transforms = new ArrayList<TransformTableNodeGroupLink>();
+        TransformColumn column = new TransformColumn("heartbeat_time", "heartbeat_time", false);
+        column.setTransformType("variable");
+        column.setTransformExpression("system_timestamp");
+        String tableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE_HOST);
+        TransformTableNodeGroupLink transform = new TransformTableNodeGroupLink();
+        transform.setSourceTableName(tableName);
+        transform.setTargetTableName(tableName);
+        transform.setTransformPoint(TransformPoint.LOAD);
+        transform.addTransformColumn(column);
+        transform.setNodeGroupLink(nodeGroupLink);
+        transforms.add(transform);
+        
+        if (extensionService.getExtensionPoint(INodePasswordFilter.class) != null) {
+            tableName = TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE_SECURITY);
+            transform = new TransformTableNodeGroupLink();
+            transform.setSourceTableName(tableName);
+            transform.setTargetTableName(tableName);
+            transform.setTransformPoint(TransformPoint.LOAD);
+            column = new TransformColumn("node_password", "node_password", false);
+            column.setTransformType("bsh");
+            column.setTransformExpression("return engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class).onNodeSecuritySave(currentValue);");
+            transform.addTransformColumn(column);
+            transform.setNodeGroupLink(nodeGroupLink);
+            transforms.add(transform);
+        }
+        return transforms;
     }
 
     private List<TransformTableNodeGroupLink> getTransformTablesFromDB(boolean includeColumns, boolean replaceTokens) {

@@ -747,11 +747,6 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 dynamicErrorHandlers.addAll(databaseWriterFilters);
             }
 
-            List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(
-                    link, TransformPoint.LOAD);
-            transforms = transformsList != null ? transformsList
-                    .toArray(new TransformTable[transformsList.size()]) : null;
-
             if (isRetry) {
                 List<IncomingError> incomingErrors = getIncomingErrors(batchId, sourceNodeId);
                 for (IncomingError incomingError : incomingErrors) {
@@ -763,6 +758,9 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 }
             }
         }
+        
+        List<TransformTableNodeGroupLink> transformsList = transformService.findTransformsFor(link, TransformPoint.LOAD);
+        transforms = transformsList != null ? transformsList.toArray(new TransformTable[transformsList.size()]) : null;
 
         TransformWriter transformWriter = new TransformWriter(this.engine.getSymmetricDialect().getTargetPlatform(), TransformPoint.LOAD, null,
                 transformService.getColumnTransforms(), transforms);
