@@ -1,6 +1,4 @@
-Multiple nodes can be hosted in a single SymmetricDS instance.  SymmetricDS will start a node for each properties file it finds in the engines directory.  
-Multiple nodes can be hosted in a single SymmetricDS instance.      
-SymmetricDS will start a node for each properties file it finds in the engines directory.  
+Multiple nodes can be hosted in a single SymmetricDS instance.  SymmetricDS will start a node for each properties file it finds in the engines directory.
 
 ifndef::pro[]
 Additional nodes can be added to the same SymmetricDS instance that the master node is running in or they can be added to a different
