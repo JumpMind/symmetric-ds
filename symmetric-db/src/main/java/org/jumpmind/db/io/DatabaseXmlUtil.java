@@ -211,6 +211,8 @@ public class DatabaseXmlUtil {
                                     column.setName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("primaryKey")) {
                                     column.setPrimaryKey(FormatUtils.toBoolean(attributeValue));
+                                } else if (attributeName.equalsIgnoreCase("primaryKeySeq")) {
+                                    column.setPrimaryKeySequence(Integer.parseInt(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("required")) {
                                     column.setRequired(FormatUtils.toBoolean(attributeValue));
                                 } else if (attributeName.equalsIgnoreCase("type")) {
@@ -466,6 +468,8 @@ public class DatabaseXmlUtil {
                 output.write("\t\t<column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"");
                 if (column.isPrimaryKey()) {
                     output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
+                    output.write(" primaryKeySeq=\"" + column.getPrimaryKeySequence() + "\"");
+                    
                 }
                 if (column.isRequired()) {
                     output.write(" required=\"" + column.isRequired() + "\"");
@@ -532,6 +536,7 @@ public class DatabaseXmlUtil {
                     output.write("/>\n");
                 }
             }
+            
 
             for (ForeignKey fk : table.getForeignKeys()) {
                 output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml(fk.getName()) + "\" foreignTable=\""

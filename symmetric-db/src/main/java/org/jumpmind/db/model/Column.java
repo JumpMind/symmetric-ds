@@ -111,6 +111,8 @@ public class Column implements Cloneable, Serializable {
     
     private Map<String, PlatformColumn> platformColumns;
     
+    private int primaryKeySequence;
+    
 //    private String[] enumValues;
 
     public Column() {
@@ -761,5 +763,15 @@ public class Column implements Cloneable, Serializable {
     public void setCharOctetLength(int charOctetLength) {
         this.charOctetLength = charOctetLength;
     }
+
+    public int getPrimaryKeySequence() {
+        return primaryKeySequence;
+    }
+
+    public void setPrimaryKeySequence(int primaryKeySequence) {
+        this.primaryKeySequence = primaryKeySequence;
+    }
+    
+    
 
 }

@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -836,6 +837,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     }
                 }
             }
+            selectedColumns = selectedColumns.stream().sorted((c1, c2) -> 
+                c1.getPrimaryKeySequence() - c2.getPrimaryKeySequence()).collect(Collectors.toList());
             return selectedColumns;
         } else {
             return new ArrayList<Column>(0);

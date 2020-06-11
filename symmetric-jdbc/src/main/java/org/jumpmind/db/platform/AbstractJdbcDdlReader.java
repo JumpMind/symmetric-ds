@@ -702,10 +702,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
                     Collection<String> primaryKeys = readPrimaryKeyNames(metaData, tableName);
 
+                    int primaryKeySequence = 1;
                     for (Iterator<String> it = primaryKeys.iterator(); it.hasNext();) {
                         Column column = table.findColumn(it.next(), true);
                         if (column != null) {
                             column.setPrimaryKey(true);
+                            column.setPrimaryKeySequence(primaryKeySequence);
+                            primaryKeySequence++;
                         }
                     }
 
@@ -1027,7 +1030,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
-                pks.add(readPrimaryKeyName(metaData, values));
+                int pkSequence = 1;
+                try {
+                    pkSequence = readPrimaryKeySequence(metaData, values);
+                } catch (Exception e) {
+                    log.info("Unable to read primary key sequence.");
+                }
+                pks.add(pkSequence - 1, readPrimaryKeyName(metaData, values));
             }
         } finally {
             close(pkData);
@@ -1048,6 +1057,21 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected String readPrimaryKeyName(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         return (String) values.get(getName("COLUMN_NAME"));
+    }
+    
+    /*
+     * Extracts a primary key sequence from the result set.
+     * 
+     * @param metaData The database meta data
+     * 
+     * @param values The primary key meta data values as defined by {@link
+     * #getColumnsForPK()}
+     * 
+     * @return The primary key sequence
+     */
+    protected int readPrimaryKeySequence(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+            throws SQLException {
+        return (Integer) values.get(getName("KEY_SEQ"));
     }
 
     /*
