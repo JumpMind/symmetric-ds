@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.sql.ISqlReadCursor;
@@ -364,9 +365,8 @@ public class PurgeService extends AbstractService implements IPurgeService {
         if (startDataId == 0) {
             startDataId = sqlTemplateDirty.queryForLong(getSql("minDataId"));
         }
-        long lastBatchId = contextService.getLong(ContextConstants.PURGE_LAST_BATCH_ID);
-        long endDataId = sqlTemplateDirty.queryForLong(getSql("maxDataId"), lastBatchId, new Timestamp(time.getTime().getTime()));
-        long[] minMax = { startDataId, endDataId };
+        long[] minMax = { startDataId, getMaxDataIdEligibleToPurge(time) };
+        log.info("Found range for data of {} through {}", minMax[0], minMax[1]);
         
         long minGapStartId = sqlTemplateDirty.queryForLong(getSql("minDataGapStartId"));
         int maxNumOfDataIdsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_DATA_IDS);
@@ -406,7 +406,28 @@ public class PurgeService extends AbstractService implements IPurgeService {
 
         return dataDeletedCount;
     }
-    
+
+    private long getMaxDataIdEligibleToPurge(Calendar time) {
+        long lastBatchId = contextService.getLong(ContextConstants.PURGE_LAST_BATCH_ID);
+        long maxDataId = 0;
+        List<Long> batchIds = sqlTemplateDirty.query(getSql("maxBatchIdByChannel"), new LongMapper(),
+                new Object[] { lastBatchId, new Timestamp(time.getTime().getTime()) },
+                new int[] { symmetricDialect.getSqlTypeForIds(), Types.TIMESTAMP });
+
+        if (batchIds != null && batchIds.size() > 0) {
+            String sql = getSql("maxDataIdForBatches").replace("?", StringUtils.repeat("?", ",", batchIds.size()));
+            int[] types = new int[batchIds.size()];
+            for (int i = 0; i < batchIds.size(); i++) {
+                types[i] = symmetricDialect.getSqlTypeForIds();
+            }
+            List<Long> ids = sqlTemplateDirty.query(sql, new LongMapper(), batchIds.toArray(), types);
+            if (ids != null && ids.size() > 0) {
+                maxDataId = ids.get(0);
+            }
+        }
+        return maxDataId;
+    }
+
     private long purgeStranded(final Calendar time) {
         log.info("Getting range for stranded data events");
         int maxNumOfDataEventsToPurgeInTx = parameterService.getInt(ParameterConstants.PURGE_MAX_NUMBER_OF_EVENT_BATCH_IDS);
