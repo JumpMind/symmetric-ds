@@ -41,6 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -1022,26 +1023,26 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
-        List<String> pks = new ArrayList<String>();
+        TreeMap<Integer, String> pks = new TreeMap<Integer, String>();
+        
         ResultSet pkData = null;
 
         try {
             pkData = metaData.getPrimaryKeys(getTableNamePatternForConstraints(tableName));
+            
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
                 int pkSequence = 1;
                 try {
                     pkSequence = readPrimaryKeySequence(metaData, values);
-                } catch (Exception e) {
-                    log.info("Unable to read primary key sequence.");
-                }
-                pks.add(pkSequence - 1, readPrimaryKeyName(metaData, values));
+                } catch (Exception e) { }
+                pks.put(pkSequence, readPrimaryKeyName(metaData, values));
             }
         } finally {
             close(pkData);
         }
-        return pks;
+        return pks.values();
     }
 
     /*
