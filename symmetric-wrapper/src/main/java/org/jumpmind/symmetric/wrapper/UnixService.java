@@ -88,7 +88,7 @@ public class UnixService extends WrapperService {
     }
     
     private void installSystemd() {
-        String runFile = SYSTEMD_INSTALL_DIR + "/" + config.getName() + ".service";
+        String runFile = getSystemdScriptFile();
         try(FileWriter writer = new FileWriter(runFile);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(
                     "/symmetricds.systemd"))))
@@ -110,6 +110,14 @@ public class UnixService extends WrapperService {
         runServiceCommand(getSystemdCommand(SYSTEMD_SCRIPT_ENABLE, config.getName()));
     }
     
+    private String getSystemdScriptFile() {
+    	return SYSTEMD_INSTALL_DIR + "/" + config.getName() + ".service";
+    }
+    
+    private String getInitdRunFile() {
+    	return INITD_DIR + "/" + config.getName();
+    }
+    
     private String getWrapperPidFile() throws IOException {
         // Make location absolute (starting with / )
         return (config.getWrapperPidFile() != null && config.getWrapperPidFile().startsWith("/") ? config.getWrapperPidFile() :
@@ -118,7 +126,7 @@ public class UnixService extends WrapperService {
     
     private void installInitd() {
         String rcDir = getRunCommandDir();
-        String runFile = INITD_DIR + "/" + config.getName();
+        String runFile = getInitdRunFile();
 
         try {
             FileWriter writer = new FileWriter(runFile);
@@ -162,24 +170,21 @@ public class UnixService extends WrapperService {
 
         System.out.println("Uninstalling " + config.getName() + " ...");
         
-        if(isSystemdRunning()) {
-            uninstallSystemd();
-        } else {
-            uninstallInitd();
-        }
+        uninstallSystemd();
+        uninstallInitd();
 
         System.out.println("Done");
     }
     
     private void uninstallSystemd() {
         runServiceCommand(getSystemdCommand(SYSTEMD_SCRIPT_DISABLE, config.getName()));
-        String runFile = SYSTEMD_INSTALL_DIR + "/" + config.getName() + ".service";
+        String runFile = getSystemdScriptFile();
         new File(runFile).delete();
     }
     
     private void uninstallInitd() {
        String rcDir = getRunCommandDir();
-       String runFile = INITD_DIR + "/" + config.getName();
+       String runFile = getInitdRunFile();
        for (String runLevel : RUN_LEVELS_START) {
             new File(rcDir + "/rc" + runLevel + ".d/S" + RUN_SEQUENCE_START + config.getName()).delete();
         }
@@ -208,11 +213,8 @@ public class UnixService extends WrapperService {
 
     @Override
     public boolean isInstalled() {
-        if(isSystemdRunning()) {
-            return new File(SYSTEMD_INSTALL_DIR + "/" + config.getName() + ".service").exists();
-        } else {
-            return new File(INITD_DIR + "/" + config.getName()).exists();
-        }
+        return (new File(getSystemdScriptFile()).exists() ||
+        		new File(getInitdRunFile()).exists());
     }
 
     @Override
@@ -287,7 +289,7 @@ public class UnixService extends WrapperService {
     
     private ArrayList<String> getServiceCommand(String command) {
         ArrayList<String> s = new ArrayList<String>();
-        String runFile = INITD_DIR + "/" + config.getName();
+        String runFile = getInitdRunFile();
         s.add(runFile);
         s.add(command);
         return s;
@@ -314,7 +316,7 @@ public class UnixService extends WrapperService {
             stopProcesses(true);
             System.out.println("Waiting for server to start");
             
-            if(isSystemdRunning()) {
+            if(isSystemdRunning() && new File(getSystemdScriptFile()).exists()) {
                 boolean success = true;
                 if(shouldRunService()) {
                     success = runServiceCommand(getSystemdCommand(SYSTEMD_SCRIPT_START, config.getName()));
@@ -426,7 +428,7 @@ public class UnixService extends WrapperService {
                 }
             }
             
-            if(isSystemdRunning()) {
+            if(isSystemdRunning() && new File(getSystemdScriptFile()).exists()) {
                 if(shouldRunService()) {
                     runServiceCommand(getSystemdCommand(SYSTEMD_SCRIPT_STOP, config.getName()));
                 } else {
