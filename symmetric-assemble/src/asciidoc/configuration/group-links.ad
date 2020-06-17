@@ -43,11 +43,11 @@ ifndef::pro[]
 [source,sql]
 ----
 insert into SYM_NODE_GROUP_LINK
-(source_node_group, target_node_group, data_event_action) 
+(source_node_group_id, target_node_group_id, data_event_action) 
       values ('store', 'corp', 'P');
        
 insert into SYM_NODE_GROUP_LINK
-(source_node_group, target_node_group, data_event_action) 
+(source_node_group_id, target_node_group_id, data_event_action) 
       values ('corp', 'store', 'W');
 ----
 endif::pro[]

@@ -56,8 +56,9 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
 
         putSql("minDataId", "select min(data_id) from $(data)");
         
-        putSql("maxDataId", "select max(data_id) from $(data_event) where batch_id in (select max(batch_id) from $(outgoing_batch) " + 
-                "where batch_id > ? and create_time < ? group by channel_id)");
+        putSql("maxBatchIdByChannel", "select max(batch_id) from $(outgoing_batch) where batch_id > ? and create_time < ? group by channel_id");
+
+        putSql("maxDataIdForBatches", "select max(data_id) from $(data_event) where batch_id in (?)");
 
         putSql("selectNodesWithStrandedBatches", "select distinct node_id from $(outgoing_batch) " + 
 "where node_id not in (select node_id from $(node) where sync_enabled = ?) and status != ?");

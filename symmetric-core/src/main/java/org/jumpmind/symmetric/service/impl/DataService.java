@@ -71,6 +71,7 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.job.OracleNoOrderHeartbeat;
 import org.jumpmind.symmetric.job.PushHeartbeatListener;
+import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.load.IReloadListener;
 import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
@@ -813,13 +814,49 @@ public class DataService extends AbstractService implements IDataService {
     
     @Override
     public Map<Integer, ExtractRequest> insertReloadEvents(Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests, ProcessInfo processInfo, 
-            List<TriggerHistory> activeHistories, List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests) {
+            List<TriggerRouter> triggerRouters, Map<Integer, ExtractRequest> extractRequests,
+            IReloadGenerator reloadGenerator)
+    {
         if (engine.getClusterService().lock(ClusterConstants.SYNC_TRIGGERS)) {
             try {
                 INodeService nodeService = engine.getNodeService();
                 ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
                 
                 synchronized (triggerRouterService) {
+                	
+                    boolean transactional = parameterService
+                            .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
+                    long loadId = 0;
+                    if (reloadRequests != null && reloadRequests.size() > 0) {
+                        loadId = reloadRequests.get(0).getLoadId();
+                    }
+                    
+                    if(loadId != 0) {
+                    	// Cancel the load
+                    	TableReloadStatus status = new TableReloadStatus();
+                    	status.setTargetNodeId(targetNode.getNodeId());
+                    	status.setLoadId((int) loadId);
+                    	engine.getInitialLoadService().cancelLoad(status);
+                    	
+                    	// Get original table reload request
+                    	TableReloadRequest tableReloadRequest = reloadRequests.get(0);
+                    	// Insert new table reload request
+                    	tableReloadRequest.setLoadId(0l);
+                    	tableReloadRequest.setProcessed(false);
+                    	tableReloadRequest.setCreateTime(new Date());
+                    	insertTableReloadRequest(tableReloadRequest);
+                    	
+                    	// Start a new load
+                    	loadId = 0l;
+                    }
+
+
+                	List<TriggerHistory> activeHistories = null;
+                	if (reloadGenerator == null) {
+                		activeHistories = triggerRouterService.getActiveTriggerHistories();
+                	} else {
+                		activeHistories = reloadGenerator.getActiveTriggerHistories(targetNode);
+                	}
 
                     boolean isFullLoad = reloadRequests == null 
                             || (reloadRequests.size() == 1 && reloadRequests.get(0).isFullLoadRequest());
@@ -850,23 +887,15 @@ public class DataService extends AbstractService implements IDataService {
 
                     Node sourceNode = nodeService.findIdentity();
 
-                    boolean transactional = parameterService
-                            .is(ParameterConstants.DATA_RELOAD_IS_BATCH_INSERT_TRANSACTIONAL);
-
                     String nodeIdRecord = reverse ? nodeService.findIdentityNodeId() : targetNode
                             .getNodeId();
                     NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeIdRecord);
 
                     ISqlTransaction transaction = null;
-                    long loadId = 0;
 
                     try {
 
                         transaction = platform.getSqlTemplate().startSqlTransaction();
-
-                        if (reloadRequests != null && reloadRequests.size() > 0) {
-                            loadId = reloadRequests.get(0).getLoadId();
-                        }
 
                         if (loadId == 0) {
                             loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);

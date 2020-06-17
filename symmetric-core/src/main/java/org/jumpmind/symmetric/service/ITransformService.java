@@ -55,5 +55,9 @@ public interface ITransformService {
     public Map<String, IColumnTransform<?>> getColumnTransforms();
 
     public void clearCache();
+    
+    public List<TransformTableNodeGroupLink> getConfigExtractTransforms(NodeGroupLink nodeGroupLink);
+    
+    public List<TransformTableNodeGroupLink> getConfigLoadTransforms(NodeGroupLink nodeGroupLink);
 
 }

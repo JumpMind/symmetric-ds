@@ -35,12 +35,12 @@ import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
-import org.jumpmind.symmetric.model.NodeGroupLinkAction;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.TableReloadRequest;
+import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
@@ -48,6 +48,7 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.IOutgoingBatchService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,6 +109,27 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 }
             }
         }
+    }
+    
+    @Override
+    public void cancelLoad(TableReloadStatus status) {
+    	List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
+        for (ProcessInfo info : infos) {
+            if (info.getCurrentLoadId() == status.getLoadId()) {
+                log.info("Sending interrupt to " + info.getKey().toString());
+                info.getThread().interrupt();
+            }
+        }
+        
+        IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
+        log.info("Cancelling load {} for node {}", status.getLoadId(), status.getTargetNodeId());
+        int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
+        log.info("Marked {} load requests as OK for node {}", count, status.getTargetNodeId());
+        count = engine.getDataExtractorService().cancelExtractRequests(status.getLoadId());
+        log.info("Marked {} extract requests as OK for node {}", count, status.getTargetNodeId());
+        count = outgoingBatchService.cancelLoadBatches(status.getLoadId());
+        log.info("Marked {} batches as OK for node {}", count, status.getTargetNodeId());
+        engine.getDataExtractorService().releaseMissedExtractRequests();
     }
 
     /**
@@ -236,12 +258,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup = new HashMap<String, List<TriggerRouter>>();
             Map<Integer, ExtractRequest> extractRequests = null;
-            List<TriggerHistory> activeHistories = null;
 
             IReloadGenerator reloadGenerator = extensionService.getExtensionPoint(IReloadGenerator.class);
-            if (reloadGenerator == null) {
-                activeHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
-            }
 
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
@@ -251,12 +269,9 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         fullLoad.add(load);
                         List<TriggerRouter> triggerRouters = getTriggerRoutersForNodeGroup(triggerRoutersByNodeGroup, targetNode.getNodeGroupId());
 
-                        if (reloadGenerator != null) {
-                            activeHistories = reloadGenerator.getActiveTriggerHistories(targetNode);
-                        }
 
-                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo, activeHistories,
-                                triggerRouters, extractRequests);
+                        extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo,
+                                triggerRouters, extractRequests, reloadGenerator);
 
                         loadCountToProcess--;
                         if (++activeLoadCount >= maxLoadCount) {
@@ -302,12 +317,9 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                             targetNode.getNodeGroupId());
                     triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
                 }
-                if (reloadGenerator != null) {
-                    activeHistories = reloadGenerator.getActiveTriggerHistories(targetNode);
-                }
 
-                extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo, activeHistories,
-                        triggerRouters, extractRequests);
+                extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo,
+                        triggerRouters, extractRequests, reloadGenerator);
 
                 loadCountToProcess--;
                 if (++activeLoadCount >= maxLoadCount) {
@@ -351,24 +363,6 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
             }
         }
         return toReturn;
-    }
-
-    protected void sendReverseInitialLoad(ProcessInfo processInfo, List<TriggerHistory> activeHistories,
-            Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup) {        
-        INodeService nodeService = engine.getNodeService();
-        boolean queuedLoad = false;
-        List<Node> nodes = new ArrayList<Node>();
-        nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.P));
-        nodes.addAll(nodeService.findTargetNodesFor(NodeGroupLinkAction.W));
-        for (Node node : nodes) {
-            List<TriggerRouter> triggerRouters = getTriggerRoutersForNodeGroup(triggerRoutersByNodeGroup, node.getNodeGroupId()); 
-            engine.getDataService().insertReloadEvents(node, true, null, processInfo, activeHistories, triggerRouters, null);
-            queuedLoad = true;
-        }
-
-        if (!queuedLoad) {
-            log.info("{} was enabled but no nodes were linked to load", ParameterConstants.AUTO_RELOAD_REVERSE_ENABLED);
-        }
     }
 
     protected boolean isValidLoadTarget(String targetNodeId) {

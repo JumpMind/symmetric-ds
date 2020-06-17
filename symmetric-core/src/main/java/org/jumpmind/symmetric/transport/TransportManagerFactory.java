@@ -83,9 +83,7 @@ public class TransportManagerFactory {
                     }
                 };
                 HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
-                if (enableHttps2) {
-                    Http2Connection.setHostnameVerifier(hostnameVerifier);
-                }
+                Http2Connection.setHostnameVerifier(hostnameVerifier);
             }
 
             if (allowSelfSignedCerts) {

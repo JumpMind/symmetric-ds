@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.amazonaws.regions.Region;
@@ -36,8 +37,15 @@ public class AWSHelper {
     public AWSHelper() {
     }
     
-    public List<Region> getRegions() {
-        return RegionUtils.getRegions();
+    public List<String> getRegions() {
+        List<String> list = new ArrayList<String>();
+        List<Region> regions = RegionUtils.getRegions();
+        if (regions != null) {
+            for (Region region : regions) {
+                list.add(region.getName());
+            }
+        }
+        return list;
     }
     
     public Regions fromName(String regionName) {

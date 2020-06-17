@@ -627,8 +627,8 @@ public class RegistrationService extends AbstractService implements IRegistratio
             password = security.getNodePassword();
         } else {
             password = extensionService.getExtensionPoint(INodeIdCreator.class).generatePassword(node);
-            password = filterPasswordOnSaveIfNeeded(password);
         }
+        password = filterPasswordOnSaveIfNeeded(password);
         if (node != null) {
             int updateCount = sqlTemplate.update(getSql("reopenRegistrationSql"), new Object[] {
                     password, nodeId });

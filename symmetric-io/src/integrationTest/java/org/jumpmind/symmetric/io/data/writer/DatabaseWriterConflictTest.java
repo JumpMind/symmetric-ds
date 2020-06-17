@@ -26,6 +26,7 @@ import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.greenplum.GreenplumPlatform;
 import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
+import org.jumpmind.db.platform.ingres.IngresDatabasePlatform;
 import org.jumpmind.db.platform.redshift.RedshiftDatabasePlatform;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
 import org.jumpmind.db.platform.sqlite.SqliteDatabasePlatform;
@@ -71,10 +72,11 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         // TODO: Sybase ASE has metadata problem in the DDL reader for exported keys
         // TODO: Informix has metadata problem in the DDL reader for exported keys
         // TODO: Untested on Volt, Greenplum, Redshift
+        // TODO: Ingres does not display UK index that caused SQl exception
         shouldTest = !(platform instanceof SqliteDatabasePlatform || platform instanceof SqlAnywhereDatabasePlatform ||
                 platform instanceof AseDatabasePlatform || platform instanceof InformixDatabasePlatform ||
                 platform instanceof VoltDbDatabasePlatform || platform instanceof GreenplumPlatform ||
-                platform instanceof RedshiftDatabasePlatform);
+                platform instanceof RedshiftDatabasePlatform || platform instanceof IngresDatabasePlatform);
     }
 
     @Test
