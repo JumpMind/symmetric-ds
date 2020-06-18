@@ -1030,14 +1030,18 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         try {
             pkData = metaData.getPrimaryKeys(getTableNamePatternForConstraints(tableName));
             
+            int i=1;
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
 
                 int pkSequence = 1;
                 try {
                     pkSequence = readPrimaryKeySequence(metaData, values);
-                } catch (Exception e) { }
-                pks.put(pkSequence, readPrimaryKeyName(metaData, values));
+                    pks.put(pkSequence, readPrimaryKeyName(metaData, values));
+                } catch (Exception e) { 
+                    pks.put(i, readPrimaryKeyName(metaData, values));
+                    i++;
+                }
             }
         } finally {
             close(pkData);
