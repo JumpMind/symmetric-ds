@@ -137,7 +137,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                                 }
                                 out.write('"');
                                 if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
-                                    out.write(escape(Hex.decodeHex(parsedData[i].toCharArray())));
+                                    out.write(parsedData[i].getBytes());                                
                                 } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
                                     out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes()))).getBytes());
                                 }
