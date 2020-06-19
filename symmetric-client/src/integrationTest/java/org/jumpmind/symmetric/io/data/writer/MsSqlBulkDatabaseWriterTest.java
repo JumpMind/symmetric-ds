@@ -32,6 +32,7 @@ import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.MsSqlBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
@@ -80,6 +81,12 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
         return writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 1000, false, uncPath, null, null, null), new TableCsvData(table, data));
     }
+    
+    protected long writeData(BinaryEncoding encoding, List<CsvData> data) {
+        Table table = platform.getTableFromCache(getTestTable(), false);
+        return writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+                1000, false, uncPath, null, null, null), encoding, new TableCsvData(table, data));
+    }
 
     @Test
     public void testInsertReorderColumns() throws Exception {
@@ -87,7 +94,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
             String id = getNextId();
             String[] values = { "string with space in it", "string-with-no-space", "string with space in it",
                     "string-with-no-space", "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663",
-                    encode("string with space in it"), id };
+                    encodeBase64("string with space in it"), id };
             List<CsvData> data = new ArrayList<CsvData>();
             data.add(new CsvData(DataEventType.INSERT, (String[]) ArrayUtils.clone(values)));
             Table table = (Table) platform.getTableFromCache(getTestTable(), false).clone();

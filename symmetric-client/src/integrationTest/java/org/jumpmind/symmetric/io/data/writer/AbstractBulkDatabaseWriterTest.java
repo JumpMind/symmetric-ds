@@ -34,6 +34,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -56,26 +57,57 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     
     protected abstract boolean shouldTestRun(IDatabasePlatform platform);
 
-    protected String encode(String str) {
+    protected String encodeBase64(String str) {
         return new String(Base64.encodeBase64(str.getBytes()));
     }
 
-    protected String encode(int[] bytes) {
+    protected String encodeBase64(int[] bytes) {
         ByteBuffer bb = ByteBuffer.allocate(bytes.length);
         for (int b : bytes) {
             bb.put((byte) b);
         }
         return new String(Base64.encodeBase64(bb.array()));
     }
+    
+    protected String encodeHex(int[] bytes) {
+        ByteBuffer bb = ByteBuffer.allocate(bytes.length);
+        for (int b : bytes) {
+            bb.put((byte) b);
+        }
+        return new String(Hex.encodeHex(bb.array()));
+    }
 
-    protected void insertAndVerify(String[] values) {
+    protected void insertAndVerify(String[] values, BinaryEncoding encoding) {
         List<CsvData> data = new ArrayList<CsvData>();
         data.add(new CsvData(DataEventType.INSERT, (String[]) ArrayUtils.clone(values)));
-        writeData(data);
-        assertTestTableEquals(values[0], massageExpectectedResultsForDialect(values));
+        writeData(encoding, data);
+        assertTestTableEquals(values[0], encoding, massageExpectectedResultsForDialect(values));
+    }
+    
+    protected void insertEncodeAndVerify(String[] values, int elementToEncode, int[] bytes)
+    {
+        values[elementToEncode] = new String(encodeHex(bytes));
+        insertAndVerify(values, BinaryEncoding.HEX);
+        values[0] = getNextId();
+        values[elementToEncode] = new String(encodeBase64(bytes));
+        insertAndVerify(values, BinaryEncoding.BASE64);
+    }
+    
+    protected void insertEncodeAndVerify(String[] values, int elementToEncode)
+    {
+        if (values[11] != null)
+        {
+            values[elementToEncode] = new String(Hex.encodeHex(values[elementToEncode].getBytes()));
+            insertAndVerify(values, BinaryEncoding.HEX);
+            values[0] = getNextId();
+            values[elementToEncode] = new String(encodeBase64(values[elementToEncode]));
+        }
+
+        insertAndVerify(values, BinaryEncoding.BASE64);
     }
 
     protected abstract long writeData(List<CsvData> data);
+    protected abstract long writeData(BinaryEncoding encoding, List<CsvData> data);
     //protected abstract long writeBulkData(IDataWriter writer, List<CsvData> data);
 
     @Test
@@ -83,8 +115,8 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), "string with space in it", "string-with-no-space", "string with space in it",
                     "string-with-no-space", "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663",
-                    encode("string with space in it") };
-            insertAndVerify(values);
+                    "string with space in it" };
+            insertEncodeAndVerify(values, 11);
         }
     }
 
@@ -95,7 +127,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             List<CsvData> data = new ArrayList<CsvData>();
             for (int i = 0; i < 30; i++) {
                 String[] values = { getNextId(), "stri'ng2", "string not null2", "char2", "char not null2",
-                        "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+                        "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", "string" };
                 data.add(new CsvData(DataEventType.INSERT, values));
             }
             Assert.assertEquals(writeData(data), countRows(getTestTable()));
@@ -107,10 +139,10 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         if (shouldTestRun(platform)) {
             for (int index : new int[] { 1, 3, 5, 6, 7, 8, 9, 10, 11 }) {
                 String[] values = { "", "stri'ng2", "string not null2", "char2", "char not null2", "2007-01-02 00:00:00.000",
-                        "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+                        "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", "string" };
                 values[0] = getNextId();
                 values[index] = null;
-                insertAndVerify(values);
+                insertEncodeAndVerify(values, 11);
             }
         }
     }
@@ -119,8 +151,8 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     public void testInsertWithBackslash() {
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), "back\\slash", "double\\\\back\\slash", "back\\slash", "double\\\\back\\slash",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", encode("back\\slash") };
-            insertAndVerify(values);
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", "back\\slash" };
+            insertEncodeAndVerify(values, 11);
         }
     }
 
@@ -128,12 +160,12 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     public void testInsertWithQuotes() {
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), "single'qoute", "double''single'quote", "single'quote", "double''single'quote",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", encode("single'qoute") };
-            insertAndVerify(values);
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", "single'qoute" };
+            insertEncodeAndVerify(values, 11);
             String[] values2 = { getNextId(), "single\"qoute", "double\"\"single\"quote", "single\"quote",
                     "double\"\"single\"quote", "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89",
-                    "-0.0747663", encode("single\"quote") };
-            insertAndVerify(values2);
+                    "-0.0747663", "single\"quote" };
+            insertEncodeAndVerify(values2, 11);
         }
     }
 
@@ -141,8 +173,8 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     public void testInsertWithCommas() {
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), "single,comma", "double,,comma,comma", "single,comma", "double,,comma,comma",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", encode("single,comma") };
-            insertAndVerify(values);
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", "single,comma" };
+            insertEncodeAndVerify(values, 11);
         }
     }
 
@@ -150,8 +182,8 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     public void testInsertWithNonEscaped() {
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), null, "\n\0\r\t\f\'\"", null, "\n\0\r\t\f\'\"",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", encode("\n\0\r\t\f\'\"") };
-            insertAndVerify(values);
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", "\n\0\r\t\f\'\"" };
+            insertEncodeAndVerify(values, 11);
         }
     }
 
@@ -160,8 +192,8 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), "\\n\\N\\0\\r\\t\\b\\f\\", "\\n\\N\\0\\r\\t\\b\\f\\", "\\x31\\x32\\x33", "\\061\\062\\063",
                     "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663",
-                    encode("\\n\\N\\0\\r\\t\\\n\r\t\b\f\0\\x31\\x32\\x33") };
-            insertAndVerify(values);
+                    "\\n\\N\\0\\r\\t\\\n\r\t\b\f\0\\x31\\x32\\x33" };
+            insertEncodeAndVerify(values, 11);
         }
     }
 
@@ -170,17 +202,17 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         if (shouldTestRun(platform)) {
             String unicode = "\u007E\u00A7\u2702\u28FF\uFFE6\uFFFC\uFFFF";
             String[] values = { getNextId(), null, "", null, "", "2007-01-02 00:00:00.000",
-                    "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", encode(unicode) };
-            insertAndVerify(values);
+                    "2007-02-03 04:05:06.000", "1", "47", "67.89", "-0.0747663", unicode };
+            insertEncodeAndVerify(values, 11);
         }
     }
 
     @Test
     public void testInsertBlobInvalidUnicode() {
         if (shouldTestRun(platform)) {
-            String[] values = { getNextId(), null, "x", null, "x", null, null, null, null, null, null, 
-                    encode(new int[] { 0x10, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0xF5 } ) };
-            insertAndVerify(values);
+            String[] values = { getNextId(), null, "x", null, "x", null, null, null, null, null, null, null }; 
+                    int[] bytes = new int[] { 0x10, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0xF5 };
+            insertEncodeAndVerify(values, 11, bytes);
         }
     }
 
@@ -195,8 +227,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
                     bytes[i + j + 1] = j; 
                 }
             }
-            values[11] = encode(bytes);
-            insertAndVerify(values);
+            insertEncodeAndVerify(values, 11, bytes);
         }
     }
 
@@ -209,8 +240,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             for (int i = 0; i < bytes.length; ++i) {
                 bytes[i] = randomGenerator.nextInt(256);
             }
-            values[11] = encode(bytes);
-            insertAndVerify(values);
+            insertEncodeAndVerify(values, 11, bytes);
         }
     }
     
@@ -222,11 +252,11 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             
             String id=getNextId();
             String[] values1 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encodeBase64("string") };
             data.add(new CsvData(DataEventType.INSERT, values1));
             
             String[] values2 = { id, "stri'ng2", "string not null2", "char2", "char not null2",
-                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encode("string") };
+                    "2007-01-02 00:00:00.000", "2007-02-03 04:05:06.000", "0", "47", "67.89", "-0.0747663", encodeBase64("string") };
             data.add(new CsvData(DataEventType.INSERT, values2));
             
             Table table = platform.getTableFromCache(getTestTable(), false);        
@@ -260,9 +290,14 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     }
     
     protected abstract AbstractDatabaseWriter create();    
-
+    
     @Override
     protected void assertTestTableEquals(String testTableId, String[] expectedValues) {
+        assertTestTableEquals(testTableId, BinaryEncoding.BASE64, expectedValues);
+    }
+    
+
+    protected void assertTestTableEquals(String testTableId, BinaryEncoding encoding, String[] expectedValues) {
         String sql = "select " + getSelect(TEST_COLUMNS) + " from " + getTestTable() + " where " + getWhere(TEST_KEYS);
         Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
 
@@ -272,8 +307,14 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             expectedValues[3] = translateExpectedCharString(expectedValues[3], 50, false);
             expectedValues[4] = translateExpectedCharString(expectedValues[4], 50, true);
             if (expectedValues[11] != null) {
-                expectedValues[11] = new String(Hex.encodeHex(Base64.decodeBase64(expectedValues[11].getBytes())));
-                results.put(TEST_COLUMNS[11], new String(Hex.encodeHex((byte[]) results.get(TEST_COLUMNS[11]))));
+                if (encoding.equals(BinaryEncoding.HEX))
+                {
+                    expectedValues[11] = new String(expectedValues[11]);
+                    results.put(TEST_COLUMNS[11], new String(Hex.encodeHex((byte[]) results.get(TEST_COLUMNS[11]))));
+                } else {
+                    expectedValues[11] = new String(Hex.encodeHex(Base64.decodeBase64(expectedValues[11].getBytes())));
+                    results.put(TEST_COLUMNS[11], new String(Hex.encodeHex((byte[]) results.get(TEST_COLUMNS[11]))));
+                }
             }
         }
         assertEquals(TEST_COLUMNS, expectedValues, results);
