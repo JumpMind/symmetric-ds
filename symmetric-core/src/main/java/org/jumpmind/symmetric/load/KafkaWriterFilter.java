@@ -445,7 +445,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             String batchFileName = "batch-" + context.getBatch().getSourceNodeId() + "-" + context.getBatch().getBatchId();
             
             log.debug("Kafka client config: {}", configs);
-            KafkaProducer<String, String> producer = new KafkaProducer<String, String>(configs);
             try {
                 if (confluentUrl == null && kafkaDataMap.size() > 0) {
                     StringBuffer kafkaText = new StringBuffer();
@@ -470,7 +469,6 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 log.warn("Unable to write batch to Kafka " + batchFileName, e);
                 e.printStackTrace();
             } finally {
-                producer.close();
                 context.put(KAFKA_TEXT_CACHE, new HashMap<String, List<String>>());
                 tableNameCache.clear();
                 tableColumnCache = new HashMap<String, Map<String, String>>();
