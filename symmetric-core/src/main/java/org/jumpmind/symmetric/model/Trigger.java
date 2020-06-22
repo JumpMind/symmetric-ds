@@ -49,7 +49,9 @@ public class Trigger implements Serializable {
     private String triggerId;
 
     private String sourceTableName;
-    
+
+    private String sourceTableNameLowerCase;
+
     private String sourceSchemaName;
 
     private String sourceCatalogName;
@@ -312,6 +314,10 @@ public class Trigger implements Serializable {
         return sourceTableName;
     }
 
+    public String getSourceTableNameLowerCase() {
+        return sourceTableNameLowerCase;
+    }
+
     public String getSourceTableNameUnescaped() {
         return sourceTableNameUnescaped;
     }
@@ -342,6 +348,7 @@ public class Trigger implements Serializable {
 
     public void setSourceTableName(String sourceTableName) {
         this.sourceTableName = sourceTableName;
+        this.sourceTableNameLowerCase = sourceTableName == null ? null : sourceTableName.toLowerCase();
         this.isSourceTableNameWildCarded = FormatUtils.isWildCarded(sourceTableName);
         if (!this.isSourceTableNameWildCarded) {
             this.sourceTableNameUnescaped = FormatUtils.unescapeWildCards(sourceTableName);
