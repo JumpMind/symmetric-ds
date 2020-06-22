@@ -226,7 +226,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             baseTime = createTime.getTime();
             println(CsvConstants.BASETIME, String.valueOf(baseTime));            
         }
-        if (sendRowCaptureTime && createTime != null) {
+        if (sendCaptureTime && sendRowCaptureTime && createTime != null) {
             long thisTime = baseTime - createTime.getTime();
             if (thisTime != lastTime) {
                 println(CsvConstants.TIME, String.valueOf(thisTime));
