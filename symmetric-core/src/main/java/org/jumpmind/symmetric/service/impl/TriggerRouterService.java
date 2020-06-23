@@ -82,6 +82,7 @@ import org.jumpmind.symmetric.service.ISequenceService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.util.FormatUtils;
+import org.slf4j.MDC;
 
 /**
  * @see ITriggerRouterService
@@ -1349,6 +1350,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (final TriggerHistory history : activeTriggerHistories) {
             Runnable runnable = new Runnable() {
                 public void run() {
+                    MDC.put("engineName", parameterService.getEngineName());
                     boolean removeTrigger = false;
                     Set<Table> tables = tablesByTriggerId.get(history.getTriggerId());
                     Trigger trigger = getTriggerFromList(history.getTriggerId(), triggersThatShouldBeActive);
@@ -1612,6 +1614,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         for (final Trigger trigger : triggers) {
             Runnable task = new Runnable() {
                 public void run() {
+                    MDC.put("engineName", parameterService.getEngineName());
                     updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force, verifyInDatabase, activeTriggerHistories, useTableCache);
                 }                
             };

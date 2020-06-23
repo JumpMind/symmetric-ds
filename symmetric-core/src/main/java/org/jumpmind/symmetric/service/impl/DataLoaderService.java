@@ -139,6 +139,7 @@ import org.jumpmind.symmetric.transport.SyncDisabledException;
 import org.jumpmind.symmetric.transport.internal.InternalIncomingTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.jumpmind.util.CustomizableThreadFactory;
+import org.slf4j.MDC;
 
 /**
  * Responsible for writing batch data to the database
@@ -1064,6 +1065,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 public IncomingBatch call() throws Exception {
                     IncomingBatch incomingBatch = null;
                     DataProcessor processor = null;
+                    MDC.put("engineName", engine.getParameterService().getEngineName());
                     if (!isError && resource != null && resource.exists()) {
                         try {
                             loadInfo = statisticManager.newProcessInfo(new ProcessInfoKey(transferInfo.getSourceNodeId(),

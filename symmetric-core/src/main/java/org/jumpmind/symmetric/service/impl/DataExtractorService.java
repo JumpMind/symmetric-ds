@@ -178,6 +178,7 @@ import org.jumpmind.util.ExceptionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.FutureImpl;
 import org.jumpmind.util.Statistics;
+import org.slf4j.MDC;
 
 /**
  * @see IDataExtractorService
@@ -701,6 +702,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     
                     final OutgoingBatch extractBatch = currentBatch;
                     Callable<FutureOutgoingBatch> callable = () -> {
+                        MDC.put("engineName", engine.getParameterService().getEngineName()); 
                         OutgoingBatch refreshedBatch = requeryIfEnoughTimeHasPassed(batchesSelectedAtMs, extractBatch);
                         return extractBatch(refreshedBatch, status, extractInfo, targetNode, dataWriter, mode, activeBatches);                            
                     };
@@ -874,7 +876,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                     extractedBatch.delete();
                                 }
                             } else {
-                                log.error("Failed to extract batch {}", currentBatch, e);
+                                log.error("Failed to extract batch " + currentBatch, e);
                             }
                         }
                         extractInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);                        
