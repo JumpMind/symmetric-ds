@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -117,6 +118,7 @@ public class BandwidthService implements IBandwidthService {
             outgoing =
                     engine.getTransportManager().getBandwidthPushTransport(
                             remoteNode, localNode, identitySecurity.getNodePassword(), requestProperties, engine.getParameterService().getRegistrationUrl());
+            outgoing.getSuspendIgnoreChannelLists(engine.getConfigurationService(), Constants.CHANNEL_DEFAULT, remoteNode);
             long startTime = System.currentTimeMillis();
             BufferedWriter writer = outgoing.openWriter();
             String stringToWriter = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
