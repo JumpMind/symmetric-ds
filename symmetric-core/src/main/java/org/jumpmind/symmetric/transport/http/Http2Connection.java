@@ -143,11 +143,14 @@ public class Http2Connection extends HttpConnection {
             OkHttpClient client = clientBuilder.build();
 
             if (log.isDebugEnabled()) {
-                logHeaders(request);
+                logHeaders("Request", request.headers());
             }
 
             try {
                 response = client.newCall(request).execute();
+                if (log.isDebugEnabled()) {
+                    logHeaders("Response", response.headers());
+                }
             } catch (IOException e) {
                 exception = e;
                 throw e;
@@ -159,13 +162,14 @@ public class Http2Connection extends HttpConnection {
         return response;
     }
 
-    protected void logHeaders(Request request) {
-        Headers headers = request.headers();
+    protected void logHeaders(String name, Headers headers) {
         StringBuilder sb = new StringBuilder("{");
         Iterator<Pair<String, String>> iter = headers.iterator();
         while (iter.hasNext()) {
             Pair<String, String> header = iter.next();
             if (!header.getFirst().equalsIgnoreCase(WebConstants.HEADER_SESSION_ID) &&
+                    !header.getFirst().equalsIgnoreCase(WebConstants.HEADER_SET_SESSION_ID) &&
+                    !header.getFirst().equalsIgnoreCase(WebConstants.REG_PASSWORD) &&
                     !header.getFirst().equalsIgnoreCase(WebConstants.HEADER_SECURITY_TOKEN)) {
                 if (sb.length() > 1) {
                     sb.append(", ");
@@ -174,7 +178,7 @@ public class Http2Connection extends HttpConnection {
             }
         }
         sb.append("}");
-        log.debug("Request headers: {}", sb.toString());
+        log.debug(name + " headers: {}", sb.toString());
     }
 
     @Override
@@ -211,7 +215,7 @@ public class Http2Connection extends HttpConnection {
                 }
             }
             if (exception != null) {
-                throw exception;
+                throw new IOException(exception);
             }
         }
     }
@@ -321,9 +325,6 @@ public class Http2Connection extends HttpConnection {
 
     protected void detectMediaType(String key, String value) {
         if (key.equalsIgnoreCase("Content-Type")) {
-            if (value.equals("gzip")) {
-                value = "application/gzip";
-            }
             mediaType = MediaType.parse(value);
         }
     }
@@ -389,9 +390,13 @@ public class Http2Connection extends HttpConnection {
         public MediaType contentType() {
             if (mediaType != null) {
                 return mediaType;
+            } else if (requestMethod.equalsIgnoreCase("PUT")) {
+                return null;
+            } else if (requestMethod.equalsIgnoreCase("POST")) {
+                return MediaType.parse("application/x-www-form-urlencoded");
+            } else {
+                return MediaType.parse("text/plain");
             }
-            return requestMethod.equalsIgnoreCase("POST") ? MediaType.parse("application/x-www-form-urlencoded"):
-                MediaType.parse("text/plain");
         }
 
         @Override
