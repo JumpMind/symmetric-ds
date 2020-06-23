@@ -44,8 +44,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
         ISymmetricEngineAware, IBuiltInExtensionPoint {
 
-    protected ISymmetricEngine engine;
-
     protected String typeName = "mongodb";
 
     protected IDBObjectMapper objectMapper;

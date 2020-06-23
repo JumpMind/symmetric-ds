@@ -26,21 +26,20 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.util.Map;
 import java.util.Set;
 
+import org.bson.Document;
 import org.jumpmind.db.model.Table;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 public class SimpleDBObjectMapper implements IDBObjectMapper {
 
     String defaultDatabaseName = "default";
 
-    public DBObject mapToDBObject(Table table, Map<String, String> newData,
-            Map<String, String> oldData, Map<String, String> pkData, boolean mapKeyOnly) {
+    public Document mapToDocument(Table table, Map<String, String> newData,
+            Map<String, String> oldData, Map<String, String> pkData, boolean mapKeyOnly)
+    {
         if (mapKeyOnly) {
-            return buildWithKey(table, newData, oldData, pkData);
+            return buildDocumentWithKey(table, newData, oldData, pkData);
         } else {
-            return buildWithKeyAndData(table, newData, oldData, pkData);
+            return buildDocumentWithKeyAndData(table, newData, oldData, pkData);
         }
     }
 
@@ -67,8 +66,9 @@ public class SimpleDBObjectMapper implements IDBObjectMapper {
         return mongoDatabaseName;
     }
 
-    protected BasicDBObject buildWithKey(Table table, Map<String, String> newData,
-            Map<String, String> oldData, Map<String, String> pkData) {
+    protected Document buildDocumentWithKey(Table table, Map<String, String> newData,
+            Map<String, String> oldData, Map<String, String> pkData)
+    {
         if (oldData == null || oldData.size() == 0) {
             oldData = pkData;
         }
@@ -77,35 +77,27 @@ public class SimpleDBObjectMapper implements IDBObjectMapper {
         }
 
         String[] keyNames = table.getPrimaryKeyColumnNames();
-
-        BasicDBObject object = new BasicDBObject();
-
-        // TODO support property to just let mongodb create ids?
+        
+        Document document = new Document();
         if (keyNames != null && keyNames.length > 0) {
-            if (keyNames.length == 1) {
-                object.put("_id", oldData.get(keyNames[0]));
-            } else {
-                BasicDBObject key = new BasicDBObject();
-                for (String keyName : keyNames) {
-                    key.put(keyName, oldData.get(keyName));
-                }
-                object.put("_id", key);
+            for (String keyName : keyNames) {
+                document.put(keyName, oldData.get(keyName));
             }
         }
-
-        return object;
+        return document;
     }
 
-    protected BasicDBObject buildWithKeyAndData(Table table, Map<String, String> newData,
-            Map<String, String> oldData, Map<String, String> pkData) {
-        BasicDBObject object = buildWithKey(table, newData, oldData, pkData);
+    protected Document buildDocumentWithKeyAndData(Table table, Map<String, String> newData,
+            Map<String, String> oldData, Map<String, String> pkData)
+    {
+        Document document = buildDocumentWithKey(table, newData, oldData, pkData);
 
         Set<String> newDataKeys = newData.keySet();
         for (String newDataKey : newDataKeys) {
-            object.put(newDataKey, newData.get(newDataKey));
+            document.put(newDataKey, newData.get(newDataKey));
         }
 
-        return object;
+        return document;
     }
 
     public void setDefaultDatabaseName(String defaultDatabaseName) {

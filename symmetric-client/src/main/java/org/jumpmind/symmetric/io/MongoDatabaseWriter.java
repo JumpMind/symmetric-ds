@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io;
 
 import java.util.Map;
 
+import org.bson.Document;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter;
@@ -29,12 +30,11 @@ import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterConflictResolver;
 
-import com.mongodb.CommandResult;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 /**
  * The default mapping is that a catalog or schema or catalog.schema is mapped
@@ -96,8 +96,8 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
     protected LoadStatus upsert(CsvData data) {
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
-            DB db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
-            DBCollection collection = db.getCollection(objectMapper
+            MongoDatabase db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
+            MongoCollection<Document> collection = db.getCollection(objectMapper
                     .mapToCollection(this.targetTable));
             String[] columnNames = sourceTable.getColumnNames();
             Map<String, String> newData = data
@@ -105,13 +105,12 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
             Map<String, String> oldData = data
                     .toColumnNameValuePairs(columnNames, CsvData.OLD_DATA);
             Map<String, String> pkData = data.toKeyColumnValuePairs(this.sourceTable);
-            DBObject query = objectMapper
-                    .mapToDBObject(sourceTable, newData, oldData, pkData, true);
-            DBObject object = objectMapper.mapToDBObject(sourceTable, newData, oldData, pkData,
+            Document query = objectMapper
+                    .mapToDocument(sourceTable, newData, oldData, pkData, true);
+            Document object = objectMapper.mapToDocument(sourceTable, newData, oldData, pkData,
                     false);
-            WriteResult results = collection.update(query, object, true, false,
-                    WriteConcern.ACKNOWLEDGED);
-            if (results.getN() == 1) {
+            UpdateResult results = collection.replaceOne(query, object, new ReplaceOptions().upsert(true));
+            if (results.getModifiedCount() == 1 || results.getUpsertedId() != null) {
                 return LoadStatus.SUCCESS;
             } else {
                 throw new SymmetricException("Failed to write data: " + object.toString());
@@ -125,8 +124,8 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
     protected LoadStatus delete(CsvData data, boolean useConflictDetection) {
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
-            DB db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
-            DBCollection collection = db.getCollection(objectMapper
+            MongoDatabase db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
+            MongoCollection<Document> collection = db.getCollection(objectMapper
                     .mapToCollection(this.targetTable));
             String[] columnNames = sourceTable.getColumnNames();
             Map<String, String> newData = data
@@ -134,12 +133,12 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
             Map<String, String> oldData = data
                     .toColumnNameValuePairs(columnNames, CsvData.OLD_DATA);
             Map<String, String> pkData = data.toKeyColumnValuePairs(this.sourceTable);
-            DBObject query = objectMapper
-                    .mapToDBObject(sourceTable, newData, oldData, pkData, true);
-            WriteResult results = collection.remove(query, WriteConcern.ACKNOWLEDGED);
-            if (results.getN() != 1) {
+            Document query = objectMapper
+                    .mapToDocument(sourceTable, newData, oldData, pkData, true);
+            DeleteResult results = collection.deleteOne(query);
+            if (results.getDeletedCount() != 1) {
                 log.warn("Attempted to remove a single object" + query.toString()
-                        + ".  Instead removed: " + results.getN());
+                        + ".  Instead removed: " + results.getDeletedCount());
             }
             return LoadStatus.SUCCESS;
         } finally {
@@ -157,10 +156,10 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean sql(CsvData data) {
         statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
         try {
-            DB db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
+            MongoDatabase db = clientManager.getDB(objectMapper.mapToDatabase(this.targetTable));
             String command = data.getParsedData(CsvData.ROW_DATA)[0];
             log.info("About to run command: {}", command);
-            CommandResult results = db.command(command);
+            Document results = db.runCommand(new Document(command, 1));
             log.info("The results of the command were: {}", results);
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);

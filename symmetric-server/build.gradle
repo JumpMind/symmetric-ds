@@ -23,7 +23,7 @@ apply from: symAssembleDir + '/asciidoc.gradle'
         compile project(":symmetric-wrapper")
 
         provided "javax.jms:jms-api:1.1-rev-1"
-        provided "org.mongodb:mongo-java-driver:2.12.3"
+        provided "org.mongodb:mongodb-driver:3.12.5"
         provided "org.codehaus.mojo:animal-sniffer-annotations:$animalSnifferVersion"
         
         compile "javax.servlet:javax.servlet-api:$servletVersion"

@@ -310,7 +310,8 @@ subprojects { subproject ->
             exclude group: 'org.slf4j'
         }        
 
-        provided "org.mongodb:mongo-java-driver:2.12.3"
+        provided "org.mongodb:mongodb-driver:3.12.5"
+        
         
         provided ("com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.36.1060") {
 			exclude group: 'org.apache.httpcomponents'
