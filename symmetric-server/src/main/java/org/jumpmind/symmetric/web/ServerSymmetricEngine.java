@@ -84,7 +84,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         int maxSessions = parameterService.getInt(ParameterConstants.TRANSPORT_HTTP_SESSION_MAX_COUNT, 1000);
         AuthenticationInterceptor authInterceptor = new AuthenticationInterceptor(nodeService, securityService, useSessionAuth, sessionExpireSeconds, maxSessions);
         NodeConcurrencyInterceptor concurrencyInterceptor = new NodeConcurrencyInterceptor(
-                concurrentConnectionManager, configurationService, statisticManager);
+                concurrentConnectionManager, configurationService, nodeService, statisticManager);
         IInterceptor[] customInterceptors = buildCustomInterceptors();
         
         this.uriHandlers = new ArrayList<IUriHandler>();
@@ -93,7 +93,7 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new PingUriHandler(parameterService, customInterceptors));
         this.uriHandlers
                 .add(new InfoUriHandler(parameterService, nodeService, configurationService, customInterceptors));
-        this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService, customInterceptors));
+        this.uriHandlers.add(new BandwidthSamplerUriHandler(parameterService, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new PullUriHandler(parameterService, nodeService,
                 configurationService, dataExtractorService, registrationService, statisticManager, outgoingBatchService,
                 add(customInterceptors, authInterceptor, concurrencyInterceptor)));

@@ -29,7 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.symmetric.model.ChannelMap;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager;
 import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.ReservationType;
@@ -47,13 +49,16 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
     private IConcurrentConnectionManager concurrentConnectionManager;
 
     private IConfigurationService configurationService;
+    
+    private INodeService nodeService;
 
     private IStatisticManager statisticManager;
     
     public NodeConcurrencyInterceptor(IConcurrentConnectionManager concurrentConnectionManager,
-            IConfigurationService configurationService, IStatisticManager statisticManager) {
+            IConfigurationService configurationService, INodeService nodeService, IStatisticManager statisticManager) {
         this.concurrentConnectionManager = concurrentConnectionManager;
         this.configurationService = configurationService;
+        this.nodeService = nodeService;
         this.statisticManager = statisticManager;
     }
 
@@ -83,6 +88,18 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 }
             }
+            
+            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);            
+            if (nodeSecurity != null) {
+                String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
+                if (nodeSecurity.isRegistrationEnabled() && (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
+                    if (nodeSecurity.getRegistrationTime() != null) {
+                        ServletUtils.sendError(resp, WebConstants.REGISTRATION_PENDING);                        
+                    }
+                    ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
+                }
+            }
+
             return false;
         // Support for channel threading
         } else if (threadChannel != null) {

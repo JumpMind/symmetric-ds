@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.model.Node;
-import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -80,17 +79,6 @@ public class PushUriHandler extends AbstractUriHandler {
         long ts = System.currentTimeMillis();
         try {
             Node sourceNode = nodeService.findNode(sourceNodeId, true);
-            NodeSecurity nodeSecurity = nodeService.findNodeSecurity(sourceNodeId, true);
-            
-            if (nodeSecurity != null) {
-                String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
-                if (nodeSecurity.isRegistrationEnabled() && (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
-                    if (nodeSecurity.getRegistrationTime() != null) {
-                        return WebConstants.REGISTRATION_PENDING;                        
-                    }
-                    return WebConstants.REGISTRATION_REQUIRED;
-                }
-            }
             dataLoaderService.loadDataFromPush(sourceNode, channelId, inputStream, outputStream);
         } finally {
             statisticManager.incrementNodesPushed(1);
