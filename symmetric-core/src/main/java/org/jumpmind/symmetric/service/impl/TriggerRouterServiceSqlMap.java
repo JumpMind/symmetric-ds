@@ -79,6 +79,7 @@ public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
                         + "  t.name_for_delete_trigger,t.name_for_insert_trigger,t.name_for_update_trigger,                   "
                         + "  t.sync_on_insert_condition,t.sync_on_update_condition,t.sync_on_delete_condition,                "
                         + "  t.custom_on_insert_text,t.custom_on_update_text,t.custom_on_delete_text,                               "
+                        + "  t.custom_before_insert_text,t.custom_before_update_text,t.custom_before_delete_text,             "
                         + "  t.tx_id_expression,t.external_select,t.channel_expression, t.stream_row,              " 
                         + "  t.create_time as t_create_time,                             "
                         + "  t.last_update_time as t_last_update_time, t.last_update_by as t_last_update_by                   ");

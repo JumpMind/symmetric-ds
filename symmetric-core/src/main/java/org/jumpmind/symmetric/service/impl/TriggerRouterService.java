@@ -2128,6 +2128,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (!StringUtils.isBlank(text)) {
                 trigger.setCustomOnDeleteText(text);
             }
+            
+            text = rs.getString("custom_before_insert_text");
+            if (!StringUtils.isBlank(text)) {
+                trigger.setCustomBeforeInsertText(text);
+            }
+            text = rs.getString("custom_before_update_text");
+            if (!StringUtils.isBlank(text)) {
+                trigger.setCustomBeforeUpdateText(text);
+            }
+            text = rs.getString("custom_before_delete_text");
+            if (!StringUtils.isBlank(text)) {
+                trigger.setCustomBeforeDeleteText(text);
+            }
 
             condition = rs.getString("external_select");
             if (!StringUtils.isBlank(condition)) {

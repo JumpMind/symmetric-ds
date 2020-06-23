@@ -20,14 +20,14 @@
  */
 package org.jumpmind.symmetric.io;
 
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 
 public interface IMongoClientManager {
 
-    public MongoClient get();
+    public MongoClient getClient(String databaseName);
     
-    public DB getDB(String name);
+    public MongoDatabase getDB(String name);
     
     public String getName();
     
