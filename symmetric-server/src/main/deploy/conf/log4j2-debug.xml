@@ -3,10 +3,10 @@
     <Appenders>
         <Console name="CONSOLE" target="SYSTEM_ERR">
             <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY" />
-            <PatternLayout pattern="[%X{engineName}] - %c{1} - %m%n" />
+            <PatternLayout pattern="[%X{engineName}] - %c{1} - %m%ex%n" />
         </Console>
         <SymRollingFile name="ROLLING" fileName="${env:SYM_HOME:-.}/logs/symmetric.log" filePattern="${env:SYM_HOME:-.}/logs/symmetric.log.%i" createOnDemand="true">
-            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
+            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%ex%n" />
             <Policies>
                 <SizeBasedTriggeringPolicy size="20 MB" />
             </Policies>

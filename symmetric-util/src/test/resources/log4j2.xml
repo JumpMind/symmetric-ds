@@ -3,14 +3,14 @@
     <Appenders>
         <Console name="CONSOLE_ERR" target="SYSTEM_ERR">
             <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY" />
-            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
+            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%ex%n" />
         </Console>
         <Console name="CONSOLE_OUT" target="SYSTEM_OUT">
             <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="ACCEPT" />
-            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
+            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%ex%n" />
         </Console>
         <SymRollingFile name="ROLLING" fileName="target/junit.log" filePattern="target/junit.log.%i">
-            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%n" />
+            <PatternLayout pattern="%d %p [%X{engineName}] [%c{1}] [%t] %m%ex%n" />
             <Policies>
                 <SizeBasedTriggeringPolicy size="20 MB" />
             </Policies>
