@@ -27,6 +27,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.PostgresBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.junit.Before;
@@ -68,6 +69,13 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), 
                 1000), new TableCsvData(table, data));
+    }
+    
+    @Override
+    protected long writeData(BinaryEncoding encoding, List<CsvData> data) {
+        Table table = platform.getTableFromCache(getTestTable(), false);
+        return writeData(new PostgresBulkDatabaseWriter(platform, platform, "sym_", new DatabaseWriterSettings(), 
+                1000), encoding, new TableCsvData(table, data));
     }
    
 

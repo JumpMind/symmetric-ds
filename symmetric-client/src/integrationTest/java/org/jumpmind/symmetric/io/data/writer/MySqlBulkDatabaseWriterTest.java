@@ -27,6 +27,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.MySqlBulkDatabaseWriter;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
@@ -61,7 +62,7 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     public void testDuplicateRow() {
         //  mysql already handles duplidates. no need to test the special functionality we added to handle dupes
     }
-
+    
     protected AbstractDatabaseWriter create(){
         return new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 10, 1000,true, true, null);
@@ -72,6 +73,13 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
         return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 10, 1000,
                 true, true, null), new TableCsvData(table, data));
+    }
+    
+    protected long writeData(BinaryEncoding encoding, List<CsvData> data) {
+        Table table = platform.getTableFromCache(getTestTable(), false);
+        return writeData(new MySqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
+                10, 1000,
+                true, true, null), encoding, new TableCsvData(table, data));
     }
 
 }

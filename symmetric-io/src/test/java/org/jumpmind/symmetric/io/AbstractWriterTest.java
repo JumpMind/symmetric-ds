@@ -130,13 +130,21 @@ abstract public class AbstractWriterTest {
     protected long writeData(TableCsvData... datas) {
         return writeData(new DynamicDefaultDatabaseWriter(platform, platform, "sym", writerSettings), datas);
     }
-
+    
+    protected long writeData(BinaryEncoding encoding, TableCsvData... datas) {
+        return writeData(new DynamicDefaultDatabaseWriter(platform, platform, "sym", writerSettings), encoding, datas);
+    }
+    
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
+        return writeData(writer, BinaryEncoding.BASE64, datas);
+    }
+
+    protected long writeData(IDataWriter writer, BinaryEncoding encoding, TableCsvData... datas) {
         this.lastDataWriterUsed = writer;
         
         try {
             for (TableCsvData tableCsvData : datas) {
-                Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", BinaryEncoding.BASE64, "00000", "00001", false);
+                Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", encoding, "00000", "00001", false);
                 
                 DataContext context = new DataContext(batch);
                 writer.open(context);
@@ -177,11 +185,16 @@ abstract public class AbstractWriterTest {
     }
     
     protected long writeData(IDataWriter writer, DataContext context, TableCsvData... datas) {
+        return writeData(writer, context, BinaryEncoding.BASE64, datas);
+
+    }
+    
+    protected long writeData(IDataWriter writer, DataContext context, BinaryEncoding encoding, TableCsvData... datas) {
         this.lastDataWriterUsed = writer;
         
         try {
             for (TableCsvData tableCsvData : datas) {
-                Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", BinaryEncoding.BASE64, "00000", "00001", false);
+                Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", encoding, "00000", "00001", false);
                 writer.open(context);
                 try {
                     writer.start(batch);
