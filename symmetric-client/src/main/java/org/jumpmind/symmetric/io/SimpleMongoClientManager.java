@@ -20,17 +20,18 @@
  */
 package org.jumpmind.symmetric.io;
 
-import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.service.IParameterService;
 
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoDatabase;
 
 public class SimpleMongoClientManager implements IMongoClientManager {
 
@@ -44,7 +45,7 @@ public class SimpleMongoClientManager implements IMongoClientManager {
      */
     protected final static Map<String, MongoClient> clients = new HashMap<String, MongoClient>();
 
-    protected DB currentDB;
+    protected MongoDatabase currentDB;
 
     public SimpleMongoClientManager(IParameterService parameterService, String name) {
         this.name = name;
@@ -52,52 +53,44 @@ public class SimpleMongoClientManager implements IMongoClientManager {
     }
 
     @Override
-    public synchronized  MongoClient get() {
+    public synchronized  MongoClient getClient(String databaseName) {
         MongoClient client = clients.get(name);
         if (client == null) {
             int port = 27017;
-            String host = "localhost";            
+            String host = "localhost";
             if (parameterService != null) {
                 port = parameterService.getInt(name + MongoConstants.PORT, port);
                 host = parameterService.getString(name + MongoConstants.HOST, host);
             }
             String dbUrl = "mongodb://" + host + ":" + port;
-            if (parameterService != null) {
-                dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
-            }
-            try {
-                client = new MongoClient(new MongoClientURI(dbUrl));
-                clients.put(name, client);
-            } catch (UnknownHostException e) {
-                throw new SymmetricException(e);
-            }
-        }
-        return client;
-    }
-
-    @Override
-    public synchronized DB getDB(String name) {
-        if (currentDB == null || !currentDB.getName().equals(name)) {
-            currentDB = get().getDB(name);
-            /**
-             * TODO make this a property
-             */
-            currentDB.setWriteConcern(WriteConcern.ACKNOWLEDGED);
             String username = null;
             char[] password = null;
             if (parameterService != null) {
-                username = parameterService.getString(name + MongoConstants.USERNAME, username);
-                String passwordString = parameterService.getString(name + MongoConstants.PASSWORD,
+                dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
+                username = parameterService.getString(this.name + MongoConstants.USERNAME, username);
+                String passwordString = parameterService.getString(this.name + MongoConstants.PASSWORD,
                         null);
                 if (passwordString != null) {
                     password = passwordString.toCharArray();
                 }
             }
+            MongoCredential credential = null;
+            credential = MongoCredential.createCredential(username, databaseName, password);
+            client = new MongoClient(Arrays.asList(new ServerAddress(host, port)),
+                    credential, new MongoClientOptions.Builder().build());
+            clients.put(name, client);
+        }
+        return client;
+    }
 
-            if (username != null && !currentDB.authenticate(username, password)) {
-                throw new SymmetricException("Failed to authenticate with the mongo database: "
-                        + name);
-            }
+    @Override
+    public synchronized MongoDatabase getDB(String databaseName) {
+        if (currentDB == null || !currentDB.getName().equals(databaseName)) {
+            currentDB = getClient(databaseName).getDatabase(databaseName);
+            /**
+             * TODO make this a property
+             */
+            currentDB.withWriteConcern(WriteConcern.ACKNOWLEDGED);
         }
         return currentDB;
     }
