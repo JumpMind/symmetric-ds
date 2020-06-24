@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -31,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +41,9 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.Version;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +59,16 @@ public class ModuleManager {
     private static final String PROP_REPOSITORIES = "repos";
 
     private static final String PROP_VERSION = "sym.version";
+    
+    private static final String PROP_DRIVER = "driver.";
 
     private static ModuleManager instance;
     
     private Properties properties = new Properties();
 
     private Map<String, List<MavenArtifact>> modules = new TreeMap<String, List<MavenArtifact>>();
+    
+    private Map<String, String> driverToModule = new HashMap<String, String>();
 
     private List<String> repos = new ArrayList<String>();
     
@@ -81,6 +89,11 @@ public class ModuleManager {
                 if (key.equals(PROP_REPOSITORIES)) {
                     for (String repo : entry.getValue().toString().split(MavenArtifact.REGEX_LIST)) {
                         repos.add(repo);
+                    }
+                } else if (key.startsWith(PROP_DRIVER)) {
+                    String[] drivers = entry.getValue().toString().split(MavenArtifact.REGEX_LIST);
+                    for (String driver : drivers) {
+                        driverToModule.put(driver, key.substring(PROP_DRIVER.length()));
                     }
                 } else {
                     List<MavenArtifact> list = new ArrayList<MavenArtifact>();
@@ -193,6 +206,48 @@ public class ModuleManager {
     public void upgradeAll() throws ModuleException {
         for (String moduleId : list()) {
             upgrade(moduleId);
+        }
+    }
+
+    public void convertToModules() {
+        log.info("Module conversion starting");
+        String dirName = System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR, AppUtils.getSymHome() + "/engines");
+        File dir = new File(dirName);
+        File[] files = dir.listFiles();
+        if (files != null ) {
+            List<String> currentModules = list();
+            log.info("Checking {} files in engines directory for possible module conversion", files.length);
+            for (File file : files) {
+                if (file.getName().endsWith(".properties")) {
+                    log.info("Checking {} for possible module conversion", file.getPath());
+                    convertToModule(file, currentModules);
+                }
+            }
+        }
+        log.info("Module conversion ended");
+    }
+
+    protected void convertToModule(File engineFile, List<String> currentModules) {
+        TypedProperties prop = new TypedProperties();
+        try (FileInputStream is = new FileInputStream(engineFile)) {
+            prop.load(is);
+        } catch (IOException e) {
+            log.error("Failed module conversion for engine " + engineFile.getPath(), e);
+            return;
+        }
+
+        String driver = prop.getProperty("db.driver");
+        String moduleId = driverToModule.get(driver);
+        if (moduleId != null && currentModules.contains(moduleId)) {
+            log.info("Module '" + moduleId + "' already installed");
+        } else if (moduleId != null && modules.containsKey(moduleId)) {
+            try {
+                install(moduleId);
+            } catch (ModuleException e) {
+                log.error("Failed module conversion for module " + moduleId, e);
+            }
+        } else {
+            log.info("Skipping module conversion for driver '" + driver + "' and module '" + moduleId + "' for engine " + engineFile.getPath());
         }
     }
 
