@@ -1,0 +1,2 @@
+monitor=readonly
+admin=readwrite create javax.management.monitor.*,javax.management.timer.* unregister

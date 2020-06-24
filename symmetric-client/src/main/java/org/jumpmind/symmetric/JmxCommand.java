@@ -22,7 +22,10 @@ package org.jumpmind.symmetric;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 
+import java.io.File;
+import java.io.FileReader;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -41,6 +44,7 @@ import org.apache.commons.cli.Options;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvUtils;
+import org.jumpmind.util.AppUtils;
 
 public class JmxCommand extends AbstractCommandLauncher {
 
@@ -219,7 +223,25 @@ public class JmxCommand extends AbstractCommandLauncher {
         String url = "service:jmx:rmi:///jndi/rmi://" + host + ":"
                 + System.getProperty("jmx.agent.port", "31418") + "/jmxrmi";
         JMXServiceURL serviceUrl = new JMXServiceURL(url);
-        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
+
+        HashMap<String, Object> env = new HashMap<String, Object>();
+        File jmxPassFile = new File(AppUtils.getSymHome() + "/security/jmxremote.password");
+        if (jmxPassFile.canRead()) {
+            try (FileReader reader = new FileReader(jmxPassFile)) {
+                TypedProperties jmxPassProp = new TypedProperties();
+                jmxPassProp.load(reader);
+                if (jmxPassProp.size() > 0) {
+                    String user = "admin";
+                    if (!jmxPassProp.containsKey(user)) {
+                        user = (String) jmxPassProp.keySet().iterator().next();    
+                    }                    
+                    String[] credentials = new String[] { user, jmxPassProp.get(user) };
+                    env.put(JMXConnector.CREDENTIALS, credentials);
+                }
+            }
+        }
+
+        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, env);
         TypedProperties properties = getTypedProperties();
         String engineName = properties.get(ParameterConstants.ENGINE_NAME, "unknown");
         try {
