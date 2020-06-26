@@ -203,8 +203,13 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     protected void performChainedFallbackForUpdate(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, boolean overrideToUsePkData) {
         if (conflict.getDetectType() == DetectConflict.USE_PK_DATA || overrideToUsePkData) {
             if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
-                // unique index violation, we remove blocking rows, and try again
-                performFallbackToUpdate(writer, data, conflict, true);
+                try {
+                    // unique index violation, we remove blocking rows, and try again
+                    performFallbackToUpdate(writer, data, conflict, true);
+                } catch (ConflictException ex) {
+                    // update now gets 0 rows because our row was the blocking foreign key child row removed
+                    performFallbackToInsert(writer, data.copyWithoutOldData(), conflict, true);
+                }
             } else if (checkForForeignKeyChildExistsViolation(writer, data, conflict, writer.getContext().getLastError())) {
                 // foreign key child exists violation, we remove blocking rows, and try again
                 performFallbackToUpdate(writer, data, conflict, true);                                
