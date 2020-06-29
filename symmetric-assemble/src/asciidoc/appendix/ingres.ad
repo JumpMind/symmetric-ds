@@ -1,0 +1,62 @@
+
+=== Ingres
+This section describes Ingres specific SymmetricDS details.
+
+==== Ingres Driver
+The Ingres Driver is a licensed library, so the download of the driver can not be performed by SymmetricDS.
+You will have to provide the driver and install it in the `lib` sub-directory of the SymmetricDS installation.
+
+ifndef::pro[] 
+==== Set Row Level Locking For Connections
+
+The default locking by Ingres is page level locking, and can cause deadlocks to occur during SymmetricDS processing. In order to
+reduce the chance of deadlocks, set the connections used by SymmetricDS to use row level locking. This can be accomplished by
+setting the following parameter in the engine file:
+
+=====
+db.init.sql=set lockmode session where level = row
+=====
+
+endif::pro[]
+
+==== Supported Data Types
+            
+.Supported Data Types
+|===
+| Data Type | Supported?
+
+| Char | Yes
+| NChar | Yes
+| VarChar | Yes
+| NVarChar | Yes
+| Long VarChar | Yes
+| Long NVarChar | Yes
+| C | No
+| Text | No
+| TinyInt | Yes
+| SmallInt | Yes
+| Integer | Yes
+| BigInt | Yes
+| Float | Yes
+| Float4 | No
+| AnsiDate | No
+| Time Without Time Zone | Yes
+| Time With Time Zone | Yes
+| Time With Local Time Zone | Yes
+| Timestamp Without Time Zone | Yes
+| Timestamp With Time Zone | Yes
+| Timestamp With Local Time Zone | Yes
+| Interval Year To Month | Yes
+| Interval Day To Second | Yes
+| IngresDate | No
+| Money | No
+| Logical_Key | No
+| IPV4 | No
+| IPV6 | No
+| UUID | Yes
+| Byte | Yes
+| VarByte | Yes
+| Long Byte | Yes
+| Boolean | Yes
+| Spatial | No
+|===

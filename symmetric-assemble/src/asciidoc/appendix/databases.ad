@@ -154,6 +154,17 @@ by database.
 |N                    
 |N                    
 
+|Ingres
+|11 and above
+|Y
+|Y
+|Y
+|Y
+|Y
+|Y
+|N
+|N
+
 |Interbase
 |9.0
 |N
@@ -389,6 +400,14 @@ When locating a table, SymmetricDS uses the default catalog and schema unless th
 |
 |Y
 |select trim(user) from sysmaster:sysdual
+
+|Ingres
+|
+|N
+|
+|Y
+|select dbmsinfo('username')
+
  
 |Interbase
 |
@@ -507,6 +526,7 @@ include::hbase.ad[]
 include::hsqldb.ad[]
 include::ignite.ad[]
 include::informix.ad[]
+include::ingres.ad[]
 include::interbase.ad[]
 include::kafka.ad[]
 include::mariadb.ad[]
