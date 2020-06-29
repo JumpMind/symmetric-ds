@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -168,9 +169,12 @@ public class StagedResource implements IStagedResource {
                     }
                 }
                 
-                if (!file.renameTo(newFile)) {
+                try {
+                    Files.move(file.toPath(), newFile.toPath());
+                } catch(IOException e) {
+                    log.error(e.getMessage(),e);
                     handleFailedRename(file, newFile);
-                }  
+                }
             }
         } 
         
