@@ -285,7 +285,9 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                 byteCount += delimiter.length();
             }
             print(batch, data[i]);
-            byteCount += data[i].length();
+            if (data[i] != null) {
+                byteCount += data[i].length();
+            }
         }
         print(batch, "\n");
         byteCount += "\n".length();
