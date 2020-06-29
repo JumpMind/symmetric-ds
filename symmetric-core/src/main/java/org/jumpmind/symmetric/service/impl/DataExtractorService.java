@@ -2984,7 +2984,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
 
                 if (selfRefLevel == 0) {
-                    selectSql += selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + " ";
+                    selectSql += "(" + selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + ") ";
                 } else {
                     DatabaseInfo info = getSymmetricDialect().getPlatform().getDatabaseInfo();
                     String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
