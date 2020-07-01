@@ -284,11 +284,13 @@ public class JdbcDatabasePlatformFactory {
                 }
             }
             
-            if(nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
+            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
                 int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
                 int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
-                if(majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
-                    nameVersion[0] = DatabaseNamesConstants.ORACLE122;
+                if (majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
+                    if (isOracle122Compatible(connection)) {
+                        nameVersion[0] = DatabaseNamesConstants.ORACLE122;
+                    }
                 }
             }
             
@@ -443,6 +445,28 @@ public class JdbcDatabasePlatformFactory {
             }
         }
         return productVersion;
+    }
+
+    private static boolean isOracle122Compatible(Connection connection) {
+        boolean isOracle122 = false;
+        String sql = "select value from v$parameter where name = 'compatible'";
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                String value = rs.getString(1);
+                if (value != null) {
+                    String[] valueArr = value.split("\\.");
+                    if (valueArr != null) {
+                        if ((valueArr.length > 0 && Integer.parseInt(valueArr[0]) > 12) ||
+                                (valueArr.length > 1 && Integer.parseInt(valueArr[0]) == 12 && Integer.parseInt(valueArr[1]) >= 2)) {
+                            isOracle122 = true;
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to check Oracle compatible parameter", e);
+        }
+        return isOracle122;
     }
 
     public static String getDatabaseProductVersion(DataSource dataSource) {
