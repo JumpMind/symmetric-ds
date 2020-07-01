@@ -1174,19 +1174,18 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
                         trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                         trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
-                        trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(),
-                        trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
-                        trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
-                        trigger.getSyncKeyNames(), trigger.getLastUpdateBy(), 
-                        trigger.getLastUpdateTime(), trigger.getExternalSelect(), 
-                        trigger.getChannelExpression(), trigger.isStreamRow(), trigger.getTriggerId() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
-                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                        Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, 
-                        Types.SMALLINT, Types.VARCHAR })) {
+                        trigger.getCustomBeforeUpdateText(), trigger.getCustomBeforeInsertText(),
+                        trigger.getCustomBeforeDeleteText(), trigger.getCustomOnUpdateText(),
+                        trigger.getCustomOnInsertText(), trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
+                        trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(), trigger.getSyncKeyNames(),
+                        trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), trigger.getExternalSelect(),
+                        trigger.getChannelExpression(), trigger.isStreamRow(), trigger.getTriggerId() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT,
+                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                        Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.SMALLINT, Types.VARCHAR })) {
             trigger.setCreateTime(trigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertTriggerSql"),
@@ -1199,21 +1198,20 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             trigger.getNameForUpdateTrigger(), trigger.getNameForInsertTrigger(),
                             trigger.getNameForDeleteTrigger(), trigger.getSyncOnUpdateCondition(),
                             trigger.getSyncOnInsertCondition(), trigger.getSyncOnDeleteCondition(),
-                            trigger.getCustomOnUpdateText(), trigger.getCustomOnInsertText(),
-                            trigger.getCustomOnDeleteText(), trigger.getTxIdExpression(),
-                            trigger.getExcludedColumnNames(), trigger.getIncludedColumnNames(),
-                            trigger.getSyncKeyNames(), trigger.getCreateTime(), 
-                            trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), 
-                            trigger.getExternalSelect(), trigger.getChannelExpression(),
-                            trigger.getTriggerId() }, new int[] {
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, 
-                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                            trigger.getCustomBeforeUpdateText(), trigger.getCustomBeforeInsertText(),
+                            trigger.getCustomBeforeDeleteText(), trigger.getCustomOnUpdateText(),
+                            trigger.getCustomOnInsertText(), trigger.getCustomOnDeleteText(),
+                            trigger.getTxIdExpression(), trigger.getExcludedColumnNames(),
+                            trigger.getIncludedColumnNames(), trigger.getSyncKeyNames(), trigger.getCreateTime(),
+                            trigger.getLastUpdateBy(), trigger.getLastUpdateTime(), trigger.getExternalSelect(),
+                            trigger.getChannelExpression(), trigger.getTriggerId() },
+                    new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                            Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                            Types.VARCHAR, Types.VARCHAR });
         }
         
         clearCache();
