@@ -106,8 +106,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     public String getDefaultCatalog() {
         return null;
-    }
-    
+    }    
 
     @Override
     protected Array createArray(Column column, final String value) {
@@ -180,8 +179,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     @Override
     protected String cleanTextForTextBasedColumns(String text) {
         return text.replace("\0", "");
-    }
-    
+    }    
     
     @Override
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
@@ -201,40 +199,40 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
     
     @Override
-       public PermissionResult getCreateSymTriggerPermission() {
-           String delimiter = getDatabaseInfo().getDelimiterToken();
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-           String triggerSql = "CREATE OR REPLACE FUNCTION TEST_TRIGGER() RETURNS trigger AS $$ BEGIN END $$ LANGUAGE plpgsql";
 
-           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-           
-           try {
-               getSqlTemplate().update(triggerSql);
-               result.setStatus(Status.PASS);
-           } catch (SqlException e) {
-               result.setException(e);
-               result.setSolution("Grant CREATE TRIGGER permission and/or DROP TRIGGER permission");
-           }
-           
-           return result;
+        String triggerSql = "CREATE OR REPLACE FUNCTION TEST_TRIGGER() RETURNS trigger AS $$ BEGIN END $$ LANGUAGE plpgsql";
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission and/or DROP TRIGGER permission");
+        }
+
+        return result;
     }
     
     @Override
-       public PermissionResult getDropSymTriggerPermission() {
-           String dropTriggerSql = "DROP FUNCTION TEST_TRIGGER()";
+    public PermissionResult getDropSymTriggerPermission() {
+        String dropTriggerSql = "DROP FUNCTION TEST_TRIGGER()";
 
-           PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
-           
-           try {
-               getSqlTemplate().update(dropTriggerSql);
-               result.setStatus(PermissionResult.Status.PASS);
-           } catch (SqlException e) {
-               result.setException(e);
-           }
-           
-           return result;
-    }    
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
+
+        try {
+            getSqlTemplate().update(dropTriggerSql);
+            result.setStatus(PermissionResult.Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+        }
+
+        return result;
+    }
 
     @Override
     public long getEstimatedRowCount(Table table) {        
