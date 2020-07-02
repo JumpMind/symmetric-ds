@@ -369,15 +369,17 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         boolean result = false;
         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(targetNodeId);
 
-        boolean reverseLoadFirst = parameterService.is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
-        boolean registered = targetNodeSecurity.getRegistrationTime() != null;
-        boolean reverseLoadQueued = targetNodeSecurity.isRevInitialLoadEnabled();
-
-        if (registered && (!reverseLoadFirst || !reverseLoadQueued)) {
-            result = true;
-        } else {
-            log.info("Unable to process load for target node id " + targetNodeId + " [registered: " + registered + ", reverse load first: "
-                    + reverseLoadFirst + ", reverse load queued: " + reverseLoadQueued + "]");
+        if (targetNodeSecurity != null) {
+            boolean reverseLoadFirst = parameterService.is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
+            boolean registered = targetNodeSecurity.getRegistrationTime() != null;
+            boolean reverseLoadQueued = targetNodeSecurity.isRevInitialLoadEnabled();
+    
+            if (registered && (!reverseLoadFirst || !reverseLoadQueued)) {
+                result = true;
+            } else {
+                log.info("Unable to process load for target node id " + targetNodeId + " [registered: " + registered + ", reverse load first: "
+                        + reverseLoadFirst + ", reverse load queued: " + reverseLoadQueued + "]");
+            }
         }
         return result;
     }
