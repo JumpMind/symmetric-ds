@@ -39,47 +39,33 @@ To automatically start SymmetricDS when the machine boots, see <<Running as a Se
 endif::pro[]
 
 ifdef::pro[]
-The SymmetricDS installer is an executable jar file named *symmetric-pro-<version>-setup.jar*.  
-In order to run the installer, you must have the Java Runtime Environment (JRE)
-version 8.0 or newer installed.
-Start the installer by _double-clicking_ it (if the JRE is in your path and associated with .jar files),
-or by running it from a command prompt, like this:
+The SymmetricDS Pro setup program is an executable JAR file that can run on any system 
+with a Java Runtime Environment (JRE).  See <<System Requirements>> for prerequisites.
+Download the setup program from https://support.jumpmind.com/downloads[SymmetricDS Pro Downloads].
 
-`java -jar symmetric-pro-<version>-setup.jar`
+Run the setup program:
 
-The default installation will run in graphical mode, but it can also be run from a command window by
-adding the `-console` argument on the end of the command.
+* From a desktop environment, double click the *symmetric-pro-<version>-setup.jar* file
+* If double clicking doesn't work, use a command prompt to run: `java -jar symmetric-pro-<version>-setup.jar`
+* From a text-based environment, use a terminal to run: `java -jar symmetric-pro-<version>-setup.jar -console`
 
-[.float-group]
---
-[.left.text-left]
-image::install/install-first.png[]
-
-The first screen is a Welcome screen that includes the SymmetricDS Pro version number.
-The installer will ask a series of questions before writing files to disk.
-
-To begin selecting installation options, click *Next*.
-
---
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-second.png[]
+image::install/install1.png[]
 
-Specify whether you want to install a new version of SymmetricDS for the first time 
-(_Install new software_) or upgrade an existing version of SymmetricDS that was previously installed 
-(_Upgrade existing software_).  For upgrade, the existing installation of SymmetricDS or
-SymmetricDS Pro is verified before continuing.
+The first screen shows the SymmetricDS Pro software version.
+The setup program will ask a series of questions before writing files to disk.
 
-Select the appropriate option and click *Next*.
+To begin selecting options, click *Next*.
 
 --
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-third.png[]
+image::install/install2.png[]
 
 Carefully read the SymmetricDS Pro License Agreement.
 
@@ -90,7 +76,20 @@ If you accept, select _I accept the terms of this license agreement_ and click *
 [.float-group]
 --
 [.left.text-left]
-image::install/install-fourth.png[]
+image::install/install3.png[]
+
+Specify _Install new software_ to install a new version of SymmetricDS for the first time.
+
+For upgrading an existing installation of SymmetricDS, see <<Upgrading>>.
+
+Click *Next* to continue.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install4.png[]
 
 Choose the installation path where SymmetricDS will either be installed or upgraded.
 If the directory does not already exist, it will be created for you.  Make sure your user has permission
@@ -103,11 +102,12 @@ After entering the directory path, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install-fifth.png[]
+image::install/install5.png[]
 
 Select the packages you want to install and verify disk space requirements are met.
-By default, all packages are selected.  If you are NOT integrating 
-SymmetricDS with Android, you can unselect the Android package.
+By default, all packages are selected.
+Drivers for popular databases are included, but they can be unselected if you
+don't plan to use them.
 
 After selecting packages, click *Next*.
 
@@ -116,9 +116,9 @@ After selecting packages, click *Next*.
 [.float-group]
 --
 [.left.text-left]
-image::install/install-sixth.png[]
+image::install/install6.png[]
 
-A standalone installation can either be run automatically by the system or manually by the user.
+SymmetricDS can either be run automatically by the system or manually by the user.
 Select the _Install service to run automatically_ checkbox to install a Windows service or Unix daemon that will
 start SymmetricDS when the computer is restarted.  The service can installed or uninstalled later using
 the Control Center or command line (see <<Running as a Service>>).
@@ -127,69 +127,99 @@ Select the _Run server after installing_ checkbox to also run SymmetricDS after 
 
 After selecting options, click *Next*.
 
-NOTE: We do not currently support the automatic run on Mac Operating Systems.
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install7.png[]
+
+HTTPS and HTTPS/2 protocols are recommended for protecting data security.
+For testing without security or encryption, the HTTP protocol can be enabled.
+Choose an available port number to listen on, which will be validated.
+
+Java Management eXtension (JMX) is an optional way to manage the server
+from third party tools like JConsole.
+Most installations leave it disabled and use the web console for management.
+
+Click *Next* to continue.
 
 --
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-seventh.png[]
+image::install/install8.png[]
+Specify how much memory to use for sending and receive data changes.
+More memory is needed to communicate with multiple clients and when data contains large objects (LOB). 
+Estimate an extra 5 MB of memory for each client and each 500 MB/hour of data transfer.
 
-For standard synchronization and web console access over HTTP, select the _Enable HTTP_ checkbox.
-For encrypted synchronization and web console access over HTTPS, select the _Enabled SSL_ checkbox.
-
-The Java Management eXtensions (JMX) are a set of server properties and operations that can be used to manage the server.
-To enable a simple web console for JMX, select the _Enable JMX_ checkbox.
-To enable remote access for JMX clients like JConsole and `bin/jmx`, select the _Enable JMX Agent_ checkbox.
-
-After selecting options and specifying unused ports, click *Next*.
+Click *Next* to continue.
 
 --
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-eigth.png[]
+image::install/install9.png[]
+Specify disk space options for temporarily staging incoming and outgoing data changes.
+Using staging helps the overall performance of the system and minimizes use of the database.
+The default location is the "tmp" sub-directory of the installation directory.
+For <<Clustering>>, specify a common network share.
 
-Confirm your installation settings and click *Next* to begin the installation.
-
---
-
-[.float-group]
---
-[.left.text-left]
-image::install/install-ninth.png[]
-
-After SymmetricDS finishes installing, click *Next*.
+Click *Next* to continue.
 
 --
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-tenth.png[]
+image::install/install10.png[]
 
-If you chose the option for the server to start after installation, wait for it to start and then click *Next*.
+Confirm your installation settings look correct.
+
+Click *Next* to begin installing files.
 
 --
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-eleventh.png[]
+image::install/install11.png[]
+
+The packages you selected are installed to disk.
+
+After it finishes, click *Next*.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install12.png[]
+
+During the finish step, it will install the service and start the service if you selected those options.
+
+After it finishes, click *Next*.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install13.png[]
 
 The installation is now complete.  Choose if you want to open the SymmetricDS Pro Control Center where
 you can view the server status and open a web console.
 
-Click *Done* to exit the installer.
+Click *Done* to exit the setup program.
 
 --
 
 [.float-group]
 --
 [.left.text-left]
-image::install/install-twelth.png[]
+image::install/install14.png[]
 
 From the SymmetricDS Pro Control Center, 
 you can start/stop the server, open the web console, and install/uninstall the service.

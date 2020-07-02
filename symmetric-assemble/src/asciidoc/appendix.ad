@@ -79,31 +79,50 @@ include::appendix/versioning.ad[]
 == Upgrading
 
 ifdef::pro[]
-The SymmetricDS Pro setup program can upgrade an existing installation, which is the preferred method
-for the Pro version.  The full upgrade and incremental upgrade methods work best with the open source version.
-endif::pro[]
+The SymmetricDS Pro setup program is an executable JAR file that can 
+upgrade an existing installation to a newer version while preserving settings.
+Download the setup program from https://support.jumpmind.com/downloads[SymmetricDS Pro Downloads].
+Run the setup program the same way as <<Standalone Installation>>.
+It is recommended to run the upgrade in a lower environment first to become familiar with the
+procedure and identify any issues.
+For deployments with a large number of nodes, upgrade the registration server first, then roll out upgrades to client nodes.
+For a clustered deployment, stop all clustered nodes, upgrade one node and start it before proceeding to the other nodes.
 
-The upgrade process can either be a full upgrade of a new installation that copies in existing settings
-or an incremental upgrade of an existing installation that copies in new library files.
-A full upgrade is the cleanest method that ensures all new files are updated, while an incremental upgrade
-changes a minimal number of files.
-An incremental upgrade works best for patch releases and most minor releases.
-When SymmetricDS is started after a major or minor software update, it will alter its database tables with any changes needed
-for that release. 
+IMPORTANT: Stop SymmetricDS and close the SymmetricDS Pro Control Center before performing an upgrade. 
 
-ifdef::pro[]
+[.float-group]
+--
+[.left.text-left]
+image::install/install1.png[]
 
-=== Pro Upgrade
+The first screen shows the SymmetricDS Pro software version.
+The setup program will ask a series of questions before writing files to disk.
 
-The SymmetricDS Pro setup program can upgrade an existing installation to a newer version.  
-It stops the server, makes a backup copy of libraries, copies in new libraries, merges settings, and restarts the server.
+To begin selecting options, click *Next*.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install2.png[]
+
+Carefully read the SymmetricDS Pro License Agreement.
+
+If you accept, select *I accept the terms of this license agreement* and click *Next*.
+
+--
 
 [.float-group]
 --
 [.left.text-left]
 image::upgrade/upgrade-1.png[]
 
-Select *Upgrade* for the installation type to upgrade an existing installation to a newer version.
+Specify *Upgrade existing software* to upgrade an existing version of SymmetricDS to a newer version.
+
+For installing a new copy of SymmetricDS for the first time, see <<Standalone Installation>>.
+
+Click *Next* to continue.
 
 --
 
@@ -112,18 +131,100 @@ Select *Upgrade* for the installation type to upgrade an existing installation t
 [.left.text-left]
 image::upgrade/upgrade-2.png[]
 
-Provide the directory of the existing installation.  The directory is verified as a valid installation of SymmetricDS
-before continuing.
+Provide the directory of the existing installation.
+The directory will be verified as a valid installation of SymmetricDS
+before advancing.
+
+Choose the directory path, then click *Next* to continue.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install5.png[]
+
+Select the packages you want to upgrade and verify disk space requirements are met.
+By default, all packages are selected.
+Drivers for popular databases are included, but they can be unselected if you
+don't plan to use them.
+
+After selecting packages, click *Next*.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install10.png[]
+
+Confirm your upgrade settings look correct.
+
+Click *Next* to begin upgrading and installing files.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install11.png[]
+
+The packages you selected are upgraded or installed to disk.
+For some upgrades, it may add or adjust settings in the "conf" subdirectory to accommodate the new version.
+
+After it finishes, click *Next*.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::upgrade/upgrade-3.png[]
+
+During the finish step, it will upgrade the module system 
+(optional packages that were installed outside of the setup program) and perform any cleanup. 
+
+After it finishes, click *Next*.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install13.png[]
+
+The upgrade is now complete.  Choose if you want to open the SymmetricDS Pro Control Center where
+you can view the server status and open a web console.
+
+Click *Done* to exit the setup program.
+
+--
+
+[.float-group]
+--
+[.left.text-left]
+image::install/install14.png[]
+
+From the SymmetricDS Pro Control Center, you can start the server again.
+On the first startup after an upgrade, the server will make any required alterations
+to its runtime tables in the database.
+
+Verify that the server is running, and then click *Open Web Console*.  
 
 --
 
 endif::pro[]
 
-=== Full Upgrade
+ifndef::pro[]
+The upgrade process can either be a full upgrade of a new installation that copies in existing settings
+or an incremental upgrade of an existing installation that copies in new library files.
+A full upgrade is the cleanest method that ensures all new files are updated, while an incremental upgrade
+changes a minimal number of files.
+An incremental upgrade works best for patch releases and most minor releases.
+When SymmetricDS is started after a major or minor software update, it will alter its database tables with any changes needed
+for that release.
 
-ifdef::pro[]
-The full upgrade method is for the open source version; SymmetricDS Pro users should use the <<Pro Upgrade>> method.
-endif::pro[]
+=== Full Upgrade
 
 For major releases and clean upgrades, copy old settings into a new installation using the following steps:
 
@@ -136,10 +237,6 @@ For major releases and clean upgrades, copy old settings into a new installation
 . Restart SymmetricDS.
   
 === Incremental Upgrade
-
-ifdef::pro[]
-The incremental upgrade method is for the open source version; SymmetricDS Pro users should use the <<Pro Upgrade>> method.
-endif::pro[]
  
 For patch and minor releases, copy and replace the library folders of the installation using the following steps:
 
@@ -150,6 +247,8 @@ For patch and minor releases, copy and replace the library folders of the instal
 . Restart SymmetricDS.
 
 Most patch releases only change the JAR files named with "symmetric" in the "web/WEB-INF/lib" folder.
+
+endif::pro[]
 
 [appendix]
 == Utilities

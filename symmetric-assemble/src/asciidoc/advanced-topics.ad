@@ -365,14 +365,8 @@ syadmin obfuscate-text changeit
 === Java Management Extensions
        
 Monitoring and administrative operations can be performed using Java Management Extensions (JMX).
-SymmetricDS uses MX4J to expose JMX attributes and operations that can be accessed
-from the built-in web console, Java's jconsole, or an application server.
-By default, the web management console can be opened from the following address:
-
-[source, url]
-----
-http://localhost:31416/
-----
+SymmetricDS exposes JMX attributes and operations that can be accessed
+from the `jmx` command, Java's jconsole, or a third party tool.
 
 In order to use jconsole, you must enable JMX remote management in the JVM. You can edit the startup scripts to set the following system
 parameters.
