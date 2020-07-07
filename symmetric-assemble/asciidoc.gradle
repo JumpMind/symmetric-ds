@@ -1,17 +1,80 @@
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
 apply plugin: 'docbook-reference'
 
-configurations{ generateAppendixesDependencies }
+configurations{ 
+	generateAppendixesDependencies
+	generateReleaseNotesDependencies	
+}
 
 dependencies {
     generateAppendixesDependencies project(":symmetric-util")
     generateAppendixesDependencies project(":symmetric-db")
+    generateReleaseNotesDependencies project(":symmetric-util")
+    generateReleaseNotesDependencies project(":symmetric-db")
 }
 
 reference {
     sourceDir = file("$buildDir/src/asciidoc/docbook")
     // Configure which files have ${} expanded
     expandPlaceholders = '**/user-guide.xml'
+}
+
+
+def downloadURLCore = 'http://maven.jumpmind.com/repo/org/jumpmind/symmetric/symmetric-core/%s/symmetric-core-%s.jar'
+def downloadURLPro = 'http://maven.jumpmind.com/repo/org/jumpmind/symmetric/symmetric-pro/%s/symmetric-pro-%s.jar'
+
+
+task downloadJars {
+	doFirst{
+		println("Downloading jars for docs...")
+		def previousURL = String.format(downloadURLCore, latestPreviousVersion, latestPreviousVersion)
+		new File('build/docJars').mkdirs()
+		def out = new BufferedOutputStream(new FileOutputStream(symAssembleDir + '/build/docJars/download-core-' + latestPreviousVersion + '.zip'))
+		out << new URL(previousURL).openStream()
+		out.close()
+		
+		def formattedURL = String.format(downloadURLPro, latestPreviousVersion, latestPreviousVersion)
+		out = new BufferedOutputStream(new FileOutputStream(symAssembleDir + '/build/docJars/download-pro-' + latestPreviousVersion + '.zip'))
+		out << new URL(formattedURL).openStream()
+		out.close()
+	}
+}
+
+task unzipCoreJar(type: Copy) {
+	dependsOn downloadJars
+		def zipFile1 = file(symAssembleDir + '/build/docJars/download-core-' + latestPreviousVersion + '.zip')
+		def outputDir1 = file('../symmetric-assemble/build/docJars/core-' + latestPreviousVersion)
+		from zipTree(zipFile1)
+		into outputDir1	
+}
+
+task unzipProJar(type: Copy) {
+	dependsOn unzipCoreJar
+		def zipFile2 = file(symAssembleDir + '/build/docJars/download-pro-' + latestPreviousVersion + '.zip')
+		def outputDir2 = file('../symmetric-assemble/build/docJars/pro-' + latestPreviousVersion)
+		from zipTree(zipFile2)
+		into outputDir2
+}
+
+
+task generateReleaseNotes {
+	dependsOn unzipProJar
+	dependsOn project(":symmetric-util").jar
+	dependsOn project(":symmetric-db").jar
+	doFirst{
+		javaexec {
+			main = 'org.jumpmind.db.io.ReleaseNotesGenerator'
+			classpath = configurations.generateReleaseNotesDependencies
+			args = [
+				symAssembleDir + '/build/docJars/core-' + latestPreviousVersion + "/symmetric-default.properties",
+				symAssembleDir + '/build/docJars/core-' + latestPreviousVersion + "/symmetric-schema.xml",
+				symAssembleDir + '/build/docJars/pro-' + latestPreviousVersion + "/symmetric-console-default.properties",
+				symAssembleDir + '/build/docJars/pro-' + latestPreviousVersion + "/console-schema.xml",
+				symAssembleDir + '/src/asciidoc/generated/release-notes.ad',
+				'https://www.symmetricds.org/api/get-issues.php?version=' + version.substring(0, version.lastIndexOf(".")) + '&secret=' + restAPISecret
+			]
+		}
+	}
 }
 
 task generateAppendixes {
@@ -106,6 +169,17 @@ task generateDocs(type: Copy) {
     
     destinationDir = getDocDir()
 
+	into('html') {
+		from ("$buildDir/src/asciidoc/html5/generated") { include "release-notes.html" }
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+            'appVersion': version,
+            'appMajorVersion': version.substring(0, version.lastIndexOf(".")),
+            'buildTime': new java.text.SimpleDateFormat('yyyy-MM-dd HH:mm:ss').format(new java.util.Date()),
+            'buildYear': new java.text.SimpleDateFormat('yyyy').format(new java.util.Date()),
+            'scmVersion' : scmVersion
+        ])
+    }
+    
     into('html') {
         from ("$buildDir/src/asciidoc/html5") { include "user-guide.html" }
         filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
@@ -181,6 +255,7 @@ asciidoctor { (1)
     options = [
         doctype: 'book',
         sourceDocumentNames: [
+        	symAssembleDir + 'generated/release-notes.ad',
             symAssembleDir + 'user-guide.ad',
             symAssembleDir + 'tutorials/tutorials.ad',
             symAssembleDir + 'operations/operations.ad']
@@ -195,3 +270,4 @@ asciidoctor { (1)
 }
 
 asciidoctor.dependsOn { tasks.generateAppendixes }
+asciidoctor.dependsOn { tasks.generateReleaseNotes }
