@@ -1,26 +1,74 @@
 == What's New
-=== Conflict Management
+
+ifdef::pro[]
+
+=== Design Screen
 --
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vitae nunc 
-nisl. Fusce eu placerat nisl, id porttitor diam. Suspendisse vehicula 
-gravida lectus, in cursus eros sagittis at. Aenean vel urna finibus,
-pellentesque orci nec, egestas nibh. Donec tristique ligula purus, 
-vitae viverra nulla vestibulum eu. Morbi bibendum lorem sapien, ac 
-ullamcorper quam ullamcorper ac. Etiam fringilla facilisis purus, sed 
-congue libero aliquet sit amet. Sed et nibh nunc.
+The web console has a new "Design" tab to visually build configuration from a higher level.  The "Configure" tab is still available for editing
+configuration options.
+--
+
+=== Log Mining for SQL-Server
+--
+Log mining is not available for SQL-Server in additional to trigger-based change capture.
+It is based on change tracking provided by SQL Server 2008 and newer.
+--
+
+endif::pro[]
+
+=== Conflicts by Time of Capture
+--
+The new default conflict detection is USE_CHANGED_DATA with a resolver of NEWER_WINS.  The NEWER_WINS resolution was enhanced to automatically use the source capture time of the change.  (Previously, the user had to setup a detection with USE_TIMESTAMP and specify a timestamp column from the table.)  When the target node is version 3.12 or newer, the source node will send the capture time in the CSV protocol, which is used when resolving conflicts.   The default for dataloader.apply.changes.only parameter was changed to true, which will help avoid conflicts of a row when different columns are updated.
 --
 
 === Modules
 --
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vitae nunc 
-nisl. Fusce eu placerat nisl, id porttitor diam. Suspendisse vehicula 
-gravida lectus, in cursus eros sagittis at. Aenean vel urna finibus,
-pellentesque orci nec, egestas nibh. Donec tristique ligula purus, 
-vitae viverra nulla vestibulum eu. Morbi bibendum lorem sapien, ac 
-ullamcorper quam ullamcorper ac. Etiam fringilla facilisis purus, sed 
-congue libero aliquet sit amet. Sed et nibh nunc.
+ifdef::pro[]
+A modules system was added to reduce the size of the setup program.  There are modules for JDBC drivers, streaming platforms, and
+the Swagger UI that will download automatically as needed.  The most popular drivers (Oracle, SQL-Server, PostgreSQL, MySQL, and H2)
+are still included in the setup program, but they may become modules in the future. 
+For command line support, see the "symadmin help module" command.  
+endif::pro[]
+ifndef::pro[]
+A modules system was added to reduce the size of the distributed ZIP file.  Certain features are now enabled by installing a module with the "symadmin" command, which downloads required JAR files from a Maven repository.  (See "symadmin help module".)  Many of the JDBC drivers and JAR files for publishing are now available as modules.  The database appendices in the user guide were updated with the appropriate command to run.  The most popular drivers (Oracle, SQL-Server, PostgreSQL, MySQL, and H2) are still included in the ZIP for now, which will help smooth the transition to modules.
+endif::pro[]
+
 --
 
-////
-Additional Blocks as needed
-////
+=== HTTP/2
+--
+Jetty was upgraded to support HTTP/2 with ALPN for TLS 1.2 encryption.
+ifdef::pro[]
+When configuring server options during installation, HTTP/2 is an enabled option by default.
+When upgrading, edit the symmetric-server.properties file to enable the https2.enable property.
+endif::pro[]
+ifndef::pro[]
+When enabling HTTPS in symmetric-server.properties file, there is now an option to enable HTTP/2.
+endif::pro[]
+The new protocol is faster, more efficient, and more secure.  To continue supporting Java 8 and Android platforms, the okhttp3 library is used for client connections that support HTTP/2.
+--
+
+=== Node Password Lockout
+--
+When a node fails to authenticate too many times in a row, it will be locked out as a security feature.   A new field named failed_logins was added to the sym_node_security table, which is incremented for each failed login.  A successful login resets the counter back to 0.  When failed_login reaches the limit for the node.password.failed.attempts parameter, which defaults to 5, then the log changes from "it had the wrong password" to "it had too many login attempts".  Set the failed_logins back to 0 to unlock the node.
+--
+
+=== Index on SYM_DATA
+--
+When upgrading, you'll see an index on sym_data is dropped and recreated for the columns data_id and channel_id.  The index was changed from non-unique to unique, which will help query execution plans associated with routing and extraction of batches to run more efficiently.
+--
+
+=== Ingres Database
+--
+The Ingres database is now supported for change capture, as well as load only and extract only.
+--
+
+=== Oracle Character Sets
+--
+The Oracle triggers were enhanced to handle multiple character sets in the same database.  To enable the feature, set parameter oracle.use.ntypes.for.sync=true in the engine file.  The triggers will use nchar and nclob types, and the sym_data table is altered to use nclob.  As a nice side effect for all Oracle users, the triggers should be slightly more efficient because they now use nvl2() instead of decode() function.
+--
+
+=== Logging System
+--
+The logging was upgraded to use log4j2 logging system.  There is now a log4j2.xml file to configure instead of log4j.xml file.  The logging format and rotation of log files should continue to work the same way.
+--
