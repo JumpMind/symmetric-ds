@@ -28,11 +28,11 @@ public class ReleaseNotesConstants {
     public static final String OS_TOKEN_START = "ifndef::pro[]";
     public static final String OS_TOKEN_END = "endif::pro[]";
 
-    public static final String PROPERTIES_DIR = "../symmetric-core/build/resources/main/symmetric-default.properties";
-    public static final String PRO_PROPERTIES_DIR = "../../symmetric-pro/symmetric-pro/build/resources/main/symmetric-console-default.properties";
+    public static final String PROPERTIES_DIR = "../symmetric-core/src/main/resources/symmetric-default.properties";
+    public static final String PRO_PROPERTIES_DIR = "../../symmetric-pro/symmetric-pro/src/main/resources/symmetric-console-default.properties";
 
-    public static final String SCHEMA_DIR = "../symmetric-core/build/resources/main/symmetric-schema.xml";
-    public static final String PRO_SCHEMA_DIR = "../../symmetric-pro/symmetric-pro/build/resources/main/console-schema.xml";
+    public static final String SCHEMA_DIR = "../symmetric-core/src/main/resources/symmetric-schema.xml";
+    public static final String PRO_SCHEMA_DIR = "../../symmetric-pro/symmetric-pro/src/main/resources/console-schema.xml";
 
     public static final String ISSUE_URL = "https://www.symmetricds.org/issues/view.php?id=%s[%s]";
 
