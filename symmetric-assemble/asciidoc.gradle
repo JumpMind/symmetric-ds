@@ -28,7 +28,7 @@ task downloadJars {
 	doFirst{
 		println("Downloading jars for docs...")
 		def previousURL = String.format(downloadURLCore, latestPreviousVersion, latestPreviousVersion)
-		new File('build/docJars').mkdirs()
+		new File(symAssembleDir + '/build/docJars').mkdirs()
 		def out = new BufferedOutputStream(new FileOutputStream(symAssembleDir + '/build/docJars/download-core-' + latestPreviousVersion + '.zip'))
 		out << new URL(previousURL).openStream()
 		out.close()
@@ -43,7 +43,7 @@ task downloadJars {
 task unzipCoreJar(type: Copy) {
 	dependsOn downloadJars
 		def zipFile1 = file(symAssembleDir + '/build/docJars/download-core-' + latestPreviousVersion + '.zip')
-		def outputDir1 = file('../symmetric-assemble/build/docJars/core-' + latestPreviousVersion)
+		def outputDir1 = file(symAssembleDir + '/build/docJars/core-' + latestPreviousVersion)
 		from zipTree(zipFile1)
 		into outputDir1	
 }
@@ -51,7 +51,7 @@ task unzipCoreJar(type: Copy) {
 task unzipProJar(type: Copy) {
 	dependsOn unzipCoreJar
 		def zipFile2 = file(symAssembleDir + '/build/docJars/download-pro-' + latestPreviousVersion + '.zip')
-		def outputDir2 = file('../symmetric-assemble/build/docJars/pro-' + latestPreviousVersion)
+		def outputDir2 = file(symAssembleDir + '/build/docJars/pro-' + latestPreviousVersion)
 		from zipTree(zipFile2)
 		into outputDir2
 }
