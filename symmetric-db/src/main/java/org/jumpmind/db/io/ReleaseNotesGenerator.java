@@ -1,3 +1,23 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.jumpmind.db.io;
 
 import java.io.BufferedReader;
@@ -53,21 +73,6 @@ public class ReleaseNotesGenerator {
     private static final String tags[] = { "security", "performance" };
 
     public static void main(String[] args) throws Exception {
-
-//        String symAssembleDir = "../symmetric-assemble";
-//        String latestPreviousVersion = "3.11.9";
-//        String version = "3.12.x-SNAPSHOT";
-//        String restAPISecret = "84a1fbb5b191718cabab209";
-//        String[] args2 = {
-//                symAssembleDir + "/build/docJars/core-" + latestPreviousVersion + "/symmetric-default.properties",
-//                symAssembleDir + "/build/docJars/core-" + latestPreviousVersion + "/symmetric-schema.xml",
-//                symAssembleDir + "/build/docJars/pro-" + latestPreviousVersion
-//                        + "/symmetric-console-default.properties",
-//                symAssembleDir + "/build/docJars/pro-" + latestPreviousVersion + "/console-schema.xml",
-//                symAssembleDir + "/src/asciidoc/generated/release-notes.ad",
-//                "https://www.symmetricds.org/api/get-issues.php?version="
-//                        + version.substring(0, version.lastIndexOf('.')) + "&secret=" + restAPISecret };
-//        args = args2;
 
         String directory = args[4].substring(0, args[4].lastIndexOf('/')) + '/';
         String finalNotesFile = args[4];
@@ -129,6 +134,7 @@ public class ReleaseNotesGenerator {
         conn.disconnect();
 
         List<Issue> issues = new ArrayList<Issue>();
+        @SuppressWarnings("unchecked")
         List<Map<String, String>> root = new Gson().fromJson(json, List.class);
         for (Map<String, String> map : root) {
             Issue issue = new Issue();
@@ -151,7 +157,7 @@ public class ReleaseNotesGenerator {
         writer.println(ReleaseNotesConstants.OVERVIEW_HEADER);
         writer.println();
         writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
-        writer.println(String.format(ReleaseNotesConstants.OVERVIEW_DESC, features, improvements, fixes));
+        writer.println(String.format(ReleaseNotesConstants.OVERVIEW_PRO_DESC, features, improvements, fixes));
         writer.println(ReleaseNotesConstants.PRO_TOKEN_END);
         writer.println(ReleaseNotesConstants.OS_TOKEN_START);
         writer.println(String.format(ReleaseNotesConstants.OVERVIEW_DESC, osFeatures, osImprovements, osFixes));
@@ -247,7 +253,10 @@ public class ReleaseNotesGenerator {
                 writer.println(ReleaseNotesConstants.PRO_TOKEN_END);
             }
 
-            for (String parameter : inCurrentNotPrevious) {
+            List<String> parameters = new ArrayList<String>(inCurrentNotPrevious);
+            parameters.sort(new StringComparator());
+            
+            for (String parameter : parameters) {
                 if (currentProParamMap.containsKey(parameter)) {
                     writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
                     writer.println(String.format(ReleaseNotesConstants.PARAMETER_PRO_FORMAT, parameter));
@@ -284,7 +293,10 @@ public class ReleaseNotesGenerator {
                 writer.println(ReleaseNotesConstants.PRO_TOKEN_END);
             }
 
-            for (String parameter : modifiedSincePrevious) {
+            List<String> parameters = new ArrayList<String>(modifiedSincePrevious);
+            parameters.sort(new StringComparator());
+
+            for (String parameter : parameters) {
                 if (currentProParamMap.containsKey(parameter)) {
                     writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
                     writer.println(String.format(ReleaseNotesConstants.PARAMETER_PRO_FORMAT, parameter));
@@ -308,6 +320,9 @@ public class ReleaseNotesGenerator {
                 }
                 writer.println();
             }
+
+            parameters = new ArrayList<String>(inPreviousNotCurrent);
+            parameters.sort(new StringComparator());
 
             for (String parameter : inPreviousNotCurrent) {
                 if (previousProParamMap.containsKey(parameter)) {
@@ -638,17 +653,19 @@ public class ReleaseNotesGenerator {
             if (tableColMap.keySet().size() > 0) {
                 writer.println(ReleaseNotesConstants.TABLES_NEW_COL_HEADER);
                 writer.println();
-                for (Table table : tableColMap.keySet()) {
+                List<Table> tables = new ArrayList<Table>(tableColMap.keySet());
+                tables.sort(new TableComparator());
+                for (Table table : tables) {
                     if (tablesProCurrent.contains(table)) {
                         writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
-                        writer.println(String.format(ReleaseNotesConstants.TABLES_COL_HEADER_PRO, table.getName()));
+                        writer.println(String.format(ReleaseNotesConstants.TABLES_COL_HEADER_PRO, table.getName().toUpperCase()));
                         writer.println();
                     } else {
-                        writer.println(String.format(ReleaseNotesConstants.TABLES_COL_HEADER, table.getName()));
+                        writer.println(String.format(ReleaseNotesConstants.TABLES_COL_HEADER, table.getName().toUpperCase()));
                         writer.println();
                     }
                     for (Column column : tableColMap.get(table)) {
-                        writer.println(String.format(ReleaseNotesConstants.TABLES_TABLE_ELEMENT, column.getName(),
+                        writer.println(String.format(ReleaseNotesConstants.TABLES_COLUMN_ELEMENT, column.getName(),
                                 column.getDescription()));
                         writer.println();
                     }
@@ -664,13 +681,15 @@ public class ReleaseNotesGenerator {
             if (tableChangeMap.size() > 0) {
                 writer.println(ReleaseNotesConstants.TABLES_MODIFIED_HEADER);
                 writer.println();
-                for (Table table : tableChangeMap.keySet()) {
+                List<Table> tables = new ArrayList<Table>(tableChangeMap.keySet());
+                tables.sort(new TableComparator());
+                for (Table table : tables) {
                     if (tablesProCurrent.contains(table)) {
                         writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
                         writer.println(
-                                String.format(ReleaseNotesConstants.TABLES_MODIFIED_CAPTION_PRO, table.getName()));
+                                String.format(ReleaseNotesConstants.TABLES_MODIFIED_CAPTION_PRO, table.getName().toUpperCase()));
                     } else {
-                        writer.println(String.format(ReleaseNotesConstants.TABLES_MODIFIED_CAPTION, table.getName()));
+                        writer.println(String.format(ReleaseNotesConstants.TABLES_MODIFIED_CAPTION, table.getName().toUpperCase()));
                     }
                     for (String change : tableChangeMap.get(table)) {
                         writer.println(String.format(ReleaseNotesConstants.TABLES_MODIFIED_ELEMENT, change));
@@ -769,17 +788,9 @@ public class ReleaseNotesGenerator {
             }
         }
 
-        versions.sort(new Comparator<String>() {
-            public int compare(String obj1, String obj2) {
-                return obj1.compareTo(obj2) * -1;
-            }
-        });
+        versions.sort(new VersionComparator());
 
-        issues.sort(new Comparator<Issue>() {
-            public int compare(Issue obj1, Issue obj2) {
-                return obj2.getPriorityAsInt() - obj1.getPriorityAsInt();
-            }
-        });
+        issues.sort(new IssueComparator());
 
         features = issues.stream().filter(e -> e.getCategory().equalsIgnoreCase(categories[0]))
                 .collect(Collectors.toList()).size();
@@ -865,11 +876,7 @@ public class ReleaseNotesGenerator {
             writer.println();
             writer.println(ReleaseNotesConstants.FIXES_TABLE_HEADER);
             writer.println();
-            issues.sort(new Comparator<Issue>() {
-                public int compare(Issue obj1, Issue obj2) {
-                    return obj2.getPriorityAsInt() - obj1.getPriorityAsInt();
-                }
-            });
+            issues.sort(new IssueComparator());
             for (Issue issue : issues) {
                 if (issue.getTag() != null && issue.getTag().equalsIgnoreCase(tags[0])) {
                     String idWithLink = (String.format(ReleaseNotesConstants.ISSUE_URL, issue.getId(), issue.getId()));
@@ -928,4 +935,47 @@ public class ReleaseNotesGenerator {
         }
     }
 
+    static class VersionComparator implements Comparator<String> {
+        @Override
+        public int compare(String v1, String v2) {
+            return compareTo(v1.split("\\."), v2.split("\\."), 0);
+        }
+        
+        private int compareTo(String[] v1, String[] v2, int index) {
+            int compareTo = 0;
+            if (v1.length > index && v1.length > index) {
+                try {
+                    compareTo = new Integer(v1[index]).compareTo(new Integer(v2[index]));
+                    if (compareTo == 0) {
+                        compareTo = compareTo(v1, v2, index + 1);
+                    }
+                } catch (NumberFormatException e) {
+                }
+            } else if (v1.length != v2.length) {
+                compareTo = v1.length > v2.length ? 1 : -1;
+            }
+            return compareTo;
+        }
+    }
+
+    static class TableComparator implements Comparator<Table> {
+        @Override
+        public int compare(Table t1, Table t2) {
+            return t1.getNameLowerCase().compareTo(t2.getNameLowerCase());
+        }    
+    }
+    
+    static class StringComparator implements Comparator<String> {
+        @Override
+        public int compare(String s1, String s2) {
+            return s1.compareTo(s2);
+        }
+    }
+    
+    static class IssueComparator implements Comparator<Issue> {
+        @Override
+        public int compare(Issue i1, Issue i2) {
+            return i1.getId().compareTo(i2.getId());
+        }
+    }
 }
