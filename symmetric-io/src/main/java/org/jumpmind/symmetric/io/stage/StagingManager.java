@@ -223,12 +223,11 @@ public class StagingManager implements IStagingManager {
         IStagedResource resource = inUse.get(path);
         if (resource == null) {
             boolean foundResourcePath = resourcePathsCache.containsKey(path);
-            if (!foundResourcePath && clusterEnabled) {
+            if (!foundResourcePath) {
                 synchronized (this) {
-                    IStagedResource staged = createStagedResource(path);
-                    if (staged.getState() == State.DONE) {
+                    resource = createStagedResource(path);
+                    if (resource.getState() == State.DONE) {
                         resourcePathsCache.put(path, path);
-                        resource = staged;
                         foundResourcePath = true;
                     }
                 }
