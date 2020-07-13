@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -39,8 +40,10 @@ import javax.crypto.spec.DESedeKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.KeyManagerFactory;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,13 +66,10 @@ public class SecurityService implements ISecurityService {
     @Override
     public KeyStore getTrustStore() {
         try {
-            String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
-                    SecurityConstants.KEYSTORE_TYPE);
-            KeyStore ks = KeyStore.getInstance(keyStoreType);
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             FileInputStream is = new FileInputStream(
                     System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE));
-            String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
-            ks.load(is, password != null ? password.toCharArray() : null);
+            ks.load(is, getTrustStorePassword().toCharArray());
             is.close();
             return ks;
         } catch (RuntimeException e) {
@@ -78,7 +78,7 @@ public class SecurityService implements ISecurityService {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
     public KeyStore getKeyStore() {
         try {
@@ -98,6 +98,46 @@ public class SecurityService implements ISecurityService {
         }
     }
     
+    @Override
+    public KeyManagerFactory getKeyManagerFactory() {
+        KeyManagerFactory keyManagerFactory;
+        try {
+            keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(getKeyStore(), getKeyStorePassword().toCharArray());
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        
+        return keyManagerFactory;
+    }
+
+    @Override
+    public void installTrustedCert(TrustedCertificateEntry entry) {
+        try {
+            KeyStore keyStore = getTrustStore();
+            String alias = keyStore.getCertificateAlias(entry.getTrustedCertificate());
+            if (alias == null) {
+                alias = new String(Base64.encodeBase64(DigestUtils.sha1(entry.getTrustedCertificate().getEncoded()), false));
+                keyStore.setEntry(alias, entry, null);
+                log.info("Installing trusted certificate: {}", ((X509Certificate) entry.getTrustedCertificate()).getIssuerX500Principal().getName());
+                saveTrustStore(keyStore);
+            } else {
+                log.info("Trusted certificate already installed: {}", ((X509Certificate) entry.getTrustedCertificate()).getIssuerX500Principal().getName());
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public TrustedCertificateEntry createTrustedCert(byte[] content, String fileType, String alias, String password) {        
+        return null;
+    }
+
     @Override
     public void installDefaultSslCert(String host) {
     }
@@ -123,7 +163,12 @@ public class SecurityService implements ISecurityService {
     }
     
     @Override
-    public String exportCurrentSslCert() {
+    public String exportCurrentSslCert(boolean includePrivateKey) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String exportTrustedCert(String alias) {
         throw new NotImplementedException();
     }
 
@@ -227,6 +272,12 @@ public class SecurityService implements ISecurityService {
         }
     }
 
+    protected String getTrustStorePassword() {
+        String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
+        password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
+        return password;
+    }
+
     protected String getKeyStorePassword() {
         String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
@@ -293,7 +344,15 @@ public class SecurityService implements ISecurityService {
         random.nextBytes(bytes);
         return bytes;        
     }
-    
+ 
+    @Override
+    public void saveTrustStore(KeyStore ks) throws Exception {
+        FileOutputStream os = new FileOutputStream(
+                System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE));
+        ks.store(os, getTrustStorePassword().toCharArray());
+        os.close();
+    }
+
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
         FileOutputStream os = new FileOutputStream(
                 System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));

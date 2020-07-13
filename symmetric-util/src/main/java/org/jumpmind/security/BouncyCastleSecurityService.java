@@ -32,6 +32,7 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStore.Entry;
 import java.security.KeyStore.PrivateKeyEntry;
+import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
@@ -146,7 +147,16 @@ public class BouncyCastleSecurityService extends SecurityService {
 
     @Override
     public synchronized PrivateKeyEntry createSslCert(byte[] content, String fileType, String alias, String password) {
-        PrivateKeyEntry entry = null;
+        return (PrivateKeyEntry) createSslCert(content, fileType, alias, password, true);
+    }
+
+    @Override
+    public synchronized TrustedCertificateEntry createTrustedCert(byte[] content, String fileType, String alias, String password) {
+        return (TrustedCertificateEntry) createSslCert(content, fileType, alias, password, false);
+    }
+
+    protected Entry createSslCert(byte[] content, String fileType, String alias, String password, boolean isKeyEntry) {
+        Entry entry = null;
         try {
             ByteArrayInputStream is = new ByteArrayInputStream(content);
             PrivateKey key = null;
@@ -164,11 +174,17 @@ public class BouncyCastleSecurityService extends SecurityService {
                 } else if (alias == null) {
                     throw new KeystoreAliasException("Alias must be specified when keystore contains multiple entries", aliases);
                 }
-                chain = store.getCertificateChain(alias);
-                if (chain == null) {
-                    throw new UnrecoverableKeyException();
+                if (isKeyEntry) {
+                    chain = store.getCertificateChain(alias);
+                    if (chain == null) {
+                        throw new UnrecoverableKeyException();
+                    }
+
+                    key = (PrivateKey) store.getKey(alias, passchar);
+                } else {
+                    chain = new Certificate[1];
+                    chain[0] = store.getCertificate(alias);
                 }
-                key = (PrivateKey) store.getKey(alias, passchar);
             } else if (fileType.equalsIgnoreCase("pem") || fileType.equalsIgnoreCase("crt")) {
                 List<Certificate> certs = new ArrayList<Certificate>();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -188,13 +204,17 @@ public class BouncyCastleSecurityService extends SecurityService {
             }
             
             if (chain == null || chain.length == 0) {
-                throw new RuntimeException("Missing TLS certificate chain");
+                throw new RuntimeException("Missing TLS certificate");
             }
-            if (key == null) {
+            if (isKeyEntry && key == null) {
                 throw new RuntimeException("Missing TLS private key");
             }
 
-            entry = new PrivateKeyEntry(key, chain);
+            if (isKeyEntry) {
+                entry = new PrivateKeyEntry(key, chain);
+            } else {
+                entry = new TrustedCertificateEntry(chain[0]);
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -237,7 +257,7 @@ public class BouncyCastleSecurityService extends SecurityService {
     }
     
     @Override
-    public synchronized String exportCurrentSslCert() {
+    public synchronized String exportCurrentSslCert(boolean includePrivateKey) {
         String pem = null;
         try {
             KeyStore keyStore = getKeyStore();
@@ -253,10 +273,12 @@ public class BouncyCastleSecurityService extends SecurityService {
                 writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true)));
                 writer.write("-----END CERTIFICATE-----" + nl);
 
-                PrivateKeyEntry key = (PrivateKeyEntry) entry;
-                writer.write("-----BEGIN PRIVATE KEY-----" + nl);
-                writer.write(new String(Base64.encodeBase64(key.getPrivateKey().getEncoded(), true)));
-                writer.write("-----END PRIVATE KEY-----" + nl);
+                if (includePrivateKey) {
+                    PrivateKeyEntry key = (PrivateKeyEntry) entry;
+                    writer.write("-----BEGIN PRIVATE KEY-----" + nl);
+                    writer.write(new String(Base64.encodeBase64(key.getPrivateKey().getEncoded(), true)));
+                    writer.write("-----END PRIVATE KEY-----" + nl);
+                }
                 pem = writer.toString();
             }
         } catch (RuntimeException e) {
@@ -266,4 +288,30 @@ public class BouncyCastleSecurityService extends SecurityService {
         }
         return pem;
     }
+    
+    @Override
+    public String exportTrustedCert(String alias) {
+        String pem = null;
+        try {
+            KeyStore keyStore = getTrustStore();
+            Entry entry = keyStore.getEntry(alias, null);
+            if (entry != null && entry instanceof TrustedCertificateEntry) {
+                X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+
+                String nl = System.getProperty("line.separator");
+                StringWriter writer = new StringWriter();
+                writer.write("-----BEGIN CERTIFICATE-----" + nl);
+                writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true)));
+                writer.write("-----END CERTIFICATE-----" + nl);
+
+                pem = writer.toString();
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return pem;
+    }
+
 }
