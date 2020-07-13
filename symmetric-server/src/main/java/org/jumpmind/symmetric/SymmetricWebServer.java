@@ -110,10 +110,6 @@ public class SymmetricWebServer {
     
     protected int httpsPort = -1;
 
-    protected String basicAuthUsername = null;
-
-    protected String basicAuthPassword = null;
-
     protected String propertiesFile = null;
 
     protected String host = null;
@@ -127,6 +123,10 @@ public class SymmetricWebServer {
     protected String name = "SymmetricDS";
 
     protected String httpSslVerifiedServerNames = "all";
+    
+    protected boolean httpsNeedClientAuth = false;
+    
+    protected boolean httpsWantClientAuth = false;
 
     protected String allowDirListing = "false";
     
@@ -189,7 +189,9 @@ public class SymmetricWebServer {
         allowDirListing = serverProperties.get(ServerConstants.SERVER_ALLOW_DIR_LISTING, "false");
         allowedMethods = serverProperties.get(ServerConstants.SERVER_ALLOW_HTTP_METHODS, "");
         disallowedMethods = serverProperties.get(ServerConstants.SERVER_DISALLOW_HTTP_METHODS, "OPTIONS");
-
+        httpsNeedClientAuth = serverProperties.is(ServerConstants.HTTPS_NEED_CLIENT_AUTH, false);
+        httpsWantClientAuth = serverProperties.is(ServerConstants.HTTPS_WANT_CLIENT_AUTH, false);
+        
         if (serverProperties.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED, false)) {
             if (CookieHandler.getDefault() == null) {
                 CookieHandler.setDefault(new CookieManager());
@@ -379,6 +381,8 @@ public class SymmetricWebServer {
             sslContextFactory.setKeyManagerPassword(keyStorePassword);
             sslContextFactory.setCertAlias(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS,
                     SecurityConstants.ALIAS_SYM_PRIVATE_KEY));
+            sslContextFactory.setNeedClientAuth(httpsNeedClientAuth);
+            sslContextFactory.setWantClientAuth(httpsWantClientAuth);
 
             String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
             if (ignoredProtocols != null && ignoredProtocols.length() > 0) {
@@ -530,6 +534,22 @@ public class SymmetricWebServer {
 
     public boolean isHttps2Enabled() {
         return https2Enabled;
+    }
+
+    public void setHttpsNeedClientAuth(boolean httpsNeedClientAuth) {
+        this.httpsNeedClientAuth = httpsNeedClientAuth;
+    }
+
+    public boolean isHttpsNeedClientAuth() {
+        return httpsNeedClientAuth;
+    }
+
+    public boolean isHttpsWantClientAuth() {
+        return httpsWantClientAuth;
+    }
+
+    public void setHttpsWantClientAuth(boolean httpsWantClientAuth) {
+        this.httpsWantClientAuth = httpsWantClientAuth;
     }
 
     protected Class<?> loadRemoteStatusEndpoint() {
