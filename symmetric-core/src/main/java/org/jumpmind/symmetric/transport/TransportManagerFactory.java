@@ -38,6 +38,8 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.exception.SecurityException;
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
@@ -162,7 +164,8 @@ public class TransportManagerFactory {
         }
         X509TrustManager trustManager = new SelfSignedX509TrustManager(null);
         SSLContext context = SSLContext.getInstance("TLS");
-        context.init(null, new TrustManager[] { trustManager }, new SecureRandom());
+        ISecurityService securityService = SecurityServiceFactory.create();
+        context.init(securityService.getKeyManagerFactory().getKeyManagers(), new TrustManager[] { trustManager }, new SecureRandom());
         SSLSocketFactory sslSocketFactory = context.getSocketFactory();
         
         HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
