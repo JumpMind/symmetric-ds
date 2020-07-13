@@ -243,6 +243,7 @@ public class ModuleManager {
         } else if (moduleId != null && modules.containsKey(moduleId)) {
             try {
                 install(moduleId);
+                currentModules.add(moduleId);
             } catch (ModuleException e) {
                 log.error("Failed module conversion for module " + moduleId, e);
             }
