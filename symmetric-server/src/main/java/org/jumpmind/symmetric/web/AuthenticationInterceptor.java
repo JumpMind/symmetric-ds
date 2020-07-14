@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.web;
 
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,6 +74,13 @@ public class AuthenticationInterceptor implements IInterceptor {
         String securityToken = null;
         AuthenticationStatus status = null;
         AuthenticationSession session = null;
+
+        if (log.isDebugEnabled()) {
+            X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
+            if (certs != null && certs.length > 0) {
+                log.debug("Client cert: " + certs[0].getSubjectX500Principal().getName());
+            }
+        }
 
         if (useSessionAuth && (session = getSession(req, false)) != null) {
             nodeId = (String) session.getAttribute(WebConstants.NODE_ID);
