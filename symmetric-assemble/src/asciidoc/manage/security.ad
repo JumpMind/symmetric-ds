@@ -1,9 +1,36 @@
+ifdef::pro[]
 
 === Security
 
-The Security panel manages the SSL/TLS certificate for encrypting the HTTPS transport of data.
+The Security panel manages the SSL/TLS certificates and keys.
+
+==== Server Certificate
+
+The server certificate and private key are used for encrypting the HTTPS transport of data.  The certificate can also be used to verify a node when client authentication is enabled.  The server certificate is stored in a protected keystore named `security/keystore`.
   
-Import certificate from file:: Upload a file containing the certificate, which can then be imported.  If the file is a keystore with multiple entries, the user is prompted to select one from the list.  If the file is a protected keystore, the user is prompted for the password.  File types supported include PEM and PKCS12 (P12, PFX).
-Export certificate to file:: Export the current certificate and private key to a PEM-encoded text file.
-Generate self-signed certificate:: Generate a new key pair and self-signed certificate, which can then be be imported.  The signature cannot be verified by clients using a third-party Certifying Authority, but data will be encrypted. 
-  
+Import certificate and key from file:: Upload a file containing the server certificate and private key, which can then be imported.  If the file is a keystore with multiple entries, the user is prompted to select one from the list.  If the file is a protected keystore, the user is prompted for the password.  File types supported include PEM and PKCS12 (P12, PFX).
+Backup certificate key to file:: Backup the current server certificate and private key to a PEM-encoded text file.
+Export certificate to file:: Export the current certificate to a PEM-encoded text file.
+Generate self-signed certificate:: Generate a new key and self-signed certificate.
+
+==== Certificate Authorities
+
+The certificates for authorities are public keys used for verifying authorized certificates used for encryption and authentication.  Certificates are stored in a trusted keystore named `security/cacerts`.
+
+View:: View one certicate to display its subject, issuer, effective date, expiration date, and key type.
+Delete:: Delete one or more certificates from the keystore.
+Export:: Export one public certificate to a file.
+Import:: Import one public certificate from a file.
+
+==== Client Authentication
+
+Authentication of clients using certificates is enabled in the `conf/symmetric-server.properties` file.
+
+[source, cli]
+----
+https.need.client.auth=true
+----
+
+The client will be required to send a valid certificate before HTTPS requests can be made.  During TLS negotiation, the server will send a list of certificate authorities to the client (See <<Certificate Authorities>>).  If the client has a certificate signed by one of the authorities, it will send it to the server as authentication (See <<Server Certificate>>).
+
+endif::pro[]
