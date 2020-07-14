@@ -117,16 +117,15 @@ public class ModuleManager {
 
     public void install(String moduleId) throws ModuleException {
         checkModuleInstalled(moduleId, false);
-        boolean installedOkay = false;
         List<MavenArtifact> artifacts = resolveArtifacts(moduleId);
         log.info("Installing module {} with {} artifacts", moduleId, artifacts.size());
 
         for (MavenArtifact artifact : artifacts) {
             String fileName = buildFileName(modulesDir, artifact, EXT_JAR);
             if (new File(fileName).exists()) {
-                installedOkay = true;
                 log.info("{} already exists", fileName);
             } else {
+                boolean installedOkay = false;
                 String errorMessage = null;
                 for (String repo : repos) {
                     String urlString = buildUrl(repo, artifact, EXT_JAR);
