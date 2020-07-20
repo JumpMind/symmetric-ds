@@ -67,6 +67,10 @@ public abstract class WrapperService {
         config = new WrapperConfig(applHomeDir, configFile, jarFile);
         setWorkingDirectory(config.getWorkingDirectory().getAbsolutePath());        
     }
+    
+    public WrapperConfig getConfig() {
+        return config;
+    }
 
     public void start() {
         if (isRunning()) {
