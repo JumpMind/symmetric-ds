@@ -96,11 +96,10 @@ public class MsSql2000DatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        if ((column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() <= 8000)
-                || column.getMappedTypeCode() == Types.BINARY) {
-            return true;
+        if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
+            return false;
         }
-        return !column.isOfBinaryType();
+        return !isLob(column.getJdbcTypeCode());
     }
 
     @Override
