@@ -23,6 +23,7 @@ package org.jumpmind.db.io;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -183,8 +184,12 @@ public class ReleaseNotesGenerator {
         parser = new DefaultParameterParser(new FileInputStream(proPropertiesLoc));
         Map<String, ParameterMetaData> previousProParamMap = parser.parse();
 
-        parser = new DefaultParameterParser(new FileInputStream(ReleaseNotesConstants.PRO_PROPERTIES_DIR));
-        Map<String, ParameterMetaData> currentProParamMap = parser.parse();
+        Map<String, ParameterMetaData> currentProParamMap = new HashMap<String, ParameterMetaData>();
+        try {
+            parser = new DefaultParameterParser(new FileInputStream(ReleaseNotesConstants.PRO_PROPERTIES_DIR));
+            currentProParamMap = parser.parse();
+        } catch (FileNotFoundException e) {            
+        }
 
         Set<String> previousParams = previousParamMap.keySet();
         Set<String> currentParams = currentParamMap.keySet();
@@ -350,8 +355,17 @@ public class ReleaseNotesGenerator {
 
         Database dbOld = DatabaseXmlUtil.read(new File(schemaLoc));
         Database dbCurrent = DatabaseXmlUtil.read(new File(ReleaseNotesConstants.SCHEMA_DIR));
-        Database dbProOld = DatabaseXmlUtil.read(new File(proSchemaLoc));
-        Database dbProCurrent = DatabaseXmlUtil.read(new File(ReleaseNotesConstants.PRO_SCHEMA_DIR));
+        
+        Database dbProOld = new Database();
+        File proSchemaFile = new File(proSchemaLoc);
+        if (proSchemaFile.canRead()) {
+            dbProOld = DatabaseXmlUtil.read(proSchemaFile);
+        }
+        Database dbProCurrent = new Database();
+        File dbProCurrentFile = new File(ReleaseNotesConstants.PRO_SCHEMA_DIR);
+        if (dbProCurrentFile.canRead()) {
+            dbProCurrent = DatabaseXmlUtil.read(dbProCurrentFile);
+        }
 
         List<Table> tablesProOld = new ArrayList<Table>(Arrays.asList(dbProOld.getTables()));
         List<Table> tablesProCurrent = new ArrayList<Table>(Arrays.asList(dbProCurrent.getTables()));
