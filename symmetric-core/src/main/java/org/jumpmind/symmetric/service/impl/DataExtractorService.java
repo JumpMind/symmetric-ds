@@ -270,7 +270,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         tableName = tableName.toLowerCase();
         boolean include = true;
-        if (pre39 && tableName.contains(TableConstants.SYM_JOB)) {
+        if (pre39 && (tableName.contains(TableConstants.SYM_JOB) || tableName.contains(TableConstants.SYM_CONSOLE_ROLE) || tableName.contains(TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE))) {
             include = false;
         } else if (pre37 && tableName.contains(TableConstants.SYM_EXTENSION)) {
             include = false;

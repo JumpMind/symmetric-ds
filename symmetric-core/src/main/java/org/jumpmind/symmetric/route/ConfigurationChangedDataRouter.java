@@ -262,10 +262,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         if (tableMatches(dataMetaData, TableConstants.SYM_MONITOR)
                 || tableMatches(dataMetaData, TableConstants.SYM_MONITOR_EVENT) 
                 || tableMatches(dataMetaData, TableConstants.SYM_NOTIFICATION)
-                || tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_JOB)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
             Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)
+                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
                     if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 9, 0)) {
                         targetNodes.add(nodeThatMayBeRoutedTo);
                     }
