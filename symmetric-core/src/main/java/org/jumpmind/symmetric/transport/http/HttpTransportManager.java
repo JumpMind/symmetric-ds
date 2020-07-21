@@ -82,7 +82,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         this.engine = engine;
         useHeaderSecurityToken = engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_HEADER_SECURITY_TOKEN);
         useSessionAuth = engine.getParameterService().is(ParameterConstants.TRANSPORT_HTTP_USE_SESSION_AUTH);
-        isHttp2Enabled = engine.getParameterService().is(ServerConstants.HTTPS2_ENABLE);
+        isHttp2Enabled = engine.getParameterService().is(ServerConstants.HTTPS2_ENABLE, true);
     }
 
     public int sendCopyRequest(Node local) throws IOException {
