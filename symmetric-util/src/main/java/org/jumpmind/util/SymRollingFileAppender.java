@@ -20,10 +20,8 @@
  */
 package org.jumpmind.util;
 
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -38,7 +36,6 @@ import org.apache.logging.log4j.core.Core;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
 import org.apache.logging.log4j.core.appender.rolling.DirectFileRolloverStrategy;
@@ -71,6 +68,8 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
     private int historySize = 2048;
 
     private Map<String, String> loggedEventKeys;
+    
+    private long lastFileTime;
 
     private SymRollingFileAppender(final String name, final Layout<? extends Serializable> layout, final Filter filter,
             final RollingFileManager manager, final String fileName, final String filePattern,
@@ -111,6 +110,10 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
         }
 
         getManager().checkRollover(event);
+        if (getManager().getFileTime() != lastFileTime) {
+            loggedEventKeys.clear();
+            lastFileTime = getManager().getFileTime();
+        }
         super.append(event);
     }
 
@@ -134,7 +137,7 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
                 buff.append("-jvm-optimized");    
             }
             buff.append(":");
-            buff.append(getThrowableHash(event.getThrown().getStackTrace()));
+            buff.append(getThrowableHash(event.getThrown().getStackTrace(), event.getThrown().getMessage()));
             return buff.toString();
         } catch (Exception ex) {
             StatusLogger.getLogger().error("Failed to hash stack trace.", ex);
@@ -142,10 +145,13 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
         }
     }
     
-    protected long getThrowableHash(StackTraceElement[] elements) throws UnsupportedEncodingException {
+    protected long getThrowableHash(StackTraceElement[] elements, String message) throws UnsupportedEncodingException {
         CRC32 crc = new CRC32();
+        if (message != null) {
+            crc.update(message.getBytes("UTF8"));
+        }
         for (StackTraceElement element : elements) {
-            crc.update((element.getClassName() + element.getMethodName()).getBytes("UTF8"));
+            crc.update((element.getClassName() + element.getMethodName() + element.getLineNumber()).getBytes("UTF8"));
         }
         return crc.getValue();
     }
@@ -177,6 +183,12 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
         }
         buff.append(" [").append(key).append("]");
         return buff.toString();
+    }
+
+    @Override
+    public void start() {
+        super.start();
+        lastFileTime = getManager().getFileTime();
     }
 
     @Override
@@ -297,7 +309,7 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
             }
 
             final Layout<? extends Serializable> layout = getOrCreateLayout();
-            final RollingFileManager manager = SymRollingFileManager.getFileManager(fileName, filePattern, append,
+            final RollingFileManager manager = RollingFileManager.getFileManager(fileName, filePattern, append,
                     isBufferedIo, policy, strategy, advertiseUri, layout, bufferSize, isImmediateFlush(),
                     createOnDemand, filePermissions, fileOwner, fileGroup, getConfiguration());
 
@@ -418,23 +430,6 @@ public class SymRollingFileAppender extends AbstractOutputStreamAppender<Rolling
         public B withFileGroup(final String fileGroup) {
             this.fileGroup = fileGroup;
             return asBuilder();
-        }
-    }
-    
-    class SymRollingFileManager extends RollingFileManager {
-
-        protected SymRollingFileManager(LoggerContext loggerContext, String fileName, String pattern, OutputStream os,
-                boolean append, boolean createOnDemand, long size, long initialTime, TriggeringPolicy triggeringPolicy,
-                RolloverStrategy rolloverStrategy, String advertiseURI, Layout<? extends Serializable> layout,
-                String filePermissions, String fileOwner, String fileGroup, boolean writeHeader, ByteBuffer buffer) {
-            super(loggerContext, fileName, pattern, os, append, createOnDemand, size, initialTime, triggeringPolicy,
-                    rolloverStrategy, advertiseURI, layout, filePermissions, fileOwner, fileGroup, writeHeader, buffer);
-        }
-
-        @Override
-        public synchronized void rollover() {
-            loggedEventKeys.clear();
-            super.rollover();
         }
     }
 
