@@ -170,7 +170,7 @@ public class StagedResource implements IStagedResource {
                 
                 if (!file.renameTo(newFile)) {
                     handleFailedRename(file, newFile);
-                }  
+                }
             }
         } 
         
