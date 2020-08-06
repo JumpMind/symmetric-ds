@@ -749,7 +749,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         int rowIndex = 0;
         for (Column col : targetTable.getColumns()) {
             if (col.getJdbcTypeCode() == Types.VARCHAR) { // CHAR
-                if (rowData[rowIndex].length() > Integer.parseInt(col.getSize())) {
+                if (rowData[rowIndex] != null && rowData[rowIndex].length() > Integer.parseInt(col.getSize())) {
                     failureMessage.append("Failed truncation column: ");
                     failureMessage.append(col.getName());
                     failureMessage.append(" with size of: ");
