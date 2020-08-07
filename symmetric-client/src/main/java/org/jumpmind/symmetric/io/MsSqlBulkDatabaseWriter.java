@@ -75,6 +75,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
            this.rowTerminator = rowTerminator;
         }
         this.uncPath = uncPath;
+        log.debug("Initialized with maxRowsBeforeFlush={}, fireTriggers={}, fieldTerminator={}, rowTerminator={}, uncPath={}",
+                maxRowsBeforeFlush, fireTriggers, fieldTerminator, rowTerminator, uncPath);
     }
 
     public boolean start(Table table) {
@@ -204,7 +206,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     
     protected void flush() {
         if (loadedRows > 0) {
-                this.stagedInputFile.close();
+            this.stagedInputFile.close();
                 
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             String filename;
@@ -236,7 +238,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         " WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
                         (fireTriggers ? ", FIRE_TRIGGERS" : "") + rowTerminatorString +");";
                 Statement stmt = c.createStatement();
-    
+                log.debug("Running {}", sql);
+
                 //TODO:  clean this up, deal with errors, etc.?
                 stmt.execute(sql);
                 stmt.close();
@@ -255,5 +258,6 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         //      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create("bulkloaddir",
                 table.getName() + this.getBatch().getBatchId() + ".csv");
+        log.debug("Using staging file {}", stagedInputFile.getFile().getPath());
     }
 }
