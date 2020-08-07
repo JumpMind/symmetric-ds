@@ -21,11 +21,11 @@
 package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -35,11 +35,11 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.transform.TargetDmlAction;
 import org.jumpmind.symmetric.io.data.transform.IColumnTransform;
 import org.jumpmind.symmetric.io.data.transform.IgnoreColumnException;
 import org.jumpmind.symmetric.io.data.transform.IgnoreRowException;
 import org.jumpmind.symmetric.io.data.transform.NewAndOldValue;
+import org.jumpmind.symmetric.io.data.transform.TargetDmlAction;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 import org.jumpmind.symmetric.io.data.transform.TransformColumnException;
@@ -159,9 +159,11 @@ public class TransformWriter extends NestedDataWriter {
                                 this.sourceTable.getFullyQualifiedTableName(), sourceValues });
             }
 
-            TransformTable[] transformTables = activeTransforms.toArray(new TransformTable[activeTransforms.size()]);
+            List<TransformTable> transformTables = activeTransforms;
+
             if (eventType == DataEventType.DELETE) {
-                CollectionUtils.reverseArray(transformTables);
+                transformTables = new ArrayList<TransformTable>(activeTransforms);
+                Collections.reverse(transformTables);
             }
 
             for (TransformTable transformation : transformTables) {
@@ -173,12 +175,11 @@ public class TransformWriter extends NestedDataWriter {
                 List<TransformedData> dataThatHasBeenTransformed = 
                         transform(localEventType, context, transformation, sourceKeyValues, oldSourceValues, sourceValues);
                 
-                
                 for (TransformedData transformedData : dataThatHasBeenTransformed) {
                     Table transformedTable = transformedData.buildTargetTable();
                     CsvData csvData = transformedData.buildTargetCsvData();
                     boolean processData = true;
-                    if (lastTransformedTable == null || !lastTransformedTable.equals(transformedTable)) {
+                    if (lastTransformedTable == null || transformedTable == null || !lastTransformedTable.equalsByName(transformedTable)) {
                         if (lastTransformedTable != null) {
                             this.nestedWriter.end(lastTransformedTable);
                         }
