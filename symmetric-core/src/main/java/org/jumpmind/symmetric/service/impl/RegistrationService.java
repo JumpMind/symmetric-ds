@@ -481,8 +481,9 @@ public class RegistrationService extends AbstractService implements IRegistratio
     /**
      * @see IRegistrationService#registerWithServer()
      */
-    public void registerWithServer() {
-        boolean registered = isRegisteredWithServer();
+    public boolean registerWithServer() {
+        boolean wasRegistered = isRegisteredWithServer();
+        boolean registered = wasRegistered;
         int maxNumberOfAttempts = parameterService
                 .getInt(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS);        
         
@@ -502,6 +503,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                     "Failed after trying to register %s times.",
                     parameterService.getString(ParameterConstants.REGISTRATION_NUMBER_OF_ATTEMPTS)));
         }
+        return registered != wasRegistered;
     }
 
     public synchronized boolean attemptToRegisterWithServer(int maxNumberOfAttempts) {

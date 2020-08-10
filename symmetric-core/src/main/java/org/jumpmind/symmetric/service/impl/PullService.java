@@ -85,8 +85,9 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
         if (identity == null || identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PULL_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PULL)) {
-                    // register if we haven't already been registered
-                    registrationService.registerWithServer();
+                // register if we haven't already been registered
+                // Only pull if we did not have to register this time
+                if (!registrationService.registerWithServer()) {
                     identity = nodeService.findIdentity();
                     if (identity != null) {
                         List<NodeCommunication> nodes = nodeCommunicationService
@@ -108,6 +109,10 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                             nodeCommunication.setBatchToSendCount(0);
                         }
                     }
+                } else {
+                    identity = nodeService.findIdentity();
+                    log.info("Node {}:{} just registered, not pulling yet", identity != null ? identity.getNodeGroupId() : "", identity != null ? identity.getNodeId() : "");
+                }
             } else {
                 log.debug("Did not run the pull process because it has been stopped");
             }
