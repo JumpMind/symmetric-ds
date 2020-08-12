@@ -103,8 +103,10 @@ public interface IRegistrationService {
      * registration server cannot be reach this method will continue to try with
      * random sleep periods up to one minute up until the registration succeeds
      * or the maximum number of attempts has been reached.
+     * Returns true if we had to register with server and was successful.
+     * Returns false if we did not have to register.
      */
-    public void registerWithServer();
+    public boolean registerWithServer();
     
     /**
      * Client method which attempts to register with the registration.url to

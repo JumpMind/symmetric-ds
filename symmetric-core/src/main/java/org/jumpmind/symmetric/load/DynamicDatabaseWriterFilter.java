@@ -125,6 +125,9 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
                 foundFilters = lookupFilters(foundFilters, 
                         table.getCatalog(), FormatUtils.WILDCARD, FormatUtils.WILDCARD);
                 
+                foundFilters = lookupFilters(foundFilters, 
+                        FormatUtils.WILDCARD, table.getSchema(), FormatUtils.WILDCARD);
+                
                 foundFilters = lookupFilters(foundFilters,
                         FormatUtils.WILDCARD, FormatUtils.WILDCARD, FormatUtils.WILDCARD);
             }
