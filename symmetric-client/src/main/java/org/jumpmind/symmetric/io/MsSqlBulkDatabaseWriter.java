@@ -232,7 +232,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 if (!(rowTerminator.equals("\n") || rowTerminator.equals("\r\n"))) {
                     rowTerminatorString = ", ROWTERMINATOR='" + StringEscapeUtils.escapeJava(rowTerminator) + "'";
                 }
-                String sql = String.format("BULK INSERT " + 
+                final String sql = String.format("BULK INSERT " + 
                         this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) + 
                         " FROM '" + filename) + "'" +
                         " WITH (DATAFILETYPE='widechar', FIELDTERMINATOR='"+StringEscapeUtils.escapeJava(fieldTerminator)+"', KEEPIDENTITY" + 
