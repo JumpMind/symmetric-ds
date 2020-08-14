@@ -42,6 +42,7 @@ include::configuration/parameters.ad[]
 
 ifdef::pro[]
 include::configuration/users.ad[]
+include::configuration/rest-keys.ad[]
 include::configuration/ldap.ad[]
 include::configuration/license-key.ad[]
 endif::pro[]
