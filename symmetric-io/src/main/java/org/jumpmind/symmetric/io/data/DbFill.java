@@ -926,7 +926,9 @@ public class DbFill {
             objectValue = randomTinyInt();
         } else if (type == Types.NUMERIC || type == Types.DECIMAL
                 || type == Types.REAL) {
-            objectValue = randomBigDecimal(column.getSizeAsInt(), column.getScale());
+            // big decimal is very slow if too big
+            int size = column.getSizeAsInt() > 32 ? 32 : column.getSizeAsInt();
+            objectValue = randomBigDecimal(size, column.getScale());
         } else if (type == Types.BOOLEAN || type == Types.BIT) {
             objectValue = randomBoolean();
         } else if (type == Types.BLOB || type == Types.LONGVARBINARY || type == Types.BINARY

@@ -68,7 +68,7 @@ def ignoreDerivedResources(projectDescription, directories = ["build", "test-out
 
 subprojects { subproject ->
 
-    apply plugin:'license-report'
+    apply plugin: 'com.github.hierynomus.license'
     apply plugin: 'java'
     apply plugin: 'propdeps'
     apply plugin: 'propdeps-maven'
@@ -288,5 +288,40 @@ subprojects { subproject ->
             delete wstFacetXml 
         }
     }
+
+    downloadLicenses {
+        ext.gplTwo = license('GNU General Public License, Version 2', 'http://www.gnu.org/licenses/old-licenses/gpl-2.0.html')
+        ext.gplTwoCE = license('GNU General Public License with Classpath Exception, Version 2', 'http://www.gnu.org/licenses/old-licenses/gpl-2.0.html')
+        ext.lgpl = license('GNU Lesser General Public License', 'https://opensource.org/licenses/lgpl-license')
+        ext.apacheTwo = license('Apache License, Version 2.0', 'http://opensource.org/licenses/Apache-2.0')
+        ext.bsd = license('BSD License', 'http://www.opensource.org/licenses/bsd-license.php')
+        ext.eclipse = license('Eclipse Public License, Version 1.0', 'http://www.eclipse.org/legal/epl-v10.html')
+        ext.mit = license('MIT License', 'https://opensource.org/licenses/MIT')
+        ext.cddl = license('Common Development and Distribution License (CDDL)', 'https://opensource.org/licenses/CDDL-1.0')
+        ext.w3c = license('W3C Software License', 'http://www.w3.org/Consortium/Legal/copyright-software-19980720')
     
+        includeProjectDependencies = true
+    
+        licenses = [
+            (group('org.jumpmind.symmetric')) : license('JumpMind License'),
+            (group('com.jumpmind.symmetric')) : license('JumpMind License'),
+            'com.byteowls:vaadin-chartjs:1.2.0' : mit,
+            'org.vaadin.addons:aceeditor:0.8.15' : bsd,
+            'org.vaadin.addons:fontawesomelabel:1.4.0' : apacheTwo    
+        ]
+    
+        aliases = [
+            (gplTwo) : ['The GNU General Public License, Version 2'],
+            (gplTwoCE) : ['GPL2 w/ CPE', 'GPL v2 with ClassPath Exception'],
+            (lgpl) : ['GNU Library or Lesser General Public License (LGPL) V2.1', 'LGPL, version 2.1', 'LGPL'],
+            (apacheTwo) : ['The Apache Software License, Version 2.0', 'Apache 2', 'Apache License Version 2.0', 'Apache License, Version 2.0', 'Apache License 2.0', 'Apache Software License - Version 2.0', 'The Apache License, Version 2.0', 'Apache License v2.0', 'Apache 2.0', 'Similar to Apache License but with the acknowledgment clause removed', 'GWT Terms'],
+            (bsd) : ['BSD License', 'BSD', 'BSD style', 'BSD 3-clause License w/nuclear disclaimer', 'BSD-2-Clause'],
+            (eclipse) : ['Eclipse Public License, Version 1.0', 'Eclipse Public License - Version 1.0', 'The H2 License, Version 1.0'],
+            (mit) : ['MIT License', 'The MIT License', 'The MIT License (MIT)', 'Bouncy Castle Licence'],
+            (cddl) : ['CDDL', 'Common Development and Distribution License (CDDL) v1.0', 'CDDL 1.1', 'Dual license consisting of the CDDL v1.1 and GPL v2', 'CDDL/GPLv2+CE', 'CDDL + GPLv2 with classpath exception'],
+            (w3c) : ['The W3C Software License', 'W3C Software Copyright Notice and License']
+        ]
+    
+        dependencyConfiguration = 'compile'
+    }    
 }
