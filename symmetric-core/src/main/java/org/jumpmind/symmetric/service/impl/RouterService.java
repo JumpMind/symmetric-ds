@@ -500,7 +500,7 @@ public class RouterService extends AbstractService implements IRouterService {
             if (overrideBatchesByNodes != null) {
                 context.getBatchesByNodes().putAll(overrideBatchesByNodes);
             }
-            if (overrideBatchesByNodes != null) {
+            if (overrideBatchesByGroups != null) {
                 context.getBatchesByGroups().putAll(overrideBatchesByGroups);
             }
 
