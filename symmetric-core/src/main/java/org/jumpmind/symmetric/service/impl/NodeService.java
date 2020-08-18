@@ -947,6 +947,9 @@ public class NodeService extends AbstractService implements INodeService {
     public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
         AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
         Node node = findNode(nodeId, true);
+        if(node == null) {
+            node = findNode(nodeId, false);
+        }
         if (node == null) {
             retVal = AuthenticationStatus.REGISTRATION_REQUIRED;
         } else if (!syncEnabled(node)) {
