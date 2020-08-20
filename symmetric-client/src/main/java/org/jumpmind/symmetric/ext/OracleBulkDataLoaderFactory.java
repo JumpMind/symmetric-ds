@@ -41,11 +41,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
-    private ISymmetricEngine engine;
-
     public OracleBulkDataLoaderFactory(ISymmetricEngine engine) {
-        this.engine = engine;
-        this.parameterService = engine.getParameterService();
+        super(engine);
     }
 
     public String getTypeName() {
