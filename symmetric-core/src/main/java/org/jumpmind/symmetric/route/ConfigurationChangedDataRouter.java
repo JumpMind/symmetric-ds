@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.route;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,8 @@ import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
+
+import avro.shaded.com.google.common.collect.Sets;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
 
@@ -340,7 +343,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             String nodeIdForRecordBeingRouted, DataMetaData dataMetaData, Set<String> nodeIds, Map<String, String> columnValues) {
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         boolean fromAnotherNode = isNotBlank(dataMetaData.getData().getSourceNodeId());
-
+        boolean masterToMasterInitialLoad = false;
+        
         if (nodeIds.contains(nodeIdForRecordBeingRouted)) {
             /*
              * Don't route node security to it's own node. That node will
@@ -365,7 +369,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     if (reverseLoadQueued) {
                         remove = false;
                     }
-                }                            
+                } else if (engine.getConfigurationService().isMasterToMaster() && "1".equals(columnValues.get("INITIAL_LOAD_ENABLED"))) {
+                    remove = false;
+                    masterToMasterInitialLoad = true;
+                    log.info("Master to master registration sym node security update batch allow it to sync out to nodes: " + String.join(", ", nodeIds));
+                }
             }
             if (remove) {
                 nodeIds.remove(nodeIdForRecordBeingRouted);
@@ -388,7 +396,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
              * Don't send updates where the initial load flags are enabled to other 
              * nodes in the cluster 
              */
-            if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED"))) {
+            if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED")) && !masterToMasterInitialLoad) {
                 nodeIds.clear();
             }
         }
