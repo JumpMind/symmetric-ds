@@ -1559,14 +1559,25 @@ public class DataService extends AbstractService implements IDataService {
                     } else {
                         log.warn("The table defined by trigger_hist row %d no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());                            
                     }
-                    if (!transactional) {
+                    if (!transactional) {     
                         transaction.commit();
                     }
                 }
                 
             }
         }
-
+        
+        //Needs to have a "data batch" to give point of reference for setup/finalize batches if no actual data batches
+        if (requests.size() == 0) {
+            long startBatchId = 0;
+            if (platform.supportsMultiThreadedTransactions()) {
+                startBatchId = engine.getSequenceService().nextRange(Constants.SEQUENCE_OUTGOING_BATCH, 1);
+            } else {
+                startBatchId = engine.getSequenceService().nextRange(transaction, Constants.SEQUENCE_OUTGOING_BATCH, 1);
+            }
+            updateTableReloadStatusDataCounts(platform.supportsMultiThreadedTransactions() ? null : transaction, 
+                    loadId, startBatchId, startBatchId, 0, 0);
+        }
         return requests;
     }
 

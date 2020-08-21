@@ -37,6 +37,7 @@ public class SystemConstants {
     public static final String SYSPROP_DEFAULT_HTTP_PORT = "symmetric.default.http.port";
     public static final String SYSPROP_DEFAULT_HTTPS_PORT = "symmetric.default.https.port";
     public static final String SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT = "symmetric.concurrent.engines.starting.count";
+    public static final String SYSPROP_REST_PROPERTIES_FILE = "sym.rest.properties.file";
     public static final String SYSPROP_KEYSTORE_TYPE = SecurityConstants.SYSPROP_KEYSTORE_TYPE;
     public static final String SYSPROP_KEYSTORE_CERT_ALIAS = SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS;
 

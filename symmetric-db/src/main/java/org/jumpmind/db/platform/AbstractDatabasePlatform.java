@@ -1058,6 +1058,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     protected Table getPermissionTableDefinition() {
         Column idColumn = new Column("TEST_ID");
         idColumn.setMappedType("INTEGER");
+        idColumn.setRequired(true);
+        idColumn.setPrimaryKey(true);
         Column valueColumn = new Column("TEST_VALUE");
         valueColumn.setMappedType("INTEGER");
         return new Table(PERMISSION_TEST_TABLE_NAME, idColumn, valueColumn);

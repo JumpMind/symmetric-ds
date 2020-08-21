@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -960,6 +961,30 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         } else {
             return false;
         }
+    }
+
+    public boolean equalsByName(Table other) {
+        if (this == other) {
+            return true;
+        }
+        if (other != null && StringUtils.equals(catalog, other.catalog) && StringUtils.equalsIgnoreCase(schema, other.schema) &&
+                StringUtils.equalsIgnoreCase(name, other.name)) {
+
+            if (columns == other.columns) {
+                return true;
+            }
+            ListIterator<Column> iter1 = columns.listIterator();
+            ListIterator<Column> iter2 = other.columns.listIterator();
+            while (iter1.hasNext() && iter2.hasNext()) {
+                Column c1 = iter1.next();
+                Column c2 = iter2.next();
+                if (!(c1 == null ? c2 == null : c1.equalsByName(c2))) {
+                    return false;
+                }
+            }
+            return !(iter1.hasNext() || iter2.hasNext());
+        }
+        return false;
     }
 
     @Override

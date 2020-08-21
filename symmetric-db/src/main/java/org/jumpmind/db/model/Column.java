@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.jumpmind.db.platform.PlatformUtils;
@@ -630,6 +631,10 @@ public class Column implements Cloneable, Serializable {
         } else {
             return false;
         }
+    }
+
+    public boolean equalsByName(Column other) {
+        return StringUtils.equalsIgnoreCase(name, other.name) && primaryKey == other.primaryKey;
     }
 
     /**
