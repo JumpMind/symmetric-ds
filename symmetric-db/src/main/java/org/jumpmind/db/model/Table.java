@@ -967,7 +967,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         if (this == other) {
             return true;
         }
-        if (other != null && StringUtils.equals(catalog, other.catalog) && StringUtils.equalsIgnoreCase(schema, other.schema) &&
+        if (other != null && StringUtils.equalsIgnoreCase(catalog, other.catalog) && StringUtils.equalsIgnoreCase(schema, other.schema) &&
                 StringUtils.equalsIgnoreCase(name, other.name)) {
 
             if (columns == other.columns) {
