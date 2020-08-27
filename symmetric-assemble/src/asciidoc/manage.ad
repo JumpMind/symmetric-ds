@@ -82,6 +82,7 @@ include::manage/monitors.ad[]
 
 ifdef::pro[]
 include::manage/security.ad[]
+include::manage/rest-keys.ad[]
 endif::pro[]
 
 include::manage/logging.ad[]
