@@ -3,9 +3,9 @@ apply from: symAssembleDir + '/common.gradle'
 buildscript {
     repositories { 
        jcenter()
-       maven { url 'http://repo.spring.io/plugins-release' } 
+       maven { url 'https://repo.spring.io/plugins-release' } 
        maven { url 'https://plugins.gradle.org/m2/' }
-       maven { url "http://maven.vaadin.com/vaadin-addons" }         
+       maven { url "https://maven.vaadin.com/vaadin-addons" }         
     }
 
     dependencies { 
