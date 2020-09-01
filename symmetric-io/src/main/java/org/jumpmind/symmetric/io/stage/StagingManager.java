@@ -41,18 +41,19 @@ import org.slf4j.LoggerFactory;
 
 public class StagingManager implements IStagingManager {
 
-    private static final String LOCK_EXTENSION = ".lock";
+    protected static final String LOCK_EXTENSION = ".lock";
 
     protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
     protected File directory;
 
-    private Map<String, String> resourcePathsCache = new ConcurrentHashMap<String, String>();
+    protected Set<String> resourcePathsCache;
+
     protected Map<String, IStagedResource> inUse = new ConcurrentHashMap<String, IStagedResource>();
 
-    boolean clusterEnabled;
+    protected boolean clusterEnabled;
     
-    long lowFreeSpaceThresholdMegabytes;
+    protected long lowFreeSpaceThresholdMegabytes;
 
     public StagingManager(String directory, boolean clusterEnabled, long lowFreeSpaceThresholdMegabytes) {
         log.info("The staging directory was initialized at the following location: " + directory);
@@ -60,6 +61,7 @@ public class StagingManager implements IStagingManager {
         this.directory.mkdirs();
         this.clusterEnabled = clusterEnabled;
         this.lowFreeSpaceThresholdMegabytes = lowFreeSpaceThresholdMegabytes;
+        this.resourcePathsCache = ConcurrentHashMap.newKeySet();
     }
 
     public StagingManager(String directory, boolean clusterEnabled) {
@@ -68,7 +70,7 @@ public class StagingManager implements IStagingManager {
     
     @Override
     public Set<String> getResourceReferences() {
-        return new TreeSet<String>(resourcePathsCache.keySet());
+        return new TreeSet<String>(resourcePathsCache);
     }
 
     @Override
@@ -143,13 +145,13 @@ public class StagingManager implements IStagingManager {
                             }
                             
                             cleanPath(resource, ttlInMs, context); // this comes after stat collection because 
-                                                                   // once the file is gone we loose visibility to size
+                                                                   // once the file is gone we lose visibility to size
                         } else {
-                            resourcePathsCache.put(stagingPath,stagingPath);                            
+                            resourcePathsCache.add(stagingPath);                            
                         }
                     }
                 } catch (IllegalStateException ex) {
-                    log.warn("Failure during refreshResourceList ", ex);
+                    log.warn("Failure during clean ", ex);
                 }                
             }
         }
@@ -196,7 +198,7 @@ public class StagingManager implements IStagingManager {
         }
 
         this.inUse.put(filePath, resource);
-        this.resourcePathsCache.put(filePath, filePath);
+        this.resourcePathsCache.add(filePath);
         return resource;
     }
     
@@ -222,16 +224,9 @@ public class StagingManager implements IStagingManager {
     public IStagedResource find(String path) {
         IStagedResource resource = inUse.get(path);
         if (resource == null) {
-            boolean foundResourcePath = resourcePathsCache.containsKey(path);
-            if (!foundResourcePath) {
-                resource = createStagedResource(path);
-                if (resource.getState() == State.DONE) {
-                    resourcePathsCache.put(path, path);
-                    foundResourcePath = true;
-                }
-            } else if (foundResourcePath) {
-                resource = createStagedResource(path);           
-            }
+            resource = createStagedResource(path);
+            inUse.put(path, resource);
+            resourcePathsCache.add(path);
         }
         return resource;
     }
@@ -305,6 +300,5 @@ public class StagingManager implements IStagingManager {
             }
         }
     };
-
 
 }

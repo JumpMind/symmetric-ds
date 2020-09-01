@@ -24,11 +24,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
-import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
@@ -41,8 +38,7 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 
-public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
-        ISymmetricEngineAware, IBuiltInExtensionPoint {
+public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements IBuiltInExtensionPoint {
 
     protected String typeName = "mongodb";
 
@@ -50,12 +46,6 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
 
     public MongoDataLoaderFactory() {
         super();
-    }
-
-    @Override
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.engine = engine;
-        this.parameterService = engine.getParameterService();
     }
 
     @Override
@@ -106,11 +96,6 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    @Override
-    public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return true;
     }
 
     public void setTypeName(String typeName) {
