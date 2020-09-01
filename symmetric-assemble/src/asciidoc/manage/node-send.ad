@@ -46,7 +46,45 @@ select '00001', source_table_name, 'S', '"delete from sale_transaction where day
 from sym_trigger_hist where source_table_name = 'sale_transaction' and inactive_time is null;
 ----
 
-===== Create Event
+===== BSH Event
+
+A BSH event runs a BeanShell script you specify at the target nodes.
+
+.Variables available to the script
+[cols=".^2,8"] 
+|===
+
+|sourceNodeId|Source node ID
+
+|sourceNodeExternalId|Source node external ID
+
+|sourceNodeGroupId|Source node group ID
+
+|sourceNode|Source node object of type org.jumpmind.symmetric.model.Node
+
+|targetNodeId|Target node ID
+
+|targetNodeExternalId|Target node external ID
+
+|targetNodeGroupId|Target node group ID
+
+|targetNode|Target node object of type org.jumpmind.symmetric.model.Node
+
+|engine|Current engine of type org.jumpmind.symmetric.ISymmetricEngine
+
+|log|Logger of type org.slf4j.Logger for writing messages to log
+
+|===
+
+[source, sql]
+----
+insert into sym_data (node_list, table_name, event_type, row_data, trigger_hist_id, channel_id, create_time)
+select '00001', source_table_name, 'B', 'log.info("Hello, world");', trigger_hist_id, 'config', current_timestamp
+from sym_trigger_hist where source_table_name = 'sym_node' and inactive_time is null;
+----
+
+
+===== Table Schema
 
 A "create" event will send the table definition as XML to the target nodes, where it is converted to database specific SQL that will
 either create the table if it's missing or alter it to match the definition.
