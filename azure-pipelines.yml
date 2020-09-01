@@ -5,6 +5,8 @@
 
 trigger:
 - 3.10
+- 3.11
+- 3.12
 
 pool:
   vmImage: 'Ubuntu-16.04'
