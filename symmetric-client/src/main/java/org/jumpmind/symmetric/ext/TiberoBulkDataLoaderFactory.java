@@ -41,11 +41,8 @@ import org.jumpmind.symmetric.service.IParameterService;
 
 public class TiberoBulkDataLoaderFactory extends DefaultDataLoaderFactory {
 
-    private ISymmetricEngine engine;
-
     public TiberoBulkDataLoaderFactory(ISymmetricEngine engine) {
-        this.engine = engine;
-        this.parameterService = engine.getParameterService();
+        super(engine);
     }
 
     public String getTypeName() {
