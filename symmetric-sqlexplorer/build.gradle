@@ -3,7 +3,7 @@ apply from: symAssembleDir + '/common.gradle'
 buildscript {
     repositories { 
        jcenter()
-       maven { url 'https://repo.spring.io/plugins-release' }
+       maven { url 'https://repo.spring.io/plugins-release' } 
        maven { url 'https://plugins.gradle.org/m2/' }
        maven { url "http://maven.vaadin.com/vaadin-addons" }         
     }
