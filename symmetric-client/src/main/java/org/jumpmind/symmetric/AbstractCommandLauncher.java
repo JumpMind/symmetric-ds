@@ -306,7 +306,7 @@ public abstract class AbstractCommandLauncher {
         return enginesDir;
     }
 
-    public File findPropertiesFileForEngineWithName(String engineName) {
+    public static File findPropertiesFileForEngineWithName(String engineName) {
         File[] files = findEnginePropertiesFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
@@ -323,7 +323,7 @@ public abstract class AbstractCommandLauncher {
 
     }
 
-    public File[] findEnginePropertiesFiles() {
+    public static File[] findEnginePropertiesFiles() {
         List<File> propFiles = new ArrayList<File>();
         File enginesDir = new File(getEnginesDir());
         File[] files = enginesDir.listFiles();
