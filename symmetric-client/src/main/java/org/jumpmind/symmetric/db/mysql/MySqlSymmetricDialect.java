@@ -201,7 +201,14 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, ISqlTransaction transaction) {
-        catalogName = catalogName == null ? "" : (catalogName + ".");
+        if (catalogName == null || platform.getDefaultCatalog().equals(catalogName)) {
+            catalogName = "";
+        } else {
+            if (parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE)) {
+                catalogName = platform.alterCaseToMatchDatabaseDefaultCase(catalogName);
+            }
+            catalogName = platform.getDatabaseInfo().getDelimiterToken() + catalogName + platform.getDatabaseInfo().getDelimiterToken() + ".";
+        }
         final String sql = "drop trigger if exists " + catalogName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
