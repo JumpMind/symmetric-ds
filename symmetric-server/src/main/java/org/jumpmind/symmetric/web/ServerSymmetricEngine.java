@@ -108,9 +108,6 @@ public class ServerSymmetricEngine extends ClientSymmetricEngine {
         this.uriHandlers.add(new FileSyncPullUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new FileSyncPushUriHandler(this, add(customInterceptors, authInterceptor, concurrencyInterceptor)));
         this.uriHandlers.add(new CopyNodeUriHandler(this, add(customInterceptors, authInterceptor)));
-        if (parameterService.is(ParameterConstants.WEB_BATCH_URI_HANDLER_ENABLE)) {
-            this.uriHandlers.add(new BatchUriHandler(parameterService, dataExtractorService, customInterceptors));
-        }
     }
     
     protected IInterceptor[] buildCustomInterceptors() {
