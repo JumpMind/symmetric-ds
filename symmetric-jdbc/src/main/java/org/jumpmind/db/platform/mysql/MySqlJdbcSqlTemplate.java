@@ -36,6 +36,7 @@ public class MySqlJdbcSqlTemplate extends JdbcSqlTemplate {
         uniqueKeyViolationNameRegex = new String[] { "Duplicate entry .* for key '(.*)'" };
         foreignKeyViolationCodes = new int[] {1452, 1216};
         foreignKeyChildExistsViolationCodes = new int[] {1451};
+        deadlockCodes = new int[] {1213};
     }
     
     @Override

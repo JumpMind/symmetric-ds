@@ -117,6 +117,8 @@ public interface ISqlTemplate {
     public boolean isForeignKeyViolation(Throwable ex);
     
     public boolean isForeignKeyChildExistsViolation(Throwable ex);
+    
+    public boolean isDeadlock(Throwable ex);
 
     public ISqlTransaction startSqlTransaction();
     

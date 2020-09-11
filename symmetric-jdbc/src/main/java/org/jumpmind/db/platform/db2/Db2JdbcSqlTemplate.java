@@ -37,6 +37,7 @@ public class Db2JdbcSqlTemplate extends JdbcSqlTemplate {
         primaryKeyViolationCodes = new int[] {-803};
         foreignKeyViolationCodes = new int[] {-530};
         foreignKeyChildExistsViolationCodes = new int[] {-531, -532};
+        deadlockCodes = new int[] {-911};
     }
     
 

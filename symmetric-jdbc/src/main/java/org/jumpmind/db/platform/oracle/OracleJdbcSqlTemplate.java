@@ -36,6 +36,7 @@ public class OracleJdbcSqlTemplate extends JdbcSqlTemplate {
         uniqueKeyViolationNameRegex = new String[] { "unique constraint \\(.*\\.(.*)\\) violated" };
         foreignKeyViolationCodes = new int[] {2291};
         foreignKeyChildExistsViolationCodes = new int[] {2292};
+        deadlockCodes = new int[] {60};
     }
     
     @Override

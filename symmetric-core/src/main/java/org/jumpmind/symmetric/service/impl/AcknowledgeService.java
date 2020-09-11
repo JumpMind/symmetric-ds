@@ -164,6 +164,9 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             }
                         }
                     }
+                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.DEADLOCK_CODE) {
+                        suppressLogError = true;
+                    }
                     if (!suppressLogError) {
                         log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
                                 (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());

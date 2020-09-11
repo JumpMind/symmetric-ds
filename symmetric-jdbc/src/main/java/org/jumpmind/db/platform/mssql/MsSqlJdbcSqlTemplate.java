@@ -43,6 +43,7 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
                 "DELETE statement conflicted with the REFERENCE constraint",
                 "UPDATE statement conflicted with the SAME TABLE REFERENCE constraint",
                 "UPDATE statement conflicted with the REFERENCE constraint" };
+        deadlockCodes = new int[] {1205};
     }
     
     @Override

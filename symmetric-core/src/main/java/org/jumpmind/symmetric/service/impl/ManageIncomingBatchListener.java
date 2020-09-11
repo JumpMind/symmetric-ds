@@ -253,6 +253,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         if (sqlTemplate.isForeignKeyViolation(se)) {
                             this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
                             this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
+                        } else if (sqlTemplate.isDeadlock(se)) {
+                            this.currentBatch.setSqlState(ErrorConstants.DEADLOCK_STATE);
+                            this.currentBatch.setSqlCode(ErrorConstants.DEADLOCK_CODE);
                         }
                     } else {
                         this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
@@ -260,7 +263,8 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
                     if (ex instanceof TableNotFoundException) {
                         log.error(String.format("The incoming batch %s failed: %s", this.currentBatch.getNodeBatchId(), ex.getMessage()));
-                    } else if (this.currentBatch.getSqlCode() != ErrorConstants.FK_VIOLATION_CODE || !isNewErrorForCurrentBatch) {
+                    } else if ((this.currentBatch.getSqlCode() != ErrorConstants.FK_VIOLATION_CODE && this.currentBatch.getSqlCode() != ErrorConstants.DEADLOCK_CODE)
+                            || !isNewErrorForCurrentBatch) {
                         log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
                     }
                 }
