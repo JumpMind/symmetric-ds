@@ -57,7 +57,7 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                         + "  ignore_count=?, router_millis=?, network_millis=?, filter_millis=?,                                                            "
                         + "  load_millis=?, extract_millis=?, extract_start_time=?, transfer_start_time=?, load_start_time=?, "
                         + "  sql_state=?, sql_code=?, sql_message=?,                                       "
-                        + "  failed_data_id=?, last_update_hostname=?, last_update_time=current_timestamp, summary=?, "
+                        + "  failed_data_id=?, failed_line_number=?, last_update_hostname=?, last_update_time=current_timestamp, summary=?, "
                         + "  load_row_count=?, load_insert_row_count=?, load_update_row_count=?, load_delete_row_count=?, "
                         + "  fallback_insert_count=?, fallback_update_count=?, ignore_row_count=?, missing_delete_count=?, "
                         + "  skip_count=?, extract_row_count=?, extract_insert_row_count=?, extract_update_row_count=?, extract_delete_row_count=?, "
@@ -107,18 +107,18 @@ public class OutgoingBatchServiceSqlMap extends AbstractSqlMap {
                 "where node_id=? and channel_id=? and create_time >= ? and create_time <= ? ");
 
         putSql("selectOutgoingBatchPrefixSql",
-                        "select b.node_id, b.channel_id, b.status,                                                                              "
-                        + "  b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_row_count,                                           "
-                        + "  b.reload_row_count, b.data_insert_row_count, b.data_update_row_count, b.data_delete_row_count, b.other_row_count,             "
+                        "select b.node_id, b.channel_id, b.status, "
+                        + "  b.byte_count, b.extract_count, b.sent_count, b.load_count, b.data_row_count, "
+                        + "  b.reload_row_count, b.data_insert_row_count, b.data_update_row_count, b.data_delete_row_count, b.other_row_count, "
                         + "  b.ignore_count, b.router_millis, b.network_millis, b.filter_millis, b.load_millis, b.extract_millis, "
-                        + "  b.extract_start_time, b.transfer_start_time, b.load_start_time, b.sql_state, b.sql_code,  "
+                        + "  b.extract_start_time, b.transfer_start_time, b.load_start_time, b.sql_state, b.sql_code, "
                         + "  b.sql_message, b.load_insert_row_count, b.load_update_row_count, b.load_delete_row_count, b.load_row_count, "
                         + "  b.extract_insert_row_count, b.extract_update_row_count, b.extract_delete_row_count, b.extract_row_count, "
                         + "  b.transform_extract_millis, b.transform_load_millis, b.fallback_insert_count, b.fallback_update_count, "
                         + "  b.ignore_row_count, b.missing_delete_count, b.skip_count, "
-                        + "  b.failed_data_id, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, b.extract_job_flag, "
-                        + "  b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by, b.summary from      "
-                        + "  $(outgoing_batch) b                                                                                       ");
+                        + "  b.failed_data_id, b.failed_line_number, b.last_update_hostname, b.last_update_time, b.create_time, b.batch_id, "
+                        + "  b.extract_job_flag, b.load_flag, b.error_flag, b.common_flag, b.load_id, b.create_by, b.summary from "
+                        + "  $(outgoing_batch) b ");
 
         putSql("selectOutgoingBatchErrorsSql", " where error_flag=1 order by batch_id   ");
 

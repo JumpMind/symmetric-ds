@@ -116,7 +116,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 if (!batch.isOk() && batch.getErrorLine() != 0) {
                     if (outgoingBatch.isLoadFlag()) {
                         isNewError = outgoingBatch.getSentCount() == 1;
-                    } else {
+                    } else if (batch.getErrorLine() != outgoingBatch.getFailedLineNumber()){
                         String sql = getSql("selectDataIdSql");
                         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
                             sql = getSql("selectDataIdByCreateTimeSql");
@@ -132,6 +132,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             }
                             outgoingBatch.setFailedDataId(failedDataId);
                         }
+                        outgoingBatch.setFailedLineNumber(batch.getErrorLine());
                     }
                 }
 
