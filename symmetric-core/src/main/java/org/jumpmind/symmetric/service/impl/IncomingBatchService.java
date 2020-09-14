@@ -321,10 +321,9 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public int updateIncomingBatch(ISqlTransaction transaction, IncomingBatch batch) {
         int count = 0;
         if (batch.isPersistable()) {
-            if (batch.getStatus() == IncomingBatch.Status.ER) {
-                batch.setErrorFlag(true);
-            } else if (batch.getStatus() == IncomingBatch.Status.OK) {
+            if (batch.getStatus() == IncomingBatch.Status.OK) {
                 batch.setErrorFlag(false);
+                batch.setFailedDataId(0);
             }
             batch.setLastUpdatedHostName(clusterService.getServerId());
             count = transaction.prepareAndExecute(getSql("updateIncomingBatchSql"),

@@ -50,7 +50,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipException;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -62,7 +61,6 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
@@ -78,7 +76,6 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
 import org.jumpmind.symmetric.io.data.IDataWriter;
-import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
@@ -1105,21 +1102,16 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                     isError = true;
                                     incomingBatch = listener.currentBatch;
                                     incomingBatch.setStatus(Status.ER);
+                                    incomingBatch.setErrorFlag(true);
                                     incomingBatchService.updateIncomingBatch(incomingBatch);
                                     throw e;
                                 }
                             } else {
                                 isError = true;
-                                if (e instanceof ParseException || e instanceof ProtocolException || e.getCause() instanceof ZipException) {
-                                    log.warn("The batch {} may be corrupt in staging, so removing it.", batchInStaging.getNodeBatchId());
+                                if (listener.currentBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE) {
+                                    log.info("The batch {} may be corrupt in staging, so removing it.", batchInStaging.getNodeBatchId());
                                     resource.delete();
                                     incomingBatch = listener.currentBatch;
-                                    if (incomingBatch != null) {
-                                        incomingBatch.setStatus(Status.ER);
-                                        incomingBatch.setSqlCode(ErrorConstants.PROTOCOL_VIOLATION_CODE);
-                                        incomingBatch.setSqlState(ErrorConstants.PROTOCOL_VIOLATION_STATE);
-                                        incomingBatchService.updateIncomingBatch(incomingBatch);
-                                    }
                                 } else {
                                     throw e;
                                 }
