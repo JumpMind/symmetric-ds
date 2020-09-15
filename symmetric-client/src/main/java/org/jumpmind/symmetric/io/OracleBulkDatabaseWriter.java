@@ -87,12 +87,14 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected int rows = 0;
     
     protected Map<String, Integer> columnLengthsMap = new HashMap<String, Integer>();
+    
+    protected boolean delimitTokens = true;
 
     public OracleBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String sqlLoaderCommand, String sqlLoaderOptions,
             String dbUser, String dbPassword, String dbUrl, String ezConnectString, String sqlLoaderInfileCharset,
             String fieldTerminator, String lineTerminator,
-            DatabaseWriterSettings settings) {
+            DatabaseWriterSettings settings, boolean delimitTokens) {
         super(symmetricPlatform, targetPlatform, tablePrefix, settings);
         this.targetPlatform = targetPlatform;
         logger = LoggerFactory.getLogger(getClass());
@@ -105,6 +107,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.sqlLoaderInfileCharset = StringUtils.defaultIfBlank(sqlLoaderInfileCharset, null);
         this.fieldTerminator = fieldTerminator;
         this.lineTerminator = lineTerminator;
+        this.delimitTokens = delimitTokens;
 
         this.sqlLoaderOptions = new ArrayList<String>();
         if (StringUtils.isNotBlank(sqlLoaderOptions)) {
@@ -165,13 +168,17 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             
             out.write("TRAILING NULLCOLS\n".getBytes());
 
+            String quote = "";
+            if(delimitTokens) {
+                quote = targetPlatform.getDdlBuilder().getDatabaseInfo().getDelimiterToken();
+            }
             StringBuilder columns = new StringBuilder("(");
             int index = 0;
             for (Column column : targetTable.getColumns()) {
                 if (index++ > 0) {
                     columns.append(", ");
                 }
-                columns.append(column.getName());
+                columns.append(quote).append(column.getName()).append(quote);
                 int type = column.getMappedTypeCode();
                 
                 if (targetPlatform.isLob(type)) {

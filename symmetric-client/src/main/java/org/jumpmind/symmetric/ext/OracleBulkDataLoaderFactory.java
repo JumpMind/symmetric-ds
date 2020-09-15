@@ -76,13 +76,15 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
         String ezConnectString = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_EZCONNECT);
         String lineTerminator = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_LINE_TERMINATOR);
         String fieldTerminator = parmService.getString(ParameterConstants.DBDIALECT_ORACLE_BULK_FIELD_TERMINATOR);
+        boolean delimitTokens = parmService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         
 
         return new OracleBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 engine.getStagingManager(), engine.getTablePrefix(), sqlLoaderCommand, sqlLoaderOptions,
                 dbUser, dbPassword, dbUrl, ezConnectString, sqlLoaderInfileCharset,
                 fieldTerminator, lineTerminator,
-                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData),
+                delimitTokens);
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
