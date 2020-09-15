@@ -446,6 +446,9 @@ public class SqlExplorer extends HorizontalSplitPanel {
                         if (panel == null && db != null) {
                             openQueryWindow(db);
                         }
+                        if (db != null) {
+                        	selectContentTab(getQueryPanelForDb(db));
+                        }
                     }
 
                     String selectedTabCaption = null;
@@ -462,7 +465,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                             DatabaseInfoPanel databaseInfoTab = new DatabaseInfoPanel(db, settingsProvider.get(), selectedTabCaption);
                             Tab tab = contentTabs.addTab(databaseInfoTab, db.getName(), FontAwesome.DATABASE, 0);
                             tab.setClosable(true);
-                            selectContentTab(databaseInfoTab);
                             infoTabs.add(databaseInfoTab);
                         }
                         if (treeNode != null && treeNode.getType().equals(DbTree.NODE_TYPE_TABLE)) {
@@ -473,7 +475,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                                         selectedTabCaption);
                                 Tab tab = contentTabs.addTab(tableInfoTab, table.getFullyQualifiedTableName(), FontAwesome.TABLE, 0);
                                 tab.setClosable(true);
-                                selectContentTab(tableInfoTab);
                                 infoTabs.add(tableInfoTab);
                             }
                         } else if (treeNode != null && treeNode.getType().equals(DbTree.NODE_TYPE_TRIGGER)) {
@@ -486,7 +487,6 @@ public class SqlExplorer extends HorizontalSplitPanel {
                                         selectedTabCaption);
                                 Tab tab = contentTabs.addTab(triggerInfoTab, trigger.getName(), FontAwesome.CROSSHAIRS, 0);
                                 tab.setClosable(true);
-                                selectContentTab(triggerInfoTab);
                                 infoTabs.add(triggerInfoTab);
                             }
                         }
