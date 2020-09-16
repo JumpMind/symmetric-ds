@@ -152,7 +152,7 @@ public class BshColumnTransform implements ISingleNewAndOldValueColumnTransform,
             }
             
             if (result instanceof String) {
-                if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
+                if (data.getTargetDmlType().equals(DataEventType.DELETE) && !column.isPk()) {
                     return new NewAndOldValue(null, (String) result);
                 } else {
                     return new NewAndOldValue((String) result, null);
