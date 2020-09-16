@@ -60,7 +60,7 @@ public class ParameterColumnTransform implements ISingleNewAndOldValueColumnTran
             value = parameterService.getString(paramName);
         }
         
-        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE) && !column.isPk()) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);

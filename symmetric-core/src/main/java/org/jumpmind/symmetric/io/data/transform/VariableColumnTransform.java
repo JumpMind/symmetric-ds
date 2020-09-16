@@ -137,7 +137,7 @@ public class VariableColumnTransform implements ISingleNewAndOldValueColumnTrans
             }
         }
         
-        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE) && !column.isPk()) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);

@@ -49,7 +49,7 @@ public class ConstantColumnTransform implements ISingleNewAndOldValueColumnTrans
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
 
-        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE) && !column.isPk()) {
             return new NewAndOldValue(null, column.getTransformExpression());
         } else {
             return new NewAndOldValue(column.getTransformExpression(), null);
