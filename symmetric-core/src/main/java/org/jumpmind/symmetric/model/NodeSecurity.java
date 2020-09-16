@@ -132,7 +132,7 @@ public class NodeSecurity implements Serializable {
     }
     
     public boolean hasRegistered() {
-        return this.registrationTime  != null;
+        return this.registrationEnabled == false && this.registrationTime != null;
     }
     
     public boolean hasInitialLoaded() {

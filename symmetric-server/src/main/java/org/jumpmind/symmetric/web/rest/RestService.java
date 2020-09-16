@@ -1638,7 +1638,7 @@ public class RestService {
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(modelNode.getNodeId());
             List<NodeHost> nodeHost = nodeService.findNodeHosts(modelNode.getNodeId());
             status.setStarted(engine.isStarted());
-            status.setRegistered(nodeSecurity.getRegistrationTime() != null);
+            status.setRegistered(nodeSecurity.hasRegistered());
             status.setInitialLoaded(nodeSecurity.getInitialLoadTime() != null);
             status.setReverseInitialLoaded(nodeSecurity.getRevInitialLoadTime() != null);
             status.setNodeId(modelNode.getNodeId());
