@@ -27,6 +27,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -90,6 +91,7 @@ public class StagingManager implements IStagingManager {
             resourcePathsCache.clear();
             clean(FileSystems.getDefault().getPath(this.directory.getAbsolutePath()), ttlInMs, context);
             logCleaningProgress(context);
+            cleanInUseCache(ttlInMs, context);
             long end = System.currentTimeMillis();
             log.info("Finished cleaning staging in " + DurationFormatUtils.formatDurationWords(end-start, true, true) + ".");
             return context.getPurgedFileSize() + context.getPurgedMemSize();
@@ -136,16 +138,15 @@ public class StagingManager implements IStagingManager {
                     IStagedResource resource = createStagedResource(stagingPath);  
                     if (stagingPath != null) {
                         if (shouldCleanPath(resource, ttlInMs, context)) {
-                            if (resource.getFile() != null) {
-                                context.incrementPurgedFileCount();
-                                context.addPurgedFileBytes(resource.getSize());
-                            } else {
+                            if (resource.isMemoryResource()) {
                                 context.incrementPurgedMemoryCount();
                                 context.addPurgedMemoryBytes(resource.getSize());
+                            } else {
+                                context.incrementPurgedFileCount();
+                                context.addPurgedFileBytes(resource.getSize());
                             }
-                            
-                            cleanPath(resource, ttlInMs, context); // this comes after stat collection because 
-                                                                   // once the file is gone we lose visibility to size
+
+                            cleanPath(resource, ttlInMs, context);
                         } else {
                             resourcePathsCache.add(stagingPath);                            
                         }
@@ -157,9 +158,36 @@ public class StagingManager implements IStagingManager {
         }
 
         stream.close();
-    } 
+    }
+    
+    protected void cleanInUseCache(long ttlInMs, StagingPurgeContext context) {
+        long resourceCount = 0;
+        long memoryBytes = 0;
+        Iterator<Map.Entry<String, IStagedResource>> iter = inUse.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String, IStagedResource> entry = iter.next();
+            IStagedResource resource = entry.getValue();
+            if (shouldCleanInUseCache(resource, ttlInMs, context)) {
+                resourceCount++;
+                if (resource.isMemoryResource()) {
+                    memoryBytes += resource.getSize();
+                    context.incrementPurgedMemoryCount();
+                    context.addPurgedMemoryBytes(resource.getSize());
+                }
+                iter.remove();
+            }
+        }
+        if (resourceCount > 0) {
+            log.info("Cleared {} cache objects, freed {}.", resourceCount, FileUtils.byteCountToDisplaySize(memoryBytes));
+        }
+    }
     
     protected boolean shouldCleanPath(IStagedResource resource, long ttlInMs, StagingPurgeContext context) {
+        boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
+        return (resourceIsOld && resource.getState() == State.DONE && !resource.isInUse());
+    }
+
+    protected boolean shouldCleanInUseCache(IStagedResource resource, long ttlInMs, StagingPurgeContext context) {
         boolean resourceIsOld = (System.currentTimeMillis() - resource.getLastUpdateTime()) > ttlInMs;
         return (resourceIsOld && resource.getState() == State.DONE && !resource.isInUse());
     }
@@ -224,9 +252,13 @@ public class StagingManager implements IStagingManager {
     public IStagedResource find(String path) {
         IStagedResource resource = inUse.get(path);
         if (resource == null) {
-            resource = createStagedResource(path);
-            inUse.put(path, resource);
-            resourcePathsCache.add(path);
+            // didn't find in cache, so it's not a memory buffer, so check if it's available on disk
+            IStagedResource fileResource = createStagedResource(path);
+            if (fileResource.exists()) {
+                resource = fileResource;
+                inUse.put(path, resource);
+                resourcePathsCache.add(path);
+            }
         }
         return resource;
     }

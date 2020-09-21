@@ -37,4 +37,7 @@ final public class ErrorConstants {
     public static final String PROTOCOL_VIOLATION_STATE = "PROTOCOL";
     public static final int PROTOCOL_VIOLATION_CODE = -888;
 
+    public static final String STAGE_ERROR_STATE = "STAGE";
+    public static final int STAGE_ERROR_CODE = -808;
+
 }

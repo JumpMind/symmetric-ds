@@ -24,6 +24,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,6 +128,10 @@ public class StagedResource implements IStagedResource {
     
     public boolean isFileResource() {     
         return file != null && file.exists();
+    }
+    
+    public boolean isMemoryResource() {
+        return memoryBuffer != null && memoryBuffer.length() > 0;
     }
 
     protected File buildFile(State state) {
@@ -225,6 +231,7 @@ public class StagedResource implements IStagedResource {
 
     @SuppressWarnings("resource")
     public synchronized BufferedReader getReader() {
+        refreshLastUpdateTime();
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader == null) {
@@ -279,10 +286,8 @@ public class StagedResource implements IStagedResource {
     }    
     
     public void close() {
+        refreshLastUpdateTime();
         closeInternal();
-        if (isFileResource()) {
-            stagingManager.inUse.remove(path);
-        }
     }
     
     private void closeInternal() {
@@ -321,7 +326,8 @@ public class StagedResource implements IStagedResource {
     }
     
     public OutputStream getOutputStream() {
-        try {            
+        refreshLastUpdateTime();
+        try {
             if (outputStream == null) {
                 if (file != null && file.exists()) {
                     log.warn("getOutputStream had to delete {} because it already existed",
@@ -343,6 +349,7 @@ public class StagedResource implements IStagedResource {
 
     @SuppressWarnings("resource")
     public synchronized InputStream getInputStream() {
+        refreshLastUpdateTime();
         Thread thread = Thread.currentThread();
         InputStream reader = inputStreams != null ? inputStreams.get(thread) : null;
         if (reader == null) {
@@ -354,6 +361,10 @@ public class StagedResource implements IStagedResource {
                 } catch (IOException ex) {
                     throw new IoException(ex);
                 }
+            } else if (memoryBuffer != null && memoryBuffer.length() > 0) {
+                reader = new ByteArrayInputStream(memoryBuffer.toString().getBytes(StandardCharsets.UTF_8));
+                createInputStreamsMap();
+                inputStreams.put(thread, reader);
             } else {
                 throw new IllegalStateException("There is no content to read. "
                         + file.getAbsolutePath() + " was not found.");
@@ -367,6 +378,7 @@ public class StagedResource implements IStagedResource {
     }
     
     public BufferedWriter getWriter(long threshold) {
+        refreshLastUpdateTime();
         if (writer == null) {
             if (file != null && file.exists()) {
                 log.warn("getWriter had to delete {} because it already existed.", file.getAbsolutePath());
@@ -420,8 +432,9 @@ public class StagedResource implements IStagedResource {
             deleted = true;
         }
 
+        stagingManager.removeResourcePath(path);
+
         if (deleted) {
-            stagingManager.removeResourcePath(path);
             if (log.isDebugEnabled() && path.contains("outgoing")) {
                 log.debug("Deleted staging resource {}", path);
             }
