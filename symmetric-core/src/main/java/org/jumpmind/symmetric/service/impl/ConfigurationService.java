@@ -149,7 +149,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 }
             }
         }
-        return masterCount > 1 && otherCount == 0;
+        return masterCount >= 1 && otherCount == 0;
     }
     
     public boolean refreshFromDatabase() {
