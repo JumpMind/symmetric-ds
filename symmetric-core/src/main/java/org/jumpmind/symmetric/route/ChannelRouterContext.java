@@ -91,6 +91,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private long uncommittedDataEventCount = 0;
     private long committedDataEventCount = 0;
     private IBatchAlgorithm batchAlgorithm;
+    private Map<Long, DataMetaData> configDataIdsProcessed = new HashMap<Long, DataMetaData>();
 
     public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction, IBatchAlgorithm batchAlgorithm)
             throws SQLException {
@@ -133,6 +134,14 @@ public class ChannelRouterContext extends SimpleRouterContext {
                 iter.remove();
             }            
         }
+    }
+    
+    public void addConfigDataMetaData(DataMetaData dataMetaData) {
+        configDataIdsProcessed.put(dataMetaData.getData().getDataId(), dataMetaData);
+    }
+    
+    public DataMetaData getConfigDataMetaData(Long dataId) {
+        return configDataIdsProcessed.get(dataId);
     }
 
     public long getCommittedDataEventCount() {

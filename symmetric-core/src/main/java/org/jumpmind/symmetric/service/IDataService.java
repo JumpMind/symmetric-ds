@@ -218,4 +218,6 @@ public interface IDataService {
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String targetNodeId, boolean isContainsBigLob);
 
     public Map<String, Date> getLastDataCaptureByChannel();
+    
+    public String findNodeIdsByNodeGroupId();
 }

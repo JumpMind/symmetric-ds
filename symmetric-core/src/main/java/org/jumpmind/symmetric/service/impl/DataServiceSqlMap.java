@@ -234,6 +234,10 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         
         putSql("findLastCaptureTimeByChannelSql", 
                 "select max(create_time) as create_time, channel_id from $(data) group by channel_id ");        
+        
+        // Used by ConfigurationChangedDataRouter for table reload request of sym_node_security
+        // ConfigurationChangedDataRouter appends node_group_id value
+        putSql("findNodeIdsByNodeGroupIdSql", " node_id in (select node_id from $(node) where node_group_id = %s)");
 
     }
 

@@ -3061,6 +3061,11 @@ public class DataService extends AbstractService implements IDataService {
         }
         return fixed;
     }
+    
+    @Override
+    public String findNodeIdsByNodeGroupId() {
+        return getSql("findNodeIdsByNodeGroupIdSql");
+    }
 
     protected void checkInterrupted() throws InterruptedException {
         if (Thread.interrupted()) {
