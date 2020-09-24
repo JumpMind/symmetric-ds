@@ -2281,38 +2281,42 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             if (index.getName() == null) {
                 log.warn("Cannot write unnamed index " + index);
             } else {
-                ddl.append("CREATE");
-                if (index.isUnique()) {
-                    ddl.append(" UNIQUE");
-                }
-                if (isFullTextIndex(index)) {
-                    ddl.append(" FULLTEXT");
-                }
-                ddl.append(" INDEX ");
-                printIdentifier(getIndexName(index), ddl);
-                ddl.append(" ON ");
-                ddl.append(getFullyQualifiedTableNameShorten(table));
-                ddl.append(" (");
-
-                for (int idx = 0; idx < index.getColumnCount(); idx++) {
-                    IndexColumn idxColumn = index.getColumn(idx);
-                    if (idx > 0) {
-                        ddl.append(", ");
-                    }
-                    String name = shortenName(idxColumn.getName(), databaseInfo.getMaxColumnNameLength());
-                    if (name.startsWith("(")) {
-                        // When a column name starts with parenthesis, it's a grouping syntax for an
-                        // aggregate column, so don't quote it
-                        ddl.append(name);
-                    } else {
-                        printIdentifier(name, ddl);
-                    }
-                }
-
-                ddl.append(")");
+                writeExternalIndexCreate(table, index, ddl);
                 printEndOfStatement(ddl);
             }
         }
+    }
+    
+    protected void writeExternalIndexCreate(Table table, IIndex index, StringBuilder ddl) {
+        ddl.append("CREATE");
+        if (index.isUnique()) {
+            ddl.append(" UNIQUE");
+        }
+        if (isFullTextIndex(index)) {
+            ddl.append(" FULLTEXT");
+        }
+        ddl.append(" INDEX ");
+        printIdentifier(getIndexName(index), ddl);
+        ddl.append(" ON ");
+        ddl.append(getFullyQualifiedTableNameShorten(table));
+        ddl.append(" (");
+
+        for (int idx = 0; idx < index.getColumnCount(); idx++) {
+            IndexColumn idxColumn = index.getColumn(idx);
+            if (idx > 0) {
+                ddl.append(", ");
+            }
+            String name = shortenName(idxColumn.getName(), databaseInfo.getMaxColumnNameLength());
+            if (name.startsWith("(")) {
+                // When a column name starts with parenthesis, it's a grouping syntax for an
+                // aggregate column, so don't quote it
+                ddl.append(name);
+            } else {
+                printIdentifier(name, ddl);
+            }
+        }
+
+        ddl.append(")");
     }
 
     protected boolean isFullTextIndex(IIndex index) {
