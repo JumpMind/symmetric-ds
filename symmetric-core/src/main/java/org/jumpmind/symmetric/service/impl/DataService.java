@@ -791,7 +791,7 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
-    private String getReloadChannelIdForTrigger(Trigger trigger, Map<String, Channel> channels) {
+    protected String getReloadChannelIdForTrigger(Trigger trigger, Map<String, Channel> channels) {
         String channelId = trigger != null ? trigger.getChannelId() : Constants.CHANNEL_DEFAULT;
         if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_RELOAD_CHANNEL)) {
             Channel normalChannel = channels.get(channelId);

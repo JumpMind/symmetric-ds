@@ -284,7 +284,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.SQL);
-                    data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1] });
+                    data.putParsedData(CsvData.ROW_DATA, new String[] { tokens[1], tokens.length > 2 ? tokens[2] : "0" });
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.BSH)) {

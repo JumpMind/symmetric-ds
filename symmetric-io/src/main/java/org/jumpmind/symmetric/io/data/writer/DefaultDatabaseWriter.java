@@ -185,6 +185,24 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
         super.commit(earlyCommit);
     }
+    
+    protected void commit(boolean earlyCommit, ISqlTransaction newTransaction) {
+        if (this.transaction != null) {
+            try {
+                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
+                newTransaction.commit();
+                if (!earlyCommit) {
+                   notifyFiltersBatchCommitted();
+                } else {
+                    notifyFiltersEarlyCommit();
+                }
+            } finally {
+                statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
+            }
+
+        }
+        super.commit(earlyCommit);
+    }
 
     @Override
     protected void rollback() {
@@ -601,27 +619,58 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     protected boolean sql(CsvData data) {
         try {
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-            String script = data.getParsedData(CsvData.ROW_DATA)[0];
+            String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
+            String script = parsedData[0];
+            boolean captureChanges = parsedData.length > 1 && parsedData[1].equals("1");
             List<String> sqlStatements = getSqlStatements(script);
             long count = 0;
             for (String sql : sqlStatements) {
+            	ISqlTransaction newTransaction = null;
                 try {
                     sql = preprocessSqlStatement(sql);
-                    if (sql.matches(TRUNCATE_PATTERN) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
-                        commit(true);
+                    if (captureChanges) {
+                    	newTransaction = getPlatform().getSqlTemplate().startSqlTransaction();
+                        if (sql.matches(TRUNCATE_PATTERN) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
+                        	commit(true, newTransaction);
+                        }
+                        newTransaction.prepare(sql);
+                        if (log.isDebugEnabled()) {
+                            log.debug("About to run: {}", sql);
+                        }
+                        count += newTransaction.prepareAndExecute(sql);
+                        if (log.isDebugEnabled()) {
+                            log.debug("{} rows updated when running: {}", count, sql);
+                        }
+                    } else {
+                        if (sql.matches(TRUNCATE_PATTERN) && getPlatform().getName().equals(DatabaseNamesConstants.DB2)) {
+                            commit(true);
+                        }
+                        prepare(sql, data);
+                        if (log.isDebugEnabled()) {
+                            log.debug("About to run: {}", sql);
+                        }
+                        count += prepareAndExecute(sql, data);
+                        if (log.isDebugEnabled()) {
+                            log.debug("{} rows updated when running: {}", count, sql);
+                        }
                     }
-                    prepare(sql, data);
-                    if (log.isDebugEnabled()) {
-                        log.debug("About to run: {}", sql);
-                    }
-                    count += prepareAndExecute(sql, data);
-                    if (log.isDebugEnabled()) {
-                        log.debug("{} rows updated when running: {}", count, sql);
-                    }
+                } catch (Error ex) {
+                    log.error("Failed to run the following sql: {}", sql);
+    				if (newTransaction != null) {
+    					newTransaction.rollback();
+    				}
+                    throw ex;
                 } catch (RuntimeException ex) {
                     log.error("Failed to run the following sql: {}", sql);
+    				if (newTransaction != null) {
+    					newTransaction.rollback();
+    				}
                     throw ex;
-                }
+                } finally {
+    				if (newTransaction != null) {
+    					newTransaction.close();
+    				}
+    			}
             }
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLCOUNT);
             statistics.get(batch).increment(DataWriterStatisticConstants.SQLROWSAFFECTEDCOUNT,
