@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
@@ -35,6 +36,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -336,6 +338,7 @@ public class SnapshotUtil {
 
         createThreadsFile(tmpDir.getPath(), false);
         createThreadsFile(tmpDir.getPath(), true);
+        createThreadStatsFile(tmpDir.getPath());
 
         fos = null;
         try {
@@ -822,6 +825,42 @@ public class SnapshotUtil {
             }
         } catch (Exception e) {
             log.warn("Failed to export thread information", e);
+        }
+        return file;
+    }
+    
+    public static File createThreadStatsFile(String parent) {
+        File file = new File(parent, "thread-stats.csv");
+        try {
+        	OutputStream outputStream = new FileOutputStream(file);
+        	CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"));
+        	String[] heading = {"Thread", "Allocated Memory (Bytes)", "CPU Time (Seconds)"};
+        	csvWriter.writeRecord(heading);
+            ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+            long[] threadIds = threadBean.getAllThreadIds();
+            for (long l : threadIds) {
+                ThreadInfo info = threadBean.getThreadInfo(l, 100);
+                if (info != null) {
+                    String threadName = info.getThreadName();
+                    long threadId = info.getThreadId();
+                    long allocatedBytes = 0;
+                    
+        			try {
+        	            Method method = threadBean.getClass().getMethod("getThreadAllocatedBytes");
+        	            method.setAccessible(true);
+        	            allocatedBytes = (Long) method.invoke(threadBean, threadId);
+        			} catch (Exception ignore) {
+        			}
+
+        			String[] row = {threadName, Long.toString(allocatedBytes), Float.toString(threadBean.getThreadCpuTime(threadId) / 1000000000f)};
+                    csvWriter.writeRecord(row);
+                }
+            }
+            csvWriter.flush();
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+        	log.warn("Failed to export thread information", e);
         }
         return file;
     }
