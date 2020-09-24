@@ -20,6 +20,7 @@ package org.jumpmind.db.model;
  */
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Represents an index definition for a table which may be either unique or non-unique.
@@ -122,4 +123,9 @@ public interface IIndex extends Cloneable, Serializable
     public String toVerboseString();
     
     public boolean hasAllPrimaryKeys();
+    
+    public void removePlatformIndex(PlatformIndex platformIndex);
+    public void addPlatformIndex(PlatformIndex platformIndex);
+    public Map<String, PlatformIndex> getPlatformIndexes();
+    public PlatformIndex findPlatformIndex(PlatformIndex platformIndex);
 }
