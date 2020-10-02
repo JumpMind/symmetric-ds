@@ -32,6 +32,8 @@ final public class Version {
     public static final int[] VERSION_3_8_0 = new int[] {3,8,0};
     public static final int[] VERSION_3_8_18 = new int[] {3,8,18};
     public static final int[] VERSION_3_9_0 = new int[] {3,9,0};
+    public static final int[] VERSION_3_11_0 = new int[] {3,11,0};
+    public static final int[] VERSION_3_12_0 = new int[] {3,12,0};
 
     private static AbstractVersion version = new AbstractVersion() {
         @Override

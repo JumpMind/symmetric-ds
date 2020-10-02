@@ -267,6 +267,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         boolean pre38 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_8_0);
         boolean pre3818 = Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_8_18);
         boolean pre39 =  Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_9_0);
+        boolean pre311 =  Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_11_0);
+        boolean pre312 =  Version.isOlderThanVersion(targetNode.getSymmetricVersionParts(), Version.VERSION_3_12_0);
 
         tableName = tableName.toLowerCase();
         boolean include = true;
@@ -279,8 +281,19 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             include = false;
         } else if (pre3818 && tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
             include = false;
+        } else if (pre311 && (tableName.contains(TableConstants.SYM_CONSOLE_ROLE)
+                || tableName.contains(TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE))) {
+            include = false;
+        } else if (pre312 && (tableName.contains(TableConstants.SYM_DESIGN_DIAGRAM)
+                || tableName.contains(TableConstants.SYM_DIAGRAM_GROUP))) {
+            include = false;
         } else if (tableName.contains(TableConstants.SYM_CONSOLE_USER) 
-                || tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)) {
+                || tableName.contains(TableConstants.SYM_CONSOLE_USER_HIST)
+                || tableName.contains(TableConstants.SYM_CONSOLE_EVENT)
+                || tableName.contains(TableConstants.SYM_CONSOLE_ROLE)
+                || tableName.contains(TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                || tableName.contains(TableConstants.SYM_DESIGN_DIAGRAM)
+                || tableName.contains(TableConstants.SYM_DIAGRAM_GROUP)) {
             boolean isTargetProfessional = StringUtils.equals(targetNode.getDeploymentType(), 
                     Constants.DEPLOYMENT_TYPE_PROFESSIONAL);
             if (!isTargetProfessional) {
