@@ -316,4 +316,10 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public boolean isForeignKeyChildExistsViolation(Throwable ex) {
         return false;
     }
+    
+    @Override
+    public boolean isDeadlock(Throwable ex) {
+        return false;
+    }
+
 }

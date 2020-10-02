@@ -108,7 +108,7 @@ public class LookupColumnTransform implements ISingleNewAndOldValueColumnTransfo
                     column.getTargetColumnName(), column.getTransformId());
         }
         
-        if (data.getTargetDmlType().equals(DataEventType.DELETE)) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE) && !column.isPk()) {
             return new NewAndOldValue(null, lookupValue);
         } else {
             return new NewAndOldValue(lookupValue, null);

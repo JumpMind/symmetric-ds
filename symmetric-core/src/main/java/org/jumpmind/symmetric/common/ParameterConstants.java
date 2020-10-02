@@ -352,8 +352,6 @@ final public class ParameterConstants {
 
     public final static String IP_FILTERS = "ip.filters";
 
-    public final static String WEB_BATCH_URI_HANDLER_ENABLE = "web.batch.servlet.enable";
-
     public final static String NODE_COPY_MODE_ENABLED = "node.copy.mode.enabled";
     public final static String NODE_PASSWORD_FAILED_ATTEMPTS = "node.password.failed.attempts";
 

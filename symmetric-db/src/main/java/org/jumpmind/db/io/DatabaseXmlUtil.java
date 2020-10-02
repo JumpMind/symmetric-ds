@@ -34,6 +34,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,6 +46,7 @@ import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.NonUniqueIndex;
 import org.jumpmind.db.model.PlatformColumn;
+import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
@@ -328,6 +330,20 @@ public class DatabaseXmlUtil {
                             if (index != null) {
                                 index.addColumn(indexColumn);
                             }
+                        } else if (name.equalsIgnoreCase("platform-index")) {
+                            PlatformIndex platformIndex = new PlatformIndex();
+                            for(int i = 0; i < parser.getAttributeCount(); i++) {
+                                String attributeName = parser.getAttributeName(i);
+                                String attributeValue = parser.getAttributeValue(i);
+                                if(attributeName.equalsIgnoreCase("name")) {
+                                    platformIndex.setName(attributeValue);
+                                } else if(attributeName.equalsIgnoreCase("filter-condition")) {
+                                    platformIndex.setFilterCondition(attributeValue);
+                                }
+                            }
+                            if(index != null) {
+                                index.addPlatformIndex(platformIndex);
+                            }
                         }
                         break;
                     case XmlPullParser.END_TAG:
@@ -565,7 +581,6 @@ public class DatabaseXmlUtil {
                     for (IndexColumn column : index.getColumns()) {
                         output.write("\t\t\t<unique-column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"/>\n");
                     }
-                    output.write("\t\t</unique>\n");
                 } else {
                     output.write("\t\t<index name=\"" + StringEscapeUtils.escapeXml(index.getName()) + "\">\n");
                     for (IndexColumn column : index.getColumns()) {
@@ -575,6 +590,17 @@ public class DatabaseXmlUtil {
                         }
                         output.write("/>\n");
                     }
+                }
+                if(index.getPlatformIndexes() != null && index.getPlatformIndexes().size() > 0) {
+                    Map<String, PlatformIndex> platformIndexes = index.getPlatformIndexes();
+                    for(String key : platformIndexes.keySet()) {
+                        PlatformIndex platformIndex = platformIndexes.get(key);
+                        output.write("\t\t\t<platform-index name=\"" + StringEscapeUtils.escapeXml(platformIndex.getName()) + "\" filter-condition=\"" + platformIndex.getFilterCondition() + "\"/>\n");
+                    }
+                }
+                if (index.isUnique()) {
+                    output.write("\t\t</unique>\n");
+                } else {
                     output.write("\t\t</index>\n");
                 }
             }

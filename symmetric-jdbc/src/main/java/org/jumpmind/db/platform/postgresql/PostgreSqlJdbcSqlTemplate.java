@@ -34,7 +34,6 @@ import org.springframework.jdbc.core.StatementCreatorUtils;
 
 public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
 
-
     public PostgreSqlJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -45,6 +44,7 @@ public class PostgreSqlJdbcSqlTemplate extends JdbcSqlTemplate {
         foreignKeyViolationMessageParts = new String[] {"violates foreign key constraint"};
         foreignKeyViolationSqlStates = new String[] { "23503" };
         foreignKeyChildExistsViolationMessageParts = new String[] { "is still referenced from table" };
+        deadlockSqlStates = new String[] { "40P01" };
     }
 
     @Override

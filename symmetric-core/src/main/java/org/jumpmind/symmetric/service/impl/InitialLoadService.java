@@ -89,8 +89,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     } else {
                         boolean isClusteringEnabled = parameterService.is(ParameterConstants.CLUSTER_LOCKING_ENABLED);
                         NodeSecurity identitySecurity = engine.getNodeService().findNodeSecurity(identity.getNodeId(), !isClusteringEnabled);
-                        isRegistered = identitySecurity != null && !identitySecurity.isRegistrationEnabled()
-                                && identitySecurity.getRegistrationTime() != null;
+                        isRegistered = identitySecurity != null && identitySecurity.hasRegistered();
                     }
 
                     if (isRegistered) {
@@ -158,7 +157,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
                         boolean reverseLoadEnabled = security.isRevInitialLoadEnabled();
                         boolean initialLoadEnabled = security.isInitialLoadEnabled();
-                        boolean registered = security.getRegistrationTime() != null;
+                        boolean registered = security.hasRegistered();
                         if (! thisMySecurityRecord && registered && reverseLoadEnabled && (reverseLoadFirst || !initialLoadEnabled)) {
                             // If node is created by me then set up reverse initial load
                             if(StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
@@ -281,7 +280,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     } else {
                         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
 
-                        boolean registered = targetNodeSecurity != null && (targetNodeSecurity.getRegistrationTime() != null
+                        boolean registered = targetNodeSecurity != null && (targetNodeSecurity.hasRegistered()
                                 || targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
                         if (registered) {
                             // Make loads unique to the target and create time
@@ -371,7 +370,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
         if (targetNodeSecurity != null) {
             boolean reverseLoadFirst = parameterService.is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
-            boolean registered = targetNodeSecurity.getRegistrationTime() != null;
+            boolean registered = targetNodeSecurity.hasRegistered();
             boolean reverseLoadQueued = targetNodeSecurity.isRevInitialLoadEnabled();
     
             if (registered && (!reverseLoadFirst || !reverseLoadQueued)) {

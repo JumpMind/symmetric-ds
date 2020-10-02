@@ -36,8 +36,6 @@ public class IncomingBatch extends AbstractBatch {
 
     private long failedRowNumber;
 
-    private long failedLineNumber;
-
     private long startTime;
 
     private boolean retry;
@@ -71,7 +69,7 @@ public class IncomingBatch extends AbstractBatch {
             setLastUpdatedTime(new Date());
             if (!isSuccess) {
                 failedRowNumber = getLoadRowCount();
-                failedLineNumber = writerStatistics.get(DataWriterStatisticConstants.LINENUMBER);
+                setFailedLineNumber(writerStatistics.get(DataWriterStatisticConstants.LINENUMBER));
             }
 
             setLoadInsertRowCount(writerStatistics.get(DataWriterStatisticConstants.INSERTCOUNT));
@@ -146,14 +144,6 @@ public class IncomingBatch extends AbstractBatch {
      */
     public boolean isPersistable() {
         return getBatchId() >= 0;
-    }
-
-    public void setFailedLineNumber(long failedLineNumber) {
-        this.failedLineNumber = failedLineNumber;
-    }
-
-    public long getFailedLineNumber() {
-        return failedLineNumber;
     }
 
     @Override

@@ -20,6 +20,8 @@ package org.jumpmind.db.model;
  */
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class for indices.
@@ -33,6 +35,8 @@ public abstract class IndexImpBase implements IIndex {
 
     /** The columns making up the index. */
     protected ArrayList<IndexColumn> columns = new ArrayList<IndexColumn>();
+    
+    private Map<String, PlatformIndex> platformIndexes;
 
     public String getName() {
         return name;
@@ -95,5 +99,43 @@ public abstract class IndexImpBase implements IIndex {
             hasAllPrimaryKeys &= col.isPrimaryKey();
         }
         return hasAllPrimaryKeys;
+    }
+    
+    @Override
+    public void removePlatformIndex(PlatformIndex platformIndex) {
+        if(platformIndexes != null) {
+            platformIndexes.remove(platformIndex.getName());
+        }
+    }
+    
+    @Override
+    public void addPlatformIndex(PlatformIndex platformIndex) {
+        if(platformIndexes == null) {
+            platformIndexes = new HashMap<String, PlatformIndex>();
+        }
+        platformIndexes.put(platformIndex.getName(), platformIndex);
+    }
+    
+    @Override
+    public Map<String, PlatformIndex> getPlatformIndexes() {
+        return platformIndexes;
+    }
+    
+    @Override
+    public PlatformIndex findPlatformIndex(PlatformIndex platformIndex) {
+        PlatformIndex ret = null;
+        if(platformIndexes != null) {
+            ret = platformIndexes.get(platformIndex.getName());
+        }
+        return ret;
+    }
+    
+    protected void clonePlatformIndexes(IndexImpBase indexImpBase) throws CloneNotSupportedException {
+        if(platformIndexes != null) {
+            for(String key : platformIndexes.keySet()) {
+                PlatformIndex platformIndex = platformIndexes.get(key);
+                indexImpBase.addPlatformIndex(platformIndex.clone());
+            }
+        }
     }
 }

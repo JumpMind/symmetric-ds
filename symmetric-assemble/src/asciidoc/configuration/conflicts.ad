@@ -66,6 +66,11 @@ endif::pro[]
 
 |===
 
+Detection Expression:: An expression that provides additional information about the detection mechanism.  If the detection 
+mechanism is use_timestamp or use_version then this expression will be the name of the timestamp or version column.
+The detect_expression is also used to exclude certain column names from being used.  For example, to exclude column1 and column2, 
+the expression is "excluded_column_names=column1,column2".
+
 Resolution Type:: The choice of how to resolve a detected conflict is configured via the resolve type.
 
 .Resolution Types
@@ -93,27 +98,20 @@ The resolve_ignore flag can also be used to indicate that the row should be igno
 TIP: To make a primary node group always win a conflict, use a "fallback" resolution on group links where primary is the source
 and an "ignore" resolution on group links where primary is the target.
 
-ifndef::pro[]
 Ping Back:: For each configured conflict, you also have the ability to control if and how much "resolved" data is sent back to the 
-node whose data change is in conflict. This "ping back" behavior is specified by the following options.
+node whose data change is in conflict.
 
 .Ping Backs
 [cols=".^2,8"] 
 |===
 
-|REMAINING_ROWS|The resolved data of the single row in the batch in conflict, along with the entire remainder of the batch, is sent back to the originating node.
-
 |SINGLE_ROW|The resolved data of the single row in the batch that caused the conflict is sent back to the originating node.  Recommended use with MANUAL resolution, so the resolved data is sent back to the originating node.
+
+|REMAINING_ROWS|The resolved data of the single row in the batch in conflict, along with the entire remainder of the batch, is sent back to the originating node.
 
 |OFF|No data is sent back to the originating node, even if the resolved data doesn't match the data the node sent.  Recommended use with resolution types that choose a winning row, including NEWER_WINS and when IGNORE and FALLBACK are used on opposing group links.
 
 |===
-endif::pro[]
-
-Detection Expression:: An expression that provides additional information about the detection mechanism.  If the detection 
-mechanism is use_timestamp or use_version then this expression will be the name of the timestamp or version column.
-The detect_expression is also used to exclude certain column names from being used.  For example, to exclude column1 and column2, 
-the expression is "excluded_column_names=column1,column2".
 
 ifdef::pro[]
 .Advanced Options

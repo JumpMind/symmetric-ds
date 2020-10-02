@@ -49,6 +49,8 @@ public class NonUniqueIndex extends IndexImpBase {
 
         result.name = name;
         result.columns = (ArrayList<IndexColumn>) columns.clone();
+        
+        clonePlatformIndexes(result);
 
         return result;
     }

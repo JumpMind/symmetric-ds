@@ -105,6 +105,20 @@ public class TransformWriterTest extends AbstractWriterTest {
         Assert.assertEquals(DataEventType.UPDATE, datas.get(2).getDataEventType());
         Assert.assertEquals(DataEventType.UPDATE, datas.get(3).getDataEventType());
     }
+    
+    @Test
+    public void testDeleteNoCaptureOldData() throws Exception {
+        mockWriter.reset();
+        Table table = new Table("s4", new Column("id"));
+        writeData(getTransformWriter(), new TableCsvData(table,
+                new CsvData(DataEventType.DELETE, new String[] {"1"}, null)));
+        List<CsvData> datas = mockWriter.writtenDatas.get("t4");
+        Assert.assertEquals(1, datas.size());
+        Assert.assertEquals(DataEventType.DELETE, datas.get(0).getDataEventType());
+        String[] pkData = datas.get(0).getParsedData(CsvData.PK_DATA);
+        Assert.assertEquals(1, pkData.length);
+        Assert.assertEquals("1", pkData[0]);
+    }
 
 
     @Test
@@ -124,6 +138,9 @@ public class TransformWriterTest extends AbstractWriterTest {
     }
 
     protected TransformWriter getTransformWriter() {
+        TransformTable transformTable4 =
+           new TransformTable("s4", "t4", TransformPoint.LOAD,
+                   new TransformColumn("id", "id", true, "const", "1"));
         TransformTable transformTable3 =
            new TransformTable("s3", "t3", TransformPoint.LOAD, new TransformColumn("id", "id", true));
         transformTable3.setUpdateAction("switch (id) { case \"1\": return \"INS_ROW\"; case \"2\": "
@@ -133,7 +150,8 @@ public class TransformWriterTest extends AbstractWriterTest {
                 new TransformTable("s1", "t1", TransformPoint.LOAD, new TransformColumn("id", "id", true)),
                 new TransformTable("s2", "t2", TransformPoint.LOAD, new TransformColumn("id", "id", true),
                    new TransformColumn(null, "col2", false, "const", "added")),
-                transformTable3
+                transformTable3,
+                transformTable4
         });
     }
     

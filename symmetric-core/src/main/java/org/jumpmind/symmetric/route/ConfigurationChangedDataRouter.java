@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.route;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +31,10 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
@@ -40,6 +42,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.load.ConfigurationChangedDatabaseWriterFilter;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.NetworkedNode;
 import org.jumpmind.symmetric.model.Node;
@@ -48,9 +51,8 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.IConfigurationService;
+import org.jumpmind.symmetric.service.IDataService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
-
-import avro.shaded.com.google.common.collect.Sets;
 
 public class ConfigurationChangedDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
 
@@ -232,6 +234,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 
                 if (tableMatches(dataMetaData, TableConstants.SYM_NODE_GROUP_LINK)) {
                     routingContext.put(CTX_KEY_FLUSH_NODE_GROUP_LINK_NEEDED, Boolean.TRUE);
+                    if(dataMetaData.getData().getDataEventType().equals(DataEventType.INSERT)) {
+                        if(! initialLoad) {
+                            if (! isConfigDataMetaDataAlreadyHandled(dataMetaData, routingContext)) {
+                                buildReloadEvents(dataMetaData, columnValues);
+                                addConfigDataMetaData(dataMetaData, routingContext);
+                            }
+                        }
+                    }
                 }
                 
                 if (tableMatches(dataMetaData, TableConstants.SYM_JOB)
@@ -242,6 +252,114 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         }
 
         return nodeIds;
+    }
+    
+    private boolean isConfigDataMetaDataAlreadyHandled(DataMetaData dataMetaData, SimpleRouterContext routingContext) {
+        boolean ret = false;
+        if(routingContext instanceof ChannelRouterContext) {
+            ChannelRouterContext channelRoutingContext = (ChannelRouterContext) routingContext;
+            if (channelRoutingContext.getConfigDataMetaData(dataMetaData.getData().getDataId()) != null) {
+                ret = true;
+            }
+        }
+        return ret;
+    }
+    
+    private void addConfigDataMetaData(DataMetaData dataMetaData, SimpleRouterContext routingContext) {
+        if(routingContext instanceof ChannelRouterContext) {
+            ChannelRouterContext channelRoutingContext = (ChannelRouterContext) routingContext;
+            channelRoutingContext.addConfigDataMetaData(dataMetaData);
+        }
+    }
+    
+    private void buildReloadEvents(DataMetaData dataMetaData, Map<String, String> columnValues) {
+        String symTablePrefix = engine.getTablePrefix();
+        String tableName = dataMetaData.getTable().getName();
+        if (TableConstants.getTableName(symTablePrefix, TableConstants.SYM_NODE_GROUP_LINK).equalsIgnoreCase(tableName))
+        {
+            if (engine.getParameterService().isRegistrationServer()) {
+                if(dataMetaData.getData().getDataEventType().equals(DataEventType.INSERT)) {
+                    Node me = engine.getNodeService().findIdentity();
+                    String targetNodeGroupId = columnValues.get("TARGET_NODE_GROUP_ID");
+                    String sourceNodeGroupId = columnValues.get("SOURCE_NODE_GROUP_ID");
+                    log.info("Inserting reload events for sym_node and sym_node_security for source_node_group_id=" + sourceNodeGroupId + " and target_node_group_id=" + targetNodeGroupId);
+                    Collection<Node> targetNodes = engine.getNodeService().findEnabledNodesFromNodeGroup(targetNodeGroupId);
+                    Collection<Node> sourceNodes = engine.getNodeService().findEnabledNodesFromNodeGroup(sourceNodeGroupId);
+                    NodeGroupLink nodeGroupLink = new  NodeGroupLink(sourceNodeGroupId, targetNodeGroupId);
+                    Date createTime = new Date();
+                    List<TriggerRouter> triggerRouterList =
+                            engine.getTriggerRouterService().buildTriggerRoutersForSymmetricTables(
+                                    Version.version(), nodeGroupLink);
+                    // send sym_node
+                    TriggerRouter triggerRouter = findTriggerRouter(triggerRouterList, TableConstants.SYM_NODE, symTablePrefix);
+                    if(triggerRouter != null) {
+                        // send nodes in sourcenodegroupid to target nodes
+                        String initialLoadSelect =
+                                String.format(engine.getDataService().findNodeIdsByNodeGroupId(), "'" + sourceNodeGroupId + "'");
+                        insertReloadEvents(triggerRouter, initialLoadSelect, sourceNodeGroupId, targetNodeGroupId,
+                                createTime, me, targetNodes);
+                        // send nodes in targetnodegroupid to source nodes
+                        initialLoadSelect =
+                                String.format(engine.getDataService().findNodeIdsByNodeGroupId(), "'" + targetNodeGroupId + "'");
+                        insertReloadEvents(triggerRouter, initialLoadSelect, sourceNodeGroupId, targetNodeGroupId,
+                                createTime, me, sourceNodes);
+                    }
+                    // send sym_node_security
+                    triggerRouter = findTriggerRouter(triggerRouterList, TableConstants.SYM_NODE_SECURITY, symTablePrefix);
+                    if(triggerRouter != null) {
+                        // send source nodes in sourcenodegroupid to target nodes
+                        String initialLoadSelect =
+                                String.format(engine.getDataService().findNodeIdsByNodeGroupId(), "'" + sourceNodeGroupId + "'");
+                        insertReloadEvents(triggerRouter, initialLoadSelect, sourceNodeGroupId, targetNodeGroupId,
+                                createTime, me, targetNodes);
+                        // send target nodes in targetnodegroupid to source nodes
+                        initialLoadSelect =
+                                String.format(engine.getDataService().findNodeIdsByNodeGroupId(), "'" + targetNodeGroupId + "'");
+                        insertReloadEvents(triggerRouter, initialLoadSelect, sourceNodeGroupId, targetNodeGroupId,
+                                createTime, me, sourceNodes);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void insertReloadEvents(
+            TriggerRouter triggerRouter, String initialLoadSelect, String sourceNodeGroupId,
+            String targetNodeGroupId, Date createTime, Node me, Collection<Node> targetNodes)
+    {
+        IDataService dataService = engine.getDataService();
+        ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+        List<TriggerHistory> triggerHistories =
+                triggerRouterService.getActiveTriggerHistories(triggerRouter.getTrigger());
+        TriggerHistory triggerHistory = triggerHistories.get(0);
+        ISqlTransaction transaction = null;
+        try {
+            transaction = engine.getDatabasePlatform().getSqlTemplate().startSqlTransaction();
+            for(Node targetNode : targetNodes) {
+                if(me.getNodeId().equalsIgnoreCase(targetNode.getNodeId())) {
+                    continue;
+                }
+                dataService.insertReloadEvent(transaction, targetNode,
+                        triggerRouter, triggerHistory,
+                        initialLoadSelect, false, -1l, "configRouter",
+                        Status.NE, 0l);
+            }
+            transaction.commit();
+        } catch(Exception e) {
+            log.error("Failed to insert reload events for table " + triggerRouter.getTrigger().getSourceTableName(), e);
+            if(transaction != null) {
+                transaction.rollback();
+            }
+       }
+    }
+    
+    private TriggerRouter findTriggerRouter(List<TriggerRouter> triggerRouters, String tableName, String symTablePrefix) {
+        for(TriggerRouter triggerRouter : triggerRouters) {
+            if (TableConstants.getTableName(symTablePrefix, tableName).equalsIgnoreCase(triggerRouter.getTrigger().getSourceTableName())) {
+                return triggerRouter;
+            }
+        }
+        return null;
     }
     
     protected Set<Node> filterOutNodesByDeploymentType(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
@@ -343,8 +461,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             String nodeIdForRecordBeingRouted, DataMetaData dataMetaData, Set<String> nodeIds, Map<String, String> columnValues) {
         DataEventType eventType = dataMetaData.getData().getDataEventType();
         boolean fromAnotherNode = isNotBlank(dataMetaData.getData().getSourceNodeId());
-        boolean masterToMasterInitialLoad = false;
-        
+
         if (nodeIds.contains(nodeIdForRecordBeingRouted)) {
             /*
              * Don't route node security to it's own node. That node will
@@ -369,11 +486,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     if (reverseLoadQueued) {
                         remove = false;
                     }
-                } else if (engine.getConfigurationService().isMasterToMaster() && "1".equals(columnValues.get("INITIAL_LOAD_ENABLED"))) {
-                    remove = false;
-                    masterToMasterInitialLoad = true;
-                    log.info("Master to master registration sym node security update batch allow it to sync out to nodes: " + String.join(", ", nodeIds));
-                }
+                }                            
             }
             if (remove) {
                 nodeIds.remove(nodeIdForRecordBeingRouted);
@@ -396,7 +509,7 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
              * Don't send updates where the initial load flags are enabled to other 
              * nodes in the cluster 
              */
-            if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED")) && !masterToMasterInitialLoad) {
+            if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED"))) {
                 nodeIds.clear();
             }
         }

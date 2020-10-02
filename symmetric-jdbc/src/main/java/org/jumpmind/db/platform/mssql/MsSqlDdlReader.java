@@ -30,6 +30,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -39,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
+import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.model.Trigger.TriggerType;
@@ -356,5 +358,56 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     
     protected IConnectionHandler getConnectionHandler(String catalog) {
         return new ChangeCatalogConnectionHandler(catalog == null ? platform.getDefaultCatalog() : catalog);
+    }
+    
+    @Override
+    protected Collection<IIndex> readIndices(Connection connection,
+            DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
+        Collection<IIndex> cIndex = super.readIndices(connection,  metaData, tableName);
+        if (cIndex != null && cIndex.size() > 0) {
+            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+            String sql = "SELECT [TABLENAME] = t.[Name]\n" + 
+                    "        ,[INDEXNAME] = i.[Name]\n" + 
+                    "        ,[IndexType] = i.[type_desc]\n" + 
+                    "        ,[FILTER] = i.filter_definition\n" + 
+                    "FROM sys.indexes i\n" + 
+                    "INNER JOIN sys.tables t ON t.object_id = i.object_id\n" + 
+                    "WHERE t.type_desc = N'USER_TABLE'\n" + 
+                    "AND i.has_filter = 1\n" + 
+                    "and t.name=?\n" + 
+                    "and i.name in (%s)";
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < cIndex.size(); i++) {
+                if(sb.length() > 0) {
+                    sb.append(",");
+                }
+                sb.append("?");
+            }
+            sql = String.format(sql, sb.toString());
+            List<String> l = new ArrayList<String>();
+            l.add(tableName);
+            for(IIndex index : cIndex) {
+                l.add(index.getName());
+            }
+            List<Row> filters = sqlTemplate.query(sql, l.toArray());
+            for(Row filter : filters) {
+                String indexName = filter.getString("INDEXNAME");
+                filter.getString("FILTER");
+                IIndex iIndex = findIndex(indexName, cIndex);
+                if(iIndex != null) {
+                    iIndex.addPlatformIndex(new PlatformIndex(indexName, "WHERE " + filter.getString("FILTER")));
+                }
+            }
+        }
+        return cIndex;
+    }
+    
+    private IIndex findIndex(String indexName, Collection<IIndex> cIndex) {
+        for(IIndex index : cIndex) {
+            if(StringUtils.equals(index.getName(), indexName)) {
+                return index;
+            }
+        }
+        return null;
     }
 }

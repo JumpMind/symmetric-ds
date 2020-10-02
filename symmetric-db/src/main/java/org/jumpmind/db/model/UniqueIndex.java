@@ -50,6 +50,8 @@ public class UniqueIndex extends IndexImpBase {
 
         result.name = name;
         result.columns = (ArrayList<IndexColumn>) columns.clone();
+        
+        clonePlatformIndexes(result);
 
         return result;
     }

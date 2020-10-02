@@ -21,8 +21,13 @@
 package org.jumpmind.db.platform.mssql;
 
 import java.sql.Types;
+import java.util.Map;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.IIndex;
+import org.jumpmind.db.model.PlatformIndex;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
@@ -35,5 +40,22 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
         databaseInfo.addNativeTypeMapping(ColumnTypes.MSSQL_SQL_VARIANT, "SQL_VARIANT", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME2");
         databaseInfo.addNativeTypeMapping(ColumnTypes.MAPPED_TIMESTAMPTZ, "DATETIMEOFFSET");
+    }
+    
+    @Override
+    protected void writeExternalIndexCreate(Table table, IIndex index, StringBuilder ddl) {
+        super.writeExternalIndexCreate(table, index, ddl);
+        if (index.getPlatformIndexes() != null && index.getPlatformIndexes().size() > 0) {
+            Map<String, PlatformIndex> platformIndices = index.getPlatformIndexes();
+            for(PlatformIndex platformIndex : platformIndices.values()) {
+                if (StringUtils.equals(platformIndex.getName(),index.getName())) {
+                    if(platformIndex.getFilterCondition() != null) {
+                        println(ddl);
+                        ddl.append(platformIndex.getFilterCondition());
+                        println(ddl);
+                    }
+                }
+            }
+        }
     }
 }

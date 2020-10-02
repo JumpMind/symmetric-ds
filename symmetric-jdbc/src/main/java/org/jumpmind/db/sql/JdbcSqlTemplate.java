@@ -99,6 +99,10 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     protected String[] foreignKeyChildExistsViolationMessageParts;
 
+    protected int[] deadlockCodes;
+
+    protected String[] deadlockSqlStates;
+
     protected int isolationLevel;
 
     public JdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
@@ -1023,6 +1027,39 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         }
 
         return foreignKeyChildExistsViolation;
+    }
+
+    public boolean isDeadlock(Throwable ex) {
+        boolean deadlock = false;
+        if (deadlockCodes != null || deadlockSqlStates != null) {
+            SQLException sqlEx = findSQLException(ex);
+            if (sqlEx != null) {
+                if (deadlockCodes != null) {
+                    int errorCode = sqlEx.getErrorCode();
+                    for (int deadlockCode : deadlockCodes) {                        
+                        if (deadlockCode == errorCode) {
+                            deadlock = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (deadlockSqlStates != null) {
+                    String sqlState = sqlEx.getSQLState();
+                    if (sqlState != null) {
+                        for (String primaryKeyViolationSqlState : deadlockSqlStates) {
+                            if (primaryKeyViolationSqlState != null
+                                    && primaryKeyViolationSqlState.equals(sqlState)) {
+                                deadlock = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return deadlock;
     }
 
     protected SQLException findSQLException(Throwable ex) {

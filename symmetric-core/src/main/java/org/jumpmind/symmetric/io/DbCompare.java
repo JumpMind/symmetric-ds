@@ -420,7 +420,7 @@ public class DbCompare {
 
             DbCompareTables tables = new DbCompareTables(sourceTable, null);
 
-            String targetTableName = null;
+            String targetTableName = tableName;
             if (!CollectionUtils.isEmpty(targetTableNames)) {
                 targetTableName = targetTableNames.get(i);
             }
@@ -487,43 +487,45 @@ public class DbCompare {
         return true;
     }
 
-    protected Table loadTargetTable(DbCompareTables tables, String targetTableNameOverride) {
+    protected Table loadTargetTable(DbCompareTables tables, String targetTableName) {
         Table targetTable = null;
-        
-        String catalog = targetEngine.getDatabasePlatform().getDefaultCatalog();
-        String schema = targetEngine.getDatabasePlatform().getDefaultSchema();
         
         if (config.isUseSymmetricConfig()) {
             TransformTableNodeGroupLink transform = getTransformFor(tables.getSourceTable());
             if (transform != null) {
-                targetTable =  loadTargetTableUsingTransform(transform);
-                tables.setTargetTable(targetTable);
+                targetTable = loadTargetTableUsingTransform(transform);
                 tables.setTransform(transform);
-                return targetTable;
-            }
-            
-            TriggerRouter triggerRouter = getTriggerRouterFor(tables.getSourceTable());
-            if (triggerRouter != null) {
-                catalog = triggerRouter.getTargetCatalog(catalog, null);
-                schema = triggerRouter.getTargetSchema(schema, null);
-            }
-        }
-        
-        if (StringUtils.isEmpty(targetTableNameOverride)) {            
-            targetTable = targetEngine.getDatabasePlatform().
-                    getTableFromCache(catalog, schema, tables.getSourceTable().getName(), true);
-        } else {
-            try {
-                targetTable = (Table) tables.getSourceTable().clone();
-            } catch (CloneNotSupportedException ex) {
-                throw new SymmetricException("Exception while cloning " +  tables.getSourceTable());
-            }
-            targetTable.setCatalog("");
-            targetTable.setSchema("");
-            targetTable.setName(targetTableNameOverride);
-        }
-        tables.setTargetTable(targetTable);
+            } else {
+                String catalog = targetEngine.getDatabasePlatform().getDefaultCatalog();
+                String schema = targetEngine.getDatabasePlatform().getDefaultSchema();
+                String tableName = tables.getSourceTable().getName();
+                TriggerRouter triggerRouter = getTriggerRouterFor(tables.getSourceTable());
 
+                if (triggerRouter != null) {
+                    catalog = triggerRouter.getTargetCatalog(catalog, null);
+                    schema = triggerRouter.getTargetSchema(schema, null);
+                    if (StringUtils.isNotEmpty(triggerRouter.getTargetTable(null))) {
+                        tableName = triggerRouter.getTargetTable(null);
+                    }
+                }            
+                targetTable = targetEngine.getDatabasePlatform().
+                        getTableFromCache(catalog, schema, tableName, true);
+            }
+        } else {
+            Map<String, String> tableNameParts = targetEngine.getDatabasePlatform().parseQualifiedTableName(targetTableName);
+            if (tableNameParts.size() == 1) {
+                targetTable = targetEngine.getDatabasePlatform().getTableFromCache(targetTableName, true);
+            } else {
+                targetTable = targetEngine.getDatabasePlatform().
+                        getTableFromCache(tableNameParts.get("catalog"), tableNameParts.get("schema"), tableNameParts.get("table"), true);                
+                if (targetTable == null) {                    
+                    targetTable = targetEngine.getDatabasePlatform().
+                            getTableFromCache(tableNameParts.get("schema"), tableNameParts.get("catalog"), tableNameParts.get("table"), true);
+                }
+            }
+        }
+
+        tables.setTargetTable(targetTable);
         return targetTable;
     }
 

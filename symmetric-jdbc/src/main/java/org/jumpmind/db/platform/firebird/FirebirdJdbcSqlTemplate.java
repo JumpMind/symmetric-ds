@@ -40,6 +40,7 @@ public class FirebirdJdbcSqlTemplate extends JdbcSqlTemplate {
         uniqueKeyViolationNameRegex = new String[] { "unique index \"(.*?)\"" };
         foreignKeyViolationCodes = new int[] {335544466};
         foreignKeyChildExistsViolationMessageParts = new String[] { "Foreign key references are present for the record" };
+        deadlockSqlStates = new String[] {"40001"};
     }
     
     @Override

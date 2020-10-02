@@ -51,8 +51,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
     public AcknowledgeService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
-        setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(),
-                createSqlReplacementTokens()));
+        setSqlMap(new AcknowledgeServiceSqlMap(symmetricDialect.getPlatform(), createSqlReplacementTokens()));
     }
 
     public BatchAckResult ack(final BatchAck batch) {
@@ -70,30 +69,22 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 registrationService.markNodeAsRegistered(batch.getNodeId());
             }
         } else {
-            OutgoingBatch outgoingBatch = outgoingBatchService
-                    .findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
+            OutgoingBatch outgoingBatch = outgoingBatchService.findOutgoingBatch(batch.getBatchId(), batch.getNodeId());
             Status status = batch.isResend() ? Status.RS : batch.isOk() ? Status.OK : Status.ER;
-            Status oldStatus = null;
+
             if (outgoingBatch != null && outgoingBatch.getStatus() != Status.RQ) {
-                // Allow an outside system/user to indicate that a batch
-                // is OK.
-                if (outgoingBatch.getStatus() != Status.OK && 
-                        outgoingBatch.getStatus() != Status.IG) {
-                    outgoingBatch.setStatus(status);
-                    outgoingBatch.setErrorFlag(!batch.isOk());
-                } else if (outgoingBatch.getStatus() != Status.OK) {
-                    // clearing the error flag in case the user set the batch
-                    // status to OK
-                    oldStatus = outgoingBatch.getStatus();
-                    outgoingBatch.setStatus(Status.OK);
-                    outgoingBatch.setErrorFlag(false);
-                    status = Status.OK;
-                    log.info("Batch {} for node {} was set to {}.  Updating the status to OK.",
-                            new Object[] { batch.getBatchId(), batch.getNodeId(), oldStatus.name() });
+
+                // Allow an outside system/user to indicate that a batch is OK
+                if (outgoingBatch.getStatus() == Status.IG && status == Status.OK) {
+                    log.info("Ignoring batch {}", outgoingBatch.getNodeBatchId());
+                } else if (outgoingBatch.getStatus() == Status.OK && status != Status.OK) {
+                    log.info("Setting status to ignore for batch {} because status was set to OK by user", outgoingBatch.getNodeBatchId());
+                    status = Status.IG;
                 }
-                if (batch.isIgnored()) {
-                    outgoingBatch.incrementIgnoreCount();
-                }
+
+                boolean isFirstTimeAsOkStatus = outgoingBatch.getStatus() != Status.OK && status == Status.OK;
+                outgoingBatch.setStatus(status);
+                outgoingBatch.setErrorFlag(status == Status.ER);
                 outgoingBatch.setNetworkMillis(batch.getNetworkMillis());
                 outgoingBatch.setFilterMillis(batch.getFilterMillis());
                 outgoingBatch.setLoadMillis(batch.getLoadMillis());
@@ -111,12 +102,19 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 outgoingBatch.setIgnoreRowCount(batch.getIgnoreRowCount());
                 outgoingBatch.setMissingDeleteCount(batch.getMissingDeleteCount());
                 outgoingBatch.setSkipCount(batch.getSkipCount());
+                if (batch.isIgnored()) {
+                    outgoingBatch.incrementIgnoreCount();
+                }
+                if (status == Status.OK) {
+                    outgoingBatch.setFailedDataId(0);
+                    outgoingBatch.setFailedLineNumber(0);
+                }
 
                 boolean isNewError = false;
-                if (!batch.isOk() && batch.getErrorLine() != 0) {
+                if (status == Status.ER && batch.getErrorLine() != 0) {
                     if (outgoingBatch.isLoadFlag()) {
                         isNewError = outgoingBatch.getSentCount() == 1;
-                    } else {
+                    } else if (batch.getErrorLine() != outgoingBatch.getFailedLineNumber()){
                         String sql = getSql("selectDataIdSql");
                         if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER, false)) {
                             sql = getSql("selectDataIdByCreateTimeSql");
@@ -127,26 +125,25 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         List<Number> ids = sqlTemplateDirty.query(sql, new NumberMapper(), outgoingBatch.getBatchId());
                         if (ids.size() >= batch.getErrorLine()) {
                             long failedDataId = ids.get((int) batch.getErrorLine() - 1).longValue();
-                            if (outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId) {
-                                isNewError = true;
-                            }
+                            isNewError = outgoingBatch.getFailedDataId() == 0 || outgoingBatch.getFailedDataId() != failedDataId;
                             outgoingBatch.setFailedDataId(failedDataId);
                         }
+                        outgoingBatch.setFailedLineNumber(batch.getErrorLine());
                     }
                 }
 
                 if (status == Status.ER) {
-                    boolean suppressLogError = false;
+                    boolean suppressError = false;
                     if (isNewError) {
                         engine.getStatisticManager().incrementDataLoadedOutgoingErrors(outgoingBatch.getChannelId(), 1);
                     }
                     if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
                         if (!outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
                             engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
-                            suppressLogError = true;
+                            suppressError = true;
                         }
                         if (outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_RELOAD)) {
-                            suppressLogError = true;
+                            suppressError = true;
                         }
                     }
                     if (outgoingBatch.getSqlCode() == ErrorConstants.PROTOCOL_VIOLATION_CODE
@@ -160,11 +157,17 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             if (resource != null) {
                                 log.info("The batch {} may be corrupt in staging, so removing it.", outgoingBatch.getNodeBatchId());
                                 resource.delete();
-                                suppressLogError = isNewError;
+                                suppressError = isNewError;
                             }
                         }
                     }
-                    if (!suppressLogError) {
+                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.DEADLOCK_CODE) {
+                        suppressError = true;
+                    }
+                    
+                    if (suppressError) {
+                        outgoingBatch.setErrorFlag(false);
+                    } else {
                         log.error("The outgoing batch {} failed: {}{}", outgoingBatch.getNodeBatchId(),
                                 (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
                         RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
@@ -177,8 +180,9 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 }
                 
                 outgoingBatchService.updateOutgoingBatch(outgoingBatch);
+
                 if (status == Status.OK) {
-                    if (!Status.OK.equals(oldStatus)) {
+                    if (isFirstTimeAsOkStatus) {
                         if (outgoingBatch.getLoadId() > 0) {
                             engine.getDataExtractorService().updateExtractRequestLoadTime(new Date(), outgoingBatch);
                         }

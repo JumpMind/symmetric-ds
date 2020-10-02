@@ -34,6 +34,7 @@ public class AseJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo)
     {
         super(dataSource, settings, lobHandler, databaseInfo);
+        deadlockCodes = new int[] {1205};
     }
 
     @Override

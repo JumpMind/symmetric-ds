@@ -161,11 +161,14 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             // return Integer.MAX_VALUE
             // on columns defined as TEXT.
             else if (column.getSizeAsInt() == Integer.MAX_VALUE) {
-                column.setSize(null);
                 if (column.getMappedTypeCode() == Types.VARCHAR) {
-                    column.setMappedTypeCode(Types.LONGVARCHAR);
+                    if(column.getJdbcTypeName().equalsIgnoreCase("TEXT")) {
+                        column.setMappedTypeCode(Types.LONGVARCHAR);
+                        column.setSize(null);
+                    }
                 } else if (column.getMappedTypeCode() == Types.BINARY) {
                     column.setMappedTypeCode(Types.LONGVARBINARY);
+                    column.setSize(null);
                 }
             } else if (column.getSizeAsInt() == 131089 && column.getJdbcTypeCode() == Types.NUMERIC) {                
                 column.setSizeAndScale(0, 0);

@@ -29,6 +29,7 @@ import java.security.SecureRandom;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
@@ -51,9 +52,13 @@ import org.jumpmind.symmetric.transport.http.Http2Connection;
 import org.jumpmind.symmetric.transport.http.HttpTransportManager;
 import org.jumpmind.symmetric.transport.http.SelfSignedX509TrustManager;
 import org.jumpmind.symmetric.transport.internal.InternalTransportManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TransportManagerFactory {
 
+    private static final Logger log = LoggerFactory.getLogger(TransportManagerFactory.class);
+    
     private ISymmetricEngine symmetricEngine;
 
     public TransportManagerFactory(ISymmetricEngine symmetricEngine) {
@@ -165,7 +170,13 @@ public class TransportManagerFactory {
         X509TrustManager trustManager = new SelfSignedX509TrustManager(null);
         SSLContext context = SSLContext.getInstance("TLS");
         ISecurityService securityService = SecurityServiceFactory.create();
-        context.init(securityService.getKeyManagerFactory().getKeyManagers(), new TrustManager[] { trustManager }, new SecureRandom());
+        KeyManager[] keyManagers = null;
+        try {
+            keyManagers = securityService.getKeyManagerFactory().getKeyManagers();
+        } catch (Exception e) {
+            log.warn("No key managers found: " + e.getMessage());
+        }
+        context.init(keyManagers, new TrustManager[] { trustManager }, new SecureRandom());
         SSLSocketFactory sslSocketFactory = context.getSocketFactory();
         
         HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);

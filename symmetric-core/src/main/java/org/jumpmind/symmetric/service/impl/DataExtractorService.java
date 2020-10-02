@@ -85,6 +85,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
+import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -847,56 +848,56 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     }
                 }
             } catch (RuntimeException e) {
-                SQLException se = ExceptionUtils.unwrapSqlException(e);              
                 if (currentBatch != null) {
+                    boolean isNewErrorStaging = false;
+                    if (!isStreamClosedByClient(e)) {                            
+                        if (e.getCause() instanceof InterruptedException || e.getCause() instanceof CancellationException) {
+                            log.info("Extract of batch {} was interrupted", currentBatch);
+                        } else if (e instanceof StagingLowFreeSpace) {
+                            log.error("Extract is disabled because disk is almost full: {}", e.getMessage());
+                        } else if (e.getCause() instanceof ZipException || e instanceof ProtocolException || e instanceof IllegalStateException) {
+                            if (currentBatch.getSqlCode() != ErrorConstants.STAGE_ERROR_CODE) {
+                                isNewErrorStaging = true;
+                            }
+                            log.warn("The batch {} appears corrupt in staging, so removing it. ({})", currentBatch.getNodeBatchId(), e.getMessage());    
+                            IStagedResource resource = getStagedResource(currentBatch);
+                            if (resource != null) {
+                                resource.delete();
+                            }
+                        } else {
+                            log.error("Failed to extract batch " + currentBatch, e);
+                        }
+                    }
+
                     try {
                         /* Reread batch in case the ignore flag has been set */
-                        currentBatch = outgoingBatchService.
-                                findOutgoingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
-                        statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
+                        currentBatch = outgoingBatchService.findOutgoingBatch(currentBatch.getBatchId(), currentBatch.getNodeId());
+                        SQLException se = ExceptionUtils.unwrapSqlException(e);
                         if (se != null) {
                             currentBatch.setSqlState(se.getSQLState());
                             currentBatch.setSqlCode(se.getErrorCode());
                             currentBatch.setSqlMessage(se.getMessage());
+                        } else if (isNewErrorStaging) {
+                            currentBatch.setSqlState(ErrorConstants.STAGE_ERROR_STATE);
+                            currentBatch.setSqlCode(ErrorConstants.STAGE_ERROR_CODE);
+                            currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(e));                            
                         } else {
                             currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(e));
                         }
                         currentBatch.revertStatsOnError();
-                        if (currentBatch.getStatus() != Status.IG &&
-                                currentBatch.getStatus() != Status.OK) {
+                        if (currentBatch.getStatus() != Status.IG && currentBatch.getStatus() != Status.OK) {
                             currentBatch.setStatus(Status.ER);
-                            currentBatch.setErrorFlag(true);
+                            currentBatch.setErrorFlag(isNewErrorStaging ? false : true);
+                            statisticManager.incrementDataExtractedErrors(currentBatch.getChannelId(), 1);
+                            extractInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                         }
                         outgoingBatchService.updateOutgoingBatch(currentBatch);
                     } catch(Exception ex) {
                         log.error("Failed to update the outgoing batch status for failed batch {}", currentBatch, ex);
-                    } finally {
-                        if (!isStreamClosedByClient(e)) {
-                            if (e instanceof ProtocolException) {
-                                IStagedResource resource = getStagedResource(currentBatch);
-                                if (resource != null) {
-                                    resource.delete();
-                                }
-                            }
-                            if (e.getCause() instanceof InterruptedException || e.getCause() instanceof CancellationException) {
-                                log.info("Extract of batch {} was interrupted", currentBatch);
-                            } else if (e instanceof StagingLowFreeSpace) {
-                                log.error("Extract is disabled because disk is almost full: {}", e.getMessage());
-                            } else if (e.getCause() instanceof ZipException) {
-                                log.warn("The batch {} appears corrupt in staging, so removing it. ({})", currentBatch.getNodeBatchId(), e.getMessage());
-                                IStagedResource extractedBatch = getStagedResource(currentBatch);
-                                if (extractedBatch != null) {
-                                    extractedBatch.delete();
-                                }
-                            } else {
-                                log.error("Failed to extract batch " + currentBatch, e);
-                            }
-                        }
-                        extractInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);                        
+                        extractInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
                     }
                 } else {
-                    log.error("Could not log the outgoing batch status because the batch was null",
-                            e);
+                    log.error("Could not log the outgoing batch status because the batch was null", e);
                 }
             } finally {
                 if (executor != null) {                    
@@ -1214,7 +1215,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             throw new org.jumpmind.exception.InterruptedException(e);
         }
         
-        log.debug("Acquired {}", lock);
         return lock;
     }
 
@@ -1598,9 +1598,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } finally {
             stagedResource.close();
             stagedResource.dereference();
-            if (!stagedResource.isFileResource() && !stagedResource.isInUse()) {
+            if (!batch.isCommonFlag() && stagedResource.isMemoryResource() && !stagedResource.isInUse()) {
                 synchronized(DataExtractorService.this) {
-                    if (!stagedResource.isFileResource() && !stagedResource.isInUse()) {
+                    if (stagedResource.isMemoryResource() && !stagedResource.isInUse()) {
                         stagedResource.delete();
                     }
                 }

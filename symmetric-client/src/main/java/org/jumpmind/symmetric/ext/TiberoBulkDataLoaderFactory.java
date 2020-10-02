@@ -71,11 +71,13 @@ public class TiberoBulkDataLoaderFactory extends DefaultDataLoaderFactory {
         String dbName = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LOAD_DBNAME);
         String lineTerminator = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_LINE_TERMINATOR);
         String fieldTerminator = parmService.getString(ParameterConstants.DBDIALECT_TIBERO_BULK_FIELD_TERMINATOR);
+        boolean delimitTokens = parmService.is(ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
 
         return new TiberoBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 engine.getStagingManager(), engine.getTablePrefix(), tbLoaderCommand, tbLoaderOptions,
                 dbUser, dbPassword, dbUrl, dbName, null, fieldTerminator, lineTerminator,
-                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
+                buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData),
+                delimitTokens);
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {

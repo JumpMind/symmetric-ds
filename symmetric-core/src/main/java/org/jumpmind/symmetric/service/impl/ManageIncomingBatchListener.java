@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.zip.ZipException;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -34,6 +35,7 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.TableNotFoundException;
 import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
@@ -43,6 +45,7 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
+import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
@@ -162,6 +165,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         try {
             this.currentBatch.setStatus(Status.OK);
             if (incomingBatchService.isRecordOkBatchesEnabled()) {
+                if (this.currentBatch.getIgnoreCount() > 0) {
+                    log.info("Ignoring batch {}", this.currentBatch.getNodeBatchId());
+                }
                 incomingBatchService.updateIncomingBatch(this.currentBatch);
             } else if (this.currentBatch.isRetry()) {
                 incomingBatchService.deleteIncomingBatch(this.currentBatch);
@@ -202,7 +208,12 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                  * Reread batch to make sure it wasn't set to IG or OK
                  */
                 engine.getIncomingBatchService().refreshIncomingBatch(currentBatch);
-    
+
+                if (currentBatch.getStatus() != Status.OK && currentBatch.getStatus() != Status.IG) {
+                    currentBatch.setStatus(IncomingBatch.Status.ER);
+                    currentBatch.setErrorFlag(true);
+                }
+
                 Batch batch = context.getBatch();
                 isNewErrorForCurrentBatch = batch.getLineCount() != currentBatch.getFailedLineNumber();
     
@@ -222,13 +233,21 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 }
     
                 enableSyncTriggers(context);
-    
+
                 if (ex instanceof CancellationException) {
                     log.info("Cancelling batch " + this.currentBatch.getNodeBatchId());
                 } else if (ex instanceof IOException || ex instanceof TransportException
                         || ex instanceof IoException) {
                     log.warn("Failed to load batch " + this.currentBatch.getNodeBatchId(), ex);
                     this.currentBatch.setSqlMessage(ex.getMessage());
+                } else if (ex instanceof ParseException || ex instanceof ProtocolException || ex.getCause() instanceof ZipException) {
+                    this.currentBatch.setSqlCode(ErrorConstants.PROTOCOL_VIOLATION_CODE);
+                    this.currentBatch.setSqlState(ErrorConstants.PROTOCOL_VIOLATION_STATE);
+                    if (isNewErrorForCurrentBatch) {
+                        this.currentBatch.setErrorFlag(false);
+                    } else {
+                        log.error(String.format("Failed to parse batch %s", this.currentBatch.getNodeBatchId()), ex);
+                    }
                 } else {    
                     SQLException se = ExceptionUtils.unwrapSqlException(ex);
                     if (ex instanceof ConflictException) {
@@ -253,6 +272,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         if (sqlTemplate.isForeignKeyViolation(se)) {
                             this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
                             this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
+                        } else if (sqlTemplate.isDeadlock(se)) {
+                            this.currentBatch.setSqlState(ErrorConstants.DEADLOCK_STATE);
+                            this.currentBatch.setSqlCode(ErrorConstants.DEADLOCK_CODE);
                         }
                     } else {
                         this.currentBatch.setSqlMessage(ExceptionUtils.getRootMessage(ex));
@@ -260,20 +282,17 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
                     if (ex instanceof TableNotFoundException) {
                         log.error(String.format("The incoming batch %s failed: %s", this.currentBatch.getNodeBatchId(), ex.getMessage()));
-                    } else if (this.currentBatch.getSqlCode() != ErrorConstants.FK_VIOLATION_CODE || !isNewErrorForCurrentBatch) {
+                    } else if (isNewErrorForCurrentBatch && (this.currentBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
+                            || this.currentBatch.getSqlCode() == ErrorConstants.DEADLOCK_CODE)) {
+                        this.currentBatch.setErrorFlag(false);
+                    } else {
                         log.error(String.format("Failed to load batch %s", this.currentBatch.getNodeBatchId()), ex);
                     }
                 }
     
                 ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
     
-                // If we were in the process of skipping or ignoring a batch
-                // then its status would have been OK. We should not
-                // set the status to ER.
-                if (this.currentBatch.getStatus() != Status.OK &&
-                        this.currentBatch.getStatus() != Status.IG) {
-    
-                    this.currentBatch.setStatus(IncomingBatch.Status.ER);
+                if (currentBatch.getStatus() == Status.ER) {
                     if (context.getTable() != null && context.getData() != null) {
                         try {
                             IncomingError error = new IncomingError();

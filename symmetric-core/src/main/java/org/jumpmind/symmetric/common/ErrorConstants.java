@@ -31,7 +31,13 @@ final public class ErrorConstants {
     public static final String FK_VIOLATION_STATE = "FK";
     public static final int FK_VIOLATION_CODE = -900;
 
+    public static final String DEADLOCK_STATE = "DEADLOCK";
+    public static final int DEADLOCK_CODE = -911;
+
     public static final String PROTOCOL_VIOLATION_STATE = "PROTOCOL";
     public static final int PROTOCOL_VIOLATION_CODE = -888;
+
+    public static final String STAGE_ERROR_STATE = "STAGE";
+    public static final int STAGE_ERROR_CODE = -808;
 
 }
