@@ -479,6 +479,8 @@ public class DmlStatement {
             String name = column.getName();
             int type = column.getMappedTypeCode();
 
+            log.info("Building where clause for column=" + name +", type=" + type);
+            
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
                     try {
@@ -517,8 +519,11 @@ public class DmlStatement {
                         newSql = newSql.replaceFirst(regex, binaryQuoteStart
                                 + new String(Hex.encodeHex(bytes)) + binaryQuoteEnd);
                     }
+                }  else if (type == Types.BIT) {
+                    String value = row.getString(name);
+                    newSql = newSql.replaceFirst(regex, value != null && value.toLowerCase().equals("true") ? "1" : "0");
                 } else {
-                    newSql = newSql.replaceFirst(regex, row.getString(name));
+                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
                 }
             } else {
                 newSql = newSql.replaceFirst(regex, "null");
@@ -526,6 +531,7 @@ public class DmlStatement {
         }
         
         newSql = newSql.replace(QUESTION_MARK, "?");
+        log.info("Final SQL " + newSql);
         return newSql + databaseInfo.getSqlCommandDelimiter();    
     }
     

@@ -2901,7 +2901,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     this.currentInitialLoadEvent = null;
                 } else {
                     this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
-                    this.initialLoadSelectUsed = StringUtils.isNotBlank(this.triggerRouter.getInitialLoadSelect());
+                    this.initialLoadSelectUsed = this.currentInitialLoadEvent.getInitialLoadSelect() != null 
+                            ? true : StringUtils.isNotBlank(this.triggerRouter.getInitialLoadSelect());
 
                     Router router = triggerRouter.getRouter();
                     if (!StringUtils.isBlank(router.getRouterType())) {
