@@ -39,6 +39,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;
@@ -202,6 +203,18 @@ public class DatabaseXmlUtil {
                                     table.setName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("description")) {
                                     table.setDescription(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("compression")) {
+                                    if (CompressionTypes.PAGE.name().equalsIgnoreCase(attributeValue)) {
+                                        table.setCompressionType(CompressionTypes.PAGE);
+                                    } else if (CompressionTypes.ROW.name().equalsIgnoreCase(attributeValue)) {
+                                        table.setCompressionType(CompressionTypes.ROW);
+                                    } else if (CompressionTypes.COLUMNSTORE.name().equalsIgnoreCase(attributeValue)) {
+                                        table.setCompressionType(CompressionTypes.COLUMNSTORE);
+                                    } else if (CompressionTypes.COLUMNSTORE_ARCHIVE.name().equals(attributeValue)) {
+                                        table.setCompressionType(CompressionTypes.COLUMNSTORE_ARCHIVE);
+                                    } else {
+                                        table.setCompressionType(CompressionTypes.NONE);
+                                    }
                                 }
                             }
                         } else if (name.equalsIgnoreCase("column")) {
@@ -337,8 +350,20 @@ public class DatabaseXmlUtil {
                                 String attributeValue = parser.getAttributeValue(i);
                                 if(attributeName.equalsIgnoreCase("name")) {
                                     platformIndex.setName(attributeValue);
-                                } else if(attributeName.equalsIgnoreCase("filter-condition")) {
+                                } else if (attributeName.equalsIgnoreCase("filter-condition")) {
                                     platformIndex.setFilterCondition(attributeValue);
+                                } else if (attributeName.equalsIgnoreCase("compression")) {
+                                    if (CompressionTypes.ROW.name().equalsIgnoreCase(attributeValue)) {
+                                        platformIndex.setCompressionType(CompressionTypes.ROW);
+                                    } else if (CompressionTypes.PAGE.name().equalsIgnoreCase(attributeValue)) {
+                                        platformIndex.setCompressionType(CompressionTypes.PAGE);
+                                    } else if (CompressionTypes.COLUMNSTORE.name().equalsIgnoreCase(attributeValue)) {
+                                        platformIndex.setCompressionType(CompressionTypes.COLUMNSTORE);
+                                    } else if (CompressionTypes.COLUMNSTORE_ARCHIVE.name().equals(attributeValue)) {
+                                        platformIndex.setCompressionType(CompressionTypes.COLUMNSTORE_ARCHIVE);
+                                    } else {
+                                        platformIndex.setCompressionType(CompressionTypes.NONE);
+                                    }
                                 }
                             }
                             if(index != null) {
@@ -478,7 +503,11 @@ public class DatabaseXmlUtil {
     public static void write(Table table, Writer output) {
 
         try {
-            output.write("\t<table name=\"" + StringEscapeUtils.escapeXml(table.getName()) + "\">\n");
+            output.write("\t<table name=\"" + StringEscapeUtils.escapeXml(table.getName()) + "\"");
+            if (table.getCompressionType() != CompressionTypes.NONE) {
+                output.write(" compression=\"" + table.getCompressionType().name() + "\"");
+            }
+            output.write(">\n");
 
             for (Column column : table.getColumns()) {
                 output.write("\t\t<column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"");
@@ -595,7 +624,19 @@ public class DatabaseXmlUtil {
                     Map<String, PlatformIndex> platformIndexes = index.getPlatformIndexes();
                     for(String key : platformIndexes.keySet()) {
                         PlatformIndex platformIndex = platformIndexes.get(key);
-                        output.write("\t\t\t<platform-index name=\"" + StringEscapeUtils.escapeXml(platformIndex.getName()) + "\" filter-condition=\"" + platformIndex.getFilterCondition() + "\"/>\n");
+                        if ((platformIndex.getFilterCondition() != null && platformIndex.getFilterCondition().length() > 0) ||
+                                platformIndex.getCompressionType() != CompressionTypes.NONE)
+                        {
+                            output.write("\t\t\t<platform-index name=\"" + StringEscapeUtils.escapeXml(platformIndex.getName()) + "\"");
+                            if (platformIndex.getFilterCondition() != null && platformIndex.getFilterCondition().length() > 0) {
+                                output.write(" filter-condition=\"" + platformIndex.getFilterCondition() + "\"");
+                            }
+                            if (platformIndex.getCompressionType() != CompressionTypes.NONE) {
+                                output.write(" compression=\"" + platformIndex.getCompressionType().name() + "\"");
+                                
+                            }
+                            output.write("/>\n");
+                        }
                     }
                 }
                 if (index.isUnique()) {

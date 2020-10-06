@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.PlatformIndex;
@@ -118,6 +119,49 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 } else {
                     idx++;
                 }
+            }
+            
+            if (platform instanceof MsSql2008DatabasePlatform) {
+                JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+                String sql = "SELECT [TABLENAME] = t.[Name]\n" + 
+                        "        ,[INDEXNAME] = i.[Name]\n" + 
+                        "        ,[IndexType] = i.[type_desc]\n" + 
+                        "        ,[FILTER] = i.filter_definition\n" + 
+                        "        ,[HASFILTER] = i.has_filter\n" +
+                        "        ,[COMPRESSIONTYPE] = p.data_compression\n" +
+                        "        ,[COMPRESSIONDESCRIPTION] = p.data_compression_desc\n" +
+                        "FROM sys.indexes i\n" + 
+                        "INNER JOIN sys.tables t ON t.object_id = i.object_id\n" +
+                        "INNER JOIN sys.partitions p ON p.object_id=t.object_id AND p.index_id=i.index_id\n" + 
+                        "WHERE t.type_desc = N'USER_TABLE'\n" + 
+                        "and t.name=?\n" + 
+                        "and p.index_id in (0,1)";
+                List<String> l = new ArrayList<String>();
+                l.add(tableName);
+                log.debug("Running the following query to get metadata about whether a table has compression\n {}", sql );
+                List<Row> filters = sqlTemplate.query(sql, l.toArray());
+                for(Row filter : filters) {
+                    int compressionType = filter.getInt("COMPRESSIONTYPE");
+                    boolean hasCompression = (compressionType > 0);
+                    if (hasCompression) {
+                        if (compressionType == 1) {
+                            log.debug("table: " + tableName + " has compression: " + CompressionTypes.ROW.name());
+                            table.setCompressionType(CompressionTypes.ROW);
+                        } else if (compressionType == 2) {
+                            log.debug("table: " + tableName + " has compression: " + CompressionTypes.PAGE.name());
+                            table.setCompressionType(CompressionTypes.PAGE);
+                        } else if (compressionType == 3) {
+                            log.debug("table: " + tableName + " has compression: " + CompressionTypes.COLUMNSTORE.name());
+                            table.setCompressionType(CompressionTypes.COLUMNSTORE);
+                        } else if (compressionType == 4) {
+                            log.debug("table: " + tableName + " has compression: " + CompressionTypes.COLUMNSTORE_ARCHIVE.name());
+                            table.setCompressionType(CompressionTypes.COLUMNSTORE_ARCHIVE);
+                        } else {
+                            table.setCompressionType(CompressionTypes.NONE);
+                        }
+                    }
+                }
+
             }
         }
         return table; 
@@ -364,38 +408,72 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     protected Collection<IIndex> readIndices(Connection connection,
             DatabaseMetaDataWrapper metaData, String tableName) throws SQLException {
         Collection<IIndex> cIndex = super.readIndices(connection,  metaData, tableName);
-        if (cIndex != null && cIndex.size() > 0) {
-            JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
-            String sql = "SELECT [TABLENAME] = t.[Name]\n" + 
-                    "        ,[INDEXNAME] = i.[Name]\n" + 
-                    "        ,[IndexType] = i.[type_desc]\n" + 
-                    "        ,[FILTER] = i.filter_definition\n" + 
-                    "FROM sys.indexes i\n" + 
-                    "INNER JOIN sys.tables t ON t.object_id = i.object_id\n" + 
-                    "WHERE t.type_desc = N'USER_TABLE'\n" + 
-                    "AND i.has_filter = 1\n" + 
-                    "and t.name=?\n" + 
-                    "and i.name in (%s)";
-            StringBuilder sb = new StringBuilder();
-            for(int i = 0; i < cIndex.size(); i++) {
-                if(sb.length() > 0) {
-                    sb.append(",");
+        if (platform instanceof MsSql2008DatabasePlatform) {
+            if (cIndex != null && cIndex.size() > 0) {
+                JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
+                String sql = "SELECT [TABLENAME] = t.[Name]\n" + 
+                        "        ,[INDEXNAME] = i.[Name]\n" + 
+                        "        ,[IndexType] = i.[type_desc]\n" + 
+                        "        ,[FILTER] = i.filter_definition\n" + 
+                        "        ,[HASFILTER] = i.has_filter\n" +
+                        "        ,[COMPRESSIONTYPE] = p.data_compression\n" +
+                        "        ,[COMPRESSIONDESCRIPTION] = p.data_compression_desc\n" +
+                        "FROM sys.indexes i\n" + 
+                        "INNER JOIN sys.tables t ON t.object_id = i.object_id\n" +
+                        "INNER JOIN sys.partitions p ON p.object_id=t.object_id AND p.index_id=i.index_id\n" + 
+                        "WHERE t.type_desc = N'USER_TABLE'\n" + 
+                        "and t.name=?\n" + 
+                        "and i.name in (%s)\n" +
+                        "and p.index_id > 1";
+                StringBuilder sb = new StringBuilder();
+                for(int i = 0; i < cIndex.size(); i++) {
+                    if(sb.length() > 0) {
+                        sb.append(",");
+                    }
+                    sb.append("?");
                 }
-                sb.append("?");
-            }
-            sql = String.format(sql, sb.toString());
-            List<String> l = new ArrayList<String>();
-            l.add(tableName);
-            for(IIndex index : cIndex) {
-                l.add(index.getName());
-            }
-            List<Row> filters = sqlTemplate.query(sql, l.toArray());
-            for(Row filter : filters) {
-                String indexName = filter.getString("INDEXNAME");
-                filter.getString("FILTER");
-                IIndex iIndex = findIndex(indexName, cIndex);
-                if(iIndex != null) {
-                    iIndex.addPlatformIndex(new PlatformIndex(indexName, "WHERE " + filter.getString("FILTER")));
+                sql = String.format(sql, sb.toString());
+                List<String> l = new ArrayList<String>();
+                l.add(tableName);
+                for(IIndex index : cIndex) {
+                    l.add(index.getName());
+                }
+                log.debug("Running the following query to get metadata about whether an index has compression or filters\n {}", sql );
+                List<Row> filters = sqlTemplate.query(sql, l.toArray());
+                for(Row filter : filters) {
+                    String indexName = filter.getString("INDEXNAME");
+                    IIndex iIndex = findIndex(indexName, cIndex);
+                    if(iIndex != null) {
+                        boolean hasFilter = filter.getBoolean("HASFILTER");
+                        int compressionType = filter.getInt("COMPRESSIONTYPE");
+                        boolean hasCompression = (compressionType > 0);
+                        if(hasFilter || hasCompression) {
+                            PlatformIndex platformIndex = new PlatformIndex();
+                            platformIndex.setName(indexName);
+                            if(hasFilter) {
+                                log.debug("table: " + tableName + " index: " + indexName + " has filter: " + filter.getString("FILTER"));
+                                platformIndex.setFilterCondition("WHERE " + filter.getString("FILTER"));
+                            }
+                            if(hasCompression) {
+                                if(compressionType == 1) {
+                                    log.debug("table: " + tableName + " index: " + indexName + " has compression: " + CompressionTypes.ROW.name());
+                                    platformIndex.setCompressionType(CompressionTypes.ROW);
+                                } else if (compressionType == 2) {
+                                    log.debug("table: " + tableName + " index: " + indexName + " has compression: " + CompressionTypes.PAGE.name());
+                                    platformIndex.setCompressionType(CompressionTypes.PAGE);
+                                } else if (compressionType == 3) {
+                                    log.debug("table: " + tableName + " index: " + indexName + " has compression: " + CompressionTypes.COLUMNSTORE.name());
+                                    platformIndex.setCompressionType(CompressionTypes.COLUMNSTORE);
+                                } else if (compressionType == 4) {
+                                    log.debug("table: " + tableName + " index: " + indexName + " has compression: " + CompressionTypes.COLUMNSTORE_ARCHIVE.name());
+                                    platformIndex.setCompressionType(CompressionTypes.COLUMNSTORE_ARCHIVE);
+                                } else {
+                                    platformIndex.setCompressionType(CompressionTypes.NONE);
+                                }
+                            }
+                            iIndex.addPlatformIndex(platformIndex);
+                        }
+                    }
                 }
             }
         }
