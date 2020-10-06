@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.StringUtils;
 import org.jumpmind.db.model.ColumnTypes;
+import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.PlatformIndex;
 import org.jumpmind.db.model.Table;
@@ -49,13 +50,26 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
             Map<String, PlatformIndex> platformIndices = index.getPlatformIndexes();
             for(PlatformIndex platformIndex : platformIndices.values()) {
                 if (StringUtils.equals(platformIndex.getName(),index.getName())) {
-                    if(platformIndex.getFilterCondition() != null) {
+                    if (platformIndex.getFilterCondition() != null) {
                         println(ddl);
                         ddl.append(platformIndex.getFilterCondition());
                         println(ddl);
                     }
+                    if (platformIndex.getCompressionType() != CompressionTypes.NONE) {
+                        println(ddl);
+                        ddl.append(" WITH(data_compression=" + platformIndex.getCompressionType().name() + ")");
+                        println(ddl);
+                    }
                 }
             }
+        }
+    }
+    
+    @Override
+    protected void writeTableCreationStmt(Table table, StringBuilder ddl) {
+        super.writeTableCreationStmt(table, ddl);
+        if (table.getCompressionType() != CompressionTypes.NONE) {
+            ddl.append(" WITH(data_compression=" + table.getCompressionType().name() + ")");
         }
     }
 }

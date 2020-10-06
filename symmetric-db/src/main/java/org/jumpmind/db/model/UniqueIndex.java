@@ -61,6 +61,7 @@ public class UniqueIndex extends IndexImpBase {
             UniqueIndex other = (UniqueIndex) obj;
 
             return new EqualsBuilder().append(name, other.name).append(columns, other.columns)
+                    .append(platformIndexes, other.platformIndexes)
                     .isEquals();
         } else {
             return false;

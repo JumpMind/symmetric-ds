@@ -36,7 +36,7 @@ public abstract class IndexImpBase implements IIndex {
     /** The columns making up the index. */
     protected ArrayList<IndexColumn> columns = new ArrayList<IndexColumn>();
     
-    private Map<String, PlatformIndex> platformIndexes;
+    protected Map<String, PlatformIndex> platformIndexes;
 
     public String getName() {
         return name;

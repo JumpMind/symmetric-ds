@@ -88,6 +88,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     private String tableNameLowerCase;
     
     private ArrayList<Column> lobColumns;
+    
+    private CompressionTypes compressionType = CompressionTypes.NONE;
 
     public Table() {
     }
@@ -1455,6 +1457,14 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
     }    
     
+    public CompressionTypes getCompressionType() {
+        return compressionType;
+    }
+
+    public void setCompressionType(CompressionTypes compressionType) {
+        this.compressionType = compressionType;
+    }
+
     public static void main(String[] args) {
         String result = escapeColumnNameForCsv("\\What, \"");
         String result2 = escapeColumnNameForCsv("a_normal_column");
