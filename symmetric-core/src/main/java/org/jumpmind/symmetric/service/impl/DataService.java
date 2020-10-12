@@ -2906,10 +2906,16 @@ public class DataService extends AbstractService implements IDataService {
         if (listeners.size() > 0) {
             Node me = engine.getNodeService().findIdentity();
             if (me != null) {
+                List<IHeartbeatListener> successfulListeners = new ArrayList<IHeartbeatListener>();
                 for (IHeartbeatListener l : listeners) {
-                    l.heartbeat(me);
+                    try {
+                        l.heartbeat(me);
+                        successfulListeners.add(l);
+                    } catch(Throwable e) {
+                        log.error("Failed to execute IHeartbeatListener " + l.getClass().getSimpleName(), e);
+                    }
                 }
-                updateLastHeartbeatTime(listeners);
+                updateLastHeartbeatTime(successfulListeners);
             } else {
                 log.debug("Did not run the heartbeat process because the node has not been configured");
             }
