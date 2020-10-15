@@ -34,17 +34,18 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteOpenHelper;
+
+import androidx.sqlite.db.SupportSQLiteOpenHelper;
 
 public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
 
-    protected SQLiteOpenHelper database;
+    protected SupportSQLiteOpenHelper database;
 
     protected AndroidSqlTemplate sqlTemplate;
     
     protected Context androidContext;
 
-    public AndroidDatabasePlatform(SQLiteOpenHelper database, Context androidContext) {
+    public AndroidDatabasePlatform(SupportSQLiteOpenHelper database, Context androidContext) {
         super(new SqlTemplateSettings());
         this.database = database;
         this.androidContext = androidContext;

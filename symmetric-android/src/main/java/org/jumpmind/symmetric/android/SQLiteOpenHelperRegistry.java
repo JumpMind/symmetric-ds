@@ -23,17 +23,17 @@ package org.jumpmind.symmetric.android;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.database.sqlite.SQLiteOpenHelper;
+import androidx.sqlite.db.SupportSQLiteOpenHelper;
 
 public class SQLiteOpenHelperRegistry {
     
-    static private Map<String, SQLiteOpenHelper> sqliteOpenHelpers = new HashMap<String, SQLiteOpenHelper>();
+    static private Map<String, SupportSQLiteOpenHelper> sqliteOpenHelpers = new HashMap<String, SupportSQLiteOpenHelper>();
     
-    public static void register(String name, SQLiteOpenHelper helper) {
+    public static void register(String name, SupportSQLiteOpenHelper helper) {
         sqliteOpenHelpers.put(name, helper);
     }
     
-    public static SQLiteOpenHelper lookup(String name) {
+    public static SupportSQLiteOpenHelper lookup(String name) {
         return sqliteOpenHelpers.get(name);
     }
 
