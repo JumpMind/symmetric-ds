@@ -167,4 +167,10 @@ final public class Constants {
     public static final String SEQUENCE_OUTGOING_BATCH = TableConstants.SYM_OUTGOING_BATCH;
     
     public static final String SEQUENCE_OUTGOING_BATCH_LOAD_ID = "outgoing_batch_load_id";
+    
+    public static final String SEND_SCHEMA_EXCLUDE_INDICES = "excludeIndices";
+    
+    public static final String SEND_SCHEMA_EXCLUDE_FOREIGN_KEYS = "excludeForeignKeys";
+    
+    public static final String SEND_SCHEMA_EXCLUDE_DEFAULTS = "excludeDefaults";
 }

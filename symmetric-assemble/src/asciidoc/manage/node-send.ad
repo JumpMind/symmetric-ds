@@ -13,6 +13,7 @@ To create an event, you insert into <<DATA>> at the source database.  Any column
 | table_name | Name of your table to be sent. 
 | event_type | Use 'R' for reload, 'S' for SQL, 'C' for create table.
 | row_data   |  For reload event, specify the "where" clause to limit rows or use null for all rows.  For SQL event, specify the SQL to run. 
+| old_data   | For Table Schema event, specify a comma separated list of options to modify what gets sent with the table schema request.
 | trigger_hist_id  |  Reference to the active entry in <<TRIGGER_HIST>> for your table. 
 | channel_id  |  The channel to create batches on. 
 | create_time |  Timestamp when this event was created.
@@ -96,5 +97,16 @@ select '00001', source_table_name, 'C', trigger_hist_id, 'reload', current_times
 from sym_trigger_hist where source_table_name = 'sale_transaction' and inactive_time is null;
 ----
 
+There are three options that can be specified in the old_data column. These options should be comma separated. The options are
+excludeIndices, excludeForeignKeys, and excludeDefaults. The option excludeIndices will send the create table
+request without associated indices. The excludeForeignKeys option will send the create table request without the associated
+foreign key references. The excludeDefaults option will send the create table request without column defaults.
+
+[source, sql]
+----
+insert into sym_data (node_list, table_name, event_type, trigger_hist_id, channel_id, create_time, old_data)
+select '00001', source_table_name, 'C', trigger_hist_id, 'reload', current_timestamp, 'deferIndices,deferForeignKeys'
+from sym_trigger_hist where source_table_name = 'sale_transaction' and inactive_time is null;
+----
 
 endif::pro[]

@@ -150,6 +150,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     
     private static final String OPTION_IN = "in";
     
+    private static final String OPTION_EXCLUDE_INDICES = "exclude-indices";
+    
+    private static final String OPTION_EXCLUDE_FOREIGN_KEYS = "exclude-fk";
+    
+    private static final String OPTION_EXCLUDE_DEFAULTS = "exclude-defaults";
+    
     private static final int WIDTH = 120;
 
     private static final int PAD = 3;
@@ -273,6 +279,11 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             if(cmd.equals(CMD_RESTORE_FILE_CONFIGURATION)) {
                 addOption(options, "i", OPTION_IN, true);
             }
+            if (cmd.equals(CMD_SEND_SCHEMA)) {
+                addOption(options, null, OPTION_EXCLUDE_INDICES, false);
+                addOption(options, null, OPTION_EXCLUDE_FOREIGN_KEYS, false);
+                addOption(options, null, OPTION_EXCLUDE_DEFAULTS, false);
+            }
 
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
@@ -306,6 +317,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, "o", OPTION_OUT, true);
         addOption(options, "r", OPTION_REVERSE, false);
         addOption(options, "i", OPTION_IN, true);
+        addOption(options, null, OPTION_EXCLUDE_INDICES, false);
+        addOption(options, null, OPTION_EXCLUDE_FOREIGN_KEYS, false);
+        addOption(options, null, OPTION_EXCLUDE_DEFAULTS, false);
         buildCryptoOptions(options);
     }
 
@@ -726,6 +740,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private void sendSchema(CommandLine line, List<String> args) {
         String catalog = line.getOptionValue(OPTION_CATALOG);
         String schema = line.getOptionValue(OPTION_SCHEMA);
+        boolean excludeIndices = line.hasOption(OPTION_EXCLUDE_INDICES);
+        boolean excludeForeignKeys = line.hasOption(OPTION_EXCLUDE_FOREIGN_KEYS);
+        boolean excludeDefaults = line.hasOption(OPTION_EXCLUDE_DEFAULTS);
         Collection<Node> nodes = getNodes(line);
         
         if (args.size() == 0) {
@@ -734,7 +751,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                     if ((catalog == null || catalog.equals(hist.getSourceCatalogName())) &&
                             (schema == null || schema.equals(hist.getSourceSchemaName()))) {
                         getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), hist.getSourceCatalogName(), 
-                                hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+                                hist.getSourceSchemaName(), hist.getSourceTableName(), false,
+                                excludeIndices, excludeForeignKeys, excludeDefaults);
                     }
                 }
             }
@@ -742,7 +760,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
             for (String tableName : args) {
                 for (Node node : nodes) {
                     getSymmetricEngine().getDataService().sendSchema(node.getNodeId(), catalog, 
-                            schema, tableName, false);
+                            schema, tableName, false, excludeIndices, excludeForeignKeys, excludeDefaults);
                 }                
             }
         }

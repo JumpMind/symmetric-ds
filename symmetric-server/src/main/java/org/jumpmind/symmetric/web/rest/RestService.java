@@ -1449,7 +1449,7 @@ public class RestService {
                                     dataService.sendSchema(node.getNodeId(),
                                             trigger.getSourceCatalogName(),
                                             trigger.getSourceSchemaName(),
-                                            trigger.getSourceTableName(), false);
+                                            trigger.getSourceTableName(), false, false, false, false);
                                     results.get(node.getNodeId()).add(
                                             new TableName(trigger.getSourceCatalogName(), trigger
                                                     .getSourceSchemaName(), trigger

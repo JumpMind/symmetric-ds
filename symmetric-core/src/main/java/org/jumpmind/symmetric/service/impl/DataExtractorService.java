@@ -2660,10 +2660,26 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                             
                         if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {                          
+                            String oldData = data.getCsvData(CsvData.OLD_DATA);
+                            boolean sendSchemaExcludeIndices = false;
+                            boolean sendSchemaExcludeForeignKeys = false;
+                            boolean sendSchemaExcludeDefaults = false;
+                            if (oldData != null && oldData.length() > 0) {
+                                String[] excludes = data.getCsvData(CsvData.OLD_DATA).split(",");
+                                for(String exclude : excludes) {
+                                    if (Constants.SEND_SCHEMA_EXCLUDE_INDICES.equals(exclude)) {
+                                        sendSchemaExcludeIndices = true;
+                                    } else if (Constants.SEND_SCHEMA_EXCLUDE_FOREIGN_KEYS.equals(exclude)) {
+                                        sendSchemaExcludeForeignKeys = true;
+                                    } else if (Constants.SEND_SCHEMA_EXCLUDE_DEFAULTS.equals(exclude)) {
+                                        sendSchemaExcludeDefaults = true;
+                                    }
+                                }
+                            }
 
-                            boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false);
-                            boolean excludeForeignKeys = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_FOREIGN_KEYS, false);
-                            boolean excludeIndexes = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_INDEXES, false);
+                            boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false) | sendSchemaExcludeDefaults;
+                            boolean excludeForeignKeys = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_FOREIGN_KEYS, false) | sendSchemaExcludeForeignKeys;
+                            boolean excludeIndexes = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_INDEXES, false) | sendSchemaExcludeIndices;
                             boolean deferConstraints = outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false);
                             
                             String[] pkData = data.getParsedData(CsvData.PK_DATA);
