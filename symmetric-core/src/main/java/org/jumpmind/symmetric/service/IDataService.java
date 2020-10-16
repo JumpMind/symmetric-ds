@@ -90,6 +90,9 @@ public interface IDataService {
 
     public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers);
 
+    public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData, 
+            Date minCreateTime, String winningNodeId);
+
     /**
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
      * 

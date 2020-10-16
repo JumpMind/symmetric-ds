@@ -40,6 +40,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -2010,21 +2011,23 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public long insertData(ISqlTransaction transaction, final Data data) {
-        long id = transaction.insertWithGeneratedKey(
-                getSql("insertIntoDataSql"),
-                symmetricDialect.getSequenceKeyName(SequenceIdentifier.DATA),
-                symmetricDialect.getSequenceName(SequenceIdentifier.DATA),
-                new Object[] {
-                        data.getTableName(),
-                        data.getDataEventType().getCode(),
-                        data.getRowData(),
-                        data.getPkData(),
-                        data.getOldData(),
-                        data.getTriggerHistory() != null ? data.getTriggerHistory()
-                                .getTriggerHistoryId() : -1, data.getChannelId(),
-                        data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0, data.getTransactionId() },
-                        new int[] { Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
-                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR });
+        String sql = getSql("insertIntoDataSql");
+        Object[] args = new Object[] { data.getTableName(), data.getDataEventType().getCode(), data.getRowData(),
+                data.getPkData(), data.getOldData(),
+                data.getTriggerHistory() != null ? data.getTriggerHistory().getTriggerHistoryId() : -1,
+                data.getChannelId(), data.getExternalData(), data.getNodeList(), data.isPreRouted() ? 1 : 0,
+                data.getTransactionId(), data.getSourceNodeId() };
+        int[] types = new int[] { Types.VARCHAR, Types.CHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR };
+
+        if (data.getCreateTime() != null) {
+            sql = sql.replace("current_timestamp", "?");
+            args = ArrayUtils.add(args, data.getCreateTime());
+            types = ArrayUtils.add(types, Types.TIMESTAMP);
+        }
+
+        long id = transaction.insertWithGeneratedKey(sql, symmetricDialect.getSequenceKeyName(SequenceIdentifier.DATA),
+                symmetricDialect.getSequenceName(SequenceIdentifier.DATA), args, types);
         data.setDataId(id);
         return id;
     }
@@ -2538,6 +2541,28 @@ public class DataService extends AbstractService implements IDataService {
         }
     }
 
+    public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData, 
+            Date minCreateTime, String winningNodeId) {
+
+        List<Data> datas = transaction.query(getSql("selectData", "whereNewerData"), getDataMapper(),
+                new Object[] { tableName, pkCsvData + "%", pkCsvData, minCreateTime },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP });
+
+        if (datas != null && datas.size() > 0) {
+            Data data = datas.get(0);
+            String dataNodeId = data.getSourceNodeId();
+            if (dataNodeId == null || dataNodeId.equals("")) {
+                dataNodeId = engine.getNodeId();
+            }
+
+            if (data.getCreateTime().getTime() > minCreateTime.getTime() || dataNodeId.hashCode() > winningNodeId.hashCode()) {
+                data.setNodeList(targetNodeId);
+                data.setChannelId(Constants.CHANNEL_RELOAD);
+                insertData(transaction, data);
+            }
+        }
+    }
+
     /**
      * Because we can't add a trigger on the _node table, we are artificially
      * generating heartbeat events.
@@ -2950,7 +2975,7 @@ public class DataService extends AbstractService implements IDataService {
     }
 
     public Data findData(long dataId) {
-        return sqlTemplateDirty.queryForObject(getSql("selectData"), new DataMapper(), dataId);       
+        return sqlTemplateDirty.queryForObject(getSql("selectData", "whereDataId"), new DataMapper(), dataId);       
     }
     
     public ISqlRowMapper<Data> getDataMapper() {

@@ -189,7 +189,12 @@ public class DataServiceSqlMap extends AbstractSqlMap {
         putSql("selectData",
             "select data_id, table_name, event_type, row_data, pk_data, old_data, " +
             "create_time, trigger_hist_id, channel_id, transaction_id, source_node_id, external_data, node_list, '' as router_id, is_prerouted " +
-            "from $(data) where data_id = ?");
+            "from $(data) ");
+        
+        putSql("whereDataId", "where data_id = ?");
+
+        putSql("whereNewerData", "where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
+                "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc");
 
         putSql("selectMaxDataEventDataIdSql", ""
                 + "select max(data_id) from $(data_event)   ");
@@ -199,7 +204,8 @@ public class DataServiceSqlMap extends AbstractSqlMap {
 
         putSql("insertIntoDataSql",
                 "insert into $(data) (data_id, table_name, event_type, row_data, pk_data, " +
-                "old_data, trigger_hist_id, channel_id, external_data, node_list, is_prerouted, transaction_id, create_time) values(null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
+                "old_data, trigger_hist_id, channel_id, external_data, node_list, is_prerouted, transaction_id, source_node_id, create_time) " +
+                "values (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)");
 
         putSql("insertIntoDataEventSql",
                 "insert into $(data_event) (data_id, batch_id, create_time) values(?, ?, current_timestamp)");

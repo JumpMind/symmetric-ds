@@ -67,6 +67,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
     protected Object next;
     protected Batch batch;
     protected String channelId;
+    protected String tableName;
     protected String sourceNodeId;
     protected String targetNodeId;
     protected BinaryEncoding binaryEncoding;
@@ -178,6 +179,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     if (createTime != null) {
                         data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, createTime);
                     }
+                    data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, channelId);
+                    data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, tableName);
+                    data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, sourceNodeId);
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.OLD)) {
@@ -202,6 +206,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     if (createTime != null) {
                         data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, createTime);
                     }
+                    data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, channelId);
+                    data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, tableName);
+                    data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, sourceNodeId);
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
@@ -213,6 +220,9 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     if (createTime != null) {
                         data.putAttribute(CsvData.ATTRIBUTE_CREATE_TIME, createTime);
                     }
+                    data.putAttribute(CsvData.ATTRIBUTE_CHANNEL_ID, channelId);
+                    data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, tableName);
+                    data.putAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID, sourceNodeId);
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.TIME)) {
@@ -251,7 +261,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     catalogName = tokens.length == 1 || StringUtils.isBlank(tokens[1]) ? null : tokens[1];
 
                 } else if (tokens[0].equals(CsvConstants.TABLE)) {
-                    String tableName = tokens[1];
+                    tableName = tokens[1];
                     table = context.getParsedTables().get(Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                     if (table != null) {
                         context.setLastParsedTable(table);
