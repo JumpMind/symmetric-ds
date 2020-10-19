@@ -22,40 +22,30 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jumpmind.vaadin.ui.common.AbbreviatorConverter;
+import org.apache.commons.lang.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.DurationConverter;
 import org.jumpmind.vaadin.ui.common.ResizableWindow;
 
-import com.vaadin.v7.data.util.BeanContainer;
-import com.vaadin.v7.data.util.filter.SimpleStringFilter;
-import com.vaadin.v7.event.FieldEvents.TextChangeEvent;
-import com.vaadin.v7.event.FieldEvents.TextChangeListener;
-import com.vaadin.v7.event.ItemClickEvent;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.v7.ui.Grid;
-import com.vaadin.v7.ui.Grid.HeaderCell;
-import com.vaadin.v7.ui.Grid.HeaderRow;
-import com.vaadin.v7.ui.Grid.RowDescriptionGenerator;
-import com.vaadin.v7.ui.Grid.RowReference;
-import com.vaadin.v7.ui.Grid.SelectionMode;
-import com.vaadin.v7.ui.TextField;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.v7.ui.renderers.DateRenderer;
+import com.vaadin.ui.components.grid.HeaderCell;
+import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class SqlHistoryDialog extends ResizableWindow {
 
     private static final long serialVersionUID = 1L;
 
-    private final Grid table;
+    private final Grid<SqlHistory> grid;
 
     private QueryPanel queryPanel;
 
@@ -74,86 +64,45 @@ public class SqlHistoryDialog extends ResizableWindow {
 
         final Set<SqlHistory> sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
 
-        table = new Grid();
+        grid = new Grid<SqlHistory>();
+        grid.setSelectionMode(SelectionMode.MULTI);
 
-        table.addColumn("sqlStatement", String.class).setHeaderCaption("SQL").setConverter(new AbbreviatorConverter(50));
+        grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setId("sqlStatement").setCaption("SQL");
 
-        table.addColumn("lastExecuteTime", Date.class).setHeaderCaption("Time").setWidth(150).setMaximumWidth(200)
-                .setRenderer(new DateRenderer("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS"));
+        grid.addColumn(history -> String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS", history.getLastExecuteTime()))
+                .setCaption("Time").setWidth(150).setMaximumWidth(200);
 
-        table.addColumn("lastExecuteDuration", Long.class).setHeaderCaption("Duration").setWidth(120).setConverter(new DurationConverter());
+        grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setCaption("Duration").setWidth(120);
 
-        table.addColumn("executeCount", Long.class).setHeaderCaption("Count").setWidth(120);
-        table.setEditorEnabled(false);
-        table.setSelectionMode(SelectionMode.MULTI);
-        table.setRowDescriptionGenerator(new RowDescriptionGenerator() {
+        grid.addColumn(history -> history.getExecuteCount()).setCaption("Count").setWidth(120);
+        
+        grid.setDescriptionGenerator(history -> history.getSqlStatement());
 
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public String getDescription(RowReference row) {
-                return (String) row.getItemId();
-            }
-        });
-        final BeanContainer<String, SqlHistory> container = new BeanContainer<String, SqlHistory>(SqlHistory.class);
-        container.setBeanIdProperty("sqlStatement");
-
-        HeaderRow filteringHeader = table.appendHeaderRow();
+        HeaderRow filteringHeader = grid.appendHeaderRow();
         HeaderCell logTextFilterCell = filteringHeader.getCell("sqlStatement");
         TextField filterField = new TextField();
-        filterField.setInputPrompt("Filter");
+        filterField.setPlaceholder("Filter");
         filterField.addStyleName(ValoTheme.TEXTFIELD_TINY);
         filterField.setWidth("100%");
 
         // Update filter When the filter input is changed
-        filterField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                // Can't modify filters so need to replace
-                container.removeContainerFilters("sqlStatement");
-
-                // (Re)create the filter if necessary
-                if (!event.getText().isEmpty()) {
-                    container.addContainerFilter(new SimpleStringFilter("sqlStatement", event.getText(), true, false));
-                }
-
-            }
-        });
+        filterField.addValueChangeListener(event -> filter(event.getValue()));
         logTextFilterCell.setComponent(filterField);
 
-        table.setContainerDataSource(container);
-
-        table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            public void itemClick(ItemClickEvent event) {
-                Object object = event.getPropertyId();
-                if (object != null && !object.toString().equals("")) {
-                    if (event.isDoubleClick()) {
-                        table.select(event.getItemId());
-                        select();
-                    } else {
-                        Object row = event.getItemId();
-                        if (!table.getSelectedRows().contains(row)) {
-                            table.select(row);
-                        } else {
-                            table.deselect(row);
-                        }
-                    }
-                }
+        grid.addItemClickListener(event -> {
+            grid.deselectAll();
+            grid.select(event.getItem());
+            if (event.getMouseEventDetails().isDoubleClick()) {
+                select();
             }
         });
 
-        table.setSizeFull();
+        grid.setSizeFull();
 
-        mainLayout.addComponent(table);
-        mainLayout.setExpandRatio(table, 1);
-
-        container.addAll(sqlHistories);
+        mainLayout.addComponent(grid);
+        mainLayout.setExpandRatio(grid, 1);
+        
+        grid.setItems(sqlHistories);
 
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickListener(new Button.ClickListener() {
@@ -177,14 +126,26 @@ public class SqlHistoryDialog extends ResizableWindow {
         addComponent(buildButtonFooter(cancelButton, applyButton));
 
     }
+    
+    private void filter(String filter) {
+        final Set<SqlHistory> histories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
+        List<SqlHistory> filteredHistories = new ArrayList<SqlHistory>();
+        for (SqlHistory history : histories) {
+            if (StringUtils.isBlank(filter) || history.getSqlStatement().toLowerCase().contains(filter.toLowerCase())) {
+                filteredHistories.add(history);
+            }
+        }
+        grid.setItems(filteredHistories);
+    }
 
     protected void select() {
-        List<Object> values = new ArrayList<Object>(table.getSelectedRows());
-        Collections.reverse(values);
-        if (values != null && values.size() > 0) {
+        List<SqlHistory> histories = new ArrayList<SqlHistory>(grid.getSelectedItems());
+        Collections.reverse(histories);
+        if (histories != null && histories.size() > 0) {
             String delimiter = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_DELIMITER);
-            for (Object sql : values) {
-                queryPanel.appendSql(sql + (sql.toString().trim().endsWith(delimiter) ? "" : delimiter));
+            for (SqlHistory history : histories) {
+                String sql = history.getSqlStatement();
+                queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
             }
             close();
         }

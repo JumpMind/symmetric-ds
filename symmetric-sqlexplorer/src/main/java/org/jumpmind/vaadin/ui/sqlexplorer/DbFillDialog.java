@@ -21,7 +21,6 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,19 +33,16 @@ import org.jumpmind.vaadin.ui.common.ConfirmDialog;
 import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 
-import com.vaadin.v7.data.Item;
-import com.vaadin.v7.event.FieldEvents.TextChangeEvent;
-import com.vaadin.v7.event.FieldEvents.TextChangeListener;
-import com.vaadin.v7.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.v7.ui.CheckBox;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.v7.ui.OptionGroup;
-import com.vaadin.v7.ui.TextField;
+import com.vaadin.ui.RadioButtonGroup;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -88,7 +84,7 @@ public class DbFillDialog extends ResizableWindow {
 
     private DbFill dbFill;
 
-    private OptionGroup oGroup;
+    private RadioButtonGroup<String> oGroup;
 
     private QueryPanel queryPanel;
 
@@ -210,77 +206,32 @@ public class DbFillDialog extends ResizableWindow {
 
         countField = new TextField("Count (# of rows to fill)");
         countField.setValue("1");
-        countField.setTextChangeEventMode(TextChangeEventMode.EAGER);
-        countField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                countField.setValue(event.getText());
-                fillButton.setEnabled(enableFillButton());
-            }
-        });
+        countField.setValueChangeMode(ValueChangeMode.EAGER);
+        countField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
         formLayout.addComponent(countField);
 
         intervalField = new TextField("Interval (ms)");
         intervalField.setValue("0");
-        intervalField.setTextChangeEventMode(TextChangeEventMode.EAGER);
-        intervalField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                intervalField.setValue(event.getText());
-                fillButton.setEnabled(enableFillButton());
-            }
-        });
+        intervalField.setValueChangeMode(ValueChangeMode.EAGER);
+        intervalField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
         formLayout.addComponent(intervalField);
 
         insertWeightField = new TextField("Insert Weight");
         insertWeightField.setValue("1");
-        insertWeightField.setTextChangeEventMode(TextChangeEventMode.EAGER);
-        insertWeightField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                insertWeightField.setValue(event.getText());
-                fillButton.setEnabled(enableFillButton());
-            }
-        });
+        insertWeightField.setValueChangeMode(ValueChangeMode.EAGER);
+        insertWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
         formLayout.addComponent(insertWeightField);
 
         updateWeightField = new TextField("Update Weight");
         updateWeightField.setValue("0");
-        updateWeightField.setTextChangeEventMode(TextChangeEventMode.EAGER);
-        updateWeightField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                updateWeightField.setValue(event.getText());
-                fillButton.setEnabled(enableFillButton());
-            }
-        });
+        updateWeightField.setValueChangeMode(ValueChangeMode.EAGER);
+        updateWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
         formLayout.addComponent(updateWeightField);
 
         deleteWeightField = new TextField("Delete Weight");
         deleteWeightField.setValue("0");
-        deleteWeightField.setTextChangeEventMode(TextChangeEventMode.EAGER);
-        deleteWeightField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                deleteWeightField.setValue(event.getText());
-                fillButton.setEnabled(enableFillButton());
-            }
-        });
+        deleteWeightField.setValueChangeMode(ValueChangeMode.EAGER);
+        deleteWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
         formLayout.addComponent(deleteWeightField);
 
         continueBox = new CheckBox("Continue (ignore ANY errors and continue to modify)");
@@ -303,11 +254,9 @@ public class DbFillDialog extends ResizableWindow {
         truncateBox.setValue(false);
         formLayout.addComponent(truncateBox);
         
-        oGroup = new OptionGroup();
-        oGroup.addItem("Fill Table(s)");
-        oGroup.addItem("Send to Sql Editor");
-        oGroup.select("Fill Table(s)");
-        oGroup.setNullSelectionAllowed(false);
+        oGroup = new RadioButtonGroup<String>();
+        oGroup.setItems("Fill Table(s)", "Send to Sql Editor");
+        oGroup.setSelectedItem("Fill Table(s)");
         formLayout.addComponent(oGroup);
 
     }
@@ -400,19 +349,7 @@ public class DbFillDialog extends ResizableWindow {
         return false;
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getSelectedTables() {
-        tableSelectionLayout.listOfTablesTable.commit();
-        List<String> select = new ArrayList<String>();
-        Collection<Object> itemIds = (Collection<Object>) tableSelectionLayout.listOfTablesTable
-                .getItemIds();
-        for (Object itemId : itemIds) {
-            Item item = tableSelectionLayout.listOfTablesTable.getItem(itemId);
-            CheckBox checkBox = (CheckBox) item.getItemProperty("selected").getValue();
-            if (checkBox.getValue().equals(Boolean.TRUE) && checkBox.isEnabled()) {
-                select.add((String) itemId);
-            }
-        }
-        return select;
+        return new ArrayList<String>(tableSelectionLayout.listOfTablesGrid.getSelectedItems());
     }
 }

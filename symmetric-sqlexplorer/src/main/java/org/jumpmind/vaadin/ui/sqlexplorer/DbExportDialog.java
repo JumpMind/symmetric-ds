@@ -24,6 +24,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -39,25 +41,21 @@ import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.v7.data.Property;
-import com.vaadin.v7.data.Property.ValueChangeEvent;
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.v7.ui.AbstractSelect;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.CheckBox;
-import com.vaadin.v7.ui.ComboBox;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.v7.ui.OptionGroup;
+import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
-@SuppressWarnings("deprecation")
 public class DbExportDialog extends ResizableWindow {
 
     private static final String EXPORT_TO_THE_SQL_EDITOR = "Export to the SQL Editor";
@@ -72,9 +70,9 @@ public class DbExportDialog extends ResizableWindow {
         SQL, XML, CSV, SYM_XML, CSV_DQUOTE;
     }
     
-    private AbstractSelect formatSelect;
+    private ComboBox<DbExportFormat> formatSelect;
 
-    private AbstractSelect compatibilitySelect;
+    private ComboBox<Compatible> compatibilitySelect;
 
     private CheckBox data;
 
@@ -114,7 +112,7 @@ public class DbExportDialog extends ResizableWindow {
 
     private DbExport dbExport;
 
-    private OptionGroup exportFormatOptionGroup;
+    private RadioButtonGroup<String> exportFormatOptionGroup;
 
     private QueryPanel queryPanel;
 
@@ -250,71 +248,47 @@ public class DbExportDialog extends ResizableWindow {
         optionLayout.addComponent(formLayout);
         optionLayout.setExpandRatio(formLayout, 1);
 
-        formatSelect = new ComboBox("Format");
-        formatSelect.setImmediate(true);
-        for (DbExportFormat format : DbExportFormat.values()) {
-            formatSelect.addItem(format);
-        }
-        formatSelect.setNullSelectionAllowed(false);
+        formatSelect = new ComboBox<DbExportFormat>("Format", Arrays.asList(DbExportFormat.values()));
+        formatSelect.setEmptySelectionAllowed(false);
         formatSelect.setValue(DbExportFormat.SQL);
-        formatSelect.addValueChangeListener(new Property.ValueChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                DbExportFormat format = (DbExportFormat) formatSelect.getValue();
-
-                switch (format) {
-                    case SQL:
-                        compatibilitySelect.setEnabled(true);
-                        compatibilitySelect.setNullSelectionAllowed(false);
-                        setDefaultCompatibility();
-                        data.setEnabled(true);
-                        foreignKeys.setEnabled(true);
-                        indices.setEnabled(true);
-                        quotedIdentifiers.setEnabled(true);
-                        break;
-                    case XML:
-                        compatibilitySelect.setEnabled(false);
-                        compatibilitySelect.setNullSelectionAllowed(true);
-                        compatibilitySelect.setValue(null);
-                        data.setEnabled(true);
-                        foreignKeys.setEnabled(true);
-                        indices.setEnabled(true);
-                        quotedIdentifiers.setEnabled(true);
-                        break;
-                    case CSV:
-                    case CSV_DQUOTE:
-                        compatibilitySelect.setEnabled(false);
-                        compatibilitySelect.setNullSelectionAllowed(true);
-                        compatibilitySelect.setValue(null);
-                        data.setEnabled(false);
-                        foreignKeys.setEnabled(false);
-                        indices.setEnabled(false);
-                        quotedIdentifiers.setEnabled(false);
-                        break;
-                    case SYM_XML:
-                        compatibilitySelect.setEnabled(false);
-                        compatibilitySelect.setNullSelectionAllowed(true);
-                        compatibilitySelect.setValue(null);
-                        data.setEnabled(false);
-                        foreignKeys.setEnabled(false);
-                        indices.setEnabled(false);
-                        quotedIdentifiers.setEnabled(false);
-                        break;
-                }
+        formatSelect.addValueChangeListener(event -> {
+            switch (formatSelect.getValue()) {
+                case SQL:
+                    compatibilitySelect.setEnabled(true);
+                    compatibilitySelect.setEmptySelectionAllowed(false);
+                    setDefaultCompatibility();
+                    data.setEnabled(true);
+                    foreignKeys.setEnabled(true);
+                    indices.setEnabled(true);
+                    quotedIdentifiers.setEnabled(true);
+                    break;
+                case XML:
+                    compatibilitySelect.setEnabled(false);
+                    compatibilitySelect.setEmptySelectionAllowed(true);
+                    compatibilitySelect.setValue(null);
+                    data.setEnabled(true);
+                    foreignKeys.setEnabled(true);
+                    indices.setEnabled(true);
+                    quotedIdentifiers.setEnabled(true);
+                    break;
+                case CSV:
+                case CSV_DQUOTE:
+                case SYM_XML:
+                    compatibilitySelect.setEnabled(false);
+                    compatibilitySelect.setEmptySelectionAllowed(true);
+                    compatibilitySelect.setValue(null);
+                    data.setEnabled(false);
+                    foreignKeys.setEnabled(false);
+                    indices.setEnabled(false);
+                    quotedIdentifiers.setEnabled(false);
             }
         });
-        formatSelect.select(DbExportFormat.SQL);
+        formatSelect.setSelectedItem(DbExportFormat.SQL);
         formLayout.addComponent(formatSelect);
 
-        compatibilitySelect = new ComboBox("Compatibility");
-        for (Compatible compatability : Compatible.values()) {
-            compatibilitySelect.addItem(compatability);
-        }
+        compatibilitySelect = new ComboBox<Compatible>("Compatibility", Arrays.asList(Compatible.values()));
 
-        compatibilitySelect.setNullSelectionAllowed(false);
+        compatibilitySelect.setEmptySelectionAllowed(false);
         setDefaultCompatibility();
         formLayout.addComponent(compatibilitySelect);
 
@@ -342,22 +316,15 @@ public class DbExportDialog extends ResizableWindow {
         whereClauseField.setRows(2);
         formLayout.addComponent(whereClauseField);
 
-        exportFormatOptionGroup = new OptionGroup("Export Format");
-        exportFormatOptionGroup.setImmediate(true);
-        exportFormatOptionGroup.addItem(EXPORT_AS_A_FILE);
+        exportFormatOptionGroup = new RadioButtonGroup<String>("Export Format");
+        List<String> formatList = new ArrayList<String>();
+        formatList.add(EXPORT_AS_A_FILE);
         if (queryPanel != null) {
-           exportFormatOptionGroup.addItem(EXPORT_TO_THE_SQL_EDITOR);
+           formatList.add(EXPORT_TO_THE_SQL_EDITOR);
         }
+        exportFormatOptionGroup.setItems(formatList);
         exportFormatOptionGroup.setValue(EXPORT_AS_A_FILE);
-        exportFormatOptionGroup.addValueChangeListener(new Property.ValueChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                setExportButtonsEnabled();
-            }
-        });
+        exportFormatOptionGroup.addValueChangeListener(event -> setExportButtonsEnabled());
         formLayout.addComponent(exportFormatOptionGroup);
 
     }

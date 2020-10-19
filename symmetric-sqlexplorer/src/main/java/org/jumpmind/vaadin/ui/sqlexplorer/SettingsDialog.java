@@ -35,13 +35,16 @@ import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.data.Binder;
+import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.v7.ui.TextField;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -52,6 +55,8 @@ public class SettingsDialog extends ResizableWindow {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private TextField rowsToFetchField;
+    
+    private Binder<Integer> binder;
 
     private CheckBox autoCommitBox;
 
@@ -93,9 +98,10 @@ public class SettingsDialog extends ResizableWindow {
         TypedProperties properties = settings.getProperties();
 
         rowsToFetchField = new TextField("Max Results");
-        rowsToFetchField.setColumns(6);
-        rowsToFetchField.setValidationVisible(true);
-        rowsToFetchField.setConverter(Integer.class);
+        rowsToFetchField.setWidth(6, Unit.EM);
+        binder = new Binder<Integer>();
+        binder.forField(rowsToFetchField).withConverter(new StringToIntegerConverter("Could not convert value to Integer"))
+                .withValidator(value -> value != null, "Invalid value").bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
         settingsLayout.addComponent(rowsToFetchField);
 
@@ -171,34 +177,40 @@ public class SettingsDialog extends ResizableWindow {
             private static final long serialVersionUID = 1L;
 
             public void buttonClick(ClickEvent event) {
-                save();
-                UI.getCurrent().removeWindow(SettingsDialog.this);
+                if (save()) {
+                    UI.getCurrent().removeWindow(SettingsDialog.this);
+                }
             }
         });
 
         return buildButtonFooter(new Button("Cancel", new CloseButtonListener()), saveButton);
     }
 
-    protected void save() {
-        Settings settings = settingsProvider.get();
-        TypedProperties properties = settings.getProperties();
-
-        try {
-            rowsToFetchField.validate();
-            properties.setProperty(SQL_EXPLORER_MAX_RESULTS, new DecimalFormat().parse(rowsToFetchField.getValue()).intValue());
-            properties.setProperty(SQL_EXPLORER_AUTO_COMMIT, String.valueOf(autoCommitBox.getValue()));
-            properties.setProperty(SQL_EXPLORER_AUTO_COMPLETE, String.valueOf(autoCompleteBox.getValue()));
-            properties.setProperty(SQL_EXPLORER_DELIMITER, delimiterField.getValue());
-            properties.setProperty(SQL_EXPLORER_RESULT_AS_TEXT, String.valueOf(resultAsTextBox.getValue()));
-            properties.setProperty(SQL_EXPLORER_SHOW_ROW_NUMBERS, String.valueOf(showRowNumbersBox.getValue()));
-            properties.setProperty(SQL_EXPLORER_EXCLUDE_TABLES_REGEX, excludeTablesWithPrefixField.getValue());
-            properties.setProperty(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS, String.valueOf(ignoreErrorsWhenRunningScript.getValue()));
-            properties.setProperty(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS, String.valueOf(showResultsInNewTabsBox.getValue()));
-            settingsProvider.save(settings);
-            explorer.refreshQueryPanels();
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
-            CommonUiUtils.notify(ex);
+    protected boolean save() {
+        if (binder.validate().isOk()) {
+            Settings settings = settingsProvider.get();
+            TypedProperties properties = settings.getProperties();
+            
+            try {
+                properties.setProperty(SQL_EXPLORER_MAX_RESULTS, new DecimalFormat().parse(rowsToFetchField.getValue()).intValue());
+                properties.setProperty(SQL_EXPLORER_AUTO_COMMIT, String.valueOf(autoCommitBox.getValue()));
+                properties.setProperty(SQL_EXPLORER_AUTO_COMPLETE, String.valueOf(autoCompleteBox.getValue()));
+                properties.setProperty(SQL_EXPLORER_DELIMITER, delimiterField.getValue());
+                properties.setProperty(SQL_EXPLORER_RESULT_AS_TEXT, String.valueOf(resultAsTextBox.getValue()));
+                properties.setProperty(SQL_EXPLORER_SHOW_ROW_NUMBERS, String.valueOf(showRowNumbersBox.getValue()));
+                properties.setProperty(SQL_EXPLORER_EXCLUDE_TABLES_REGEX, excludeTablesWithPrefixField.getValue());
+                properties.setProperty(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS, String.valueOf(ignoreErrorsWhenRunningScript.getValue()));
+                properties.setProperty(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS, String.valueOf(showResultsInNewTabsBox.getValue()));
+                settingsProvider.save(settings);
+                explorer.refreshQueryPanels();
+                return true;
+            } catch (Exception ex) {
+                log.error(ex.getMessage(), ex);
+                CommonUiUtils.notify(ex);
+                return false;
+            }
         }
+        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", Type.WARNING_MESSAGE);
+        return false;
     }
 }

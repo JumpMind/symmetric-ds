@@ -23,48 +23,39 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.UiConstants;
-
-import com.vaadin.server.FontAwesome;
+import com.vaadin.data.provider.Query;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.themes.ValoTheme;
-import com.vaadin.v7.data.Item;
-import com.vaadin.v7.data.Property;
-import com.vaadin.v7.data.Property.ValueChangeEvent;
-import com.vaadin.v7.event.FieldEvents.TextChangeEvent;
-import com.vaadin.v7.event.FieldEvents.TextChangeListener;
-import com.vaadin.v7.event.ItemClickEvent;
-import com.vaadin.v7.event.ItemClickEvent.ItemClickListener;
-import com.vaadin.v7.ui.AbstractSelect;
-import com.vaadin.v7.ui.AbstractTextField.TextChangeEventMode;
-import com.vaadin.v7.ui.CheckBox;
-import com.vaadin.v7.ui.ComboBox;
-import com.vaadin.v7.ui.Table;
-import com.vaadin.v7.ui.TextField;
+import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.TextField;
 
 public class TableSelectionLayout extends VerticalLayout {
 
     private Set<org.jumpmind.db.model.Table> selectedTablesSet;
+    
+    private final Set<org.jumpmind.db.model.Table> originalSelectedTablesSet;
 
     private static final long serialVersionUID = 1L;
+    
+    public Grid<String> listOfTablesGrid;
 
-    public Table listOfTablesTable;
+    public ComboBox<String> catalogSelect;
 
-    public AbstractSelect catalogSelect;
-
-    public AbstractSelect schemaSelect;
+    public ComboBox<String> schemaSelect;
 
     @SuppressWarnings("unused")
     private String filterCriteria = null;
@@ -95,6 +86,7 @@ public class TableSelectionLayout extends VerticalLayout {
         this.setSpacing(true);
 
         this.selectedTablesSet = selectedSet;
+        this.originalSelectedTablesSet = selectedSet;
         this.databasePlatform = databasePlatform;
         this.excludedTables = excludedTables;
         this.excludeTablesRegex = excludeTablesRegex;
@@ -111,23 +103,19 @@ public class TableSelectionLayout extends VerticalLayout {
         schemaChooserLayout.setSpacing(true);
         this.addComponent(schemaChooserLayout);
 
-        catalogSelect = new ComboBox("Catalog");
-        catalogSelect.setImmediate(true);
-        CommonUiUtils.addItems(getCatalogs(), catalogSelect);
+        catalogSelect = new ComboBox<String>("Catalog", getCatalogs());
         schemaChooserLayout.addComponent(catalogSelect);
         if (selectedTablesSet.iterator().hasNext()) {
-            catalogSelect.select(selectedTablesSet.iterator().next().getCatalog());
+            catalogSelect.setSelectedItem(selectedTablesSet.iterator().next().getCatalog());
         } else {
-            catalogSelect.select(databasePlatform.getDefaultCatalog());
+            catalogSelect.setSelectedItem(databasePlatform.getDefaultCatalog());
         }
-        schemaSelect = new ComboBox("Schema");
-        schemaSelect.setImmediate(true);
-        CommonUiUtils.addItems(getSchemas(), schemaSelect);
+        schemaSelect = new ComboBox<String>("Schema", getSchemas());
         schemaChooserLayout.addComponent(schemaSelect);
         if (selectedTablesSet.iterator().hasNext()) {
-            schemaSelect.select(selectedTablesSet.iterator().next().getSchema());
+            schemaSelect.setSelectedItem(selectedTablesSet.iterator().next().getSchema());
         } else {
-            schemaSelect.select(databasePlatform.getDefaultSchema());
+            schemaSelect.setSelectedItem(databasePlatform.getDefaultSchema());
         }
 
         Label spacer = new Label();
@@ -136,58 +124,41 @@ public class TableSelectionLayout extends VerticalLayout {
 
         filterField = new TextField();
         filterField.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
-        filterField.setIcon(FontAwesome.SEARCH);
-        filterField.setInputPrompt("Filter Tables");
-        filterField.setNullRepresentation("");
-        filterField.setImmediate(true);
-        filterField.setTextChangeEventMode(TextChangeEventMode.LAZY);
-        filterField.setTextChangeTimeout(200);
-        filterField.addTextChangeListener(new TextChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void textChange(TextChangeEvent event) {
-                filterField.setValue(event.getText());
-                refreshTableOfTables();
-            }
+        filterField.setIcon(VaadinIcons.SEARCH);
+        filterField.setPlaceholder("Filter Tables");
+        filterField.setValueChangeTimeout(200);
+        filterField.addValueChangeListener(event -> {
+            filterField.setValue(event.getValue());
+            refreshTableOfTables();
         });
 
         schemaChooserLayout.addComponent(filterField);
         schemaChooserLayout.setComponentAlignment(filterField, Alignment.BOTTOM_RIGHT);
-
-        listOfTablesTable = CommonUiUtils.createTable();
-        listOfTablesTable.setImmediate(true);
-        listOfTablesTable.addItemClickListener(new ItemClickListener() {            
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void itemClick(ItemClickEvent event) {
-                CheckBox checkBox = (CheckBox)event.getItem().getItemProperty("selected").getValue();
-                checkBox.setValue(!checkBox.getValue());
-            }
+        
+        listOfTablesGrid = new Grid<String>();
+        listOfTablesGrid.setSizeFull();
+        listOfTablesGrid.setSelectionMode(SelectionMode.MULTI);
+        listOfTablesGrid.addItemClickListener(event -> {
+           listOfTablesGrid.deselectAll();
+           listOfTablesGrid.select(event.getItem());
         });
-        listOfTablesTable.addContainerProperty("selected", CheckBox.class, null);
-        listOfTablesTable.setColumnWidth("selected", UiConstants.TABLE_SELECTED_COLUMN_WIDTH);
-        listOfTablesTable.setColumnHeader("selected", "");
-        listOfTablesTable.addContainerProperty("table", String.class, null);
-        listOfTablesTable.setColumnHeader("table", "");
-        listOfTablesTable.setSizeFull();
-        this.addComponent(listOfTablesTable);
-        this.setExpandRatio(listOfTablesTable, 1);
-
-        schemaSelect.addValueChangeListener(new Property.ValueChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void valueChange(ValueChangeEvent event) {
-                refreshTableOfTables();
+        listOfTablesGrid.addSelectionListener(event -> {
+            selectedTablesSet.clear();
+            selectedTablesSet.addAll(originalSelectedTablesSet);
+            for (String table : listOfTablesGrid.getSelectedItems()){
+                selectedTablesSet.add(new org.jumpmind.db.model.Table(table));
             }
+            selectionChanged();
         });
+        
+        listOfTablesGrid.addColumn(table -> table);
+        
+        this.addComponent(listOfTablesGrid);
+        this.setExpandRatio(listOfTablesGrid, 1);
 
-        catalogSelect.addValueChangeListener(new Property.ValueChangeListener() {
-            private static final long serialVersionUID = 1L;
+        schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
 
-            public void valueChange(ValueChangeEvent event) {
-                refreshTableOfTables();
-            }
-        });
+        catalogSelect.addValueChangeListener(event -> refreshTableOfTables());
 
         Button selectAllLink = new Button("Select All");
         selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
@@ -229,93 +200,42 @@ public class TableSelectionLayout extends VerticalLayout {
     }
 
     protected void refreshTableOfTables() {
-        listOfTablesTable.removeAllItems();
         List<String> tables = getTables();
         String filter = filterField.getValue();
+        List<String> filteredTables = new ArrayList<String>();
 
         for (String table : tables) {
             if ((excludedTables == null || !excludedTables.contains(table.toLowerCase())) && display(getSelectedCatalog(), getSelectedSchema(), table)) {
                 if (!filter.equals("")) {
                     if (containsIgnoreCase(table, filter)) {
-                        populateTable(table);
+                        filteredTables.add(table);
                     }
                 } else {
-                    populateTable(table);
+                    filteredTables.add(table);
                 }
             }
         }
-    }
-
-    private void populateTable(final String table) {
-        final CheckBox checkBox = new CheckBox();
-        checkBox.setValue(select(getSelectedCatalog(), getSelectedSchema(), table));
-        listOfTablesTable.addItem(new Object[] { checkBox, table }, table);
-        checkBox.addValueChangeListener(new Property.ValueChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void valueChange(ValueChangeEvent event) {
-                if (checkBox.getValue()) {
-                    org.jumpmind.db.model.Table t = new org.jumpmind.db.model.Table(table);
-                    selectedTablesSet.add(t);
-                } else {
-                    Iterator<org.jumpmind.db.model.Table> selectedIterator = selectedTablesSet
-                            .iterator();
-                    boolean notFound = true;
-                    while (selectedIterator.hasNext() || notFound) {
-                        if (selectedIterator.next().getName().equals(table)) {
-                            selectedIterator.remove();
-                            notFound = false;
-                        }
-                    }
-                }
-                selectionChanged();
-            }
-        });
+        listOfTablesGrid.setItems(filteredTables);
     }
 
     protected void selectionChanged() {
 
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getSelectedTables() {
-        listOfTablesTable.commit();
-        List<String> select = new ArrayList<String>();
-        Collection<Object> itemIds = (Collection<Object>) listOfTablesTable.getItemIds();
-        for (Object itemId : itemIds) {
-            Item item = listOfTablesTable.getItem(itemId);
-            CheckBox checkBox = (CheckBox) item.getItemProperty("selected").getValue();
-            if (checkBox.getValue().equals(Boolean.TRUE) && checkBox.isEnabled()) {
-                select.add((String) itemId);
-            }
-        }
-        return select;
+        return new ArrayList<String>(listOfTablesGrid.getSelectedItems());
     }
 
     public void selectAll() {
-        @SuppressWarnings("unchecked")
-        Collection<Object> itemIds = (Collection<Object>) listOfTablesTable.getItemIds();
-        for (Object itemId : itemIds) {
-            Item item = listOfTablesTable.getItem(itemId);
-            CheckBox checkBox = (CheckBox) item.getItemProperty("selected").getValue();
-            if (checkBox.isEnabled()) {
-                checkBox.setValue(Boolean.TRUE);
-            }
+        for (String table : listOfTablesGrid.getDataProvider().fetch(new Query<>()).collect(Collectors.toList())) {
+            listOfTablesGrid.select(table);
         }
+        selectionChanged();
     }
 
     public void selectNone() {
-        @SuppressWarnings("unchecked")
-        Collection<Object> itemIds = (Collection<Object>) listOfTablesTable.getItemIds();
-        for (Object itemId : itemIds) {
-            Item item = listOfTablesTable.getItem(itemId);
-            CheckBox checkBox = (CheckBox) item.getItemProperty("selected").getValue();
-            if (checkBox.isEnabled()) {
-                checkBox.setValue(Boolean.FALSE);
-            }
-        }
+        listOfTablesGrid.deselectAll();
+        selectionChanged();
     }
 
     public List<String> getSchemas() {

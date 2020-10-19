@@ -37,8 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.VaadinSession;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
@@ -150,7 +149,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         p.setIndeterminate(true);
         executingLayout.addComponent(p);
         executingLayout.setData(isInit);
-        tabSheet.addTab(executingLayout, "Data", isInit ? null : FontAwesome.SPINNER, 1);
+        tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcons.SPINNER, 1);
         if (!isInit) {
             tabSheet.setSelectedTab(executingLayout);
         }
@@ -171,7 +170,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                     }
 
                     @Override
-                    public void finished(final FontAwesome icon, final List<Component> results,
+                    public void finished(final VaadinIcons icon, final List<Component> results,
                             long executionTimeInMs, boolean transactionStarted,
                             boolean transactionEnded) {
                         TableInfoPanel.this.getUI().access(new Runnable() {

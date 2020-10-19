@@ -64,7 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.contextmenu.ContextMenu;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
@@ -92,12 +92,12 @@ import com.vaadin.v7.data.util.converter.StringToBooleanConverter;
 import com.vaadin.v7.data.util.converter.StringToLongConverter;
 import com.vaadin.v7.event.ItemClickEvent;
 import com.vaadin.v7.event.ItemClickEvent.ItemClickListener;
-import com.vaadin.v7.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.v7.ui.CustomField;
 import com.vaadin.v7.ui.Grid;
 import com.vaadin.v7.ui.Grid.CellReference;
 import com.vaadin.v7.ui.Grid.CellStyleGenerator;
-import com.vaadin.v7.ui.Label;
+import com.vaadin.ui.Label;
 import com.vaadin.v7.ui.TextField;
 
 public class TabularResultLayout extends VerticalLayout {
@@ -332,7 +332,7 @@ public class TabularResultLayout extends VerticalLayout {
                 listener.reExecute(sql);
             }
         });
-        refreshButton.setIcon(FontAwesome.REFRESH);
+        refreshButton.setIcon(VaadinIcons.REFRESH);
         refreshButton.setDescription("Refresh");
         
         MenuBar.MenuItem exportButton = rightBar.addItem("", new Command() {
@@ -351,7 +351,7 @@ public class TabularResultLayout extends VerticalLayout {
 
             }
         });
-        exportButton.setIcon(FontAwesome.UPLOAD);
+        exportButton.setIcon(VaadinIcons.UPLOAD);
         exportButton.setDescription("Export Results");
 
         if (isInQueryGeneralResults) {
@@ -365,7 +365,7 @@ public class TabularResultLayout extends VerticalLayout {
                     queryPanel.resetGeneralResultsTab();
                 }
             });
-            keepResultsButton.setIcon(FontAwesome.CLONE);
+            keepResultsButton.setIcon(VaadinIcons.COPY);
             keepResultsButton.setDescription("Save these results to a new tab");
         }
 
