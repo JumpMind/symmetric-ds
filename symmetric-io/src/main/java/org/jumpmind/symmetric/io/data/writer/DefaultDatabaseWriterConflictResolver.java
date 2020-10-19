@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
@@ -132,19 +132,28 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
 
-            // make sure we lock the row that is in conflict to prevent a race with other data loading
-            DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
-                    targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(), 
-                    new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
-            databaseWriter.getTransaction(targetTable.getName()).prepareAndExecute(st.getSql(), (Object[]) ArrayUtils.addAll(pkData, pkData));
+            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+                // make sure we lock the row that is in conflict to prevent a race with other data loading
+                DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
+                        targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(), 
+                        new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
+                databaseWriter.getTransaction(targetTable.getName()).prepareAndExecute(st.getSql(), (Object[]) ArrayUtils.addAll(pkData, pkData));
+            }
 
             String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() + 
                     "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
                     "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc";
             
-            // we may have waited for another transaction to commit, so query with a new transaction
-            List<Row> rows = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplate().query(sql,
-                    new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs });
+            Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs };
+            List<Row> rows = null;
+
+            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+                // we may have waited for another transaction to commit, so query with a new transaction
+                rows = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplate().query(sql, args);
+            } else {
+                writer.getContext().findTransaction().queryForRow(sql, args);
+            }
+
             if (rows != null && rows.size() > 0) {
                 existingTs = rows.get(0).getDateTime("create_time");
                 existingNodeId = rows.get(0).getString("source_node_id");

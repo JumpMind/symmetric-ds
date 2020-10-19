@@ -29,14 +29,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemOptions;
-import org.apache.commons.vfs.Selectors;
-import org.apache.commons.vfs.impl.StandardFileSystemManager;
-import org.apache.commons.vfs.provider.ftp.FtpFileSystemConfigBuilder;
-import org.apache.commons.vfs.provider.sftp.SftpFileSystemConfigBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.FileSystemOptions;
+import org.apache.commons.vfs2.Selectors;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -81,7 +82,7 @@ public class FtpDataWriter implements IDataWriter {
 
     protected Map<String, FileInfo> fileInfoByTable = new HashMap<String, FtpDataWriter.FileInfo>();
 
-    protected StandardFileSystemManager manager = new StandardFileSystemManager();
+    protected FileSystemManager manager;
 
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
@@ -115,7 +116,7 @@ public class FtpDataWriter implements IDataWriter {
 
     public void open(DataContext context) {
         try {
-            manager.init();
+            manager = VFS.getManager();
         } catch (FileSystemException e) {
             throw new IoException(e);
         }
@@ -220,7 +221,7 @@ public class FtpDataWriter implements IDataWriter {
                 FileSystemOptions opts = new FileSystemOptions();
                 FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, true);
                 SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-                SftpFileSystemConfigBuilder.getInstance().setTimeout(opts, 60000);
+                SftpFileSystemConfigBuilder.getInstance().setSessionTimeoutMillis(opts, 60000);
 
                 Collection<FileInfo> fileInfos = fileInfoByTable.values();
                 for (FileInfo fileInfo : fileInfos) {

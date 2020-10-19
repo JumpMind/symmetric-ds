@@ -32,10 +32,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+import java.util.Objects;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Level;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -292,7 +292,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         if (getServer().getSymmetricDialect().isBlobSyncSupported()) {
             byte[] data = clientTestService.getCustomerIcon(101);
             assertTrue("The BLOB icon field on customer was not sync'd to the client",
-                    ArrayUtils.isEquals(data, BIG_BINARY));
+                    Objects.deepEquals(data, BIG_BINARY));
         }
 
     }

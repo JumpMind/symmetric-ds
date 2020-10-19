@@ -20,7 +20,7 @@
  */
 package org.jumpmind.properties;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -37,8 +37,8 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,7 +175,7 @@ public class DefaultParameterParser {
                     writer.write("<listitem><para>"
                             + parm.getDescription()
                             + " [ Default: "
-                            + (parm.isXmlType() ? StringEscapeUtils.escapeXml(parm
+                            + (parm.isXmlType() ? StringEscapeUtils.escapeXml10(parm
                                     .getDefaultValue()) : parm.getDefaultValue())
                             + " ]</para></listitem>\n</varlistentry>\n");
                 } else {

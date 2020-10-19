@@ -34,8 +34,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -641,7 +641,7 @@ public class DbExport {
                     for (int i = 0; i < columns.length; i++) {
                         if (values[i] != null) {
                             write("\t\t<field name=\"", columns[i].getName(), "\">",
-                                    StringEscapeUtils.escapeXml(values[i]), "</field>\n");
+                                    StringEscapeUtils.escapeXml10(values[i]), "</field>\n");
                         } else {
                             write("\t\t<field name=\"", columns[i].getName(),
                                     "\" xsi:nil=\"true\" />\n");
@@ -654,7 +654,7 @@ public class DbExport {
                     for (int i = 0; i < columns.length; i++) {
                         if (values[i] != null) {
                             write("\t\t<data key=\"", columns[i].getName(), "\">",
-                                    StringEscapeUtils.escapeXml(values[i]), "</data>\n");
+                                    StringEscapeUtils.escapeXml10(values[i]), "</data>\n");
                         } else {
                             write("\t\t<data key=\"", columns[i].getName(),
                                     "\" xsi:nil=\"true\" />\n");

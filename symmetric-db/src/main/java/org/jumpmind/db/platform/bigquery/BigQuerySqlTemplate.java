@@ -1,6 +1,6 @@
 package org.jumpmind.db.platform.bigquery;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.FileInputStream;
 import java.util.UUID;

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;

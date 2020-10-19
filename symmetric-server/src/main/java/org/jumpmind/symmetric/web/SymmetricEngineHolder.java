@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.properties.SortedProperties;

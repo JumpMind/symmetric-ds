@@ -22,7 +22,6 @@ package org.jumpmind.symmetric.map;
 
 import java.util.List;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.ext.INodeGroupExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -85,7 +84,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                                 // readable
                                 Throwable causedBy = ex;
                                 do {
-                                    causedBy = ExceptionUtils.getCause(causedBy);
+                                    causedBy = ex.getCause();
                                     if (causedBy instanceof ScriptCompilationException) {
                                         log.error("{}", causedBy.getMessage());
                                         throw new RuntimeException(causedBy.getMessage());

@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.db.interbase;
 import java.sql.Types;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.TypeMap;

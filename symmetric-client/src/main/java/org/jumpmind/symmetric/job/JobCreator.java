@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.job;
 
 import java.lang.reflect.Constructor;
 
-import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.model.JobDefinition;

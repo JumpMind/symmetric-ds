@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.sql.AbstractSqlTemplate;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlResultsListener;

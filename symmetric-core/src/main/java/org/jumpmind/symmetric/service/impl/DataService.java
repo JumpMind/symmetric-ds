@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.nio.charset.Charset;
 import java.sql.DataTruncation;
@@ -36,15 +36,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -1117,12 +1117,11 @@ public class DataService extends AbstractService implements IDataService {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     protected Map<String, TableReloadRequest> convertReloadListToMap(List<TableReloadRequest> reloadRequests, List<TriggerRouter> triggerRouters, boolean isFullLoad, boolean isChannelLoad) {
         if (reloadRequests == null) {
             return null;
         }
-        Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap();
+        Map<String, TableReloadRequest> reloadMap = new CaseInsensitiveMap<String, TableReloadRequest>();
         for (TableReloadRequest reloadRequest : reloadRequests) {
             if (!isFullLoad && !isChannelLoad) {
                 validate(reloadRequest, triggerRouters);
@@ -1135,8 +1134,8 @@ public class DataService extends AbstractService implements IDataService {
     protected void validate(TableReloadRequest reloadRequest, List<TriggerRouter> triggerRouters) {
         boolean validMatch = false;
         for (TriggerRouter triggerRouter : triggerRouters) {
-            if (ObjectUtils.equals(triggerRouter.getTriggerId(), reloadRequest.getTriggerId())
-                    && ObjectUtils.equals(triggerRouter.getRouterId(), reloadRequest.getRouterId())) {
+            if (Objects.equals(triggerRouter.getTriggerId(), reloadRequest.getTriggerId())
+                    && Objects.equals(triggerRouter.getRouterId(), reloadRequest.getRouterId())) {
                 validMatch = true;
                 break;
             }
@@ -1178,7 +1177,7 @@ public class DataService extends AbstractService implements IDataService {
                 java.io.StringWriter ow = new java.io.StringWriter();
                 IOUtils.copy(is, ow, Charset.defaultCharset());
                 String output = ow.toString();
-                output = StringEscapeUtils.escapeJavaScript(output);
+                output = StringEscapeUtils.escapeEcmaScript(output);
                 
                 String script = IOUtils.toString(getClass().getResourceAsStream("/load-schema-at-target.bsh"), Charset.defaultCharset());
                 script = script.replace("${data}", output);

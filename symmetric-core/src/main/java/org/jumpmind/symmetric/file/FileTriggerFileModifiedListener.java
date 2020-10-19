@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.model.FileSnapshot;
 import org.jumpmind.symmetric.model.FileSnapshot.LastEventType;

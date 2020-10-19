@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.io.data.writer;
 
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;

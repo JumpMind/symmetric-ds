@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;

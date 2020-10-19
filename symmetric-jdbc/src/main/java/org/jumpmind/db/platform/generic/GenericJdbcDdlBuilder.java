@@ -1,6 +1,6 @@
 package org.jumpmind.db.platform.generic;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

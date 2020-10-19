@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.writer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter.LoadStatus;

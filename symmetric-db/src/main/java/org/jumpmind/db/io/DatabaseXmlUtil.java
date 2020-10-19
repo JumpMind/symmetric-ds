@@ -19,7 +19,7 @@ package org.jumpmind.db.io;
  * under the License.
  */
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,8 +36,8 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.CompressionTypes;
 import org.jumpmind.db.model.Database;
@@ -503,14 +503,14 @@ public class DatabaseXmlUtil {
     public static void write(Table table, Writer output) {
 
         try {
-            output.write("\t<table name=\"" + StringEscapeUtils.escapeXml(table.getName()) + "\"");
+            output.write("\t<table name=\"" + StringEscapeUtils.escapeXml10(table.getName()) + "\"");
             if (table.getCompressionType() != CompressionTypes.NONE) {
                 output.write(" compression=\"" + table.getCompressionType().name() + "\"");
             }
             output.write(">\n");
 
             for (Column column : table.getColumns()) {
-                output.write("\t\t<column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"");
+                output.write("\t\t<column name=\"" + StringEscapeUtils.escapeXml10(column.getName()) + "\"");
                 if (column.isPrimaryKey()) {
                     output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
                     output.write(" primaryKeySeq=\"" + column.getPrimaryKeySequence() + "\"");
@@ -530,7 +530,7 @@ public class DatabaseXmlUtil {
                     output.write(" size=\"" + column.getSize() + "\"");
                 }
                 if (column.getDefaultValue() != null) {
-                    output.write(" default=\"" + StringEscapeUtils.escapeXml(column.getDefaultValue()) + "\"");
+                    output.write(" default=\"" + StringEscapeUtils.escapeXml10(column.getDefaultValue()) + "\"");
                 }
                 if (column.isAutoIncrement()) {
                     output.write(" autoIncrement=\"" + column.isAutoIncrement() + "\"");
@@ -559,7 +559,7 @@ public class DatabaseXmlUtil {
                             }
                             
                             if (platformColumn.getDefaultValue() != null) {
-                                output.write(" default=\"" + StringEscapeUtils.escapeXml(platformColumn.getDefaultValue()) + "\"");
+                                output.write(" default=\"" + StringEscapeUtils.escapeXml10(platformColumn.getDefaultValue()) + "\"");
                             }
                             if(platformColumn.getEnumValues() != null && platformColumn.getEnumValues().length > 0) {
                                 output.write(" enumValues=\"");
@@ -584,11 +584,11 @@ public class DatabaseXmlUtil {
             
 
             for (ForeignKey fk : table.getForeignKeys()) {
-                output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml(fk.getName()) + "\" foreignTable=\""
-                        + StringEscapeUtils.escapeXml(fk.getForeignTableName()) + "\" foreignTableCatalog=\""
-                        + StringEscapeUtils.escapeXml(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog()) 
+                output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml10(fk.getName()) + "\" foreignTable=\""
+                        + StringEscapeUtils.escapeXml10(fk.getForeignTableName()) + "\" foreignTableCatalog=\""
+                        + StringEscapeUtils.escapeXml10(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog()) 
                             ? "" : fk.getForeignTableCatalog()) + 
-                        "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml(fk.getForeignTableSchema() == null || 
+                        "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml10(fk.getForeignTableSchema() == null || 
                             fk.getForeignTableSchema().equals(table.getSchema()) ? "" : fk.getForeignTableSchema())  + "\""
                         +
                         writeForeignKeyOnUpdateClause(fk)
@@ -598,22 +598,22 @@ public class DatabaseXmlUtil {
                         ">\n");
                                 
                 for (Reference ref : fk.getReferences()) {
-                    output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml(ref.getLocalColumnName())
-                            + "\" foreign=\"" + StringEscapeUtils.escapeXml(ref.getForeignColumnName()) + "\"/>\n");
+                    output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml10(ref.getLocalColumnName())
+                            + "\" foreign=\"" + StringEscapeUtils.escapeXml10(ref.getForeignColumnName()) + "\"/>\n");
                 }
                 output.write("\t\t</foreign-key>\n");
             }
 
             for (IIndex index : table.getIndices()) {
                 if (index.isUnique()) {
-                    output.write("\t\t<unique name=\"" + StringEscapeUtils.escapeXml(index.getName()) + "\">\n");
+                    output.write("\t\t<unique name=\"" + StringEscapeUtils.escapeXml10(index.getName()) + "\">\n");
                     for (IndexColumn column : index.getColumns()) {
-                        output.write("\t\t\t<unique-column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"/>\n");
+                        output.write("\t\t\t<unique-column name=\"" + StringEscapeUtils.escapeXml10(column.getName()) + "\"/>\n");
                     }
                 } else {
-                    output.write("\t\t<index name=\"" + StringEscapeUtils.escapeXml(index.getName()) + "\">\n");
+                    output.write("\t\t<index name=\"" + StringEscapeUtils.escapeXml10(index.getName()) + "\">\n");
                     for (IndexColumn column : index.getColumns()) {
-                        output.write("\t\t\t<index-column name=\"" + StringEscapeUtils.escapeXml(column.getName()) + "\"");
+                        output.write("\t\t\t<index-column name=\"" + StringEscapeUtils.escapeXml10(column.getName()) + "\"");
                         if (column.getSize() != null) {
                             output.write(" size=\"" + column.getSize() + "\"");
                         }
@@ -627,7 +627,7 @@ public class DatabaseXmlUtil {
                         if ((platformIndex.getFilterCondition() != null && platformIndex.getFilterCondition().length() > 0) ||
                                 platformIndex.getCompressionType() != CompressionTypes.NONE)
                         {
-                            output.write("\t\t\t<platform-index name=\"" + StringEscapeUtils.escapeXml(platformIndex.getName()) + "\"");
+                            output.write("\t\t\t<platform-index name=\"" + StringEscapeUtils.escapeXml10(platformIndex.getName()) + "\"");
                             if (platformIndex.getFilterCondition() != null && platformIndex.getFilterCondition().length() > 0) {
                                 output.write(" filter-condition=\"" + platformIndex.getFilterCondition() + "\"");
                             }
@@ -660,7 +660,7 @@ public class DatabaseXmlUtil {
              ))
         {
             sb.append(" foreignOnUpdateAction=\"" +
-                StringEscapeUtils.escapeXml(fk.getOnUpdateAction().getForeignKeyActionName()) + "\"");
+                StringEscapeUtils.escapeXml10(fk.getOnUpdateAction().getForeignKeyActionName()) + "\"");
         }
         return sb.toString();
     }
@@ -673,7 +673,7 @@ public class DatabaseXmlUtil {
                ))
         {
             sb.append(" foreignOnDeleteAction=\"" +
-                StringEscapeUtils.escapeXml(fk.getOnDeleteAction().getForeignKeyActionName()) + "\"");
+                StringEscapeUtils.escapeXml10(fk.getOnDeleteAction().getForeignKeyActionName()) + "\"");
         }
         return sb.toString();
     }

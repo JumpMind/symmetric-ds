@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.mssql;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;

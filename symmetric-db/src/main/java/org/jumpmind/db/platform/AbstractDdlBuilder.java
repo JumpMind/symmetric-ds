@@ -31,10 +31,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.Closure;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections4.Closure;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddForeignKeyChange;
 import org.jumpmind.db.alter.AddIndexChange;

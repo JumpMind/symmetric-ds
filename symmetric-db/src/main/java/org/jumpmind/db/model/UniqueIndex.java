@@ -21,7 +21,7 @@ package org.jumpmind.db.model;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Provides compatibility with Torque-style xml with separate &lt;index&gt; and

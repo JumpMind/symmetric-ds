@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -212,8 +212,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                 scriptData.setSourceNodeId(sourceNodeId);
                                 engine.getDataService().insertData(transaction, scriptData);
                             }
-                        } else {
-                            log.warn("Missing trigger hist for table {}", tableName);
                         }
                     }
                 }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));

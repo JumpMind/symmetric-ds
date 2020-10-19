@@ -33,7 +33,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;

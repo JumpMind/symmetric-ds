@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;

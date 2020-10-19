@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.db;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.model.Channel;

@@ -50,7 +50,7 @@ dependencies {
     compile project(":symmetric-jdbc")
     compile project(":symmetric-io")
     
-    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile "commons-dbcp:commons-dbcp:$commonsDbcpVersion"
     compile "commons-io:commons-io:$commonsIoVersion"
     

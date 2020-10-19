@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.csv.CsvReader;

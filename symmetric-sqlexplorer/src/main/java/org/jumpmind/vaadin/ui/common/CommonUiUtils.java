@@ -20,7 +20,7 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
-import static org.apache.commons.lang.StringUtils.abbreviate;
+import static org.apache.commons.lang3.StringUtils.abbreviate;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -42,7 +42,7 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;

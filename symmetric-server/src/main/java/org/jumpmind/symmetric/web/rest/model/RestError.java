@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.web.rest.model;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 @XmlRootElement(name="error")
 public class RestError {
@@ -37,7 +37,7 @@ public class RestError {
     public RestError(Exception ex, int statusCode) {
         this.message = ex.getMessage();
         this.statusCode = statusCode;
-        this.details = ExceptionUtils.getFullStackTrace(ex);
+        this.details = ExceptionUtils.getStackTrace(ex);
     }
 
     public String getMessage() {

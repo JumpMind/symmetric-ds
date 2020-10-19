@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;

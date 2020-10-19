@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.io;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagingManager;

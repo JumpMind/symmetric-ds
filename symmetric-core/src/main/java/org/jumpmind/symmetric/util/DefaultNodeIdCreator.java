@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;

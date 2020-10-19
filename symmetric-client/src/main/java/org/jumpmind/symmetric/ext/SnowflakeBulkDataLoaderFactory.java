@@ -16,7 +16,6 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
-import org.jumpmind.symmetric.service.IParameterService;
 
 public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
     

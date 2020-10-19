@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.sql.SQLException;

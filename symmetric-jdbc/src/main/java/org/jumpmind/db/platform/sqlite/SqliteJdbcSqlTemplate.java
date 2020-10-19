@@ -31,7 +31,7 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlTemplateSettings;

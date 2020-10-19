@@ -34,8 +34,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

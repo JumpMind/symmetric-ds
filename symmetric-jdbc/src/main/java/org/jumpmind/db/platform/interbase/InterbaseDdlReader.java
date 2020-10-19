@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;

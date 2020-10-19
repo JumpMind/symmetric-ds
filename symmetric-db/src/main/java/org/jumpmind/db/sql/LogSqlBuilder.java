@@ -30,7 +30,7 @@ import java.util.Date;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.ParseException;

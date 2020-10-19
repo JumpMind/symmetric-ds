@@ -20,7 +20,7 @@
  */
 package org.jumpmind.db.platform.informix;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.map.ListOrderedMap;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.ForeignKey.ForeignKeyAction;

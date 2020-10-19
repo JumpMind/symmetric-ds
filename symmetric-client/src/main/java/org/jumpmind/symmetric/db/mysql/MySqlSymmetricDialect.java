@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.db.mysql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;

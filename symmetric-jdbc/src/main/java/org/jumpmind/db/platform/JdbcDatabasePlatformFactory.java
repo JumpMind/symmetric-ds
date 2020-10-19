@@ -30,7 +30,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.ase.AseDatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2As400DatabasePlatform;
 import org.jumpmind.db.platform.db2.Db2DatabasePlatform;

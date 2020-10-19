@@ -20,7 +20,7 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.vaadin.v7.event.FieldEvents.TextChangeEvent;
 import com.vaadin.v7.event.FieldEvents.TextChangeListener;

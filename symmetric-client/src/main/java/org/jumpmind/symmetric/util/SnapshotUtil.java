@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.util;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,8 +58,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Layout;
@@ -758,9 +758,9 @@ public class SnapshotUtil {
 
     protected static String getLastFinishTime(IJob job, Lock lock) {
         if (lock != null && lock.getLastLockTime() != null) {
-            return DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(lock.getLastLockTime());
+            return DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(lock.getLastLockTime());
         } else {
-            return job.getLastFinishTime() == null ? null : DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(job.getLastFinishTime());
+            return job.getLastFinishTime() == null ? null : DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(job.getLastFinishTime());
         }
     }
 

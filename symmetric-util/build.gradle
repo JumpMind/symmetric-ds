@@ -3,10 +3,11 @@ apply from: symAssembleDir + '/common.gradle'
     description = 'Utility classes that are used by several Symmetric libraries'
 
     dependencies {
-        compile "commons-lang:commons-lang:$commonsLangVersion"
+        compile "org.apache.commons:commons-lang3:$commonsLangVersion"
+        compile "org.apache.commons:commons-text:$commonsTextVersion"
         compile "commons-io:commons-io:$commonsIoVersion"
         compile "commons-codec:commons-codec:$commonsCodecVersion"
-        compile "commons-collections:commons-collections:$commonsCollectionVersion"
+        compile "org.apache.commons:commons-collections4:$commonsCollectionVersion"
         compile "com.google.code.gson:gson:$gsonVersion"
         compileOnly "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
         compileOnly "org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion"

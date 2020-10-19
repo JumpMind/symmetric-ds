@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 
 public class Conflict implements Serializable {

@@ -33,7 +33,7 @@ import static org.jumpmind.symmetric.common.Constants.DATA_CONTEXT_TARGET_NODE_I
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.SymmetricException;

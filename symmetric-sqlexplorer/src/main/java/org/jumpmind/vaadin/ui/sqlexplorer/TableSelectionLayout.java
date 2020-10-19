@@ -20,7 +20,7 @@
  */
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
-import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.UiConstants;

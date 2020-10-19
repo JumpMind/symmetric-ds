@@ -26,7 +26,7 @@ import java.util.List;
 public class ExceptionUtils {
     
     public static SQLException unwrapSqlException(Throwable e) {
-        List<Throwable> exs = org.apache.commons.lang.exception.ExceptionUtils.getThrowableList(e);
+        List<Throwable> exs = org.apache.commons.lang3.exception.ExceptionUtils.getThrowableList(e);
         for (Throwable throwable : exs) {
             if (throwable instanceof SQLException) {
                 return (SQLException) throwable;
@@ -36,7 +36,7 @@ public class ExceptionUtils {
     }
     
     public static String getRootMessage(Throwable ex) {
-        Throwable cause = org.apache.commons.lang.exception.ExceptionUtils.getRootCause(ex);
+        Throwable cause = org.apache.commons.lang3.exception.ExceptionUtils.getRootCause(ex);
         if (cause == null) {
             cause = ex;
         }

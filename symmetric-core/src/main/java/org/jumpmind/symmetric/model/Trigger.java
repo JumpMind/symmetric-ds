@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.Constants;

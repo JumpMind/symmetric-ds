@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.util.AppUtils;

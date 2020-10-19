@@ -2,7 +2,7 @@ package org.jumpmind.vaadin.ui.common;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.vaadin.v7.data.util.converter.Converter;
 

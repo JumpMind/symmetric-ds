@@ -20,7 +20,7 @@
  */
 package org.jumpmind.db.sql;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
 import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
 
