@@ -24,14 +24,14 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.v7.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.v7.ui.Label;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
@@ -59,7 +59,7 @@ public class NotifyDialog extends ResizableWindow {
         text = isNotBlank(text) ? text : (ex != null ? ex.getMessage()
                 : "");
         if (type == Type.ERROR_MESSAGE) {
-            setIcon(FontAwesome.BAN);
+            setIcon(VaadinIcons.BAN);
         }
         
         final String message = text;

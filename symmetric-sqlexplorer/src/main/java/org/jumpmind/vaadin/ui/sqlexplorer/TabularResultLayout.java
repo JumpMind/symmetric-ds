@@ -25,21 +25,13 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_MAX_RESULTS;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_ROW_NUMBERS;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -50,55 +42,33 @@ import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDdlReader;
-import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.CsvExport;
-import org.jumpmind.vaadin.ui.common.Grid7DataProvider;
+import org.jumpmind.vaadin.ui.common.GridDataProvider;
 import org.jumpmind.vaadin.ui.common.IDataProvider;
-import org.jumpmind.vaadin.ui.common.NotifyDialog;
 import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.contextmenu.ContextMenu;
+import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
-import com.vaadin.v7.data.Item;
-import com.vaadin.v7.data.Property;
-import com.vaadin.v7.data.Validator;
-import com.vaadin.v7.data.fieldgroup.FieldGroup.CommitEvent;
-import com.vaadin.v7.data.fieldgroup.FieldGroup.CommitException;
-import com.vaadin.v7.data.fieldgroup.FieldGroup.CommitHandler;
-import com.vaadin.v7.data.util.converter.Converter;
-import com.vaadin.v7.data.util.converter.StringToBigDecimalConverter;
-import com.vaadin.v7.data.util.converter.StringToBooleanConverter;
-import com.vaadin.v7.data.util.converter.StringToLongConverter;
-import com.vaadin.v7.event.ItemClickEvent;
-import com.vaadin.v7.event.ItemClickEvent.ItemClickListener;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.v7.ui.CustomField;
-import com.vaadin.v7.ui.Grid;
-import com.vaadin.v7.ui.Grid.CellReference;
-import com.vaadin.v7.ui.Grid.CellStyleGenerator;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.Label;
-import com.vaadin.v7.ui.TextField;
 
 public class TabularResultLayout extends VerticalLayout {
 
@@ -124,7 +94,7 @@ public class TabularResultLayout extends VerticalLayout {
 
     String schemaName;
 
-    Grid grid;
+    Grid<List<Object>> grid;
 
     org.jumpmind.db.model.Table resultTable;
 
@@ -188,23 +158,6 @@ public class TabularResultLayout extends VerticalLayout {
             grid = putResultsInGrid(settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS));
             grid.setSizeFull();
 
-            initGridEditing();
-
-            grid.setCellStyleGenerator(new CellStyleGenerator() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public String getStyle(CellReference cell) {
-                    if (cell.getPropertyId().equals("#") && !grid.getSelectedRows().contains(cell.getItemId())) {
-                        return "rowheader";
-                    }
-                    if (cell.getValue() == null) {
-                        return "italics";
-                    }
-                    return null;
-                }
-            });
-
             ContextMenu menu = new ContextMenu(grid, true);
             menu.addItem(ACTION_SELECT, new MenuBar.Command() {
 
@@ -248,38 +201,34 @@ public class TabularResultLayout extends VerticalLayout {
                 buildFollowToMenu();
             }
 
-            grid.addItemClickListener(new ItemClickListener() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void itemClick(ItemClickEvent event) {
-                    MouseButton button = event.getButton();
-                    if (button == MouseButton.LEFT) {
-                        Object object = event.getPropertyId();
-                        if (object != null && !object.toString().equals("")) {
-                            if (event.isDoubleClick() && !grid.isEditorEnabled()) {
-                                Object prop = event.getPropertyId();
-                                String header = grid.getColumn(prop).getHeaderCaption();
-                                Property<?> p = event.getItem().getItemProperty(prop);
-                                if (p != null) {
-                                    String data = String.valueOf(p.getValue());
-                                    boolean binary = resultTable != null ? resultTable.getColumnWithName(header).isOfBinaryType() : false;
-                                    if (binary) {
-                                        ReadOnlyTextAreaDialog.show(header, data.toUpperCase(), binary);
-                                    } else {
-                                        ReadOnlyTextAreaDialog.show(header, data, binary);
-                                    }
-                                }
-                            } else {
-                                Object row = event.getItemId();
-                                if (!grid.getSelectedRows().contains(row)) {
-                                    grid.deselectAll();
-                                    grid.select(row);
-                                } else {
-                                    grid.deselect(row);
-                                }
+            grid.addItemClickListener(event -> {
+                MouseButton button = event.getMouseEventDetails().getButton();
+                if (button == MouseButton.LEFT) {
+                    if (event.getMouseEventDetails().isDoubleClick()) {
+                        String header = event.getColumn().getCaption();
+                        List<Grid.Column<List<Object>, ?>> colList = grid.getColumns();
+                        Object o = null;
+                        for (int i = 1; i < colList.size(); i++) {
+                            if (colList.get(i).getCaption().equals(header)) {
+                                o = event.getItem().get(i - 1);
+                                break;
                             }
+                        }
+                        if (o != null) {
+                            String data = String.valueOf(o);
+                            boolean binary = resultTable != null ? resultTable.getColumnWithName(header).isOfBinaryType() : false;
+                            if (binary) {
+                                ReadOnlyTextAreaDialog.show(header, data.toUpperCase(), binary);
+                            } else {
+                                ReadOnlyTextAreaDialog.show(header, data, binary);
+                            }
+                        }
+                    } else {
+                        if (!grid.getSelectedItems().contains(event.getItem())) {
+                            grid.deselectAll();
+                            grid.select(event.getItem());
+                        } else {
+                            grid.deselect(event.getItem());
                         }
                     }
                 }
@@ -288,7 +237,7 @@ public class TabularResultLayout extends VerticalLayout {
             this.addComponent(grid);
             this.setExpandRatio(grid, 1);
 
-            int count = (grid.getContainerDataSource().getItemIds().size());
+            long count = (grid.getDataProvider().fetch(new Query<>()).count());
             int maxResultsSize = settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS);
             if (count >= maxResultsSize) {
                 resultLabel.setValue("Limited to <span style='color: red'>" + maxResultsSize + "</span> rows;");
@@ -340,7 +289,7 @@ public class TabularResultLayout extends VerticalLayout {
             
             @Override
             public void menuSelected(MenuBar.MenuItem selectedItem) {
-                IDataProvider target = new Grid7DataProvider(grid);
+                IDataProvider target = new GridDataProvider(grid);
                 CsvExport csvExport = null;
                 if (target instanceof IDataProvider) {
                     csvExport = new CsvExport((IDataProvider) target);
@@ -394,17 +343,14 @@ public class TabularResultLayout extends VerticalLayout {
             final String schemaSeparator = dbInfo.getSchemaSeparator();
 
             String[] columnHeaders = CommonUiUtils.getHeaderCaptions(grid);
-            Collection<Object> selectedRowsSet = grid.getSelectedRows();
-            Iterator<Object> setIterator = selectedRowsSet.iterator();
+            Set<List<Object>> selectedRowsSet = grid.getSelectedItems();
+            Iterator<List<Object>> setIterator = selectedRowsSet.iterator();
             while (setIterator.hasNext()) {
                 List<Object> typeValueList = new ArrayList<Object>();
-                int row = (Integer) setIterator.next();
-                Item item = grid.getContainerDataSource().getItem(row);
-                Iterator<?> iterator = item.getItemPropertyIds().iterator();
-                iterator.next();
+                List<Object> item = setIterator.next();
 
                 for (int i = 1; i < columnHeaders.length; i++) {
-                    Object typeValue = item.getItemProperty(iterator.next()).getValue();
+                    Object typeValue = item.get(i - 1);
                     if (typeValue instanceof String) {
                         if ("<null>".equals(typeValue) || "".equals(typeValue)) {
                             typeValue = "null";
@@ -580,7 +526,7 @@ public class TabularResultLayout extends VerticalLayout {
     }
 
     protected void followTo(ForeignKey foreignKey) {
-        Collection<Object> selectedRows = grid.getSelectedRows();
+        Set<List<Object>> selectedRows = grid.getSelectedItems();
         if (selectedRows.size() > 0) {
             log.info("Following foreign key to " + foreignKey.getForeignTableName());
 
@@ -609,11 +555,16 @@ public class TabularResultLayout extends VerticalLayout {
             try {
                 PreparedStatement ps = ((DataSource) db.getPlatform().getDataSource()).getConnection().prepareStatement(sql);
                 int i = 1;
-                for (Object row : selectedRows) {
+                for (List<Object> row : selectedRows) {
                     for (Reference ref : references) {
-                        Object targetObject = grid.getContainerDataSource().getItem(row).getItemProperty(ref.getLocalColumnName()).getValue();
+                        int colNum = 0;
+                        for (Grid.Column<List<Object>, ?> col : grid.getColumns()) {
+                            if (col.getCaption().equals(ref.getLocalColumnName())) {
+                                break;
+                            }
+                        }
                         int targetType = ref.getForeignColumn().getMappedTypeCode();
-                        ps.setObject(i, targetObject, targetType);
+                        ps.setObject(i, row.get(colNum - 1), targetType);
                         i++;
                     }
                 }
@@ -657,7 +608,7 @@ public class TabularResultLayout extends VerticalLayout {
         return sql.toString();
     }
 
-    protected Grid putResultsInGrid(int maxResultSize) throws SQLException {
+    protected Grid<List<Object>> putResultsInGrid(int maxResultSize) throws SQLException {
         String parsedSql = sql;
         String first = "";
         String second = "";
@@ -751,367 +702,12 @@ public class TabularResultLayout extends VerticalLayout {
         }
 
         TypedProperties properties = settings.getProperties();
-        return CommonUiUtils.putResultsInGrid(rs, resultTable, properties.getInt(SQL_EXPLORER_MAX_RESULTS),
+        return CommonUiUtils.putResultsInGrid(rs, properties.getInt(SQL_EXPLORER_MAX_RESULTS),
                 properties.is(SQL_EXPLORER_SHOW_ROW_NUMBERS), getColumnsToExclude());
 
     }
 
     protected String[] getColumnsToExclude() {
         return new String[0];
-    }
-
-    private void initGridEditing() {
-        if (resultTable != null) {
-            grid.setEditorEnabled(true);
-            List<com.vaadin.v7.ui.Grid.Column> columns = grid.getColumns();
-            List<TextField> primaryKeyEditors = new ArrayList<TextField>();
-            for (com.vaadin.v7.ui.Grid.Column gridColumn : columns) {
-                String header = gridColumn.getHeaderCaption();
-                Column tableColumn = resultTable.getColumnWithName(header);
-                if (columns.get(0).equals(gridColumn) || (tableColumn != null && tableColumn.isAutoIncrement()
-                        && !db.getPlatform().getDatabaseInfo().isAutoIncrementUpdateAllowed())) {
-                    gridColumn.setEditable(false);
-                } else if (tableColumn != null && db.getPlatform().isLob(tableColumn.getMappedTypeCode())) {
-                    gridColumn.setEditorField(new LobEditorField(header));
-                } else if (tableColumn != null) {
-                    setEditor(gridColumn, tableColumn, primaryKeyEditors);
-                }
-            }
-
-            for (TextField editor : primaryKeyEditors) {
-                editor.addValidator(new PrimaryKeyValidator(primaryKeyEditors));
-            }
-
-            initCommit();
-        } else {
-            log.info("Table editing disabled.");
-        }
-    }
-
-    private void setEditor(Grid.Column gridColumn, Column tableColumn, List<TextField> primaryKeyEditors) {
-        TextField editor = new TextField();
-        int typeCode = tableColumn.getMappedTypeCode();
-
-        switch (typeCode) {
-            case Types.DATE:
-                editor.setConverter(new ObjectConverter(Date.class, typeCode));
-                break;
-            case Types.TIME:
-                editor.setConverter(new ObjectConverter(Time.class, typeCode));
-                break;
-            case Types.TIMESTAMP:
-                editor.setConverter(new ObjectConverter(Timestamp.class, typeCode));
-                break;
-            case Types.BIT:
-                editor.setConverter(new StringToBooleanConverter());
-                break;
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.BIGINT:
-            case Types.INTEGER:
-                editor.setConverter(new StringToLongConverter() {
-                    private static final long serialVersionUID = 1L;
-
-                    public NumberFormat getFormat(Locale locale) {
-                        NumberFormat format = super.getFormat(locale);
-                        format.setGroupingUsed(false);
-                        return format;
-                    }
-                });
-                break;
-            case Types.FLOAT:
-            case Types.DOUBLE:
-            case Types.REAL:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                editor.setConverter(new StringToBigDecimalConverter() {
-                    private static final long serialVersionUID = 1L;
-
-                    public NumberFormat getFormat(Locale locale) {
-                        NumberFormat format = super.getFormat(locale);
-                        format.setGroupingUsed(false);
-                        return format;
-                    }
-                });
-                break;
-            default:
-                break;
-        }
-
-        editor.addValidator(new TableChangeValidator(editor, tableColumn));
-
-        editor.setNullRepresentation("");
-        if (!tableColumn.isRequired()) {
-            editor.setNullSettingAllowed(true);
-        }
-
-        if (tableColumn.isPrimaryKey()) {
-            primaryKeyEditors.add(editor);
-        }
-
-        gridColumn.setEditorField(editor);
-    }
-
-    private void initCommit() {
-        grid.getEditorFieldGroup().addCommitHandler(new CommitHandler() {
-
-            private static final long serialVersionUID = 1L;
-
-            Map<Object, Object> unchangedValues;
-            Object[] params;
-            int[] types;
-
-            @Override
-            public void preCommit(CommitEvent commitEvent) throws CommitException {
-                Item row = commitEvent.getFieldBinder().getItemDataSource();
-                unchangedValues = new HashMap<Object, Object>();
-                params = new Object[resultTable.getPrimaryKeyColumnCount() + 1];
-                types = new int[params.length];
-                int paramCount = 1;
-                for (Object id : row.getItemPropertyIds()) {
-                    unchangedValues.put(id, row.getItemProperty(id).getValue());
-                    if (resultTable.getPrimaryKeyColumnIndex(id.toString()) >= 0) {
-                        params[paramCount] = commitEvent.getFieldBinder().getItemDataSource().getItemProperty(id).getValue();
-                        types[paramCount] = resultTable.getColumnWithName(id.toString()).getMappedTypeCode();
-                        paramCount++;
-                    }
-                }
-            }
-
-            @Override
-            public void postCommit(CommitEvent commitEvent) throws CommitException {
-                Item row = commitEvent.getFieldBinder().getItemDataSource();
-                for (Object id : row.getItemPropertyIds()) {
-                    if (grid.getColumn(id).isEditable()
-                            && !db.getPlatform().isLob(resultTable.getColumnWithName(id.toString()).getMappedTypeCode())) {
-                        String sql = buildUpdate(resultTable, id.toString(), resultTable.getPrimaryKeyColumnNames());
-                        params[0] = row.getItemProperty(id).getValue();
-                        if ((params[0] == null && unchangedValues.get(id) == null)
-                                || (params[0] != null && params[0].equals(unchangedValues.get(id)))) {
-                            continue;
-                        }
-                        types[0] = resultTable.getColumnWithName(id.toString()).getMappedTypeCode();
-                        for (int i = 0; i < types.length; i++) {
-                            if (types[i] == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp()) {
-                                types[i] = Types.TIMESTAMP;
-                            }
-                        }
-                        try {
-                            db.getPlatform().getSqlTemplate().update(sql, params, types);
-                        } catch (SqlException e) {
-                            NotifyDialog.show("Error",
-                                    "<b>The table could not be updated.</b><br>"
-                                            + "Cause: the sql update statement failed to execute.<br><br>"
-                                            + "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.",
-                                    e, Type.ERROR_MESSAGE);
-                        }
-                    }
-                }
-                listener.reExecute(sql);
-            }
-        });
-    }
-
-    protected Object[] getPrimaryKeys() {
-        String[] columnNames = resultTable.getPrimaryKeyColumnNames();
-        Object[] pks = new Object[columnNames.length];
-        Item row = grid.getContainerDataSource().getItem(grid.getEditedItemId());
-        int index = 0;
-        for (String columnName : columnNames) {
-            Property<?> p = row.getItemProperty(columnName);
-            if (p != null) {
-                pks[index++] = p.getValue();
-            } else {
-                return null;
-            }
-        }
-        return pks;
-    }
-
-    protected String buildUpdate(Table table, String columnName, String[] pkColumnNames) {
-        StringBuilder sql = new StringBuilder("update ");
-        DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
-        String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
-        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
-        sql.append(" set ");
-        sql.append(quote);
-        sql.append(columnName);
-        sql.append(quote);
-        sql.append("=? where ");
-        for (String col : pkColumnNames) {
-            sql.append(quote);
-            sql.append(col);
-            sql.append(quote);
-            sql.append("=? and ");
-        }
-        sql.delete(sql.length() - 5, sql.length());
-        return sql.toString();
-    }
-
-    class LobEditorField extends CustomField<String> {
-
-        private static final long serialVersionUID = 1L;
-
-        String header;
-
-        LobEditorField(String header) {
-            super();
-            this.header = header;
-        }
-
-        @Override
-        protected Component initContent() {
-            final Button button = new Button("...");
-            button.addClickListener(new ClickListener() {
-
-                private static final long serialVersionUID = 1L;
-
-                public void buttonClick(ClickEvent event) {
-                    Property<?> p = grid.getContainerDataSource().getItem(grid.getEditedItemId()).getItemProperty(header);
-                    if (p != null) {
-                        String data = p.getValue() == null ? null : String.valueOf(p.getValue());
-                        boolean binary = resultTable != null ? resultTable.getColumnWithName(header).isOfBinaryType() : false;
-                        if (binary) {
-                            ReadOnlyTextAreaDialog.show(header, data == null ? null : data.toUpperCase(), resultTable, getPrimaryKeys(),
-                                    db.getPlatform(), binary, true);
-                        } else {
-                            ReadOnlyTextAreaDialog.show(header, data, resultTable, getPrimaryKeys(), db.getPlatform(), binary, true);
-                        }
-                    }
-                }
-            });
-            return button;
-        }
-
-        @Override
-        public Class<? extends String> getType() {
-            return String.class;
-        }
-
-    }
-
-    class ObjectConverter implements Converter<String, Object> {
-
-        private static final long serialVersionUID = 1L;
-
-        Class<?> modelType;
-        int typeCode;
-
-        ObjectConverter(Class<?> modelType, int typeCode) {
-            super();
-            this.modelType = modelType;
-            this.typeCode = typeCode;
-        }
-
-        @Override
-        public Object convertToModel(String value, Class<? extends Object> targetType, Locale locale)
-                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-            if (value == null || value.isEmpty() || value.equals("<null>")) {
-                return null;
-            }
-
-            if (java.util.Date.class.isAssignableFrom(modelType)) {
-                try {
-                    return modelType.cast(db.getPlatform().parseDate(typeCode, value, false));
-                } catch (Exception e) {
-                    return value;
-                }
-            }
-
-            return value.toString();
-        }
-
-        @Override
-        public String convertToPresentation(Object value, Class<? extends String> targetType, Locale locale)
-                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-            if (value == null || value.equals("") || value.equals("<null>"))
-                return "";
-            return String.valueOf(value);
-        }
-
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        @Override
-        public Class getModelType() {
-            if (typeCode == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo().isDateOverridesToTimestamp()) {
-                modelType = Timestamp.class;
-            }
-            return modelType;
-        }
-
-        @Override
-        public Class<String> getPresentationType() {
-            return String.class;
-        }
-    }
-
-    class TableChangeValidator implements Validator {
-
-        private static final long serialVersionUID = 1L;
-
-        TextField editor;
-        Column col;
-
-        TableChangeValidator(TextField editor, Column col) {
-            super();
-            this.editor = editor;
-            this.col = col;
-        }
-
-        @Override
-        public void validate(Object value) throws InvalidValueException {
-            if (value == null || value.toString().isEmpty()) {
-                if (col.isRequired()) {
-                    throw new EmptyValueException("Value cannot be null");
-                }
-            } else if (editor.getConverter() instanceof ObjectConverter) {
-                int typeCode = col.getMappedTypeCode();
-                if (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP) {
-                    try {
-                        db.getPlatform().parseDate(typeCode, String.valueOf(value), false);
-                    } catch (Exception e) {
-                        throw new InvalidValueException(col.getMappedType() + " format not valid");
-                    }
-                }
-            }
-        }
-    }
-
-    class PrimaryKeyValidator implements Validator {
-
-        private static final long serialVersionUID = 1L;
-
-        List<TextField> editors;
-
-        PrimaryKeyValidator(List<TextField> editors) {
-            super();
-            this.editors = editors;
-        }
-
-        public void validate(Object value) throws InvalidValueException {
-            String[] pkColumns = resultTable.getPrimaryKeyColumnNames();
-            if (editors.size() != pkColumns.length) {
-                throw new IllegalArgumentException();
-            }
-            Object[] newValues = new Object[pkColumns.length];
-            for (int i = 0; i < editors.size(); i++) {
-                TextField editor = editors.get(i);
-                if (editor.getConverter() != null) {
-                    newValues[i] = editor.getConverter().convertToModel(editor.getValue(), editor.getConverter().getModelType(),
-                            editor.getLocale());
-                } else {
-                    newValues[i] = editor.getValue();
-                }
-            }
-            allColumns: for (Object row : grid.getContainerDataSource().getItemIds()) {
-                if (!row.equals(grid.getEditedItemId())) {
-                    for (int i = 0; i < pkColumns.length; i++) {
-                        if (!grid.getContainerDataSource().getItem(row).getItemProperty(pkColumns[i]).getValue().equals(newValues[i])) {
-                            continue allColumns;
-                        }
-                    }
-                    throw new InvalidValueException("Cannot use repeated primary keys");
-                }
-            }
-        }
     }
 }

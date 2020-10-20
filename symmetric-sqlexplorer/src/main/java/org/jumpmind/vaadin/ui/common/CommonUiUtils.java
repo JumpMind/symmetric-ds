@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -49,28 +49,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.aceeditor.AceEditor;
 
-import com.vaadin.v7.data.Container;
-import com.vaadin.v7.data.Property;
-import com.vaadin.v7.data.util.converter.Converter;
-import com.vaadin.v7.data.util.converter.StringToBigDecimalConverter;
-import com.vaadin.v7.data.util.converter.StringToLongConverter;
 import com.vaadin.server.Page;
 import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.Position;
-import com.vaadin.v7.ui.AbstractSelect;
-import com.vaadin.v7.ui.AbstractTextField.TextChangeEventMode;
 import com.vaadin.ui.Button;
-import com.vaadin.v7.ui.Grid;
-import com.vaadin.v7.ui.Grid.Column;
-import com.vaadin.v7.ui.Grid.SelectionMode;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.Column;
+import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.Label;
-import com.vaadin.v7.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TabSheet;
-import com.vaadin.v7.ui.Table;
-import com.vaadin.v7.ui.Table.CellStyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 
 public final class CommonUiUtils {
@@ -110,42 +100,6 @@ public final class CommonUiUtils {
         }
         button.addStyleName(ValoTheme.BUTTON_PRIMARY);
         return button;
-    }
-
-    public static Table createTable() {
-        Table table = new Table() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected String formatPropertyValue(Object rowId, Object colId, Property<?> property) {
-                if (property.getValue() != null) {
-                    if (property.getType() == Date.class) {
-                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss aaa");
-                        return df.format((Date) property.getValue());
-                    } else if (Number.class.isAssignableFrom(property.getType())) {
-                        return property.getValue().toString();
-                    }
-                }
-                return super.formatPropertyValue(rowId, colId, property);
-            }
-
-        };
-        
-        table.setCellStyleGenerator(new CellStyleGenerator() {
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public String getStyle(Table source, Object itemId, Object propertyId) {
-                if (propertyId != null && propertyId.equals("#")) {
-                    return "rowheader";
-                }
-                return null;
-            }
-        });
-        
-        return table;
     }
 
     public static AceEditor createAceEditor() {
@@ -229,319 +183,134 @@ public final class CommonUiUtils {
         return obj;
     }
 
-    public static Table putResultsInTable(final ResultSet rs, int maxResultSize, final boolean showRowNumbers, String... excludeValues)
-            throws SQLException {
-        try {
-            final Table table = createTable();
-            table.setImmediate(true);
-            table.setSortEnabled(true);
-            table.setSelectable(true);
-            table.setMultiSelect(true);
-            table.setColumnReorderingAllowed(true);
-            table.setColumnReorderingAllowed(true);
-            table.setColumnCollapsingAllowed(true);
-
-            if(rs != null) {
-                final ResultSetMetaData meta = rs.getMetaData();
-                int columnCount = meta.getColumnCount();
-                table.addContainerProperty("#", Integer.class, null);
-                Set<String> columnNames = new HashSet<String>();
-                Set<Integer> skipColumnIndexes = new HashSet<Integer>();
-                int[] types = new int[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    String realColumnName = meta.getColumnName(i);
-                    String columnName = realColumnName;
-                    if (!Arrays.asList(excludeValues).contains(columnName)) {
+    public static String[] getHeaderCaptions(Grid<?> grid) {
+        List<String> headers = new ArrayList<String>();
+        for (Column<?, ?> column : grid.getColumns()) {
+            headers.add(column.getCaption());
+        }
+        return headers.toArray(new String[headers.size()]);
+    }
     
-                        int index = 1;
-                        while (columnNames.contains(columnName)) {
-                            columnName = realColumnName + "_" + index++;
+    public static Grid<List<Object>> putResultsInGrid(final ResultSet rs, int maxResultSize, final boolean showRowNumbers,
+            String... excludeValues) throws SQLException {
+        final Grid<List<Object>> grid = new Grid<List<Object>>();
+        grid.setSelectionMode(SelectionMode.MULTI);
+        grid.setColumnReorderingAllowed(true);
+        grid.addItemClickListener(event -> {
+            grid.deselectAll();
+            grid.select(event.getItem());
+        });
+        
+        List<List<Object>> outerList = new ArrayList<List<Object>>();
+        if (rs != null) {
+            final int[] rowCounter = {0};
+            final Map<List<Object>, Integer> rowNumberMap = new HashMap<List<Object>, Integer>();
+            grid.addColumn(row -> {
+                if (!rowNumberMap.containsKey(row)) {
+                    rowCounter[0]++;
+                    rowNumberMap.put(row, rowCounter[0]);
+                }
+                return rowNumberMap.get(row);
+            }).setCaption("#").setId("#").setHidden(!showRowNumbers).setStyleGenerator(row -> {
+                if (!grid.getSelectedItems().contains(row)) {
+                    return "rowheader";
+                }
+                return null;
+            });
+            
+            final ResultSetMetaData meta = rs.getMetaData();
+            int totalColumns = meta.getColumnCount();
+            Set<Integer> skipColumnIndexes = new HashSet<Integer>();
+            Set<String> columnNames = new HashSet<String>();
+            int[] types = new int[totalColumns];
+            final int[] columnCounter = {1};
+            while (columnCounter[0] <= totalColumns) {
+                String realColumnName = meta.getColumnName(columnCounter[0]);
+                String columnName = realColumnName;
+                if (!Arrays.asList(excludeValues).contains(columnName)) {
+                    int index = 1;
+                    while (columnNames.contains(columnName)) {
+                        columnName = realColumnName + "_" + index++;
+                    }
+                    columnNames.add(columnName);
+                    
+                    Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
+                    grid.addColumn(row -> row.get(colNum)).setCaption(columnName).setHidable(true)
+                            .setStyleGenerator(row -> {
+                        if (row.get(colNum) == null) {
+                            return "italics";
                         }
-                        columnNames.add(columnName);
-    
-                        Class<?> typeClass = Object.class;
-                        int type = meta.getColumnType(i);
-                        types[i - 1] = type;
+                        return null;
+                    });
+                    
+                    types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
+                } else {
+                    skipColumnIndexes.add(columnCounter[0] - 1);
+                }
+                columnCounter[0]++;
+            }
+            
+            for (int rowNumber = 1; rs.next() && rowNumber <= maxResultSize; rowNumber++) {
+                List<Object> innerList = new ArrayList<Object>();
+                
+                for (int i = 0; i < totalColumns; i++) {
+                    if (!skipColumnIndexes.contains(i)) {
+                        Object o = getObject(rs, i + 1);
+                        int type = types[i];
                         switch (type) {
                             case Types.FLOAT:
                             case Types.DOUBLE:
-                            case Types.NUMERIC:
                             case Types.REAL:
+                            case Types.NUMERIC:
                             case Types.DECIMAL:
-                                typeClass = BigDecimal.class;
+                                if (o == null) {
+                                    o = new BigDecimal(-1);
+                                }
+                                if (!(o instanceof BigDecimal)) {
+                                    o = new BigDecimal(castToNumber(o.toString()));
+                                }
                                 break;
                             case Types.TINYINT:
                             case Types.SMALLINT:
                             case Types.BIGINT:
                             case Types.INTEGER:
-                                typeClass = Long.class;
+                                if (o == null) {
+                                    o = new Long(-1);
+                                }
+
+                                if (!(o instanceof Long)) {
+                                    o = new Long(castToNumber(o.toString()));
+                                }
                                 break;
-                            case Types.VARCHAR:
-                            case Types.CHAR:
-                            case Types.NVARCHAR:
-                            case Types.NCHAR:
-                            case Types.CLOB:
-                                typeClass = String.class;
                             default:
                                 break;
                         }
-                        table.addContainerProperty(i, typeClass, null);
-                        table.setColumnHeader(i, columnName);
-                    } else {
-                        skipColumnIndexes.add(i - 1);
-                    }
-    
-                }
-                int rowNumber = 1;
-                while (rs.next() && rowNumber <= maxResultSize) {
-                    Object[] row = new Object[columnNames.size() + 1];
-                    row[0] = new Integer(rowNumber);
-                    int rowIndex = 1;
-                    for (int i = 0; i < columnCount; i++) {
-                        if (!skipColumnIndexes.contains(i)) {
-                            Object o = getObject(rs, i + 1);
-                            int type = types[i];
-                            switch (type) {
-                                case Types.FLOAT:
-                                case Types.DOUBLE:
-                                case Types.REAL:
-                                case Types.NUMERIC:
-                                case Types.DECIMAL:
-                                    if (o == null) {
-                                        o = new BigDecimal(-1);
-                                    }
-                                    if (!(o instanceof BigDecimal)) {
-                                        o = new BigDecimal(castToNumber(o.toString()));
-                                    }
-                                    break;
-                                case Types.TINYINT:
-                                case Types.SMALLINT:
-                                case Types.BIGINT:
-                                case Types.INTEGER:
-                                    if (o == null) {
-                                        o = new Long(-1);
-                                    }
-    
-                                    if (!(o instanceof Long)) {
-                                        o = new Long(castToNumber(o.toString()));
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                            row[rowIndex] = o == null ? NULL_TEXT : o;
-                            rowIndex++;
-                        }
-                    }
-                    table.addItem(row, rowNumber);
-                    rowNumber++;
-                }
-    
-                if (rowNumber < 100) {
-                    table.setColumnWidth("#", 18);
-                } else if (rowNumber < 1000) {
-                    table.setColumnWidth("#", 25);
-                } else {
-                    table.setColumnWidth("#", 30);
-                }
-    
-                if (!showRowNumbers) {
-                    table.setColumnCollapsed("#", true);
-                }
-            } else {
-                Object[] row = new Object[1];
-                row[0] = "Metadata unavailable";
-                table.addContainerProperty(1, String.class, null);
-                table.setColumnHeader(1, "Status");
-                table.addItem(row, 1);
-            }
-
-            return table;
-        } finally {
-            JdbcSqlTemplate.close(rs);
-        }
-    }
-
-    public static String[] getHeaderCaptions(Grid grid) {
-        List<String> headers = new ArrayList<String>();
-        List<Column> columns = grid.getColumns();
-        for (Column column : columns) {
-            headers.add(column.getHeaderCaption());
-        }
-        return headers.toArray(new String[headers.size()]);
-    }
-
-    public static Grid putResultsInGrid(final ResultSet rs, org.jumpmind.db.model.Table resultTable, int maxResultSize, final boolean showRowNumbers, String... excludeValues)
-            throws SQLException {
-
-        final Grid grid = new Grid();
-        grid.setSelectionMode(SelectionMode.MULTI);
-        grid.setColumnReorderingAllowed(true);
-        grid.setData(new HashMap<Object, List<Object>>());
-
-        final ResultSetMetaData meta = rs.getMetaData();
-        int columnCount = meta.getColumnCount();
-        grid.addColumn("#", Integer.class).setHeaderCaption("#").setHidable(true);
-        Set<String> columnNames = new HashSet<String>();
-        Set<Integer> skipColumnIndexes = new HashSet<Integer>();
-        int[] types = new int[columnCount];
-        for (int i = 1; i <= columnCount; i++) {
-            String realColumnName = meta.getColumnName(i);
-            String columnName = realColumnName;
-            if (!Arrays.asList(excludeValues).contains(columnName)) {
-
-                int index = 1;
-                while (columnNames.contains(columnName)) {
-                    columnName = realColumnName + "_" + index++;
-                }
-                columnNames.add(columnName);
-
-                Class<?> typeClass = Object.class;
-                int type = meta.getColumnType(i);
-                types[i - 1] = type;
-                switch (type) {
-                    case Types.FLOAT:
-                    case Types.DOUBLE:
-                    case Types.NUMERIC:
-                    case Types.REAL:
-                    case Types.DECIMAL:
-                        typeClass = BigDecimal.class;
-                        break;
-                    case Types.TINYINT:
-                    case Types.SMALLINT:
-                    case Types.BIGINT:
-                    case Types.INTEGER:
-                        typeClass = Long.class;
-                        break;
-                    case Types.VARCHAR:
-                    case Types.CHAR:
-                    case Types.NVARCHAR:
-                    case Types.NCHAR:
-                    case Types.CLOB:
-                        typeClass = String.class;
-                    default:
-                        break;
-                }
-                Column column = grid.addColumn(columnName, typeClass).setHeaderCaption(columnName).setHidable(true);
-                if (typeClass.equals(Long.class)) {
-                    column.setConverter(new StringToLongConverter() {
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public String convertToPresentation(Long value, Class<? extends String> targetType, Locale locale)
-                                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-                            if (value == null) {
-                                return NULL_TEXT;
-                            } else {
-                                return value.toString();
-                            }
-                        }
-                    });
-                } else if (typeClass.equals(BigDecimal.class)) {
-                    column.setConverter(new StringToBigDecimalConverter() {
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public String convertToPresentation(BigDecimal value, Class<? extends String> targetType, Locale locale)
-                                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-                            if (value == null) {
-                                return NULL_TEXT;
-                            } else {
-                                return value.toString();
-                            }
-                        }
-                    });
-                } else {
-                    column.setConverter(new Converter<String, Object>() {
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public Object convertToModel(String value, Class<? extends Object> targetType, Locale locale)
-                                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-                            return null;
-                        }
-
-                        @Override
-                        public String convertToPresentation(Object value, Class<? extends String> targetType, Locale locale)
-                                throws com.vaadin.v7.data.util.converter.Converter.ConversionException {
-                            if (value == null) {
-                                return NULL_TEXT;
-                            } else {
-                                return value.toString();
-                            }
-                        }
-
-                        @Override
-                        public Class<Object> getModelType() {
-                            return Object.class;
-                        }
-
-                        @Override
-                        public Class<String> getPresentationType() {
-                            return String.class;
-                        }
                         
-                    });
-                }
-            } else {
-                skipColumnIndexes.add(i - 1);
-            }
-
-        }
-        int rowNumber = 1;
-        while (rs.next() && rowNumber <= maxResultSize) {
-            Object[] row = new Object[columnNames.size() + 1];
-            row[0] = new Integer(rowNumber);
-            int rowIndex = 1;
-            for (int i = 0; i < columnCount; i++) {
-                if (!skipColumnIndexes.contains(i)) {
-                    Object o = getObject(rs, i + 1);
-                    int type = types[i];
-                    switch (type) {
-                        case Types.FLOAT:
-                        case Types.DOUBLE:
-                        case Types.REAL:
-                        case Types.NUMERIC:
-                        case Types.DECIMAL:
-                            if (o != null && !(o instanceof BigDecimal)) {
-                                o = new BigDecimal(castToNumber(o.toString()));
-                            }
-                            break;
-                        case Types.TINYINT:
-                        case Types.SMALLINT:
-                        case Types.BIGINT:
-                        case Types.INTEGER:
-                            if (o != null && !(o instanceof Long)) {
-                                o = new Long(castToNumber(o.toString()));
-                            }
-                            break;
-                        default:
-                            break;
+                        innerList.add(o == null ? NULL_TEXT : o);
                     }
-                    row[rowIndex] = o;
-                    rowIndex++;
+                }
+                
+                outerList.add(innerList);
+                
+                if (rowNumber < 100) {
+                    grid.getColumn("#").setWidth(75);
+                } else if (rowNumber < 1000) {
+                    grid.getColumn("#").setWidth(95);
+                } else {
+                    grid.getColumn("#").setWidth(115);
+                }
+
+                if (showRowNumbers) {
+                    grid.setFrozenColumnCount(1);
                 }
             }
-            grid.addRow(row);
-            rowNumber++;
-        }
-
-        if (rowNumber < 100) {
-            grid.getColumn("#").setWidth(75);
-        } else if (rowNumber < 1000) {
-            grid.getColumn("#").setWidth(95);
         } else {
-            grid.getColumn("#").setWidth(115);
+            grid.addColumn(row -> row.get(0)).setCaption("Status");
+            List<Object> innerList = new ArrayList<Object>();
+            innerList.add("Metadata unavailable");
+            outerList.add(innerList);
         }
-
-        if (!showRowNumbers) {
-            grid.getColumn("#").setHidden(true);
-        } else {
-            grid.setFrozenColumnCount(1);
-        }
-
-        
-        
+        grid.setItems(outerList);
         return grid;
     }
 
@@ -580,12 +349,6 @@ public final class CommonUiUtils {
             }
         } else {
             return null;
-        }
-    }
-
-    public static void addItems(List<?> items, Container container) {
-        for (Object item : items) {
-            container.addItem(item);
         }
     }
 
@@ -659,18 +422,5 @@ public final class CommonUiUtils {
         separator.setHeight(100, Unit.PERCENTAGE);
         separator.setWidthUndefined();
         return separator;
-    }
-
-    public static AbstractSelect createComboBox() {
-        return createComboBox(null);
-    }
-
-    public static AbstractSelect createComboBox(String name) {
-        NativeSelect cb = name == null ? new NativeSelect() : new NativeSelect(name);
-        cb.setImmediate(true);
-        cb.setWidth(16, Unit.EM);
-        cb.setHeight(2.15f, Unit.EM);
-        cb.setNullSelectionAllowed(false);
-        return cb;
     }
 }

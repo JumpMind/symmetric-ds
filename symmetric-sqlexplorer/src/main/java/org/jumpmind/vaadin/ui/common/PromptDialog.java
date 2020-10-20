@@ -30,7 +30,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
-import com.vaadin.v7.ui.TextField;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
@@ -63,10 +63,9 @@ public class PromptDialog extends Window {
 
         final TextField field = new TextField();
         field.setWidth(100, Unit.PERCENTAGE);
-        field.setNullRepresentation("");
         field.setValue(defaultValue);
         if (defaultValue != null) {
-            field.setSelectionRange(0, defaultValue.length());
+            field.setSelection(0, defaultValue.length());
         }
         layout.addComponent(field);
 

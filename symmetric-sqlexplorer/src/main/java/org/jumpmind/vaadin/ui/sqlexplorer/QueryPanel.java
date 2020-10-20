@@ -62,6 +62,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
@@ -69,7 +70,6 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.v7.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.themes.ValoTheme;
@@ -307,8 +307,8 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
             @Override
             public void handleAction(Object sender, Object target) {
-                if (target instanceof Table) {
-                    Table table = (Table) target;
+                if (target instanceof Grid<?>) {
+                    Grid<?> table = (Grid<?>) target;
                     TabularResultLayout layout = (TabularResultLayout) table.getParent();
                     reExecute(layout.getSql());
                 } else if (target instanceof AceEditor) {
@@ -329,8 +329,8 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
             
             @Override
             public void handleAction(Object sender, Object target){
-                if (target instanceof Table) {
-                    Table table = (Table) target;
+                if (target instanceof Grid<?>) {
+                    Grid<?> table = (Grid<?>) target;
                     TabularResultLayout layout = (TabularResultLayout) table.getParent();
                     reExecute(layout.getSql());
                 }else if (target instanceof AceEditor){

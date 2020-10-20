@@ -31,6 +31,8 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -45,24 +47,19 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.v7.data.Property.ValueChangeEvent;
-import com.vaadin.v7.data.Property.ValueChangeListener;
-import com.vaadin.v7.event.FieldEvents.TextChangeEvent;
-import com.vaadin.v7.event.FieldEvents.TextChangeListener;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.v7.ui.AbstractSelect;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.v7.ui.ComboBox;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.v7.ui.TextArea;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
@@ -78,7 +75,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     VerticalLayout wrapper;
     protected HorizontalLayout buttonLayout;
     protected TextArea textField;
-    protected AbstractSelect displayBox;
+    protected NativeSelect<String> displayBox;
     protected Button downloadButton;
     protected Table table;
     protected Column column;
@@ -102,7 +99,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         wrapper.setSizeFull();
         textField = new TextArea();
         textField.setSizeFull();
-        textField.setWordwrap(false);
+        textField.setWordWrap(false);
         wrapper.addComponent(textField);
         addComponent(wrapper, 1);
 
@@ -113,21 +110,14 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         addComponent(buttonLayout);
 
         if (value != null && isEncodedInHex) {
-            displayBox = new ComboBox("Display As");
-            displayBox.addItem("Hex");
-            displayBox.addItem("Text");
-            displayBox.addItem("Decimal");
-            displayBox.setNullSelectionAllowed(false);
-            displayBox.select("Hex");
-            displayBox.addValueChangeListener(new ValueChangeListener() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void valueChange(ValueChangeEvent event) {
-                    updateTextField((String) displayBox.getValue(), value);
-                }
-            });
+            List<String> displayList = new ArrayList<String>();
+            displayList.add("Hex");
+            displayList.add("Text");
+            displayList.add("Decimal");
+            displayBox = new NativeSelect<String>("Display As", displayList);
+            displayBox.setEmptySelectionAllowed(false);
+            displayBox.setSelectedItem("Hex");
+            displayBox.addValueChangeListener(event -> updateTextField((String) displayBox.getValue(), value));
             buttonLayout.addComponent(displayBox);
         }
         
@@ -145,17 +135,11 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         buttonLayout.setComponentAlignment(closeButton, Alignment.BOTTOM_RIGHT);
 
         textField.setValue(value);
-        textField.addTextChangeListener(new TextChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void textChange(TextChangeEvent event) {
-                if (displayBox != null) {
-                    updateTextField((String) displayBox.getValue(), value);
-                } else {
-                    textField.setValue(value);
-                }
+        textField.addValueChangeListener(event -> {
+            if (displayBox != null) {
+                updateTextField((String) displayBox.getValue(), value);
+            } else {
+                textField.setValue(value);
             }
         });
     }
