@@ -22,7 +22,7 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.io.Serializable;
 
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
@@ -87,7 +87,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
     }
     
     protected void populate(MenuBar menuBar) {
-        executeAtCursorButton = menuBar.addItem("", FontAwesome.PLAY, new Command() {
+        executeAtCursorButton = menuBar.addItem("", VaadinIcons.PLAY, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -98,7 +98,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         });
         executeAtCursorButton.setDescription("Run sql under cursor (CTRL+ENTER)");
 
-        executeScriptButton = menuBar.addItem("", FontAwesome.FORWARD, new Command() {
+        executeScriptButton = menuBar.addItem("", VaadinIcons.FORWARD, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -109,7 +109,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         });
         executeScriptButton.setDescription("Run as script");
 
-        commitButton = menuBar.addItem("", FontAwesome.ARROW_CIRCLE_O_RIGHT, new Command() {
+        commitButton = menuBar.addItem("", VaadinIcons.ARROW_CIRCLE_RIGHT_O, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -122,7 +122,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         commitButton.setDescription("Commit");
         commitButton.setEnabled(false);
 
-        rollbackButton = menuBar.addItem("", FontAwesome.ARROW_CIRCLE_O_LEFT, new Command() {
+        rollbackButton = menuBar.addItem("", VaadinIcons.ARROW_CIRCLE_LEFT_O, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -135,7 +135,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         rollbackButton.setDescription("Rollback");
         rollbackButton.setEnabled(false);
 
-        historyButton = menuBar.addItem("", FontAwesome.SEARCH, new Command() {
+        historyButton = menuBar.addItem("", VaadinIcons.SEARCH, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -147,10 +147,10 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         historyButton.setDescription("Sql History");
         historyButton.setEnabled(true);
 
-        MenuItem optionsButton = menuBar.addItem("", FontAwesome.TASKS, null);
+        MenuItem optionsButton = menuBar.addItem("", VaadinIcons.TASKS, null);
         optionsButton.setDescription("Options");
 
-        importButton = optionsButton.addItem("DB Import", FontAwesome.DOWNLOAD, new Command() {
+        importButton = optionsButton.addItem("DB Import", VaadinIcons.DOWNLOAD, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -160,7 +160,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
             }
         });
 
-        exportButton = optionsButton.addItem("DB Export", FontAwesome.UPLOAD, new Command() {
+        exportButton = optionsButton.addItem("DB Export", VaadinIcons.UPLOAD, new Command() {
 
             private static final long serialVersionUID = 1L;
 
@@ -171,7 +171,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
             }
         });
         
-        fillButton = optionsButton.addItem("DB Fill", FontAwesome.BEER, new Command() {
+        fillButton = optionsButton.addItem("DB Fill", VaadinIcons.FILL, new Command() {
 
             private static final long serialVersionUID = 1L;
 

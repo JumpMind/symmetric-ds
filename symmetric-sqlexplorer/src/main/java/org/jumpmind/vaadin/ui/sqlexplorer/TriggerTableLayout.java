@@ -6,18 +6,15 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.TriggerInfoPanel.Refresher;
 
-import com.vaadin.v7.data.Property;
-import com.vaadin.v7.event.ItemClickEvent;
-import com.vaadin.v7.event.ItemClickEvent.ItemClickListener;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.v7.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Alignment;
-import com.vaadin.v7.ui.Grid;
-import com.vaadin.v7.ui.Grid.SelectionMode;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.v7.ui.Label;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
@@ -30,15 +27,12 @@ public class TriggerTableLayout extends VerticalLayout{
     
     private Trigger trigger;
     
-    private Grid grid;
-    
-    private Settings settings;
+    private Grid<String> grid;
     
     private Refresher refresher;
     
     public TriggerTableLayout(Trigger trigger, Settings settings, Refresher refresher) {
         this.trigger = trigger;
-        this.settings = settings;
         this.refresher = refresher;
         
         createTabularLayout();
@@ -73,46 +67,29 @@ public class TriggerTableLayout extends VerticalLayout{
                 refresher.refresh();
             }
         });
-        refreshButton.setIcon(FontAwesome.REFRESH);
+        refreshButton.setIcon(VaadinIcons.REFRESH);
 
         bar.addComponent(rightBar);
         bar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
         
         this.addComponent(bar);
         
-        grid = fillGrid(settings);
+        grid = fillGrid();
         grid.setSizeFull();
         
-        grid.addItemClickListener(new ItemClickListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void itemClick(ItemClickEvent event) {
-                MouseButton button = event.getButton();
-                if (button == MouseButton.LEFT) {
-                    Object object = event.getPropertyId();
-                    if (object != null && !object.toString().equals("")) {
-                        if (event.isDoubleClick()) {
-
-                            Object prop = event.getPropertyId();
-                            String header = grid.getColumn(prop).getHeaderCaption();
-                            Property<?> p = event.getItem().getItemProperty(prop);
-                            if (p != null) {
-                                String data = String.valueOf(p.getValue());
-                                ReadOnlyTextAreaDialog.show(header, data, false);
-                            }
-
-                        } else {
-                            Object row = event.getItemId();
-                            if (!grid.getSelectedRows().contains(row)) {
-                                grid.deselectAll();
-                                grid.select(row);
-                            } else {
-                                grid.deselect(row);
-                            }
-                        }
+        grid.addItemClickListener(event -> {
+            MouseButton button = event.getMouseEventDetails().getButton();
+            if (button == MouseButton.LEFT) {
+                if (event.getMouseEventDetails().isDoubleClick()) {
+                    String colId = event.getColumn().getId();
+                    if (colId.equals("property")) {
+                        ReadOnlyTextAreaDialog.show("Property", event.getItem(), false);
+                    } else if (colId.equals("value")) {
+                        ReadOnlyTextAreaDialog.show("Value", (String) trigger.getMetaData().get(event.getItem()), false);
                     }
+                } else {
+                    grid.deselectAll();
+                    grid.select(event.getItem());
                 }
             }
         });
@@ -121,23 +98,16 @@ public class TriggerTableLayout extends VerticalLayout{
         this.setExpandRatio(grid, 1);
     }
     
-    private Grid fillGrid(Settings settings) {
-        Grid grid = new Grid();
+    private Grid<String> fillGrid() {
+        Grid<String> grid = new Grid<String>();
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setColumnReorderingAllowed(false);
         
-        Map<String, Object> metaData = trigger.getMetaData();  
-        grid.addColumn("Property", String.class).setHeaderCaption("Property").setHidable(false);
-        grid.addColumn("Value", String.class).setHeaderCaption("Value").setHidable(false);
+        Map<String, Object> metaData = trigger.getMetaData();
+        grid.addColumn(property -> property).setId("property").setCaption("Property").setWidth(250);
+        grid.addColumn(property -> String.valueOf(metaData.get(property))).setId("value").setCaption("Value");
         
-        for (String key : metaData.keySet()) {
-            Object[] row = new Object[2];
-            row[0] = key;
-            row[1] = String.valueOf(metaData.get(key));
-            grid.addRow(row);
-        }
-        
-        grid.getColumn("Property").setWidth(250);
+        grid.setItems(metaData.keySet());
         
         return grid;
     }    

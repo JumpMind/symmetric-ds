@@ -8,7 +8,7 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
@@ -100,7 +100,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
                 refreshSource(trigger);                
             }
         });
-        wrapButton.setIcon(FontAwesome.ALIGN_JUSTIFY);
+        wrapButton.setIcon(VaadinIcons.ALIGN_JUSTIFY);
         
         bar.addComponent(wrapSelect);
         bar.setComponentAlignment(wrapSelect, Alignment.TOP_RIGHT);
@@ -284,7 +284,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
         executingLayout.addComponent(p);
-        tabSheet.addTab(executingLayout, "Details", FontAwesome.SPINNER, 0);
+        tabSheet.addTab(executingLayout, "Details", VaadinIcons.SPINNER, 0);
         tabSheet.setSelectedTab(executingLayout);
         
         TriggerTableLayout triggerTable = new TriggerTableLayout(trigger, settings, new Refresher() {

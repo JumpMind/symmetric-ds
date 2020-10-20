@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 
-public class ImportedKeysMetaDataTableCreator extends AbstractMetaDataTableCreator {
+public class ImportedKeysMetaDataTableCreator extends AbstractMetaDataGridCreator {
 
     public ImportedKeysMetaDataTableCreator(JdbcSqlTemplate sqlTemplate, Table table,
             Settings settings) {

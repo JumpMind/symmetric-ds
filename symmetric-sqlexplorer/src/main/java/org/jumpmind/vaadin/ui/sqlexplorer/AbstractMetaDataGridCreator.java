@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
@@ -34,9 +35,9 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.v7.ui.Table;
+import com.vaadin.ui.Grid;
 
-abstract public class AbstractMetaDataTableCreator {
+abstract public class AbstractMetaDataGridCreator {
 
     final Logger log = LoggerFactory.getLogger(getClass());
     
@@ -52,31 +53,31 @@ abstract public class AbstractMetaDataTableCreator {
             "TABLE_CATALOG", "TABLE_SCHEMA", "PKTABLE_NAME", "PKTABLE_CATALOG", "PKTABLE_SCHEMA",
             "TABLE_CAT", "TABLE_SCHEM" };
 
-    public AbstractMetaDataTableCreator(JdbcSqlTemplate sqlTemplate, org.jumpmind.db.model.Table table,
+    public AbstractMetaDataGridCreator(JdbcSqlTemplate sqlTemplate, org.jumpmind.db.model.Table table,
             Settings settings) {
         this.sqlTemplate = sqlTemplate;
         this.table = table;
         this.settings = settings;
     }
 
-    public Table create() {
-        return sqlTemplate.execute(new IConnectionCallback<com.vaadin.v7.ui.Table>() {
+    public Grid<List<Object>> create() {
+        return sqlTemplate.execute(new IConnectionCallback<Grid<List<Object>>>() {
 
-            public com.vaadin.v7.ui.Table execute(Connection con) throws SQLException {
+            public Grid<List<Object>> execute(Connection con) throws SQLException {
                 TypedProperties properties = settings.getProperties();
                 ResultSet rs = null;
-                Table t = null;
+                Grid<List<Object>> g = null;
                 try {
                     DatabaseMetaData metadata = con.getMetaData();
                     rs = getMetaDataResultSet(metadata);
-                    t = CommonUiUtils.putResultsInTable(rs, Integer.MAX_VALUE,
+                    g = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE,
                             properties.is(SQL_EXPLORER_SHOW_ROW_NUMBERS), getColumnsToExclude());
-                    t.setSizeFull();
-                    return t;
+                    g.setSizeFull();
+                    return g;
                 } catch (Exception ex) {
                     log.info("Failed to retrieve meta data.  It might be that this driver doesn't support it.  Turn on debug logging to see the resulting stacktrace");
                     log.debug("", ex);
-                    return CommonUiUtils.createTable();
+                    return new Grid<List<Object>>();
                 } finally {
                     JdbcSqlTemplate.close(rs);
                 }
