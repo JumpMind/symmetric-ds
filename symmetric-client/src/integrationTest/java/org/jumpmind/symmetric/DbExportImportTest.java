@@ -24,11 +24,11 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.sql.Types;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
@@ -563,7 +563,7 @@ public class DbExportImportTest extends AbstractServiceTest {
                     oOne = FormatUtils.parseDate(oOne.toString(), FormatUtils.TIMESTAMP_PATTERNS);
                     oTwo = FormatUtils.parseDate(oTwo.toString(), FormatUtils.TIMESTAMP_PATTERNS);
                 }
-                if (!ObjectUtils.equals(oOne, oTwo)) {
+                if (!Objects.equals(oOne, oTwo)) {
                     Assert.fail("The " + i + " element was not the same.  The column " + key
                             + " had a value of " + rOne.get(key) + " for one row and "
                             + rTwo.get(key) + " for the other");
@@ -575,14 +575,11 @@ public class DbExportImportTest extends AbstractServiceTest {
     protected Row findInList(List<Row> rows, String pk, Object pkValue) {
         for (Row row : rows) {
             Object value = row.get(pk);
-            if (ObjectUtils.equals(value, pkValue)) {
+            if (Objects.equals(value, pkValue)) {
                 return row;
             }
         }
         return null;
     }
-    
-    
-
 
 }

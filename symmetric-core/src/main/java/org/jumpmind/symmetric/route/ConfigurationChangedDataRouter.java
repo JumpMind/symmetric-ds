@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Collection;
 import java.util.Date;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.extension.IBuiltInExtensionPoint;

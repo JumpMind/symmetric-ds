@@ -22,7 +22,7 @@ package org.jumpmind.db.platform.oracle;
 
 import java.sql.Types;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;

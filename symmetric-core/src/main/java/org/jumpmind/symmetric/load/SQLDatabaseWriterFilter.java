@@ -1,6 +1,6 @@
 package org.jumpmind.symmetric.load;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.Iterator;
 import java.util.List;

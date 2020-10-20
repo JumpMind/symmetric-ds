@@ -21,24 +21,32 @@
 package org.jumpmind.symmetric.load;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
+import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
+import org.jumpmind.symmetric.io.data.CsvData;
+import org.jumpmind.symmetric.io.data.CsvUtils;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.writer.BigQueryDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.CassandraDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
+import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.PingBack;
+import org.jumpmind.symmetric.io.data.writer.Conflict.ResolveConflict;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DefaultTransformWriterConflictResolver;
 import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
@@ -47,6 +55,8 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.data.writer.KafkaWriter;
 import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.TriggerHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +146,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                 symmetricDialect.getTargetPlatform(), symmetricDialect.getTablePrefix(),
                 new DefaultTransformWriterConflictResolver(transformWriter) {
                     @Override
-                    protected void beforeResolutionAttempt(Conflict conflict) {
+                    protected void beforeResolutionAttempt(CsvData csvData, Conflict conflict) {
                         if (conflict.getPingBack() != PingBack.OFF) {
                             DynamicDefaultDatabaseWriter writer = transformWriter
                                     .getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
@@ -148,13 +158,59 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                     }
 
                     @Override
-                    protected void afterResolutionAttempt(Conflict conflict) {
+                    protected void afterResolutionAttempt(CsvData csvData, Conflict conflict) {
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DynamicDefaultDatabaseWriter writer = transformWriter
-                                    .getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
+                            DynamicDefaultDatabaseWriter writer = transformWriter.getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
+                            }
+                        }
+                        if (conflict.getResolveType() == ResolveConflict.NEWER_WINS &&
+                                conflict.getDetectType() != DetectConflict.USE_TIMESTAMP &&
+                                conflict.getDetectType() != DetectConflict.USE_VERSION) {
+                            DynamicDefaultDatabaseWriter writer = transformWriter.getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
+                            Boolean isWinner = (Boolean) writer.getContext().get(DatabaseConstants.IS_CONFLICT_WINNER);
+                            if (isWinner != null && isWinner == true) {
+                                writer.getContext().remove(DatabaseConstants.IS_CONFLICT_WINNER);
+                                ISqlTransaction transaction = writer.getTransaction();
+                                if (transaction != null) {
+                                    handleWinnerForNewerCaptureWins(transaction, csvData);
+                                }
+                            }        
+                        }
+                    }
+                    
+                    /**
+                     * When using new captured row wins, the winning row is saved to sym_data so other conflicts can see it.
+                     * When two nodes are in conflict, they race to update the third node, but the first node will get no conflict,
+                     * so we send a script back to all but winning node to ask if they have a newer row. 
+                     */
+                    protected void handleWinnerForNewerCaptureWins(ISqlTransaction transaction, CsvData csvData) {
+                        String tableName = csvData.getAttribute(CsvData.ATTRIBUTE_TABLE_NAME);
+                        List<TriggerHistory> hists = engine.getTriggerRouterService().getActiveTriggerHistories(tableName);
+                        if (hists != null && hists.size() > 0) {
+                            TriggerHistory hist = hists.get(0);
+                            Data data = new Data(tableName, csvData.getDataEventType(),
+                                    csvData.getCsvData(CsvData.ROW_DATA), csvData.getCsvData(CsvData.PK_DATA), hist, 
+                                    csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID), null, csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID));
+                            data.setTableName(tableName);
+                            data.setOldData(csvData.getCsvData(CsvData.OLD_DATA));
+                            data.setPreRouted(true);
+                            data.setCreateTime(csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME));
+                            engine.getDataService().insertData(transaction, data);
+    
+                            String channelId = csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID);
+                            if (channelId != null && !channelId.equals(Constants.CHANNEL_RELOAD)) {
+                                String sourceNodeId = csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
+                                String script = "if (context != void && context != null) { " +
+                                    "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
+                                    tableName + "\", " + CsvUtils.escapeCsvData(csvData.getCsvData(CsvData.PK_DATA)) + ", new Date(" +
+                                    ((Date) csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME)).getTime() +"L), \"" + sourceNodeId + "\"); }";
+                                Data scriptData = new Data(tableName, DataEventType.BSH,
+                                        CsvUtils.escapeCsvData(script), null, hist, Constants.CHANNEL_RELOAD, null, null);
+                                scriptData.setSourceNodeId(sourceNodeId);
+                                engine.getDataService().insertData(transaction, scriptData);
                             }
                         }
                     }

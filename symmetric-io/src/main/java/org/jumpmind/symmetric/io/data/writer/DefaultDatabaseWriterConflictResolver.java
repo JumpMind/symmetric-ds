@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
@@ -46,6 +46,7 @@ import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
+import org.jumpmind.db.util.DatabaseConstants;
 import org.jumpmind.db.util.TableRow;
 import org.jumpmind.exception.ParseException;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -123,26 +124,53 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         String[] pkData = data.getPkData(targetTable);
         String pkCsv = CsvUtils.escapeCsvData(pkData);
         Timestamp loadingTs = data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
-        Timestamp existingTs = null;
+        Date existingTs = null;
+        String existingNodeId = null;
 
         if (loadingTs != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
 
-            String sql = "select max(create_time) from " + databaseWriter.getTablePrefix() + 
-                    "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
-                    "(event_type in ('U', 'D') and pk_data like ?))";
+            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+                // make sure we lock the row that is in conflict to prevent a race with other data loading
+                DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
+                        targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(), 
+                        new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
+                databaseWriter.getTransaction(targetTable.getName()).prepareAndExecute(st.getSql(), (Object[]) ArrayUtils.addAll(pkData, pkData));
+            }
 
-            existingTs = databaseWriter.getTransaction().queryForObject(sql, Timestamp.class, targetTable.getName(),
-                    pkCsv + "%", pkCsv);
+            String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() + 
+                    "_data where table_name = ? and ((event_type = 'I' and row_data like ?) or " +
+                    "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc";
+            
+            Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs };
+            List<Row> rows = null;
+
+            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+                // we may have waited for another transaction to commit, so query with a new transaction
+                rows = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplate().query(sql, args);
+            } else {
+                writer.getContext().findTransaction().queryForRow(sql, args);
+            }
+
+            if (rows != null && rows.size() > 0) {
+                existingTs = rows.get(0).getDateTime("create_time");
+                existingNodeId = rows.get(0).getString("source_node_id");
+                if (existingNodeId == null || existingNodeId.equals("")) {
+                    existingNodeId = writer.getContext().getBatch().getTargetNodeId();
+                }
+            }
         }
 
-        boolean isWinner = existingTs == null || (loadingTs != null && loadingTs.compareTo(existingTs) > 0);
+        boolean isWinner = existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
+                || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
+        writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
         
         if (log.isDebugEnabled()) {
-            log.debug("{} row with local time of {} and remote time of {} for table {} and pk of {}",
-                    isWinner ? "Winning" : "Losing", existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(pkData));
+            log.debug("{} row from batch {} with local time of {} and remote time of {} for table {} and pk of {}",
+                    isWinner ? "Winning" : "Losing", writer.getContext().getBatch().getNodeBatchId(), 
+                            existingTs, loadingTs, targetTable.getName(), ArrayUtils.toString(pkData));
         }
         return isWinner;
     }

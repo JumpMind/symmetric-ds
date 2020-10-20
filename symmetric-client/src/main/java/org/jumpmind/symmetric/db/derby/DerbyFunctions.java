@@ -32,7 +32,7 @@ import java.sql.Types;
 import java.util.Hashtable;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.derby.iapi.db.Factory;
 import org.apache.derby.iapi.db.TriggerExecutionContext;
 import org.apache.derby.iapi.sql.conn.LanguageConnectionContext;

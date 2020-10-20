@@ -26,7 +26,7 @@ import java.io.FileInputStream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.DbImport.Format;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;

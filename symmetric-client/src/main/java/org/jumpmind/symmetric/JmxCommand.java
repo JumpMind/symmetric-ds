@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.io.FileReader;

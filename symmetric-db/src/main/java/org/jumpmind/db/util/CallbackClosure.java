@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.apache.commons.collections.Closure;
+import org.apache.commons.collections4.Closure;
 import org.jumpmind.db.platform.DdlException;
 
 /**

@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.job;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
@@ -86,7 +86,7 @@ public class JavaJob extends AbstractJob {
     
     final static String CODE_START = 
             "import org.jumpmind.symmetric.job.JavaJob;\n" + 
-            "import org.apache.commons.lang.StringUtils;\n" + 
+            "import org.apache.commons.lang3.StringUtils;\n" + 
             "import org.jumpmind.symmetric.ISymmetricEngine;\n" + 
             "import org.jumpmind.symmetric.model.JobDefinition.JobType;\n" + 
             "import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;\n" + 

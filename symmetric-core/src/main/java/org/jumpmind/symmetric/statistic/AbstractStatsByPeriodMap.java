@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 abstract public class AbstractStatsByPeriodMap<T,M extends AbstractNodeHostStats> extends TreeMap<Date, T> {
 

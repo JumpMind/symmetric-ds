@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.web.rest;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -41,7 +41,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -1449,7 +1449,7 @@ public class RestService {
                                     dataService.sendSchema(node.getNodeId(),
                                             trigger.getSourceCatalogName(),
                                             trigger.getSourceSchemaName(),
-                                            trigger.getSourceTableName(), false);
+                                            trigger.getSourceTableName(), false, false, false, false);
                                     results.get(node.getNodeId()).add(
                                             new TableName(trigger.getSourceCatalogName(), trigger
                                                     .getSourceSchemaName(), trigger

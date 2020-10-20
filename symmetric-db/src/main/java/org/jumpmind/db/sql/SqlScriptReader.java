@@ -25,7 +25,7 @@ import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.util.FormatUtils;
 

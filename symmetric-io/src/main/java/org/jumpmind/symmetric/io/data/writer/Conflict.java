@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 
 public class Conflict implements Serializable {
@@ -54,7 +54,7 @@ public class Conflict implements Serializable {
     private DetectConflict detectType = DetectConflict.USE_CHANGED_DATA;
     private String detectExpression;
     private ResolveConflict resolveType = ResolveConflict.NEWER_WINS;
-    private boolean resolveChangesOnly = true;
+    private boolean resolveChangesOnly = false;
     private boolean resolveRowOnly = true;
     private Date createTime = new Date();
     private String lastUpdateBy = "symmetricds";

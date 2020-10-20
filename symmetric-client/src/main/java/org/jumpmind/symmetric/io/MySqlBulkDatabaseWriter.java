@@ -32,7 +32,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -118,9 +118,9 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             case INSERT:
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 try {
-                    String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                     byte[] byteData = null;
                     if (needsBinaryConversion) {
+                        String[] parsedData = data.getParsedData(CsvData.ROW_DATA);
                         ByteArrayOutputStream out = new ByteArrayOutputStream();
                         CsvWriter writer = new CsvWriter(new OutputStreamWriter(out), ',');
                         writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
@@ -151,8 +151,9 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         writer.close();
                         byteData = out.toByteArray();
                     } else {
-                            String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '"', CsvWriter.ESCAPE_MODE_BACKSLASH, "\\N");
-                            byteData = formattedData.getBytes();
+                        String[] rowData = getRowData(data, CsvData.ROW_DATA);
+                        String formattedData = CsvUtils.escapeCsvData(rowData, '\n', '"', CsvWriter.ESCAPE_MODE_BACKSLASH, "\\N");
+                        byteData = formattedData.getBytes();
                     }
                     this.stagedInputFile.getOutputStream().write(byteData);
                     loadedRows++;
@@ -195,7 +196,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         (isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
                         this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
                                 " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY '' " +
-                                getCommaDeliminatedColumns(table.getColumns());
+                                getCommaDeliminatedColumns(targetTable.getColumns());
                 Statement stmt = c.createStatement();
     
                 //TODO:  clean this up, deal with errors, etc.?
@@ -309,7 +310,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         //TODO: We should use constants for dir structure path, 
         //      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create("bulkloaddir",
-                table.getName() + this.getBatch().getBatchId() + ".csv");
+                targetTable.getName() + this.getBatch().getBatchId() + ".csv");
     }
 
 }

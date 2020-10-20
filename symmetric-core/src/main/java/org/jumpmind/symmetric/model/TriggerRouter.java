@@ -24,7 +24,7 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

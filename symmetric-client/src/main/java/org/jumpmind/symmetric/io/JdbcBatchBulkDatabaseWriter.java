@@ -1,7 +1,6 @@
 package org.jumpmind.symmetric.io;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
-import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;

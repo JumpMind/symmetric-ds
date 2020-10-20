@@ -90,6 +90,9 @@ public interface IDataService {
 
     public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers);
 
+    public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData, 
+            Date minCreateTime, String winningNodeId);
+
     /**
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
      * 
@@ -105,10 +108,10 @@ public interface IDataService {
     public String sendSQL(String nodeId, String sql);
 
     public Map<Integer, ExtractRequest> insertReloadEvents(
-    		Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests,
-    		ProcessInfo processInfo, List<TriggerRouter> triggerRouters,
-    		Map<Integer, ExtractRequest> extractRequests,
-    		IReloadGenerator reloadGenerator);
+            Node targetNode, boolean reverse, List<TableReloadRequest> reloadRequests,
+            ProcessInfo processInfo, List<TriggerRouter> triggerRouters,
+            Map<Integer, ExtractRequest> extractRequests,
+            IReloadGenerator reloadGenerator);
     
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
     
@@ -118,7 +121,8 @@ public interface IDataService {
     public void sendScript(String nodeId, String script, boolean isLoad);
     
     public boolean sendSchema(String nodeId, String catalogName, String schemaName,
-            String tableName, boolean isLoad);
+            String tableName, boolean isLoad, boolean excludeIndices, boolean excludeForeignKeys,
+            boolean excludeDefaults);
 
     /**
      * Update {@link Node} information for this node and call {@link IHeartbeatListener}s.
@@ -152,11 +156,11 @@ public interface IDataService {
     public void insertScriptEvent(ISqlTransaction transaction, String channelId,
             Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String createBy);
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
     
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy);
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
     
-    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId, String createBy);
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId, String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
     
     /**
      * Count the number of data ids in a range

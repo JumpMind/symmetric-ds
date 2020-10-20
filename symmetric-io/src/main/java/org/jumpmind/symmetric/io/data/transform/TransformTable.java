@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.io.data.transform;
 import java.util.*;
 
 import bsh.Interpreter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.*;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;

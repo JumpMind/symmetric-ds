@@ -22,7 +22,7 @@ package org.jumpmind.symmetric.model;
 
 import java.util.Date;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 public class JobDefinition {
     

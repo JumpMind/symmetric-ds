@@ -42,7 +42,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.properties.SortedProperties;
@@ -194,7 +194,9 @@ public class SymmetricEngineHolder {
 
             if (autoCreate) {
                 if (isMultiServerMode()) {
-                    File enginesDir = new File(AbstractCommandLauncher.getEnginesDir());
+                    String enginesDirname = AbstractCommandLauncher.getEnginesDir();
+                    log.info("Starting in multi-server mode with engines directory at {}", enginesDirname);
+                    File enginesDir = new File(enginesDirname);
                     File[] files = null;
 
                     if (enginesDir != null) {
@@ -227,6 +229,7 @@ public class SymmetricEngineHolder {
                     }
 
                 } else {
+                    log.info("Starting in single-server mode");
                     enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
                 }
                 
@@ -249,8 +252,7 @@ public class SymmetricEngineHolder {
     public void uninstallEngine(ISymmetricEngine engine) {
         Node node = engine.getNodeService().getCachedIdentity();
         String engineName = engine.getEngineName();
-        File file = new SymmetricAdmin("uninstall", "", "")
-                .findPropertiesFileForEngineWithName(engineName);
+        File file = SymmetricAdmin.findPropertiesFileForEngineWithName(engineName);
         engine.uninstall();
         engine.destroy();
         if (file != null) {

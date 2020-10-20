@@ -22,7 +22,7 @@ package org.jumpmind.util;
 
 import java.util.Date;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import static org.junit.Assert.*;
 import org.junit.Test;
 

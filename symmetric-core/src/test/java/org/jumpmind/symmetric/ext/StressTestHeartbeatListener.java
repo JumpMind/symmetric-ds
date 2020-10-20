@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -142,7 +142,7 @@ public class StressTestHeartbeatListener
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
             // Drop the table using the config channel to force drop order
             engine.getDataService().sendSQL(client.getNodeId(), null, null, "SYM_PARAMETER", dropOutgoingSql);
-            engine.getDataService().sendSchema(client.getNodeId(), null, null, STRESS_TEST_ROW_OUTGOING, true);
+            engine.getDataService().sendSchema(client.getNodeId(), null, null, STRESS_TEST_ROW_OUTGOING, true, false, false, false);
             if (initialSeedSize > 0) {
                 engine.getDataService().reloadTable(client.getNodeId(), null, null, STRESS_TEST_ROW_OUTGOING);
             }
@@ -159,7 +159,7 @@ public class StressTestHeartbeatListener
         for (Node client : engine.getNodeService().findTargetNodesFor(NodeGroupLinkAction.W)) {
             // Drop the table using the config channel to force drop order
             engine.getDataService().sendSQL(client.getNodeId(), null, null, "SYM_PARAMETER", dropIncomingSql);
-            engine.getDataService().sendSchema(client.getNodeId(), null, null, STRESS_TEST_ROW_INCOMING, true);
+            engine.getDataService().sendSchema(client.getNodeId(), null, null, STRESS_TEST_ROW_INCOMING, true, false, false, false);
         }
     }
 

@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
@@ -199,7 +199,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
 
     protected List<Class> getExtensionClassList(IExtensionPoint ext) {
         List<Class> classList = new ArrayList<Class>();
-        List<Class> interfaces = ClassUtils.getAllInterfaces(ext.getClass());
+        List<Class<?>> interfaces = ClassUtils.getAllInterfaces(ext.getClass());
         for (Class clazz : interfaces) {
             if (IExtensionPoint.class.isAssignableFrom(clazz) && ! clazz.getName().equals(IExtensionPoint.class.getName())) {
                 classList.add(clazz);

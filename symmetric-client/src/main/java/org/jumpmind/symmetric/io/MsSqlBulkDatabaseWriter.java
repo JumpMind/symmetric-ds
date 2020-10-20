@@ -28,15 +28,14 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -82,19 +81,6 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     public boolean start(Table table) {
         this.table = table;
         if (super.start(table)) {
-            if (sourceTable != null && targetTable == null) {
-                String qualifiedName = sourceTable.getFullyQualifiedTableName();
-                if (writerSettings.isIgnoreMissingTables()) {                    
-                    if (!missingTables.contains(qualifiedName)) {
-                        log.info("Did not find the {} table in the target database. This might have been part of a sql "
-                                + "command (truncate) but will work if the fully qualified name was in the sql provided", qualifiedName);
-                        missingTables.add(qualifiedName);
-                    }
-                } else {
-                    throw new SymmetricException("Could not load the %s table.  It is not in the target database", qualifiedName);
-                }
-            }
-            
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX) && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
@@ -104,9 +90,9 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            databaseTable = getPlatform(table).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-                    sourceTable.getName(), false);
-            if (targetTable != null) {
+            if (sourceTable != null && targetTable != null) {
+                databaseTable = getPlatform(table).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+                        sourceTable.getName(), false);
                 String[] csvNames = targetTable.getColumnNames();
                 String[] columnNames = databaseTable.getColumnNames();
                 needsColumnsReordered = false;
@@ -117,8 +103,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     }
                 }
             }
-            //TODO: Did this because start is getting called multiple times
-            //      for the same table in a single batch before end is being called
+            // TODO: Did this because start is getting called multiple times
+            // for the same table in a single batch before end is being called
             if (this.stagedInputFile == null) {
                 createStagingFile();
             }

@@ -166,6 +166,13 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     }
 
     @Test
+    public void testUpdateUkViolation() throws Exception {
+        String firstId = insert(getNextId(), "update-uk1", null);
+        insert(getNextId(), "update-uk2", null);
+        update(firstId, getNextId(), "update-uk2", null);
+    }
+
+    @Test
     public void testUpdateUkFkViolationChildTable() throws Exception {
         String firstId = insert(getNextId(), "update2-ukfk", null);
         whichTable = WhichTable.CHILD;

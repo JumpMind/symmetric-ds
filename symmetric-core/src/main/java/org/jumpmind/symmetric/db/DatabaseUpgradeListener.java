@@ -27,9 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.lang3.time.DateUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnDataTypeChange;
@@ -94,6 +94,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
 
         if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel)) {
+            // TODO: check if config even has two routers for this node
             log.info("Checking data_event for upgrade");
             
             List<Row> rows = engine.getDatabasePlatform().getSqlTemplateDirty().query("select batch_id, data_id, max(router_id) router_id " + 

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -227,7 +227,7 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
             println(CsvConstants.BASETIME, String.valueOf(baseTime));            
         }
         if (sendCaptureTime && sendRowCaptureTime && createTime != null) {
-            long thisTime = baseTime - createTime.getTime();
+            long thisTime = createTime.getTime() - baseTime;
             if (thisTime != lastTime) {
                 println(CsvConstants.TIME, String.valueOf(thisTime));
                 lastTime = thisTime;

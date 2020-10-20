@@ -20,7 +20,7 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jumpmind.symmetric.common.Constants.LOG_PROCESS_SUMMARY_THRESHOLD;
 
 import java.util.ArrayList;
@@ -36,8 +36,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -463,7 +463,7 @@ public class RouterService extends AbstractService implements IRouterService {
     
             if (!onlyDefaultRoutersAssigned.equals(defaultRouterOnlyLastKnownState.get(channelId))) {
                 if (onlyDefaultRoutersAssigned) {
-                    log.info("The '{}' channel for the '{}' node group has only default routers assigned to it.  Change data won't be selected during routing", channelId, nodeGroupId);
+                    log.debug("The '{}' channel for the '{}' node group has only default routers assigned to it.  Change data won't be selected during routing", channelId, nodeGroupId);
                 } 
                 defaultRouterOnlyLastKnownState.put(channelId, onlyDefaultRoutersAssigned);
             }
@@ -861,8 +861,8 @@ public class RouterService extends AbstractService implements IRouterService {
                         List<String> targetNodeIdsList = Arrays.asList(targetNodeIds.split(","));
                         nodeIds = CollectionUtils.intersection(targetNodeIdsList, toNodeIds(findAvailableNodes(triggerRouter, context)));
 
-                        if (nodeIds.size() == 0) {
-                            log.info(
+                        if (nodeIds.size() == 0 && log.isDebugEnabled()) {
+                            log.debug(
                                     "None of the target nodes specified in the data.node_list field ({}) were qualified nodes. Data id {} for table '{}' will not be routed using the {} router",
                                     new Object[] {targetNodeIds, data.getDataId(), data.getTableName(), triggerRouter.getRouter().getRouterId() });
                         }

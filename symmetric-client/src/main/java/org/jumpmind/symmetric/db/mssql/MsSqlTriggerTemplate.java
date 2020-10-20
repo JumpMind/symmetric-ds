@@ -20,12 +20,13 @@
  */
 package org.jumpmind.symmetric.db.mssql;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.sql.Types;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -424,6 +425,19 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
             return "max";
         }
         return column.getSize();
+    }
+
+    @Override
+    protected boolean useTriggerTemplateForColumnTemplatesDuringInitialLoad(Column column) {
+        boolean result = super.useTriggerTemplateForColumnTemplatesDuringInitialLoad(column);
+        if (column != null) {
+            int type = column.getJdbcTypeCode();
+            if (type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE) {
+                // always use template for decimal to avoid conversion to scientific notation
+                result = true;
+            }
+        }
+        return result;
     }
 
     @Override

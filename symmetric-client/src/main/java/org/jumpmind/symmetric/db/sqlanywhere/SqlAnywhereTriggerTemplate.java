@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.db.sqlanywhere;
 import java.sql.Types;
 import java.util.HashMap;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;

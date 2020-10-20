@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.DbTestUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;

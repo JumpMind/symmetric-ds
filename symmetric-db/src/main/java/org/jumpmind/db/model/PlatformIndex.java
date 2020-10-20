@@ -2,7 +2,7 @@ package org.jumpmind.db.model;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 public class PlatformIndex implements Serializable, Cloneable {
 

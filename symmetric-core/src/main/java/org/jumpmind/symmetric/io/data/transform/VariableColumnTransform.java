@@ -23,7 +23,7 @@ package org.jumpmind.symmetric.io.data.transform;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.common.Constants;

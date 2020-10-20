@@ -92,8 +92,11 @@ public class Http2Connection extends HttpConnection {
 
     protected void reset() {
         executor = Executors.newSingleThreadExecutor(new CustomizableThreadFactory(Thread.currentThread().getName()));
-        clientBuilder = new OkHttpClient.Builder().sslSocketFactory(sslSocketFactory, trustManager).
-                hostnameVerifier(hostnameVerifier).retryOnConnectionFailure(true);
+        clientBuilder = new OkHttpClient.Builder();
+        if (sslSocketFactory != null && trustManager != null) {
+            clientBuilder = clientBuilder.sslSocketFactory(sslSocketFactory, trustManager);
+        }
+        clientBuilder.hostnameVerifier(hostnameVerifier).retryOnConnectionFailure(true);
         requestBuilder = new Request.Builder().url(url);
         dooutput = false;
         requestMethod = "GET";

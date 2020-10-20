@@ -26,7 +26,6 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.FtpDataWriter;
 import org.jumpmind.symmetric.io.FtpDataWriter.Format;
 import org.jumpmind.symmetric.io.FtpDataWriter.Protocol;
