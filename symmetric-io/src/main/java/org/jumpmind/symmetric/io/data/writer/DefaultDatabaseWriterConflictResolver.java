@@ -145,18 +145,18 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     "(event_type in ('U', 'D') and pk_data like ?)) and create_time >= ? order by create_time desc";
             
             Object[] args = new Object[] { targetTable.getName(), pkCsv + "%", pkCsv, loadingTs };
-            List<Row> rows = null;
+            Row row = null;
 
             if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction
-                rows = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplate().query(sql, args);
+                row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplate().queryForRow(sql, args);
             } else {
-                writer.getContext().findTransaction().queryForRow(sql, args);
+                row = writer.getContext().findTransaction().queryForRow(sql, args);
             }
 
-            if (rows != null && rows.size() > 0) {
-                existingTs = rows.get(0).getDateTime("create_time");
-                existingNodeId = rows.get(0).getString("source_node_id");
+            if (row != null) {
+                existingTs = row.getDateTime("create_time");
+                existingNodeId = row.getString("source_node_id");
                 if (existingNodeId == null || existingNodeId.equals("")) {
                     existingNodeId = writer.getContext().getBatch().getTargetNodeId();
                 }
