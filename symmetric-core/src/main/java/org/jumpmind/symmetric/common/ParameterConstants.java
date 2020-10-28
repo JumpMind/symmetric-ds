@@ -354,6 +354,7 @@ final public class ParameterConstants {
 
     public final static String NODE_COPY_MODE_ENABLED = "node.copy.mode.enabled";
     public final static String NODE_PASSWORD_FAILED_ATTEMPTS = "node.password.failed.attempts";
+    public final static String USER_PASSWORD_FAILED_ATTEMPTS = "console.password.failed.attempts";
 
     public final static String NODE_OFFLINE = "node.offline";
     public final static String NODE_OFFLINE_INCOMING_DIR = "node.offline.incoming.dir";
