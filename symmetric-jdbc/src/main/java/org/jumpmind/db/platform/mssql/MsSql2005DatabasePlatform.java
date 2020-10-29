@@ -20,11 +20,16 @@
  */
 package org.jumpmind.db.platform.mssql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDdlBuilder;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 /*
@@ -57,5 +62,38 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
                     String.class);
         }
         return defaultSchema;
+    }
+    
+    @Override
+    public List<Transaction> getTransactions() {
+        String sql = "select" + 
+                "  r.session_id," + 
+                "  s.login_name," + 
+                "  c.client_net_address," + 
+                "  s.host_name," + 
+                "  r.status," + 
+                "  r.reads," + 
+                "  r.writes," + 
+                "  r.blocking_session_id," + 
+                "  r.start_time," + 
+                "  sql.text " + 
+                "from sys.dm_exec_requests as r " + 
+                "left join sys.dm_exec_connections as c" + 
+                "  on r.connection_id = c.connection_id " + 
+                "join sys.dm_exec_sessions as s" + 
+                "  on r.session_id = s.session_id " + 
+                "cross apply sys.dm_exec_sql_text(r.sql_handle) as sql;";
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        for (Row row : getSqlTemplate().query(sql)) {
+            Transaction transaction = new Transaction(row.getString("session_id"), row.getString("login_name"),
+                    row.getString("blocking_session_id"), row.getDateTime("start_time"), row.getString("text"));
+            transaction.setRemoteIp(row.getString("client_net_address"));
+            transaction.setRemoteHost(row.getString("host_name"));
+            transaction.setStatus(row.getString("status"));
+            transaction.setReads(row.getInt("reads"));
+            transaction.setWrites(row.getInt("writes"));
+            transactions.add(transaction);
+        }
+        return transactions;
     }
 }

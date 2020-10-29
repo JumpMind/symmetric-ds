@@ -68,6 +68,7 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.CatalogSchema;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -90,6 +91,7 @@ import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.monitor.MonitorTypeBlock;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -339,6 +341,16 @@ public class SnapshotUtil {
         createThreadsFile(tmpDir.getPath(), false);
         createThreadsFile(tmpDir.getPath(), true);
         createThreadStatsFile(tmpDir.getPath());
+        
+        try {
+            List<Transaction> transactions = engine.getDatabasePlatform().getTransactions();
+            if (!transactions.isEmpty()) {
+                createTransactionsFile(engine, tmpDir.getPath(), transactions);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to create transactions file", e);
+        }
+
 
         fos = null;
         try {
@@ -864,7 +876,42 @@ public class SnapshotUtil {
         }
         return file;
     }
-
+    
+    private static File createTransactionsFile(ISymmetricEngine engine, String parent, List<Transaction> transactions) {
+        Map<String, Transaction> transactionMap = new HashMap<String, Transaction>();
+        for (Transaction transaction : transactions) {
+            transactionMap.put(transaction.getId(), transaction);
+        }
+        List<Transaction> filteredTransactions = new ArrayList<Transaction>();
+        String dbUser = engine.getParameterService().getString("db.user");
+        for (Transaction transaction : transactions) {
+            MonitorTypeBlock.filterTransactions(transaction, transactionMap, filteredTransactions, dbUser, false, false);
+        }
+        File file = new File(parent, "transactions.csv");
+        try {
+            OutputStream outputStream = new FileOutputStream(file);
+            CsvWriter csvWriter = new CsvWriter(outputStream, ',', Charset.forName("ISO-8859-1"));
+            String[] heading = { "ID", "Username", "Remote IP", "Remote Host", "Status", "Reads", "Writes",
+                    "Blocking ID", "Duration", "Text" };
+            csvWriter.writeRecord(heading);
+            for (Transaction transaction : filteredTransactions) {
+                String[] row = { transaction.getId(), transaction.getUsername(), transaction.getRemoteIp(),
+                        transaction.getRemoteHost(), transaction.getStatus(),
+                        transaction.getReads() == -1 ? "" : String.valueOf(transaction.getReads()),
+                        transaction.getWrites() == -1 ? "" : String.valueOf(transaction.getWrites()),
+                        transaction.getBlockingId(), String.valueOf(transaction.getDuration()) + " ms",
+                        transaction.getText() };
+                csvWriter.writeRecord(row);
+            }
+            csvWriter.flush();
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            log.warn("Failed to create transactions file", e);
+        }
+        return file;
+    }
+    
     private static void addTableToMap(HashMap<CatalogSchema, List<Table>> catalogSchemas, CatalogSchema catalogSchema, Table table) {
         List<Table> tables = catalogSchemas.get(catalogSchema);
         if (tables == null) {

@@ -40,6 +40,7 @@ import org.jumpmind.symmetric.monitor.IMonitorType;
 import org.jumpmind.symmetric.monitor.MonitorTypeOfflineNodes;
 import org.jumpmind.symmetric.monitor.MonitorTypeBatchError;
 import org.jumpmind.symmetric.monitor.MonitorTypeBatchUnsent;
+import org.jumpmind.symmetric.monitor.MonitorTypeBlock;
 import org.jumpmind.symmetric.monitor.MonitorTypeCpu;
 import org.jumpmind.symmetric.monitor.MonitorTypeDataGap;
 import org.jumpmind.symmetric.monitor.MonitorTypeDisk;
@@ -97,8 +98,9 @@ public class MonitorService extends AbstractService implements IMonitorService {
         this.contextService = contextService;
         hostName = StringUtils.left(AppUtils.getHostName(), 60);
         
-        IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(), 
-                new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(), new MonitorTypeLog(), new MonitorTypeOfflineNodes() };
+        IMonitorType monitorExtensions[] = { new MonitorTypeBatchError(), new MonitorTypeBatchUnsent(), new MonitorTypeCpu(),
+                new MonitorTypeDataGap(), new MonitorTypeDisk(), new MonitorTypeMemory(), new MonitorTypeUnrouted(),
+                new MonitorTypeLog(), new MonitorTypeOfflineNodes(), new MonitorTypeBlock() };
         for (IMonitorType ext : monitorExtensions) {
             extensionService.addExtensionPoint(ext.getName(), ext);    
         }
