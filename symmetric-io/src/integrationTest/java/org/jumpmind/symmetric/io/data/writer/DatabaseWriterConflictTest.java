@@ -85,12 +85,12 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
 
     @Test
     public void testInsertUkViolationDeleteFkViolation() throws Exception {
-        String firstId = insert(getNextId(), "twin", null);
+        String firstId = insert(getNextId(), "twin2", null);
         String secondId = insert(getNextId(), "depends1", firstId);
         String thirdId = insert(getNextId(), "depends2", firstId);
         insert(getNextId(), "depends3", secondId);
         insert(getNextId(), "depends4", thirdId);
-        insert(getNextId(), "twin", null);
+        insert(getNextId(), "twin2", null);
     }
 
     @Test
@@ -182,12 +182,12 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     // TODO: Case when row blocks itself with a FK violation
     //@Test
     public void testUpdatePkViolationDeleteFkViolationBlockingSelf() throws Exception {
-        String firstId = insert(getNextId(), "update-pk1", null);
-        String secondId = insert(getNextId(), "update-pk2", firstId);
+        String firstId = insert(getNextId(), "update2-pk1", null);
+        String secondId = insert(getNextId(), "update2-pk2", firstId);
         
         // this row blocks itself (fk violation), so it gets deleted, then the update gets 0 rows
         // would it work if we then inserted the row, got a PK violation, then updated new values?
-        update(secondId, firstId, "update-pk2", null);
+        update(secondId, firstId, "update2-pk2", null);
     }
 
     @Test
