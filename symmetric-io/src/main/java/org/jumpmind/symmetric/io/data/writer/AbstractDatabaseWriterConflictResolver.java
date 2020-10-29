@@ -104,11 +104,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             }
                             
                             if (isWinner) {
-                                try {
-                                    performFallbackToUpdate(writer, data, conflict, false);
-                                } catch (ConflictException e) {
-                                    performChainedFallbackForUpdate(writer, data, conflict, true);
-                                }                                
+                                performChainedFallbackForUpdate(writer, data, conflict, true);                               
                             } else if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();                              
                             }

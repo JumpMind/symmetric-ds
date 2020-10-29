@@ -6,6 +6,8 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.DatabaseInfo;
 
 public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
+    
+    public static final String ON_CONFLICT_DO_NOTHING = "on conflict do nothing";
 
     public PostgreSqlDmlStatement95(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, DatabaseInfo databaseInfo,
@@ -20,8 +22,17 @@ public class PostgreSqlDmlStatement95 extends PostgreSqlDmlStatement {
         appendColumns(sql, columns, false);
         sql.append(") values (");
         appendColumnParameters(sql, columns);
-        sql.append(") on conflict do nothing");
+        sql.append(") ").append(ON_CONFLICT_DO_NOTHING);
         return sql.toString();
+    }
+    
+    @Override
+    public String getSql(boolean allowIgnoreOnConflict) {
+        if (allowIgnoreOnConflict) {
+            return sql;
+        } else {
+            return sql.replace(ON_CONFLICT_DO_NOTHING, "");
+        }
     }
 
     @Override

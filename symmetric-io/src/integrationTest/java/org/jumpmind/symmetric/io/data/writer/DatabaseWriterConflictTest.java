@@ -87,12 +87,12 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
 
     @Test
     public void testInsertUkViolationDeleteFkViolation() throws Exception {
-        String firstId = insert(getNextId(), "twin", null);
+        String firstId = insert(getNextId(), "twin2", null);
         String secondId = insert(getNextId(), "depends1", firstId);
         String thirdId = insert(getNextId(), "depends2", firstId);
         insert(getNextId(), "depends3", secondId);
         insert(getNextId(), "depends4", thirdId);
-        insert(getNextId(), "twin", null);
+        insert(getNextId(), "twin2", null);
     }
 
     @Test
@@ -190,16 +190,16 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
 
     @Test
     public void testUpdatePkViolationDeleteFkViolationBlockingSelf() throws Exception {
-        String firstId = insert(getNextId(), "update-pk1", null);
-        String secondId = insert(getNextId(), "update-pk2", firstId);        
-        update(secondId, firstId, "update-pk2", null);
+        String firstId = insert(getNextId(), "update2-pk1", null);
+        String secondId = insert(getNextId(), "update2-pk2", firstId);        
+        update(secondId, firstId, "update2-pk2", null);
     }
 
     @Test
     public void testUpdateUkViolationDeleteFkViolationBlockingSelf() throws Exception {
-        String firstId = insert(getNextId(), "update-pk1", null);
-        String secondId = insert(getNextId(), "update-pk2", firstId);        
-        update(secondId, secondId, "update-pk1", null);
+        String firstId = insert(getNextId(), "update3-pk1", null);
+        String secondId = insert(getNextId(), "update3-pk2", firstId);        
+        update(secondId, secondId, "update3-pk1", null);
     }
 
     @Test
