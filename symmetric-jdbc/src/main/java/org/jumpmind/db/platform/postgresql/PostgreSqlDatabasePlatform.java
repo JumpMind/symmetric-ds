@@ -23,6 +23,11 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -30,12 +35,15 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
@@ -253,5 +261,71 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         String sql = super.getDeleteSql(table);
         sql += " cascade";
         return sql;
+    }
+    
+    @Override
+    public List<Transaction> getTransactions() {
+        ISqlTemplate template = getSqlTemplate();
+        String sql = "";
+        boolean oldVersion = (template.getDatabaseMajorVersion() == 9 && template.getDatabaseMinorVersion() < 2)
+                || template.getDatabaseMajorVersion() < 9;
+        if (oldVersion) {
+            sql = "select distinct" + 
+                    "  a.procpid as pid," + 
+                    "  a.usename," + 
+                    "  a.client_addr," + 
+                    "  blocking.pid as blockingPid," + 
+                    "  a.query_start," + 
+                    "  a.current_query as query " + 
+                    "from pg_stat_activity a " + 
+                    "join pg_catalog.pg_locks blocked" + 
+                    "  on a.procpid = blocked.pid " + 
+                    "left join pg_catalog.pg_locks blocking" + 
+                    "  on (blocking.relation = blocked.relation and blocking.locktype = blocked.locktype and blocked.pid != blocking.pid)";
+        } else {
+            sql = "select distinct" + 
+                    "  a.pid as pid," + 
+                    "  a.usename," + 
+                    "  a.client_addr," + 
+                    "  a.client_hostname," + 
+                    "  a.state," + 
+                    "  blocking.pid as blockingPid," + 
+                    "  a.query_start," + 
+                    "  a.query as query " + 
+                    "from pg_stat_activity a " + 
+                    "join pg_catalog.pg_locks blocked" + 
+                    "  on a.pid = blocked.pid " + 
+                    "left join pg_catalog.pg_locks blocking" + 
+                    "  on (blocking.relation = blocked.relation and blocking.locktype = blocked.locktype and blocked.pid != blocking.pid)";
+        }
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        final String formatString = "yyyy-MM-dd HH:mm:ss.SSSX";
+        final SimpleDateFormat dateFormat = new SimpleDateFormat(formatString);
+        for (Row row : template.query(sql)) {
+            try {
+                String startTime = row.getString("query_start");
+                String adjustedTime;
+                if (startTime != null) {
+                    int decimalIndex = startTime.indexOf(".");
+                    int timezoneIndex = startTime.length() - 3;
+                    adjustedTime = StringUtils.rightPad(startTime.substring(0, Math.min(decimalIndex + 4, timezoneIndex)), 3, "0")
+                            + startTime.substring(timezoneIndex);
+                } else {
+                    continue;
+                }
+                Transaction transaction = new Transaction(row.getString("pid"), row.getString("usename"), row.getString("blockingPid"),
+                        dateFormat.parse(adjustedTime), row.getString("query"));
+                transaction.setRemoteIp(row.getString("client_addr"));
+                if (!oldVersion) {
+                    transaction.setRemoteHost(row.getString("client_hostname"));
+                    transaction.setStatus(row.getString("state"));
+                }
+                transactions.add(transaction);
+            } catch (ParseException e) {
+                log.error("Could not parse date", e);
+            }
+
+        }
+        return transactions;
     }
 }

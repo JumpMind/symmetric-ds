@@ -59,6 +59,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Reference;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.PermissionResult.Status;
@@ -1238,5 +1239,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
         sql += table.getQualifiedTableName(quote, getDatabaseInfo().getCatalogSeparator(), getDatabaseInfo().getSchemaSeparator());
 
         return sql;
+    }
+    
+    public List<Transaction> getTransactions() {
+        return new ArrayList<Transaction>();
     }
 }

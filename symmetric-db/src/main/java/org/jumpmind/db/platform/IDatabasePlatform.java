@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -204,5 +205,7 @@ public interface IDatabasePlatform {
     public String getTruncateSql(Table table);
 
     public String getDeleteSql(Table table);
+    
+    public List<Transaction> getTransactions();
     
 }

@@ -1,6 +1,8 @@
 package org.jumpmind.db.platform.mysql;
 
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -26,6 +28,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
@@ -33,6 +36,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -173,5 +178,40 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return !column.isOfBinaryType();
     }
     
+    @Override
+    public List<Transaction> getTransactions() {
+        ISqlTemplate template = getSqlTemplate();
+        String transactionString = "trx";
+        String lockWaitsString = "information_schema.innodb_lock_waits";
+        if (template.getDatabaseMajorVersion() >= 8) {
+            transactionString = "engine_transaction";
+            lockWaitsString = "performance_schema.data_lock_waits";
+        }
+        String sql = "SELECT" + 
+                "  b.trx_id," + 
+                "  t.processlist_user," + 
+                "  t.processlist_host," + 
+                "  b.trx_started," + 
+                "  b.trx_state," + 
+                "  b.trx_rows_modified," + 
+                "  w.blocking_" + transactionString + "_id 'blockingId'," + 
+                "  b.trx_query " + 
+                "FROM " + lockWaitsString + " w " + 
+                "RIGHT JOIN information_schema.innodb_trx b" + 
+                "  ON b.trx_id = w.requesting_" + transactionString + "_id " + 
+                "INNER JOIN performance_schema.threads t" + 
+                "  ON b.trx_mysql_thread_id = t.thread_id;";
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        for (Row row : template.query(sql)) {
+            Transaction transaction = new Transaction(row.getString("trx_id"), row.getString("processlist_user"),
+                    row.getString("blockingId"), row.getDateTime("trx_started"), row.getString("trx_query"));
+            transaction.setRemoteHost(row.getString("processlist_host"));
+            transaction.setStatus(row.getString("trx_state"));
+            transaction.setWrites(row.getInt("trx_rows_modified"));
+            transactions.add(transaction);
+        }
+        return transactions;
+    }
 
+    
 }

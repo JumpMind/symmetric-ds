@@ -3,6 +3,8 @@ package org.jumpmind.db.platform.oracle;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -27,6 +29,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -36,6 +39,7 @@ import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -201,6 +205,31 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return getSqlTemplateDirty().queryForLong(
                 "select nvl(num_rows, -1) from all_tables where table_name = ? and owner = ?", table.getName(),
                 table.getSchema());
+    }
+    
+    @Override
+    public List<Transaction> getTransactions() {
+        ISqlTemplate template = getSqlTemplate();
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        if (template.getDatabaseMajorVersion() >= 10) {
+            String sql = "select" + 
+                    "  blocked.sid," + 
+                    "  blocked.username," + 
+                    "  blocked.status," + 
+                    "  blocked.blocking_session" + 
+                    "  sql.last_load_time," + 
+                    "  sql.sql_text " + 
+                    "from v$session blocked " + 
+                    "left join v$sqlarea sql" + 
+                    "  on blocked.sql_id = sql.sql_id";
+            for (Row row : template.query(sql)) {
+                Transaction transaction = new Transaction(row.getString("sid"), row.getString("username"),
+                        row.getString("blocking_session"), row.getDateTime("last_load_time"), row.getString("sql_text"));
+                transaction.setStatus(row.getString("status"));
+                transactions.add(transaction);
+            }
+        }
+        return transactions;
     }
 
 }
