@@ -42,8 +42,7 @@ public class MonitorTypeBlock extends AbstractMonitorType {
             long secondsBlocked = 0;
             for (Transaction transaction : filteredTransactions) {
                 if (transaction.getUsername().equals(dbUser) && transactionMap.get(transaction.getBlockingId()) != null) {
-                    secondsBlocked = transaction.getDuration() / 1000;
-                    break;
+                    secondsBlocked = Math.max(secondsBlocked, transaction.getDuration() / 1000);
                 }
             }
             event.setValue(secondsBlocked);

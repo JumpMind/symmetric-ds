@@ -26,6 +26,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -303,10 +304,15 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         for (Row row : template.query(sql)) {
             try {
                 String startTime = row.getString("query_start");
-                int decimalIndex = startTime.indexOf(".");
-                int timezoneIndex = startTime.length() - 3;
-                String adjustedTime = StringUtils.rightPad(startTime.substring(0, Math.min(decimalIndex + 4, timezoneIndex)), 3, "0")
-                        + startTime.substring(timezoneIndex);
+                String adjustedTime;
+                if (startTime != null) {
+                    int decimalIndex = startTime.indexOf(".");
+                    int timezoneIndex = startTime.length() - 3;
+                    adjustedTime = StringUtils.rightPad(startTime.substring(0, Math.min(decimalIndex + 4, timezoneIndex)), 3, "0")
+                            + startTime.substring(timezoneIndex);
+                } else {
+                    continue;
+                }
                 Transaction transaction = new Transaction(row.getString("pid"), row.getString("usename"), row.getString("blockingPid"),
                         dateFormat.parse(adjustedTime), row.getString("query"));
                 transaction.setRemoteIp(row.getString("client_addr"));
