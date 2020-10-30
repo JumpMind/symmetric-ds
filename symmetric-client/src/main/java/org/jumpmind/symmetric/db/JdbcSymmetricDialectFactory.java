@@ -39,6 +39,7 @@ import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
@@ -68,6 +69,7 @@ import org.jumpmind.symmetric.db.ingres.IngresSymmetricDialect;
 import org.jumpmind.symmetric.db.interbase.InterbaseSymmetricDialect;
 import org.jumpmind.symmetric.db.mariadb.MariaDBSymmetricDialect;
 import org.jumpmind.symmetric.db.mssql.MsSql2008SymmetricDialect;
+import org.jumpmind.symmetric.db.mssql.MsSql2016SymmetricDialect;
 import org.jumpmind.symmetric.db.mssql.MsSqlSymmetricDialect;
 import org.jumpmind.symmetric.db.mssql2000.MsSql2000SymmetricDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
@@ -112,6 +114,8 @@ public class JdbcSymmetricDialectFactory {
                 dialect = new MySqlSymmetricDialect(parameterService, platform);
         } else if (platform instanceof OracleDatabasePlatform) {
             dialect = new OracleSymmetricDialect(parameterService, platform);
+        } else if (platform instanceof MsSql2016DatabasePlatform) {
+            dialect = new MsSql2016SymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2008DatabasePlatform) {
             dialect = new MsSql2008SymmetricDialect(parameterService, platform);
         } else if (platform instanceof MsSql2005DatabasePlatform) {

@@ -31,6 +31,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.io.MsSqlBulkDatabaseWriter;
@@ -68,7 +69,8 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
         return platform != null && (
                 platform instanceof MsSql2000DatabasePlatform || 
                 platform instanceof MsSql2005DatabasePlatform || 
-                platform instanceof MsSql2008DatabasePlatform);
+                platform instanceof MsSql2008DatabasePlatform ||
+                platform instanceof MsSql2016DatabasePlatform);
     }
 
     protected AbstractDatabaseWriter create(){

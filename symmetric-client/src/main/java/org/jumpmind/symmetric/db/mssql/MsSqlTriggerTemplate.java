@@ -80,7 +80,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates = new HashMap<String,String>();
 
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -108,7 +108,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
         
         sqlTemplates.put("insertReloadTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -142,7 +142,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         // This occurs for column types like blob, clob, varbinary and binary because those are captured using blobTemplate
         // and need access to the original data
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
 "  declare @LOCALROWCOUNT int                                                                                   \n" + 
@@ -236,7 +236,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
         
         sqlTemplates.put("updateReloadTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
 "  declare @LOCALROWCOUNT int                                                                                   \n" + 
@@ -328,7 +328,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
 "  begin                                                                                                                                                                  \n" +
 "    declare @NCT int \n" +
 "    set @NCT = @@OPTIONS & 512 \n" +
@@ -350,7 +350,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
 
         sqlTemplates.put("ddlTriggerTemplate",
-"create trigger $(triggerName) on database\n" + 
+getCreateTriggerString() + " $(triggerName) on database\n" + 
 "for create_table, drop_table, alter_table,\n" +
 "create_view, drop_view, alter_view,\n" +
 "create_function, drop_function, alter_function,\n" +

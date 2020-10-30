@@ -2640,7 +2640,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 || symmetricDialect.getName().equals(
                                         DatabaseNamesConstants.MSSQL2005)
                                 || symmetricDialect.getName().equals(
-                                        DatabaseNamesConstants.MSSQL2008));
+                                        DatabaseNamesConstants.MSSQL2008)
+                                || symmetricDialect.getName().equals(
+                                        DatabaseNamesConstants.MSSQL2016));
                         
                         outgoingBatch.incrementExtractRowCount();
                         outgoingBatch.incrementExtractRowCount(data.getDataEventType());
