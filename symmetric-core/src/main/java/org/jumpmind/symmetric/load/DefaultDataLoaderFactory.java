@@ -207,7 +207,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                     long createTime = data.getCreateTime() != null ? data.getCreateTime().getTime() : 0;
                                     String script = "if (context != void && context != null) { " +
                                         "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
-                                        tableName + "\", " + CsvUtils.escapeCsvData(getPkCsvData(csvData, hist)) + ", new Date(" +
+                                        tableName + "\", " + pkCsvData + ", new Date(" +
                                         createTime +"L), \"" + sourceNodeId + "\"); }";
                                     Data scriptData = new Data(tableName, DataEventType.BSH,
                                             CsvUtils.escapeCsvData(script), null, hist, Constants.CHANNEL_RELOAD, null, null);
@@ -219,8 +219,8 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                     }
                     
                     protected String getPkCsvData(CsvData csvData, TriggerHistory hist) {
-                        String pkCsvData = null;
-                        if (csvData.getDataEventType() == DataEventType.INSERT) {
+                        String pkCsvData = csvData.getCsvData(CsvData.PK_DATA);
+                        if (pkCsvData == null) {
                             if (hist.getParsedPkColumnNames() != null && hist.getParsedPkColumnNames().length > 0) {
                                 String[] pkData = new String[hist.getParsedPkColumnNames().length];
                                 Map<String, String> values = csvData.toColumnNameValuePairs(hist.getParsedPkColumnNames(), CsvData.ROW_DATA);
@@ -229,9 +229,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                                     pkData[i++] = values.get(name);
                                 }
                                 pkCsvData = CsvUtils.escapeCsvData(pkData);
+                            } else {
+                                pkCsvData = csvData.getCsvData(CsvData.ROW_DATA);
                             }
-                        } else {
-                            pkCsvData = csvData.getCsvData(CsvData.PK_DATA);
                         }
                         return pkCsvData;
                     }
