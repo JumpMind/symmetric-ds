@@ -67,8 +67,7 @@ public class SecurityService implements ISecurityService {
     public KeyStore getTrustStore() {
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            FileInputStream is = new FileInputStream(
-                    System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE));
+            FileInputStream is = new FileInputStream(getTrustStoreFilename());
             ks.load(is, getTrustStorePassword().toCharArray());
             is.close();
             return ks;
@@ -86,8 +85,7 @@ public class SecurityService implements ISecurityService {
             String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
                     SecurityConstants.KEYSTORE_TYPE);
             KeyStore ks = KeyStore.getInstance(keyStoreType);
-            FileInputStream is = new FileInputStream(
-                    System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
+            FileInputStream is = new FileInputStream(getKeyStoreFilename());
             ks.load(is, getKeyStorePassword().toCharArray());
             is.close();
             return ks;
@@ -173,10 +171,7 @@ public class SecurityService implements ISecurityService {
     }
 
     protected void checkThatKeystoreFileExists() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        String keyStoreLocation = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE);
-        if (keyStoreLocation == null) {
-            throw new RuntimeException("System property '" + SecurityConstants.SYSPROP_KEYSTORE + "' is not defined.");
-        }
+        String keyStoreLocation = getKeyStoreFilename();
         if (!new File(keyStoreLocation).exists()) {
             String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
                     SecurityConstants.KEYSTORE_TYPE);
@@ -347,17 +342,23 @@ public class SecurityService implements ISecurityService {
  
     @Override
     public void saveTrustStore(KeyStore ks) throws Exception {
-        FileOutputStream os = new FileOutputStream(
-                System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE));
+        FileOutputStream os = new FileOutputStream(getTrustStoreFilename());
         ks.store(os, getTrustStorePassword().toCharArray());
         os.close();
     }
 
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
-        FileOutputStream os = new FileOutputStream(
-                System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
+        FileOutputStream os = new FileOutputStream(getKeyStoreFilename());
         ks.store(os, password.toCharArray());
         os.close();
+    }
+    
+    protected String getTrustStoreFilename() {
+        return System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE, "security/cacerts");
+    }
+
+    protected String getKeyStoreFilename() {
+        return System.getProperty(SecurityConstants.SYSPROP_KEYSTORE, "security/keystore");
     }
 
 }
