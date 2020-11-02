@@ -105,10 +105,8 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
         String sourceTables = getOptionValue(OPTION_SOURCE_TABLES, "sourceTableNames", line, config);
         if (sourceTables == null && !CollectionUtils.isEmpty(line.getArgList())) {
-            sourceTables = line.getArgList().get(0).toString(); 
-        }
-        
-        if (sourceTables != null) {            
+            config.setSourceTableNames(line.getArgList());
+        } else if (sourceTables != null) {            
             config.setSourceTableNames(Arrays.asList(sourceTables.split(",")));
         }
 
