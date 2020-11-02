@@ -193,6 +193,7 @@ public class SymmetricEngineHolder {
             }
 
             if (autoCreate) {
+                log.info("Current directory is {}", System.getProperty("user.dir"));
                 if (isMultiServerMode()) {
                     String enginesDirname = AbstractCommandLauncher.getEnginesDir();
                     log.info("Starting in multi-server mode with engines directory at {}", enginesDirname);
@@ -218,11 +219,16 @@ public class SymmetricEngineHolder {
                     validateEngineFiles(files); 
 
                     if (files != null) {
+                        boolean found = false;
                         for (int i = 0; i < files.length; i++) {
                             File file = files[i];
                             if (file.getName().endsWith(".properties")) {
                                 enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
+                                found = true;
                             }
+                        }
+                        if (!found) {
+                            log.info("No engine *.properties files found");
                         }
                     } else {
                         log.error("Unable to retrieve engine properties files from default location or from current working directory.  No engines to start.");
