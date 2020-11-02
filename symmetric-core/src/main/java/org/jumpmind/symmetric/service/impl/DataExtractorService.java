@@ -1598,13 +1598,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } finally {
             stagedResource.close();
             stagedResource.dereference();
-            if (!batch.isCommonFlag() && stagedResource.isMemoryResource() && !stagedResource.isInUse()) {
-                synchronized(DataExtractorService.this) {
-                    if (stagedResource.isMemoryResource() && !stagedResource.isInUse()) {
-                        stagedResource.delete();
-                    }
-                }
-            }
         }
     }
     
@@ -1652,7 +1645,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
             dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);            
-            
+
+            // TODO: check if TableReloadRequest.isFullLoadRequest()
+            // TOOD: move to nodeservice
+            int done = transaction.queryForInt("select case when completed = 1 or cancelled = 1 then 1 else 0 end " +
+                    "from sym_table_reload_status where load_id = ?", outgoingBatch.getLoadId());
+            if (done == 1) {
+                log.info("Initial load for node {} ended", outgoingBatch.getNodeId());
+                transaction.prepareAndExecute("update sym_node_security set initial_load_end_time = current_timestamp where node_id = ?", 
+                        outgoingBatch.getNodeId());
+            }
             
             transaction.commit();
         } catch (Error ex) {
