@@ -72,9 +72,6 @@ public class SecurityService implements ISecurityService {
             ks.load(is, getTrustStorePassword().toCharArray());
             is.close();
             return ks;
-        } catch (FileNotFoundException e) {
-            log.warn("Unable to open " + getTrustStoreFilename() + ", returning null");
-            return null;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
