@@ -22,7 +22,6 @@ package org.jumpmind.security;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -281,7 +280,14 @@ public class SecurityService implements ISecurityService {
     }
     
     protected String getKeyManagerFactoryAlgorithm() {
-        return System.getProperty(SecurityConstants.SYSPROP_KEY_MANAGER_FACTORY_ALGORITHM, "SunX509");
+        String algorithm = System.getProperty(SecurityConstants.SYSPROP_KEY_MANAGER_FACTORY_ALGORITHM);
+        if(algorithm == null) {
+            algorithm = KeyManagerFactory.getDefaultAlgorithm();
+        }
+        if(algorithm == null) {
+            algorithm = "SunX509";
+        }
+        return algorithm;
     }
 
     protected SecretKey getSecretKey() throws Exception {
