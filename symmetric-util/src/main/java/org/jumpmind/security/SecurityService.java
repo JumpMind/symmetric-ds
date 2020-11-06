@@ -100,7 +100,7 @@ public class SecurityService implements ISecurityService {
     public KeyManagerFactory getKeyManagerFactory() {
         KeyManagerFactory keyManagerFactory;
         try {
-            keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory = KeyManagerFactory.getInstance(getKeyManagerFactoryAlgorithm());
             keyManagerFactory.init(getKeyStore(), getKeyStorePassword().toCharArray());
         } catch (RuntimeException e) {
             throw e;
@@ -277,6 +277,10 @@ public class SecurityService implements ISecurityService {
         String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
         password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
         return password;
+    }
+    
+    protected String getKeyManagerFactoryAlgorithm() {
+        return System.getProperty(SecurityConstants.SYSPROP_KEY_MANAGER_FACTORY_ALGORITHM, "SunX509");
     }
 
     protected SecretKey getSecretKey() throws Exception {
