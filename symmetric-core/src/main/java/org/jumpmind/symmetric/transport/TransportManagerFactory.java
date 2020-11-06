@@ -167,9 +167,9 @@ public class TransportManagerFactory {
         if (enableHttps2) {
             new ConscryptHelper().checkProviderInstalled();
         }
-        X509TrustManager trustManager = new SelfSignedX509TrustManager(null);
         SSLContext context = SSLContext.getInstance("TLS");
         ISecurityService securityService = SecurityServiceFactory.create();
+        X509TrustManager trustManager = new SelfSignedX509TrustManager(securityService.getTrustStore());
         KeyManager[] keyManagers = null;
         try {
             keyManagers = securityService.getKeyManagerFactory().getKeyManagers();
