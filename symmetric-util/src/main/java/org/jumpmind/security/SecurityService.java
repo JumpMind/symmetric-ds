@@ -22,6 +22,7 @@ package org.jumpmind.security;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -71,6 +72,9 @@ public class SecurityService implements ISecurityService {
             ks.load(is, getTrustStorePassword().toCharArray());
             is.close();
             return ks;
+        } catch (FileNotFoundException e) {
+            log.warn("Unable to open " + getTrustStoreFilename() + ", returning null");
+            return null;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
