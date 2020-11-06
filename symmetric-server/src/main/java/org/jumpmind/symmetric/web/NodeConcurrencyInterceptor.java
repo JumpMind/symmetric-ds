@@ -88,7 +88,15 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                     ServletUtils.sendError(resp, WebConstants.SC_SERVICE_ERROR);
                 }
             }
-            
+
+            if (configurationService.isMasterToMaster() & nodeService.isDataLoadStarted()) {
+                NodeSecurity identity = nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true);
+                if (identity != null && nodeId != null && !nodeId.equals(identity.getCreatedAtNodeId())) {
+                    log.debug("Not allowing push from node {} until initial load from {} is complete", nodeId, identity.getCreatedAtNodeId());
+                    ServletUtils.sendError(resp, WebConstants.INITIAL_LOAD_PENDING);
+                }
+            }
+
             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);            
             if (nodeSecurity != null) {
                 String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
