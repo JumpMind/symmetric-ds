@@ -173,8 +173,8 @@ public class TransportManagerFactory {
         KeyStore trustStore = null;
         try {
             trustStore = securityService.getTrustStore();
-        } catch(Exception e) {
-            log.warn(e.getMessage(),e);
+        } catch (Exception e) {
+            log.warn("No trust store found: " + e.getMessage());
         }
         X509TrustManager trustManager = new SelfSignedX509TrustManager(trustStore);
         KeyManager[] keyManagers = null;
