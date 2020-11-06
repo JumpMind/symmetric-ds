@@ -39,6 +39,7 @@ import org.jumpmind.symmetric.model.RemoteNodeStatus.Status;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IOfflineDetectorService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.InitialLoadPendingException;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
@@ -120,6 +121,9 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
         } else if (isRegistrationPending(exception)) {
             log.info("Registration is still pending");
             status.setStatus(Status.REGISTRATION_REQUIRED);
+        } else if (isInitialLoadPending(exception)) {
+            log.info("Initial load is pending for node {}", new Object[] { remoteNode });
+            status.setStatus(Status.INITIAL_LOAD_PENDING);
         } else if (isNoReservation(exception)) {
             log.warn("Missing reservation during push with {}", new Object[] { remoteNode });
             status.setStatus(Status.BUSY);
@@ -269,6 +273,18 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             }
         }
         return registrationPending;
+    }
+
+    protected boolean isInitialLoadPending(Exception ex) {
+        boolean loadPending = false;
+        if (ex != null) {
+            Throwable cause = getRootCause(ex);
+            loadPending = cause instanceof RegistrationPendingException;
+            if (loadPending == false && (ex instanceof InitialLoadPendingException)) {
+                loadPending = true;
+            }
+        }
+        return loadPending;
     }
 
     protected boolean isRegistrationNotOpen(Exception ex) {

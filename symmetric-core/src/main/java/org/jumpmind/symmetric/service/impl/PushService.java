@@ -107,22 +107,29 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         if (identity != null && identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
             if (force || !clusterService.isInfiniteLocked(ClusterConstants.PUSH)) {
-                    List<NodeCommunication> nodes = nodeCommunicationService
-                            .list(CommunicationType.PUSH);
+                    List<NodeCommunication> nodes = nodeCommunicationService.list(CommunicationType.PUSH);
                     if (nodes.size() > 0) {
                         NodeSecurity identitySecurity = nodeService.findNodeSecurity(identity.getNodeId(), true);
                         if (identitySecurity != null) {
-                            int availableThreads = nodeCommunicationService
-                                    .getAvailableThreads(CommunicationType.PUSH);
+                            int availableThreads = nodeCommunicationService.getAvailableThreads(CommunicationType.PUSH);
+                            boolean isMasterToMaster = configurationService.isMasterToMaster();
                             for (NodeCommunication nodeCommunication : nodes) {
                                 boolean meetsMinimumTime = true;
                                 if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
                                    (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
                                    meetsMinimumTime = false; 
                                 }
-                                if (availableThreads > 0 && meetsMinimumTime) {
-                                    if (nodeCommunicationService.execute(nodeCommunication, statuses,
-                                            this)) {
+                                boolean m2mLoadInProgress = false;
+                                if (isMasterToMaster && nodeService.isDataLoadStarted(nodeCommunication.getNodeId())) {
+                                    NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
+                                    m2mLoadInProgress = nodeSecurity != null && !identitySecurity.getNodeId().equals(nodeSecurity.getCreatedAtNodeId());
+                                    if (m2mLoadInProgress) {
+                                        log.debug("Not pushing to node {} until initial load from {} is complete", nodeCommunication.getNodeId(),
+                                                nodeSecurity.getCreatedAtNodeId());
+                                    }
+                                }
+                                if (availableThreads > 0 && meetsMinimumTime && !m2mLoadInProgress) {
+                                    if (nodeCommunicationService.execute(nodeCommunication, statuses, this)) {
                                         availableThreads--;
                                     }
                                 }

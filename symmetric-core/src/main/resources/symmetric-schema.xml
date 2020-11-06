@@ -568,6 +568,7 @@
         <column name="registration_time" type="TIMESTAMP" required="false"  description="The timestamp when this node was last registered." />
         <column name="initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates whether an initial load will be sent to this node." />
         <column name="initial_load_time" type="TIMESTAMP" required="false"  description="The timestamp when an initial load was started for this node." />
+        <column name="initial_load_end_time" type="TIMESTAMP" required="false"  description="The timestamp when an initial load was completed for this node." />
         <column name="initial_load_id" type="BIGINT" description="A reference to the load_id in outgoing_batch for the last load that occurred." />
         <column name="initial_load_create_by" type="VARCHAR" size="255" description="The user that created the initial load.  A null value means that the system created the batch." />
         <column name="rev_initial_load_enabled" type="BOOLEANINT" size="1" default="0"  description="Indicates that this node should send a reverse initial load." />
@@ -795,6 +796,7 @@
         <column name="end_time" type="TIMESTAMP" description="Timestamp when this entry was created." />
         <column name="completed" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that this load was completed." />
         <column name="cancelled" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that this load was cancelled.   When cancelled it will also be marked completed" />
+        <column name="full_load" type="BOOLEANINT" size="1" required="true" default="0"  description="Flag that indicates that this load is a full load for all tables, otherwise it is a partial load." />
         <column name="start_data_batch_id" type="BIGINT" description="A load can be split across multiple batches.  This is the first of N batches the load will be split across." />
         <column name="end_data_batch_id" type="BIGINT" description="This is the last of N batches the load will be split across." />
         <column name="setup_batch_count" type="BIGINT" required="true" default="0" description="The number of batches that have been loaded for this load id.  The same count will exists for all rows with a matching load id."/>

@@ -554,6 +554,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
             nodeService.insertNodeGroup(node.getNodeGroupId(), null);
             NodeSecurity nodeSecurity = nodeService.findOrCreateNodeSecurity(nodeId);
             nodeSecurity.setInitialLoadTime(new Date());
+            nodeSecurity.setInitialLoadEndTime(new Date());
             nodeSecurity.setRegistrationTime(new Date());
             nodeSecurity.setInitialLoadEnabled(false);
             nodeSecurity.setRegistrationEnabled(false);

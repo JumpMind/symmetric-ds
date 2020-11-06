@@ -89,20 +89,23 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                 // Only pull if we did not have to register this time
                 if (!registrationService.registerWithServer()) {
                     identity = nodeService.findIdentity();
+                    
                     if (identity != null) {
-                        List<NodeCommunication> nodes = nodeCommunicationService
-                                .list(CommunicationType.PULL);
-                        int availableThreads = nodeCommunicationService
-                                .getAvailableThreads(CommunicationType.PULL);
+                        List<NodeCommunication> nodes = nodeCommunicationService.list(CommunicationType.PULL);
+                        int availableThreads = nodeCommunicationService.getAvailableThreads(CommunicationType.PULL);
+                        boolean m2mLoadInProgress = configurationService.isMasterToMaster() && nodeService.isDataLoadStarted();
                         for (NodeCommunication nodeCommunication : nodes) {
                             boolean meetsMinimumTime = true;
                             if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
                                (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
                                meetsMinimumTime = false; 
                             }
-                            if (availableThreads > 0 && meetsMinimumTime) {
-                                if (nodeCommunicationService.execute(nodeCommunication, statuses,
-                                        this)) {
+                            boolean m2mLockout = m2mLoadInProgress && identity.getCreatedAtNodeId() != null && !identity.getCreatedAtNodeId().equals(nodeCommunication.getNodeId());
+                            if (m2mLockout) {
+                                log.debug("Not pulling from node {} until initial load from {} is complete", nodeCommunication.getNodeId(), identity.getCreatedAtNodeId());
+                            }
+                            if (availableThreads > 0 && meetsMinimumTime && !m2mLockout) {
+                                if (nodeCommunicationService.execute(nodeCommunication, statuses, this)) {
                                     availableThreads--;
                                 }
                             }

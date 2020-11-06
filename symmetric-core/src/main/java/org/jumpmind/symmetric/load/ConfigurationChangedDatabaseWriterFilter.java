@@ -100,6 +100,13 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     final String CTX_KEY_INITIAL_LOAD_LISTENER = "InitialLoadListener."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
+    final String CTX_KEY_MY_NODE_ID = "MyNodeId."
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
+    
+    final String CTX_KEY_MY_NODE_SECURITY = "MyNodeSecurity."
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
+
+
     private ISymmetricEngine engine;
 
     public ConfigurationChangedDatabaseWriterFilter(ISymmetricEngine engine) {
@@ -145,19 +152,20 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
             if (matchesTable(table, TableConstants.SYM_NODE_SECURITY)) {
 
-                if (hasClientReloadListener(context)) {
-                    Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
-                    String initialLoadEnabled = newData.get("INITIAL_LOAD_ENABLED");
-                    String nodeId = newData.get("NODE_ID");
-    
-                    INodeService nodeService = engine.getNodeService();
-                    if (nodeId.equals(nodeService.findIdentityNodeId()) || nodeService.findIdentityNodeId() == null) {
-                        boolean duringInitialLoad = nodeService.findIdentityNodeId() != null
-                                && nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true).isInitialLoadEnabled();
-                        if (!duringInitialLoad && "1".equals(initialLoadEnabled)) {
-    
-                            log.info("Reload started");
-    
+                Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+                String initialLoadTime = newData.get("INITIAL_LOAD_TIME");
+                String initialLoadEndTime = newData.get("INITIAL_LOAD_END_TIME");
+                String nodeId = newData.get("NODE_ID");
+                String identityId = (String) context.get(CTX_KEY_MY_NODE_ID);
+                NodeSecurity nodeSecurity = (NodeSecurity) context.get(CTX_KEY_MY_NODE_SECURITY);
+
+                if (nodeId.equals(identityId) || identityId == null) {
+                    if (nodeSecurity != null && (nodeSecurity.getInitialLoadTime() == null || nodeSecurity.getInitialLoadEndTime() != null) &&
+                            StringUtils.isNotBlank(initialLoadTime) && StringUtils.isBlank(initialLoadEndTime)) {
+
+                        log.info("Initial load started for me");
+
+                        if (hasClientReloadListener(context)) {
                             List<IClientReloadListener> listeners = engine.getExtensionService().getExtensionPointList(IClientReloadListener.class);
                             for (IClientReloadListener listener : listeners) {
                                 listener.reloadStarted();
@@ -210,9 +218,12 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                 Map<String, String> newData = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
                 String initialLoadEnabled = newData.get("INITIAL_LOAD_ENABLED");
                 String initialLoadTime = newData.get("INITIAL_LOAD_TIME");
+                String initialLoadEndTime = newData.get("INITIAL_LOAD_END_TIME");
                 String nodeId = newData.get("NODE_ID");
-                boolean isInitialLoadComplete = nodeId != null && nodeId.equals(context.getBatch().getTargetNodeId()) && StringUtils.isNotBlank(initialLoadTime)
-                        && "0".equals(initialLoadEnabled);
+                NodeSecurity nodeSecurity = (NodeSecurity) context.get(CTX_KEY_MY_NODE_SECURITY);
+                boolean isInitialLoadComplete = nodeId != null && nodeId.equals(context.getBatch().getTargetNodeId()) &&
+                        nodeSecurity != null && nodeSecurity.getInitialLoadEndTime() == null &&
+                        StringUtils.isNotBlank(initialLoadTime) && StringUtils.isNotBlank(initialLoadEndTime) && "0".equals(initialLoadEnabled);
 
                 if (isInitialLoadComplete && !engine.getParameterService().is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD)) {
                     log.info("Requesting syncTriggers because {} is false and sym_node_security changed to indicate that an initial load has completed",
@@ -221,15 +232,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
                     engine.getRegistrationService().setAllowClientRegistration(false);
                 }
                 
-                if (isInitialLoadComplete && hasClientReloadListener(context)) {
-                    INodeService nodeService = engine.getNodeService();
-                    boolean duringInitialLoad = nodeService.findIdentityNodeId() != null
-                            && nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true).isInitialLoadEnabled();
-                    if (duringInitialLoad) {
-                        context.put(CTX_KEY_INITIAL_LOAD_COMPLETED, true);
-                    }
+                if (isInitialLoadComplete) {
+                    context.put(CTX_KEY_INITIAL_LOAD_COMPLETED, true);
                 }
-
             }
         }
 
@@ -351,6 +356,8 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     }
     
     public void syncStarted(DataContext context) {
+        putNodeIdentityIntoContext(context);
+        putNodeSecurityIntoContext(context);
     }
     
     public void syncEnded(DataContext context, List<IncomingBatch> batchesProcessed, Throwable ex) {
@@ -418,11 +425,13 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
 
         if (context.get(CTX_KEY_INITIAL_LOAD_COMPLETED) != null) {
 
-            log.info("Reload completed");
+            log.info("Initial load ended for me");
 
-            List<IClientReloadListener> listeners = engine.getExtensionService().getExtensionPointList(IClientReloadListener.class);
-            for (IClientReloadListener listener : listeners) {
-                listener.reloadCompleted();
+            if (hasClientReloadListener(context)) {
+                List<IClientReloadListener> listeners = engine.getExtensionService().getExtensionPointList(IClientReloadListener.class);
+                for (IClientReloadListener listener : listeners) {
+                    listener.reloadCompleted();
+                }
             }
 
             context.remove(CTX_KEY_INITIAL_LOAD_COMPLETED);
@@ -434,18 +443,6 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         
         IParameterService parameterService = engine.getParameterService();
         INodeService nodeService = engine.getNodeService();
-        
-        if (context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
-            // mark registration as complete
-            String nodeId = nodeService.findIdentityNodeId();
-            if (nodeId != null) {
-                NodeSecurity security = nodeService.findNodeSecurity(nodeId);
-                if (security != null && 
-                        (security.isRegistrationEnabled() || security.getRegistrationTime() == null)) {
-                    engine.getRegistrationService().markNodeAsRegistered(nodeId);
-                }
-            }
-        }       
         
         if (context.get(CTX_KEY_FLUSH_GROUPLETS_NEEDED) != null) {
             log.info("Grouplets flushed because new grouplet config came through the data loader");
@@ -481,6 +478,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             log.info("About to refresh the cache of node security because new configuration came through the data loader");
             nodeService.flushNodeAuthorizedCache();
             context.remove(CTX_KEY_FLUSH_NODE_SECURITY_NEEDED);
+            putNodeSecurityIntoContext(context);
         }
 
         if (context.get(CTX_KEY_FLUSH_NODE_NEEDED) != null) {
@@ -488,7 +486,17 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             nodeService.flushNodeCache();
             nodeService.flushNodeGroupCache();
             context.remove(CTX_KEY_FLUSH_NODE_NEEDED);
-        }    
-
+        }
+    }
+    
+    protected void putNodeIdentityIntoContext(DataContext context) {
+        context.put(CTX_KEY_MY_NODE_ID, engine.getNodeService().findIdentityNodeId());
+    }
+    
+    protected void putNodeSecurityIntoContext(DataContext context) {
+        String myNodeId = engine.getNodeService().findIdentityNodeId();
+        if (myNodeId != null) {
+            context.put(CTX_KEY_MY_NODE_SECURITY, engine.getNodeService().findNodeSecurity(myNodeId, true));
+        }
     }
 }

@@ -29,10 +29,12 @@ import java.util.Map;
 import org.apache.commons.codec.binary.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.load.IReloadGenerator;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ExtractRequest;
+import org.jumpmind.symmetric.model.Lock;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.model.NodeSecurity;
@@ -44,7 +46,6 @@ import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.ClusterConstants;
-import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.INodeService;
@@ -129,6 +130,10 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         count = outgoingBatchService.cancelLoadBatches(status.getLoadId());
         log.info("Marked {} batches as OK for node {}", count, status.getTargetNodeId());
         engine.getDataExtractorService().releaseMissedExtractRequests();
+        
+        if (status.isFullLoad()) {
+            engine.getNodeService().setInitialLoadEnded(null, status.getTargetNodeId());
+        }
     }
 
     /**
@@ -175,9 +180,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                 
                                 // Reset reverse initial load flag to off
                                 engine.getNodeService().setReverseInitialLoadEnabled(security.getNodeId(), false, true, 0l, "initialLoadService");
-                                
                             }
-                            
                         } else if (!thisMySecurityRecord && registered && initialLoadEnabled && (!reverseLoadFirst || !reverseLoadEnabled)) {
                             // If node is created by me then set up initial load
                             if(StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
@@ -194,7 +197,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                 processInfo.incrementCurrentDataCount();
                                 
                                 // Reset initial load flag to off
-                                engine.getNodeService().setInitialLoadEnabled(security.getNodeId(), false, true, 0l, "initialLoadService");
+                                engine.getNodeService().setInitialLoadEnabled(security.getNodeId(), false, false, 0l, "initialLoadService");
                             }
                         }
                     } else {
@@ -262,7 +265,14 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
-                if (!useExtractJob || streamToFile) {
+                NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId(), true);
+
+                if (useExtractJob && !streamToFile) {
+                    throw new SymmetricException(
+                            String.format("Node '%s' can't process load for '%s' because of conflicting parameters: %s=%s and %s=%s",
+                                    source.getNodeId(), load.getTargetNodeId(), ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob,
+                                    ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
+                } else if (isOkayToQueueLoad(targetNodeSecurity)) {
                     if (load.isFullLoadRequest() && isValidLoadTarget(load.getTargetNodeId())) {
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
                         fullLoad.add(load);
@@ -278,8 +288,6 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                             return;
                         }
                     } else {
-                        NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId());
-
                         boolean registered = targetNodeSecurity != null && (targetNodeSecurity.hasRegistered()
                                 || targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
                         if (registered) {
@@ -294,11 +302,6 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                     load.getTargetNodeId());
                         }
                     }
-                } else {
-                    throw new SymmetricException(
-                            String.format("Node '%s' can't process load for '%s' because of conflicting parameters: %s=%s and %s=%s",
-                                    source.getNodeId(), load.getTargetNodeId(), ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, useExtractJob,
-                                    ParameterConstants.STREAM_TO_FILE_ENABLED, streamToFile));
                 }
             }
 
@@ -350,18 +353,37 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
 
     protected List<NodeSecurity> findNodesThatAreReadyForInitialLoad() {
         INodeService nodeService = engine.getNodeService();
-        IConfigurationService configurationService = engine.getConfigurationService();
         String me = nodeService.findIdentityNodeId();
         List<NodeSecurity> toReturn = new ArrayList<NodeSecurity>();
         List<NodeSecurity> securities = nodeService.findNodeSecurityWithLoadEnabled();
         for (NodeSecurity nodeSecurity : securities) {
-            if (((!nodeSecurity.getNodeId().equals(me) && nodeSecurity.isInitialLoadEnabled())
-                    || (!nodeSecurity.getNodeId().equals(me) && configurationService.isMasterToMaster())
-                    || (nodeSecurity.getNodeId().equals(me) && nodeSecurity.isRevInitialLoadEnabled()))) {
+            if (StringUtils.equals(nodeSecurity.getCreatedAtNodeId(), me) && nodeSecurity.hasRegistered() &&
+                    (nodeSecurity.isInitialLoadEnabled() || nodeSecurity.isRevInitialLoadEnabled()) && isOkayToQueueLoad(nodeSecurity)) {
                 toReturn.add(nodeSecurity);
             }
         }
         return toReturn;
+    }
+    
+    protected boolean isOkayToQueueLoad(NodeSecurity nodeSecurity) {
+        boolean okayToQueueLoad = true;
+        if (engine.getConfigurationService().isMasterToMaster() && nodeSecurity != null) {
+            Lock routingLock = engine.getClusterService().findLocks().get(ClusterConstants.ROUTE);
+            if (routingLock.getLastLockTime() == null || (nodeSecurity.getRegistrationTime() != null &&
+                    routingLock.getLastLockTime().compareTo(nodeSecurity.getRegistrationTime()) <= 0)) {
+                okayToQueueLoad = false;
+                log.info("Delaying initial load request for node {} until the last routing run is after {}",
+                        nodeSecurity.getNodeId(), nodeSecurity.getRegistrationTime());
+            } else {
+                int count = engine.getOutgoingBatchService().countOutgoingBatchesUnsent(Constants.CHANNEL_CONFIG);
+                if (count > 0) {
+                    okayToQueueLoad = false;
+                    log.info("Delaying initial load request for node {} until {} config batches are complete",
+                            nodeSecurity.getNodeId(), count);
+                }
+            }
+        }
+        return okayToQueueLoad;
     }
 
     protected boolean isValidLoadTarget(String targetNodeId) {
