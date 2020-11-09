@@ -248,6 +248,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = buildParameterDatabaseWritterSettings();
+        settings.setLoadOnlyNode(engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY));
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
         
