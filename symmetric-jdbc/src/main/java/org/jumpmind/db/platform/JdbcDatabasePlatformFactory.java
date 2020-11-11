@@ -52,6 +52,7 @@ import org.jumpmind.db.platform.mariadb.MariaDBDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.nuodb.NuoDbDatabasePlatform;
 import org.jumpmind.db.platform.oracle.Oracle122DatabasePlatform;
@@ -105,7 +106,9 @@ public class JdbcDatabasePlatformFactory {
         addPlatform(platforms, "microsoft sql server9", MsSql2005DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server10", MsSql2008DatabasePlatform.class);
         addPlatform(platforms, "microsoft sql server11", MsSql2008DatabasePlatform.class);
-        addPlatform(platforms, "microsoft sql server", MsSql2008DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server12", MsSql2008DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server13", MsSql2016DatabasePlatform.class);
+        addPlatform(platforms, "microsoft sql server", MsSql2016DatabasePlatform.class);
         addPlatform(platforms, "MySQL", MySqlDatabasePlatform.class);
         addPlatform(platforms, "Oracle", OracleDatabasePlatform.class);
         addPlatform(platforms, DatabaseNamesConstants.ORACLE122, Oracle122DatabasePlatform.class);
@@ -137,6 +140,7 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(MsSql2000DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2000DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSql2005DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2005DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSql2008DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2008DatabasePlatform.class);
+        jdbcSubProtocolToPlatform.put(MsSql2008DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2016DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 OracleDatabasePlatform.class);

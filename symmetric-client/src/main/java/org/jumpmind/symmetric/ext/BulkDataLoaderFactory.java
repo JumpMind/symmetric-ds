@@ -50,7 +50,8 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (DatabaseNamesConstants.MSSQL2000.equals(platformName)
                 || DatabaseNamesConstants.MSSQL2005.equals(platformName)
-                || DatabaseNamesConstants.MSSQL2008.equals(platformName)) {
+                || DatabaseNamesConstants.MSSQL2008.equals(platformName)
+                || DatabaseNamesConstants.MSSQL2016.equals(platformName)) {
             return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (DatabaseNamesConstants.ORACLE.equals(platformName)) {

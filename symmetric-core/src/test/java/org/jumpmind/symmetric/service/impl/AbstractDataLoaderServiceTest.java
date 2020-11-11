@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
@@ -327,11 +328,11 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
     }
     
     private String[] massageExpectectedResultsForDialect(String[] values) {
-        if(values[5] != null && getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform) {
+        if(values[5] != null && (getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform || getSymmetricEngine().getDatabasePlatform() instanceof MsSql2016DatabasePlatform)) {
             // No time portion for a date field
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
         }
-        if(values[6] != null && getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform) {
+        if(values[6] != null && (getSymmetricEngine().getDatabasePlatform() instanceof MsSql2008DatabasePlatform || getSymmetricEngine().getDatabasePlatform() instanceof MsSql2016DatabasePlatform)) {
             if(values[6].length() == 23) {
                 values[6] = values[6] + "0000";
             }

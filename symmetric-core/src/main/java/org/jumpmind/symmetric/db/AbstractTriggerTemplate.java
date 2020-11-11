@@ -1273,5 +1273,8 @@ abstract public class AbstractTriggerTemplate {
         return sb.toString();
     }
     
+    protected String getCreateTriggerString() {
+        return "create trigger";
+    }
 
 }

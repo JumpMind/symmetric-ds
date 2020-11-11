@@ -80,7 +80,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates = new HashMap<String,String>();
 
         sqlTemplates.put("insertTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -108,7 +108,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
         
         sqlTemplates.put("insertReloadTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after insert as                                                                                                \n" +
 "   begin                                                                                                                                                                  \n" +
 "     declare @NCT int \n" +
 "     set @NCT = @@OPTIONS & 512 \n" +
@@ -142,9 +142,11 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
         // This occurs for column types like blob, clob, varbinary and binary because those are captured using blobTemplate
         // and need access to the original data
         sqlTemplates.put("updateTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
+"  declare @LOCALROWCOUNT int                                                                                   \n" + 
+"  set @LOCALROWCOUNT=@@ROWCOUNT                                                                                \n" +
 "  declare @NCT int                                                                                             \n" +
 "  set @NCT = @@OPTIONS & 512                                                                                   \n" +
 "  set nocount on                                                                                               \n" +
@@ -160,6 +162,28 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "  begin                                                                                                        \n" +
 "    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) )                                                       \n" +
 "    begin                                                                                                      \n" +
+"      if (@LOCALROWCOUNT = 1)                                                                                  \n" +
+"      begin                                                                                                    \n" +
+"         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                 \n" +
+"            (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id,                 \n" +
+"             transaction_id, source_node_id,                                                                   \n" +
+"             external_data, create_time)                                                                       \n" +
+"          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
+"                   $(channelExpression),                                                                       \n" +
+"               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
+"                current_timestamp                                                                              \n" +
+"       $(if:containsBlobClobColumns)                                                                           \n" +
+"          from inserted                                                                                        \n" +
+"          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
+"          inner join deleted on 1=1                                                                            \n" +
+"       $(else:containsBlobClobColumns)                                                                         \n" +
+"          from inserted                                                                                        \n" +
+"          inner join deleted on 1=1                                                                            \n" +
+"       $(end:containsBlobClobColumns)                                                                          \n" +
+"          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                      \n" +
+"      end                                                                                                      \n" +
+"      else                                                                                                     \n" +
+"      begin                                                                                                    \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id,                      \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
@@ -183,6 +207,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          from inserted                                                                                        \n" +
 "       $(end:containsBlobClobColumns)                                                                          \n" +
 "          where $(syncOnInsertCondition)                                                                       \n" +
+"      end                                                                                                      \n" +
 "    end                                                                                                        \n" +
 "    else                                                                                                       \n" +
 "    begin                                                                                                      \n" +
@@ -211,9 +236,11 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
         
         sqlTemplates.put("updateReloadTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName)                                                     \n" +
 "       with execute as "+triggerExecuteAs+" after update as                                                    \n" +
 "begin                                                                                                          \n" +
+"  declare @LOCALROWCOUNT int                                                                                   \n" + 
+"  set @LOCALROWCOUNT=@@ROWCOUNT                                                                                \n" +
 "  declare @NCT int                                                                                             \n" +
 "  set @NCT = @@OPTIONS & 512                                                                                   \n" +
 "  set nocount on                                                                                               \n" +
@@ -229,6 +256,28 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "  begin                                                                                                        \n" +
 "    if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) )                                                       \n" +
 "    begin                                                                                                      \n" +
+"      if (@LOCALROWCOUNT = 1)                                                                                  \n" +
+"      begin                                                                                                    \n" +
+"         insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                 \n" +
+"            (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id,                 \n" +
+"             transaction_id, source_node_id,                                                                   \n" +
+"             external_data, create_time)                                                                       \n" +
+"          select '$(targetTableName)','U', $(triggerHistoryId), $(columns), $(oldKeys), $(oldColumns),         \n" +
+"                   $(channelExpression),                                                                       \n" +
+"               $(txIdExpression),  " + defaultCatalog + "dbo.$(prefixName)_node_disabled(), $(externalSelect), \n" +
+"                current_timestamp                                                                              \n" +
+"       $(if:containsBlobClobColumns)                                                                           \n" +
+"          from inserted                                                                                        \n" +
+"          inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin)                  \n" +
+"          inner join deleted on 1=1                                                                            \n" +
+"       $(else:containsBlobClobColumns)                                                                         \n" +
+"          from inserted                                                                                        \n" +
+"          inner join deleted on 1=1                                                                            \n" +
+"       $(end:containsBlobClobColumns)                                                                          \n" +
+"          where $(syncOnUpdateCondition) and ($(dataHasChangedCondition))                                      \n" +
+"      end                                                                                                      \n" +
+"      else                                                                                                     \n" +
+"      begin                                                                                                    \n" +
 "        insert into  " + defaultCatalog + "$(defaultSchema)$(prefixName)_data                                  \n" +
 "           (table_name, event_type, trigger_hist_id, pk_data, channel_id, transaction_id,                      \n" +
 "            source_node_id, external_data, create_time)                                                        \n" +
@@ -252,6 +301,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "          from inserted                                                                                        \n" +
 "       $(end:containsBlobClobColumns)                                                                          \n" +
 "          where $(syncOnInsertCondition)                                                                       \n" +
+"      end                                                                                                      \n" +
 "    end                                                                                                        \n" +
 "    else                                                                                                       \n" +
 "    begin                                                                                                      \n" +
@@ -278,7 +328,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
 
         sqlTemplates.put("deleteTriggerTemplate" ,
-"create trigger $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
+getCreateTriggerString() + " $(triggerName) on $(schemaName)$(tableName) with execute as "+triggerExecuteAs+" after delete as                                                                                                                             \n" +
 "  begin                                                                                                                                                                  \n" +
 "    declare @NCT int \n" +
 "    set @NCT = @@OPTIONS & 512 \n" +
@@ -300,7 +350,7 @@ public class MsSqlTriggerTemplate extends AbstractTriggerTemplate {
 "---- go");
 
         sqlTemplates.put("ddlTriggerTemplate",
-"create trigger $(triggerName) on database\n" + 
+getCreateTriggerString() + " $(triggerName) on database\n" + 
 "for create_table, drop_table, alter_table,\n" +
 "create_view, drop_view, alter_view,\n" +
 "create_function, drop_function, alter_function,\n" +

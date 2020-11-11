@@ -35,6 +35,7 @@ import org.jumpmind.db.platform.interbase.InterbaseDdlBuilder;
 import org.jumpmind.db.platform.mssql.MsSql2000DdlBuilder;
 import org.jumpmind.db.platform.mssql.MsSql2005DdlBuilder;
 import org.jumpmind.db.platform.mssql.MsSql2008DdlBuilder;
+import org.jumpmind.db.platform.mssql.MsSql2016DdlBuilder;
 import org.jumpmind.db.platform.mysql.MySqlDdlBuilder;
 import org.jumpmind.db.platform.nuodb.NuoDbDdlBuilder;
 import org.jumpmind.db.platform.oracle.Oracle122DdlBuilder;
@@ -85,6 +86,8 @@ final public class DdlBuilderFactory {
             return new MsSql2005DdlBuilder();
         } else if (DatabaseNamesConstants.MSSQL2008.equalsIgnoreCase(databaseName)) {
             return new MsSql2008DdlBuilder();
+        } else if (DatabaseNamesConstants.MSSQL2016.equalsIgnoreCase(databaseName)) {
+            return new MsSql2016DdlBuilder();
         } else if (DatabaseNamesConstants.MYSQL.equalsIgnoreCase(databaseName)) {
             return new MySqlDdlBuilder();
         } else if (DatabaseNamesConstants.ORACLE.equalsIgnoreCase(databaseName)) {

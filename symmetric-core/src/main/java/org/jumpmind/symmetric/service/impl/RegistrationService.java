@@ -233,7 +233,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             NodeSecurity security = nodeService.findNodeSecurity(nodeId);
             boolean isRegistrationAuthenticated = false;
             
-            if (userId != null) {
+            if (userId != null || password != null) {
                 List<INodeRegistrationAuthenticator> listeners = extensionService.getExtensionPointList(INodeRegistrationAuthenticator.class);
                 for (INodeRegistrationAuthenticator listener : listeners) {
                     isRegistrationAuthenticated |= listener.authenticate(userId, password);
@@ -255,6 +255,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
                 return processedNode;
             }
 
+            // TODO: since we send sym_node in registration batch, save this record with source_node_id = node_id
             foundNode.setSyncEnabled(true);
             foundNode.setSyncUrl(nodePriorToRegistration.getSyncUrl());
             foundNode.setDatabaseType(nodePriorToRegistration.getDatabaseType());
@@ -412,30 +413,11 @@ public class RegistrationService extends AbstractService implements IRegistratio
      * @see IRegistrationService#markNodeAsRegistered(Node)
      */
     public void markNodeAsRegistered(String nodeId) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-//            symmetricDialect.disableSyncTriggers(transaction, nodeId);
-            transaction.prepareAndExecute(getSql("registerNodeSecuritySql"), nodeId);
-            transaction.commit();
-            nodeService.flushNodeAuthorizedCache();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
-            for (INodeRegistrationListener l : registrationListeners) {
-                l.registrationSyncTriggers();
-            }
-//            symmetricDialect.enableSyncTriggers(transaction);
-            close(transaction);
+        sqlTemplate.update(getSql("registerNodeSecuritySql"), new Object[] { nodeId });
+        nodeService.flushNodeAuthorizedCache();
+        List<INodeRegistrationListener> registrationListeners = extensionService.getExtensionPointList(INodeRegistrationListener.class);
+        for (INodeRegistrationListener l : registrationListeners) {
+            l.registrationSyncTriggers();
         }
     }
 

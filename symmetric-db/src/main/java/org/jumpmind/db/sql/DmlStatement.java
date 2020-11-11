@@ -375,6 +375,10 @@ public class DmlStatement {
     public String getSql() {
         return sql;
     }
+    
+    public String getSql(boolean allowIgnoreOnConflict) {
+        return sql;
+    }
 
     public DmlType getDmlType() {
         return dmlType;

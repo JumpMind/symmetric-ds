@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.transport;
 import java.lang.reflect.Constructor;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -167,9 +168,15 @@ public class TransportManagerFactory {
         if (enableHttps2) {
             new ConscryptHelper().checkProviderInstalled();
         }
-        X509TrustManager trustManager = new SelfSignedX509TrustManager(null);
         SSLContext context = SSLContext.getInstance("TLS");
         ISecurityService securityService = SecurityServiceFactory.create();
+        KeyStore trustStore = null;
+        try {
+            trustStore = securityService.getTrustStore();
+        } catch (Exception e) {
+            log.warn("No trust store found: " + e.getMessage());
+        }
+        X509TrustManager trustManager = new SelfSignedX509TrustManager(trustStore);
         KeyManager[] keyManagers = null;
         try {
             keyManagers = securityService.getKeyManagerFactory().getKeyManagers();

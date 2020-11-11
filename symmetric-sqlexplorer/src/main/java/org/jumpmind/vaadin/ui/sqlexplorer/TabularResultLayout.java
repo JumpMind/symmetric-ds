@@ -204,7 +204,7 @@ public class TabularResultLayout extends VerticalLayout {
             grid.addItemClickListener(event -> {
                 MouseButton button = event.getMouseEventDetails().getButton();
                 if (button == MouseButton.LEFT) {
-                    if (event.getMouseEventDetails().isDoubleClick()) {
+                    if (event.getMouseEventDetails().isDoubleClick() && event.getColumn() != null) {
                         String header = event.getColumn().getCaption();
                         List<Grid.Column<List<Object>, ?>> colList = grid.getColumns();
                         Object o = null;
@@ -224,12 +224,8 @@ public class TabularResultLayout extends VerticalLayout {
                             }
                         }
                     } else {
-                        if (!grid.getSelectedItems().contains(event.getItem())) {
-                            grid.deselectAll();
-                            grid.select(event.getItem());
-                        } else {
-                            grid.deselect(event.getItem());
-                        }
+                        grid.deselectAll();
+                        grid.select(event.getItem());
                     }
                 }
             });

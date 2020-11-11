@@ -123,7 +123,8 @@ public class OutgoingBatches implements Serializable {
     public void removeNonLoadBatches() {
         for (Iterator<OutgoingBatch> iterator = batches.iterator(); iterator.hasNext();) {
             OutgoingBatch b = iterator.next();
-            if (!b.isLoadFlag() && !b.getChannelId().contentEquals(Constants.CHANNEL_CONFIG)) {
+            if (!b.isLoadFlag() && !b.getChannelId().contentEquals(Constants.CHANNEL_CONFIG) &&
+                    !b.getChannelId().contentEquals(Constants.CHANNEL_HEARTBEAT)) {
                 iterator.remove();
             }
         }

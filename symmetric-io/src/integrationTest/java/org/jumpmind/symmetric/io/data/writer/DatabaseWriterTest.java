@@ -39,6 +39,7 @@ import org.jumpmind.db.platform.informix.InformixDatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
 import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
 import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
@@ -627,7 +628,7 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     private String[] massageExpectectedResultsForDialect(String[] values) {
         RoundingMode mode = RoundingMode.DOWN;
         
-        if(values[5] != null && platform instanceof MsSql2008DatabasePlatform) {
+        if(values[5] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
             // No time portion for a date field
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
         } else if (values[5] != null
@@ -637,13 +638,13 @@ public class DatabaseWriterTest extends AbstractWriterTest {
                             // Only SqlServer 2000 and 2005 should not be mangled. 2008 now uses Date and Time data types.
                             (
                                     (platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform
-                            ) && ! (platform instanceof MsSql2008DatabasePlatform)
+                            ) && ! (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)
                             )
                         || platform instanceof AseDatabasePlatform
                         || platform instanceof SqlAnywhereDatabasePlatform))) {
             values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.?0?", " 00:00:00.0");
         }
-        if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
+        if(values[6] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
             if(values[6].length() == 23) {
                 values[6] = values[6] + "0000";
             }
@@ -670,11 +671,11 @@ public class DatabaseWriterTest extends AbstractWriterTest {
     }
 
     private String[] massageExpectectedResultsForDialect2(String[] values) {
-        if(values[6] != null && platform instanceof MsSql2008DatabasePlatform) {
+        if(values[6] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
             // No time portion for a date field
             values[6] = values[6].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
         }
-        if(values[7] != null && platform instanceof MsSql2008DatabasePlatform) {
+        if(values[7] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
             if(values[7].length() == 23) {
                 values[7] = values[7] + "0000";
             }

@@ -7,6 +7,7 @@ public class TableReloadStatus {
     protected String targetNodeId;
     protected boolean completed;
     protected boolean cancelled;
+    protected boolean fullLoad;
     
     protected Date startTime;
     protected Date endTime;
@@ -76,6 +77,12 @@ public class TableReloadStatus {
     }
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
+    }
+    public boolean isFullLoad() {
+        return fullLoad;
+    }
+    public void setFullLoad(boolean fullLoad) {
+        this.fullLoad = fullLoad;
     }
     public long getStartDataBatchId() {
         return startDataBatchId;

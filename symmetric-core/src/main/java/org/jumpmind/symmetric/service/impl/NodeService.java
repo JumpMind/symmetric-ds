@@ -601,7 +601,7 @@ public class NodeService extends AbstractService implements INodeService {
                 getSql("updateNodeSecuritySql"),
                 new Object[] { security.getNodePassword(),
                         security.isRegistrationEnabled() ? 1 : 0, security.getRegistrationTime(),
-                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(),
+                        security.isInitialLoadEnabled() ? 1 : 0, security.getInitialLoadTime(), security.getInitialLoadEndTime(),
                         security.getCreatedAtNodeId(),
                         security.isRevInitialLoadEnabled() ? 1 : 0,
                         security.getRevInitialLoadTime(),
@@ -612,7 +612,7 @@ public class NodeService extends AbstractService implements INodeService {
                         security.getFailedLogins(),
                         security.getNodeId() }, new int[] {
                         Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
-                        Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
+                        Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
                         Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
                         Types.VARCHAR });
         boolean updated = (updateCount == 1);
@@ -630,9 +630,10 @@ public class NodeService extends AbstractService implements INodeService {
             if (nodeSecurity != null) {
                 nodeSecurity.setInitialLoadEnabled(initialLoadEnabled);
                 nodeSecurity.setInitialLoadId(loadId);
+                nodeSecurity.setInitialLoadEndTime(null);
+                nodeSecurity.setInitialLoadCreateBy(createBy);
                 if (initialLoadEnabled) {
                     nodeSecurity.setInitialLoadTime(null);
-                    nodeSecurity.setInitialLoadCreateBy(createBy);
                 } else {
                     nodeSecurity.setInitialLoadTime(new Date());
                 }
@@ -665,6 +666,41 @@ public class NodeService extends AbstractService implements INodeService {
             throw ex;
         } finally {
             close(transaction);
+        }
+    }
+
+    public boolean setInitialLoadEnded(ISqlTransaction transaction, String nodeId) {
+        boolean isAutoCommit = false;
+        try {
+            if (transaction == null) {
+                transaction = sqlTemplate.startSqlTransaction();
+                isAutoCommit = true;
+            }
+            NodeSecurity nodeSecurity = findOrCreateNodeSecurity(nodeId);
+            boolean isUpdated = false;
+            if (nodeSecurity != null) {
+                nodeSecurity.setInitialLoadEndTime(new Date());
+                isUpdated = updateNodeSecurity(transaction, nodeSecurity);
+            }
+
+            if (isAutoCommit) {
+                transaction.commit();
+            }
+            return isUpdated;
+        } catch (Error ex) {
+            if (isAutoCommit && transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } catch (RuntimeException ex) {
+            if (isAutoCommit && transaction != null) {
+                transaction.rollback();
+            }
+            throw ex;
+        } finally {
+            if (isAutoCommit) {
+                close(transaction);
+            }
         }
     }
 
@@ -725,8 +761,16 @@ public class NodeService extends AbstractService implements INodeService {
         return getNodeStatus() == NodeStatus.DATA_LOAD_COMPLETED;
     }
 
+    public boolean isDataLoadCompleted(String nodeId) {
+        return getNodeStatus(nodeId) == NodeStatus.DATA_LOAD_COMPLETED;
+    }
+
     public boolean isDataLoadStarted() {
         return getNodeStatus() == NodeStatus.DATA_LOAD_STARTED;
+    }
+
+    public boolean isDataLoadStarted(String nodeId) {
+        return getNodeStatus(nodeId) == NodeStatus.DATA_LOAD_STARTED;
     }
 
     public boolean isRegistrationServer() {
@@ -734,13 +778,17 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public NodeStatus getNodeStatus() {
+        return getNodeStatus(findIdentityNodeId());
+    }
+    
+    public NodeStatus getNodeStatus(String nodeId) {
         long ts = System.currentTimeMillis();
         try {
-            NodeSecurity nodeSecurity = findNodeSecurity(findIdentityNodeId(), true);
+            NodeSecurity nodeSecurity = findNodeSecurity(nodeId, true);
             if (nodeSecurity != null) {
-                if (nodeSecurity.isInitialLoadEnabled()) {
+                if (nodeSecurity.isInitialLoadEnabled() || (nodeSecurity.getInitialLoadTime() != null && nodeSecurity.getInitialLoadEndTime() == null)) {
                     return NodeStatus.DATA_LOAD_STARTED;
-                } else if (nodeSecurity.getInitialLoadTime() != null) {
+                } else if (nodeSecurity.getInitialLoadEndTime() != null) {
                     return NodeStatus.DATA_LOAD_COMPLETED;
                 }
             }
@@ -905,6 +953,7 @@ public class NodeService extends AbstractService implements INodeService {
             nodeSecurity.setRegistrationTime(rs.getDateTime("registration_time"));
             nodeSecurity.setInitialLoadEnabled(rs.getBoolean("initial_load_enabled"));
             nodeSecurity.setInitialLoadTime(rs.getDateTime("initial_load_time"));
+            nodeSecurity.setInitialLoadEndTime(rs.getDateTime("initial_load_end_time"));
             nodeSecurity.setCreatedAtNodeId(rs.getString("created_at_node_id"));
             nodeSecurity.setRevInitialLoadEnabled(rs.getBoolean("rev_initial_load_enabled"));
             nodeSecurity.setRevInitialLoadTime(rs.getDateTime("rev_initial_load_time"));

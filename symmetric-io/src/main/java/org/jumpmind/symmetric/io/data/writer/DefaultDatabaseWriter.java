@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -243,7 +242,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                     return LoadStatus.SUCCESS;
                 } else {
                     context.put(CUR_DATA,getCurData(getTransaction()));
-                    context.setLastError(new SQLIntegrityConstraintViolationException("duplicate", "23000"));
+                    context.setLastError(getInsertException2(data, values));
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
@@ -269,7 +268,21 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
     }
     
-    private boolean isUniqueIndexViolation(Throwable ex, Table targetTable) {
+    private SqlException getInsertException2(CsvData data, String[] values) {
+        SqlException ret = null;
+        String sql = currentDmlStatement.getSql(false);
+        Object[] dmlValues = getPlatform().getObjectValues(batch.getBinaryEncoding(), values,
+                currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
+        try {
+            getPlatform().getSqlTemplate().update(sql, dmlValues);
+        } catch(SqlException ex) {
+            ret = ex;
+        }
+        
+        return ret;
+    }
+    
+   private boolean isUniqueIndexViolation(Throwable ex, Table targetTable) {
         String violatedIndexName = getPlatform().getSqlTemplate().getUniqueKeyViolationIndexName(ex);
         for (IIndex index : targetTable.getIndices()) {
             if (index.isUnique() && (index.getName().equals(violatedIndexName))) {

@@ -221,6 +221,7 @@ public class DatabasePlatformTest {
                 && !platform.getName().equals(DatabaseNamesConstants.MSSQL2000)
                 && !platform.getName().equals(DatabaseNamesConstants.MSSQL2005)
                 && !platform.getName().equals(DatabaseNamesConstants.MSSQL2008)
+                && !platform.getName().equals(DatabaseNamesConstants.MSSQL2016)
                 && !platform.getName().equals(DatabaseNamesConstants.SQLANYWHERE)
                 && !platform.getName().equals(DatabaseNamesConstants.INGRES); 
 

@@ -1648,7 +1648,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         Trigger trigger = null;
         List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
         for (Trigger t : triggers) {
-            if (t.getName().equals(triggerName)) {
+            if (t.getName().equalsIgnoreCase(triggerName)) {
                 trigger = t;
                 break;
             }
@@ -1662,8 +1662,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform.getSqlTemplateDirty();
             return sqlTemplate.execute(new IConnectionCallback<Collection<ForeignKey>>() {
                 public Collection<ForeignKey> execute(Connection connection) throws SQLException {
-                    connection.getMetaData().getExportedKeys(table.getCatalog(), table.getSchema(), table.getName());
-                    connection.getMetaData().getImportedKeys(table.getCatalog(), table.getSchema(), table.getName());
                     DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                     metaData.setMetaData(connection.getMetaData());
                     metaData.setCatalog(table.getCatalog());
@@ -1688,7 +1686,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         for (TableRow tableRow : tableRows) {
             if (!visited.contains(tableRow)) {
                 visited.add(tableRow);
-                Collection<ForeignKey> exportedKeys = platform.getDdlReader().getExportedKeys(tableRow.getTable());
+                Collection<ForeignKey> exportedKeys = getExportedKeys(tableRow.getTable());
                 if (exportedKeys != null) {
                     for (ForeignKey fk : exportedKeys) {
                         Table foreignTable = lookupForeignTable(platform, fk, tableRow, false);

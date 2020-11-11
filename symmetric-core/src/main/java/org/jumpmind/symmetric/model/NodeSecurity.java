@@ -43,6 +43,8 @@ public class NodeSecurity implements Serializable {
 
     private Date initialLoadTime;
     
+    private Date initialLoadEndTime;
+    
     private long initialLoadId;
     
     private String initialLoadCreateBy;
@@ -107,6 +109,14 @@ public class NodeSecurity implements Serializable {
         this.initialLoadTime = initialLoadTime;
     }
     
+    public Date getInitialLoadEndTime() {
+        return initialLoadEndTime;
+    }
+
+    public void setInitialLoadEndTime(Date initialLoadEndTime) {
+        this.initialLoadEndTime = initialLoadEndTime;
+    }
+
     public void setRevInitialLoadEnabled(boolean reverseInitialLoadEnabled) {
         this.revInitialLoadEnabled = reverseInitialLoadEnabled;
     }
@@ -136,7 +146,7 @@ public class NodeSecurity implements Serializable {
     }
     
     public boolean hasInitialLoaded() {
-        return this.initialLoadTime != null;
+        return this.initialLoadEndTime != null;
     }
     
     public boolean hasReverseInitialLoaded() {

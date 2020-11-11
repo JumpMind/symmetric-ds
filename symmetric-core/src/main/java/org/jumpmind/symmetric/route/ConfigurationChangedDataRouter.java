@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -437,11 +435,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             }
 
             if (!initialLoad && nodeIds != null) {
-
-                if (tableMatches(dataMetaData, TableConstants.SYM_NODE_SECURITY)) {
-                    routeSymNodeSecurity(me, nodeIdForRecordBeingRouted, dataMetaData, nodeIds, columnValues);
-                }
-
                 /*
                  * Don't route insert events for a node to itself. They will be
                  * loaded during registration. If we route them, then an old
@@ -455,65 +448,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
             }
         }
-    }
-    
-    protected void routeSymNodeSecurity (Node me, 
-            String nodeIdForRecordBeingRouted, DataMetaData dataMetaData, Set<String> nodeIds, Map<String, String> columnValues) {
-        DataEventType eventType = dataMetaData.getData().getDataEventType();
-        boolean fromAnotherNode = isNotBlank(dataMetaData.getData().getSourceNodeId());
-
-        if (nodeIds.contains(nodeIdForRecordBeingRouted)) {
-            /*
-             * Don't route node security to it's own node. That node will
-             * get node security via registration and it will be updated by
-             * initial load. Otherwise, updates can be unpredictable in the
-             * order they will be applied at the node because updates are on
-             * a different channel than reloads
-             */
-            boolean remove = true;
-            if (eventType == DataEventType.UPDATE) {
-                if ("1".equals(columnValues.get("REV_INITIAL_LOAD_ENABLED"))) {
-                    boolean reverseLoadQueued = engine.getParameterService().is(
-                            ParameterConstants.INITIAL_LOAD_REVERSE_FIRST)
-                            || "0".equals(columnValues.get("INITIAL_LOAD_ENABLED"));
-                    /*
-                     * Only send the update if the client is going
-                     * to be expected to queue up a reverse load.
-                     * The trigger to do this is the arrival of
-                     * sym_node_security with
-                     * REV_INITIAL_LOAD_ENABLED set to 1.
-                     */
-                    if (reverseLoadQueued) {
-                        remove = false;
-                    }
-                }                            
-            }
-            if (remove) {
-                nodeIds.remove(nodeIdForRecordBeingRouted);
-            }
-        }
-        
-        boolean removeParentNode = true;
-        if (eventType == DataEventType.UPDATE) {
-            if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED")) &&
-                    me.getNodeId().equals(nodeIdForRecordBeingRouted) ) {
-                removeParentNode = false;
-            }                            
-        }
-        if (removeParentNode) {
-            nodeIds.remove(columnValues.get("CREATED_AT_NODE_ID"));
-        }
-        
-        if (engine.getConfigurationService().isMasterToMaster() || fromAnotherNode) {
-            /*
-             * Don't send updates where the initial load flags are enabled to other 
-             * nodes in the cluster 
-             */
-            if ("1".equals(columnValues.get("INITIAL_LOAD_ENABLED"))) {
-                nodeIds.clear();
-            }
-        }
-
     }
 
     @SuppressWarnings("unchecked")

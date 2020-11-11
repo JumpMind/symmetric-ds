@@ -74,7 +74,8 @@ public class MsSqlBulkDataLoaderFactory extends AbstractDataLoaderFactory implem
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return (DatabaseNamesConstants.MSSQL2000.equals(platform.getName())
                 || DatabaseNamesConstants.MSSQL2005.equals(platform.getName()) || DatabaseNamesConstants.MSSQL2008
-                    .equals(platform.getName()));
+                    .equals(platform.getName())
+                    || DatabaseNamesConstants.MSSQL2016.equals(platform.getName()));
     }
     
     

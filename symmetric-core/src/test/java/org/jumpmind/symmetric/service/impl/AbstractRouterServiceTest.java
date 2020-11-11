@@ -501,6 +501,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         String name = getPlatform().getName();
         if (name.equals(DatabaseNamesConstants.DERBY) || name.equals(DatabaseNamesConstants.MSSQL2000)
                 || name.equals(DatabaseNamesConstants.MSSQL2005) || name.equals(DatabaseNamesConstants.MSSQL2008)
+                || name.equals(DatabaseNamesConstants.MSSQL2016)
                 || name.equals(DatabaseNamesConstants.ASE) || name.equals(DatabaseNamesConstants.SQLANYWHERE)
                 || name.equals(DatabaseNamesConstants.INGRES)) {
             // TODO could not get subselect to work in trigger text for derby or

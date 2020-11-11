@@ -189,7 +189,9 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         engine.getStatisticManager().incrementDataLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getLoadRowCount());
                         engine.getStatisticManager().incrementDataBytesLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());
                     }
-                    purgeLoadBatchesFromStaging(outgoingBatch);
+                    if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                        purgeBatchesFromStaging(outgoingBatch);
+                    }
                     Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
                     if (channel != null && channel.isFileSyncFlag()){
                         /* Acknowledge the file_sync in case the file needs deleted. */
@@ -206,7 +208,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
         return result;
     }
 
-    protected void purgeLoadBatchesFromStaging(OutgoingBatch outgoingBatch) {
+    protected void purgeBatchesFromStaging(OutgoingBatch outgoingBatch) {
         long threshold = parameterService.getLong(ParameterConstants.INITIAL_LOAD_PURGE_STAGE_IMMEDIATE_THRESHOLD_ROWS);
         if (threshold >= 0 && outgoingBatch.isLoadFlag() && !outgoingBatch.isCommonFlag()) {
             if (outgoingBatch.getDataRowCount() > threshold) {
@@ -215,6 +217,15 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                 if (resource != null) {
                     resource.delete();
                 }
+            }
+        }
+        
+        long streamToFileThreshold = parameterService.getLong(ParameterConstants.STREAM_TO_FILE_THRESHOLD);
+        if (streamToFileThreshold > 0 && !outgoingBatch.isCommonFlag() && outgoingBatch.getByteCount() <= streamToFileThreshold) {
+            IStagedResource resource = engine.getStagingManager().find(Constants.STAGING_CATEGORY_OUTGOING,
+                    outgoingBatch.getStagedLocation(), outgoingBatch.getBatchId());
+            if (resource != null && resource.isMemoryResource() && !resource.isInUse()) {
+                resource.delete();
             }
         }
     }

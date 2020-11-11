@@ -99,6 +99,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String CMD_ENCRYPT_TEXT = "encrypt-text";
     
     private static final String CMD_OBFUSCATE_TEXT = "obfuscate-text";
+    
+    private static final String CMD_UNOBFUSCATE_TEXT = "unobfuscate-text";
 
     private static final String CMD_CREATE_WAR = "create-war";
 
@@ -377,6 +379,9 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         } else if (cmd.equals(CMD_OBFUSCATE_TEXT)) {
             obfuscateText(line, args);
             return true;
+        } else if (cmd.equals(CMD_UNOBFUSCATE_TEXT)) {
+            unobfuscateText(line, args);
+            return true;
         } else if (cmd.equals(CMD_SEND_SQL)) {
             sendSql(line, args);
             return true;
@@ -510,6 +515,12 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         String plainText = popArg(args, "Text");
         ISecurityService service = createSecurityService();
         System.out.println(SecurityConstants.PREFIX_OBF + service.obfuscate(plainText));
+    }
+
+    private void unobfuscateText(CommandLine line, List<String> args) {
+        String obfText = popArg(args, "Text");
+        ISecurityService service = createSecurityService();
+        System.out.println(service.unobfuscate(obfText.substring(SecurityConstants.PREFIX_OBF.length())));
     }
 
     private void openRegistration(CommandLine line, List<String> args) {

@@ -1598,13 +1598,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } finally {
             stagedResource.close();
             stagedResource.dereference();
-            if (!batch.isCommonFlag() && stagedResource.isMemoryResource() && !stagedResource.isInUse()) {
-                synchronized(DataExtractorService.this) {
-                    if (stagedResource.isMemoryResource() && !stagedResource.isInUse()) {
-                        stagedResource.delete();
-                    }
-                }
-            }
         }
     }
     
@@ -1651,9 +1644,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
                     outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
-            dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);            
-            
-            
+            TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
+                    outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
+
+            if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
+                log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
+                nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
+            }
+
             transaction.commit();
         } catch (Error ex) {
             if (transaction != null) {
@@ -2640,7 +2638,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                 || symmetricDialect.getName().equals(
                                         DatabaseNamesConstants.MSSQL2005)
                                 || symmetricDialect.getName().equals(
-                                        DatabaseNamesConstants.MSSQL2008));
+                                        DatabaseNamesConstants.MSSQL2008)
+                                || symmetricDialect.getName().equals(
+                                        DatabaseNamesConstants.MSSQL2016));
                         
                         outgoingBatch.incrementExtractRowCount();
                         outgoingBatch.incrementExtractRowCount(data.getDataEventType());

@@ -347,4 +347,24 @@ public class MockNodeService implements INodeService {
     @Override
     public void incrementNodeFailedLogins(String nodeId) {
     }
+
+    @Override
+    public boolean isDataLoadCompleted(String nodeId) {
+        return false;
+    }
+
+    @Override
+    public boolean isDataLoadStarted(String nodeId) {
+        return false;
+    }
+
+    @Override
+    public NodeStatus getNodeStatus(String nodeId) {
+        return null;
+    }
+
+    @Override
+    public boolean setInitialLoadEnded(ISqlTransaction transaction, String nodeId) {
+        return false;
+    }
 }

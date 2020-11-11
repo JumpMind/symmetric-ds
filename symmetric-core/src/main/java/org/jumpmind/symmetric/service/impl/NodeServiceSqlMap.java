@@ -77,7 +77,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("findNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                          "
-                        + "  initial_load_enabled, initial_load_time, created_at_node_id,                         "
+                        + "  initial_load_enabled, initial_load_time, initial_load_end_time, created_at_node_id,                         "
                         + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
                           " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by, failed_logins " +
                           " from $(node_security) where   "
@@ -88,7 +88,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("findNodeSecurityWithLoadEnabledSql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
-                        + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
+                        + " initial_load_enabled, initial_load_time, initial_load_end_time, created_at_node_id,                   "
                         + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id,              "
                         + " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by, failed_logins "
                         + " from $(node_security)                                                          "
@@ -96,7 +96,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
 
         putSql("findAllNodeSecuritySql",
                 "select node_id, node_password, registration_enabled, registration_time,                   "
-                        + " initial_load_enabled, initial_load_time, created_at_node_id,                   "
+                        + " initial_load_enabled, initial_load_time, initial_load_end_time, created_at_node_id,                   "
                         + " rev_initial_load_enabled, rev_initial_load_time, initial_load_id, " +
                           " initial_load_create_by, rev_initial_load_id, rev_initial_load_create_by, failed_logins " +
                           " from $(node_security)   ");
@@ -164,7 +164,7 @@ public class NodeServiceSqlMap extends AbstractSqlMap {
         putSql("updateNodeSecuritySql",
                 ""
                         + "update $(node_security) set node_password = ?, registration_enabled = ?,                                       "
-                        + "  registration_time = ?, initial_load_enabled = ?, initial_load_time = ?, created_at_node_id = ?,"
+                        + "  registration_time = ?, initial_load_enabled = ?, initial_load_time = ?, initial_load_end_time = ?, created_at_node_id = ?,"
                         + "  rev_initial_load_enabled=?, rev_initial_load_time=?, initial_load_id=?, " +
                           " initial_load_create_by=?, rev_initial_load_id=?, rev_initial_load_create_by=?, failed_logins=? " +
                           " where node_id = ?   ");

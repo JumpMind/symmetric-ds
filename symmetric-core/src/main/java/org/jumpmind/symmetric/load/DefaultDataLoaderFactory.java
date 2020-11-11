@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.load;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,17 +201,39 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
     
                             String channelId = csvData.getAttribute(CsvData.ATTRIBUTE_CHANNEL_ID);
                             if (channelId != null && !channelId.equals(Constants.CHANNEL_RELOAD)) {
-                                String sourceNodeId = csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
-                                String script = "if (context != void && context != null) { " +
-                                    "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
-                                    tableName + "\", " + CsvUtils.escapeCsvData(csvData.getCsvData(CsvData.PK_DATA)) + ", new Date(" +
-                                    ((Date) csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME)).getTime() +"L), \"" + sourceNodeId + "\"); }";
-                                Data scriptData = new Data(tableName, DataEventType.BSH,
-                                        CsvUtils.escapeCsvData(script), null, hist, Constants.CHANNEL_RELOAD, null, null);
-                                scriptData.setSourceNodeId(sourceNodeId);
-                                engine.getDataService().insertData(transaction, scriptData);
+                                String pkCsvData = CsvUtils.escapeCsvData(getPkCsvData(csvData, hist));
+                                if (pkCsvData != null) {
+                                    String sourceNodeId = csvData.getAttribute(CsvData.ATTRIBUTE_SOURCE_NODE_ID);
+                                    long createTime = data.getCreateTime() != null ? data.getCreateTime().getTime() : 0;
+                                    String script = "if (context != void && context != null) { " +
+                                        "engine.getDataService().sendNewerDataToNode(context.findTransaction(), SOURCE_NODE_ID, \"" +
+                                        tableName + "\", " + pkCsvData + ", new Date(" +
+                                        createTime +"L), \"" + sourceNodeId + "\"); }";
+                                    Data scriptData = new Data(tableName, DataEventType.BSH,
+                                            CsvUtils.escapeCsvData(script), null, hist, Constants.CHANNEL_RELOAD, null, null);
+                                    scriptData.setSourceNodeId(sourceNodeId);
+                                    engine.getDataService().insertData(transaction, scriptData);
+                                }
                             }
                         }
+                    }
+                    
+                    protected String getPkCsvData(CsvData csvData, TriggerHistory hist) {
+                        String pkCsvData = csvData.getCsvData(CsvData.PK_DATA);
+                        if (pkCsvData == null) {
+                            if (hist.getParsedPkColumnNames() != null && hist.getParsedPkColumnNames().length > 0) {
+                                String[] pkData = new String[hist.getParsedPkColumnNames().length];
+                                Map<String, String> values = csvData.toColumnNameValuePairs(hist.getParsedPkColumnNames(), CsvData.ROW_DATA);
+                                int i = 0;
+                                for (String name : hist.getParsedPkColumnNames()) {
+                                    pkData[i++] = values.get(name);
+                                }
+                                pkCsvData = CsvUtils.escapeCsvData(pkData);
+                            } else {
+                                pkCsvData = csvData.getCsvData(CsvData.ROW_DATA);
+                            }
+                        }
+                        return pkCsvData;
                     }
                 }, buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings, resolvedData));
 
@@ -227,6 +248,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
             List<IDatabaseWriterErrorHandler> errorHandlers, List<? extends Conflict> conflictSettings,
             List<ResolvedData> resolvedDatas) {
         DatabaseWriterSettings settings = buildParameterDatabaseWritterSettings();
+        settings.setLoadOnlyNode(engine.getParameterService().is(ParameterConstants.NODE_LOAD_ONLY));
         settings.setDatabaseWriterFilters(filters);
         settings.setDatabaseWriterErrorHandlers(errorHandlers);
         
