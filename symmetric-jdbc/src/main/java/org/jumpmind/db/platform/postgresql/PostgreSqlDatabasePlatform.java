@@ -307,7 +307,13 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 String adjustedTime;
                 if (startTime != null) {
                     int decimalIndex = startTime.indexOf(".");
-                    int timezoneIndex = startTime.length() - 3;
+                    int timezoneIndex = startTime.indexOf("+");
+                    if (timezoneIndex == -1) {
+                        timezoneIndex = startTime.indexOf("Z");
+                        if (timezoneIndex == -1) {
+                            timezoneIndex = startTime.lastIndexOf("-");
+                        }
+                    }
                     adjustedTime = StringUtils.rightPad(startTime.substring(0, Math.min(decimalIndex + 4, timezoneIndex)), 3, "0")
                             + startTime.substring(timezoneIndex);
                 } else {
