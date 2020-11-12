@@ -829,7 +829,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
             if (platform.readTableFromDatabase(null, null, TableConstants.getTableName(prefix, TableConstants.SYM_LOCK)) != null) {
                // this should remove all triggers because we have removed all the trigger configuration
-               triggerRouterService.syncTriggers();            
+               triggerRouterService.syncTriggers(true);
             }
         } catch (SqlException ex) {
             log.warn("Error while trying to remove triggers on tables", ex);
