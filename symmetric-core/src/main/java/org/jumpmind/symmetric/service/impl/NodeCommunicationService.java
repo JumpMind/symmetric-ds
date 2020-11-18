@@ -38,6 +38,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
@@ -222,7 +223,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
             NodeCommunication nodeToCommunicateWith = nodesToCommunicateWithListMap.get(nodeCommunication.getNodeId()); 
             Node node = nodeToCommunicateWith != null ? nodeToCommunicateWith.getNode() : null;
-            if (node == null) {
+            if (node == null || (! isQueueValid(nodeCommunication))) {
                 delete(nodeCommunication);
                 it.remove();
             }
@@ -247,6 +248,22 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
 
         return communicationRows;
+    }
+    
+    private boolean isQueueValid(NodeCommunication nodeCommunication) {
+        boolean ret = false;
+        String queue = nodeCommunication.getQueue();
+        Map<String, Channel> channels = configurationService.getChannels(false);
+        for(String key : channels.keySet()) {
+            Channel channel = channels.get(key);
+            if (channel != null) {
+                if (StringUtils.equalsIgnoreCase(queue,  channel.getQueue())) {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+        return ret;
     }
     
     protected List<String> getNodeIdsWithUnsentCount() {
