@@ -12,8 +12,6 @@ buildscript {
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'     
         classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.2.5'    
-        classpath 'com.vaadin:vaadin-compatibility-server:8.1.2'
-        classpath 'com.vaadin:vaadin-compatibility-client-compiled:8.1.2'
     }    
 }
 
@@ -55,16 +53,6 @@ dependencies {
     compile "commons-io:commons-io:$commonsIoVersion"
     
     compile "org.springframework:spring-webmvc:$springVersion"
-    
-    compile ("com.vaadin:vaadin-compatibility-server:$vaadinVersion") {
-        	exclude group: 'javax.validation'
-    }
-    compile ("com.vaadin:vaadin-compatibility-client-compiled:$vaadinVersion") {
-        	exclude group: 'javax.validation'
-    }
-    compile ("com.vaadin:vaadin-compatibility-client:$vaadinVersion") {
-        	exclude group: 'javax.validation'
-    }
     
     compile "com.vaadin:vaadin-push:$vaadinVersion"
     compile "com.vaadin:vaadin-themes:$vaadinVersion"
