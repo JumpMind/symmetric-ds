@@ -95,21 +95,33 @@ public class TableConstants {
 
     public static final List<String> getTables(String tablePrefix) {
         if (tablesWithPrefix == null) {
-            tablesWithPrefix = populateAllTables(tablePrefix);
+            synchronized (TableConstants.class) {
+                if (tablesWithPrefix == null) {
+                    tablesWithPrefix = populateAllTables(tablePrefix);
+                }
+            }
         }
         return new ArrayList<String>(tablesWithPrefix);
     }
 
     public static final List<String> getConfigTables(String tablePrefix) {
         if (configTablesWithPrefix == null) {
-            configTablesWithPrefix = populateConfigTables(tablePrefix);
+            synchronized (TableConstants.class) {
+                if (configTablesWithPrefix == null) {
+                    configTablesWithPrefix = populateConfigTables(tablePrefix);
+                }
+            }
         }
         return new ArrayList<String>(configTablesWithPrefix);
     }
 
     public static final List<String> getTablesWithoutPrefix() {
         if (tablesWithoutPrefix == null) {
-            tablesWithoutPrefix = populateAllTables("");
+            synchronized (TableConstants.class) {
+                if (tablesWithoutPrefix == null) {
+                    tablesWithoutPrefix = populateAllTables("");
+                }
+            }
         }
         return tablesWithoutPrefix;
     }
