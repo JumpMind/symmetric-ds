@@ -55,7 +55,13 @@ public class SecurityService implements ISecurityService {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    protected SecretKey secretKey;
+    protected static SecretKey secretKey;
+
+    protected static boolean keyStoreExists;
+
+    static {
+        keyStoreExists = new File(getKeyStoreFilename()).exists();
+    }
 
     protected SecurityService() {
     }
@@ -171,15 +177,19 @@ public class SecurityService implements ISecurityService {
     }
 
     protected void checkThatKeystoreFileExists() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        String keyStoreLocation = getKeyStoreFilename();
-        if (!new File(keyStoreLocation).exists()) {
-            String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
-                    SecurityConstants.KEYSTORE_TYPE);
-            KeyStore ks = KeyStore.getInstance(keyStoreType);
-            ks.load(null, getKeyStorePassword().toCharArray());
-            FileOutputStream os = new FileOutputStream(keyStoreLocation);
-            ks.store(os, getKeyStorePassword().toCharArray());
-            os.close();
+        if (!keyStoreExists) {
+            synchronized (getClass()) {
+                if (!keyStoreExists) {
+                    String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
+                            SecurityConstants.KEYSTORE_TYPE);
+                    KeyStore ks = KeyStore.getInstance(keyStoreType);
+                    ks.load(null, getKeyStorePassword().toCharArray());
+                    FileOutputStream os = new FileOutputStream(getKeyStoreFilename());
+                    ks.store(os, getKeyStorePassword().toCharArray());
+                    os.close();
+                    keyStoreExists = true;
+                }
+            }
         }
     }
 
@@ -241,14 +251,13 @@ public class SecurityService implements ISecurityService {
     }
 
     public Cipher getCipher(int mode) throws Exception {
-        if (secretKey == null) {
-            secretKey = getSecretKey();
-            log.info("Initialized with {} {}-bit", secretKey.getAlgorithm(), secretKey.getEncoded().length * 8);
-        }
+        initializeSecretKey();
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
-        log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(), 
-                secretKey.getEncoded().length * 8, cipher.getProvider().getName());
+        if (log.isDebugEnabled()) {
+            log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(), 
+                    secretKey.getEncoded().length * 8, cipher.getProvider().getName());
+        }
         return cipher;
     }
 
@@ -290,21 +299,28 @@ public class SecurityService implements ISecurityService {
         return algorithm;
     }
 
-    protected SecretKey getSecretKey() throws Exception {
-        String password = getKeyStorePassword();
-        KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
-        KeyStore ks = getKeyStore();
-        KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(
-                SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
-        if (entry == null) {
-            log.debug("Generating secret key");
-            entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
-            ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
-            saveKeyStore(ks, password);
-        } else {
-            log.debug("Retrieving secret key");
+    protected void initializeSecretKey() throws Exception {
+        if (secretKey == null) {
+            synchronized (getClass()) {
+                if (secretKey == null) {
+                    String password = getKeyStorePassword();
+                    KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
+                    KeyStore ks = getKeyStore();
+                    KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(
+                            SecurityConstants.ALIAS_SYM_SECRET_KEY, param);
+                    if (entry == null) {
+                        log.info("Generating random secret key");
+                        entry = new KeyStore.SecretKeyEntry(getDefaultSecretKey());
+                        ks.setEntry(SecurityConstants.ALIAS_SYM_SECRET_KEY, entry, param);
+                        saveKeyStore(ks, password);
+                    } else {
+                        log.debug("Retrieving secret key");
+                    }
+                    secretKey = entry.getSecretKey();
+                    log.info("Initialized with {} {}-bit", secretKey.getAlgorithm(), secretKey.getEncoded().length * 8);
+                }
+            }
         }
-        return entry.getSecretKey();
     }
 
     public String nextSecureHexString(int len) {
@@ -364,11 +380,11 @@ public class SecurityService implements ISecurityService {
         os.close();
     }
     
-    protected String getTrustStoreFilename() {
+    protected static String getTrustStoreFilename() {
         return System.getProperty(SecurityConstants.SYSPROP_TRUSTSTORE, "security/cacerts");
     }
 
-    protected String getKeyStoreFilename() {
+    protected static String getKeyStoreFilename() {
         return System.getProperty(SecurityConstants.SYSPROP_KEYSTORE, "security/keystore");
     }
 
