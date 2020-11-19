@@ -30,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +65,8 @@ public class DefaultSettingsProvider implements ISettingsProvider, Serializable 
     public void save(Settings settings) {
         synchronized (getClass()) {
             File file = getSettingsFile();
-            FileOutputStream os = null;
             ClassLoader classloader = setContextClassloader();
-            try {
-                os = new FileOutputStream(file, false);
+            try (FileOutputStream os = new FileOutputStream(file, false)) {
                 XMLEncoder encoder = new XMLEncoder(os);
                 encoder.writeObject(settings);
                 encoder.close();
@@ -77,7 +74,6 @@ public class DefaultSettingsProvider implements ISettingsProvider, Serializable 
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
             } finally {
-                IOUtils.closeQuietly(os);
                 restoreContextClassloader(classloader);
             }
         }
@@ -87,10 +83,8 @@ public class DefaultSettingsProvider implements ISettingsProvider, Serializable 
         synchronized (getClass()) {
             File file = getSettingsFile();
             if (file.exists() && file.length() > 0) {
-                FileInputStream is = null;
                 ClassLoader classloader = setContextClassloader();
-                try {
-                    is = new FileInputStream(file);                    
+                try (FileInputStream is = new FileInputStream(file)) {
                     XMLDecoder decoder = new XMLDecoder(is);
                     Settings settings = (Settings) decoder.readObject();
                     decoder.close();
@@ -99,7 +93,6 @@ public class DefaultSettingsProvider implements ISettingsProvider, Serializable 
                     log.error("Failed to load settings", ex);
                     FileUtils.deleteQuietly(file);
                 } finally {
-                    IOUtils.closeQuietly(is);
                     restoreContextClassloader(classloader);
                 }
             }
