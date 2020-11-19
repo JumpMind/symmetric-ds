@@ -142,22 +142,29 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     }
 
     private String getTypeToCast(Column column) {
+        String typeToCast = null;
+
         if (column.isTimestampWithTimezone()) {
-            return "timestamp with time zone";
+            typeToCast = "timestamp with time zone";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
-            return "uuid";
+            typeToCast = "uuid";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
-            return "bit varying";
+            typeToCast = "bit varying";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-            return "interval";
+            typeToCast = "interval";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
-            return "tsvector";
+            typeToCast = "tsvector";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSONB)) {
-            return "json";
+            typeToCast = "json";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSON)) {
-            return "json";
+            typeToCast = "json";
         }
-        return null;
+
+        if (typeToCast != null && column.getMappedType() != null && column.getMappedType().equals(TypeMap.ARRAY)) {
+            typeToCast = typeToCast + "[]";
+        }
+
+        return typeToCast;
     }
 
     @Override
