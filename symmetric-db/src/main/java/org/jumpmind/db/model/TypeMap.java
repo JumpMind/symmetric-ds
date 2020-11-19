@@ -118,7 +118,9 @@ public abstract class TypeMap
     public static final String IMAGE = "IMAGE";
     public static final String DATETIME2 = "DATETIME2";
     public static final String TSVECTOR = "TSVECTOR";
-    
+    public static final String JSONB = "JSONB";
+    public static final String JSON = "JSON";
+
     /** Maps type names to the corresponding {@link java.sql.Types} constants. */
     private static HashMap<String, Integer> _typeNameToTypeCode = new HashMap<String, Integer>();
 

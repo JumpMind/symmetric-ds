@@ -126,6 +126,10 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
             sql.append("cast(? as tsvector)").append(",");
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSONB)) {
+            sql.append("cast(? as jsonb)").append(",");
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSON)) {
+            sql.append("cast(? as json)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
@@ -151,6 +155,10 @@ public class PostgreSqlDmlStatement extends DmlStatement {
             .append(" = ST_GEOMFROMTEXT(?)");
         } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
             sql.append(quote).append(column.getName()).append(quote).append(" = cast(? as tsvector)");
+        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSONB)) {
+            sql.append(quote).append(column.getName()).append(quote).append(" = cast(? as jsonb)");
+        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSON)) {
+            sql.append(quote).append(column.getName()).append(quote).append(" = cast(? as json)");
         } else {
             super.appendColumnEquals(sql, column);
         }
