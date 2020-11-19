@@ -415,7 +415,6 @@ public class DmlStatement {
         return keys;
     }
    
-    @SuppressWarnings("unchecked")
     public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         switch (dmlType) {
             case UPDATE:
@@ -483,7 +482,7 @@ public class DmlStatement {
             String name = column.getName();
             int type = column.getMappedTypeCode();
 
-            log.info("Building where clause for column=" + name +", type=" + type);
+            log.debug("Building where clause for column=" + name +", type=" + type);
             
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
@@ -535,7 +534,7 @@ public class DmlStatement {
         }
         
         newSql = newSql.replace(QUESTION_MARK, "?");
-        log.info("Final SQL " + newSql);
+        log.debug("Final SQL " + newSql);
         return newSql + databaseInfo.getSqlCommandDelimiter();    
     }
     
