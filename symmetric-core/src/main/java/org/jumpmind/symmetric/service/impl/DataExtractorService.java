@@ -1644,8 +1644,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
                     outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
-            dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);            
-            
+            TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
+                    outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
+
+            if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
+                log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
+                nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
+            }
+
             transaction.commit();
         } catch (Error ex) {
             if (transaction != null) {

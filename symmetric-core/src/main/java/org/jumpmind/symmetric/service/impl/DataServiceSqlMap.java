@@ -73,7 +73,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " setup_batch_count, data_batch_count, finalize_batch_count, " 
                 + " setup_batch_loaded, data_batch_loaded, finalize_batch_loaded, " 
                 + " table_count, rows_loaded, rows_count, "
-                + " completed, cancelled, "
+                + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
                 + " error_flag, sql_state, sql_code, sql_message "
                 + " from $(table_reload_status) "
@@ -84,7 +84,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " setup_batch_count, data_batch_count, finalize_batch_count, " 
                 + " setup_batch_loaded, data_batch_loaded, finalize_batch_loaded, " 
                 + " table_count, rows_loaded, rows_count, "
-                + " completed, cancelled, "
+                + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
                 + " error_flag, sql_state, sql_code, sql_message "
                 + " from $(table_reload_status) "
@@ -96,7 +96,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " setup_batch_count, data_batch_count, finalize_batch_count, " 
                 + " setup_batch_loaded, data_batch_loaded, finalize_batch_loaded, " 
                 + " table_count, rows_loaded, rows_count, "
-                + " completed, cancelled, "
+                + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
                 + " error_flag, sql_state, sql_code, sql_message "
                 + " from $(table_reload_status) "
@@ -107,7 +107,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " setup_batch_count, data_batch_count, finalize_batch_count, "
                 + " setup_batch_loaded, data_batch_loaded, finalize_batch_loaded, "
                 + " table_count, rows_loaded, rows_count, "
-                + " completed, cancelled, "
+                + " completed, cancelled, full_load, "
                 + " start_time, end_time, last_update_time, last_update_by, "
                 + " error_flag, sql_state, sql_code, sql_message "
                 + " from $(table_reload_status) "
@@ -128,7 +128,7 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " last_update_time = ?  "
                 + " where load_id = ?");
         
-        putSql("insertTableReloadStatus", "insert into $(table_reload_status) (load_id, target_node_id, source_node_id, start_time, last_update_time) values (?, ?, ?, ?, ?)");
+        putSql("insertTableReloadStatus", "insert into $(table_reload_status) (load_id, target_node_id, source_node_id, full_load, start_time, last_update_time) values (?, ?, ?, ?, ?, ?)");
         
         putSql("deleteTableReloadStatus", "delete from $(table_reload_status) where load_id = ?");
         

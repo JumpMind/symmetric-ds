@@ -38,6 +38,8 @@ public class SecurityConstants {
     
     public static final String SYSPROP_SSL_IGNORE_CIPHERS = "symmetric.ssl.ignore.ciphers";
     
+    public static final String SYSPROP_KEY_MANAGER_FACTORY_ALGORITHM = "sym.key.manager.factory.algorithm";
+    
     public final static String CLASS_NAME_SECURITY_SERVICE = "security.service.class.name";
    
     public static final String PREFIX_ENC = "enc:";

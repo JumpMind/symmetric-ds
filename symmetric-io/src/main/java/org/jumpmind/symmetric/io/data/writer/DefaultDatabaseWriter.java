@@ -241,8 +241,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (count > 0) {
                     return LoadStatus.SUCCESS;
                 } else {
-                    context.put(CUR_DATA,getCurData(getTransaction()));
-                    context.setLastError(getInsertException2(data, values));
+                    context.put(CUR_DATA, getCurData(getTransaction()));
+                    context.setLastError(getInsertException(data, values));
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
@@ -268,21 +268,24 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
     }
     
-    private SqlException getInsertException2(CsvData data, String[] values) {
+    private SqlException getInsertException(CsvData data, String[] values) {
         SqlException ret = null;
-        String sql = currentDmlStatement.getSql(false);
-        Object[] dmlValues = getPlatform().getObjectValues(batch.getBinaryEncoding(), values,
-                currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
-        try {
-            getPlatform().getSqlTemplate().update(sql, dmlValues);
-        } catch(SqlException ex) {
-            ret = ex;
+        if (getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction()) {
+            try {
+                getTransaction().execute("savepoint sym");
+                getTransaction().prepare(currentDmlStatement.getSql(false));
+                getTransaction().addRow(data, currentDmlValues, currentDmlStatement.getTypes());
+            } catch (SqlException ex) {
+                ret = ex;
+                getTransaction().execute("rollback to savepoint sym");
+            } finally {
+                getTransaction().execute("release savepoint sym");
+            }
         }
-        
         return ret;
     }
-    
-   private boolean isUniqueIndexViolation(Throwable ex, Table targetTable) {
+
+    private boolean isUniqueIndexViolation(Throwable ex, Table targetTable) {
         String violatedIndexName = getPlatform().getSqlTemplate().getUniqueKeyViolationIndexName(ex);
         for (IIndex index : targetTable.getIndices()) {
             if (index.isUnique() && (index.getName().equals(violatedIndexName))) {

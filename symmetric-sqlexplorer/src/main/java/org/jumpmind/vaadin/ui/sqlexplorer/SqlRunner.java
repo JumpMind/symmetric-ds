@@ -39,7 +39,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -51,11 +50,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Label;
 
 public class SqlRunner extends Thread {
 
@@ -226,9 +225,7 @@ public class SqlRunner extends Thread {
                     connection.setAutoCommit(false);
                 }
 
-                SqlScriptReader sqlReader = null;
-                try {
-                    sqlReader = new SqlScriptReader(new StringReader(sqlText));
+                try (SqlScriptReader sqlReader = new SqlScriptReader(new StringReader(sqlText))) {
                     sqlReader.setDelimiter(delimiter);
                     String sql = sqlReader.readSqlStatement();
                     while (sql != null) {
@@ -334,10 +331,7 @@ public class SqlRunner extends Thread {
 
                     }
 
-                } finally {
-                    IOUtils.closeQuietly(sqlReader);
                 }
-
             } catch (Throwable ex) {
                 if (isCanceled) {
                     String canceledMessage = "Canceled successfully.\n\n"+sqlText;

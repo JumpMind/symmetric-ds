@@ -38,7 +38,7 @@ public class RemoteNodeStatus implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static enum Status {
-        OFFLINE, BUSY, NOT_AUTHORIZED, REGISTRATION_REQUIRED, SYNC_DISABLED, NO_DATA, DATA_PROCESSED, DATA_ERROR, UNKNOWN_ERROR
+        OFFLINE, BUSY, NOT_AUTHORIZED, REGISTRATION_REQUIRED, INITIAL_LOAD_PENDING, SYNC_DISABLED, NO_DATA, DATA_PROCESSED, DATA_ERROR, UNKNOWN_ERROR
     };
 
     private final Object monitor = new Object();

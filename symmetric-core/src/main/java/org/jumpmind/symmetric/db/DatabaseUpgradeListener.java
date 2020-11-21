@@ -67,6 +67,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
     protected boolean isUpgradeFromPre38;
     protected boolean isUpgradeFrom38;
+    protected boolean isUpgradeFromPre3125;
 
     @Override
     public String beforeUpgrade(ISymmetricDialect symmetricDialect, String tablePrefix, Database currentModel, Database desiredModel)
@@ -148,11 +149,12 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
         
         if (isUpgradeFromPre312(tablePrefix, currentModel, desiredModel)) {
-            log.info("Before upgrade, fixing router_type");
             if (engine.getParameterService().isRegistrationServer()) {
+                log.info("Before upgrade, fixing router_type");
                 engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_ROUTER
                         + " set router_type = 'default' where router_type is null");
             }
+            
             /*
              * Workarounds for missing features (bugs) in ddl-utils
              */
@@ -184,6 +186,10 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     log.info("Unable to drop FK constraints to router table: {}", e.getMessage());
                 }
             }
+        }
+        
+        if (isUpgradeFromPre3125(tablePrefix, currentModel, desiredModel)) {
+            isUpgradeFromPre3125 = true;
         }
 
         if (engine.getDatabasePlatform().getName().equals(DatabaseNamesConstants.INFORMIX)) {
@@ -238,6 +244,12 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
                     Constants.SEQUENCE_OUTGOING_BATCH);
             engine.getSqlTemplate().update(
                     "update  " + tablePrefix + "_" + TableConstants.SYM_CHANNEL + " set max_batch_size = 10000 where reload_flag = 1 ");
+        }
+
+        if (isUpgradeFromPre3125 && engine.getParameterService().isRegistrationServer()) {
+            log.info("After upgrade, fixing initial_load_end_time");
+            engine.getSqlTemplate().update("update " + tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY
+                    + " set initial_load_end_time = initial_load_time where initial_load_time is not null");                
         }
 
         engine.getPullService().pullConfigData(false);
@@ -297,6 +309,16 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
         if (eventTable != null && eventTable.findColumn("failed_logins") == null) {
             log.info("Detected upgrade from pre-3.12 version.");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean isUpgradeFromPre3125(String tablePrefix, Database currentModel, Database desiredModel) {
+        Table eventTable = currentModel.findTable(tablePrefix + "_" + TableConstants.SYM_NODE_SECURITY);
+        if (eventTable != null && eventTable.findColumn("initial_load_end_time") == null) {
+            log.info("Detected upgrade from pre-3.12.5 version.");
             return true;
         } else {
             return false;

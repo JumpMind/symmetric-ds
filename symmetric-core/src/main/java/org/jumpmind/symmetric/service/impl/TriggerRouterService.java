@@ -1252,7 +1252,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                         boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
-                        if (StringUtils.isNotBlank(nodeId)) {
+                        if (!force && StringUtils.isNotBlank(nodeId)) {
                             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
                             if (nodeSecurity != null
                                     && (nodeSecurity.isInitialLoadEnabled() || nodeSecurity

@@ -126,8 +126,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         Timestamp loadingTs = data.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
         Date existingTs = null;
         String existingNodeId = null;
+        boolean isLoadOnlyNode = databaseWriter.getWriterSettings().isLoadOnlyNode();
 
-        if (loadingTs != null) {
+        if (loadingTs != null && !isLoadOnlyNode) {
             if (log.isDebugEnabled()) {
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
@@ -163,7 +164,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
 
-        boolean isWinner = existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
+        boolean isWinner = isLoadOnlyNode || existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
                 || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
         writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
         

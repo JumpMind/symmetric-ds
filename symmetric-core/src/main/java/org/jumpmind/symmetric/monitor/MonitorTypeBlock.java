@@ -1,13 +1,14 @@
 package org.jumpmind.symmetric.monitor;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
+import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
-public class MonitorTypeBlock extends AbstractMonitorType {
+public class MonitorTypeBlock extends AbstractMonitorType implements IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
     @Override
@@ -35,7 +36,7 @@ public class MonitorTypeBlock extends AbstractMonitorType {
                 }
             }
             List<Transaction> filteredTransactions = new ArrayList<Transaction>();
-            String dbUser = engine.getParameterService().getString("db.user");
+            String dbUser = engine.getParameterService().getString(ParameterConstants.DB_USER);
             for (Transaction transaction : transactions) {
                 filterTransactions(transaction, transactionMap, filteredTransactions, dbUser, false, false);
             }

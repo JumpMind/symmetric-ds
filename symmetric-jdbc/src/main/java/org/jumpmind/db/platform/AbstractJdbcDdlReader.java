@@ -1648,7 +1648,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         Trigger trigger = null;
         List<Trigger> triggers = getTriggers(table.getCatalog(), table.getSchema(), table.getName());
         for (Trigger t : triggers) {
-            if (t.getName().equals(triggerName)) {
+            if (t.getName().equalsIgnoreCase(triggerName)) {
                 trigger = t;
                 break;
             }

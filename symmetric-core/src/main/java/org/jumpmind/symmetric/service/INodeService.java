@@ -153,6 +153,8 @@ public interface INodeService {
     public boolean setInitialLoadEnabled(String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
 
     public boolean setInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
+    
+    public boolean setInitialLoadEnded(ISqlTransaction transaction, String nodeId);
 
     public boolean setReverseInitialLoadEnabled(ISqlTransaction transaction, String nodeId, boolean initialLoadEnabled, boolean syncChange, long loadId, String createBy);
 
@@ -162,11 +164,15 @@ public interface INodeService {
      * @return true if a data load has occurred and has been completed.
      */
     public boolean isDataLoadCompleted();
+    
+    public boolean isDataLoadCompleted(String nodeId);
 
     /**
      * @return true if a data load has started but not yet completed.
      */
     public boolean isDataLoadStarted();
+    
+    public boolean isDataLoadStarted(String nodeId);
 
     /**
      * Get the current status of this node.
@@ -174,6 +180,8 @@ public interface INodeService {
      * @return {@link NodeStatus}
      */
     public NodeStatus getNodeStatus();
+
+    public NodeStatus getNodeStatus(String nodeId);
 
     /**
      * Check to see if any nodes are offline and process any nodes found using

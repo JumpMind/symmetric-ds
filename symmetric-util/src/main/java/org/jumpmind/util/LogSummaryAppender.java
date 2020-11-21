@@ -22,6 +22,8 @@ package org.jumpmind.util;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,7 +88,13 @@ public class LogSummaryAppender extends AbstractAppender {
                 summary.setLevel(event.getLevel());
                 summary.setMostRecentTime(event.getInstant().getEpochMillisecond());
                 summary.setCount(summary.getCount() + 1);
-                summary.setThrowable(event.getThrown());
+                Throwable throwable = event.getThrown();
+                summary.setThrowable(throwable);
+                if (throwable != null) {
+                    StringWriter st = new StringWriter();
+                    throwable.printStackTrace(new PrintWriter(st));
+                    summary.setStackTrace(st.toString());
+                }
                 summary.setMostRecentThreadName(event.getThreadName());
             }
         }

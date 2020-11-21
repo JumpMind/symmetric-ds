@@ -60,6 +60,8 @@ public class DatabaseWriterSettings {
     
     protected boolean logConflictResolution = false;
     
+    protected boolean loadOnlyNode = false;
+    
     protected String textColumnExpression;
 
     protected Map<String, Conflict> conflictSettingsByChannel;
@@ -302,5 +304,13 @@ public class DatabaseWriterSettings {
     
     public boolean isApplyChangesOnly() {
         return applyChangesOnly;
+    }
+
+    public boolean isLoadOnlyNode() {
+        return loadOnlyNode;
+    }
+
+    public void setLoadOnlyNode(boolean loadOnlyNode) {
+        this.loadOnlyNode = loadOnlyNode;
     }
 }
