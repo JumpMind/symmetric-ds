@@ -151,54 +151,37 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
-        Table targetTable = writer.getTargetTable();
-        boolean isPrimaryKeyViolation = false;
+        int count = 0;
         
         if (e != null && sqlTemplate.isUniqueKeyViolation(e)) {
-            String violatedIndexName = sqlTemplate.getUniqueKeyViolationIndexName(e);
+            Table targetTable = writer.getTargetTable();
+            log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.", 
+                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
 
-            if (violatedIndexName != null) {
-                // Use the violated unique index name to find the columns involved so we can run a delete statement
-                boolean foundUniqueIndex = false;
-                int count = 0;
-                for (IIndex index : targetTable.getIndices()) {
-                    if (index.isUnique() && (index.getName().equals(violatedIndexName) || violatedIndexName.contentEquals("%"))) {
-                        foundUniqueIndex = true;
-                        log.info("Unique violation from index {} on table {} during {} with batch {}.  Attempting to correct.", violatedIndexName, targetTable.getName(), 
-                                data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-                        count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
-                    }
+            for (IIndex index : targetTable.getIndices()) {
+                if (index.isUnique()) {
+                    log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(), 
+                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                    count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
                 }
+            }
 
-                if (foundUniqueIndex) {
-                    return count != 0;
-                } else {
-                    // Couldn't find the unique index on the table, so the violation is the internal primary key index
-                    isPrimaryKeyViolation = true;
-                    log.debug("Couldn't find unique index {} on table {}, so assuming primary key violation", violatedIndexName, targetTable.getName());
-                }
-            } else {
-                // Couldn't find the unique index name from the exception, so the violation is the internal primary key index
-                isPrimaryKeyViolation = true;
-                log.debug("Assuming primary key violation for table {} with message {}", targetTable.getName(), e.getMessage());
+            if (data.getDataEventType().equals(DataEventType.UPDATE)) {
+                // Primary key is preventing our update, so we delete the blocking row
+                log.info("Correcting for possible violation of primary key on table {} during {} with batch {}", targetTable.getName(), 
+                        data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+    
+                Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+                List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
+                List<String> whereValues = new ArrayList<String>();
+                
+                for (Column column : whereColumns) {
+                    whereValues.add(values.get(column.getName()));
+                }            
+                count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);
             }
         }
-        
-        if (isPrimaryKeyViolation && data.getDataEventType().equals(DataEventType.UPDATE)) {
-            // Primary key is preventing our update, so we delete the blocking row
-            log.info("Primary key violation on table {} during {} with batch {}.  Attempting to correct.", targetTable.getName(), 
-                    data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-
-            Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
-            List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
-            List<String> whereValues = new ArrayList<String>();
-            
-            for (Column column : whereColumns) {
-                whereValues.add(values.get(column.getName()));
-            }            
-            return deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false) != 0;
-        }
-        return false;
+        return count != 0;
     }
  
     protected int deleteUniqueConstraintRow(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable,
