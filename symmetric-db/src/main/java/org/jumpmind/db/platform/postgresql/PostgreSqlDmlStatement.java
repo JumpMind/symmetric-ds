@@ -70,7 +70,6 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         if (dmlType == DmlType.INSERT) {
@@ -125,7 +124,7 @@ public class PostgreSqlDmlStatement extends DmlStatement {
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
             sql.append("cast(? as tsvector)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
