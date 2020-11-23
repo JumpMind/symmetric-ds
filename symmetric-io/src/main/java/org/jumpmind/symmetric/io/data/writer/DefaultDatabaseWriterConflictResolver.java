@@ -138,7 +138,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
                         targetTable.getName(), targetTable.getPrimaryKeyColumns(), targetTable.getPrimaryKeyColumns(), 
                         new boolean[targetTable.getPrimaryKeyColumnCount()], databaseWriter.getWriterSettings().getTextColumnExpression());
-                databaseWriter.getTransaction(targetTable.getName()).prepareAndExecute(st.getSql(), (Object[]) ArrayUtils.addAll(pkData, pkData));
+                Object[] values = databaseWriter.getPlatform().getObjectValues(writer.getBatch().getBinaryEncoding(), 
+                        pkData, targetTable.getPrimaryKeyColumns());
+                databaseWriter.getTransaction().prepareAndExecute(st.getSql(), ArrayUtils.addAll(values, values));
             }
 
             String sql = "select source_node_id, create_time from " + databaseWriter.getTablePrefix() + 
@@ -150,7 +152,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
             if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
                 // we may have waited for another transaction to commit, so query with a new transaction
-                row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplate().queryForRow(sql, args);
+                row = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForRow(sql, args);
             } else {
                 row = writer.getContext().findTransaction().queryForRow(sql, args);
             }
