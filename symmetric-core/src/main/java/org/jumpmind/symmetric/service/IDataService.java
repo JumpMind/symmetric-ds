@@ -88,8 +88,12 @@ public interface IDataService {
 
     public void reloadMissingForeignKeyRows(String nodeId, long dataId);
 
-    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers);
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, 
+            String channelId, boolean sendCorrectionToPeers);
 
+    public void sendMissingRowsForInitialLoad(String nodeId, long batchId, long rowNumber, String catalogName, String schemaName, String tableName, 
+            String whereSql, String channelId);
+    
     public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData, 
             Date minCreateTime, String winningNodeId);
 

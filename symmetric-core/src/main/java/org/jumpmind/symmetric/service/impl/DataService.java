@@ -2444,7 +2444,8 @@ public class DataService extends AbstractService implements IDataService {
 
     }
 
-    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers) {
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, String channelId,
+            boolean sendCorrectionToPeers) {
         try {
             IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
             Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
@@ -2497,12 +2498,19 @@ public class DataService extends AbstractService implements IDataService {
                             foreignTableRow.getWhereSql(), localTable.getName(), foreignTableRow.getReferenceColumnName());
 
                     for (Node targetNode : targetNodes) {
-                        script.append("engine.getDataService().reloadTableImmediate(\"" + targetNode.getNodeId() + "\", " +
-                                (catalog == null ? catalog : "\"" + catalog + "\"") + ", " +
+                        script.append("try { engine.getDataService().sendMissingRowsForInitialLoad(\"" + targetNode.getNodeId() + "\", " +
+                                batchId + ", " + rowNumber + ", " + (catalog == null ? catalog : "\"" + catalog + "\"") + ", " +
                                 (schema == null ? schema : "\"" + schema + "\"") + ", \"" +
                                 foreignTable.getName().replace("\"", "\\\"") + "\", \"" +
                                 foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\", " +
                                 (channelId == null ? channelId : "\"" + channelId + "\"") + ");\n");
+
+                        script.append("} catch (Exception e) { engine.getDataService().reloadTableImmediate(\"" + targetNode.getNodeId() + "\", " +
+                                (catalog == null ? catalog : "\"" + catalog + "\"") + ", " +
+                                (schema == null ? schema : "\"" + schema + "\"") + ", \"" +
+                                foreignTable.getName().replace("\"", "\\\"") + "\", \"" +
+                                foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\", " +
+                                (channelId == null ? channelId : "\"" + channelId + "\"") + "); }\n");
                     }
                 }
             }
@@ -2512,6 +2520,32 @@ public class DataService extends AbstractService implements IDataService {
             }
         } catch (Exception e) {
             log.error("Unknown exception while processing foreign key for node id: " + sourceNodeId, e);
+        }
+    }
+    
+    /**
+     * Check if source has the foreign key parent rows that the target is reporting as missing.
+     * If they exist, send a reload batch for each row.  Otherwise, send a SQL batch to ignore the row since we can't resolve it.
+     * 
+     * TODO: should reloadMissingForeignKeyRows() also call this to handle similar case with backlog of changes and a busy system?  
+     */
+    public void sendMissingRowsForInitialLoad(String nodeId, long batchId, long rowNumber, String catalogName, String schemaName, String tableName, 
+            String whereSql, String channelId) {
+        IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
+        DatabaseInfo info = platform.getDatabaseInfo();
+        String quote = info.getDelimiterToken() == null || !platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? "" : info.getDelimiterToken();
+        String fullTableName = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote, 
+                info.getCatalogSeparator(), info.getSchemaSeparator());
+        // TODO: still a race condition here before push/pull, maybe use createData() instead
+        long count = platform.getSqlTemplateDirty().queryForLong("select count(*) from " + fullTableName + " where " + whereSql);
+        if (count > 0) {
+            reloadTableImmediate(nodeId, catalogName, schemaName, tableName, whereSql, channelId);
+        } else {
+            log.info("Resolving initial load batch {}-{} to ignore the row because no rows found for {} where {}", nodeId, batchId,
+                    fullTableName, whereSql);
+            sendSQL(nodeId, "update " + engine.getParameterService().getTablePrefix() + 
+                    "_incoming_error set resolve_ignore = 1 where batch_id = " + batchId + " and node_id = '" + engine.getNodeId() +
+                    "' and failed_row_number = " + rowNumber);
         }
     }
 
