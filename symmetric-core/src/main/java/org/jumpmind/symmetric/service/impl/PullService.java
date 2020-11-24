@@ -29,6 +29,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeCommunication;
+import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
@@ -100,9 +101,14 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
                                (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
                                meetsMinimumTime = false; 
                             }
-                            boolean m2mLockout = m2mLoadInProgress && identity.getCreatedAtNodeId() != null && !identity.getCreatedAtNodeId().equals(nodeCommunication.getNodeId());
-                            if (m2mLockout) {
-                                log.debug("Not pulling from node {} until initial load from {} is complete", nodeCommunication.getNodeId(), identity.getCreatedAtNodeId());
+                            boolean m2mLockout = false;
+                            if (m2mLoadInProgress) {
+                                NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
+                                m2mLockout = identity.getCreatedAtNodeId() != null && "registration".equals(nodeSecurity.getInitialLoadCreateBy()) &&
+                                        !identity.getCreatedAtNodeId().equals(nodeCommunication.getNodeId());
+                                if (m2mLockout) {
+                                    log.debug("Not pulling from node {} until initial load from {} is complete", nodeCommunication.getNodeId(), identity.getCreatedAtNodeId());
+                                }
                             }
                             if (availableThreads > 0 && meetsMinimumTime && !m2mLockout) {
                                 if (nodeCommunicationService.execute(nodeCommunication, statuses, this)) {

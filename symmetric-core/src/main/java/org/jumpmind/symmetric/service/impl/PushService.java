@@ -122,7 +122,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 boolean m2mLoadInProgress = false;
                                 if (isMasterToMaster && nodeService.isDataLoadStarted(nodeCommunication.getNodeId())) {
                                     NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeCommunication.getNodeId(), true);
-                                    m2mLoadInProgress = nodeSecurity != null && !identitySecurity.getNodeId().equals(nodeSecurity.getCreatedAtNodeId());
+                                    m2mLoadInProgress = nodeSecurity != null && "registration".equals(nodeSecurity.getInitialLoadCreateBy()) &&
+                                            !identitySecurity.getNodeId().equals(nodeSecurity.getCreatedAtNodeId());
                                     if (m2mLoadInProgress) {
                                         log.debug("Not pushing to node {} until initial load from {} is complete", nodeCommunication.getNodeId(),
                                                 nodeSecurity.getCreatedAtNodeId());
