@@ -27,10 +27,14 @@ import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_ROW_
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -42,18 +46,21 @@ import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDdlReader;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.CsvExport;
 import org.jumpmind.vaadin.ui.common.GridDataProvider;
 import org.jumpmind.vaadin.ui.common.IDataProvider;
-import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
+import org.jumpmind.vaadin.ui.common.NotifyDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.contextmenu.ContextMenu;
+import com.vaadin.data.Binder;
+import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
@@ -63,8 +70,11 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
+import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.components.grid.Editor;
 import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Grid;
@@ -95,6 +105,8 @@ public class TabularResultLayout extends VerticalLayout {
     String schemaName;
 
     Grid<List<Object>> grid;
+    
+    Map<Integer, String> columnNameMap;
 
     org.jumpmind.db.model.Table resultTable;
 
@@ -157,6 +169,18 @@ public class TabularResultLayout extends VerticalLayout {
         try {
             grid = putResultsInGrid(settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS));
             grid.setSizeFull();
+            
+            columnNameMap = new HashMap<Integer, String>();
+            ResultSetMetaData meta = rs.getMetaData();
+            for (int i = 0; i < meta.getColumnCount(); i++) {
+                String realColumnName = meta.getColumnName(i + 1);
+                String columnName = realColumnName;
+                int j = 1;
+                while (columnNameMap.containsValue(columnName)) {
+                    columnName = realColumnName + "_" + j++;
+                }
+                columnNameMap.put(i, columnName);
+            }
 
             ContextMenu menu = new ContextMenu(grid, true);
             menu.addItem(ACTION_SELECT, new MenuBar.Command() {
@@ -204,31 +228,80 @@ public class TabularResultLayout extends VerticalLayout {
             grid.addItemClickListener(event -> {
                 MouseButton button = event.getMouseEventDetails().getButton();
                 if (button == MouseButton.LEFT) {
-                    if (event.getMouseEventDetails().isDoubleClick() && event.getColumn() != null) {
-                        String header = event.getColumn().getCaption();
-                        List<Grid.Column<List<Object>, ?>> colList = grid.getColumns();
-                        Object o = null;
-                        for (int i = 1; i < colList.size(); i++) {
-                            if (colList.get(i).getCaption().equals(header)) {
-                                o = event.getItem().get(i - 1);
-                                break;
-                            }
-                        }
-                        if (o != null) {
-                            String data = String.valueOf(o);
-                            boolean binary = resultTable != null ? resultTable.getColumnWithName(header).isOfBinaryType() : false;
-                            if (binary) {
-                                ReadOnlyTextAreaDialog.show(header, data.toUpperCase(), binary);
-                            } else {
-                                ReadOnlyTextAreaDialog.show(header, data, binary);
-                            }
-                        }
-                    } else {
-                        grid.deselectAll();
-                        grid.select(event.getItem());
-                    }
+                    grid.deselectAll();
+                    grid.select(event.getItem());
                 }
             });
+            
+            Editor<List<Object>> editor = grid.getEditor();
+            Binder<List<Object>> binder = editor.getBinder();
+            
+            int i = 0;
+            for (Grid.Column<List<Object>, ?> col : grid.getColumns()) {
+                String colId = col.getId();
+                if (colId == null || !colId.equals("#")) {
+                    Integer index = new Integer(i);
+                    Binding<List<Object>, String> binding = binder.bind(new TextField(),
+                            list -> list.get(index).toString(), (list, value) -> list.set(index, value));
+                    col.setEditorBinding(binding);
+                    i++;
+                }
+            }
+            
+            if (resultTable != null) {
+                @SuppressWarnings("unchecked")
+                List<Object>[] unchangedValue = (List<Object>[]) new List[1];
+                Object[] params = new Object[resultTable.getPrimaryKeyColumnCount() + 1];
+                int[] types = new int[params.length];
+                
+                editor.addOpenListener(event -> {
+                    unchangedValue[0] = new ArrayList<Object>(event.getBean());
+                    int paramCount = 1;
+                    for (int j = 0; j < unchangedValue[0].size(); j++) {
+                        if (resultTable.getPrimaryKeyColumnIndex(columnNameMap.get(j)) >= 0) {
+                            params[paramCount] = unchangedValue[0].get(j);
+                            types[paramCount] = resultTable.getColumnWithName(columnNameMap.get(j)).getMappedTypeCode();
+                            paramCount++;
+                        }
+                    }
+                });
+                
+                editor.addSaveListener(event -> {
+                    grid.setDataProvider(grid.getDataProvider());
+                    
+                    List<Object> row = event.getBean();
+                    for (int j = 0; j < row.size(); j++) {
+                        String colName = columnNameMap.get(j);
+                        if (!db.getPlatform().isLob(resultTable.getColumnWithName(colName).getMappedTypeCode())) {
+                            String sql = buildUpdate(resultTable, colName, resultTable.getPrimaryKeyColumnNames());
+                            params[0] = row.get(j);
+                            if ((params[0] == null && unchangedValue[0].get(j) == null)
+                                    || (params[0] != null && params[0].equals(unchangedValue[0].get(j)))) {
+                                continue;
+                            }
+                            types[0] = resultTable.getColumnWithName(colName).getMappedTypeCode();
+                            for (int k = 0; k < types.length; k++) {
+                                if (types[k] == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo()
+                                        .isDateOverridesToTimestamp()) {
+                                    types[k] = Types.TIMESTAMP;
+                                }
+                            }
+                            log.warn(sql);
+                            try {
+                                db.getPlatform().getSqlTemplate().update(sql, params, types);
+                            } catch (SqlException e) {
+                                NotifyDialog.show("Error",
+                                        "<b>The table could not be updated.</b><br>"
+                                                + "Cause: the sql update statement failed to execute.<br><br>"
+                                                + "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.",
+                                        e, Type.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                });
+                
+                editor.setEnabled(true);
+            }
             
             this.addComponent(grid);
             this.setExpandRatio(grid, 1);
@@ -705,5 +778,25 @@ public class TabularResultLayout extends VerticalLayout {
 
     protected String[] getColumnsToExclude() {
         return new String[0];
+    }
+    
+    protected String buildUpdate(Table table, String columnName, String[] pkColumnNames) {
+        StringBuilder sql = new StringBuilder("update ");
+        DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
+        String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
+        sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
+        sql.append(" set ");
+        sql.append(quote);
+        sql.append(columnName);
+        sql.append(quote);
+        sql.append("=? where ");
+        for (String col : pkColumnNames) {
+            sql.append(quote);
+            sql.append(col);
+            sql.append(quote);
+            sql.append("=? and ");
+        }
+        sql.delete(sql.length() - 5, sql.length());
+        return sql.toString();
     }
 }

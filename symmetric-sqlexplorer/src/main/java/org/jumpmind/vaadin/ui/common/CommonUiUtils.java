@@ -33,10 +33,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -203,14 +201,8 @@ public final class CommonUiUtils {
         
         List<List<Object>> outerList = new ArrayList<List<Object>>();
         if (rs != null) {
-            final int[] rowCounter = {0};
-            final Map<List<Object>, Integer> rowNumberMap = new HashMap<List<Object>, Integer>();
             grid.addColumn(row -> {
-                if (!rowNumberMap.containsKey(row)) {
-                    rowCounter[0]++;
-                    rowNumberMap.put(row, rowCounter[0]);
-                }
-                return rowNumberMap.get(row);
+                return outerList.indexOf(row) + 1;
             }).setCaption("#").setId("#").setHidden(!showRowNumbers).setStyleGenerator(row -> {
                 if (!grid.getSelectedItems().contains(row)) {
                     return "rowheader";
@@ -235,7 +227,7 @@ public final class CommonUiUtils {
                     columnNames.add(columnName);
                     
                     Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
-                    grid.addColumn(row -> row.get(colNum)).setCaption(columnName).setHidable(true)
+                    grid.addColumn(row -> row.get(colNum)).setId(columnName).setCaption(columnName).setHidable(true)
                             .setStyleGenerator(row -> {
                         if (row.get(colNum) == null) {
                             return "italics";
