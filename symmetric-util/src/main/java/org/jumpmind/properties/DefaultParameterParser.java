@@ -203,6 +203,7 @@ public class DefaultParameterParser {
         public static final String TYPE_SQL = "sql";
         public static final String TYPE_CODE = "code";
         public static final String TYPE_XML = "xml";
+        public static final String TYPE_ENCRYPTED = "encrypted";
 
         private static final long serialVersionUID = 1L;
         private String key;
@@ -290,6 +291,10 @@ public class DefaultParameterParser {
 
         public boolean isTextBoxType() {
             return type != null && type.equals(TYPE_TEXT_BOX);
+        }
+        
+        public boolean isEncryptedType() {
+            return type != null && type.equals(TYPE_ENCRYPTED);
         }
 
         public void addTag(String tag) {
