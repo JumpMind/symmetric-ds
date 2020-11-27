@@ -407,6 +407,7 @@ final public class ParameterConstants {
     public final static String BSH_LOAD_FILTER_HANDLES_MISSING_TABLES = "bsh.load.filter.handles.missing.tables";
     
     public final static String BSH_TRANSFORM_GLOBAL_SCRIPT = "bsh.transform.global.script";
+    public final static String BSH_EXTENSION_GLOBAL_SCRIPT = "bsh.extension.global.script";
     
     public final static String MSSQL_ROW_LEVEL_LOCKS_ONLY = "mssql.allow.only.row.level.locks.on.runtime.tables";
     public final static String MSSQL_USE_NTYPES_FOR_SYNC = "mssql.use.ntypes.for.sync";
