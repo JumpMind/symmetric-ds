@@ -148,7 +148,22 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         ignore(writer, conflict);
                         break;
                     case NEWER_WINS:
-                        status = performChainedFallbackForDelete(writer, data, conflict);
+                        status = LoadStatus.CONFLICT;
+                        boolean isWinner = false;
+                        if (conflict.getDetectType() == DetectConflict.USE_TIMESTAMP || conflict.getDetectType() == DetectConflict.USE_VERSION) {
+                            isWinner = true;
+                        } else {
+                            isWinner = isCaptureTimeNewer(conflict, writer, data);
+                        }
+                        
+                        if (isWinner) {
+                            if (writer.getContext().getLastError() == null) {
+                                status = writer.delete(data, false);
+                            }
+                            if (status == LoadStatus.CONFLICT && writer.getContext().getLastError() != null) {
+                                status = performChainedFallbackForDelete(writer, data, conflict);
+                            }
+                        }
 
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);

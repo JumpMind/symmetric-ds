@@ -310,6 +310,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 } else {
                     switch (conflict.getDetectType()) {
                         case USE_OLD_DATA:
+                        case USE_CHANGED_DATA:
                             if (data.contains(CsvData.OLD_DATA)) {
                                 lookupKeys = targetTable.getColumnsAsList();
                             } else {
