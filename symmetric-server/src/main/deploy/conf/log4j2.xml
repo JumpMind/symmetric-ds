@@ -2,7 +2,6 @@
 <Configuration name="SYM" status="warn" packages="org.jumpmind.util">
     <Appenders>
         <Console name="CONSOLE" target="SYSTEM_ERR">
-            <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY" />
             <PatternLayout pattern="[%X{engineName}] - %c{1} - %m%ex%n" />
         </Console>
         <SymRollingFile name="ROLLING" fileName="${env:SYM_HOME:-.}/logs/symmetric.log" filePattern="${env:SYM_HOME:-.}/logs/symmetric.log.%i" createOnDemand="true">
