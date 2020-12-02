@@ -112,6 +112,9 @@ public class DataService extends AbstractService implements IDataService {
     private ISymmetricEngine engine;
 
     private IExtensionService extensionService;
+    
+    private String currentTimestampString = "current_timestamp";
+    private String scrubbedCurrentTimestampString;
 
     public DataService(ISymmetricEngine engine, IExtensionService extensionService) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
@@ -123,6 +126,7 @@ public class DataService extends AbstractService implements IDataService {
         }
         setSqlMap(new DataServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
+        scrubbedCurrentTimestampString = symmetricDialect.getPlatform().scrubSql(currentTimestampString);
     }
 
     protected Map<IHeartbeatListener, Long> lastHeartbeatTimestamps = new HashMap<IHeartbeatListener, Long>();
@@ -2047,7 +2051,7 @@ public class DataService extends AbstractService implements IDataService {
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.NUMERIC, Types.VARCHAR, Types.VARCHAR };
 
         if (data.getCreateTime() != null) {
-            sql = sql.replace("current_timestamp", "?");
+            sql = sql.replace(scrubbedCurrentTimestampString, "?");
             args = ArrayUtils.add(args, data.getCreateTime());
             types = ArrayUtils.add(types, Types.TIMESTAMP);
         }
