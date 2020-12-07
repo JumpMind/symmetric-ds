@@ -282,7 +282,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         try {
             count = prepareAndExecute(platform, databaseWriter, sql, objectValues);
             if (count == 0) {
-                log.error("Failed to find and delete the blocking row by {}: {} {}",
+                log.info("Could not find and delete the blocking row by {}: {} {}",
                         isUniqueKey ? "unique constraint" : "primary key", sql, ArrayUtils.toString(objectValues));
             }
         } catch (SqlException ex) {

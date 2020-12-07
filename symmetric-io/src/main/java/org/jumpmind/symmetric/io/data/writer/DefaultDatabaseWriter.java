@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
@@ -247,15 +246,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 }
             } catch (SqlException ex) {
                 if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)) {
-                    if (!getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() || isUniqueIndexViolation(ex, targetTable)) {
-                        context.put(CONFLICT_ERROR, ex);
-                        context.put(CUR_DATA,getCurData(getTransaction()));
-                        context.setLastError(ex);
-                        return LoadStatus.CONFLICT;
-                    } else {
-                        log.info("Detected a conflict via an exception, but cannot perform conflict resolution because the database in use requires savepoints");
-                        throw ex;
-                    }
+                    context.put(CONFLICT_ERROR, ex);
+                    context.put(CUR_DATA,getCurData(getTransaction()));
+                    context.setLastError(ex);
+                    return LoadStatus.CONFLICT;
                 } else {
                     throw ex;
                 }
@@ -283,16 +277,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             }
         }
         return ret;
-    }
-
-    private boolean isUniqueIndexViolation(Throwable ex, Table targetTable) {
-        String violatedIndexName = getPlatform().getSqlTemplate().getUniqueKeyViolationIndexName(ex);
-        for (IIndex index : targetTable.getIndices()) {
-            if (index.isUnique() && (index.getName().equals(violatedIndexName))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
