@@ -74,7 +74,7 @@ public class SecurityService implements ISecurityService {
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             FileInputStream is = new FileInputStream(getTrustStoreFilename());
-            ks.load(is, getTrustStorePassword().toCharArray());
+            ks.load(is, getTrustStorePassword() == null ? null : getTrustStorePassword().toCharArray());
             is.close();
             return ks;
         } catch (RuntimeException e) {
@@ -277,9 +277,7 @@ public class SecurityService implements ISecurityService {
     }
 
     protected String getTrustStorePassword() {
-        String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
-        password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
-        return password;
+        return unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
     }
 
     protected String getKeyStorePassword() {
