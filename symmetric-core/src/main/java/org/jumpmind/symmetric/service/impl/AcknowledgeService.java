@@ -138,8 +138,10 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                         engine.getStatisticManager().incrementDataLoadedOutgoingErrors(outgoingBatch.getChannelId(), 1);
                     }
                     if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
-                        if (!outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
-                            engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getNodeId(), outgoingBatch.getFailedDataId());
+                        if (!outgoingBatch.isLoadFlag() && outgoingBatch.getReloadRowCount() == 0 && 
+                                parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION)) {
+                            engine.getDataService().reloadMissingForeignKeyRows(outgoingBatch.getBatchId(), outgoingBatch.getNodeId(), 
+                                    outgoingBatch.getFailedDataId(), outgoingBatch.getFailedLineNumber());
                             suppressError = true;
                         }
                         if (outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_RELOAD)) {
