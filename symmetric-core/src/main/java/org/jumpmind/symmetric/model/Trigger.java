@@ -178,6 +178,12 @@ public class Trigger implements Serializable {
         includedColumnNames = StringUtils.trimToNull(includedColumnNames);
         syncKeyNames = StringUtils.trimToNull(syncKeyNames);
         channelExpression = StringUtils.trimToNull(channelExpression);
+        customBeforeInsertText = StringUtils.trimToNull(customBeforeInsertText);
+        customBeforeUpdateText = StringUtils.trimToNull(customBeforeUpdateText);
+        customBeforeDeleteText = StringUtils.trimToNull(customBeforeDeleteText);
+        customOnInsertText = StringUtils.trimToNull(customOnInsertText);
+        customOnUpdateText = StringUtils.trimToNull(customOnUpdateText);
+        customOnDeleteText = StringUtils.trimToNull(customOnDeleteText);
     }
     
     public Column[] filterExcludedAndIncludedColumns(Column[] src) {

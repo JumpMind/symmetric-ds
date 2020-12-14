@@ -46,6 +46,8 @@ import org.jumpmind.db.model.Trigger.TriggerType;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ChangeCatalogConnectionHandler;
+import org.jumpmind.db.sql.IConnectionHandler;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
@@ -345,5 +347,10 @@ public class AseDdlReader extends AbstractJdbcDdlReader {
         query.append(identifier);
         query.append("\"");
         return query;
+    }
+    
+    @Override
+    protected IConnectionHandler getConnectionHandler(String catalog) {
+        return new ChangeCatalogConnectionHandler(catalog == null ? platform.getDefaultCatalog() : catalog);
     }
 }

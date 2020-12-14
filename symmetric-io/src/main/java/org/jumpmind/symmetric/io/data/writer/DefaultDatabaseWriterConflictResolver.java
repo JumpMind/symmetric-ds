@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
@@ -209,7 +210,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
     }
     
     @Override
-    protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable e) {
+    protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable e, boolean isFallback) {
         DefaultDatabaseWriter databaseWriter = (DefaultDatabaseWriter)writer;
         IDatabasePlatform platform = databaseWriter.getPlatform();
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
@@ -217,30 +218,58 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         
         if (e != null && sqlTemplate.isUniqueKeyViolation(e)) {
             Table targetTable = writer.getTargetTable();
-            log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.", 
-                    targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+            Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+            List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
+            List<String> whereValues = new ArrayList<String>();
+            for (Column column : whereColumns) {
+                whereValues.add(values.get(column.getName()));
+            }
+            boolean[] nullKeyValues = new boolean[whereColumns.size()];
+            DmlStatement countStmt = platform.createDmlStatement(DmlType.COUNT, targetTable.getCatalog(), targetTable.getSchema(),
+                    targetTable.getName(), whereColumns.toArray(new Column[0]), targetTable.getPrimaryKeyColumns(), nullKeyValues,
+                    databaseWriter.getWriterSettings().getTextColumnExpression());
+            Object[] objectValues = platform.getObjectValues(databaseWriter.getBatch().getBinaryEncoding(),
+                    whereValues.toArray(new String[0]), whereColumns.toArray(new Column[0]));
+            int pkCount = queryForInt(platform, databaseWriter, countStmt.getSql(), objectValues);
+            boolean isUniqueKeyBlocking = false;
+            boolean isPrimaryKeyBlocking = false;
 
-            for (IIndex index : targetTable.getIndices()) {
-                if (index.isUnique()) {
-                    log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(), 
-                            targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
-                    count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
+            if ((!isFallback && data.getDataEventType().equals(DataEventType.UPDATE)) || 
+                    (isFallback && data.getDataEventType().equals(DataEventType.INSERT))) {
+                Map<String, String> pkValues = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+                boolean isPkChanged = false;
+                for (Map.Entry<String, String> entry : pkValues.entrySet()) {
+                    String newValue = values.get(entry.getKey());
+                    if (!StringUtils.equals(newValue, entry.getValue())) {
+                        isPkChanged = true;
+                        break;
+                    }
                 }
+                if (isPkChanged && pkCount > 0) {
+                    isPrimaryKeyBlocking = true;
+                } else {
+                    isUniqueKeyBlocking = true;
+                }
+            } else if ((!isFallback && data.getDataEventType().equals(DataEventType.INSERT)) || 
+                    (isFallback && data.getDataEventType().equals(DataEventType.UPDATE))) {
+                isUniqueKeyBlocking = pkCount == 0;
             }
 
-            if (data.getDataEventType().equals(DataEventType.UPDATE)) {
-                // Primary key is preventing our update, so we delete the blocking row
-                log.info("Correcting for possible violation of primary key on table {} during {} with batch {}", targetTable.getName(), 
-                        data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+            if (isUniqueKeyBlocking) {
+                log.info("Unique key violation on table {} during {} with batch {}.  Attempting to correct.", 
+                        targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
     
-                Map<String, String> values = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
-                List<Column> whereColumns = targetTable.getPrimaryKeyColumnsAsList();
-                List<String> whereValues = new ArrayList<String>();
-                
-                for (Column column : whereColumns) {
-                    whereValues.add(values.get(column.getName()));
-                }            
-                count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);
+                for (IIndex index : targetTable.getIndices()) {
+                    if (index.isUnique()) {
+                        log.info("Correcting for possible violation of unique index {} on table {} during {} with batch {}", index.getName(), 
+                                targetTable.getName(), data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                        count += deleteUniqueConstraintRow(platform, sqlTemplate, databaseWriter, targetTable, index, data);
+                    }
+                }
+            } else if (isPrimaryKeyBlocking) {
+                log.info("Correcting for update violation of primary key on table {} during {} with batch {}", targetTable.getName(), 
+                        data.getDataEventType().toString(), writer.getContext().getBatch().getNodeBatchId());
+                count += deleteRow(platform, sqlTemplate, databaseWriter, targetTable, whereColumns, whereValues, false);                            
             }
         }
         return count != 0;
@@ -353,10 +382,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             if (visited.add(foreignTableRow)) {
                 Table foreignTable = foreignTableRow.getTable();
             
-                log.info("Remove foreign row "
-                        + "catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
-                        + "to correct table '{}' for column '{}'",
-                        foreignTable.getCatalog(), foreignTable.getSchema(), foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
+                log.info("Remove foreign row from table '{}' fk name '{}' where sql '{}' to correct table '{}' for column '{}'",
+                        foreignTable.getFullyQualifiedTableName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
                         targetTable.getName(), foreignTableRow.getReferenceColumnName());
                 
                 DatabaseInfo info = platform.getDatabaseInfo();
@@ -381,6 +408,14 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         return doInTransaction(platform, databaseWriter, new ITransactionCallback<Row>() {
             public Row execute(ISqlTransaction transaction) {
                 return transaction.queryForRow(sql, values);
+            }
+        });
+    }
+
+    protected int queryForInt(IDatabasePlatform platform, DefaultDatabaseWriter databaseWriter, String sql, Object... values) {
+        return doInTransaction(platform, databaseWriter, new ITransactionCallback<Integer>() {
+            public Integer execute(ISqlTransaction transaction) {
+                return transaction.queryForInt(sql, values);
             }
         });
     }

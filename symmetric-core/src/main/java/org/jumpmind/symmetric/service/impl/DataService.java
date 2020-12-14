@@ -2448,8 +2448,7 @@ public class DataService extends AbstractService implements IDataService {
 
     }
 
-    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, String channelId,
-            boolean sendCorrectionToPeers) {
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, String channelId, boolean sendCorrectionToPeers) {
         try {
             IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
             Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
@@ -2502,19 +2501,12 @@ public class DataService extends AbstractService implements IDataService {
                             foreignTableRow.getWhereSql(), localTable.getName(), foreignTableRow.getReferenceColumnName());
 
                     for (Node targetNode : targetNodes) {
-                        script.append("try { engine.getDataService().sendMissingRowsForInitialLoad(\"" + targetNode.getNodeId() + "\", " +
-                                batchId + ", " + rowNumber + ", " + (catalog == null ? catalog : "\"" + catalog + "\"") + ", " +
-                                (schema == null ? schema : "\"" + schema + "\"") + ", \"" +
-                                foreignTable.getName().replace("\"", "\\\"") + "\", \"" +
-                                foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\", " +
-                                (channelId == null ? channelId : "\"" + channelId + "\"") + ");\n");
-
-                        script.append("} catch (Exception e) { engine.getDataService().reloadTableImmediate(\"" + targetNode.getNodeId() + "\", " +
+                        script.append("engine.getDataService().reloadTableImmediate(\"" + targetNode.getNodeId() + "\", " +
                                 (catalog == null ? catalog : "\"" + catalog + "\"") + ", " +
                                 (schema == null ? schema : "\"" + schema + "\"") + ", \"" +
                                 foreignTable.getName().replace("\"", "\\\"") + "\", \"" +
                                 foreignTableRow.getWhereSql().replace("\"", "\\\"") + "\", " +
-                                (channelId == null ? channelId : "\"" + channelId + "\"") + "); }\n");
+                                (channelId == null ? channelId : "\"" + channelId + "\"") + ");\n");
                     }
                 }
             }
@@ -2526,38 +2518,47 @@ public class DataService extends AbstractService implements IDataService {
             log.error("Unknown exception while processing foreign key for node id: " + sourceNodeId, e);
         }
     }
-    
-    /**
-     * Check if source has the foreign key parent rows that the target is reporting as missing.
-     * If they exist, send a reload batch for each row.  Otherwise, send a SQL batch to ignore the row since we can't resolve it.
-     * 
-     * TODO: should reloadMissingForeignKeyRows() also call this to handle similar case with backlog of changes and a busy system?  
-     */
-    public void sendMissingRowsForInitialLoad(String nodeId, long batchId, long rowNumber, String catalogName, String schemaName, String tableName, 
-            String whereSql, String channelId) {
-        IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
-        DatabaseInfo info = platform.getDatabaseInfo();
-        String quote = info.getDelimiterToken() == null || !platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? "" : info.getDelimiterToken();
-        String fullTableName = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName, quote, 
-                info.getCatalogSeparator(), info.getSchemaSeparator());
-        // TODO: still a race condition here before push/pull, maybe use createData() instead
-        long count = platform.getSqlTemplateDirty().queryForLong("select count(*) from " + fullTableName + " where " + whereSql);
-        if (count > 0) {
-            reloadTableImmediate(nodeId, catalogName, schemaName, tableName, whereSql, channelId);
+
+    public void reloadMissingForeignKeyRowsForLoad(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, String channelId) {
+        String rowData = CsvUtils.escapeCsvData(data.getCsvData(CsvData.ROW_DATA));
+        Node sourceNode = engine.getNodeService().findNode(sourceNodeId);
+        String script = "try { engine.getDataService().sendMissingForeignKeyRowsForLoad(" + batchId + ", \""
+                + engine.getNodeId() + "\", " + rowNumber + ", " + rowData + "); } catch (Exception e) { }";
+        if (log.isDebugEnabled()) {
+            log.debug("Requesting missing foreign key rows for batch {}-{} row {} for table {} row data {}", sourceNodeId, batchId, rowNumber,
+                    table.getFullyQualifiedTableName(), data.getCsvData(CsvData.ROW_DATA));
         } else {
-            log.info("Resolving initial load batch {}-{} to ignore the row because no rows found for {} where {}", nodeId, batchId,
-                    fullTableName, whereSql);
-            sendSQL(nodeId, "update " + engine.getParameterService().getTablePrefix() + 
-                    "_incoming_error set resolve_ignore = 1 where batch_id = " + batchId + " and node_id = '" + engine.getNodeId() +
-                    "' and failed_row_number = " + rowNumber);
+            log.info("Requesting missing foreign key rows for batch {}-{} row {} for table {}", sourceNodeId, batchId, rowNumber,
+                    table.getFullyQualifiedTableName());
+        }
+        insertScriptEvent("config", sourceNode, script, false, -1, "fk");
+    }
+
+    public void sendMissingForeignKeyRowsForLoad(long batchId, String nodeId, long rowNumber, String rowData) {
+        ISqlReadCursor<Data> cursor = null;
+        Data data = null;
+        try {
+            cursor = selectDataFor(batchId, nodeId, false);
+            data = cursor.next();
+        } finally {
+            cursor.close();
+        }
+        if (data != null) {
+            data.putCsvData(CsvData.ROW_DATA, rowData);
+            reloadMissingForeignKeyRows(data, batchId, nodeId, -1, rowNumber);
+        } else {
+            log.warn("Unable to correct missing foreign key error in batch {}-{} row {} because no data found", nodeId, batchId, rowNumber);
         }
     }
 
-    public void reloadMissingForeignKeyRows(String nodeId, long dataId) {
+    public void reloadMissingForeignKeyRows(long batchId, String nodeId, long dataId, long rowNumber) {
+        reloadMissingForeignKeyRows(findData(dataId), batchId, nodeId, dataId, rowNumber);
+    }
+
+    protected void reloadMissingForeignKeyRows(Data data, long batchId, String nodeId, long dataId, long rowNumber) {
+        String batchName = nodeId + "-" + batchId + " " + (dataId == -1 ? "row " + rowNumber : "data " + dataId);
         try {
-            IDatabasePlatform platform = engine.getTargetDialect().getPlatform();
-            Data data = findData(dataId);
-            log.debug("reloadMissingForeignKeyRows for nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+            log.debug("reloadMissingForeignKeyRows for batch {} table {}", batchName, data.getTableName());
             TriggerHistory hist = data.getTriggerHistory();
             Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
             if (table == null) {
@@ -2575,35 +2576,49 @@ public class DataService extends AbstractService implements IDataService {
             
             if (foreignTableRows.isEmpty()) {
                 log.info("Could not determine foreign table rows to fix foreign key violation for "
-                        + "nodeId '{}' dataId '{}' table '{}'", nodeId, dataId, data.getTableName());
+                        + "batch {} table {}", batchName, data.getTableName());
             }
             
             Collections.reverse(foreignTableRows);
             Set<TableRow> visited = new HashSet<TableRow>();
-            
+            boolean foundAllRows = true;
+
             for (TableRow foreignTableRow : foreignTableRows) {
-                if (visited.add(foreignTableRow)) {
-                    Table foreignTable = foreignTableRow.getTable();
-                    String catalog = foreignTable.getCatalog();
-                    String schema = foreignTable.getSchema();
-                    if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
-                        catalog = null;
-                        if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
-                            schema = null;
-                        }
-                    }
-                
-                    log.info("Issuing foreign key correction reload "
-                            + "nodeId {} catalog '{}' schema '{}' foreign table name '{}' fk name '{}' where sql '{}' "
-                            + "to correct dataId '{}' table '{}' for column '{}'",
-                            nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql(), 
-                            dataId, data.getTableName(), foreignTableRow.getReferenceColumnName());
-                    reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(), null);
+                if (foreignTableRow.getRow().size() == 0) {
+                    log.info("Resolving batch {} to ignore the row because {} refers to a missing foreign row in {}", batchName,
+                            table.getFullyQualifiedTableName(), foreignTableRow.getTable().getFullyQualifiedTableName());
+                    foundAllRows = false;
+                    break;
                 }
-            }        
-        }
-        catch (Exception e) {
-            log.error("Unknown exception while processing foreign key for node id: " + nodeId + " data id " + dataId, e);
+            }
+
+            if (foundAllRows) {
+                for (TableRow foreignTableRow : foreignTableRows) {
+                    if (visited.add(foreignTableRow)) {
+                        Table foreignTable = foreignTableRow.getTable();
+                        String catalog = foreignTable.getCatalog();
+                        String schema = foreignTable.getSchema();
+                        if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                            catalog = null;
+                            if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                                schema = null;
+                            }
+                        }
+
+                        log.info("Issuing foreign key correction for batch {} table {}: foreign table '{}' column '{}' fk name '{}' where '{}'",
+                                batchName, data.getTableName(), Table.getFullyQualifiedTableName(catalog, schema, foreignTable.getName()),
+                                foreignTableRow.getReferenceColumnName(), foreignTableRow.getFkName(), foreignTableRow.getWhereSql());
+                        reloadTableImmediate(nodeId, catalog, schema, foreignTable.getName(), foreignTableRow.getWhereSql(), 
+                                dataId == -1 ? Constants.CHANNEL_CONFIG : null);
+                    }
+                }
+            } else {
+                sendSQL(nodeId, "update " + engine.getParameterService().getTablePrefix() + 
+                        "_incoming_error set resolve_ignore = 1 where batch_id = " + batchId + " and node_id = '" + engine.getNodeId() +
+                        "' and failed_row_number = " + rowNumber);
+            }
+        } catch (Exception e) {
+            log.error("Unknown exception while processing foreign key for batch " + batchName, e);
         }
     }
 

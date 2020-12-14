@@ -649,15 +649,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                     && listener.getCurrentBatch() != null && listener.isNewErrorForCurrentBatch()
                     && listener.getCurrentBatch().isLoadFlag()
                     && listener.getCurrentBatch().getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
-                engine.getDataService().reloadMissingForeignKeyRowsReverse(sourceNode.getNodeId(), ctx.getBatch().getBatchId(), 
-                        listener.getCurrentBatch().getFailedLineNumber(), ctx.getTable(), ctx.getData(), Constants.CHANNEL_CONFIG, false);
+                engine.getDataService().reloadMissingForeignKeyRowsForLoad(sourceNode.getNodeId(), ctx.getBatch().getBatchId(), 
+                        listener.getCurrentBatch().getFailedLineNumber(), ctx.getTable(), ctx.getData(), Constants.CHANNEL_CONFIG);
             }
             if (parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE)
                     && listener.getCurrentBatch() != null && listener.isNewErrorForCurrentBatch()
                     && !listener.getCurrentBatch().isLoadFlag()
                     && listener.getCurrentBatch().getSqlCode() == ErrorConstants.FK_VIOLATION_CODE) {
-                engine.getDataService().reloadMissingForeignKeyRowsReverse(sourceNode.getNodeId(), ctx.getBatch().getBatchId(), 
-                        listener.getCurrentBatch().getFailedLineNumber(), ctx.getTable(), ctx.getData(), null, 
+                engine.getDataService().reloadMissingForeignKeyRowsReverse(sourceNode.getNodeId(), ctx.getTable(), ctx.getData(), null, 
                         parameterService.is(ParameterConstants.AUTO_RESOLVE_FOREIGN_KEY_VIOLATION_REVERSE_PEERS));
             }
             logOrRethrow(ex);
