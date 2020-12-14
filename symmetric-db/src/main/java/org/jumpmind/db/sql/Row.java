@@ -158,7 +158,11 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public String getString(String columnName, boolean checkForColumn) {
         Object obj = this.get(columnName);
         if (obj != null) {
-            return obj.toString();
+            if(obj instanceof BigDecimal) {
+                return ((BigDecimal) obj).toPlainString();
+            } else {
+                return obj.toString();
+            }
         } else {
             if (checkForColumn) {
                 checkForColumn(columnName);
