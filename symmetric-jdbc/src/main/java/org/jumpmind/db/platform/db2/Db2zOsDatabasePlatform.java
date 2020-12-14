@@ -23,6 +23,10 @@ package org.jumpmind.db.platform.db2;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.PermissionResult;
+import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.platform.PermissionResult.Status;
+import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
@@ -44,4 +48,38 @@ public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
         return new Db2zOsDdlReader(this);
     }    
 
+    @Override
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
+        delimiter = delimiter != null ? delimiter : "";
+           
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + PERMISSION_TEST_TABLE_NAME + " FOR EACH ROW MODE DB2SQL BEGIN ATOMIC END"; 
+
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        
+        try {
+            //getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+        
+        return result;
+    }
+    
+    protected PermissionResult getDropSymTriggerPermission() {
+        String dropTriggerSql = "DROP TRIGGER IF EXISTS TEST_TRIGGER";
+        PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, dropTriggerSql);
+
+        try {
+            //getSqlTemplate().update(dropTriggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant DROP TRIGGER permission or TRIGGER permission");
+        }
+
+        return result;
+    }
 }
