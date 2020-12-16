@@ -32,6 +32,10 @@ public class MsSqlJdbcSqlTransaction extends JdbcSqlTransaction {
         super(sqltemplate);
     }
 
+    public MsSqlJdbcSqlTransaction(JdbcSqlTemplate sqltemplate, boolean autoCommit) {
+        super(sqltemplate, autoCommit);
+    }
+    
     @Override
     public void allowInsertIntoAutoIncrementColumns(boolean allow, Table table, String quote, String catalogSeparator, String schemaSeparator) {
         if (table != null && table.getAutoIncrementColumns().length > 0) {

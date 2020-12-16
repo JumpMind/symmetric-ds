@@ -50,6 +50,11 @@ public class MsSqlJdbcSqlTemplate extends JdbcSqlTemplate {
     public ISqlTransaction startSqlTransaction() {
         return new MsSqlJdbcSqlTransaction(this);
     }
+    
+    @Override
+    public ISqlTransaction startSqlTransaction(boolean autoCommit) {
+        return new MsSqlJdbcSqlTransaction(this, autoCommit);
+    }
    
     @Override
     protected boolean allowsNullForIdentityColumn() {
