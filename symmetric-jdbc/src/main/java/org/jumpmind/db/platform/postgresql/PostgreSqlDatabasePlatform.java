@@ -26,7 +26,6 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -333,5 +332,18 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
         }
         return transactions;
+    }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (sql.endsWith(";")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        return sql + " limit " + limit + " offset " + offset + ";";
     }
 }

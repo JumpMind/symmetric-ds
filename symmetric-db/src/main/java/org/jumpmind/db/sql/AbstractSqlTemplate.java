@@ -116,6 +116,13 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
         return queryForCursor(sql, mapper);
     }
+    
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, Map<String,Object> namedParams) {
+        ParsedSql parsedSql = NamedParameterUtils.parseSqlStatement(sql);
+        String newSql = NamedParameterUtils.substituteNamedParameters(parsedSql, namedParams);
+        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, namedParams);
+        return queryForCursor(newSql, mapper, null, params, null);
+    }
 
     public List<Row> query(String sql) {
         return query(sql, (Object[])null, (int[]) null);

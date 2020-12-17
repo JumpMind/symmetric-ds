@@ -29,8 +29,6 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
-import org.jumpmind.symmetric.model.OutgoingBatch;
-import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 
 /**
@@ -67,6 +65,10 @@ public interface IIncomingBatchService {
     
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
+    
+    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter, boolean refresh);
+    
+    public int countIncomingBatchesWithLimit();
 
     public void markIncomingBatchesOk(String nodeId);
     

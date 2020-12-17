@@ -208,4 +208,8 @@ public interface IDatabasePlatform {
     
     public List<Transaction> getTransactions();
     
+    public boolean supportsLimitOffset();
+    
+    public String massageForLimitOffset(String sql, int limit, int offset);
+    
 }

@@ -117,4 +117,17 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
         return result;
     }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (StringUtils.containsIgnoreCase(sql, "select")) {
+            sql = StringUtils.replaceIgnoreCase(sql, "select", "select skip " + offset + " first " + limit);
+        }
+        return sql;
+    }
 }
