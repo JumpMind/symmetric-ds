@@ -48,6 +48,15 @@ public class AbstractBatch implements Serializable {
         public String toString() {
             return description;
         }
+        
+        public static String getNameFromDescription(String description) {
+            for (Status status : Status.values()) {
+                if (status.toString().equals(description)) {
+                    return status.name();
+                }
+            }
+            return null;
+        }
     }
 
     private long batchId = -1;
@@ -716,5 +725,14 @@ public class AbstractBatch implements Serializable {
 
     public void setProcessedRowCount(long processedRowCount) {
         this.processedRowCount = processedRowCount;
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof AbstractBatch) {
+            AbstractBatch otherBatch = (AbstractBatch) other;
+            return getNodeBatchId().equals(otherBatch.getNodeBatchId());
+        }
+        return false;
     }
 }

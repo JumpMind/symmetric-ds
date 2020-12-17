@@ -20,5 +20,18 @@ public class Oracle122DatabasePlatform extends OracleDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.ORACLE122;
     }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (sql.endsWith(";")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        return sql + " offset " + offset + " rows fetch next " + limit + " rows only;";
+    }
 
 }

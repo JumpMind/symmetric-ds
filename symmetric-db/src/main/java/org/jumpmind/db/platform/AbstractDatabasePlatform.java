@@ -1244,4 +1244,12 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public List<Transaction> getTransactions() {
         return new ArrayList<Transaction>();
     }
+    
+    public boolean supportsLimitOffset() {
+        return false;
+    }
+    
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        return sql;
+    }
 }

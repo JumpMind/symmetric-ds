@@ -11,7 +11,6 @@ import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.PermissionResult.Status;
-import org.jumpmind.db.platform.mysql.MySqlJdbcSqlTemplate;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlException;
@@ -79,6 +78,19 @@ public class HanaDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         
         return result;
+    }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (sql.endsWith(";")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        return sql + " limit " + limit + " offset " + offset + ";";
     }
     
 }
