@@ -303,7 +303,7 @@ public class SymmetricWebServer {
 
         Class<?> remoteStatusEndpoint = loadRemoteStatusEndpoint();
         if (remoteStatusEndpoint != null) {            
-            ServerContainer container = WebSocketServerContainerInitializer.configureContext(webapp);
+            ServerContainer container = WebSocketServerContainerInitializer.initialize(webapp);
             container.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
             container.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
             ServerEndpointConfig websocketConfig = ServerEndpointConfig.Builder.create(remoteStatusEndpoint, "/control").build();
@@ -434,7 +434,7 @@ public class SymmetricWebServer {
             securityService.installDefaultSslCert(host);
             String keyStorePassword = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD);
             keyStorePassword = (keyStorePassword != null) ? keyStorePassword : SecurityConstants.KEYSTORE_PASSWORD;
-            SslContextFactory sslConnectorFactory = new SslContextFactory();
+            SslContextFactory sslConnectorFactory = new SslContextFactory.Server();
             sslConnectorFactory.setKeyManagerPassword(keyStorePassword);
             /* Prevent POODLE attack */
             String ignoredProtocols = System.getProperty(SecurityConstants.SYSPROP_SSL_IGNORE_PROTOCOLS);
