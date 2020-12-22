@@ -20,11 +20,14 @@ package org.jumpmind.db.platform;
  */
 
 import java.lang.reflect.Constructor;
+import java.sql.Array;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -449,22 +452,39 @@ public class JdbcDatabasePlatformFactory {
 
     private static boolean isOracle122Compatible(Connection connection) {
         boolean isOracle122 = false;
-        String sql = "select value from v$parameter where name = 'compatible'";
-        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) {
-                String value = rs.getString(1);
-                if (value != null) {
-                    String[] valueArr = value.split("\\.");
-                    if (valueArr != null) {
-                        if ((valueArr.length > 0 && Integer.parseInt(valueArr[0]) > 12) ||
-                                (valueArr.length > 1 && Integer.parseInt(valueArr[0]) == 12 && Integer.parseInt(valueArr[1]) >= 2)) {
-                            isOracle122 = true;
+        String compatible = null;
+        try (Statement s = connection.createStatement()) {
+            try {
+                s.executeUpdate("begin dbms_output.enable(); end;");
+                s.executeUpdate("declare lver varchar(100); lcomp varchar(100);" +
+                        " begin dbms_utility.db_version(lver, lcomp); dbms_output.put_line(lcomp); end;");
+        
+                String sql = "declare num integer := 1; begin dbms_output.get_lines(?, num); end;";
+                try (CallableStatement call = connection.prepareCall(sql)) {
+                    call.registerOutParameter(1, Types.ARRAY, "DBMSOUTPUT_LINESARRAY");
+                    call.execute();
+                    Array array = call.getArray(1);
+                    if (array != null) {
+                        String[] compatibleArray = (String[]) array.getArray();
+                        if (compatibleArray != null && compatibleArray.length > 0) {
+                            compatible = compatibleArray[0];
                         }
+                        array.free();
                     }
                 }
+            } finally {
+                s.executeUpdate("begin dbms_output.disable(); end;");
             }
         } catch (SQLException e) {
-            log.error("Failed to check Oracle compatible parameter", e);
+            log.warn("Could not check Oracle compatible parameter", e);
+        }
+        
+        if (compatible != null) {
+            String[] valueArr = compatible.split("\\.");
+            if (valueArr != null) {
+                isOracle122 = (valueArr.length > 0 && Integer.parseInt(valueArr[0]) > 12) ||
+                        (valueArr.length > 1 && Integer.parseInt(valueArr[0]) == 12 && Integer.parseInt(valueArr[1]) >= 2);
+            }
         }
         return isOracle122;
     }
