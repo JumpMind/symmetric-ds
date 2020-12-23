@@ -245,14 +245,21 @@ public class MultiBatchStagingWriter implements IDataWriter {
                     log.debug("About to copy batch {} to batch {}-{}", this.outgoingBatch.getNodeBatchId(), childRequest.getNodeId(), childBatchId);
                     BufferedReader reader = parentResource.getReader();
                     BufferedWriter writer = childResource.getWriter(memoryThresholdInBytes);
-                    String line = null;
                     try {
-                        while ((line = reader.readLine()) != null) {
-                            if (line.startsWith(CsvConstants.BATCH) || line.startsWith(CsvConstants.COMMIT)) {
-                                line = line.replace(Long.toString(outgoingBatch.getBatchId()), Long.toString(childBatchId));
+                        StringBuffer sb = new StringBuffer();
+                        int i;
+                        while ((i = reader.read()) != -1) {
+                            char c = (char) i;
+                            sb.append(c);
+                            if (c == '\n') {
+                                String s = replaceBatchId(sb.toString(), outgoingBatch.getBatchId(), childBatchId);
+                                writer.write(s);
+                                sb.delete(0, sb.length());
                             }
-                            writer.write(line);
-                            writer.write(System.lineSeparator());
+                        }
+                        if (sb.length() > 0) {
+                            String s = replaceBatchId(sb.toString(), outgoingBatch.getBatchId(), childBatchId);
+                            writer.write(s);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to copy batch " + this.outgoingBatch.getNodeBatchId() + " to batch " +
@@ -280,6 +287,13 @@ public class MultiBatchStagingWriter implements IDataWriter {
                 childBatches.put(childBatch.getBatchId(), childBatch);
             }
         }
+    }
+    
+    private static String replaceBatchId(String s, long originalBatchId, long newBatchId) {
+        if (s.startsWith(CsvConstants.BATCH) || s.startsWith(CsvConstants.COMMIT)) {
+            s = s.replace(Long.toString(originalBatchId), Long.toString(newBatchId));
+        }
+        return s;
     }
 
     @Override
