@@ -79,6 +79,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     final String CTX_KEY_FLUSH_CONFLICTS_NEEDED = "FlushConflicts."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
+    final String CTX_KEY_FLUSH_EXTENSIONS_NEEDED = "FlushExtensions."
+            + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
+
     final String CTX_KEY_FLUSH_NODE_SECURITY_NEEDED = "FlushNodeSecurity."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();
 
@@ -143,6 +146,7 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         recordParametersFlushNeeded(context, table);
         recordJobManagerRestartNeeded(context, table, data);
         recordConflictFlushNeeded(context, table);
+        recordExtensionFlushNeeded(context, table);
         recordNodeSecurityFlushNeeded(context, table);
         recordNodeFlushNeeded(context, table, data);
         recordFileSyncEnabled(context, table, data);
@@ -270,6 +274,12 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         }
     }
 
+    private void recordExtensionFlushNeeded(DataContext context, Table table) {
+        if (isExtensionFlushNeeded(table)) {
+            context.put(CTX_KEY_FLUSH_EXTENSIONS_NEEDED, true);
+        }
+    }
+
     private void recordNodeSecurityFlushNeeded(DataContext context, Table table) {
         if (matchesTable(table, TableConstants.SYM_NODE_SECURITY)) {
             context.put(CTX_KEY_FLUSH_NODE_SECURITY_NEEDED, true);
@@ -343,6 +353,10 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     private boolean isTransformFlushNeeded(Table table) {
         return matchesTable(table, TableConstants.SYM_TRANSFORM_COLUMN)
                 || matchesTable(table, TableConstants.SYM_TRANSFORM_TABLE);
+    }
+
+    private boolean isExtensionFlushNeeded(Table table) {
+        return matchesTable(table, TableConstants.SYM_EXTENSION);
     }
 
     private boolean matchesTable(Table table, String tableSuffix) {
@@ -472,6 +486,12 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             log.info("About to refresh the cache of parameters because new configuration came through the data loader");
             parameterService.rereadParameters();
             context.remove(CTX_KEY_FLUSH_PARAMETERS_NEEDED);
+        }
+
+        if (context.get(CTX_KEY_FLUSH_EXTENSIONS_NEEDED) != null) {
+            log.info("Extensions flushed because new extensions came through the data loader");
+            engine.getExtensionService().refresh();
+            context.remove(CTX_KEY_FLUSH_EXTENSIONS_NEEDED);
         }
 
         if (context.get(CTX_KEY_FLUSH_NODE_SECURITY_NEEDED) != null) {

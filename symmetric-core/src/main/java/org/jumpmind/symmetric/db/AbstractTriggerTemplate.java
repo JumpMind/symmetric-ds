@@ -505,7 +505,7 @@ abstract public class AbstractTriggerTemplate {
         ddl = FormatUtils.replace("channelExpression", symmetricDialect.preProcessTriggerSqlClause(
                 getChannelExpression(trigger, history, originalTable)), ddl);
         
-        ddl = FormatUtils.replace("externalSelect", (trigger.getExternalSelect() == null ? "null"
+        ddl = FormatUtils.replace("externalSelect", (StringUtils.isBlank(trigger.getExternalSelect()) ? "null"
                 : "(" + symmetricDialect.preProcessTriggerSqlClause(trigger.getExternalSelect())
                         + ")"), ddl);
 
@@ -520,18 +520,18 @@ abstract public class AbstractTriggerTemplate {
                 ddl);
 
         ddl = FormatUtils.replace("custom_before_insert_text",
-                trigger.getCustomBeforeInsertText()==null ? "" : trigger.getCustomBeforeInsertText(), ddl);
+                StringUtils.isBlank(trigger.getCustomBeforeInsertText()) ? "" : trigger.getCustomBeforeInsertText(), ddl);
         ddl = FormatUtils.replace("custom_before_update_text",
-                trigger.getCustomBeforeUpdateText()==null ? "" : trigger.getCustomBeforeUpdateText(), ddl);
+                StringUtils.isBlank(trigger.getCustomBeforeUpdateText()) ? "" : trigger.getCustomBeforeUpdateText(), ddl);
         ddl = FormatUtils.replace("custom_before_delete_text",
-                trigger.getCustomBeforeDeleteText()==null ? "" : trigger.getCustomBeforeDeleteText(), ddl);
+                StringUtils.isBlank(trigger.getCustomBeforeDeleteText()) ? "" : trigger.getCustomBeforeDeleteText(), ddl);
 
         ddl = FormatUtils.replace("custom_on_insert_text",
-                trigger.getCustomOnInsertText()==null ? "" : trigger.getCustomOnInsertText(), ddl);
+                StringUtils.isBlank(trigger.getCustomOnInsertText()) ? "" : trigger.getCustomOnInsertText(), ddl);
         ddl = FormatUtils.replace("custom_on_update_text",
-                trigger.getCustomOnUpdateText()==null ? "" : trigger.getCustomOnUpdateText(), ddl);
+                StringUtils.isBlank(trigger.getCustomOnUpdateText()) ? "" : trigger.getCustomOnUpdateText(), ddl);
         ddl = FormatUtils.replace("custom_on_delete_text",
-                trigger.getCustomOnDeleteText()==null ? "" : trigger.getCustomOnDeleteText(), ddl);
+                StringUtils.isBlank(trigger.getCustomOnDeleteText()) ? "" : trigger.getCustomOnDeleteText(), ddl);
 
         ddl = FormatUtils.replace("dataHasChangedCondition", symmetricDialect
                 .preProcessTriggerSqlClause(symmetricDialect.getDataHasChangedCondition(trigger)),

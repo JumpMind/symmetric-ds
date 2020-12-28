@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
@@ -114,10 +115,14 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             } else if (extension.getExtensionType().equalsIgnoreCase(Extension.EXTENSION_TYPE_BSH)) {
                 try {
                     Interpreter interpreter = new Interpreter();
-                    interpreter.eval(extension.getExtensionText());
                     interpreter.set("engine", engine);
                     interpreter.set("sqlTemplate", engine.getDatabasePlatform().getSqlTemplate());
                     interpreter.set("log", log);
+                    String globalScript = parameterService.getString(ParameterConstants.BSH_EXTENSION_GLOBAL_SCRIPT);
+                    if (StringUtils.isNotBlank(globalScript)) {
+                        interpreter.eval(globalScript);
+                    }
+                    interpreter.eval(extension.getExtensionText());
                     Object ext = interpreter.getInterface(Class.forName(extension.getInterfaceName()));
                     registerExtension(extension.getExtensionId(), (IExtensionPoint) ext);
                 } catch (EvalError e) {

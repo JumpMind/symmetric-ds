@@ -64,11 +64,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             }
                             
                             if (isWinner) {
-                                try {
-                                    performFallbackToUpdate(writer, data, conflict, true);
-                                } catch (ConflictException e) {
-                                    performChainedFallbackForInsert(writer, data, conflict);
-                                }                                
+                                performChainedFallbackForInsert(writer, data, conflict);
                             } else if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();                              
                             }
@@ -104,16 +100,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             }
                             
                             if (isWinner) {
-                                if (writer.getContext().getLastError() != null) {
-                                    performChainedFallbackForUpdate(writer, data, conflict, true);
-                                } else {
-                                    try {
-                                        // original update was 0 rows, so we'll try to update without conflict detection
-                                        performFallbackToUpdate(writer, data, conflict, false);
-                                    } catch (ConflictException e) {
-                                        performChainedFallbackForUpdate(writer, data, conflict, true);
-                                    }
-                                }
+                                performChainedFallbackForUpdate(writer, data, conflict, true);
                             } else if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();                              
                             }
@@ -148,7 +135,22 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         ignore(writer, conflict);
                         break;
                     case NEWER_WINS:
-                        status = performChainedFallbackForDelete(writer, data, conflict);
+                        status = LoadStatus.CONFLICT;
+                        boolean isWinner = false;
+                        if (conflict.getDetectType() == DetectConflict.USE_TIMESTAMP || conflict.getDetectType() == DetectConflict.USE_VERSION) {
+                            isWinner = true;
+                        } else {
+                            isWinner = isCaptureTimeNewer(conflict, writer, data);
+                        }
+                        
+                        if (isWinner) {
+                            if (writer.getContext().getLastError() == null) {
+                                status = writer.delete(data, false);
+                            }
+                            if (status == LoadStatus.CONFLICT && writer.getContext().getLastError() != null) {
+                                status = performChainedFallbackForDelete(writer, data, conflict);
+                            }
+                        }
 
                         if (status == LoadStatus.CONFLICT) {
                             writer.getStatistics().get(writer.getBatch()).increment(DataWriterStatisticConstants.MISSINGDELETECOUNT);
@@ -182,7 +184,17 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     }
 
     protected void performChainedFallbackForInsert(AbstractDatabaseWriter writer, CsvData data, Conflict conflict) {
-        if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+        boolean isFallback = false;
+        if (writer.getContext().getLastError() == null) {
+            try {
+                isFallback = true;
+                performFallbackToUpdate(writer, data, conflict, true);
+                return;
+            } catch (ConflictException e) {
+            }                                    
+        }
+
+        if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError(), isFallback)) {
             // unique index violation, we remove blocking rows, and try again
             try {
                 performFallbackToInsert(writer, data, conflict, true);
@@ -195,7 +207,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                 // standard fallback to update when insert gets primary key violation
                 performFallbackToUpdate(writer, data, conflict, true);
             } catch (ConflictException e) {
-                if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError(), true)) {
                     // unique index violation, we remove blocking rows, and try again
                     performFallbackToUpdate(writer, data, conflict, true);
                 } else {
@@ -206,8 +218,19 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
     }
 
     protected void performChainedFallbackForUpdate(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, boolean overrideToUsePkData) {
+        boolean isFallback = false;
+        if (writer.getContext().getLastError() == null) {
+            try {
+                // original update was 0 rows, so we'll try to update without conflict detection
+                isFallback = true;
+                performFallbackToUpdate(writer, data, conflict, false);
+                return;
+            } catch (ConflictException e) {
+            }
+        }
+
         if (conflict.getDetectType() == DetectConflict.USE_PK_DATA || overrideToUsePkData) {
-            if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+            if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError(), isFallback)) {
                 try {
                     // unique index violation, we remove blocking rows, and try again
                     performFallbackToUpdate(writer, data, conflict, true);
@@ -224,7 +247,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                     // standard fallback to insert when update gets zero rows
                     performFallbackToInsert(writer, withoutOldData, conflict, true);
                 } catch (ConflictException e) {
-                    if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError())) {
+                    if (checkForUniqueKeyViolation(writer, data, conflict, writer.getContext().getLastError(), true)) {
                         // unique index violation, we remove blocking rows, and try again
                         performFallbackToInsert(writer, withoutOldData, conflict, true);
                     } else {
@@ -363,7 +386,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
         }
     }
 
-    abstract protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData csvData, Conflict conflict, Throwable ex);
+    abstract protected boolean checkForUniqueKeyViolation(AbstractDatabaseWriter writer, CsvData csvData, Conflict conflict, Throwable ex, boolean isFallback);
     
     abstract protected boolean checkForForeignKeyChildExistsViolation(AbstractDatabaseWriter writer, CsvData data, Conflict conflict, Throwable ex);
 

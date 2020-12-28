@@ -86,8 +86,14 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
             text.append(nodeString).append("] [");
             text.append(event.getHostName()).append("] ");
             text.append("Monitor event for ").append(event.getType());
-            text.append(" reached threshold of ").append(event.getThreshold());
-            text.append(" with a value of ").append(event.getValue()).append("\n");
+            
+            if (event.isResolved()) {
+                text.append(" is resolved\n");
+                continue;
+            } else {
+                text.append(" reached threshold of ").append(event.getThreshold());
+                text.append(" with a value of ").append(event.getValue()).append("\n");
+            }
 
             try {
                 StringBuilder stackTrace = new StringBuilder();

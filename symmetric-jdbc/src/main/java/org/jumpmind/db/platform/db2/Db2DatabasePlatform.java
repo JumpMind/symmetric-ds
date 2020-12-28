@@ -119,4 +119,33 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
         sql += " reuse storage immediate";
         return sql;
     }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (supportsLimitOffset()) {
+            if (sql.endsWith(";")) {
+                sql = sql.substring(0, sql.length() - 1);
+            }
+            
+            int majorVersion = sqlTemplate.getDatabaseMajorVersion();
+            int minorVersion = sqlTemplate.getDatabaseMinorVersion();
+            if ((this instanceof Db2As400DatabasePlatform && (majorVersion >= 8 || (majorVersion == 7 && minorVersion >= 1)))
+                    || (majorVersion >= 12 || (majorVersion == 11 && minorVersion >= 1))) {
+                return sql + " limit " + limit + " offset " + offset + ";";
+            }
+
+            int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
+            String order = sql.substring(orderIndex);
+            String innerSql = sql.substring(0, orderIndex - 1);
+            innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
+            return "select from (" + innerSql + ") " +
+                   "where RowNum between " + (offset + 1) + " and " + (offset + limit) + ";";
+        }
+        return sql;
+    }
 }

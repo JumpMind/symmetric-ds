@@ -23,6 +23,8 @@ package org.jumpmind.symmetric.service.impl;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,11 +41,14 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.service.FilterCriterion;
+import org.jumpmind.symmetric.service.FilterCriterion.FilterOption;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -238,6 +243,104 @@ abstract public class AbstractService implements IService {
             where.insert(0, " where ");
         }
         return where.toString();
+    }
+    
+    protected String buildBatchWhereFromFilter(List<FilterCriterion> filter) {
+        StringBuilder where = new StringBuilder();
+        boolean needsAnd = false;
+        int id = 0;
+        
+        for (FilterCriterion criterion : filter) {
+            if (needsAnd) {
+                where.append(" and ");
+            } else {
+                needsAnd = true;
+            }
+            
+            FilterOption option = criterion.getOption();
+            String optionSql = option.toSql();
+            String prefix = null;
+            switch (criterion.getPropertyId()) {
+                case "nodeId":
+                    prefix = "node_id " + optionSql;
+                    break;
+                case "batchId":
+                    prefix = "batch_id " + optionSql;
+                    break;
+                case "status":
+                    prefix = "status " + optionSql;
+                    break;
+                case "channelId":
+                    prefix = "channel_id " + optionSql;
+                    break;
+                case "createTime":
+                    prefix = "create_time "+ optionSql;
+                    break;
+                case "loadId":
+                    prefix = "load_id " + optionSql;
+                    break;
+                case "lastUpdatedTime":
+                    prefix = "last_update_time " + optionSql;
+            }
+            if (prefix != null) {
+                if (option.equals(FilterOption.IN_LIST) || option.equals(FilterOption.NOT_IN_LIST)) {
+                    where.append(prefix + " (:" + id++ + ")");
+                } else {
+                    where.append(prefix + " :" + id++);
+                    if (option.equals(FilterOption.BETWEEN)) {
+                        where.append(" and :" + id++);
+                    }
+                }
+            }
+        }
+        
+        if (where.length() > 0) {
+            where.insert(0, " where ");
+        }
+        return where.toString();
+    }
+    
+    protected Map<String, Object> buildBatchParams(List<FilterCriterion> filter) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        
+        int id = 0;
+        for (FilterCriterion criterion : filter) {
+            FilterOption option = criterion.getOption();
+            List<Object> values = criterion.getValues();
+            switch (criterion.getPropertyId()) {
+                case "status":
+                    List<String> statuses = new ArrayList<String>();
+                    for (Object status : values) {
+                        statuses.add(Status.getNameFromDescription((String) status));
+                    }
+                    params.put(String.valueOf(id++), statuses);
+                    break;
+                case "createTime":
+                case "lastUpdatedTime":
+                    if (option.equals(FilterOption.IN_LIST) || option.equals(FilterOption.NOT_IN_LIST)) {
+                        params.put(String.valueOf(id++), values);
+                    } else {
+                        params.put(String.valueOf(id++), new Timestamp(((Date) values.get(0)).getTime()));
+                        if (option.equals(FilterOption.BETWEEN)) {
+                            params.put(String.valueOf(id++), new Timestamp(((Date) values.get(1)).getTime()));
+                        }
+                    }
+                    break;
+                default:
+                    if (option.equals(FilterOption.IN_LIST) || option.equals(FilterOption.NOT_IN_LIST)) {
+                        params.put(String.valueOf(id++), values);
+                    } else if (option.equals(FilterOption.CONTAINS) || option.equals(FilterOption.NOT_CONTAINS)) {
+                        params.put(String.valueOf(id++), "%" + values.get(0) + "%");
+                    } else {
+                        params.put(String.valueOf(id++), values.get(0));
+                        if (option.equals(FilterOption.BETWEEN)) {
+                            params.put(String.valueOf(id++), values.get(1));
+                        }
+                    }
+            }
+        }
+        
+        return params;
     }
     
     /**

@@ -120,5 +120,15 @@ public class SqlAnywhereDatabasePlatform extends AbstractJdbcDatabasePlatform {
         
         return result;
     }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        return StringUtils.replaceIgnoreCase(sql, "select", "select top " + limit + " start at " + (offset + 1));
+    }
 }
 

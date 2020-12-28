@@ -235,7 +235,7 @@ public abstract class AbstractCommandLauncher {
         
         if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
             LogSummaryAppenderUtils.removeAppender("CONSOLE");
-            PatternLayout layout = PatternLayout.newBuilder().withPattern("%d %-5p [%c{2}] [%t] %m%n").build();
+            PatternLayout layout = PatternLayout.newBuilder().withPattern("%d %-5p [%c{2}] [%t] %m%ex%n").build();
             Appender appender = ConsoleAppender.newBuilder().setName("CONSOLE").setTarget(ConsoleAppender.Target.SYSTEM_ERR)
                     .setLayout(layout).build();
             LogSummaryAppenderUtils.addAppender(appender);

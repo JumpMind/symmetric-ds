@@ -170,6 +170,20 @@ public class Trigger implements Serializable {
             sourceSchemaName = null;
             isSourceSchemaWildCarded = false;
         }
+        syncOnInsertCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnInsertCondition), DEFAULT_CONDITION);
+        syncOnUpdateCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnUpdateCondition), DEFAULT_CONDITION);
+        syncOnDeleteCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnDeleteCondition), DEFAULT_CONDITION);
+        externalSelect = StringUtils.trimToNull(externalSelect);
+        excludedColumnNames = StringUtils.trimToNull(excludedColumnNames);
+        includedColumnNames = StringUtils.trimToNull(includedColumnNames);
+        syncKeyNames = StringUtils.trimToNull(syncKeyNames);
+        channelExpression = StringUtils.trimToNull(channelExpression);
+        customBeforeInsertText = StringUtils.trimToNull(customBeforeInsertText);
+        customBeforeUpdateText = StringUtils.trimToNull(customBeforeUpdateText);
+        customBeforeDeleteText = StringUtils.trimToNull(customBeforeDeleteText);
+        customOnInsertText = StringUtils.trimToNull(customOnInsertText);
+        customOnUpdateText = StringUtils.trimToNull(customOnUpdateText);
+        customOnDeleteText = StringUtils.trimToNull(customOnDeleteText);
     }
     
     public Column[] filterExcludedAndIncludedColumns(Column[] src) {
@@ -271,7 +285,7 @@ public class Trigger implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<String> getExcludedColumnNamesAsList() {
-        if (excludedColumnNames != null && excludedColumnNames.length() > 0) {
+        if (StringUtils.isNotBlank(excludedColumnNames)) {
             StringTokenizer tokenizer = new StringTokenizer(excludedColumnNames, ",");
             List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {
@@ -285,7 +299,7 @@ public class Trigger implements Serializable {
     
     @SuppressWarnings("unchecked")
     private List<String> getIncludedColumnNamesAsList() {
-        if (includedColumnNames != null && includedColumnNames.length() > 0) {
+        if (StringUtils.isNotBlank(includedColumnNames)) {
             StringTokenizer tokenizer = new StringTokenizer(includedColumnNames, ",");
             List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {
@@ -637,7 +651,7 @@ public class Trigger implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<String> getSyncKeyNamesAsList() {
-        if (syncKeyNames != null && syncKeyNames.length() > 0) {
+        if (StringUtils.isNotBlank(syncKeyNames)) {
             StringTokenizer tokenizer = new StringTokenizer(syncKeyNames, ",");
             List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {

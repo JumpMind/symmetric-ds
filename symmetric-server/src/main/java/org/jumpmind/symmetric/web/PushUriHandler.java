@@ -59,9 +59,7 @@ public class PushUriHandler extends AbstractUriHandler {
             ServletException {
 
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-        if (log.isDebugEnabled()) {
-            log.debug("Push requested from node {} at remote address {}", nodeId, req.getRemoteAddr());
-        }
+        log.debug("Push requested from node {} at remote address {}", nodeId, req.getRemoteAddr());
 
         InputStream inputStream = createInputStream(req);
         OutputStream outputStream = res.getOutputStream();
@@ -75,7 +73,7 @@ public class PushUriHandler extends AbstractUriHandler {
         }
 
         res.flushBuffer();
-        log.debug("Push completed for {}", nodeId);
+        log.debug("Push completed for {} at remote address", nodeId, req.getRemoteAddr());
     }
     
     protected int push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {

@@ -21,6 +21,7 @@ package org.jumpmind.db.platform.firebird;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -94,5 +95,15 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         
         return result;
+    }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        return StringUtils.replaceIgnoreCase(sql, "select", "select first " + limit + " skip " + offset);
     }
 }
