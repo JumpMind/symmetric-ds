@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.RedshiftBulkDatabaseWriter;
@@ -43,10 +44,13 @@ public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     
+    private ISecurityService securityService;
+    
     private IStagingManager stagingManager;
 
     public RedshiftBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.parameterService = engine.getParameterService();
+        this.securityService = engine.getSecurityService();
         this.stagingManager = engine.getStagingManager();
     }
 
@@ -59,8 +63,9 @@ public class RedshiftBulkDataLoaderFactory extends AbstractDataLoaderFactory imp
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
-        return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, buildParameterDatabaseWritterSettings());
+        return new RedshiftBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
+                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService,
+                securityService, buildParameterDatabaseWritterSettings());
         
     }
 

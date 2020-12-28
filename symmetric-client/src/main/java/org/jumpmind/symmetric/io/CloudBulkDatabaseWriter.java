@@ -13,6 +13,9 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -83,7 +86,8 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
     
     public CloudBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings settings) {
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
+            ISecurityService securityService, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, tablePrefix);
         this.stagingManager = stagingManager;
         this.writerSettings = settings;
@@ -96,14 +100,28 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
         
         this.s3Bucket = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_BUCKET);
         this.s3AccessKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ACCESS_KEY);
-        this.s3SecretKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
+        
+        Map<String, ParameterMetaData> metaDataMap = ParameterConstants.getParameterMetaData();
+        ParameterMetaData secretKeyMetaData = metaDataMap.get(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
+        String secretKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
+        if (secretKeyMetaData.isEncryptedType() && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
+            secretKey = securityService.decrypt(secretKey.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
+        this.s3SecretKey = secretKey;
+        
         this.s3Endpoint = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ENDPOINT);
         this.s3Region = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_REGION, Regions.US_EAST_1.getName());
         
         this.azureAccountName = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_NAME);
         this.azureAccountKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_KEY);
         this.azureBlobContainer = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER, "symmetricds");
-        this.azureSasToken = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
+        
+        ParameterMetaData tokenMetaData = metaDataMap.get(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
+        String token = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
+        if (tokenMetaData.isEncryptedType() && token.startsWith(SecurityConstants.PREFIX_ENC)) {
+            token = securityService.decrypt(token.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
+        this.azureSasToken = token;
     }
     
     public void copyToS3CloudStorage() {
