@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
@@ -26,10 +27,12 @@ public class SnowflakeBulkDatabaseWriter extends CloudBulkDatabaseWriter {
     
     public final static String FILE_FORMAT_CSV = "symmetricds_csv_format";
     
-    public SnowflakeBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
+    public SnowflakeBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings writerSettings) {
-        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, writerSettings);
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
+            ISecurityService securityService, DatabaseWriterSettings writerSettings) {
+        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService,
+                securityService, writerSettings);
         
         this.internalStage = parameterService.getString(ParameterConstants.SNOWFLAKE_INTERNAL_STAGE_NAME, "symmetricds_stage");
         this.stagingType = parameterService.getString(ParameterConstants.SNOWFLAKE_STAGING_TYPE, STAGING_TYPE_SNOWFLAKE_INTERNAL);

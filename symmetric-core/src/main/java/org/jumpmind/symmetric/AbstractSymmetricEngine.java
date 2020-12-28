@@ -396,7 +396,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                 configurationService, extensionService, offlineTransportManager);
         this.fileSyncService = buildFileSyncService();
         this.fileSyncExtractorService = new FileSyncExtractorService(this);
-        this.mailService = new MailService(parameterService, symmetricDialect);
+        this.mailService = new MailService(parameterService, securityService, symmetricDialect);
 
         String updateServiceClassName = properties.get(ParameterConstants.UPDATE_SERVICE_CLASS);
         if (updateServiceClassName == null) {

@@ -31,6 +31,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
@@ -49,11 +52,13 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
 
     private String appendToCopyCommand;
     
-    public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
-            IDatabasePlatform targetPlatform, String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings settings) {
+    public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
+            String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
+            ISecurityService securityService, DatabaseWriterSettings settings) {
         
-        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, settings);
+        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService,
+                securityService, settings);
         
         this.appendToCopyCommand = parameterService.getString(ParameterConstants.REDSHIFT_APPEND_TO_COPY_COMMAND);
         
@@ -73,8 +78,14 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             super.s3AccessKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ACCESS_KEY);
         }
         
-        if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY))) {
-            super.s3SecretKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
+        ParameterMetaData secretKeyMetaData = ParameterConstants.getParameterMetaData()
+                .get(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
+        String secretKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
+        if (secretKeyMetaData.isEncryptedType() && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
+            secretKey = securityService.decrypt(secretKey.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
+        if (StringUtils.isNotBlank(secretKey)) {
+            super.s3SecretKey = secretKey;
         }
         
         if (StringUtils.isNotBlank(parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ENDPOINT))) {

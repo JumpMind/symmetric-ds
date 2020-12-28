@@ -5,6 +5,7 @@ import java.util.List;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.bigquery.BigQueryPlatform;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.BigQueryBulkDatabaseWriter;
@@ -27,11 +28,14 @@ public class BigQueryDataLoaderFactory extends AbstractDataLoaderFactory impleme
 
     private IStagingManager stagingManager;
     
+    private ISecurityService securityService;
+    
     private BigQuery bigquery;
     
     public BigQueryDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
         this.parameterService = engine.getParameterService();
+        this.securityService = engine.getSecurityService();
         this.bigquery = ((BigQueryPlatform) engine.getSymmetricDialect().getTargetPlatform()).getBigQuery();
         
     }
@@ -47,7 +51,7 @@ public class BigQueryDataLoaderFactory extends AbstractDataLoaderFactory impleme
 
         try {
             return new BigQueryBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                    symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, 
+                    symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService, 
                     buildParameterDatabaseWritterSettings(), this.bigquery);
             
         } catch (Exception e) {

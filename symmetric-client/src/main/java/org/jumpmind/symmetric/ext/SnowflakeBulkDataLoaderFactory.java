@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.io.SnowflakeBulkDatabaseWriter;
@@ -21,8 +22,11 @@ public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory im
     
     private IStagingManager stagingManager;
     
+    private ISecurityService securityService;
+    
     public SnowflakeBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
+        this.securityService = engine.getSecurityService();
         this.parameterService = engine.getParameterService();
     }
 
@@ -36,7 +40,7 @@ public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory im
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
 
         return new SnowflakeBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
-                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, 
+                symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService,
                 buildParameterDatabaseWritterSettings());
     }
 
