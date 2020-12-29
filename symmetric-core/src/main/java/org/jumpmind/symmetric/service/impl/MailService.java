@@ -35,12 +35,17 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
+import org.jumpmind.security.ISecurityService;
+import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.service.IMailService;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MailService extends AbstractService implements IMailService {
+    
+    protected ISecurityService securityService;
 
     protected static final String JAVAMAIL_HOST_NAME = "mail.host";
     protected static final String JAVAMAIL_TRANSPORT = "mail.transport";
@@ -52,8 +57,9 @@ public class MailService extends AbstractService implements IMailService {
     protected static final String JAVAMAIL_TRUST_HOST = "mail.smtp.ssl.trust";
     protected static final String JAVAMAIL_TRUST_HOST_SSL = "mail.smtps.ssl.trust";
 
-    public MailService(IParameterService parameterService, ISymmetricDialect symmetricDialect) {
+    public MailService(IParameterService parameterService, ISecurityService securityService, ISymmetricDialect symmetricDialect) {
         super(parameterService, symmetricDialect);
+        this.securityService = securityService;
     }
     
     public String sendEmail(String subject, String text, String toRecipients) {
@@ -61,11 +67,15 @@ public class MailService extends AbstractService implements IMailService {
     }
     
     public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients) {
+        ParameterMetaData passwordMetaData = ParameterConstants.getParameterMetaData().get(ParameterConstants.SMTP_PASSWORD);
+        String password = parameterService.getString(ParameterConstants.SMTP_PASSWORD);
+        if (passwordMetaData.isEncryptedType() && password.startsWith(SecurityConstants.PREFIX_ENC)) {
+            password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
+        }
         return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(),
                 parameterService.getString(ParameterConstants.SMTP_TRANSPORT, "smtp"),
                 parameterService.is(ParameterConstants.SMTP_USE_AUTH, false),
-                parameterService.getString(ParameterConstants.SMTP_USER),
-                parameterService.getString(ParameterConstants.SMTP_PASSWORD));
+                parameterService.getString(ParameterConstants.SMTP_USER), password);
     }
 
     public String sendEmail(String subject, String text, String toRecipients, TypedProperties prop) {

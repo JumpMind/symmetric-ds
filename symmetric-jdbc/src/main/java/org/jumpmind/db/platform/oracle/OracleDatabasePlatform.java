@@ -231,5 +231,24 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return transactions;
     }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (sql.endsWith(";")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        
+        int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
+        String order = sql.substring(orderIndex);
+        String innerSql = sql.substring(0, orderIndex - 1);
+        innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
+        return "select from (" + innerSql + ") " +
+               "where RowNum between " + (offset + 1) + " and " + (offset + limit) + ";";
+    }
 
 }

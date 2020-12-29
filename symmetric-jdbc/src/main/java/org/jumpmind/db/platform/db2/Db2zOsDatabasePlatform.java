@@ -47,6 +47,11 @@ public class Db2zOsDatabasePlatform extends Db2DatabasePlatform {
     protected Db2DdlReader createDdlReader() {
         return new Db2zOsDdlReader(this);
     }    
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return false;
+    }
 
     @Override
     public PermissionResult getCreateSymTriggerPermission() {

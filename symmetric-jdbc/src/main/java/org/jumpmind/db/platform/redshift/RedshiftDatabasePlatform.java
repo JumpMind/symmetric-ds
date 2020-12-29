@@ -122,4 +122,17 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
+    
+    @Override
+    public boolean supportsLimitOffset() {
+        return true;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (sql.endsWith(";")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        return sql + " limit " + limit + " offset " + offset + ";";
+    }
 }

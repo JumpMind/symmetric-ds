@@ -12,6 +12,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
@@ -31,11 +32,13 @@ public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
 
     BigQuery bigquery;
     
-    public BigQueryBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, 
+    public BigQueryBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
-            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService, DatabaseWriterSettings writerSettings,
-            BigQuery bq) throws FileNotFoundException, IOException {
-        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService, writerSettings);
+            List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
+            ISecurityService securityService, DatabaseWriterSettings writerSettings, BigQuery bq)
+            throws FileNotFoundException, IOException {
+        super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService,
+                securityService, writerSettings);
         fieldTerminator = ",";
         bigquery = bq;
     }

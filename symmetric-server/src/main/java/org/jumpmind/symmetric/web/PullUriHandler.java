@@ -83,8 +83,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             ServletException {
         // request has the "other" nodes info
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
-        
-        log.debug("Pull request received from {}", nodeId);
+        log.debug("Pull requested from node {} at remote address {}", nodeId, req.getRemoteAddr());
 
         if (StringUtils.isBlank(nodeId)) {
             ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
@@ -99,8 +98,7 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         // pull out headers and pass to pull() method
         handlePull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
 
-        log.debug("Done with Pull request from {}", nodeId);
-
+        log.debug("Pull completed for {} at remote address {}", nodeId, req.getRemoteAddr());
     }
         
     protected void handlePull(String nodeId, String remoteHost, String remoteAddress,

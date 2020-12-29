@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -41,6 +42,7 @@ import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.IncomingBatchSummary;
+import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IIncomingBatchService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -52,6 +54,12 @@ import org.jumpmind.util.FormatUtils;
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
     protected IClusterService clusterService;
+    
+    private List<IncomingBatch> batchList;
+    
+    private int previousLimit;
+    
+    private int previousOffset;
 
     @Override
     public List<String> getNodesInError() {
@@ -168,6 +176,58 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     }
 
+    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter, boolean refresh) {
+        if (!refresh && batchList != null && limit == previousLimit && offset == previousOffset) {
+            return batchList;
+        }
+        
+        String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
+        Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
+        String sql = getSql("selectIncomingBatchPrefixSql", where, " order by create_time desc");
+        
+        if (platform.supportsLimitOffset()) {
+            sql = platform.massageForLimitOffset(sql, limit, offset);
+            batchList = sqlTemplateDirty.query(sql, Integer.MAX_VALUE, new IncomingBatchMapper(), params);
+        } else {
+            ISqlReadCursor<IncomingBatch> cursor = sqlTemplateDirty.queryForCursor(sql, new IncomingBatchMapper(), params);
+            try {
+                IncomingBatch next = null;
+                batchList = new ArrayList<IncomingBatch>();
+                int rowCount = 0;
+                do {
+                    next = cursor.next();
+                    if (next != null) {
+                        if (offset <= rowCount && rowCount < limit + offset) {
+                            batchList.add(next);
+                        }
+                        rowCount++;
+                    }
+
+                    if (rowCount >= limit + offset) {
+                        break;
+                    }
+                } while (next != null);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+
+        previousLimit = limit;
+        previousOffset = offset;
+        
+        int maxBatches = parameterService.getInt("batch.screen.max.to.select");
+        int batchesToReturn = maxBatches - offset;
+        if (maxBatches > 0 && limit + offset > maxBatches && batchesToReturn < batchList.size() - 1) {
+            batchList = batchList.subList(0, batchesToReturn);
+        }
+        return batchList;
+    }
+
+    public int countIncomingBatchesWithLimit() {
+        return batchList.size();
+    }
 
     protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {
         return statuses.size() == 1 && statuses.get(0) == IncomingBatch.Status.ER;

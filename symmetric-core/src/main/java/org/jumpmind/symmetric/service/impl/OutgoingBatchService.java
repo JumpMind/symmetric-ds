@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -50,6 +51,7 @@ import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatchSummary;
 import org.jumpmind.symmetric.model.OutgoingBatches;
+import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
@@ -74,6 +76,12 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private IClusterService clusterService;
 
     private IExtensionService extensionService;
+    
+    private List<OutgoingBatch> batchList;
+    
+    private int previousLimit;
+    
+    private int previousOffset;
 
     public OutgoingBatchService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
             IConfigurationService configurationService, ISequenceService sequenceService, IClusterService clusterService,
@@ -455,6 +463,59 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
                 ascending ? " order by batch_id asc" : " order by batch_id desc");
         return sqlTemplateDirty.query(sql, maxRowsToRetrieve, new OutgoingBatchMapper(true), params);
 
+    }
+    
+    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter, boolean refresh) {
+        if (!refresh && batchList != null && limit == previousLimit && offset == previousOffset) {
+            return batchList;
+        }
+        
+        String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
+        Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
+        String sql = getSql("selectOutgoingBatchPrefixSql", where, " order by batch_id desc");
+        
+        if (platform.supportsLimitOffset()) {
+            sql = platform.massageForLimitOffset(sql, limit, offset);
+            batchList = sqlTemplateDirty.query(sql, Integer.MAX_VALUE, new OutgoingBatchMapper(true), params);
+        } else {
+            ISqlReadCursor<OutgoingBatch> cursor = sqlTemplateDirty.queryForCursor(sql, new OutgoingBatchMapper(true), params);
+            try {
+                OutgoingBatch next = null;
+                batchList = new ArrayList<OutgoingBatch>();
+                int rowCount = 0;
+                do {
+                    next = cursor.next();
+                    if (next != null) {
+                        if (offset <= rowCount && rowCount < limit + offset) {
+                            batchList.add(next);
+                        }
+                        rowCount++;
+                    }
+
+                    if (rowCount >= limit + offset) {
+                        break;
+                    }
+                } while (next != null);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        
+        previousLimit = limit;
+        previousOffset = offset;
+        
+        int maxBatches = parameterService.getInt("batch.screen.max.to.select");
+        int batchesToReturn = maxBatches - offset;
+        if (maxBatches > 0 && limit + offset > maxBatches && batchesToReturn < batchList.size() - 1) {
+            batchList = batchList.subList(0, batchesToReturn);
+        }
+        return batchList;
+    }
+    
+    public int countOutgoingBatchesWithLimit() {
+        return batchList.size();
     }
 
     protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {

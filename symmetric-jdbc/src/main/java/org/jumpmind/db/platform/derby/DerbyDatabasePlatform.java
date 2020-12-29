@@ -115,4 +115,34 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
            return result;
     }
     
+    @Override
+    public boolean supportsLimitOffset() {
+        return sqlTemplate.getDatabaseMinorVersion() >= 4;
+    }
+    
+    @Override
+    public String massageForLimitOffset(String sql, int limit, int offset) {
+        if (supportsLimitOffset()) {
+            if (sql.endsWith(";")) {
+                sql = sql.substring(0, sql.length() - 1);
+            }
+            
+            int minorVersion = sqlTemplate.getDatabaseMinorVersion();
+            if (minorVersion >= 7) {
+                if (minorVersion >= 9) {
+                    return sql + " { limit " + limit + " offset " + offset + " }";
+                }
+                return sql + " offset " + offset + " rows fetch next " + limit + " rows only;";
+            }
+            
+            int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
+            String order = sql.substring(orderIndex);
+            String innerSql = sql.substring(0, orderIndex - 1);
+            innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
+            return "select from (" + innerSql + ") " +
+                   "where RowNum between " + (offset + 1) + " and " + (offset + limit) + ";";
+        }
+        return sql;
+    }
+    
 }
