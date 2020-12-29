@@ -81,6 +81,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     public boolean start(Table table) {
         this.table = table;
         if (super.start(table)) {
+            if (isFallBackToDefault()) { return true; }
             needsBinaryConversion = false;
             if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX) && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
@@ -116,7 +117,8 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     @Override
     public void end(Table table) {
-        try {
+         try {
+            if (isFallBackToDefault()) { return; }
             flush();
             this.stagedInputFile.close();
             this.stagedInputFile.delete();
