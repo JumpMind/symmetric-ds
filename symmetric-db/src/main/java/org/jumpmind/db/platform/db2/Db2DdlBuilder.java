@@ -58,7 +58,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.FLOAT, "DOUBLE", Types.DOUBLE);
         databaseInfo.addNativeTypeMapping(Types.JAVA_OBJECT, "BLOB", Types.BLOB);
         databaseInfo.addNativeTypeMapping(Types.LONGVARBINARY, "LONG VARCHAR FOR BIT DATA");
-        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "LONG VARCHAR");
+        databaseInfo.addNativeTypeMapping(Types.LONGVARCHAR, "CLOB");
         databaseInfo.addNativeTypeMapping(Types.NULL, "LONG VARCHAR FOR BIT DATA",
                 Types.LONGVARBINARY);
         databaseInfo.addNativeTypeMapping(Types.NUMERIC, "DECIMAL", Types.DECIMAL);

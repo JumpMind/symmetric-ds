@@ -31,11 +31,11 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
     public Db2TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         emptyColumnTemplate = "''" ;
-        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then $(oracleToClob)'' else '\"' || replace(replace($(oracleToClob)$(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
+        stringColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then $(oracleToClob)'' else $(oracleToClob)'\"' || replace(replace($(tableAlias).\"$(columnName)\",'\\','\\\\'),'\"','\\\"') || '\"' end" ;
         xmlColumnTemplate = null;
         arrayColumnTemplate = null;
-        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || trim(char($(tableAlias).\"$(columnName)\")) || '\"' end" ;
-        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else '\"' || lpad(rtrim(char(year(timestamp_iso($(tableAlias).\"$(columnName)\")))),4,0) ||'-'||substr(digits(month(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'.'||RIGHT(REPEAT('0',6)||rtrim(char(microsecond(timestamp_iso($(tableAlias).\"$(columnName)\")))),6) || '\"' end" ;
+        numberColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else $(oracleToClob)'\"' || trim(char($(tableAlias).\"$(columnName)\")) || '\"' end" ;
+        datetimeColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' else $(oracleToClob)'\"' || lpad(rtrim(char(year(timestamp_iso($(tableAlias).\"$(columnName)\")))),4,'0') ||'-'||substr(digits(month(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'-'||substr(digits(day(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||' '||substr(digits(hour(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(minute(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||':'||substr(digits(second(timestamp_iso($(tableAlias).\"$(columnName)\"))),9)||'.'||RIGHT(REPEAT('0',6)||rtrim(char(microsecond(timestamp_iso($(tableAlias).\"$(columnName)\")))),6) || '\"' end" ;
         timeColumnTemplate = null;
         dateColumnTemplate = null;
         clobColumnTemplate = "case when $(tableAlias).\"$(columnName)\" is null then '' when length($(tableAlias).\"$(columnName)\") > 32672 then '\b' else '\"' || replace(replace(cast($(tableAlias).\"$(columnName)\" as varchar(32672)),'\\','\\\\'),'\"','\\\"') || '\"' end" ;
@@ -47,7 +47,7 @@ public class Db2TriggerTemplate extends AbstractTriggerTemplate {
         oldTriggerValue = "old" ;
         oldColumnPrefix = "" ;
         newColumnPrefix = "" ;
-        otherColumnTemplate = null;
+        otherColumnTemplate = stringColumnTemplate;
 
         sqlTemplates = new HashMap<String,String>();
         sqlTemplates.put("insertTriggerTemplate" ,

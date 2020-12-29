@@ -300,4 +300,17 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
         return triggers;
     }
 
+    @Override
+    protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
+        String typeName = (String) values.get("TYPE_NAME");
+        if (typeName != null && typeName.startsWith("ROWID")) {
+            return Types.VARCHAR;            
+        } else if (typeName != null && typeName.endsWith("CLOB")) {
+            return Types.LONGVARCHAR;
+        } else if (typeName != null && typeName.endsWith("LONG VARCHAR")) {
+            return Types.CLOB;
+        } else {
+            return super.mapUnknownJdbcTypeForColumn(values);
+        }
+    }
 }

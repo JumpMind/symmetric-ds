@@ -600,7 +600,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             if (e.getMessage()!=null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
                 return null;
             } else {
-                log.error("Failed to get metadata for {}", Table.getFullyQualifiedTableName(catalog, schema, table));
+                log.error("Failed to get metadata for {} because: {} {}", Table.getFullyQualifiedTableName(catalog, schema, table), e.getClass().getName(), e.getMessage());
                 throw e;
             }
         }
@@ -1674,7 +1674,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             if (e.getMessage() != null && StringUtils.containsIgnoreCase(e.getMessage(), "does not exist")) {
                 return null;
             } else {
-                log.error("Failed to get metadata for {}", table.getFullyQualifiedTableName());
+                log.error("Failed to get metadata for {}, because {} {}", table.getFullyQualifiedTableName(), e.getClass().getName(), e.getMessage());
                 throw e;
             }
         }
