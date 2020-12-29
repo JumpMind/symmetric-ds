@@ -204,7 +204,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
 
             @Override
             public void menuSelected(MenuItem selectedItem) {
-                dbTree.refresh();
+                dbTree.refresh(true);
                 Component tab = contentTabs.getSelectedTab();
                 if (tab instanceof QueryPanel) {
                     if (findQueryPanelForDb(((QueryPanel) tab).db).suggester != null) {
@@ -454,7 +454,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     contentTabs.removeComponent(panel);
                 }
                 infoTabs.clear();
-                dbTree.refresh();
+                dbTree.refresh(true);
                 return true;
 
             }
@@ -661,7 +661,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
     }
 
     public void refresh() {
-        dbTree.refresh();
+        dbTree.refresh(false);
     }
 
     public void focus() {

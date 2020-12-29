@@ -59,6 +59,12 @@ public class DbTreeNode implements Serializable {
         this.icon = icon;
         this.dbTree = dbTree;
     }
+    
+    public DbTreeNode(DbTree dbTree, String type, DbTreeNode parent) {
+        this.type = type;
+        this.parent = parent;
+        this.dbTree = dbTree;
+    }
 
     public DbTreeNode() {
     }

@@ -21,10 +21,10 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +59,7 @@ public class DbTree extends Tree<DbTreeNode> {
     public static final String NODE_TYPE_SCHEMA = "Schema";
     public static final String NODE_TYPE_TABLE = "Table";
     public static final String NODE_TYPE_TRIGGER = "Trigger";
+    public static final String NODE_TYPE_PLACEHOLDER = "Placeholder";
 
     IDbProvider databaseProvider;
 
@@ -67,6 +68,10 @@ public class DbTree extends Tree<DbTreeNode> {
     TreeData<DbTreeNode> treeData;
     
     TreeDataProvider<DbTreeNode> treeDataProvider;
+    
+    Set<DbTreeNode> rootNodes;
+    
+    Set<DbTreeNode> expandedNodes;
 
     public DbTree(IDbProvider databaseProvider, ISettingsProvider settingsProvider) {
         this.databaseProvider = databaseProvider;
@@ -75,29 +80,85 @@ public class DbTree extends Tree<DbTreeNode> {
         setStyleGenerator(getStyleGenerator());
         setStyleGenerator(new DbTreeStyleGenerator());
         setItemIconGenerator(node -> node.getIcon());
+        
+        expandedNodes = new LinkedHashSet<DbTreeNode>();
+        
+        addExpandListener(event -> {
+            DbTreeNode node = event.getExpandedItem();
+            
+            expandedNodes.add(node);
+            
+            DbTreeNode firstChild = treeData.getChildren(node).get(0);
+            if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
+                treeData.removeItem(firstChild);
+                for (DbTreeNode child : node.getChildren()) {
+                    treeData.addItem(node, child);
+                    if (child.hasChildren()) {
+                        treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
+                    }
+                }
+                
+                if (event.isUserOriginated()) {
+                    refresh(false);
+                }
+            }
+        });
+        
+        addCollapseListener(event -> {
+            DbTreeNode node = event.getCollapsedItem();
+            
+            expandedNodes.remove(node);
+            
+            for (DbTreeNode child : new ArrayList<DbTreeNode>(treeData.getChildren(node))) {
+                if (expandedNodes.contains(child)) {
+                    collapse(child);
+                }
+                deselect(child);
+                treeData.removeItem(child);
+            }
+            
+            treeData.addItem(node, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, node));
+            
+            if (event.isUserOriginated()) {
+                refresh(false);
+            }
+        });
     }
 
-    public void refresh() {
-        List<IDb> databases = databaseProvider.getDatabases();
+    public void refresh(boolean fullRefresh) {
         Set<DbTreeNode> selected = getSelectedItems();
-        if (treeData == null) {
-            treeData = new TreeData<DbTreeNode>();
+        DbTreeNode firstNode = null;
+        if (fullRefresh || rootNodes == null) {
+            List<IDb> databases = databaseProvider.getDatabases();
+            if (treeData == null) {
+                treeData = new TreeData<DbTreeNode>();
+            } else {
+                treeData.clear();
+            }
+            rootNodes = new LinkedHashSet<DbTreeNode>();
+            for (IDb database : databases) {
+                DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcons.DATABASE, null);
+                loadChildren(databaseNode);
+                treeData.addItem(null, databaseNode);
+                treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
+                rootNodes.add(databaseNode);
+
+                if (firstNode == null) {
+                    firstNode = databaseNode;
+                }
+            }
         } else {
             treeData.clear();
-        }
-        DbTreeNode firstNode = null;
-        for (IDb database : databases) {
-            DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcons.DATABASE, null);
-            treeData.addItem(null, databaseNode);
-            loadChildren(databaseNode);
-
-            if (firstNode == null) {
-                firstNode = databaseNode;
+            for (DbTreeNode databaseNode : rootNodes) {
+                treeData.addItem(null, databaseNode);
+                treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
             }
         }
         
         treeDataProvider = new TreeDataProvider<DbTreeNode>(treeData);
         setDataProvider(treeDataProvider);
+        
+        expand(expandedNodes);
 
         if (selected == null || selected.size() == 0) {
             selected = new HashSet<DbTreeNode>();
@@ -105,7 +166,9 @@ public class DbTree extends Tree<DbTreeNode> {
         }
         
         for (DbTreeNode node : selected) {
-            select(node);
+            if (node != null) {
+                select(node);
+            }
         }
 
         focus();
@@ -153,50 +216,47 @@ public class DbTree extends Tree<DbTreeNode> {
             IDatabasePlatform platform = getDbForNode(treeNode).getPlatform();
             IDdlReader reader = platform.getDdlReader();
 
-            Collection<?> children = treeData.getChildren(treeNode);
-            if (children == null || children.size() == 0) {
-                if (treeNode.getType().equals(NODE_TYPE_DATABASE)) {
-                    List<String> catalogs = reader.getCatalogNames();
-                    if (catalogs.size() > 0) {
-                        addCatalogNodes(reader,treeNode,platform,catalogs);
-                    } else {
-                        List<String> schemas = reader.getSchemaNames(null);
-                        addSchemaNodes(reader,treeNode,platform,schemas);
-                    }
-
-                    if (treeNode.getChildren().size() == 0) {
-                        addTableNodes(reader,treeNode,null,null);
-                    }
-                } else if (treeNode.getType().equals(NODE_TYPE_CATALOG)) {
-                    List<String> schemas = reader.getSchemaNames(treeNode.getName());
+            if (treeNode.getType().equals(NODE_TYPE_DATABASE)) {
+                List<String> catalogs = reader.getCatalogNames();
+                if (catalogs.size() > 0) {
+                    addCatalogNodes(reader,treeNode,platform,catalogs);
+                } else {
+                    List<String> schemas = reader.getSchemaNames(null);
                     addSchemaNodes(reader,treeNode,platform,schemas);
-                    
-                    if(treeNode.getChildren().size() == 0){
-                        addTableNodes(reader, treeNode, treeNode.getName(), null);
-                    }
-
-                } else if (treeNode.getType().equals(NODE_TYPE_SCHEMA)) {
-                    String catalogName = null;
-                    DbTreeNode parent = treeData.getParent(treeNode);
-                    if (parent != null && parent.getType().equals(NODE_TYPE_CATALOG)) {
-                        catalogName = parent.getName();
-                    }
-                    addTableNodes(reader, treeNode, catalogName,
-                            treeNode.getName());
-                } else if (treeNode.getType().equals(NODE_TYPE_TABLE)) {
-                    String catalogName = null, schemaName = null;
-                    DbTreeNode parent = treeData.getParent(treeNode);
-                    if (parent != null && parent.getType().equals(NODE_TYPE_SCHEMA)) {
-                        schemaName = parent.getName();
-                        DbTreeNode grandparent = treeData.getParent(parent);
-                        if (grandparent != null && grandparent.getType().equals(NODE_TYPE_CATALOG)) {
-                            catalogName = grandparent.getName();
-                        }
-                    } else if (parent != null && parent.getType().equals(NODE_TYPE_CATALOG)) {
-                        catalogName = parent.getName();
-                    }
-                    addTriggerNodes(reader, treeNode, catalogName, schemaName);
                 }
+
+                if (treeNode.getChildren().size() == 0) {
+                    addTableNodes(reader,treeNode,null,null);
+                }
+            } else if (treeNode.getType().equals(NODE_TYPE_CATALOG)) {
+                List<String> schemas = reader.getSchemaNames(treeNode.getName());
+                addSchemaNodes(reader,treeNode,platform,schemas);
+                
+                if(treeNode.getChildren().size() == 0){
+                    addTableNodes(reader, treeNode, treeNode.getName(), null);
+                }
+
+            } else if (treeNode.getType().equals(NODE_TYPE_SCHEMA)) {
+                String catalogName = null;
+                DbTreeNode parent = treeNode.getParent();
+                if (parent != null && parent.getType().equals(NODE_TYPE_CATALOG)) {
+                    catalogName = parent.getName();
+                }
+                addTableNodes(reader, treeNode, catalogName,
+                        treeNode.getName());
+            } else if (treeNode.getType().equals(NODE_TYPE_TABLE)) {
+                String catalogName = null, schemaName = null;
+                DbTreeNode parent = treeNode.getParent();
+                if (parent != null && parent.getType().equals(NODE_TYPE_SCHEMA)) {
+                    schemaName = parent.getName();
+                    DbTreeNode grandparent = parent.getParent();
+                    if (grandparent != null && grandparent.getType().equals(NODE_TYPE_CATALOG)) {
+                        catalogName = grandparent.getName();
+                    }
+                } else if (parent != null && parent.getType().equals(NODE_TYPE_CATALOG)) {
+                    catalogName = parent.getName();
+                }
+                addTriggerNodes(reader, treeNode, catalogName, schemaName);
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
@@ -241,7 +301,6 @@ public class DbTree extends Tree<DbTreeNode> {
         List<DbTreeNode> nodes = getTableTreeNodes(reader, parent, catalogName, schemaName);
         for (DbTreeNode treeNode : nodes) {
             parent.getChildren().add(treeNode);
-            treeData.addItem(treeNode.getParent(), treeNode);
             loadChildren(treeNode);
         }
     }
@@ -272,7 +331,6 @@ public class DbTree extends Tree<DbTreeNode> {
         List<DbTreeNode> nodes = getTriggerTreeNodes(reader, parent, catalogName, schemaName);
         for (DbTreeNode treeNode : nodes) {
             parent.getChildren().add(treeNode);
-            treeData.addItem(treeNode.getParent(), treeNode);
         }
     }
     
@@ -284,7 +342,6 @@ public class DbTree extends Tree<DbTreeNode> {
         for (String catalog : catalogs) {
             DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, VaadinIcons.BOOK, parent);
             parent.getChildren().add(catalogNode);
-            treeData.addItem(catalogNode.getParent(), catalogNode);
             loadChildren(catalogNode);
         }
     }
@@ -297,7 +354,6 @@ public class DbTree extends Tree<DbTreeNode> {
         for (String schema : schemas) {
             DbTreeNode schemaNode = new DbTreeNode(this, schema, NODE_TYPE_SCHEMA, VaadinIcons.BOOK, parent);
             parent.getChildren().add(schemaNode);
-            treeData.addItem(schemaNode.getParent(), schemaNode);
             loadChildren(schemaNode);
         }
     }
