@@ -269,7 +269,10 @@ public class SymmetricWebServer {
         }
         
         webapp.getSessionHandler().getSessionCookieConfig().setName(WebConstants.SESSION_PREFIX + (httpsPort > 0 && httpsEnabled ? httpsPort : "") + (httpEnabled && httpPort > 0 ? "_" + httpPort : ""));        
-        
+        webapp.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
+        if (httpsEnabled && !httpEnabled) { 
+            webapp.getSessionHandler().getSessionCookieConfig().setSecure(true);
+        }
         server.setHandler(webapp);
 
 
