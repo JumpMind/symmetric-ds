@@ -169,7 +169,10 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
         boolean isWinner = isLoadOnlyNode || existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
                 || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
-        writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
+        
+        if (!isLoadOnlyNode) {
+            writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
+        }
         
         if (log.isDebugEnabled()) {
             log.debug("{} row from batch {} with local time of {} and remote time of {} for table {} and pk of {}",
