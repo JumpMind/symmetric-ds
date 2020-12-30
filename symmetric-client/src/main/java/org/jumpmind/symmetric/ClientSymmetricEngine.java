@@ -408,6 +408,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         settings.setTreatBinaryAsLob(properties.is(ParameterConstants.TREAT_BINARY_AS_LOB_ENABLED, true));
         settings.setRightTrimCharValues(properties.is(ParameterConstants.RIGHT_TRIM_CHAR_VALUES, false));
         settings.setAllowUpdatesWithResults(properties.is(ParameterConstants.ALLOW_UPDATES_WITH_RESULTS, false));
+        settings.setAllowTriggerCreateOrReplace(properties.is(ParameterConstants.ALLOW_TRIGGER_CREATE_OR_REPLACE, true));
         
         LogSqlBuilder logSqlBuilder = new LogSqlBuilder();
         logSqlBuilder.setLogSlowSqlThresholdMillis(properties.getInt(ParameterConstants.LOG_SLOW_SQL_THRESHOLD_MILLIS, 20000));

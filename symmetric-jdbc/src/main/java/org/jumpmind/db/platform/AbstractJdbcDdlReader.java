@@ -576,8 +576,12 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 public Table execute(Connection connection) throws SQLException {
                     DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                     metaData.setMetaData(connection.getMetaData());
-                    metaData.setCatalog(catalog);
-                    metaData.setSchemaPattern(schema);
+                    if (isNotBlank(catalog)) {
+                        metaData.setCatalog(catalog);
+                    }
+                    if (isNotBlank(schema)) {
+                        metaData.setSchemaPattern(schema);
+                    }
                     metaData.setTableTypes(null);
     
                     ResultSet tableData = null;

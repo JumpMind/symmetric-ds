@@ -7,8 +7,12 @@ import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class MsSql2016DatabasePlatform extends MsSql2008DatabasePlatform {
+
     public MsSql2016DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
+        if (settings.isAllowTriggerCreateOrReplace()) {
+            getDatabaseInfo().setTriggersCreateOrReplaceSupported(true);
+        }
     }
     
     @Override
