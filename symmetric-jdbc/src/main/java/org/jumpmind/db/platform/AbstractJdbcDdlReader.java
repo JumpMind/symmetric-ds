@@ -22,6 +22,7 @@ package org.jumpmind.db.platform;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -1024,7 +1025,6 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         TreeMap<Integer, String> pks = new TreeMap<Integer, String>();
-        
         ResultSet pkData = null;
 
         try {
@@ -1076,6 +1076,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      */
     protected int readPrimaryKeySequence(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
+        Object obj = values.get(getName("KEY_SEQ"));
+        if (obj instanceof BigDecimal) {
+            return Integer.parseInt(((BigDecimal) obj).toString());
+        }
         return (Integer) values.get(getName("KEY_SEQ"));
     }
 
