@@ -22,8 +22,10 @@ package org.jumpmind.symmetric.load;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
@@ -64,7 +66,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected ISymmetricEngine engine;
-    
+
+    protected Set<String> conflictLosingParentRows = new HashSet<String>();
+
     public DefaultDataLoaderFactory() {
     }
 
@@ -279,6 +283,7 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
         settings.setConflictSettingsByChannel(byChannel);
         settings.setConflictSettingsByTable(byTable);
         settings.setResolvedData(resolvedDatas);
+        settings.setConflictLosingParentRows(conflictLosingParentRows);
         
         List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
                 .getExtensionPointList(IAlterDatabaseInterceptor.class);

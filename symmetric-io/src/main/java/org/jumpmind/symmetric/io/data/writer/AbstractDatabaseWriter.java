@@ -53,6 +53,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
 
     public static final String CONFLICT_ERROR = "DatabaseWriter.ConflictError";
     
+    public static final String TRANSACTION_ABORTED = "DatabaseWriter.TransactionAborted";
+    
     public static enum LoadStatus {
         SUCCESS, CONFLICT
     };
