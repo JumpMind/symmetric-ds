@@ -72,6 +72,7 @@ public class CsvExport {
             while (columnIterator.hasNext()) {
                 Object col = columnIterator.next();
                 String value = String.valueOf(gridData.getCellValue(rowItem, col));
+                value = "\"" + value.replace("\"", "\"\"") + "\"";
                 if (columnIterator.hasNext()) {
                     cellData.append(value + ",");
                 } else {
