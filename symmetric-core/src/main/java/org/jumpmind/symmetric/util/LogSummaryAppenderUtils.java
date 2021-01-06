@@ -99,10 +99,15 @@ public class LogSummaryAppenderUtils {
     }
 
     public static void addAppender(Appender appender) {
-        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
-        appender.start();
-        lc.getRootLogger().addAppender(appender);
-        lc.updateLoggers();
+        try {
+            LoggerContext lc = (LoggerContext) LogManager.getContext(false);
+            appender.start();
+            lc.getRootLogger().addAppender(appender);
+            lc.updateLoggers();
+        } catch (Exception ex) {
+            // Can get ClassCastException log4j is not being used
+            log.debug("Failed to add appender " + LOG_SUMMARY_APPENDER_NAME, ex);
+        }
     }
 
     public static void removeAppender(String name) {
