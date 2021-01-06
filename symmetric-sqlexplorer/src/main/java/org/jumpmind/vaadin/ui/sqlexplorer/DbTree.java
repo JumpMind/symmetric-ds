@@ -135,6 +135,7 @@ public class DbTree extends Tree<DbTreeNode> {
             } else {
                 treeData.clear();
             }
+            expandedNodes.clear();
             rootNodes = new LinkedHashSet<DbTreeNode>();
             for (IDb database : databases) {
                 DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcons.DATABASE, null);
