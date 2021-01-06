@@ -141,9 +141,6 @@ public class JdbcDatabasePlatformFactory {
         jdbcSubProtocolToPlatform.put(InterbaseDatabasePlatform.JDBC_SUBPROTOCOL,
                 InterbaseDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MsSql2000DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2000DatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(MsSql2005DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2005DatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(MsSql2008DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2008DatabasePlatform.class);
-        jdbcSubProtocolToPlatform.put(MsSql2008DatabasePlatform.JDBC_SUBPROTOCOL, MsSql2016DatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(MySqlDatabasePlatform.JDBC_SUBPROTOCOL, MySqlDatabasePlatform.class);
         jdbcSubProtocolToPlatform.put(OracleDatabasePlatform.JDBC_SUBPROTOCOL_THIN,
                 OracleDatabasePlatform.class);

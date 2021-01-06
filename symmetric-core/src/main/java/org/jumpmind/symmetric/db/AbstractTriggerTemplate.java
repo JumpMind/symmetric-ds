@@ -769,12 +769,15 @@ abstract public class AbstractTriggerTemplate {
 
     protected String aliasedPrimaryKeyJoin(String aliasOne, String aliasTwo, Column[] columns) {
         StringBuilder b = new StringBuilder();
+        boolean isFirst = true;
         for (Column column : columns) {
-            b.append(aliasOne).append(".\"").append(column.getName()).append("\"");
-            b.append("=").append(aliasTwo).append(".\"").append(column.getName()).append("\"");
-            if (!column.equals(columns[columns.length - 1])) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
                 b.append(" and ");
             }
+            b.append(aliasOne).append(".\"").append(column.getName()).append("\"");
+            b.append("=").append(aliasTwo).append(".\"").append(column.getName()).append("\"");
         }
 
         return b.toString();

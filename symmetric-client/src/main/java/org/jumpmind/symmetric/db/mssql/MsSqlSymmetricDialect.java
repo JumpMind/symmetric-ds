@@ -66,10 +66,6 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     protected Boolean supportsDisableTriggers = null;
 
-    public MsSqlSymmetricDialect() {
-        super();
-    }
-
     public MsSqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSqlTriggerTemplate(this);
@@ -250,7 +246,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
             final String triggerName, String tableName, ISqlTransaction transaction) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
+        schemaName = StringUtils.isBlank(schemaName) ? "" : (schemaName + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
@@ -260,7 +256,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             String previousCatalog = con.getCatalog();
                             Statement stmt = null;
                             try {
-                                if (catalogName != null) {
+                                if (StringUtils.isNotBlank(catalogName)) {
                                     con.setCatalog(catalogName);
                                 }
                                 stmt = con.createStatement();
@@ -269,7 +265,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                                 log.warn("Error removing {}: {}", triggerName, e.getMessage());
                                 throw e;
                             } finally {
-                                if (catalogName != null) {
+                                if (StringUtils.isNotBlank(catalogName) && StringUtils.isNotBlank(previousCatalog)) {
                                     con.setCatalog(previousCatalog);
                                 }
                                 try {
@@ -285,7 +281,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     protected String switchCatalogForTriggerInstall(String catalog, ISqlTransaction transaction) {
-        if (catalog != null) {
+        if (StringUtils.isNotBlank(catalog)) {
             Connection c = ((JdbcSqlTransaction) transaction).getConnection();
             String previousCatalog = null;
             try {
@@ -293,7 +289,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 c.setCatalog(catalog);
                 return previousCatalog;
             } catch (SQLException e) {
-                if (catalog != null) {
+                if (StringUtils.isNotBlank(catalog) && StringUtils.isNotBlank(previousCatalog)) {
                     try {
                         c.setCatalog(previousCatalog);
                     } catch (SQLException ex) {
@@ -351,10 +347,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 .execute(new IConnectionCallback<Boolean>() {
                     public Boolean execute(Connection con) throws SQLException {
                         String previousCatalog = con.getCatalog();
-                        PreparedStatement stmt = con
-                                .prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
+                        PreparedStatement stmt = con.prepareStatement("select count(*) from sysobjects where type = 'TR' AND name = ?");
                         try {
-                            if (catalogName != null) {
+                            if (StringUtils.isNotBlank(catalogName)) {
                                 con.setCatalog(catalogName);
                             }
                             stmt.setString(1, triggerName);
@@ -364,7 +359,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                                 return count > 0;
                             }
                         } finally {
-                            if (catalogName != null) {
+                            if (StringUtils.isNotBlank(catalogName) && StringUtils.isNotBlank(previousCatalog)) {
                                 con.setCatalog(previousCatalog);
                             }
                             stmt.close();

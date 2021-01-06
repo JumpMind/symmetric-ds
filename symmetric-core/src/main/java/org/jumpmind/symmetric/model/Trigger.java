@@ -655,7 +655,10 @@ public class Trigger implements Serializable {
             StringTokenizer tokenizer = new StringTokenizer(syncKeyNames, ",");
             List<String> columnNames = new ArrayList<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {
-                columnNames.add(tokenizer.nextToken().toLowerCase().trim());
+                String columnName = tokenizer.nextToken().toLowerCase().trim();
+                if (!columnNames.contains(columnName)) {
+                    columnNames.add(columnName);
+                }
             }
             return columnNames;
         } else {

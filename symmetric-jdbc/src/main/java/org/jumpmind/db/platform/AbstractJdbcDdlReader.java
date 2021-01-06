@@ -575,8 +575,12 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                 public Table execute(Connection connection) throws SQLException {
                     DatabaseMetaDataWrapper metaData = new DatabaseMetaDataWrapper();
                     metaData.setMetaData(connection.getMetaData());
-                    metaData.setCatalog(catalog);
-                    metaData.setSchemaPattern(schema);
+                    if (isNotBlank(catalog)) {
+                        metaData.setCatalog(catalog);
+                    }
+                    if (isNotBlank(schema)) {
+                        metaData.setSchemaPattern(schema);
+                    }
                     metaData.setTableTypes(null);
     
                     ResultSet tableData = null;
@@ -1024,21 +1028,17 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected Collection<String> readPrimaryKeyNames(DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
         TreeMap<Integer, String> pks = new TreeMap<Integer, String>();
-        
         ResultSet pkData = null;
 
         try {
             pkData = metaData.getPrimaryKeys(getTableNamePatternForConstraints(tableName));
-            
             int i=1;
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
-
-                int pkSequence = 1;
-                try {
-                    pkSequence = readPrimaryKeySequence(metaData, values);
+                Integer pkSequence = readPrimaryKeySequence(values);
+                if (pkSequence != null) {
                     pks.put(pkSequence, readPrimaryKeyName(metaData, values));
-                } catch (Exception e) { 
+                } else {
                     pks.put(i, readPrimaryKeyName(metaData, values));
                     i++;
                 }
@@ -1074,9 +1074,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return The primary key sequence
      */
-    protected int readPrimaryKeySequence(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+    protected Integer readPrimaryKeySequence(Map<String, Object> values)
             throws SQLException {
-        return (Integer) values.get(getName("KEY_SEQ"));
+        Number primaryKeySequence = (Number) values.get(getName("KEY_SEQ"));
+        if (primaryKeySequence == null) {
+            primaryKeySequence = (Number) values.get(getName("ORDINAL_POSITION"));
+        }
+        return primaryKeySequence != null ? primaryKeySequence.intValue() : null;
     }
 
     /*

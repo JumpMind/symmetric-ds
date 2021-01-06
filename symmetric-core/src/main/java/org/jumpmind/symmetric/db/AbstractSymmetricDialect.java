@@ -109,9 +109,6 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
 
-    public AbstractSymmetricDialect() {
-    }
-
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
         this.platform = platform;

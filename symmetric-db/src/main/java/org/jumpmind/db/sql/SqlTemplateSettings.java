@@ -33,6 +33,7 @@ public class SqlTemplateSettings {
     protected int resultSetType = java.sql.ResultSet.TYPE_FORWARD_ONLY;
     protected LogSqlBuilder logSqlBuilder;
     protected boolean allowUpdatesWithResults = false;
+    protected boolean allowTriggerCreateOrReplace;
     
     public SqlTemplateSettings() {     
     }      
@@ -124,7 +125,13 @@ public class SqlTemplateSettings {
     public void setBatchBulkLoaderSize(int batchBulkLoaderSize) {
         this.batchBulkLoaderSize = batchBulkLoaderSize;
     }
-    
-    
+
+    public boolean isAllowTriggerCreateOrReplace() {
+        return allowTriggerCreateOrReplace;
+    }
+
+    public void setAllowTriggerCreateOrReplace(boolean allowTriggerCreateOrReplace) {
+        this.allowTriggerCreateOrReplace = allowTriggerCreateOrReplace;
+    }
 
 }

@@ -12,9 +12,6 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MsSql2008SymmetricDialect extends MsSqlSymmetricDialect {
-    public MsSql2008SymmetricDialect() {
-        super();
-    }
 
     public MsSql2008SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
