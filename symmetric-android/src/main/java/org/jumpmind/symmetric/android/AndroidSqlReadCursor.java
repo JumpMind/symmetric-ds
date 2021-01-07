@@ -25,8 +25,7 @@ import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.Row;
 
 import android.database.Cursor;
-
-import androidx.sqlite.db.SupportSQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase;
 
 public class AndroidSqlReadCursor<T> implements ISqlReadCursor<T> {
 
@@ -38,7 +37,7 @@ public class AndroidSqlReadCursor<T> implements ISqlReadCursor<T> {
 
     protected int rowNumber = 0;
     
-    protected SupportSQLiteDatabase database;
+    protected SQLiteDatabase database;
 
     public AndroidSqlReadCursor(String sql, String[] selectionArgs, ISqlRowMapper<T> mapper,
             AndroidSqlTemplate sqlTemplate) {
@@ -46,7 +45,7 @@ public class AndroidSqlReadCursor<T> implements ISqlReadCursor<T> {
             this.mapper = mapper;
             this.sqlTemplate = sqlTemplate;
             this.database = sqlTemplate.getDatabaseHelper().getWritableDatabase();
-            this.cursor = database.query(sql, selectionArgs);
+            this.cursor = database.rawQuery(sql, selectionArgs);
         } catch (Exception ex) {
             throw this.sqlTemplate.translate(ex);
         }

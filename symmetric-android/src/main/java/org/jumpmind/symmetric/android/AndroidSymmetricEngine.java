@@ -60,8 +60,7 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
 
 import android.content.Context;
-
-import androidx.sqlite.db.SupportSQLiteOpenHelper;
+import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
@@ -69,11 +68,11 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
     protected String externalId;
     protected String nodeGroupId;
     protected Properties properties;
-    protected SupportSQLiteOpenHelper databaseHelper;
+    protected SQLiteOpenHelper databaseHelper;
     protected Context androidContext;
 
     public AndroidSymmetricEngine(String registrationUrl, String externalId, String nodeGroupId,
-            Properties properties, SupportSQLiteOpenHelper databaseHelper, Context androidContext) {
+            Properties properties, SQLiteOpenHelper databaseHelper, Context androidContext) {
         super(true);
         this.deploymentType = "android";
         this.registrationUrl = registrationUrl;

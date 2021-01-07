@@ -40,21 +40,20 @@ import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
-
-import androidx.sqlite.db.SupportSQLiteDatabase;
-import androidx.sqlite.db.SupportSQLiteOpenHelper;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidSqlTemplate extends AbstractSqlTemplate {
 
-    protected SupportSQLiteOpenHelper databaseHelper;
+    protected SQLiteOpenHelper databaseHelper;
     protected Context androidContext;
 
-    public AndroidSqlTemplate(SupportSQLiteOpenHelper databaseHelper, Context androidContext) {
+    public AndroidSqlTemplate(SQLiteOpenHelper databaseHelper, Context androidContext) {
         this.databaseHelper = databaseHelper;
         this.androidContext = androidContext;
     }
 
-    public SupportSQLiteOpenHelper getDatabaseHelper() {
+    public SQLiteOpenHelper getDatabaseHelper() {
         return databaseHelper;
     }
     
@@ -76,7 +75,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     }
 
     public <T> T queryForObject(String sql, Class<T> clazz, Object... params) {
-        SupportSQLiteDatabase database = databaseHelper.getWritableDatabase();
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
         try {
             return queryForObject(database, sql, clazz, params);
         } catch (Exception ex) {
@@ -86,12 +85,12 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         }
     }
 
-    protected <T> T queryForObject(SupportSQLiteDatabase database, String sql, Class<T> clazz,
+    protected <T> T queryForObject(SQLiteDatabase database, String sql, Class<T> clazz,
             Object... params) {
         Cursor cursor = null;
         try {
             T result = null;
-            cursor = database.query(sql, toStringArray(params));
+            cursor = database.rawQuery(sql, toStringArray(params));
             if (cursor.moveToFirst()) {
                 result = get(cursor, clazz, 0);
             }
@@ -126,7 +125,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     public int update(final boolean autoCommit, final boolean failOnError, boolean failOnDrops,
             boolean failOnSequenceCreate, final int commitRate, final ISqlResultsListener resultsListener, final ISqlStatementSource source) {
         int row = 0;
-        SupportSQLiteDatabase database = this.databaseHelper.getWritableDatabase();
+        SQLiteDatabase database = this.databaseHelper.getWritableDatabase();
         String currentStatement = null;
         try {
             if (!autoCommit) {
@@ -173,7 +172,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     }
 
     public int update(String sql, Object[] values, int[] types) {
-        SupportSQLiteDatabase database = this.databaseHelper.getWritableDatabase();
+        SQLiteDatabase database = this.databaseHelper.getWritableDatabase();
         try {
             return update(database, sql, values, types);
         } finally {
@@ -181,7 +180,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         }
     }
 
-    protected int update(SupportSQLiteDatabase database, String sql, Object[] values, int[] types) {
+    protected int update(SQLiteDatabase database, String sql, Object[] values, int[] types) {
         try {
             if (values != null) {
                 database.execSQL(sql, toStringArray(values));
@@ -221,7 +220,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     }
 
     public void testConnection() {
-        SupportSQLiteDatabase database = this.databaseHelper.getWritableDatabase();
+        SQLiteDatabase database = this.databaseHelper.getWritableDatabase();
         close(database);
     }
 
@@ -243,7 +242,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
     }
 
     public int getDatabaseMajorVersion() {
-        SupportSQLiteDatabase database = this.databaseHelper.getWritableDatabase();
+        SQLiteDatabase database = this.databaseHelper.getWritableDatabase();
         try {
             return database.getVersion();
         } catch (Exception ex) {
@@ -300,7 +299,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
 
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,
             Object[] params, int[] types) {
-        SupportSQLiteDatabase database = databaseHelper.getWritableDatabase();
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
         try {
             return insertWithGeneratedKey(database, sql, column, sequenceName, params, types);
         } finally {
@@ -308,7 +307,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         }
     }
 
-    protected long insertWithGeneratedKey(SupportSQLiteDatabase database, String sql, String column,
+    protected long insertWithGeneratedKey(SQLiteDatabase database, String sql, String column,
             String sequenceName, Object[] params, int[] types) {
         int updateCount = update(database, sql, params, types);
         if (updateCount > 0) {
@@ -319,7 +318,7 @@ public class AndroidSqlTemplate extends AbstractSqlTemplate {
         }
     }
 
-    protected void close(SupportSQLiteDatabase database) {
+    protected void close(SQLiteDatabase database) {
     }
 
     protected void close(Cursor cursor) {
