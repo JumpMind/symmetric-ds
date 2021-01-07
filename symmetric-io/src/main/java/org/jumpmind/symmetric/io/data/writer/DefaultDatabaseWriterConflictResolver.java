@@ -138,7 +138,9 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 log.debug("Finding last capture time for table {} with pk of {}", targetTable.getName(), ArrayUtils.toString(pkData));
             }
 
-            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions()) {
+            if (databaseWriter.getPlatform(targetTable.getName()).supportsMultiThreadedTransactions() &&
+                    (!databaseWriter.getPlatform().getDatabaseInfo().isRequiresSavePointsInTransaction() ||
+                            !Boolean.TRUE.equals(databaseWriter.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED)))) {
                 // make sure we lock the row that is in conflict to prevent a race with other data loading
                 if (primaryKeyUpdateAllowed(databaseWriter, targetTable)) {
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
