@@ -31,13 +31,13 @@ import org.jumpmind.db.sql.ISqlTransactionListener;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.mapper.RowMapper;
 
-import android.database.sqlite.SQLiteDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 public class AndroidSqlTransaction implements ISqlTransaction {
 
     protected AndroidSqlTemplate sqlTemplate;
 
-    protected SQLiteDatabase database;
+    protected SupportSQLiteDatabase database;
     
     protected boolean autoCommit = false;
 
