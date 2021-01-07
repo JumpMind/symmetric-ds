@@ -26,10 +26,9 @@ import java.util.Properties;
 
 import android.app.Service;
 import android.content.Intent;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.IBinder;
 import android.util.Log;
-
-import androidx.sqlite.db.SupportSQLiteOpenHelper;
 
 /**
  * This is an Android Service that can be used to start SymmetricDS embedded in
@@ -65,7 +64,7 @@ public class SymmetricService extends Service {
                 Log.i(TAG, "creating engine");
                 String key = intent.getStringExtra(INTENTKEY_SQLITEOPENHELPER_REGISTRY_KEY);
                 if (key != null) {
-                    SupportSQLiteOpenHelper databaseHelper = SQLiteOpenHelperRegistry.lookup(key);
+                    SQLiteOpenHelper databaseHelper = SQLiteOpenHelperRegistry.lookup(key);
                     if (databaseHelper != null) {
                         String registrationUrl = intent.getStringExtra(INTENTKEY_REGISTRATION_URL);
                         String externalId = intent.getStringExtra(INTENTKEY_EXTERNAL_ID);
