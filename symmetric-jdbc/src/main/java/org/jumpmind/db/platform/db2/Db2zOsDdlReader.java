@@ -24,9 +24,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
@@ -172,4 +176,22 @@ public class Db2zOsDdlReader extends Db2DdlReader {
         return triggers;
     }
 
+
+    @Override
+    protected void removeGeneratedColumns(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
+        Collection<Column> tempColumns = new ArrayList<Column>();
+        boolean found = false;
+        for (int i = 0; i < table.getColumns().length; i++) {
+            if (table.getColumn(i).getMappedTypeCode() == Types.ROWID || table.getColumn(i).getName().equals("DB2_GENERATED_ROWID_FOR_LOBS")) {
+                found = true;
+                log.info("Found generated and/or rowid column on table " + table.getFullyQualifiedTableName() + ", column " + table.getColumn(i).getName());
+            } else {
+                tempColumns.add(table.getColumn(i));
+            }
+        }
+        if (found) {
+            table.removeAllColumns();
+            table.addColumns(tempColumns);
+        }
+    }
 }

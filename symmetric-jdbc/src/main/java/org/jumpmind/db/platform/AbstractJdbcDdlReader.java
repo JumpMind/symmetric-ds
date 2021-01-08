@@ -721,6 +721,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     if (getPlatformInfo().isSystemIndicesReturned()) {
                         removeSystemIndices(connection, metaData, table);
                     }
+                    removeGeneratedColumns(connection, metaData, table);
                 } else {
                     table = null;
                 }
@@ -754,6 +755,19 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
         for (int fkIdx = 0; fkIdx < table.getForeignKeyCount(); fkIdx++) {
             removeInternalForeignKeyIndex(connection, metaData, table, table.getForeignKey(fkIdx));
         }
+    }
+    
+    
+    /*
+     * Removes any system generated columns that would be used during comparison
+     * 
+     * @param connection
+     * @param metaData
+     * @param table
+     * @throws SQLException
+     */
+    protected void removeGeneratedColumns(Connection connection, DatabaseMetaDataWrapper metaData,
+        Table table) throws SQLException {
     }
 
     /*

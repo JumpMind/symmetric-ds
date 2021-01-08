@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,8 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Trigger.TriggerType;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.AbstractJdbcDdlReader;
 import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -233,7 +234,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             return pkNames.contains(index.getName());
         }
     }
-
+    
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) throws SQLException {
@@ -309,8 +310,28 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.endsWith("LONG VARCHAR")) {
             return Types.CLOB;
+        } else if (typeName != null && typeName.endsWith("XML")) {
+            return Types.SQLXML;
         } else {
             return super.mapUnknownJdbcTypeForColumn(values);
+        }
+    }
+    
+    @Override
+    protected void removeGeneratedColumns(Connection connection, DatabaseMetaDataWrapper metaData, Table table) throws SQLException {
+        Collection<Column> tempColumns = new ArrayList<Column>();
+        boolean found = false;
+        for (int i = 0; i < table.getColumns().length; i++) {
+            if (table.getColumn(i).getMappedTypeCode() == Types.ROWID || table.getColumn(i).getName().equals("DB2_GENERATED_ROWID_FOR_LOBS")) {
+                found = true;
+                log.info("Found generated and/or rowid column on table " + table.getFullyQualifiedTableName() + ", column " + table.getColumn(i).getName());
+            } else {
+                tempColumns.add(table.getColumn(i));
+            }
+        }
+        if (found) {
+            table.removeAllColumns();
+            table.addColumns(tempColumns);
         }
     }
 }
