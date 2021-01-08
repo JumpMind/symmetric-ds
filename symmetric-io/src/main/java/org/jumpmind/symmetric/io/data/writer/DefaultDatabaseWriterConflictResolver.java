@@ -196,6 +196,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         if (!isLoadOnlyNode) {
             writer.getContext().put(DatabaseConstants.IS_CONFLICT_WINNER, isWinner);
         }
+        if (!isWinner && !isWinnerByUk) {
+            Set<String> conflictLosingParentRows = writer.getWriterSettings().getConflictLosingParentRows();
+            if (conflictLosingParentRows != null) {
+                Map<String, String> rowDataMap = data.toColumnNameValuePairs(targetTable.getColumnNames(), CsvData.ROW_DATA);
+                conflictLosingParentRows.add(getConflictRowKey(targetTable, rowDataMap));
+            }
+        }
         
         if (log.isDebugEnabled()) {
             log.debug("{} row from batch {} with local time of {} and remote time of {} for table {} and pk of {}",
@@ -289,13 +296,6 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 
                 isWinner = existingTs == null || (loadingTs != null && (loadingTs.getTime() > existingTs.getTime() 
                         || (loadingTs.getTime() == existingTs.getTime() && writer.getContext().getBatch().getSourceNodeId().hashCode() > existingNodeId.hashCode())));
-
-                if (!isWinner) {
-                    Set<String> conflictLosingParentRows = writer.getWriterSettings().getConflictLosingParentRows();
-                    if (conflictLosingParentRows != null) {
-                        conflictLosingParentRows.add(getConflictRowKey(targetTable, rowDataMap));
-                    }
-                }
 
                 if (log.isDebugEnabled()) {
                     log.debug("{} row from batch {} with local time of {} and remote time of {} for table {} and uk of {}",
