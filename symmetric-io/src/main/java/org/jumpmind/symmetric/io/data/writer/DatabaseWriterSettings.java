@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
@@ -75,6 +76,8 @@ public class DatabaseWriterSettings {
     protected List<ResolvedData> resolvedData;
 
     protected IAlterDatabaseInterceptor[] alterDatabaseInterceptors;
+    
+    protected Set<String> conflictLosingParentRows;
     
     public void setAlterDatabaseInterceptors(IAlterDatabaseInterceptor[] alterDatabaseInterceptors) {
         this.alterDatabaseInterceptors = alterDatabaseInterceptors;
@@ -312,5 +315,13 @@ public class DatabaseWriterSettings {
 
     public void setLoadOnlyNode(boolean loadOnlyNode) {
         this.loadOnlyNode = loadOnlyNode;
+    }
+
+    public Set<String> getConflictLosingParentRows() {
+        return conflictLosingParentRows;
+    }
+
+    public void setConflictLosingParentRows(Set<String> conflictLosingParentRows) {
+        this.conflictLosingParentRows = conflictLosingParentRows;
     }
 }

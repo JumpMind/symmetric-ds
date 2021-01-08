@@ -35,6 +35,10 @@
         <!-- SQL for loading batches
         <Logger name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter" level="DEBUG" />
         -->
+        <!-- Conflict detection and resolver
+        <Logger name="org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriterConflictResolver" level="DEBUG" />
+        <Logger name="org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriterConflictResolver" level="DEBUG" /> 
+        -->
         <!-- CSV protocol
         <Logger name="org.jumpmind.symmetric.io.data.writer.ProtocolDataWriter" level="DEBUG"/>
         -->

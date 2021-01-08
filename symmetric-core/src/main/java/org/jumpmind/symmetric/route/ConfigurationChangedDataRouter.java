@@ -710,6 +710,8 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 log.info("About to refresh the cache of node group link because new configuration came through the data router");
                 engine.getConfigurationService().clearCache();
                 engine.getNodeService().flushNodeGroupCache();
+                log.info("About to refresh the cache of transformation because new configuration came through the data router");
+                engine.getTransformService().clearCache();
             }
             
             if (routingContext.get(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED) != null

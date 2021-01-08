@@ -22,7 +22,6 @@ package org.jumpmind.db.platform;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -1047,16 +1046,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
         try {
             pkData = metaData.getPrimaryKeys(getTableNamePatternForConstraints(tableName));
-            
             int i=1;
             while (pkData.next()) {
                 Map<String, Object> values = readMetaData(pkData, getColumnsForPK());
-
-                int pkSequence = 1;
-                try {
-                    pkSequence = readPrimaryKeySequence(metaData, values);
+                Integer pkSequence = readPrimaryKeySequence(values);
+                if (pkSequence != null) {
                     pks.put(pkSequence, readPrimaryKeyName(metaData, values));
-                } catch (Exception e) { 
+                } else {
                     pks.put(i, readPrimaryKeyName(metaData, values));
                     i++;
                 }
@@ -1092,13 +1088,13 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
      * 
      * @return The primary key sequence
      */
-    protected int readPrimaryKeySequence(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
+    protected Integer readPrimaryKeySequence(Map<String, Object> values)
             throws SQLException {
-        Object obj = values.get(getName("KEY_SEQ"));
-        if (obj instanceof BigDecimal) {
-            return Integer.parseInt(((BigDecimal) obj).toString());
+        Number primaryKeySequence = (Number) values.get(getName("KEY_SEQ"));
+        if (primaryKeySequence == null) {
+            primaryKeySequence = (Number) values.get(getName("ORDINAL_POSITION"));
         }
-        return (Integer) values.get(getName("KEY_SEQ"));
+        return primaryKeySequence != null ? primaryKeySequence.intValue() : null;
     }
 
     /*
