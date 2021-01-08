@@ -20,6 +20,8 @@
  */
 package org.jumpmind.db.platform.mssql;
 
+import java.sql.Types;
+
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -28,6 +30,11 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     
     public MsSql2005DdlBuilder() {
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
+        
+        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.BLOB);
+        databaseInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
+        databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
+        
     }
 
     protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
@@ -82,4 +89,13 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
         printEndOfStatement(ddl);
     }
 
+    @Override
+    protected String getSqlType(Column column) {
+        String sqlType = super.getSqlType(column);
+
+        if (column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() > 8000) {
+            sqlType = "VARBINARY(MAX)";
+        }
+        return sqlType;
+    }
 }
