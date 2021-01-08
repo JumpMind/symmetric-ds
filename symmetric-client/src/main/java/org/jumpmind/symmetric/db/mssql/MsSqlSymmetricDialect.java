@@ -246,7 +246,8 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
             final String triggerName, String tableName, ISqlTransaction transaction) {
-        schemaName = StringUtils.isBlank(schemaName) ? "" : (schemaName + ".");
+        schemaName = StringUtils.isBlank(schemaName) ? "" :
+            (platform.getDatabaseInfo().getDelimiterToken() + schemaName + platform.getDatabaseInfo().getDelimiterToken() + ".");
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
