@@ -65,7 +65,7 @@ public class MonitorTypeBlock extends AbstractMonitorType implements IBuiltInExt
         if (filteredTransactions.contains(transaction)) {
             return true;
         }
-        if (isBlockingUser || transaction.getUsername().equals(dbUser)) {
+        if (isBlockingUser || transaction.getUsername().equalsIgnoreCase(dbUser)) {
             filteredTransactions.add(transaction);
             if (blockingTransaction != null) {
                 filterTransactions(blockingTransaction, transactionMap, filteredTransactions, dbUser, true, true);

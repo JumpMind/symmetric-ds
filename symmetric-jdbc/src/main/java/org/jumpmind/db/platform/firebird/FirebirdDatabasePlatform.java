@@ -1,5 +1,4 @@
 package org.jumpmind.db.platform.firebird;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,14 +18,20 @@ package org.jumpmind.db.platform.firebird;
  * under the License.
  */
 
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
@@ -106,4 +111,45 @@ public class FirebirdDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String massageForLimitOffset(String sql, int limit, int offset) {
         return StringUtils.replaceIgnoreCase(sql, "select", "select first " + limit + " skip " + offset);
     }
+
+    @Override
+    public List<Transaction> getTransactions() {
+        // Uncommitted transactions that are older than 5 minutes and have either an active IUD statement or no activity
+        int minutesOld = -5;
+        String tranSql = "select t.mon$transaction_id, a.mon$user, a.mon$remote_address, t.mon$state, t.mon$timestamp, s.mon$sql_text " +
+                "from mon$attachments a " +
+                "inner join mon$transactions t on t.mon$attachment_id = a.mon$attachment_id " +
+                "left join mon$statements s on s.mon$attachment_id = t.mon$attachment_id and (s.mon$transaction_id = t.mon$transaction_id " +
+                "or s.mon$transaction_id is null)" +
+                "where t.mon$transaction_id is not null " +
+                "and ((s.mon$state = 0 and t.mon$timestamp < dateadd(? minute to current_timestamp)) or " + 
+                "(s.mon$state = 1 and (upper(s.mon$sql_text) like 'INSERT %' or upper(s.mon$sql_text) like 'UPDATE %'or upper(s.mon$sql_text) like 'DELETE %') " +
+                "and s.mon$timestamp < dateadd(? minute to current_timestamp)))";
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        List<Transaction> blockedTransactions = new ArrayList<Transaction>();
+        List<Row> rows = getSqlTemplate().query(tranSql, new Object[] { minutesOld, minutesOld }, new int[] { Types.INTEGER, Types.INTEGER });
+
+        for (Row row : rows) {
+             Transaction tran = new Transaction(row.getString("mon$transaction_id"), StringUtils.trimToEmpty(row.getString("mon$user")),
+                    null, row.getDateTime("mon$timestamp"), row.getString("mon$sql_text"));
+            tran.setRemoteIp(row.getString("mon$remote_address"));
+            tran.setStatus(row.getString("mon$state"));
+            transactions.add(tran);
+            String text = StringUtils.trimToEmpty(StringUtils.upperCase(tran.getText()));
+            if ("1".equals(tran.getStatus()) && text.startsWith("INSERT") || text.startsWith("UPDATE") || text.startsWith("DELETE")) {
+                blockedTransactions.add(tran);
+            }
+        }
+        
+        for (Transaction blockedTran : blockedTransactions) {
+            for (Transaction tran : transactions) {
+                if (tran.getStartTime() != null && tran.getStartTime().before(blockedTran.getStartTime())) {
+                    blockedTran.setBlockingId(tran.getId());
+                    break;
+                }
+            }
+        }
+        return transactions;
+    }
+
 }
