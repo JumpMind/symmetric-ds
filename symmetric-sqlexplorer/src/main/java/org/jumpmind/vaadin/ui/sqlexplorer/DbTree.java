@@ -88,12 +88,16 @@ public class DbTree extends Tree<DbTreeNode> {
             
             expandedNodes.add(node);
             
+            if (!node.getType().equals(NODE_TYPE_TRIGGER) && !node.hasChildren()) {
+                loadChildren(node);
+            }
+            
             DbTreeNode firstChild = treeData.getChildren(node).get(0);
             if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
                 treeData.removeItem(firstChild);
                 for (DbTreeNode child : node.getChildren()) {
                     treeData.addItem(node, child);
-                    if (child.hasChildren()) {
+                    if (!child.getType().equals(NODE_TYPE_TRIGGER)) {
                         treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
                     }
                 }
@@ -139,7 +143,6 @@ public class DbTree extends Tree<DbTreeNode> {
             rootNodes = new LinkedHashSet<DbTreeNode>();
             for (IDb database : databases) {
                 DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcons.DATABASE, null);
-                loadChildren(databaseNode);
                 treeData.addItem(null, databaseNode);
                 treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
                 rootNodes.add(databaseNode);
@@ -302,7 +305,6 @@ public class DbTree extends Tree<DbTreeNode> {
         List<DbTreeNode> nodes = getTableTreeNodes(reader, parent, catalogName, schemaName);
         for (DbTreeNode treeNode : nodes) {
             parent.getChildren().add(treeNode);
-            loadChildren(treeNode);
         }
     }
 
@@ -343,7 +345,6 @@ public class DbTree extends Tree<DbTreeNode> {
         for (String catalog : catalogs) {
             DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, VaadinIcons.BOOK, parent);
             parent.getChildren().add(catalogNode);
-            loadChildren(catalogNode);
         }
     }
     
@@ -355,7 +356,6 @@ public class DbTree extends Tree<DbTreeNode> {
         for (String schema : schemas) {
             DbTreeNode schemaNode = new DbTreeNode(this, schema, NODE_TYPE_SCHEMA, VaadinIcons.BOOK, parent);
             parent.getChildren().add(schemaNode);
-            loadChildren(schemaNode);
         }
     }
 
