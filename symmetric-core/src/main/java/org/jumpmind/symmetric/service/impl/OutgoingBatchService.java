@@ -76,12 +76,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     private IClusterService clusterService;
 
     private IExtensionService extensionService;
-    
-    private List<OutgoingBatch> batchList;
-    
-    private int previousLimit;
-    
-    private int previousOffset;
 
     public OutgoingBatchService(IParameterService parameterService, ISymmetricDialect symmetricDialect, INodeService nodeService,
             IConfigurationService configurationService, ISequenceService sequenceService, IClusterService clusterService,
@@ -465,14 +459,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     }
     
-    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter, boolean refresh) {
-        if (!refresh && batchList != null && limit == previousLimit && offset == previousOffset) {
-            return batchList;
-        }
-        
+    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
         Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
         String sql = getSql("selectOutgoingBatchPrefixSql", where, " order by batch_id desc");
+        List<OutgoingBatch> batchList;
         
         if (platform.supportsLimitOffset()) {
             sql = platform.massageForLimitOffset(sql, limit, offset);
@@ -503,9 +494,6 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
             }
         }
         
-        previousLimit = limit;
-        previousOffset = offset;
-        
         int maxBatches = parameterService.getInt("batch.screen.max.to.select");
         int batchesToReturn = maxBatches - offset;
         if (maxBatches > 0 && limit + offset > maxBatches && batchesToReturn < batchList.size() - 1) {
@@ -514,8 +502,14 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
         return batchList;
     }
     
-    public int countOutgoingBatchesWithLimit() {
-        return batchList.size();
+    public int countOutgoingBatchesWithLimit(List<FilterCriterion> filter) {
+        String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
+        Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
+        String sql = getSql("selectOutgoingBatchPrefixSql", where, " order by batch_id desc");
+        
+        List<OutgoingBatch> batchList = sqlTemplateDirty.query(sql, Integer.MAX_VALUE, new OutgoingBatchMapper(true), params);
+        int maxBatches = parameterService.getInt("batch.screen.max.to.select");
+        return maxBatches > 0 ? Math.min(batchList.size(), maxBatches) : batchList.size();
     }
 
     protected List<String> toStringList(List<OutgoingBatch.Status> statuses) {

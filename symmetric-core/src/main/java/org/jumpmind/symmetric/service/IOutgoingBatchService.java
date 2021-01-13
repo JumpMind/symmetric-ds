@@ -120,9 +120,9 @@ public interface IOutgoingBatchService {
     public List<OutgoingBatch> listOutgoingBatches(List<String> nodeIds, List<String> channels,
             List<OutgoingBatch.Status> statuses, List<Long> loads, long startAtBatchId, int rowsExpected, boolean ascending);
     
-    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter, boolean refresh);
+    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter);
     
-    public int countOutgoingBatchesWithLimit();
+    public int countOutgoingBatchesWithLimit(List<FilterCriterion> filter);
     
     public void copyOutgoingBatches(String channelId, long startBatchId, String fromNodeId, String toNodeId);
     
