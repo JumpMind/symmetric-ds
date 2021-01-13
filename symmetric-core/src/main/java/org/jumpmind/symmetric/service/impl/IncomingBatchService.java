@@ -54,12 +54,6 @@ import org.jumpmind.util.FormatUtils;
 public class IncomingBatchService extends AbstractService implements IIncomingBatchService {
 
     protected IClusterService clusterService;
-    
-    private List<IncomingBatch> batchList;
-    
-    private int previousLimit;
-    
-    private int previousOffset;
 
     @Override
     public List<String> getNodesInError() {
@@ -176,14 +170,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     }
 
-    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter, boolean refresh) {
-        if (!refresh && batchList != null && limit == previousLimit && offset == previousOffset) {
-            return batchList;
-        }
-        
+    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
         Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
         String sql = getSql("selectIncomingBatchPrefixSql", where, " order by create_time desc");
+        List<IncomingBatch> batchList;
         
         if (platform.supportsLimitOffset()) {
             sql = platform.massageForLimitOffset(sql, limit, offset);
@@ -213,9 +204,6 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
                 }
             }
         }
-
-        previousLimit = limit;
-        previousOffset = offset;
         
         int maxBatches = parameterService.getInt("batch.screen.max.to.select");
         int batchesToReturn = maxBatches - offset;
@@ -225,8 +213,14 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
         return batchList;
     }
 
-    public int countIncomingBatchesWithLimit() {
-        return batchList.size();
+    public int countIncomingBatchesWithLimit(List<FilterCriterion> filter) {
+        String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
+        Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
+        String sql = getSql("selectIncomingBatchPrefixSql", where, " order by create_time desc");
+        
+        List<IncomingBatch> batchList = sqlTemplateDirty.query(sql, Integer.MAX_VALUE, new IncomingBatchMapper(), params);
+        int maxBatches = parameterService.getInt("batch.screen.max.to.select");
+        return maxBatches > 0 ? Math.min(batchList.size(), maxBatches) : batchList.size();
     }
 
     protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {
