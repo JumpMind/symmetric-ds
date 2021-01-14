@@ -246,9 +246,9 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
         int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
         String order = sql.substring(orderIndex);
         String innerSql = sql.substring(0, orderIndex - 1);
-        innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
-        return "select from (" + innerSql + ") " +
-               "where RowNum between " + (offset + 1) + " and " + (offset + limit) + ";";
+        innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as row_num from");
+        return "select * from (" + innerSql + ") " +
+               "where row_num between " + (offset + 1) + " and " + (offset + limit);
     }
 
 }
