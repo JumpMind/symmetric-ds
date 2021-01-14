@@ -128,10 +128,11 @@ public class BasicDataSourceFactory {
         if (StringUtils.isNotBlank(connectionProperties)) {
             String[] tokens = connectionProperties.split(";");
             for (String property : tokens) {
-                String[] keyValue = property.split("=");
+                String[] keyValue = property.replaceAll("==", "!!").split("=");
                 if (keyValue != null && keyValue.length > 1) {
+                    keyValue[1] = keyValue[1].replaceAll("!!", "=");
                     LoggerFactory.getLogger(BasicDataSourceFactory.class).info(
-                            "Setting database connection property {}={}", keyValue[0], keyValue[1]);
+                            "Setting database connection property {} to {}", keyValue[0], keyValue[1]);
                     dataSource.addConnectionProperty(keyValue[0], keyValue[1]);
                 }
             }
