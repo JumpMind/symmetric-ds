@@ -362,7 +362,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
     
     protected Set<Node> filterOutNodesByDeploymentType(DataMetaData dataMetaData, Set<Node> possibleTargetNodes) {
         if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER)
-                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER_HIST)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER_HIST)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
             Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 boolean isTargetProfessional = StringUtils.equals(nodeThatMayBeRoutedTo.getDeploymentType(), 
@@ -386,14 +388,16 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
             Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
-                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)
-                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
-                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
+                if (tableMatches(dataMetaData, TableConstants.SYM_JOB)) {
                     if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 9, 0)) {
                         targetNodes.add(nodeThatMayBeRoutedTo);
                     }
-                }
-                else if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
+                } else if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
+                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
+                    if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 12, 0)) {
+                        targetNodes.add(nodeThatMayBeRoutedTo);
+                    }
+                } else if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
                     targetNodes.add(nodeThatMayBeRoutedTo);
                 }
             }
