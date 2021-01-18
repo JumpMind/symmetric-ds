@@ -459,10 +459,13 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
 
     }
     
-    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter) {
+    public List<OutgoingBatch> listOutgoingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter,
+            String orderColumn, String orderDirection) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
         Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
-        String sql = getSql("selectOutgoingBatchPrefixSql", where, " order by batch_id desc");
+        String orderBy = buildBatchOrderBy(orderColumn, orderDirection);
+        String sql = getSql("selectOutgoingBatchPrefixSql", where, orderBy);
+        
         List<OutgoingBatch> batchList;
         
         if (platform.supportsLimitOffset()) {

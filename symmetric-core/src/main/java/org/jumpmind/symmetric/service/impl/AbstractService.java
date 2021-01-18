@@ -343,6 +343,30 @@ abstract public class AbstractService implements IService {
         return params;
     }
     
+    protected String buildBatchOrderBy(String orderColumn, String orderDirection) {
+        String orderBy = " order by ";
+        if (orderColumn == null) {
+            if (this instanceof OutgoingBatchService) {
+                orderBy += "batch_id desc";
+            } else {
+                orderBy += "create_time desc";
+            }
+        } else {
+            if (orderColumn.equals("lastUpdatedTime")) {
+                orderColumn = "last_update_time";
+            } else if (orderColumn.equals("lastUpdatedHostName")) {
+                orderColumn = "last_update_hostname";
+            } else {
+                orderColumn = orderColumn.replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
+            }
+            orderBy += orderColumn;
+            if (orderDirection.equals("DESCENDING")) {
+                orderBy += " desc";
+            }
+        }
+        return orderBy;
+    }
+    
     /**
      * Try a configured number of times to get the ACK through.
      */
