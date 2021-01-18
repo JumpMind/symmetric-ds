@@ -127,7 +127,7 @@ public abstract class AbstractCommandLauncher {
         TypedProperties serverProperties = new TypedProperties(System.getProperties());
         boolean allowSelfSignedCerts = serverProperties.is(ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, true);
         String allowServerNames = serverProperties.get(ServerConstants.HTTPS_VERIFIED_SERVERS, "all");
-        boolean https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE, true);
+        boolean https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE, false);
         TransportManagerFactory.initHttps(allowServerNames, allowSelfSignedCerts, https2Enabled);
     }
     

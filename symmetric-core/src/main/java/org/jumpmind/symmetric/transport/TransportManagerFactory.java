@@ -116,7 +116,7 @@ public class TransportManagerFactory {
             // Allow self signed certs based on the parameter value.
             boolean allowSelfSignedCerts = symmetricEngine.getParameterService().is(
                     ServerConstants.HTTPS_ALLOW_SELF_SIGNED_CERTS, false);
-            boolean https2Enabled = symmetricEngine.getParameterService().is(ServerConstants.HTTPS2_ENABLE, true);
+            boolean https2Enabled = symmetricEngine.getParameterService().is(ServerConstants.HTTPS2_ENABLE, false);
             initHttps(httpSslVerifiedServerNames, allowSelfSignedCerts, https2Enabled);
             return createHttpTransportManager(symmetricEngine);
         } else if (Constants.PROTOCOL_FILE.equalsIgnoreCase(transport)) {

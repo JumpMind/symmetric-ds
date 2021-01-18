@@ -176,7 +176,7 @@ public class SymmetricWebServer {
         httpsEnabled = serverProperties.is(ServerConstants.HTTPS_ENABLE,
                 Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS_ENABLE, "true")));
         https2Enabled = serverProperties.is(ServerConstants.HTTPS2_ENABLE,
-                Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS2_ENABLE, "true")));
+                Boolean.parseBoolean(System.getProperty(ServerConstants.HTTPS2_ENABLE, "false")));
         httpPort = serverProperties.getInt(ServerConstants.HTTP_PORT,
                 Integer.parseInt(System.getProperty(ServerConstants.HTTP_PORT, "" + httpPort)));
         httpsPort = serverProperties.getInt(ServerConstants.HTTPS_PORT,
