@@ -170,10 +170,12 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
 
     }
 
-    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter) {
+    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter,
+            String orderColumn, String orderDirection) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
         Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
-        String sql = getSql("selectIncomingBatchPrefixSql", where, " order by create_time desc");
+        String orderBy = buildBatchOrderBy(orderColumn, orderDirection);
+        String sql = getSql("selectIncomingBatchPrefixSql", where, orderBy);
         List<IncomingBatch> batchList;
         
         if (platform.supportsLimitOffset()) {

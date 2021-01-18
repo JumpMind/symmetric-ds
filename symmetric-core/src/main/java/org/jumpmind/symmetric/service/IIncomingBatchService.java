@@ -66,7 +66,8 @@ public interface IIncomingBatchService {
     public List<IncomingBatch> listIncomingBatches(List<String> nodeIds, List<String> channels,
             List<IncomingBatch.Status> statuses, List<Long> loads, Date startAtCreateTime, int maxRowsToRetrieve, boolean ascending);
     
-    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter);
+    public List<IncomingBatch> listIncomingBatchesWithLimit(int offset, int limit, List<FilterCriterion> filter,
+            String orderColumn, String orderDirection);
     
     public int countIncomingBatchesWithLimit(List<FilterCriterion> filter);
 
