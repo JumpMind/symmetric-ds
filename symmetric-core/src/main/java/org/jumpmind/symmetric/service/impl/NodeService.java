@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -49,8 +50,10 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
+import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
+import org.jumpmind.symmetric.service.FilterCriterion.FilterOption;
 import org.jumpmind.symmetric.util.DefaultNodeIdCreator;
 import org.jumpmind.util.AppUtils;
 
@@ -425,6 +428,108 @@ public class NodeService extends AbstractService implements INodeService {
             nodeMap.put(node.getNodeId(), node);
         }
         return nodeMap;
+    }
+    
+    public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,
+            String orderColumn, String orderDirection) {
+        String where = filter != null ? buildWhere(filter) : null;
+        Map<String, Object> params = filter != null ? buildParams(filter) : new HashMap<String, Object>();
+        String orderBy = buildOrderBy(orderColumn, orderDirection);
+        String sql = getSql("selectNodePrefixSql", where, orderBy);
+        
+        List<Node> nodeList;
+        
+        if (platform.supportsLimitOffset()) {
+            sql = platform.massageForLimitOffset(sql, limit, offset);
+            nodeList = sqlTemplateDirty.query(sql, new NodeRowMapper(), params);
+        } else {
+            ISqlReadCursor<Node> cursor = sqlTemplateDirty.queryForCursor(sql, new NodeRowMapper(), params);
+            try {
+                Node next = null;
+                nodeList = new ArrayList<Node>();
+                int rowCount = 0;
+                do {
+                    next = cursor.next();
+                    if (next != null) {
+                        if (offset <= rowCount && rowCount < limit + offset) {
+                            nodeList.add(next);
+                        }
+                        rowCount++;
+                    }
+
+                    if (rowCount >= limit + offset) {
+                        break;
+                    }
+                } while (next != null);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        
+        return nodeList;
+    }
+    
+    public int countFilteredNodes(List<FilterCriterion> filter) {
+        String where = filter != null ? buildWhere(filter) : null;
+        Map<String, Object> params = filter != null ? buildParams(filter) : new HashMap<String, Object>();
+        String sql = getSql("selectNodePrefixSql", where);
+        sql = "select count(node_id) from (" + sql + ");";
+        int size = sqlTemplate.queryForInt(sql, params);
+        return size;
+    }
+    
+    protected String buildWhere(List<FilterCriterion> filter) {
+        StringBuilder where = new StringBuilder();
+        boolean needsAnd = false;
+        int id = 0;
+        
+        for (FilterCriterion criterion : filter) {
+            if (needsAnd) {
+                where.append(" and ");
+            } else {
+                needsAnd = true;
+            }
+            
+            FilterOption option = criterion.getOption();
+            String optionSql = option.toSql();
+            String prefix = criterion.getPropertyId().replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase() + " " + optionSql;
+            where.append(prefix + " :" + id++);
+        }
+        
+        if (where.length() > 0) {
+            where.insert(0, " where ");
+        }
+        return where.toString();
+    }
+    
+    protected Map<String, Object> buildParams(List<FilterCriterion> filter) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        
+        int id = 0;
+        for (FilterCriterion criterion : filter) {
+            Object value = criterion.getValues().get(0);
+            if (criterion.getOption().equals(FilterOption.CONTAINS)) {
+                value = "%" + value + "%";
+            }
+            params.put(String.valueOf(id++), value);
+        }
+        
+        return params;
+    }
+    
+    protected String buildOrderBy(String orderColumn, String orderDirection) {
+        String orderBy = " order by ";
+        if (orderColumn == null) {
+            orderBy += "node_id desc";
+        } else {
+            orderBy += orderColumn.replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
+            if (orderDirection.equals("DESCENDING")) {
+                orderBy += " desc";
+            }
+        }
+        return orderBy;
     }
 
     public NetworkedNode getRootNetworkedNode() {
