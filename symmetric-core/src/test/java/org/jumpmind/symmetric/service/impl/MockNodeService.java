@@ -38,6 +38,7 @@ import org.jumpmind.symmetric.model.NodeHost;
 import org.jumpmind.symmetric.model.NodeSecurity;
 import org.jumpmind.symmetric.model.NodeStatus;
 import org.jumpmind.symmetric.security.INodePasswordFilter;
+import org.jumpmind.symmetric.service.FilterCriterion;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class MockNodeService implements INodeService {
@@ -154,6 +155,17 @@ public class MockNodeService implements INodeService {
     @Override
     public Node findNodeInCacheOnly(String id) {
         return null;
+    }
+    
+    @Override
+    public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,
+            String orderColumn, String orderDirection) {
+        return null;
+    }
+
+    @Override
+    public int countFilteredNodes(List<FilterCriterion> filter) {
+        return 0;
     }
 
     public Node findNodeByExternalId(String nodeGroupId, String externalId) {

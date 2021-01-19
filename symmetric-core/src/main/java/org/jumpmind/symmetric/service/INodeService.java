@@ -121,6 +121,11 @@ public interface INodeService {
     public List<Node> findAllNodes();
     
     public Map<String, Node> findAllNodesAsMap();
+    
+    public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,
+            String orderColumn, String orderDirection);
+    
+    public int countFilteredNodes(List<FilterCriterion> filter);
 
     public List<Node> findNodesToPull();
 
