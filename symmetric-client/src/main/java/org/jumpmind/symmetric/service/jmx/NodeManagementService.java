@@ -37,10 +37,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
+import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.NodeCommunication.CommunicationType;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.transport.ConcurrentConnectionManager.NodeConnectionStatistics;
 import org.jumpmind.util.FormatUtils;
@@ -130,12 +132,22 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     @ManagedAttribute(description = "Get the number of current connections allowed to this "
             + "instance of the node via HTTP.  If this value is 20, then 20 concurrent push"
             + " clients and 20 concurrent pull clients will be allowed")
-    public int getNumfNodeConnectionsPerInstance() {
+    public int getConcurrentWorkersMax() {
         return engine.getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS);
     }
 
-    @ManagedAttribute(description = "Get connection statistics about indivdual nodes")
-    public String getNodeConcurrencyStatisticsAsText() {
+    @ManagedAttribute(description = "Get the number of active connections to this node via HTTP")
+    public int getConcurrentWorkersActive() {
+        if (engine != null) {
+            int available = engine.getNodeCommunicationService().getAvailableThreads(CommunicationType.PUSH);
+            available += engine.getNodeCommunicationService().getAvailableThreads(CommunicationType.PULL);
+            return engine.getParameterService().getInt(ParameterConstants.CONCURRENT_WORKERS) - available;
+        }
+        return 0;
+    }
+    
+    @ManagedOperation(description = "Get connection statistics about indivdual nodes")
+    public String showNodeConcurrencyStatisticsAsText() {
         String lineFeed = "\n";
         if (engine.getParameterService().getString(ParameterConstants.JMX_LINE_FEED).equals("html")) {
             lineFeed = "</br>";
@@ -207,7 +219,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     @ManagedAttribute(description = "Configure the number of connections allowed to this node."
             + "  If the value is set to zero you are effectively disabling your transport"
             + " (wihch can be useful for maintainance")
-    public void setNumOfNodeConnectionsPerInstance(int value) {
+    public void setConcurrentWorkersMax(int value) {
         engine.getParameterService().saveParameter(ParameterConstants.CONCURRENT_WORKERS, value, "jmx");
     }
 
@@ -238,10 +250,20 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
     }
 
     @ManagedAttribute(description = "If a BasicDataSource, then show the number of active connections")
-    public int getNumberOfActiveConnections() {
+    public int getDatabaseConnectionsActive() {
         if (isBasicDataSource()) {
             DataSource dataSource = engine.getDataSource();
             return ((BasicDataSource) dataSource).getNumActive();
+        } else {
+            return -1;
+        }
+    }
+
+    @ManagedAttribute(description = "If a BasicDataSource, then show the number of active connections")
+    public int getDatabaseConnectionsMax() {
+        if (isBasicDataSource()) {
+            DataSource dataSource = engine.getDataSource();
+            return ((BasicDataSource) dataSource).getMaxActive();
         } else {
             return -1;
         }
@@ -401,5 +423,46 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         }
         return "";
     }
+
+    @ManagedAttribute(description = "Number of batches in error")
+    public int getBatchesInError() {
+        if (engine != null) {
+            return engine.getOutgoingBatchService().countOutgoingBatchesInError();
+        } else {
+            return 0;
+        }
+    }
+
+    @ManagedAttribute(description = "Number of batches unsent")
+    public int getBatchesUnsent() {
+        if (engine != null) {
+            return engine.getOutgoingBatchService().countOutgoingBatchesUnsent();
+        } else {
+            return 0;
+        }
+    }
+
+    @ManagedAttribute(description = "Number of data unrouted")
+    public long getDataUnrouted() {
+        if (engine != null) {
+            return engine.getRouterService().getUnroutedDataCount();
+        } else {
+            return 0;
+        }
+    }
+
+    @ManagedAttribute(description = "Last restart time")
+    public Date getStartedTime() {
+        if (engine != null) {
+            return engine.getLastRestartTime();
+        } else {
+            return null;
+        }
+    }
+    
+    @ManagedAttribute(description = "Version")
+    public String getVersion() {
+        return Version.version();
+    }    
 
 }
