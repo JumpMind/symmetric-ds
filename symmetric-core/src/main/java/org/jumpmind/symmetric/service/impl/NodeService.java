@@ -41,6 +41,7 @@ import org.jumpmind.db.sql.UniqueKeyException;
 import org.jumpmind.db.sql.mapper.StringMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.config.INodeIdCreator;
 import org.jumpmind.symmetric.ext.IOfflineServerListener;
 import org.jumpmind.symmetric.model.NetworkedNode;
@@ -474,8 +475,7 @@ public class NodeService extends AbstractService implements INodeService {
     public int countFilteredNodes(List<FilterCriterion> filter) {
         String where = filter != null ? buildWhere(filter) : null;
         Map<String, Object> params = filter != null ? buildParams(filter) : new HashMap<String, Object>();
-        String sql = getSql("selectNodePrefixSql", where);
-        sql = "select count(node_id) from (" + sql + ");";
+        String sql = "select count(*) from " + TableConstants.getTableName(parameterService.getTablePrefix(), TableConstants.SYM_NODE) + where;
         int size = sqlTemplate.queryForInt(sql, params);
         return size;
     }
