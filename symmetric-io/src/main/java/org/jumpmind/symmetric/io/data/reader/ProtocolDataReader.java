@@ -239,6 +239,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     }
                     
                     tokens = null;
+                    createTime = null;
                     return batch;
                 } else if (tokens[0].equals(CsvConstants.NO_BINARY_OLD_DATA)) {
                     if (tokens.length > 1) {

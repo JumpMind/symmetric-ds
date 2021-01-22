@@ -84,7 +84,6 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
 
     public void open(DataContext context) {
         this.context = context;
-        this.baseTime = 0;
     }
 
     public void close() {
@@ -93,6 +92,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
     public void start(Batch batch) {
         this.statistics.put(batch, new Statistics());
         this.batch = batch;
+        this.baseTime = 0;
+        this.lastTime = 0;
 
         if (listeners != null) {
             for (IProtocolDataWriterListener listener : listeners) {
