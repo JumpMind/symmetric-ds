@@ -60,16 +60,10 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.CatalogSchema;
-import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
@@ -98,7 +92,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.jumpmind.symmetric.service.impl.UpdateService;
 import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.SymRollingFileAppender;
 import org.jumpmind.util.ZipBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -446,11 +439,11 @@ public class SnapshotUtil {
             logDir = new File("logs");
         }
 
-        Map<File, Layout<?>> matches = null;
+        File matches = null;
         if (!logDir.exists()) {
-            matches = findSymmetricLogFile();
-            if (matches != null && matches.size() == 1) {
-                logDir = matches.keySet().iterator().next().getParentFile();
+            matches = LogSummaryAppenderUtils.getLogFile();
+            if (matches != null) {
+                logDir = matches.getParentFile();
             }
         }
 
@@ -468,12 +461,8 @@ public class SnapshotUtil {
             if (files != null) {
                 for (File file : files) {
                     String lowerCaseFileName = file.getName().toLowerCase();
-                    if (
-                            (lowerCaseFileName.contains(".log")
-                                    && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper"))
-                            )
-                            ||
-                            compareLogFileName(lowerCaseFileName, matches)) {
+                    if ((lowerCaseFileName.contains(".log") && (lowerCaseFileName.contains("symmetric") || lowerCaseFileName.contains("wrapper")))
+                            || compareLogFileName(lowerCaseFileName, matches)) {
                         try {
                             FileUtils.copyFileToDirectory(file, tmpDir);
                         } catch (IOException e) {
@@ -501,14 +490,11 @@ public class SnapshotUtil {
         return jarFile;
     }
     
-    private static boolean compareLogFileName(String fileName, Map<File, Layout<?>> matches) {
+    private static boolean compareLogFileName(String fileName, File matches) {
         boolean ret = false;
-        if(fileName != null && fileName.length() > 0 && matches != null && matches.size() > 0) {
-            for(File f : matches.keySet()) {
-                if(fileName.toLowerCase().contains(f.getName().toLowerCase())) {
-                    ret = true;
-                    break;
-                }
+        if (fileName != null && fileName.length() > 0 && matches != null) {
+            if (fileName.toLowerCase().contains(matches.getName().toLowerCase())) {
+                ret = true;
             }
         }
         return ret;
@@ -774,34 +760,6 @@ public class SnapshotUtil {
         } else {
             return job.getLastFinishTime() == null ? null : DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(job.getLastFinishTime());
         }
-    }
-
-    public static Map<File, Layout<?>> findSymmetricLogFile() {
-        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
-        Map<String, Appender> appenderMap = lc.getRootLogger().getAppenders();
-        for (Appender appender : appenderMap.values()) {
-            String fileName = null;
-            Layout<?> layout = null;
-            if (appender instanceof FileAppender) {
-                fileName = ((FileAppender) appender).getFileName();
-                layout = ((FileAppender) appender).getLayout();
-            } else if (appender instanceof RollingFileAppender) {
-                fileName = ((RollingFileAppender) appender).getFileName();
-                layout = ((RollingFileAppender) appender).getLayout();
-            } else if (appender instanceof SymRollingFileAppender) {
-                fileName = ((SymRollingFileAppender) appender).getFileName();
-                layout = ((SymRollingFileAppender) appender).getLayout();
-            }
-            if (fileName != null) {
-                File file = new File(fileName);
-                if (file.exists()) {
-                    Map<File, Layout<?>> matches = new HashMap<File, Layout<?>>();
-                    matches.put(file, layout);
-                    return matches;
-                }
-            }
-        }
-        return null;
     }
 
     public static File createThreadsFile(String parent, boolean isFiltered) {

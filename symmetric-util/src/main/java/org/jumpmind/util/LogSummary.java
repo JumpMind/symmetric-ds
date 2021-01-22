@@ -23,7 +23,7 @@ package org.jumpmind.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import  org.apache.logging.log4j.Level;
+import  org.slf4j.event.Level;
 
 import com.google.gson.annotations.Expose;
 
@@ -77,7 +77,7 @@ public class LogSummary implements Comparable<LogSummary> {
     }
 
     public Integer getLevelInt() {
-        return this.levelInt != null ? this.levelInt : this.level != null ? this.level.intLevel() : 0;
+        return this.levelInt != null ? this.levelInt : this.level != null ? this.level.toInt() : 0;
     }
 
     public void setLevelInt(Integer levelInt) {
@@ -140,7 +140,5 @@ public class LogSummary implements Comparable<LogSummary> {
             return mostRecentTime > other.mostRecentTime ? 1 : -1;
         }
     }
-    
-    
     
 }

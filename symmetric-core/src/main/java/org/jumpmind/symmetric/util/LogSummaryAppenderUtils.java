@@ -20,56 +20,88 @@
  */
 package org.jumpmind.symmetric.util;
 
-import java.util.Collections;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Filter.Result;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.jumpmind.util.LogSummary;
 import org.jumpmind.util.LogSummaryAppender;
+import org.jumpmind.util.Log4j2Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
+/**
+ * Compiles against slf4j and only instantiates the helper if log4j is present
+ */
 public class LogSummaryAppenderUtils {
 
     private static final String LOG_SUMMARY_APPENDER_NAME = "SUMMARY";
     
     private static final Logger log = LoggerFactory.getLogger(LogSummaryAppenderUtils.class);
+    
+    private static final List<LogSummary> EMPTY_LIST = new ArrayList<LogSummary>();
+    
+    private static Log4j2Helper helper;
 
     private LogSummaryAppenderUtils() {
     }
+    
+    static {
+        try {
+            Class.forName("org.apache.logging.log4j.core.Appender", false, LogSummaryAppenderUtils.class.getClassLoader());
+            helper = new Log4j2Helper();
+        } catch (ClassNotFoundException e) {
+        }
+    }
+
+    public static void initialize(boolean isDebug, boolean isVerbose, boolean isNoConsole, boolean isNoLog, String overrideLogFileName)
+            throws MalformedURLException {
+        if (helper != null) {
+            helper.initialize(isDebug);
+
+            if (isVerbose) {
+                helper.registerVerboseConsoleAppender();
+            }
+
+            if (isNoConsole) {
+                helper.removeAppender("CONSOLE");
+            }
+
+            if (isNoLog) {
+                helper.removeAppender("ROLLING");
+            } else {
+                helper.registerRollingFileAppender(overrideLogFileName);
+            }
+        }
+    }
 
     public static void registerLogSummaryAppender() {
-        LogSummaryAppender appender = getLogSummaryAppender();
-        if (appender == null) {
-            registerLogSummaryAppenderInternal();
+        if (helper != null) {
+            LogSummaryAppender appender = getLogSummaryAppender();
+            if (appender == null) {
+                helper.registerLogSummaryAppenderInternal(LOG_SUMMARY_APPENDER_NAME);
+            }
         }
     }
     
     public static LogSummaryAppender getLogSummaryAppender() {
-        try {            
-            LogSummaryAppender appender = (LogSummaryAppender) getAppender(LOG_SUMMARY_APPENDER_NAME);
-            return appender;
-        } catch (Exception ex) {
-            // Can get ClassCastException if if the app has been recycled in the same container.
-            log.debug("Failed to load appender " + LOG_SUMMARY_APPENDER_NAME, ex);
-            try {                
-                removeAppender(LOG_SUMMARY_APPENDER_NAME);
-            } catch (Exception ex2) {
-                log.debug("Failed to remove appender " + LOG_SUMMARY_APPENDER_NAME, ex2);    
+        LogSummaryAppender appender = null;
+        if (helper != null) {
+            try {            
+                appender = (LogSummaryAppender) helper.getAppender(LOG_SUMMARY_APPENDER_NAME);
+            } catch (Exception e) {
+                // Can get ClassCastException if the app has been recycled in the same container
+                log.debug("Failed to load appender " + LOG_SUMMARY_APPENDER_NAME, e);
+                try {                
+                    helper.removeAppender(LOG_SUMMARY_APPENDER_NAME);
+                } catch (Exception ex) {
+                    log.debug("Failed to remove appender " + LOG_SUMMARY_APPENDER_NAME, ex);    
+                }
+                appender = helper.registerLogSummaryAppenderInternal(LOG_SUMMARY_APPENDER_NAME);
             }
-            return registerLogSummaryAppenderInternal();
         }
-    }
-    
-    private static LogSummaryAppender registerLogSummaryAppenderInternal() {
-        LogSummaryAppender appender = new LogSummaryAppender(LOG_SUMMARY_APPENDER_NAME,
-                ThresholdFilter.createFilter(Level.WARN, Result.ACCEPT, Result.DENY));
-        addAppender(appender);
         return appender;
     }
 
@@ -88,39 +120,53 @@ public class LogSummaryAppenderUtils {
         return getLogSummaries(engineName, Level.ERROR);
     }
 
-    @SuppressWarnings("unchecked")
     public static List<LogSummary> getLogSummaries(String engineName, Level level) {
         LogSummaryAppender appender = getLogSummaryAppender();
         if (appender != null) {
-            return appender.getLogSummaries(engineName, level);
+            return appender.getLogSummaries(engineName, helper.convertLevel(level));
         } else {
-            return Collections.EMPTY_LIST;
+            return EMPTY_LIST;
         }
     }
-
-    public static void addAppender(Appender appender) {
-        try {
-            LoggerContext lc = (LoggerContext) LogManager.getContext(false);
-            appender.start();
-            lc.getRootLogger().addAppender(appender);
-            lc.updateLoggers();
-        } catch (Exception ex) {
-            // Can get ClassCastException log4j is not being used
-            log.debug("Failed to add appender " + LOG_SUMMARY_APPENDER_NAME, ex);
+    
+    public File getLogDir() {
+        if (helper != null) {
+            helper.getLogDir();
         }
+        return null;        
     }
 
-    public static void removeAppender(String name) {
-        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
-        Appender appender = lc.getRootLogger().getAppenders().get(name);
-        if (appender != null) {
-            lc.getRootLogger().removeAppender(appender);
+    public static File getLogFile() {
+        if (helper != null) {
+            return helper.getLogFile();
         }
+        return null;
     }
 
-    public static Appender getAppender(String name) {
-        LoggerContext lc = (LoggerContext) LogManager.getContext(false);
-        return lc.getRootLogger().getAppenders().get(name);
+    public static boolean isDefaultLogLayoutPattern() {
+        if (helper != null) {
+            return helper.isDefaultLogLayoutPattern();
+        }
+        return false;
     }
-
+    
+    public static void setLevel(String loggerName, Level level) {
+        if (helper != null) {
+            helper.setLevel(loggerName, level);
+        }        
+    }
+    
+    public static Level getLevel(String loggerName) {
+        if (helper != null) {
+            return helper.getLevel(loggerName);
+        }
+        return Level.INFO;
+    }
+    
+    public static org.slf4j.event.Level getRootLevel() {
+        if (helper != null) {
+            return helper.getRootLevel();
+        }
+        return Level.INFO;        
+    }
 }

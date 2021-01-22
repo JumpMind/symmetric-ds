@@ -40,13 +40,15 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 public class LogSummaryAppender extends AbstractAppender {
 
+    protected Map<String, Map<String, LogSummary>> errorsByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
+
+    protected Map<String, Map<String, LogSummary>> warningByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
+    
+    protected Log4j2Helper helper = new Log4j2Helper(); 
+
     public LogSummaryAppender(String name, Filter filter) {
         super(name, filter, null, false, null);
     }
-
-    Map<String, Map<String, LogSummary>> errorsByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
-
-    Map<String, Map<String, LogSummary>> warningByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
 
     @Override
     public void append(LogEvent event) {
@@ -85,7 +87,7 @@ public class LogSummaryAppender extends AbstractAppender {
                     summary.setFirstOccurranceTime(event.getInstant().getEpochMillisecond());
                     byMessage.put(message, summary);
                 }
-                summary.setLevel(event.getLevel());
+                summary.setLevel(helper.convertFromLevel(event.getLevel()));
                 summary.setMostRecentTime(event.getInstant().getEpochMillisecond());
                 summary.setCount(summary.getCount() + 1);
                 Throwable throwable = event.getThrown();

@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.Provider;
 import java.security.Security;
 import java.sql.Connection;
@@ -44,14 +43,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.appender.RollingFileAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
@@ -61,7 +52,6 @@ import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.transport.TransportManagerFactory;
 import org.jumpmind.symmetric.util.LogSummaryAppenderUtils;
 import org.jumpmind.util.AppUtils;
-import org.jumpmind.util.SymRollingFileAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,57 +212,20 @@ public abstract class AbstractCommandLauncher {
     }
 
     protected void configureLogging(CommandLine line) throws MalformedURLException {
-        URL log4jUrl = new URL(System.getProperty("log4j2.configurationFile", "file:" + AppUtils.getSymHome() + "/conf/log4j2-blank.xml"));
-        File log4jFile = new File(new File(log4jUrl.getFile()).getParent(), "log4j2.xml");
-
-        if (line.hasOption(OPTION_DEBUG)) {
-            log4jFile = new File(log4jFile.getParent(), "log4j2-debug.xml");
-        }
-
-        if (log4jFile.exists()) {
-            Configurator.initialize("SYM", log4jFile.getAbsolutePath());
-        }
+        String overrideLogFileName = null;
         
-        if (line.hasOption(OPTION_VERBOSE_CONSOLE)) {
-            LogSummaryAppenderUtils.removeAppender("CONSOLE");
-            PatternLayout layout = PatternLayout.newBuilder().withPattern("%d %-5p [%c{2}] [%t] %m%ex%n").build();
-            Appender appender = ConsoleAppender.newBuilder().setName("CONSOLE").setTarget(ConsoleAppender.Target.SYSTEM_ERR)
-                    .setLayout(layout).build();
-            LogSummaryAppenderUtils.addAppender(appender);
-        }
-        if (line.hasOption(OPTION_NO_LOG_CONSOLE)) {
-            LogSummaryAppenderUtils.removeAppender("CONSOLE");
+        if (line.hasOption(OPTION_PROPERTIES_FILE)) {
+            File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
+            String name = file.getName();
+            int index = name.lastIndexOf(".");
+            if (index > 0) {
+                name = name.substring(0, index);
+            }
+            overrideLogFileName = name + ".log";
         }
 
-        if (line.hasOption(OPTION_NO_LOG_FILE)) {
-            LogSummaryAppenderUtils.removeAppender("ROLLING");
-        } else {
-            Appender appender = LogSummaryAppenderUtils.getAppender("ROLLING");
-            if (appender instanceof SymRollingFileAppender) {
-                SymRollingFileAppender fa = (SymRollingFileAppender) appender;
-                String fileName = fa.getFileName();
-                
-                if (line.hasOption(OPTION_PROPERTIES_FILE)) {
-                    File file = new File(line.getOptionValue(OPTION_PROPERTIES_FILE));
-                    String name = file.getName();
-                    int index = name.lastIndexOf(".");
-                    if (index > 0) {
-                        name = name.substring(0, index);
-                    }
-                    fileName = fileName.replace("symmetric.log", name + ".log");
-                    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-                    Configuration config = ctx.getConfiguration();
-                    RollingFileAppender rolling = RollingFileAppender.newBuilder().setConfiguration(config).setName("ROLLING")
-                        .withFileName(fileName)
-                        .withFilePattern(fa.getFilePattern().replace("symmetric.log", name + ".log"))
-                        .setLayout(fa.getLayout()).withPolicy(fa.getTriggeringPolicy())
-                        .withStrategy(fa.getManager().getRolloverStrategy()).build();
-                    LogSummaryAppenderUtils.removeAppender("ROLLING");
-                    LogSummaryAppenderUtils.addAppender(rolling);
-                }
-                System.err.println(String.format("Log output will be written to %s", fileName));
-            }
-        }
+        LogSummaryAppenderUtils.initialize(line.hasOption(OPTION_DEBUG), line.hasOption(OPTION_VERBOSE_CONSOLE), 
+                line.hasOption(OPTION_NO_LOG_CONSOLE), line.hasOption(OPTION_NO_LOG_FILE), overrideLogFileName);
     }
 
     protected void configurePropertiesFile(CommandLine line) throws ParseException {
