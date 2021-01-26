@@ -129,6 +129,8 @@ public class ExtensionService extends AbstractService implements IExtensionServi
                     log.error("Error while parsing BSH extension " + extension.getExtensionId(), e);
                 } catch (ClassNotFoundException e) {
                     log.error("Interface class not found for BSH extension " + extension.getExtensionId(), e);
+                } catch (Error e) {
+                    log.error("Failed to register BSH extension " + extension.getExtensionId(), e);
                 }
             } else {
                 log.error("Skipping extension " + extension.getExtensionId() + ", unknown extension type " + extension.getExtensionType());
