@@ -39,6 +39,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.ForeignKey;
@@ -251,16 +252,16 @@ public class TabularResultLayout extends VerticalLayout {
             if (resultTable != null) {
                 @SuppressWarnings("unchecked")
                 List<Object>[] unchangedValue = (List<Object>[]) new List[1];
-                Object[] params = new Object[resultTable.getPrimaryKeyColumnCount() + 1];
-                int[] types = new int[params.length];
+                Object[] pkParams = new Object[resultTable.getPrimaryKeyColumnCount()];
+                int[] pkTypes = new int[pkParams.length];
                 
                 editor.addOpenListener(event -> {
                     unchangedValue[0] = new ArrayList<Object>(event.getBean());
-                    int paramCount = 1;
+                    int paramCount = 0;
                     for (int j = 0; j < unchangedValue[0].size(); j++) {
                         if (resultTable.getPrimaryKeyColumnIndex(columnNameMap.get(j)) >= 0) {
-                            params[paramCount] = unchangedValue[0].get(j);
-                            types[paramCount] = resultTable.getColumnWithName(columnNameMap.get(j)).getMappedTypeCode();
+                            pkParams[paramCount] = unchangedValue[0].get(j);
+                            pkTypes[paramCount] = resultTable.getColumnWithName(columnNameMap.get(j)).getMappedTypeCode();
                             paramCount++;
                         }
                     }
@@ -270,33 +271,40 @@ public class TabularResultLayout extends VerticalLayout {
                     grid.setDataProvider(grid.getDataProvider());
                     
                     List<Object> row = event.getBean();
+                    List<String> colNames = new ArrayList<String>();
+                    List<Object> params = new ArrayList<Object>();
+                    List<Integer> types = new ArrayList<Integer>();
                     for (int j = 0; j < row.size(); j++) {
                         String colName = columnNameMap.get(j);
                         if (!db.getPlatform().isLob(resultTable.getColumnWithName(colName).getMappedTypeCode())) {
-                            String sql = buildUpdate(resultTable, colName, resultTable.getPrimaryKeyColumnNames());
-                            params[0] = row.get(j);
-                            if ((params[0] == null && unchangedValue[0].get(j) == null)
-                                    || (params[0] != null && params[0].equals(unchangedValue[0].get(j)))) {
+                            Object param = row.get(j);
+                            Object originalValue = unchangedValue[0].get(j).toString();
+                            if ((param == null && originalValue == null) || (param != null && param.equals(originalValue))) {
                                 continue;
                             }
-                            types[0] = resultTable.getColumnWithName(colName).getMappedTypeCode();
-                            for (int k = 0; k < types.length; k++) {
-                                if (types[k] == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo()
-                                        .isDateOverridesToTimestamp()) {
-                                    types[k] = Types.TIMESTAMP;
-                                }
-                            }
-                            log.warn(sql);
-                            try {
-                                db.getPlatform().getSqlTemplate().update(sql, params, types);
-                            } catch (SqlException e) {
-                                NotifyDialog.show("Error",
-                                        "<b>The table could not be updated.</b><br>"
-                                                + "Cause: the sql update statement failed to execute.<br><br>"
-                                                + "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.",
-                                        e, Type.ERROR_MESSAGE);
-                            }
+                            colNames.add(colName);
+                            params.add(param);
+                            types.add(resultTable.getColumnWithName(colName).getMappedTypeCode());
                         }
+                    }
+                    String sql = buildUpdate(resultTable, colNames, resultTable.getPrimaryKeyColumnNames());
+                    log.warn(sql);
+                    Object[] allParams = ArrayUtils.addAll(params.toArray(), pkParams);
+                    int[] allTypes = ArrayUtils.addAll(types.stream().mapToInt(val -> val).toArray(), pkTypes);
+                    for (int k = 0; k < allTypes.length; k++) {
+                        if (allTypes[k] == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo()
+                                .isDateOverridesToTimestamp()) {
+                            allTypes[k] = Types.TIMESTAMP;
+                        }
+                    }
+                    try {
+                        db.getPlatform().getSqlTemplate().update(sql, allParams, allTypes);
+                    } catch (SqlException e) {
+                        NotifyDialog.show("Error",
+                                "<b>The table could not be updated.</b><br>"
+                                        + "Cause: the sql update statement failed to execute.<br><br>"
+                                        + "To view the <b>Stack Trace</b>, click <b>\"Details\"</b>.",
+                                e, Type.ERROR_MESSAGE);
                     }
                 });
                 
@@ -780,16 +788,20 @@ public class TabularResultLayout extends VerticalLayout {
         return new String[0];
     }
     
-    protected String buildUpdate(Table table, String columnName, String[] pkColumnNames) {
+    protected String buildUpdate(Table table, List<String> columnNames, String[] pkColumnNames) {
         StringBuilder sql = new StringBuilder("update ");
         DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
         String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
         sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
         sql.append(" set ");
-        sql.append(quote);
-        sql.append(columnName);
-        sql.append(quote);
-        sql.append("=? where ");
+        for (String col : columnNames) {
+            sql.append(quote);
+            sql.append(col);
+            sql.append(quote);
+            sql.append("=?, ");
+        }
+        sql.delete(sql.length() - 2, sql.length());
+        sql.append(" where ");
         for (String col : pkColumnNames) {
             sql.append(quote);
             sql.append(col);
