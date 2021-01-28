@@ -2537,8 +2537,15 @@ public class DataService extends AbstractService implements IDataService {
     public void sendMissingForeignKeyRowsForLoad(long batchId, String nodeId, long rowNumber, String rowData) {
         ISqlReadCursor<Data> cursor = null;
         Data data = null;
+        long startBatchId = batchId;
+        if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
+            startBatchId = sqlTemplateDirty.queryForLong(getSql("selectStartBatchExtractRequest"), batchId, nodeId);
+            if (startBatchId == 0) {
+                startBatchId = batchId;
+            }
+        }
         try {
-            cursor = selectDataFor(batchId, nodeId, false);
+            cursor = selectDataFor(startBatchId, nodeId, false);
             data = cursor.next();
         } finally {
             cursor.close();
