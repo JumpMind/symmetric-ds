@@ -968,6 +968,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             return null;
         }
     }
+    
+    public List<TriggerRouter> findTriggerRoutersByTriggerId(String triggerId, boolean refreshCache) {
+        List<TriggerRouter> configs = (List<TriggerRouter>) sqlTemplate.query(
+                getTriggerRouterSql("selectTriggerRoutersByTriggerIdSql"), new TriggerRouterMapper(), triggerId);
+        for (TriggerRouter triggerRouter : configs) {
+            triggerRouter.setRouter(getRouterById(triggerRouter.getRouter().getRouterId(), refreshCache));
+            triggerRouter.setTrigger(getTriggerById(triggerRouter.getTrigger().getTriggerId(), refreshCache));
+        }
+        return configs;
+    }
 
     private List<TriggerRouter> enhanceTriggerRouters(List<TriggerRouter> triggerRouters) {
         HashMap<String, Router> routersById = new HashMap<String, Router>();
