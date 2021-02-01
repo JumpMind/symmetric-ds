@@ -146,6 +146,8 @@ public interface ITriggerRouterService {
     
     public TriggerRouter findTriggerRouterById(String triggerId, String routerId, boolean refreshCache);
     
+    public List<TriggerRouter> findTriggerRoutersByTriggerId(String triggerId, boolean refreshCache);
+    
     public void inactivateTriggerHistory(TriggerHistory history);
 
     public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
