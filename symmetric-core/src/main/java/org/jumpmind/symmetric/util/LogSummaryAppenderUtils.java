@@ -51,7 +51,10 @@ public class LogSummaryAppenderUtils {
     static {
         try {
             Class.forName("org.apache.logging.log4j.core.Appender", false, LogSummaryAppenderUtils.class.getClassLoader());
-            helper = new Log4j2Helper();
+            // WebLogic log4j is not complete, so don't use it
+            if (!"true".equalsIgnoreCase(System.getProperty("weblogic.log.Log4jLoggingEnabled"))) {
+                helper = new Log4j2Helper();
+            }
         } catch (ClassNotFoundException e) {
         }
     }
@@ -79,9 +82,14 @@ public class LogSummaryAppenderUtils {
 
     public static void registerLogSummaryAppender() {
         if (helper != null) {
-            LogSummaryAppender appender = getLogSummaryAppender();
-            if (appender == null) {
-                helper.registerLogSummaryAppenderInternal(LOG_SUMMARY_APPENDER_NAME);
+            try {
+                LogSummaryAppender appender = getLogSummaryAppender();
+                if (appender == null) {
+                    helper.registerLogSummaryAppenderInternal(LOG_SUMMARY_APPENDER_NAME);
+                }
+            } catch (NoSuchMethodError e) {
+                helper = null;
+                log.debug("Disabling log4j because it appears to be a wrapper implementation", e);
             }
         }
     }

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.service.IAcknowledgeService;
 import org.jumpmind.symmetric.service.IParameterService;
@@ -48,9 +49,14 @@ public class AckUriHandler extends AbstractUriHandler {
 
     private IAcknowledgeService acknowledgeService;
     
+    private boolean isStandalone = false;
+    
     public AckUriHandler(IParameterService parameterService, IAcknowledgeService acknowledgeService, IInterceptor...interceptors) {
         super("/ack/*", parameterService, interceptors);
         this.acknowledgeService = acknowledgeService;
+        if ("true".equals(System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB))) {
+            isStandalone = true;
+        }
     }
 
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
@@ -61,7 +67,9 @@ public class AckUriHandler extends AbstractUriHandler {
         List<BatchAck> batches = AbstractTransportManager.readAcknowledgement(req.getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
 
-        res.setHeader("Transfer-Encoding", "chunked");
+        if (isStandalone) {
+            res.setHeader("Transfer-Encoding", "chunked");
+        }
 
         long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
         long ts = System.currentTimeMillis();

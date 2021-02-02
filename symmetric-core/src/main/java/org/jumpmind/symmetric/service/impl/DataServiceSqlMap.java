@@ -154,6 +154,9 @@ public class DataServiceSqlMap extends AbstractSqlMap {
                 + " last_update_time = ? "
                 + " where load_id = ? and completed = 0");
         
+        putSql("selectStartBatchExtractRequest",
+                "select start_batch_id from $(extract_request) where ? between start_batch_id and end_batch_id and node_id = ?");
+        
         putSql("updateTableReloadStatusFinalizeCount", "update $(table_reload_status) set "
                 + " finalize_batch_count = ?, last_update_time = ? "
                 + " where load_id = ?");

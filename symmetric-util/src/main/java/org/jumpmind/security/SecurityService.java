@@ -73,9 +73,9 @@ public class SecurityService implements ISecurityService {
     public KeyStore getTrustStore() {
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            FileInputStream is = new FileInputStream(getTrustStoreFilename());
-            ks.load(is, getTrustStorePassword() == null ? null : getTrustStorePassword().toCharArray());
-            is.close();
+            try (FileInputStream is = new FileInputStream(getTrustStoreFilename())) {
+                ks.load(is, getTrustStorePassword().toCharArray());
+            }
             return ks;
         } catch (RuntimeException e) {
             throw e;
@@ -91,9 +91,9 @@ public class SecurityService implements ISecurityService {
             String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE,
                     SecurityConstants.KEYSTORE_TYPE);
             KeyStore ks = KeyStore.getInstance(keyStoreType);
-            FileInputStream is = new FileInputStream(getKeyStoreFilename());
-            ks.load(is, getKeyStorePassword().toCharArray());
-            is.close();
+            try (FileInputStream is = new FileInputStream(getKeyStoreFilename())) {
+                ks.load(is, getKeyStorePassword().toCharArray());
+            }
             return ks;
         } catch (RuntimeException e) {
             throw e;
@@ -125,10 +125,10 @@ public class SecurityService implements ISecurityService {
             if (alias == null) {
                 alias = new String(Base64.encodeBase64(DigestUtils.sha1(entry.getTrustedCertificate().getEncoded()), false));
                 keyStore.setEntry(alias, entry, null);
-                log.info("Installing trusted certificate: {}", ((X509Certificate) entry.getTrustedCertificate()).getIssuerX500Principal().getName());
+                log.info("Installing trusted certificate: {}", ((X509Certificate) entry.getTrustedCertificate()).getSubjectDN().getName());
                 saveTrustStore(keyStore);
             } else {
-                log.info("Trusted certificate already installed: {}", ((X509Certificate) entry.getTrustedCertificate()).getIssuerX500Principal().getName());
+                log.info("Trusted certificate already installed: {}", ((X509Certificate) entry.getTrustedCertificate()).getSubjectDN().getName());
             }
         } catch (RuntimeException e) {
             throw e;
@@ -184,9 +184,9 @@ public class SecurityService implements ISecurityService {
                             SecurityConstants.KEYSTORE_TYPE);
                     KeyStore ks = KeyStore.getInstance(keyStoreType);
                     ks.load(null, getKeyStorePassword().toCharArray());
-                    FileOutputStream os = new FileOutputStream(getKeyStoreFilename());
-                    ks.store(os, getKeyStorePassword().toCharArray());
-                    os.close();
+                    try (FileOutputStream os = new FileOutputStream(getKeyStoreFilename())) {
+                        ks.store(os, getKeyStorePassword().toCharArray());
+                    }
                     keyStoreExists = true;
                 }
             }
@@ -277,7 +277,9 @@ public class SecurityService implements ISecurityService {
     }
 
     protected String getTrustStorePassword() {
-        return unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
+        String password = unobfuscateIfNeeded(SecurityConstants.SYSPROP_TRUSTSTORE_PASSWORD);
+        password = (password != null) ? password : SecurityConstants.KEYSTORE_PASSWORD;
+        return password;
     }
 
     protected String getKeyStorePassword() {
@@ -367,15 +369,15 @@ public class SecurityService implements ISecurityService {
  
     @Override
     public void saveTrustStore(KeyStore ks) throws Exception {
-        FileOutputStream os = new FileOutputStream(getTrustStoreFilename());
-        ks.store(os, getTrustStorePassword().toCharArray());
-        os.close();
+        try (FileOutputStream os = new FileOutputStream(getTrustStoreFilename())) {
+            ks.store(os, getTrustStorePassword().toCharArray());
+        }
     }
 
     protected void saveKeyStore(KeyStore ks, String password) throws Exception {
-        FileOutputStream os = new FileOutputStream(getKeyStoreFilename());
-        ks.store(os, password.toCharArray());
-        os.close();
+        try (FileOutputStream os = new FileOutputStream(getKeyStoreFilename())) {
+            ks.store(os, password.toCharArray());
+        }
     }
     
     protected static String getTrustStoreFilename() {

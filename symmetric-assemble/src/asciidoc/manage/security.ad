@@ -33,4 +33,8 @@ https.need.client.auth=true
 
 The client will be required to send a valid certificate before HTTPS requests can be made.  During TLS negotiation, the server will send a list of certificate authorities to the client (See <<Certificate Authorities>>).  If the client has a certificate signed by one of the authorities, it will send it to the server as authentication (See <<Server Certificate>>).
 
+==== Console Client Authentication
+
+Authentication of console users using client certificates can be enabled with parameter `console.auth.client.cert`.  The console username is parsed from the distinguished name of the certificate's subject using the first matching group of a regular expression specified by parameter `console.auth.client.cert.subject.regex`.  By default, it will match on the common name of the subject.
+
 endif::pro[]
