@@ -187,6 +187,27 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             transactionString = "engine_transaction";
             lockWaitsString = "performance_schema.data_lock_waits";
         }
+        List<Transaction> transactions = new ArrayList<Transaction>();
+        if (template.getDatabaseMajorVersion() == 5 && template.getDatabaseMinorVersion() <= 5) {
+            String sql = "SELECT" + 
+                    "  b.trx_id," + 
+                    "  b.trx_started," + 
+                    "  b.trx_state," + 
+                    "  b.trx_rows_modified," + 
+                    "  w.blocking_" + transactionString + "_id 'blockingId'," + 
+                    "  b.trx_query " + 
+                    "FROM " + lockWaitsString + " w " + 
+                    "RIGHT JOIN information_schema.innodb_trx b" + 
+                    "  ON b.trx_id = w.requesting_" + transactionString + "_id;";
+            for (Row row : template.query(sql)) {
+                Transaction transaction = new Transaction(row.getString("trx_id"), "",
+                        row.getString("blockingId"), row.getDateTime("trx_started"), row.getString("trx_query"));
+                transaction.setStatus(row.getString("trx_state"));
+                transaction.setWrites(row.getInt("trx_rows_modified"));
+                transactions.add(transaction);
+            }
+            return transactions;
+        }
         String sql = "SELECT" + 
                 "  b.trx_id," + 
                 "  t.processlist_user," + 
@@ -201,7 +222,6 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                 "  ON b.trx_id = w.requesting_" + transactionString + "_id " + 
                 "INNER JOIN performance_schema.threads t" + 
                 "  ON b.trx_mysql_thread_id = t.thread_id;";
-        List<Transaction> transactions = new ArrayList<Transaction>();
         for (Row row : template.query(sql)) {
             Transaction transaction = new Transaction(row.getString("trx_id"), row.getString("processlist_user"),
                     row.getString("blockingId"), row.getDateTime("trx_started"), row.getString("trx_query"));
