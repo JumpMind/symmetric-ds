@@ -86,6 +86,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
     protected boolean isRequiresSavePointsInTransaction;
 
+    protected boolean isCteExpression;
+    
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
     }
@@ -99,6 +101,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         super(conflictResolver, settings);
         this.platform = platform;
         isRequiresSavePointsInTransaction = platform.getDatabaseInfo().isRequiresSavePointsInTransaction();
+        isCteExpression = getPlatform().getDdlBuilder().getDatabaseInfo().getCteExpression() != null;
     }
 
     public IDatabasePlatform getPlatform() {
@@ -219,6 +222,12 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         }
         super.rollback();
     }
+    
+    protected void replaceCteExpression() {
+        if (isCteExpression) {
+            this.currentDmlStatement.updateCteExpression(this.batch.getSourceNodeId());
+        }
+    }
 
     @Override
     protected LoadStatus insert(CsvData data) {
@@ -233,6 +242,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 this.lastUseConflictDetection = true;
                 this.currentDmlStatement = getPlatform()
                         .createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
+                replaceCteExpression();
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
@@ -382,6 +392,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 this.currentDmlStatement = getPlatform().createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
                         lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues, writerSettings.getTextColumnExpression());
+                replaceCteExpression();
                 if (log.isDebugEnabled()) {
                     log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                 }
@@ -556,6 +567,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             lookupKeys.toArray(new Column[lookupKeys.size()]),
                             changedColumnsList.toArray(new Column[changedColumnsList.size()]),
                             nullKeyValues, writerSettings.getTextColumnExpression());
+                    replaceCteExpression();
                     if (log.isDebugEnabled()) {
                         log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
                     }

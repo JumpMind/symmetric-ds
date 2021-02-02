@@ -22,6 +22,27 @@ public class MsSqlDmlStatement extends DmlStatement {
     }
 
     @Override
+    protected String buildInsertSql(String tableName, Column[] keys, Column[] columns) {
+        return databaseInfo.getCteExpression() != null 
+                ? databaseInfo.getCteExpression() + super.buildInsertSql(tableName, keys, columns) 
+                : super.buildInsertSql(tableName, keys, columns);
+    }
+    
+    @Override
+    protected String buildUpdateSql(String tableName, Column[] keyColumns, Column[] columns) {
+        return databaseInfo.getCteExpression() != null 
+                ? databaseInfo.getCteExpression() + super.buildUpdateSql(tableName, keyColumns, columns)
+                : super.buildUpdateSql(tableName, keyColumns, columns);
+    }
+    
+    @Override
+    protected String buildDeleteSql(String tableName, Column[] keyColumns) {
+        return databaseInfo.getCteExpression() != null 
+                ? databaseInfo.getCteExpression() + super.buildDeleteSql(tableName, keyColumns)
+                : super.buildDeleteSql(tableName, keyColumns);
+    }
+    
+    @Override
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
         int type = column.getMappedTypeCode();
         if (type == Types.FLOAT) {

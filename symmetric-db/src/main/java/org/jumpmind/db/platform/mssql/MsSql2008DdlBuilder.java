@@ -33,6 +33,8 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
     
+    public static final String CHANGE_TRACKING_SYM_PREFIX = "SymmetricDS";
+    
     public MsSql2008DdlBuilder() {
         this.databaseName = DatabaseNamesConstants.MSSQL2008;
     
@@ -70,6 +72,14 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
         super.writeTableCreationStmt(table, ddl);
         if (table.getCompressionType() != CompressionTypes.NONE) {
             ddl.append(" WITH(data_compression=" + table.getCompressionType().name() + ")");
+        }
+    }
+    
+    @Override
+    public void initCteExpression() {
+        if (getDatabaseInfo().isLogBased()) {
+            getDatabaseInfo().setCteExpression("DECLARE @ctcontext varbinary(128) = CAST('" + CHANGE_TRACKING_SYM_PREFIX 
+                    + ":' AS varbinary(128)); WITH CHANGE_TRACKING_CONTEXT (@ctcontext) ");
         }
     }
 }

@@ -279,6 +279,10 @@ public class DatabaseInfo {
     
     private boolean zeroDateAllowed;
 
+    private String cteExpression;
+    
+    private boolean logBased;
+    
     /**
      * Creates a new platform info object.
      */
@@ -1377,4 +1381,21 @@ public class DatabaseInfo {
         this.triggersCreateOrReplaceSupported = triggersCreateOrReplaceSupported;
     }
 
+    public String getCteExpression() {
+        return cteExpression;
+    }
+
+    public void setCteExpression(String cteExpression) {
+        this.cteExpression = cteExpression;
+    }
+
+    public boolean isLogBased() {
+        return logBased;
+    }
+
+    public void setLogBased(boolean logBased) {
+        this.logBased = logBased;
+    }
+
+    
 }

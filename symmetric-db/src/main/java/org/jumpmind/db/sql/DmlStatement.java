@@ -38,6 +38,7 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.mssql.MsSql2008DdlBuilder;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
@@ -575,6 +576,12 @@ public class DmlStatement {
         value = value.replace("?", QUESTION_MARK);
         value = value.replace("'", "''");
         return value;
+    }
+    
+    public void updateCteExpression(String value) {
+        this.sql = this.sql.replaceAll(MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":",  
+                MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":" + value);
+
     }
 
 }

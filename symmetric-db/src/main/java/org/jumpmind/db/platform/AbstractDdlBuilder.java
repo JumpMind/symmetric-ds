@@ -2713,4 +2713,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         return caseSensitive;
     }
 
+    @Override
+    public void initCteExpression() {
+    }
 }

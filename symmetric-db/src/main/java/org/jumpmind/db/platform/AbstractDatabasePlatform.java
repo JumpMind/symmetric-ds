@@ -127,6 +127,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     
     protected boolean supportsTruncate = true;
     
+    protected String sourceNodeId;
+    
     public AbstractDatabasePlatform(SqlTemplateSettings settings) {
         this.settings = settings;
     }
@@ -141,6 +143,11 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression) {
 
+        return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(), table.getPrimaryKeyColumns(),
+                table.getColumns(), null, textColumnExpression);
+    }
+    
+    public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression, String sourceNodeId) {
         return createDmlStatement(dmlType, table.getCatalog(), table.getSchema(), table.getName(), table.getPrimaryKeyColumns(),
                 table.getColumns(), null, textColumnExpression);
     }

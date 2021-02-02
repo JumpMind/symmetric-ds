@@ -310,7 +310,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             copyProperties(properties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
             copyProperties(properties, "", ParameterConstants.ALL_KAFKA_PARAMS);
             
-            IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true);
+            IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true, 
+                    parameterService.is(ParameterConstants.START_LOG_MINER_JOB, false));
 
             if (targetPlatform instanceof GenericJdbcDatabasePlatform) {
                 targetPlatform.getDatabaseInfo().setNotNullColumnsSupported(parameterService.is(prefix + 
@@ -338,10 +339,11 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
             DataSource dataSource, boolean waitOnAvailableDatabase) {
-            return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, properties.is(ParameterConstants.NODE_LOAD_ONLY));
+            return createDatabasePlatform(springContext, properties, dataSource, waitOnAvailableDatabase, properties.is(ParameterConstants.NODE_LOAD_ONLY), 
+                    properties.is(ParameterConstants.START_LOG_MINER_JOB));
     }
     public static IDatabasePlatform createDatabasePlatform(ApplicationContext springContext, TypedProperties properties,
-            DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly) {
+            DataSource dataSource, boolean waitOnAvailableDatabase, boolean isLoadOnly, boolean isLogBased) {
         log.info("Initializing connection to database");
         if (dataSource == null) {
             if (isLoadOnly) {
@@ -394,7 +396,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                 ParameterConstants.DB_DELIMITED_IDENTIFIER_MODE, true);
         boolean caseSensitive = !properties.is(ParameterConstants.DB_METADATA_IGNORE_CASE, true);
         return JdbcDatabasePlatformFactory.createNewPlatformInstance(dataSource,
-                createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive, isLoadOnly);
+                createSqlTemplateSettings(properties), delimitedIdentifierMode, caseSensitive, isLoadOnly, isLogBased);
     }
 
     protected static SqlTemplateSettings createSqlTemplateSettings(TypedProperties properties) {

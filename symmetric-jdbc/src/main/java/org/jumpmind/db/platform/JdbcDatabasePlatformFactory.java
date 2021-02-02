@@ -162,7 +162,7 @@ public class JdbcDatabasePlatformFactory {
 
     public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive)
             throws DdlException {
-            return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false);
+            return createNewPlatformInstance(dataSource, settings, delimitedIdentifierMode, caseSensitive, false, false);
     }
     
     /*
@@ -175,7 +175,7 @@ public class JdbcDatabasePlatformFactory {
      * @return The platform or <code>null</code> if the database is not
      * supported
      */
-    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive, boolean isLoadOnly)
+    public static synchronized IDatabasePlatform createNewPlatformInstance(DataSource dataSource, SqlTemplateSettings settings, boolean delimitedIdentifierMode, boolean caseSensitive, boolean isLoadOnly, boolean isLogBased)
             throws DdlException {
 
         // connects to the database and uses actual metadata info to get db name
@@ -190,6 +190,8 @@ public class JdbcDatabasePlatformFactory {
             log.info("The IDatabasePlatform being used is " + platform.getClass().getCanonicalName());
             platform.getDdlBuilder().setDelimitedIdentifierModeOn(delimitedIdentifierMode);
             platform.getDdlBuilder().setCaseSensitive(caseSensitive);
+            platform.getDdlBuilder().getDatabaseInfo().setLogBased(isLogBased);
+            platform.getDdlBuilder().initCteExpression();
             return platform;
         } catch (Exception e) {
             throw new DdlException("Could not create a platform of type " + nameVersion[0], e);

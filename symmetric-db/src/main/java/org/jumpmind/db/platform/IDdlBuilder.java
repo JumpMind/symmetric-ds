@@ -79,4 +79,6 @@ public interface IDdlBuilder {
     public boolean areColumnSizesTheSame(Column sourceColumn, Column targetColumn);
     
     public List<IModelChange> getDetectedChanges(Database currentModel, Database desiredModel, IAlterDatabaseInterceptor... alterDatabaseInterceptors);
+    
+    public void initCteExpression();
 }
