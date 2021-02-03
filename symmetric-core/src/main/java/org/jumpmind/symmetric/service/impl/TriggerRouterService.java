@@ -1262,13 +1262,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
                         boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
-                        if (!force && StringUtils.isNotBlank(nodeId)) {
+                        if (StringUtils.isNotBlank(nodeId)) {
                             NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId);
-                            if (nodeSecurity != null
-                                    && (nodeSecurity.isInitialLoadEnabled() || nodeSecurity
-                                            .getInitialLoadTime() == null)) {
-                                createTriggersForTables = parameterService
-                                        .is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);
+                            if (nodeSecurity != null && (nodeSecurity.isInitialLoadEnabled() || nodeSecurity .getInitialLoadEndTime() == null)) {
+                                createTriggersForTables = parameterService.is(ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD);
                                 if (!createTriggersForTables) {
                                     log.info("Trigger creation has been disabled by "
                                             + ParameterConstants.TRIGGER_CREATE_BEFORE_INITIAL_LOAD
