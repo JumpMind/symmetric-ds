@@ -177,8 +177,10 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setSizeFull();
         grid.addItemClickListener(event -> {
-            grid.deselectAll();
-            grid.select(event.getItem());
+            if (event.getColumn() != null) {
+                grid.deselectAll();
+                grid.select(event.getItem());
+            }
         });
         
         grid.addColumn(row -> row.get(0)).setCaption("Property").setWidth(400);
@@ -231,8 +233,10 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setSizeFull();
         grid.addItemClickListener(event -> {
-            grid.deselectAll();
-            grid.select(event.getItem());
+            if (event.getColumn() != null) {
+                grid.deselectAll();
+                grid.select(event.getItem());
+            }
         });
         
         grid.addColumn(row -> row).setCaption(columnName);

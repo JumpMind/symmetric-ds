@@ -64,7 +64,6 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.HorizontalLayout;
@@ -225,14 +224,6 @@ public class TabularResultLayout extends VerticalLayout {
                 followToMenu = menu.addItem("Follow to", null);
                 buildFollowToMenu();
             }
-
-            grid.addItemClickListener(event -> {
-                MouseButton button = event.getMouseEventDetails().getButton();
-                if (button == MouseButton.LEFT) {
-                    grid.deselectAll();
-                    grid.select(event.getItem());
-                }
-            });
             
             Editor<List<Object>> editor = grid.getEditor();
             Binder<List<Object>> binder = editor.getBinder();

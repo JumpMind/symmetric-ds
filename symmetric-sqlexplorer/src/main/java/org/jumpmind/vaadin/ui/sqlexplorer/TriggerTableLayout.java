@@ -79,7 +79,7 @@ public class TriggerTableLayout extends VerticalLayout{
         
         grid.addItemClickListener(event -> {
             MouseButton button = event.getMouseEventDetails().getButton();
-            if (button == MouseButton.LEFT) {
+            if (button == MouseButton.LEFT && event.getColumn() != null) {
                 if (event.getMouseEventDetails().isDoubleClick()) {
                     String colId = event.getColumn().getId();
                     if (colId.equals("property")) {
