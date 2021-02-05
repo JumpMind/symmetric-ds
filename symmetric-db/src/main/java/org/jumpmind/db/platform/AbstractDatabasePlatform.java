@@ -579,7 +579,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
-                    if (encoding == BinaryEncoding.NONE) {
+                    if (bytes.length == 0) {
+                        concatenatedRow.append("\"\"");
+                    } else if (encoding == BinaryEncoding.NONE) {
                         concatenatedRow.append(row.getString(name));
                     } else if (encoding == BinaryEncoding.BASE64) {
                         concatenatedRow.append(new String(Base64.encodeBase64(bytes)));
