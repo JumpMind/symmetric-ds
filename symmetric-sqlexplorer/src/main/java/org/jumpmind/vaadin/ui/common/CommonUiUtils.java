@@ -195,8 +195,10 @@ public final class CommonUiUtils {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setColumnReorderingAllowed(true);
         grid.addItemClickListener(event -> {
-            grid.deselectAll();
-            grid.select(event.getItem());
+            if (event.getColumn() != null) {
+                grid.deselectAll();
+                grid.select(event.getItem());
+            }
         });
         
         List<List<Object>> outerList = new ArrayList<List<Object>>();

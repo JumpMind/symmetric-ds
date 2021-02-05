@@ -139,8 +139,10 @@ public class TableSelectionLayout extends VerticalLayout {
         listOfTablesGrid.setSizeFull();
         listOfTablesGrid.setSelectionMode(SelectionMode.MULTI);
         listOfTablesGrid.addItemClickListener(event -> {
-           listOfTablesGrid.deselectAll();
-           listOfTablesGrid.select(event.getItem());
+            if (event.getColumn() != null) {
+                listOfTablesGrid.deselectAll();
+                listOfTablesGrid.select(event.getItem());
+            }
         });
         listOfTablesGrid.addSelectionListener(event -> {
             selectedTablesSet.clear();

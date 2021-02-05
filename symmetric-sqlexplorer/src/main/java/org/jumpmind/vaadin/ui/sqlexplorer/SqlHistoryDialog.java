@@ -90,8 +90,10 @@ public class SqlHistoryDialog extends ResizableWindow {
         logTextFilterCell.setComponent(filterField);
 
         grid.addItemClickListener(event -> {
-            grid.deselectAll();
-            grid.select(event.getItem());
+            if (event.getColumn() != null) {
+                grid.deselectAll();
+                grid.select(event.getItem());
+            }
             if (event.getMouseEventDetails().isDoubleClick()) {
                 select();
             }
