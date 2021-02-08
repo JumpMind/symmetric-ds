@@ -197,7 +197,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     protected void init() {
         try {
-            LogSummaryAppenderUtils.registerLogSummaryAppender();
+            LogSummaryAppenderUtils.initialize();
             
             if (getSecurityServiceType().equals(SecurityServiceType.CLIENT)) {
                 SymmetricUtils.logNotices();

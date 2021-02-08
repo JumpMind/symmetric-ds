@@ -27,6 +27,7 @@ import static org.jumpmind.symmetric.service.ClusterConstants.FILE_SYNC_TRACKER;
 import static org.jumpmind.symmetric.service.ClusterConstants.HEARTBEAT;
 import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_EXTRACT;
 import static org.jumpmind.symmetric.service.ClusterConstants.INITIAL_LOAD_QUEUE;
+import static org.jumpmind.symmetric.service.ClusterConstants.LOG_MINER;
 import static org.jumpmind.symmetric.service.ClusterConstants.MONITOR;
 import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PULL;
 import static org.jumpmind.symmetric.service.ClusterConstants.OFFLINE_PUSH;
@@ -45,11 +46,11 @@ import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_CLUSTER;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_EXCLUSIVE;
 import static org.jumpmind.symmetric.service.ClusterConstants.TYPE_SHARED;
 import static org.jumpmind.symmetric.service.ClusterConstants.WATCHDOG;
-import static org.jumpmind.symmetric.service.ClusterConstants.LOG_MINER;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
@@ -154,13 +155,30 @@ public class ClusterService extends AbstractService implements IClusterService {
         if (instanceId != null) {
             return;
         }
-        File instanceIdFile = new File(AppUtils.getSymHome() + "/" + parameterService.getString(ParameterConstants.INSTANCE_ID_LOCATION));
-        String instanceIdLocation = instanceIdFile.getAbsolutePath();
-        
-        try {            
-            instanceId = IOUtils.toString(new FileInputStream(instanceIdLocation), Charset.defaultCharset()).trim();
-        } catch (Exception ex) {
-            log.debug("Failed to load instance id from file '" + instanceIdLocation + "'", ex);
+        File defaultFile = new File(AppUtils.getSymHome() + "/" + parameterService.getString(ParameterConstants.INSTANCE_ID_LOCATION));
+        File instanceIdFile = null;
+        URL instanceIdURL = null;
+        if ("true".equals(System.getProperty(SystemConstants.SYSPROP_LAUNCHER))) {
+            instanceIdFile = defaultFile;
+        } else {
+            instanceIdURL = getClass().getClassLoader().getResource("/instance.uuid");
+            if (instanceIdURL == null) {
+                instanceIdFile = defaultFile;
+            }
+        }
+
+        if (instanceIdFile != null) {
+            try {
+                instanceId = IOUtils.toString(new FileInputStream(instanceIdFile), Charset.defaultCharset()).trim();
+            } catch (Exception ex) {
+                log.debug("Failed to load instance id from file '" + instanceIdFile + "'", ex);
+            }
+        } else if (instanceIdURL != null) {
+            try {
+                instanceId = IOUtils.toString(instanceIdURL.openStream(), Charset.defaultCharset()).trim();
+            } catch (Exception ex) {
+                log.debug("Failed to load instance id from classpath '" + instanceIdURL + "'", ex);
+            }            
         }
 
         IClusterInstanceGenerator generator = null;
@@ -176,13 +194,15 @@ public class ClusterService extends AbstractService implements IClusterService {
             if (newInstanceId == null) {
                 newInstanceId = generateInstanceId(AppUtils.getHostName());
             }
-            try {            
-                instanceIdFile.getParentFile().mkdirs();
-                IOUtils.write(newInstanceId, new FileOutputStream(instanceIdLocation), Charset.defaultCharset());
-                instanceId = newInstanceId;
-                isUpgradedInstanceId = true;
-            } catch (Exception ex) {
-                throw new SymmetricException("Failed to save file '" + instanceIdLocation + "' Please correct and restart this node.", ex);
+            if (instanceIdFile != null) {
+                try {            
+                    instanceIdFile.getParentFile().mkdirs();
+                    IOUtils.write(newInstanceId, new FileOutputStream(instanceIdFile), Charset.defaultCharset());
+                    instanceId = newInstanceId;
+                    isUpgradedInstanceId = true;
+                } catch (Exception ex) {
+                    throw new SymmetricException("Failed to save file '" + instanceIdFile + "' Please correct and restart this node.", ex);
+                }
             }
         }
     }

@@ -20,10 +20,17 @@
  */
 package org.jumpmind.symmetric.web;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.symmetric.common.SystemConstants;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class SymmetricContextListener implements ServletContextListener {
@@ -39,8 +46,8 @@ public class SymmetricContextListener implements ServletContextListener {
         engineHolder.setAutoCreate(autoCreate == null ? true : autoCreate.equalsIgnoreCase("true"));
         
         String multiServerMode = ctx.getInitParameter(WebConstants.INIT_PARAM_MULTI_SERVER_MODE);
-        engineHolder.setMultiServerMode(multiServerMode != null
-                && multiServerMode.equalsIgnoreCase("true"));
+        engineHolder.setMultiServerMode((multiServerMode != null && multiServerMode.equalsIgnoreCase("true")) ||
+                StringUtils.isNotBlank(System.getProperty(SystemConstants.SYSPROP_ENGINES_DIR)));
         
         engineHolder.setSingleServerPropertiesFile(ctx
                 .getInitParameter(WebConstants.INIT_SINGLE_SERVER_PROPERTIES_FILE));
@@ -57,6 +64,19 @@ public class SymmetricContextListener implements ServletContextListener {
             engineHolder.setSpringContext(WebApplicationContextUtils.getWebApplicationContext(sce.getServletContext()));
         }
         
+        if (!"true".equals(System.getProperty(SystemConstants.SYSPROP_LAUNCHER))) {
+            URL serverPropertiesURL = getClass().getClassLoader().getResource("/symmetric-server.properties");
+            if (serverPropertiesURL != null) {
+                try (InputStream fis = serverPropertiesURL.openStream()) {
+                    TypedProperties serverProperties = new TypedProperties();
+                    serverProperties.load(fis);
+                    serverProperties.merge(System.getProperties());
+                    System.getProperties().putAll(serverProperties);
+                } catch (IOException ex) {
+                }
+            }
+        }
+
         engineHolder.start();
     }
 

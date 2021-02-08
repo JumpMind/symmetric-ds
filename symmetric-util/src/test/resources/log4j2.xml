@@ -32,6 +32,10 @@
         <Logger name="com.vaadin.server.communication" level="FATAL" />
         <Logger name="org.atmosphere" level="FATAL" />
         <Logger name="io.confluent.kafka.serializers.KafkaAvroSerializerConfig" level="WARN" />
+        <Logger name="org.atmosphere.cpr.AtmosphereFramework" level="ERROR" />
+        <Logger name="org.atmosphere.util.IOUtils" level="ERROR" />
+        <Logger name="com.vaadin.event.EventRouter" level="ERROR" />
+        <Logger name="sun.net.www.protocol.http.HttpURLConnection" level="ERROR" />
 
         <!-- SQL for all statements
         <Logger name="org.jumpmind.db.sql" level="DEBUG" />

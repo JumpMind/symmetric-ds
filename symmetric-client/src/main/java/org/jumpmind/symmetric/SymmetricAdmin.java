@@ -48,6 +48,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -60,6 +61,7 @@ import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.ServerConstants;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IDataExtractorService;
@@ -79,7 +81,6 @@ import org.jumpmind.util.ZipBuilder;
  */
 public class SymmetricAdmin extends AbstractCommandLauncher {
 
-    @SuppressWarnings("unused")
     private static final Log log = LogFactory.getLog(SymmetricAdmin.class);
 
     private static final String CMD_LIST_ENGINES = "list-engines";
@@ -157,6 +158,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     private static final String OPTION_EXCLUDE_FOREIGN_KEYS = "exclude-fk";
     
     private static final String OPTION_EXCLUDE_DEFAULTS = "exclude-defaults";
+    
+    private static final String OPTION_EXCLUDE_LOG4J = "exclude-log4j";
+    
+    private static final String OPTION_EXTERNAL_SECURITY = "external-security";
     
     private static final int WIDTH = 120;
 
@@ -286,7 +291,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
                 addOption(options, null, OPTION_EXCLUDE_FOREIGN_KEYS, false);
                 addOption(options, null, OPTION_EXCLUDE_DEFAULTS, false);
             }
-
+            if (cmd.equals(CMD_CREATE_WAR)) {
+                addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
+                addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
+            }
             if (options.getOptions().size() > 0) {
                 format.printWrapped(writer, WIDTH, "\nOptions:");
                 format.printOptions(writer, WIDTH, options, PAD, PAD);
@@ -322,6 +330,8 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         addOption(options, null, OPTION_EXCLUDE_INDICES, false);
         addOption(options, null, OPTION_EXCLUDE_FOREIGN_KEYS, false);
         addOption(options, null, OPTION_EXCLUDE_DEFAULTS, false);
+        addOption(options, null, OPTION_EXCLUDE_LOG4J, false);
+        addOption(options, null, OPTION_EXTERNAL_SECURITY, false);
         buildCryptoOptions(options);
     }
 
@@ -673,15 +683,76 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         final File workingDirectory = new File(AppUtils.getSymHome() + "/.war");
         FileUtils.deleteDirectory(workingDirectory);
         FileUtils.copyDirectory(new File(AppUtils.getSymHome() + "/web"), workingDirectory);
-        FileUtils.copyDirectory(new File(AppUtils.getSymHome() + "/conf"), new File(workingDirectory, "WEB-INF/classes"));
-        if (propertiesFile != null && propertiesFile.exists()) {
-            FileUtils.copyFile(propertiesFile, new File(workingDirectory,
-                    "WEB-INF/classes/symmetric.properties"));
+        FileUtils.copyToDirectory(new File(AppUtils.getSymHome() + "/conf/instance.uuid"), new File(workingDirectory, "WEB-INF/classes"));
+
+        boolean useProperties = (line.hasOption(OPTION_PROPERTIES_FILE) || line.hasOption(OPTION_ENGINE)) &&
+                propertiesFile != null && propertiesFile.exists();
+        if (useProperties) {
+            System.out.println("Copying symmetric.properties");
+            FileUtils.copyFile(propertiesFile, new File(workingDirectory, "WEB-INF/classes/symmetric.properties"));
         }
+
+        if (!line.hasOption(OPTION_EXTERNAL_SECURITY)) {
+            System.out.println("Copying security files");
+            FileUtils.copyToDirectory(new File(AppUtils.getSymHome() + "/security/keystore"), new File(workingDirectory, "WEB-INF/classes"));
+            FileUtils.copyToDirectory(new File(AppUtils.getSymHome() + "/security/cacerts"), new File(workingDirectory, "WEB-INF/classes"));
+            FileUtils.copyToDirectory(new File(AppUtils.getSymHome() + "/security/rest.properties"), new File(workingDirectory, "WEB-INF/classes"));
+        }
+
+        if (!line.hasOption(OPTION_EXCLUDE_LOG4J)) {
+            System.out.println("Copying log4j files");
+            FileUtils.copyToDirectory(new File(AppUtils.getSymHome() + "/conf/log4j2.xml"), new File(workingDirectory, "WEB-INF/classes"));
+            for (File file : FileUtils.listFiles(new File(AppUtils.getSymHome() + "/lib"), FileFilterUtils.prefixFileFilter("log4j-"), null)) {
+                FileUtils.copyToDirectory(file, new File(workingDirectory, "WEB-INF/lib"));
+            }
+        }
+
+        System.out.println("Copying symmetric-server.properties");
+        Properties prop = new Properties();
+        try (InputStream in = new FileInputStream(AppUtils.getSymHome() + "/conf/symmetric-server.properties")) {
+            prop.load(in);
+            prop.remove(ServerConstants.HOST_BIND_NAME);
+            prop.remove(ServerConstants.HTTP_ENABLE);
+            prop.remove(ServerConstants.HTTPS_ENABLE);
+            prop.remove(ServerConstants.HTTPS2_ENABLE);
+            prop.remove(ServerConstants.HTTP_PORT);
+            prop.remove(ServerConstants.HTTPS_PORT);
+            if (StringUtils.isNotBlank(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD))) {
+                ISecurityService service = createSecurityService();
+                String password = SecurityConstants.PREFIX_OBF + service.obfuscate(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD));
+                prop.put(SecurityConstants.SYSPROP_KEYSTORE_PASSWORD, password);
+            }
+            prop.store(new FileOutputStream(new File(workingDirectory, "WEB-INF/classes/symmetric-server.properties")), warFileName);
+        } catch (Exception e) {
+            log.error("Failed to process symmetric-server.properties", e);
+        }
+
+        System.out.println("Building web archive");
         JarBuilder builder = new JarBuilder(workingDirectory, new File(warFileName),
                 new File[] { workingDirectory }, Version.version());
         builder.build();
+        System.out.println("Cleaning up");
         FileUtils.deleteDirectory(workingDirectory);
+
+        System.out.println("Created " + warFileName);
+        System.out.println("\nRemember to:");
+        if (!line.hasOption(OPTION_EXCLUDE_LOG4J)) {
+            System.out.println("- Edit " + warFileName + ":/WEB-INF/classes/log4j2.xml to set the path and filename to the log file");
+        }
+        if (useProperties) {
+            System.out.println("- Edit " + warFileName + ":/WEB-INF/classes/symmetric.properties to set sync.url to match web server");
+        } else {
+            System.out.println("- Set system property for engines directory: -Dsymmetric.engines.dir=/path/to/dir");
+        }
+        if (line.hasOption(OPTION_EXTERNAL_SECURITY)) {
+            System.out.println("- Set system property for security file: -Dsym.keystore.file=/path/to/keystore");
+            System.out.println("- Set system property for cacerts file: -Djavax.net.ssl.trustStore=/path/to/cacerts");
+            System.out.println("- Set system property for REST file: -Dsym.rest.properties.file=/path/to/rest.properties");
+        }
+        if (line.hasOption(OPTION_EXCLUDE_LOG4J)) {
+            System.out.println("- Provide a SLF4J binding JAR for your logging framework");
+        }
+        System.out.println("- Provide JDBC driver JAR for your database");
     }
 
     private void exportSymTables(CommandLine line, List<String> args) throws IOException {

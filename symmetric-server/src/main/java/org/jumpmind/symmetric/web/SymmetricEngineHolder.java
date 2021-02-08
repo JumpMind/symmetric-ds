@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -236,6 +237,12 @@ public class SymmetricEngineHolder {
 
                 } else {
                     log.info("Starting in single-server mode");
+                    if (StringUtils.isBlank(singleServerPropertiesFile)) {
+                        URL singleServerPropertiesURL = getClass().getClassLoader().getResource("/symmetric.properties");
+                        if (singleServerPropertiesURL != null) {
+                            singleServerPropertiesFile = singleServerPropertiesURL.getFile();
+                        }
+                    }
                     enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
                 }
                 

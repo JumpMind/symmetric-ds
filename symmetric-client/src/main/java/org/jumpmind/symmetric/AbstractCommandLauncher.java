@@ -98,6 +98,7 @@ public abstract class AbstractCommandLauncher {
     private static boolean serverPropertiesInitialized = false;
 
     static {
+        System.setProperty(SystemConstants.SYSPROP_LAUNCHER, "true");
         String symHome = AppUtils.getSymHome();
         if (isBlank(System.getProperty("h2.baseDir.disable")) && isBlank(System.getProperty("h2.baseDir"))) {
            System.setProperty("h2.baseDir", symHome + "/db/h2");

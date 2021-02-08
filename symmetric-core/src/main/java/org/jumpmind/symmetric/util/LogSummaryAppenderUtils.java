@@ -30,6 +30,7 @@ import org.jumpmind.util.LogSummaryAppender;
 import org.jumpmind.util.Log4j2Helper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.slf4j.event.Level;
 
 /**
@@ -49,6 +50,7 @@ public class LogSummaryAppenderUtils {
     }
     
     static {
+        SLF4JBridgeHandler.install();
         try {
             Class.forName("org.apache.logging.log4j.core.Appender", false, LogSummaryAppenderUtils.class.getClassLoader());
             // WebLogic log4j is not complete, so don't use it
@@ -72,6 +74,10 @@ public class LogSummaryAppenderUtils {
                 helper.removeAppender("CONSOLE");
             }
 
+            if (!isVerbose && !isNoConsole) {
+                helper.registerConsoleAppender();
+            }
+
             if (isNoLog) {
                 helper.removeAppender("ROLLING");
             } else {
@@ -80,7 +86,7 @@ public class LogSummaryAppenderUtils {
         }
     }
 
-    public static void registerLogSummaryAppender() {
+    public static void initialize() {
         if (helper != null) {
             try {
                 LogSummaryAppender appender = getLogSummaryAppender();

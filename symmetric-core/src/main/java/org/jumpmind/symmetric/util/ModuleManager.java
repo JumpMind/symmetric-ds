@@ -75,7 +75,14 @@ public class ModuleManager {
     private String modulesDir;
 
     private ModuleManager() throws ModuleException {
-        modulesDir = joinDirName(AppUtils.getSymHome(), "lib");
+        String sysModulesDir = System.getProperty(SystemConstants.SYSPROP_MODULES_DIR);
+        if (StringUtils.isNotBlank(sysModulesDir)) {
+            modulesDir = sysModulesDir;
+        } else if ("true".equals(System.getProperty(SystemConstants.SYSPROP_LAUNCHER))) {
+            modulesDir = joinDirName(AppUtils.getSymHome(), "lib");
+        } else {
+            modulesDir = ".";
+        }
         File dir = new File(modulesDir);
         if (!dir.exists()) {
             dir.mkdirs();

@@ -69,6 +69,15 @@ public class Log4j2Helper {
         return appender;
     }
 
+    public void registerConsoleAppender() {
+        if (getAppender("CONSOLE") == null && getAppender("CONSOLE_ERR") == null) {
+            PatternLayout layout = PatternLayout.newBuilder().withPattern("[%X{engineName}] - %c{1} - %m%ex%n").build();
+            Appender appender = ConsoleAppender.newBuilder().setName("CONSOLE").setTarget(ConsoleAppender.Target.SYSTEM_ERR)
+                    .setLayout(layout).build();
+            addAppender(appender);
+        }
+    }
+
     public void registerVerboseConsoleAppender() {
         removeAppender("CONSOLE");
         PatternLayout layout = PatternLayout.newBuilder().withPattern("%d %-5p [%c{2}] [%t] %m%ex%n").build();

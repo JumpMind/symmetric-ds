@@ -94,14 +94,20 @@ apply from: symAssembleDir + '/asciidoc.gradle'
                 }
                 into('doc') { from ("$symAssembleDir/build/doc") }
                 into('lib') {
-                    from configurations.provided { exclude "*animal-sniffer*" }
+                    from configurations.provided {
+                        exclude "*animal-sniffer*"
+                        exclude "slf4j-api*"
+                        exclude "*to-slf4j*"
+                        exclude "*over-slf4j*"
+                    }
                     rename 'symmetric-wrapper(.*).jar', 'symmetric-wrapper.jar'
                 }
                 into('web/WEB-INF/lib') {
                     from project(":symmetric-server").jar
                     from configurations.compile.filter {  a ->
-                                !configurations.provided.contains(a) &&
-                                !project(':symmetric-server').configurations.provided.contains(a)
+                                (!configurations.provided.contains(a) &&
+                                !project(':symmetric-server').configurations.provided.contains(a)) ||
+                                (a.name.contains('slf4j-api') || a.name.contains('to-slf4j') || a.name.contains('over-slf4j'))
                     }
                 }
             }
