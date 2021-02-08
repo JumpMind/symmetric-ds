@@ -216,7 +216,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     "  blocked.sid," + 
                     "  blocked.username," + 
                     "  blocked.status," + 
-                    "  blocked.blocking_session" + 
+                    "  blocked.blocking_session," + 
                     "  sql.last_load_time," + 
                     "  sql.sql_text " + 
                     "from v$session blocked " + 
