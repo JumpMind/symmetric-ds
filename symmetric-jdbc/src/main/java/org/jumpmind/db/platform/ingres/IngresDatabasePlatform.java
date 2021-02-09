@@ -140,7 +140,7 @@ public class IngresDatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (sql.endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
-        return sql + " offset " + offset + " fetch first " + limit + " rows only;";
+        return sql + " offset " + offset + " fetch first " + limit + " rows only";
     }
 
 }

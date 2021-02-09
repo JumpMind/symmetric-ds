@@ -31,7 +31,7 @@ public class Oracle122DatabasePlatform extends OracleDatabasePlatform {
         if (sql.endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
-        return sql + " offset " + offset + " rows fetch next " + limit + " rows only;";
+        return sql + " offset " + offset + " rows fetch next " + limit + " rows only";
     }
 
 }
