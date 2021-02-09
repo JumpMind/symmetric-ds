@@ -164,6 +164,6 @@ public class VoltDbDatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (sql.endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
-        return sql + " limit " + limit + " offset " + offset + ";";
+        return sql + " limit " + limit + " offset " + offset;
     }
 }
