@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.load;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -191,8 +192,9 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                      */
                     protected void handleWinnerForNewerCaptureWins(ISqlTransaction transaction, CsvData csvData) {
                         String tableName = csvData.getAttribute(CsvData.ATTRIBUTE_TABLE_NAME);
+                        Timestamp loadingTs = csvData.getAttribute(CsvData.ATTRIBUTE_CREATE_TIME);
                         List<TriggerHistory> hists = engine.getTriggerRouterService().getActiveTriggerHistories(tableName);
-                        if (hists != null && hists.size() > 0) {
+                        if (hists != null && hists.size() > 0 && loadingTs != null) {
                             TriggerHistory hist = hists.get(0);
                             Data data = new Data(tableName, csvData.getDataEventType(),
                                     csvData.getCsvData(CsvData.ROW_DATA), csvData.getCsvData(CsvData.PK_DATA), hist, 
