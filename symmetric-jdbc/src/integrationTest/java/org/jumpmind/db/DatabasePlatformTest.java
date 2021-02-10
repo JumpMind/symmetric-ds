@@ -47,6 +47,7 @@ import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -357,6 +358,40 @@ public class DatabasePlatformTest {
                        assertTrue("Non-implementing enum platform not defined as type varchar", ddl.contains("varchar") || ddl.contains("VARCHAR"));
                 }
             }
+        }
+    }
+    
+    @Test
+    public void testMassageForLimitOffset() {
+        if (platform.supportsLimitOffset()) {
+            ISqlTemplate template = platform.getSqlTemplate();
+            String insertSql = "insert into \"" + UPPERCASE_TABLE + "\" (\"id\",\"text\") values(null,?)";
+            insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
+            for (char letter = 'a'; letter <= 'z'; letter++) {
+                template.insertWithGeneratedKey(insertSql, "ID", getSequenceName(platform),
+                        new Object[] { String.valueOf(letter) }, new int[] { Types.VARCHAR });
+            }
+            
+            String selectSql = "select \"text\" from \"" + UPPERCASE_TABLE + "\" order by \"id\" asc";
+            
+            String testSql = platform.massageForLimitOffset(selectSql, 5, 0);
+            List<Row> testResult = template.query(testSql);
+            assertNotNull("The result set was null when testing the limit", testResult);
+            assertEquals("The result set wasn't correctly limited when testing the limit", 5, testResult.size());
+            assertEquals("The result set was unnecessarily offset", "a", testResult.get(0).getString("text"));
+            
+            testSql = platform.massageForLimitOffset(selectSql, 30, 5);
+            testResult = template.query(testSql);
+            assertNotNull("The result set was null when testing the offset", testResult);
+            assertEquals("The result set was unnecessarily limited", 21, testResult.size());
+            assertEquals("The result set wasn't correctly offset when testing the offset", "f", testResult.get(0).getString("text"));
+            
+            testSql = platform.massageForLimitOffset(selectSql, 5, 5);
+            testResult = template.query(testSql);
+            assertNotNull("The result set wasn't correctly limited when ", testResult);
+            assertEquals("The result set wasn't correctly limited when testing the limit and offset", 5, testResult.size());
+            assertEquals("The result set wasn't correctly offset when testing the limit and offset", "f",
+                    testResult.get(0).getString("text"));
         }
     }
 }
