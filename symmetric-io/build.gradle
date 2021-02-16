@@ -20,8 +20,7 @@ apply from: symAssembleDir + '/common.gradle'
         }
 
         testCompile project(path: ':symmetric-util', configuration: 'testArtifacts')
-        testCompile project(":symmetric-jdbc")
-        testCompile "com.h2database:h2:$h2Version"
+        testCompile project(path: ':symmetric-jdbc', configuration: 'testArtifacts')
         integrationTestImplementation project(':symmetric-jdbc').sourceSets.integrationTest.output
         integrationTestRuntimeOnly project(':symmetric-jdbc').sourceSets.integrationTest.output
         integrationTestRuntimeOnly project(':symmetric-jdbc').sourceSets.test.output
