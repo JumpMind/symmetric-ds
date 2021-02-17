@@ -1645,7 +1645,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force, verifyInDatabase, activeTriggerHistories);
             }
         } else {
-            log.warn(
+            log.error(
                     "Could not find any database tables matching '{}' in the datasource that is configured",
                     trigger.qualifiedSourceTableName());
 

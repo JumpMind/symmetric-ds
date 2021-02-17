@@ -30,6 +30,8 @@ import org.jumpmind.db.sql.DmlStatement;
 
 public class PostgreSqlDmlStatement extends DmlStatement {
 
+    protected boolean allowIgnoreOnConflict = true;
+
     public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
@@ -62,8 +64,18 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     }
 
     @Override
+    public String getSql(boolean allowIgnoreOnConflict) {
+        this.allowIgnoreOnConflict = allowIgnoreOnConflict;
+        if (allowIgnoreOnConflict) {
+            return sql;
+        } else {
+            return super.buildInsertSql(tableName, keys, columns);
+        }
+    }
+
+    @Override
     public Column[] getMetaData() {
-        if (dmlType == DmlType.INSERT) {
+        if (dmlType == DmlType.INSERT && allowIgnoreOnConflict) {
             return getColumnKeyMetaData();
         } else {
             return super.getMetaData();

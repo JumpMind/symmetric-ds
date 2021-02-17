@@ -163,7 +163,8 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                             }
                         }
                     }
-                    if (isNewError && outgoingBatch.getSqlCode() == ErrorConstants.DEADLOCK_CODE) {
+                    if (isNewError && (outgoingBatch.getSqlCode() == ErrorConstants.DEADLOCK_CODE ||
+                            outgoingBatch.getSqlCode() == ErrorConstants.CONFLICT_CODE)) {
                         suppressError = true;
                     }
                     

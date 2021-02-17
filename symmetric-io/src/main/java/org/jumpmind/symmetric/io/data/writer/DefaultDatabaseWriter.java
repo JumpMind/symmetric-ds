@@ -248,6 +248,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 }
                 prepare();
             }
+            boolean isFindAndThrowException = false;
             try {
                 Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
                 String[] values = (String[]) ArrayUtils.addAll(getRowData(data, CsvData.ROW_DATA),
@@ -258,11 +259,12 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (count > 0) {
                     return LoadStatus.SUCCESS;
                 } else {
+                    isFindAndThrowException = true;
                     findAndThrowInsertException(data, values);
                     return LoadStatus.CONFLICT;
                 }
             } catch (SqlException ex) {
-                if (isRequiresSavePointsInTransaction && !context.getContext().containsKey(TRANSACTION_ABORTED)) {
+                if (isRequiresSavePointsInTransaction && !isFindAndThrowException) {
                     context.put(TRANSACTION_ABORTED, true);
                 }
                 if (getPlatform().getSqlTemplate().isUniqueKeyViolation(ex)) {
@@ -287,14 +289,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             try {
                 getTransaction().execute("savepoint sym");
                 getTransaction().prepare(currentDmlStatement.getSql(false));
+                currentDmlValues = getPlatform().getObjectValues(batch.getBinaryEncoding(), values,
+                        currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
                 getTransaction().addRow(data, currentDmlValues, currentDmlStatement.getTypes());
             } catch (SqlException e) {
                 getTransaction().execute("rollback to savepoint sym");
                 throw e;
             } finally {
                 getTransaction().execute("release savepoint sym");
-                getTransaction().prepare(currentDmlStatement.getSql());
-                context.put(TRANSACTION_ABORTED, false);
+                getTransaction().prepare(currentDmlStatement.getSql(true));
             }
         }
     }

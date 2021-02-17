@@ -1420,8 +1420,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (targetEngine != null && extractedBatch.isFileResource() && targetEngine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                             Node sourceNode = nodeService.findIdentity();
                             Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
-                            if(sourceNode.equals(targetNodeByEngine) || !targetNodeByEngine.equals(targetNode)) {
-                                log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a miss configuration of the sync urls '{}'", 
+                            if ((sourceNode != null && sourceNode.equals(targetNodeByEngine)) || (targetNodeByEngine != null && !targetNodeByEngine.equals(targetNode))) {
+                                log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a mis-configuration of the sync urls '{}'", 
                                         targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
                             } else {
                                 IStagedResource targetResource = targetEngine.getStagingManager().create( 
@@ -2962,7 +2962,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
-                    if (this.routingContext.getChannel().isReloadFlag() && getSymmetricDialect().isInitialLoadTwoPassLob(this.sourceTable)) {
+                    ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
+                    if (this.routingContext.getChannel().isReloadFlag() && symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable)) {
                         this.isLobFirstPass = true;
                     }
 
@@ -2974,11 +2975,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 data = this.cursor.next();
                 if (data == null) {
                     closeCursor();
+                    ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
                     if (isSelfReferencingFk && !this.isFirstRow) {
                         this.selfRefLevel++;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                         this.isFirstRow = true;
-                    } else if (getSymmetricDialect().isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
+                    } else if (symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
                         this.isLobFirstPass = false;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
                     } else {
@@ -3001,11 +3003,20 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         }
         
         public ISymmetricDialect getSymmetricDialect() {
-            return this.isConfiguration ? symmetricDialect : symmetricDialect.getTargetDialect();
+            ISymmetricDialect dialect = null;
+            if (this.isConfiguration || (sourceTable != null && 
+                    sourceTable.getNameLowerCase().startsWith(parameterService.getTablePrefix().toLowerCase() + "_"))) {
+                dialect = symmetricDialect;
+            } else {
+                dialect = symmetricDialect.getTargetDialect();
+            }
+            return dialect;
         }
 
         protected void startNewCursor(final TriggerHistory triggerHistory,
                 final TriggerRouter triggerRouter) {
+            
+            ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
 
             String selectSql = overrideSelectSql;
             if (isSelfReferencingFk) {
@@ -3018,7 +3029,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 if (selfRefLevel == 0) {
                     selectSql += "(" + selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + ") ";
                 } else {
-                    DatabaseInfo info = getSymmetricDialect().getPlatform().getDatabaseInfo();
+                    DatabaseInfo info = symmetricDialectToUse.getPlatform().getDatabaseInfo();
                     String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
                             sourceTable.getName(), info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());                    
                     String refSql= "select " + selfRefChildColumnName + " from " + tableName + 
@@ -3036,14 +3047,14 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
             Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getReloadChannelId());
             
-            if (channel.isReloadFlag() && getSymmetricDialect().isInitialLoadTwoPassLob(this.sourceTable)) {
+            if (channel.isReloadFlag() && symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable)) {
                 channel = new Channel();
                 channel.setContainsBigLob(!this.isLobFirstPass);
-                selectSql = getSymmetricDialect().getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
+                selectSql = symmetricDialectToUse.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
                 log.info("Querying {} pass LOB for table {}: {}", (this.isLobFirstPass ? "first" : "second"), sourceTable.getName(), selectSql);
             }
             
-            String sql = getSymmetricDialect().createInitialLoadSqlFor(
+            String sql = symmetricDialectToUse.createInitialLoadSqlFor(
                     this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable, triggerHistory, channel, selectSql);
 
             for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
@@ -3052,16 +3063,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             
             final String initialLoadSql = sql;
             final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
-            final boolean selectedAsCsv = getSymmetricDialect().getParameterService().is(
+            final boolean selectedAsCsv = symmetricDialectToUse.getParameterService().is(
                     ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
-            final boolean objectValuesWillNeedEscaped = !getSymmetricDialect().getTriggerTemplate()
+            final boolean objectValuesWillNeedEscaped = !symmetricDialectToUse.getTriggerTemplate()
                     .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
-            final boolean[] isColumnPositionUsingTemplate = getSymmetricDialect().getColumnPositionUsingTemplate(sourceTable, triggerHistory);
+            final boolean[] isColumnPositionUsingTemplate = symmetricDialectToUse.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
             final boolean checkRowLength = parameterService.is(ParameterConstants.EXTRACT_CHECK_ROW_SIZE, false);
             final long rowMaxLength = parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000000);
             log.debug(sql);
             
-            this.cursor = getSymmetricDialect().getPlatform().getSqlTemplate().queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
+            this.cursor = symmetricDialectToUse.getPlatform().getSqlTemplate().queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
                 public Data mapRow(Row row) {
                     if (checkRowLength) {
                         // Account for double byte characters and encoding

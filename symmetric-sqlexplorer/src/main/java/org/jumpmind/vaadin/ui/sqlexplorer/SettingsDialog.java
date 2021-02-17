@@ -39,11 +39,15 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbstractLayout;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -82,16 +86,15 @@ public class SettingsDialog extends ResizableWindow {
         super("Settings");
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
-        setWidth(400, Unit.PIXELS);
+        setWidth(600, Unit.PIXELS);
         addComponent(createSettingsLayout(), 1);
         addComponent(createButtonLayout());
     }
 
     protected AbstractLayout createSettingsLayout() {
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSizeFull();
+        GridLayout layout = new GridLayout(2, 9);
+        layout.setWidth(700, Unit.PIXELS);
         layout.setMargin(new MarginInfo(false, true, false, true));
-        layout.addStyleName("v-scrollable");
         FormLayout settingsLayout = new FormLayout();
 
         Settings settings = settingsProvider.get();
@@ -99,9 +102,18 @@ public class SettingsDialog extends ResizableWindow {
 
         rowsToFetchField = new TextField("Max Results");
         rowsToFetchField.setWidth(6, Unit.EM);
+        Label rowsToFetchLabel = new Label();
+        rowsToFetchLabel.addStyleName("v-label-marked");
         binder = new Binder<Integer>();
         binder.forField(rowsToFetchField).withConverter(new StringToIntegerConverter("Could not convert value to Integer"))
-                .withValidator(value -> value != null, "Invalid value").bind(integer -> integer, (integer, value) -> integer = value);
+                .withValidator(value -> value != null, "Invalid value").withValidationStatusHandler(event -> {
+                    rowsToFetchLabel.setValue(event.getMessage().orElse(""));
+                    if (event.isError()) {
+                        rowsToFetchField.addStyleName("v-textfield-error");
+                    } else {
+                        rowsToFetchField.removeStyleName("v-textfield-error");
+                    }
+                }).bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
         settingsLayout.addComponent(rowsToFetchField);
 
@@ -167,7 +179,10 @@ public class SettingsDialog extends ResizableWindow {
         }
         settingsLayout.addComponent(showResultsInNewTabsBox);
 
-        layout.addComponent(settingsLayout);
+        layout.addComponent(settingsLayout, 0, 0, 0, 8);
+        layout.addComponent(rowsToFetchLabel, 1, 0);
+        layout.setComponentAlignment(rowsToFetchLabel, Alignment.MIDDLE_LEFT);
+        
         return layout;
 
     }

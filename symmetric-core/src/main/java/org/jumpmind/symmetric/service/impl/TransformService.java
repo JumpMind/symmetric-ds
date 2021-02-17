@@ -77,6 +77,10 @@ import org.jumpmind.util.FormatUtils;
 
 public class TransformService extends AbstractService implements ITransformService {
 
+    private static final String NODE_FILTER_BSH = "filter = null; if (engine != null && engine.getExtensionService() != null) " +
+            "filter = engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class); " +
+            "if (filter != null) return filter.%s(currentValue); else return currentValue;";
+
     private Map<NodeGroupLink, Map<TransformPoint, List<TransformTableNodeGroupLink>>> transformsCacheByNodeGroupLinkByTransformPoint;
 
     private long lastCacheTimeInMs;
@@ -291,7 +295,7 @@ public class TransformService extends AbstractService implements ITransformServi
             transform.setTransformPoint(TransformPoint.EXTRACT);
             TransformColumn column = new TransformColumn("node_password", "node_password", false);
             column.setTransformType("bsh");
-            column.setTransformExpression("return engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class).onNodeSecurityRender(currentValue);");
+            column.setTransformExpression(String.format(NODE_FILTER_BSH, "onNodeSecurityRender"));
             transform.addTransformColumn(column);
             transform.setNodeGroupLink(nodeGroupLink);
             transforms.add(transform);
@@ -321,7 +325,7 @@ public class TransformService extends AbstractService implements ITransformServi
             transform.setTransformPoint(TransformPoint.LOAD);
             column = new TransformColumn("node_password", "node_password", false);
             column.setTransformType("bsh");
-            column.setTransformExpression("return engine.getExtensionService().getExtensionPoint(org.jumpmind.symmetric.security.INodePasswordFilter.class).onNodeSecuritySave(currentValue);");
+            column.setTransformExpression(String.format(NODE_FILTER_BSH, "onNodeSecuritySave"));
             transform.addTransformColumn(column);
             transform.setNodeGroupLink(nodeGroupLink);
             transforms.add(transform);
