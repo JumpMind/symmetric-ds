@@ -2903,7 +2903,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         protected CsvData selectNext() {
             CsvData data = null;
-            ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
             if (this.currentInitialLoadEvent == null && selectFromTableEventsToSend.size() > 0) {
                 this.currentInitialLoadEvent = selectFromTableEventsToSend.remove(0);
                 TriggerHistory history = this.currentInitialLoadEvent.getTriggerHistory();
@@ -2963,6 +2962,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         }
                     }
 
+                    ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
                     if (this.routingContext.getChannel().isReloadFlag() && symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable)) {
                         this.isLobFirstPass = true;
                     }
@@ -2975,6 +2975,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 data = this.cursor.next();
                 if (data == null) {
                     closeCursor();
+                    ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
                     if (isSelfReferencingFk && !this.isFirstRow) {
                         this.selfRefLevel++;
                         this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
@@ -3003,7 +3004,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
         public ISymmetricDialect getSymmetricDialect() {
             ISymmetricDialect dialect = null;
-            if (this.isConfiguration || sourceTable.getName().toLowerCase().startsWith(parameterService.getTablePrefix().toLowerCase() + "_")) {
+            if (this.isConfiguration || (sourceTable != null && 
+                    sourceTable.getNameLowerCase().startsWith(parameterService.getTablePrefix().toLowerCase() + "_"))) {
                 dialect = symmetricDialect;
             } else {
                 dialect = symmetricDialect.getTargetDialect();
