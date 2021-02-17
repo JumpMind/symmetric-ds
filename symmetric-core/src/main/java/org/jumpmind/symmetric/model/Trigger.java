@@ -61,6 +61,8 @@ public class Trigger implements Serializable {
     private boolean isSourceSchemaWildCarded;
     
     private boolean isSourceCatalogWildCarded;
+    
+    private boolean isSourceTableNameExpanded;
 
     private String sourceTableNameUnescaped;
     
@@ -344,7 +346,15 @@ public class Trigger implements Serializable {
         return isSourceTableNameWildCarded;
     }
     
-    public boolean isSourceCatalogNameWildCarded() {
+    public boolean isSourceTableNameExpanded() {
+		return isSourceTableNameExpanded;
+	}
+
+	public void setSourceTableNameExpanded(boolean isSourceTableNameExpanded) {
+		this.isSourceTableNameExpanded = isSourceTableNameExpanded;
+	}
+
+	public boolean isSourceCatalogNameWildCarded() {
         return isSourceCatalogWildCarded;
     }
 

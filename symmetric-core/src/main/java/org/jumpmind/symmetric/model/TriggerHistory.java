@@ -120,7 +120,7 @@ public class TriggerHistory implements Serializable {
         }
         
         this.lastTriggerBuildReason = reason;
-        this.sourceTableName = trigger.isSourceTableNameWildCarded() ? table.getName() : 
+        this.sourceTableName = (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName() : 
             trigger.getSourceTableNameUnescaped();
         this.columnNames = Table.getCommaDeliminatedColumns(trigger.orderColumnsForTable(table));
         this.sourceSchemaName = trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : 

@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Database;
@@ -56,6 +57,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.config.ITableResolver;
 import org.jumpmind.symmetric.config.ITriggerCreationListener;
 import org.jumpmind.symmetric.config.TriggerFailureListener;
 import org.jumpmind.symmetric.config.TriggerSelector;
@@ -1379,7 +1381,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                             : trigger.getSourceSchemaNameUnescaped(), history.getSourceSchemaName(),
                                     ignoreCase);
                             boolean matchesTable = isEqual(
-                                    trigger.isSourceTableNameWildCarded() ? table.getName()
+                                    (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName()
                                             : trigger.getSourceTableNameUnescaped(), history.getSourceTableName(),
                                     ignoreCase);
                             foundTable |= matchesCatalog && matchesSchema && matchesTable;
@@ -1538,6 +1540,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                                 tables.add(table);
                             }
                         }
+                    } else if (!trigger.getSourceTableName().startsWith(parameterService.getTablePrefix() + "_") 
+                    		&& CollectionUtils.isNotEmpty(extensionService.getExtensionPointList(ITableResolver.class))) {
+                    	for (ITableResolver resolver : extensionService.getExtensionPointList(ITableResolver.class)) {
+                    		resolver.resolve(catalogName, schemaName, tables, sourcePlatform, nodeService, trigger);
+                    	}
                     } else {
                         Table table = sourcePlatform.getTableFromCache(
                                 catalogName, schemaName,
@@ -1545,7 +1552,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         if (table != null) {
                             tables.add(table);
                         }
-                    }                    
+                    }      
                 }                
             }            
             
@@ -1589,7 +1596,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
         for (Trigger trigger : triggersForCurrentNode) {
             if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
-                    (!trigger.isSourceTableNameWildCarded() || !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
+                    (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded() 
+                    		|| !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
                 log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
                 updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories);
                 log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
@@ -1668,7 +1676,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
             if (triggersForCurrentNode.contains(trigger)) {
-                if (!trigger.isSourceTableNameWildCarded()) {
+                if (!trigger.isSourceTableNameWildCarded() && !trigger.isSourceTableNameExpanded()) {
                     for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
                         if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
                             dropTriggers(triggerHistory, sqlBuffer);
@@ -1721,7 +1729,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     trigger.getTriggerId(),
                     trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                     trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
-                    trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
+                    (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName() : trigger.getSourceTableNameUnescaped());
 
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
@@ -1827,7 +1835,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
                         trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                         trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
-                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
+                        (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName() : trigger.getSourceTableNameUnescaped());
             }
             return hist;
         }
@@ -1893,7 +1901,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
                         trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                         trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
-                        trigger.isSourceTableNameWildCarded() ? table.getName() : trigger.getSourceTableNameUnescaped());
+                        trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded() ? table.getName() : trigger.getSourceTableNameUnescaped());
             }
 
             try {

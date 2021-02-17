@@ -1,0 +1,25 @@
+
+==== Expandable Triggers
+
+When a set of tables is repeated for each node and the tables all contain a prefix which groups them together an expandable trigger can be used.  The prefix will be resolved to the external id that the source node replicates with either through a push or pull.
+
+.Variable
+[cols=".^2,2"]
+|===
+
+|$(targetExternalId)|Resolved by looking up all the nodes the source node replicates with and will be replaced with each external id to represent a table.
+
+|===
+
+.Example
+----
+$(targetExternalId)-Item
+
+If there are nodes present with external ids of client1, client2, client3 then this trigger configuration would match the following 3 tables.
+
+client1-Item
+client2-Item
+client3-Item
+
+This reduces configuration if there are for example 10 tables that are repeated for each client then only table trigger configurations would be needed and as new nodes are added (along with their tables) there is no need to add any more configuration.
+----
