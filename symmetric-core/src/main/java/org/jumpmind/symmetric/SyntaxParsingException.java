@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric;
 
-import org.jumpmind.symmetric.SymmetricException;
-
 public class SyntaxParsingException extends SymmetricException {
 
     private static final long serialVersionUID = 1L;
@@ -42,6 +40,7 @@ public class SyntaxParsingException extends SymmetricException {
     }
 
     public SyntaxParsingException(String message, Throwable cause, Object... args) {
-        super(message, cause, args);    }
+        super(message, cause, args);
+    }
 
 }
