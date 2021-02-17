@@ -289,13 +289,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
             try {
                 getTransaction().execute("savepoint sym");
                 getTransaction().prepare(currentDmlStatement.getSql(false));
+                currentDmlValues = getPlatform().getObjectValues(batch.getBinaryEncoding(), values,
+                        currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
                 getTransaction().addRow(data, currentDmlValues, currentDmlStatement.getTypes());
             } catch (SqlException e) {
                 getTransaction().execute("rollback to savepoint sym");
                 throw e;
             } finally {
                 getTransaction().execute("release savepoint sym");
-                getTransaction().prepare(currentDmlStatement.getSql());
+                getTransaction().prepare(currentDmlStatement.getSql(true));
             }
         }
     }
