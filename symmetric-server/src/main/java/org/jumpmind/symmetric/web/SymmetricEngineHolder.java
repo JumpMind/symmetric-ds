@@ -531,7 +531,7 @@ public class SymmetricEngineHolder {
             } else {
                 engineName = groupId + "-" + externalId;
             }
-            engineName = properties.getProperty(ParameterConstants.ENGINE_NAME, engineName);
+            engineName = engineName.replaceAll(" ", "_");
             String engineExt = "";
             int engineNumber = 0;
             while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt
