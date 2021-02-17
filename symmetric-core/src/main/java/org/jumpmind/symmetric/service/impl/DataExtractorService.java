@@ -1420,8 +1420,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                         if (targetEngine != null && extractedBatch.isFileResource() && targetEngine.getParameterService().is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
                             Node sourceNode = nodeService.findIdentity();
                             Node targetNodeByEngine = targetEngine.getNodeService().findIdentity();
-                            if(sourceNode.equals(targetNodeByEngine) || !targetNodeByEngine.equals(targetNode)) {
-                                log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a miss configuration of the sync urls '{}'", 
+                            if ((sourceNode != null && sourceNode.equals(targetNodeByEngine)) || (targetNodeByEngine != null && !targetNodeByEngine.equals(targetNode))) {
+                                log.warn("Target engine (NodeId {}) is the same engine as the current one and differs from the correct target (NodeId {}). This looks like a mis-configuration of the sync urls '{}'", 
                                         targetNodeByEngine.getNodeId(), targetNode.getNodeId(), targetNode.getSyncUrl());
                             } else {
                                 IStagedResource targetResource = targetEngine.getStagingManager().create( 
