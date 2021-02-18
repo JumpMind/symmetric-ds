@@ -655,11 +655,13 @@ public class NodeService extends AbstractService implements INodeService {
         int maxFailedLogins = parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS);
         Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
         NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
-        if (nodeSecurity != null && !nodeId.equals(findIdentityNodeId())
-                && ((nodeSecurity.getNodePassword() != null && !nodeSecurity.getNodePassword().equals("")
-                        && nodeSecurity.getNodePassword().equals(password)) || nodeSecurity.isRegistrationEnabled())
-                && (maxFailedLogins <= 0 || nodeSecurity.getFailedLogins() <= maxFailedLogins) || nodeSecurity.isRegistrationEnabled()) {
-            return true;
+        if (nodeSecurity != null) {
+            if (!nodeId.equals(findIdentityNodeId()) && StringUtils.isNotBlank(nodeSecurity.getNodePassword())
+                    && nodeSecurity.getNodePassword().equals(password)
+                    && (maxFailedLogins <= 0 || nodeSecurity.getFailedLogins() <= maxFailedLogins)
+                    || nodeSecurity.isRegistrationEnabled()) {
+                return true;
+            }
         }
         return false;
     }
