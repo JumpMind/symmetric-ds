@@ -658,7 +658,7 @@ public class NodeService extends AbstractService implements INodeService {
         if (nodeSecurity != null) {
             if (!nodeId.equals(findIdentityNodeId()) && StringUtils.isNotBlank(nodeSecurity.getNodePassword())
                     && nodeSecurity.getNodePassword().equals(password)
-                    && (maxFailedLogins <= 0 || nodeSecurity.getFailedLogins() <= maxFailedLogins)
+                    && (maxFailedLogins <= 0 || nodeSecurity.getFailedLogins() < maxFailedLogins)
                     || nodeSecurity.isRegistrationEnabled()) {
                 return true;
             }
@@ -671,7 +671,7 @@ public class NodeService extends AbstractService implements INodeService {
         if (maxFailedLogins > 0) {
             Map<String, NodeSecurity> nodeSecurities = findAllNodeSecurity(true);
             NodeSecurity nodeSecurity = nodeSecurities.get(nodeId);
-            return nodeSecurity != null && nodeSecurity.getFailedLogins() > maxFailedLogins;
+            return nodeSecurity != null && nodeSecurity.getFailedLogins() >= maxFailedLogins;
         }
         return false;
     }
@@ -1140,17 +1140,20 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void incrementNodeFailedLogins(String nodeId) {
-        if (parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS) >= 0) {
+        int maxFailedAttempts = parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS);
+        if (maxFailedAttempts >= 0) {
             NodeSecurity nodeSecurity = findNodeSecurity(nodeId);
             if (nodeSecurity != null) {
-                nodeSecurity.setFailedLogins(nodeSecurity.getFailedLogins() + 1);
-                updateNodeSecurity(nodeSecurity);
-            }
-    
-            Map<String, NodeSecurity> cache = findAllNodeSecurity(true);
-            NodeSecurity cacheSecurity = cache.get(nodeId);
-            if (cacheSecurity != null) {
-                cacheSecurity.setFailedLogins(nodeSecurity.getFailedLogins());
+                if (nodeSecurity.getFailedLogins() < maxFailedAttempts) {
+                    nodeSecurity.setFailedLogins(nodeSecurity.getFailedLogins() + 1);
+                    updateNodeSecurity(nodeSecurity);
+                    
+                    Map<String, NodeSecurity> cache = findAllNodeSecurity(true);
+                    NodeSecurity cacheSecurity = cache.get(nodeId);
+                    if (cacheSecurity != null) {
+                        cacheSecurity.setFailedLogins(nodeSecurity.getFailedLogins());
+                    }
+                }
             }
         }
     }
