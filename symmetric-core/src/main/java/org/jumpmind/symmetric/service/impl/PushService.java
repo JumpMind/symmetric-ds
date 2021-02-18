@@ -136,10 +136,11 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                                 }
                             }
                         } else {
-                            Node doubleCheckidentity = nodeService.findIdentity(false);
-                            if (doubleCheckidentity != null) {
-                                log.error("Could not find a node security row for '{}'.  A node needs a matching security row in both the local and remote nodes if it is going to authenticate to push data",
-                                    identity.getNodeId());
+                            identity = nodeService.findIdentity(false);
+                            if (identity != null) {
+                                if (nodeService.findNodeSecurity(identity.getNodeId(), false) == null) {
+                                    log.error("Could not find my node security row, which is needed to authenticate as node {}", identity.getNodeId());
+                                }
                             }
                         }
                     }
@@ -232,7 +233,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             if (isRegistrationRequired(ex) && !parameterService.isRegistrationServer() && parameterService.isRemoteNodeRegistrationServer(remote)) {
                 log.info("Removing identity because registration is required");
                 nodeService.deleteIdentity();
-                nodeService.findIdentity(false);
+                nodeService.deleteNodeSecurity(identity.getNodeId());
+                nodeService.deleteNode(identity.getNodeId(), false);
             }
         } finally {
             try {

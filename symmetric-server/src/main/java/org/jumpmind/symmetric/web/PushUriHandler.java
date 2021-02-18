@@ -33,6 +33,7 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IDataLoaderService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 
 /**
@@ -81,6 +82,8 @@ public class PushUriHandler extends AbstractUriHandler {
         try {
             Node sourceNode = nodeService.findNode(sourceNodeId, true);
             dataLoaderService.loadDataFromPush(sourceNode, channelId, inputStream, outputStream);
+        } catch (RegistrationPendingException e) {
+            return WebConstants.SC_SERVICE_BUSY;
         } finally {
             statisticManager.incrementNodesPushed(1);
             statisticManager.incrementTotalNodesPushedTime(System.currentTimeMillis() - ts);
