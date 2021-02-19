@@ -1543,7 +1543,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     } else if (!trigger.getSourceTableName().startsWith(parameterService.getTablePrefix() + "_") 
                     		&& CollectionUtils.isNotEmpty(extensionService.getExtensionPointList(ITableResolver.class))) {
                     	for (ITableResolver resolver : extensionService.getExtensionPointList(ITableResolver.class)) {
-                    		resolver.resolve(catalogName, schemaName, tables, sourcePlatform, nodeService, trigger);
+                    		resolver.resolve(catalogName, schemaName, tables, sourcePlatform, nodeService, trigger, useTableCache);
                     	}
                     } else {
                         Table table = sourcePlatform.getTableFromCache(

@@ -11,5 +11,5 @@ import org.jumpmind.symmetric.service.INodeService;
 public interface ITableResolver extends IExtensionPoint {
 
 	public void resolve(String catalog, String schema, Set<Table> tables, IDatabasePlatform platform, 
-			INodeService nodeService, Trigger trigger);
+			INodeService nodeService, Trigger trigger, boolean useTableCache);
 }
