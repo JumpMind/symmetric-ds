@@ -62,7 +62,6 @@ import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.InvalidRetryException;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
@@ -124,6 +123,7 @@ import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.ITransformService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
+import org.jumpmind.symmetric.service.RegistrationPendingException;
 import org.jumpmind.symmetric.service.RegistrationRequiredException;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
@@ -427,7 +427,8 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 throw new RuntimeException(e);
             }
         } else {
-            throw new SymmetricException("Could not load data because the node is not registered");
+            log.info("Could not load data because the node is not registered");
+            throw new RegistrationPendingException();
         }
     }
     

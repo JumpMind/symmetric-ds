@@ -102,6 +102,8 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for update " + getOrderClause() + " as\n" +
 "                                begin                                                                                                                                                                  \n" +
+"                                  declare @LOCALROWCOUNT int                                                                                   \n" + 
+"                                  set @LOCALROWCOUNT=@@ROWCOUNT                                                                                \n" +
 "                                  set nocount on      \n" +
 "                                  declare @DataRow varchar(16384)                                                                                                                                      \n" +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
@@ -121,7 +123,27 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
 "                                   if ($(hasPrimaryKeysDefined) $(primaryKeysUpdated) ) \n" +
 "                                    begin \n" +
-"                                    declare DeleteDataCursor cursor for                                                                                                                                      \n" +
+"                                     if (@LOCALROWCOUNT = 1)                                                                                  \n" +
+"                                     begin                                                                                                    \n" +
+"                                      declare DataCursor cursor for                                                                                                                                      \n" + 
+"                                    $(if:containsBlobClobColumns)                                                                                                                                      \n" + 
+"                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) inner join deleted on 1=1 where $(syncOnUpdateCondition)\n" + 
+"                                    $(else:containsBlobClobColumns)                                                                                                                                    \n" + 
+"                                       select $(columns), $(oldKeys), $(oldColumns) $(oldKeyNames) $(newKeyNames), $(channelExpression) from inserted inner join deleted on 1=1 where $(syncOnUpdateCondition)                                    \n" + 
+"                                    $(end:containsBlobClobColumns)                                                                                                                                     \n" + 
+"                                       open DataCursor                                                                                                                                                 \n" + 
+"                                       fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                             \n" + 
+"                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" + 
+"                                         insert into $(defaultCatalog)$(defaultSchema)$(prefixName)_data (table_name, event_type, trigger_hist_id, row_data, pk_data, old_data, channel_id, transaction_id, source_node_id, external_data, create_time) \n" + 
+"                                           values('$(targetTableName)','U', $(triggerHistoryId), @DataRow, @OldPk, @OldDataRow, @ChannelId, @txid, @clientname, $(externalSelect), getdate())\n" + 
+"                                         fetch DataCursor into @DataRow, @OldPk, @OldDataRow $(oldKeyVariables) $(newKeyVariables), @ChannelId                                                           \n" + 
+"                                       end                                                                                                                                                             \n" + 
+"                                       close DataCursor                                                                                                                                                \n" + 
+"                                       deallocate cursor DataCursor                                                                                                                                           \n" + 
+"                                   end                                                                                                      \n" +
+"                                     else                                                                                                     \n" +
+"                                     begin                                                                                                    \n" +
+"                                     declare DeleteDataCursor cursor for                                                                                                                                      \n" +
 "                                      select $(oldKeys), $(oldColumns) $(oldKeyNames), $(specialSqlServerSybaseChannelExpression) from deleted where $(syncOnDeleteCondition)                                                                      \n" +
 "                                      open DeleteDataCursor                                                                                                                                                  \n" +
 "                                       fetch DeleteDataCursor into @OldPk, @OldDataRow $(oldKeyVariables), @ChannelId                                                                                          \n" +
@@ -132,12 +154,12 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       end                                                                                                                                                             \n" +
 "                                       close DeleteDataCursor                                                                                                                                                \n" +
 "                                       deallocate cursor DeleteDataCursor                                                                                                                                           \n" +
-"                                    declare InsertDataCursor cursor for                                                                                                                                      \n" +
-"                                    $(if:containsBlobClobColumns)                                                                                                                                      \n" +
+"                                     declare InsertDataCursor cursor for                                                                                                                                      \n" +
+"                                     $(if:containsBlobClobColumns)                                                                                                                                      \n" +
 "                                       select $(columns) $(newKeyNames), $(channelExpression) from inserted inner join $(schemaName)$(tableName) $(origTableAlias) on $(tableNewPrimaryKeyJoin) where $(syncOnInsertCondition)\n" +
-"                                    $(else:containsBlobClobColumns)                                                                                                                                    \n" +
+"                                     $(else:containsBlobClobColumns)                                                                                                                                    \n" +
 "                                       select $(columns) $(newKeyNames), $(channelExpression) from inserted where $(syncOnInsertCondition)                                                                                  \n" +
-"                                    $(end:containsBlobClobColumns)                                                                                                                                     \n" +
+"                                     $(end:containsBlobClobColumns)                                                                                                                                     \n" +
 "                                       open InsertDataCursor                                                                                                                                                 \n" +
 "                                       fetch InsertDataCursor into @DataRow $(newKeyVariables), @ChannelId                                                                                                     \n" +
 "                                       while @@sqlstatus = 0 begin                                                                                                                                  \n" +
@@ -147,7 +169,8 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                       end                                                                                                                                                             \n" +
 "                                       close InsertDataCursor                                                                                                                                                \n" +
 "                                       deallocate cursor InsertDataCursor                                                                                                                                           \n" +
-"                                    end \n" +
+"                                     end \n" +
+"                                    end                                                                                                        \n" +
 "                                   else \n" +
 "                                    begin                                                                                                                           \n" +
 "                                    declare DataCursor cursor for                                                                                                                                      \n" +
