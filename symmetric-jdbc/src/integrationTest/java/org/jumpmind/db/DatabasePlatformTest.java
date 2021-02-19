@@ -373,7 +373,8 @@ public class DatabasePlatformTest {
                 template.update(insertSql, id, String.valueOf(letter));
             }
             
-            String selectSql = "select \"text\" from \"" + UPPERCASE_TABLE + "\" order by \"id\" asc";
+            String delimiter = platform.getDatabaseInfo().getDelimiterToken();
+            String selectSql = "select " + delimiter + "text" + delimiter + " from " + delimiter + UPPERCASE_TABLE + delimiter + " order by " + delimiter + "id" + delimiter + " asc";
             
             String testSql = platform.massageForLimitOffset(selectSql, 5, 0);
             List<Row> testResult = template.query(testSql);
