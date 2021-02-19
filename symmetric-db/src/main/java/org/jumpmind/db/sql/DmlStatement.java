@@ -527,7 +527,7 @@ public class DmlStatement {
                     String value = row.getString(name);
                     newSql = newSql.replaceFirst(regex, value != null && value.toLowerCase().equals("true") ? "1" : "0");
                 } else {
-                    newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
+                    newSql = newSql.replaceFirst(regex, row.getString(name));
                 }
             } else {
                 newSql = newSql.replaceFirst(regex, "null");

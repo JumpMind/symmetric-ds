@@ -365,11 +365,12 @@ public class DatabasePlatformTest {
     public void testMassageForLimitOffset() {
         if (platform.supportsLimitOffset()) {
             ISqlTemplate template = platform.getSqlTemplate();
-            String insertSql = "insert into \"" + UPPERCASE_TABLE + "\" (\"id\",\"text\") values(null,?)";
+            String insertSql = "insert into \"" + UPPERCASE_TABLE + "\" (\"id\",\"text\") values(?,?)";
             insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
+            int id = 0;
             for (char letter = 'a'; letter <= 'z'; letter++) {
-                template.insertWithGeneratedKey(insertSql, "ID", getSequenceName(platform),
-                        new Object[] { String.valueOf(letter) }, new int[] { Types.VARCHAR });
+                id++;
+                template.update(insertSql, id, String.valueOf(letter));
             }
             
             String selectSql = "select \"text\" from \"" + UPPERCASE_TABLE + "\" order by \"id\" asc";
