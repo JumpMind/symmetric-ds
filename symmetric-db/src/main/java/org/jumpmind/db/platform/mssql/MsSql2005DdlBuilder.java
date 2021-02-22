@@ -29,6 +29,7 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     
     public MsSql2005DdlBuilder() {
+        super();
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
     }
 
