@@ -30,11 +30,6 @@ public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     
     public MsSql2005DdlBuilder() {
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
-        
-        databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
-        databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
-        
     }
 
     protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
