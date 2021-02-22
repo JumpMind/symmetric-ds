@@ -39,6 +39,7 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlBuilder;
@@ -47,6 +48,7 @@ import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlScript;
 import org.junit.Before;
@@ -365,12 +367,32 @@ public class DatabasePlatformTest {
     public void testMassageForLimitOffset() {
         if (platform.supportsLimitOffset()) {
             ISqlTemplate template = platform.getSqlTemplate();
-            String insertSql = "insert into \"" + UPPERCASE_TABLE + "\" (\"id\",\"text\") values(?,?)";
-            insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
-            int id = 0;
-            for (char letter = 'a'; letter <= 'z'; letter++) {
-                id++;
-                template.update(insertSql, id, String.valueOf(letter));
+            ISqlTransaction transaction = null;
+            try {
+                transaction = template.startSqlTransaction();
+                Table table = platform.getTableFromCache(UPPERCASE_TABLE, true);
+                DatabaseInfo dbInfo = platform.getDatabaseInfo();
+                String quote = dbInfo.getDelimiterToken();
+                String catalogSeparator = dbInfo.getCatalogSeparator();
+                String schemaSeparator = dbInfo.getSchemaSeparator();
+                transaction.allowInsertIntoAutoIncrementColumns(true, table, quote, catalogSeparator, schemaSeparator);
+                String insertSql = "insert into \"" + UPPERCASE_TABLE + "\" (\"id\",\"text\") values(?,?)";
+                insertSql = insertSql.replaceAll("\"", platform.getDatabaseInfo().getDelimiterToken());
+                int id = 0;
+                for (char letter = 'a'; letter <= 'z'; letter++) {
+                    id++;
+                    template.update(insertSql, id, String.valueOf(letter));
+                }
+                transaction.commit();
+            } catch(Throwable e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new RuntimeException(e);
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
+                }
             }
             
             String delimiter = platform.getDatabaseInfo().getDelimiterToken();
