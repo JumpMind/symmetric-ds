@@ -381,7 +381,7 @@ public class DatabasePlatformTest {
                 int id = 0;
                 for (char letter = 'a'; letter <= 'z'; letter++) {
                     id++;
-                    template.update(insertSql, id, String.valueOf(letter));
+                    transaction.prepareAndExecute(insertSql, id, String.valueOf(letter));
                 }
                 transaction.commit();
             } catch(Throwable e) {
