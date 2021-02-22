@@ -55,6 +55,8 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
     
     public static final String TRANSACTION_ABORTED = "DatabaseWriter.TransactionAborted";
     
+    public static final String CONFLICT_IGNORE = "DatabaseWriter.ConflictIgnore";
+    
     public static enum LoadStatus {
         SUCCESS, CONFLICT
     };

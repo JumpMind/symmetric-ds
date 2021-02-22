@@ -886,6 +886,11 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 batchId, nodeId);
     }
 
+    public IncomingError getIncomingError(long batchId, String nodeId, long rowNumber) {
+        return sqlTemplate.queryForObject(getSql("selectIncomingErrorSql") + " and failed_row_number = ?",
+                new IncomingErrorMapper(), batchId, nodeId, rowNumber);
+    }
+
     public IncomingError getCurrentIncomingError(long batchId, String nodeId) {
         return sqlTemplate.queryForObject(getSql("selectCurrentIncomingErrorSql"),
                 new IncomingErrorMapper(), batchId, nodeId);

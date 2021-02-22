@@ -72,6 +72,8 @@ public interface IDataLoaderService {
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 
+    public IncomingError getIncomingError(long batchId, String nodeId, long rowNumber);
+    
     public IncomingError getCurrentIncomingError(long batchId, String nodeId);
     
     public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError);

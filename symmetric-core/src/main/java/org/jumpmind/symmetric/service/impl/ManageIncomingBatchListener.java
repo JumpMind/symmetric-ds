@@ -46,6 +46,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.ProtocolException;
+import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
 import org.jumpmind.symmetric.io.data.writer.ConflictException;
 import org.jumpmind.symmetric.io.data.writer.DefaultDatabaseWriter;
@@ -182,7 +183,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         try {
             ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
             if (transaction != null) {
-                symmetricDialect.enableSyncTriggers(transaction);
+                if (!Boolean.TRUE.equals(context.get(AbstractDatabaseWriter.TRANSACTION_ABORTED))) {
+                    symmetricDialect.enableSyncTriggers(transaction);
+                }
             }
         } catch (Exception ex) {
             log.error("", ex);
@@ -292,6 +295,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 }
     
                 ISqlTransaction transaction = context.findSymmetricTransaction(engine.getTablePrefix());
+                if (Boolean.TRUE.equals(context.get(AbstractDatabaseWriter.TRANSACTION_ABORTED))) {
+                    transaction = null;
+                }
     
                 if (currentBatch.getStatus() == Status.ER) {
                     if (context.getTable() != null && context.getData() != null) {
@@ -319,6 +325,9 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                                     error.setConflictId(conflict.getConflictId());
                                 }
                             }
+                            if (context.get(AbstractDatabaseWriter.CONFLICT_IGNORE) != null) {
+                                error.setResolveIgnore(true);
+                            }
                             if (transaction != null) {
                                 dataLoaderService.insertIncomingError(transaction, error);
                             } else {
@@ -329,10 +338,18 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                             if (transaction != null) {
                                 transaction.rollback();
                             }
+                            if (context.get(AbstractDatabaseWriter.CONFLICT_IGNORE) != null) {
+                                IncomingError error = dataLoaderService.getIncomingError(currentBatch.getBatchId(), currentBatch.getNodeId(), 
+                                        currentBatch.getFailedRowNumber());
+                                if (error != null) {
+                                    error.setResolveIgnore(true);
+                                    dataLoaderService.updateIncomingError(error);
+                                }
+                            }
                         }
                     }
                 }
-    
+
                 if (transaction != null) {
                     if (incomingBatchService.isRecordOkBatchesEnabled()
                             || this.currentBatch.isRetry()) {
