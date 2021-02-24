@@ -91,7 +91,10 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return !column.isOfBinaryType();
+        return (!column.isOfBinaryType()) &&
+                column.getJdbcTypeCode() != Types.CLOB &&
+                column.getJdbcTypeCode() != Types.LONGVARCHAR &&
+                column.getJdbcTypeCode() != Types.LONGNVARCHAR;
     }
 
     @Override
