@@ -608,6 +608,10 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         try {
             if (useSavepoints && isAborted) {
                 transaction = platform.getSqlTemplate().startSqlTransaction(true);
+                transaction.prepareAndExecute("select set_config('symmetric.triggers_disabled', '1', false)");
+                String sourceNodeId = (String) databaseWriter.getContext().get("sourceNodeId");
+                transaction.prepareAndExecute("select set_config('symmetric.node_disabled', '" +
+                        (sourceNodeId == null ? "" : sourceNodeId) + "', false)");
             } else {
                 transaction = databaseWriter.getTransaction();
                 if (useSavepoints) {
@@ -623,6 +627,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         } finally {
             if (useSavepoints) {
                 if (isAborted) {
+                    transaction.prepareAndExecute("select set_config('symmetric.triggers_disabled', '', false)");
+                    transaction.prepareAndExecute("select set_config('symmetric.node_disabled', '', false)");
                     transaction.close();
                 } else {
                     transaction.execute("release savepoint sym");
