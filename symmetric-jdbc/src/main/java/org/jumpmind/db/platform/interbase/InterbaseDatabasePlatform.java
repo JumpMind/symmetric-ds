@@ -111,6 +111,6 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         if (sql.endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
-        return sql + " rows " + offset + " to " + (offset + limit - 1);
+        return sql + " rows " + (offset + 1) + " to " + (offset + limit);
     }
 }
