@@ -21,7 +21,7 @@ apply from: symAssembleDir + '/common.gradle'
         testCompile "org.hsqldb:hsqldb:$hsqldbVersion"
         testCompile "org.xerial:sqlite-jdbc:$sqliteVersion"
         testCompile "jdbc.db2:db2jcc:9.7"
-        testCompile "org.firebirdsql.jdbc:jaybird-jdk18:3.0.8"
+        testCompile "org.firebirdsql.jdbc:jaybird:4.0.2.java8"
         testCompile "javax.resource:connector-api:1.5"
         testCompile "jdbc.informix:ifxjdbc:1.0"
         testCompile "jdbc.informix:ifxlang:1.0"
