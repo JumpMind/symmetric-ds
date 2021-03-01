@@ -222,6 +222,17 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         }
         return true;
     }
+    
+    protected boolean uniqueKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable, Column[] uniqueColumns) {
+        if (!databaseWriter.getPlatform(targetTable.getName()).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
+            for (Column column : uniqueColumns) {
+                if (column.isAutoIncrement()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     protected boolean isCaptureTimeNewerForUk(AbstractDatabaseWriter writer, CsvData data) {
         DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
@@ -263,7 +274,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
                             databaseWriter.getWriterSettings().getTextColumnExpression());
                     count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), values);                    
-                } else {
+                } else if (uniqueKeyUpdateAllowed(databaseWriter, targetTable, uniqueKeyColumns)) {
                     // make sure we lock the row that is in conflict to prevent a race with other data loading
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
