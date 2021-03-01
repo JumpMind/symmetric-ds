@@ -143,7 +143,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
             String order = sql.substring(orderIndex);
             String innerSql = sql.substring(0, orderIndex - 1);
             innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
-            return "select from (" + innerSql + ") " +
+            return "select * from (" + innerSql + ") " +
                    "where RowNum between " + (offset + 1) + " and " + (offset + limit);
         }
         return sql;

@@ -91,7 +91,10 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
     
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return !column.isOfBinaryType();
+        return (!column.isOfBinaryType()) &&
+                column.getJdbcTypeCode() != Types.CLOB &&
+                column.getJdbcTypeCode() != Types.LONGVARCHAR &&
+                column.getJdbcTypeCode() != Types.LONGNVARCHAR;
     }
 
     @Override
@@ -139,7 +142,7 @@ public class DerbyDatabasePlatform extends AbstractJdbcDatabasePlatform {
             String order = sql.substring(orderIndex);
             String innerSql = sql.substring(0, orderIndex - 1);
             innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
-            return "select from (" + innerSql + ") " +
+            return "select * from (" + innerSql + ") " +
                    "where RowNum between " + (offset + 1) + " and " + (offset + limit);
         }
         return sql;

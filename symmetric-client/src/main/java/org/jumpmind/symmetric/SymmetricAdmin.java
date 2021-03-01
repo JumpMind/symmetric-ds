@@ -133,7 +133,7 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
     
     private static final String CMD_RESTORE_FILE_CONFIGURATION = "restore-config";
 
-    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES, CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION };
+    private static final String[] NO_ENGINE_REQUIRED = { CMD_EXPORT_PROPERTIES, CMD_ENCRYPT_TEXT, CMD_OBFUSCATE_TEXT, CMD_LIST_ENGINES, CMD_MODULE, CMD_BACKUP_FILE_CONFIGURATION, CMD_RESTORE_FILE_CONFIGURATION, CMD_CREATE_WAR };
 
     private static final String OPTION_NODE = "node";
 
@@ -683,7 +683,10 @@ public class SymmetricAdmin extends AbstractCommandLauncher {
         final File workingDirectory = new File(AppUtils.getSymHome() + "/.war");
         FileUtils.deleteDirectory(workingDirectory);
         FileUtils.copyDirectory(new File(AppUtils.getSymHome() + "/web"), workingDirectory);
-        FileUtils.copyToDirectory(new File(AppUtils.getSymHome() + "/conf/instance.uuid"), new File(workingDirectory, "WEB-INF/classes"));
+        File instanceIdFile = new File(AppUtils.getSymHome() + "/conf/instance.uuid");
+        if (instanceIdFile.canRead()) {
+            FileUtils.copyToDirectory(instanceIdFile, new File(workingDirectory, "WEB-INF/classes"));
+        }
 
         boolean useProperties = (line.hasOption(OPTION_PROPERTIES_FILE) || line.hasOption(OPTION_ENGINE)) &&
                 propertiesFile != null && propertiesFile.exists();

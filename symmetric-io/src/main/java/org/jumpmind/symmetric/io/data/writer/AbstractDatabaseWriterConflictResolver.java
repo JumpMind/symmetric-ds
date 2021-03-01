@@ -67,6 +67,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                                 performChainedFallbackForInsert(writer, data, conflict);
                             } else if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();                              
+                            } else {
+                                ignoreRow(writer);
                             }
                             break;
                         case IGNORE:
@@ -76,7 +78,6 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                         default:
                             attemptToResolve(resolvedData, data, writer, conflict);
                             break;
-
                     }
                 }
                 break;
@@ -103,6 +104,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                                 performChainedFallbackForUpdate(writer, data, conflict);
                             } else if (!conflict.isResolveRowOnly()) {
                                 throw new IgnoreBatchException();                              
+                            } else {
+                                ignoreRow(writer);
                             }
                             break;
                         case IGNORE:
@@ -150,6 +153,8 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             if (status == LoadStatus.CONFLICT && writer.getContext().getLastError() != null) {
                                 status = performChainedFallbackForDelete(writer, data, conflict);
                             }
+                        } else {
+                            ignoreRow(writer);
                         }
 
                         if (status == LoadStatus.CONFLICT) {
@@ -181,6 +186,7 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
 
         writer.getContext().setLastError(null);
         logConflictResolution(conflict, data, writer, resolvedData, lineNumber);
+        checkIfTransactionAborted(writer, data, conflict);
     }
 
     protected void performChainedFallbackForInsert(AbstractDatabaseWriter writer, CsvData data, Conflict conflict) {
@@ -378,6 +384,12 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
             }
         } finally {
             afterResolutionAttempt(csvData, conflict);
+        }
+    }
+
+    protected void ignoreRow(AbstractDatabaseWriter writer) {
+        if (Boolean.TRUE.equals(writer.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED))) {
+            writer.getContext().put(AbstractDatabaseWriter.CONFLICT_IGNORE, true);
         }
     }
 

@@ -1137,7 +1137,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertTrue("Expected the testFlag static variable to have been set to true", testFlag);
     }
     
-    @Test
+    @Test(timeout = 900000)
     public void test30AutoConfigureTablesAfterAlreadyCreated() {
         logTestRunning();
         testAutoConfigureTablesAfterAlreadyCreated(getServer());
@@ -1146,11 +1146,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     
     public static void main(String[] args) {
         SimpleIntegrationTest sit = new SimpleIntegrationTest();
-        sit.getServer().getDatabasePlatform().readFromDatabase(new Table(null, null, "SYM_CONFLICT"));
-        sit.test30AutoConfigureTablesAfterAlreadyCreated();
+        sit.test01CreateServer();
+        sit.test02RegisterClientWithRoot();
+        sit.test31ReloadMissingForeignKeys();
     }
     
-    @Test
+    @Test(timeout = 900000)
     public void test31ReloadMissingForeignKeys() {
         if (getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.VOLTDB) ||
                 getClient().getSymmetricDialect().getName().equalsIgnoreCase(DatabaseNamesConstants.REDSHIFT) ||
@@ -1179,7 +1180,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Tables were altered when they should not have been", false, dialect.createOrAlterTablesIfNecessary());
     }   
     
-    @Test
+    @Test(timeout = 900000)
     public void test99Shutdown() throws Exception {
         logTestRunning();
         getClient().destroy();

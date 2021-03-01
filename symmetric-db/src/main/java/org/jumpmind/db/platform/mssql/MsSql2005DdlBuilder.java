@@ -29,13 +29,12 @@ import org.jumpmind.db.platform.DatabaseNamesConstants;
 public class MsSql2005DdlBuilder extends MsSql2000DdlBuilder {
     
     public MsSql2005DdlBuilder() {
+        super();
         this.databaseName = DatabaseNamesConstants.MSSQL2005;
         
         databaseInfo.addNativeTypeMapping(Types.BLOB, "IMAGE", Types.BLOB);
-        databaseInfo.addNativeTypeMapping(Types.CLOB, "CLOB", Types.CLOB);
         databaseInfo.addNativeTypeMapping(Types.SQLXML, "XML", Types.SQLXML);
-        
-    }
+            }
 
     protected void dropDefaultConstraint(String tableName, String columnName, StringBuilder ddl) {         
         println(              "BEGIN                                                                                        ", ddl);

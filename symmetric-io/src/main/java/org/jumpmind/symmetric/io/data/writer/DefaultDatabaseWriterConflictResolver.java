@@ -222,6 +222,17 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         }
         return true;
     }
+    
+    protected boolean uniqueKeyUpdateAllowed(DynamicDefaultDatabaseWriter databaseWriter, Table targetTable, Column[] uniqueColumns) {
+        if (!databaseWriter.getPlatform(targetTable.getName()).getDatabaseInfo().isAutoIncrementUpdateAllowed()) {
+            for (Column column : uniqueColumns) {
+                if (column.isAutoIncrement()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     protected boolean isCaptureTimeNewerForUk(AbstractDatabaseWriter writer, CsvData data) {
         DynamicDefaultDatabaseWriter databaseWriter = (DynamicDefaultDatabaseWriter) writer;
@@ -263,7 +274,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
                             databaseWriter.getWriterSettings().getTextColumnExpression());
                     count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), values);                    
-                } else {
+                } else if (uniqueKeyUpdateAllowed(databaseWriter, targetTable, uniqueKeyColumns)) {
                     // make sure we lock the row that is in conflict to prevent a race with other data loading
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
@@ -608,6 +619,10 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         try {
             if (useSavepoints && isAborted) {
                 transaction = platform.getSqlTemplate().startSqlTransaction(true);
+                transaction.prepareAndExecute("select set_config('symmetric.triggers_disabled', '1', false)");
+                String sourceNodeId = (String) databaseWriter.getContext().get("sourceNodeId");
+                transaction.prepareAndExecute("select set_config('symmetric.node_disabled', '" +
+                        (sourceNodeId == null ? "" : sourceNodeId) + "', false)");
             } else {
                 transaction = databaseWriter.getTransaction();
                 if (useSavepoints) {
@@ -623,6 +638,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         } finally {
             if (useSavepoints) {
                 if (isAborted) {
+                    transaction.prepareAndExecute("select set_config('symmetric.triggers_disabled', '', false)");
+                    transaction.prepareAndExecute("select set_config('symmetric.node_disabled', '', false)");
                     transaction.close();
                 } else {
                     transaction.execute("release savepoint sym");

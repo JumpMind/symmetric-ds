@@ -43,6 +43,7 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
+import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.BigQueryDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.CassandraDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.Conflict;
@@ -163,8 +164,11 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
 
                     @Override
                     protected void afterResolutionAttempt(CsvData csvData, Conflict conflict) {
+                        DynamicDefaultDatabaseWriter writer = transformWriter.getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
+                        if (Boolean.TRUE.equals(writer.getContext().get(AbstractDatabaseWriter.TRANSACTION_ABORTED))) {
+                            return;
+                        }
                         if (conflict.getPingBack() == PingBack.SINGLE_ROW) {
-                            DynamicDefaultDatabaseWriter writer = transformWriter.getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             ISqlTransaction transaction = writer.getTransaction();
                             if (transaction != null) {
                                 symmetricDialect.disableSyncTriggers(transaction, sourceNodeId);
@@ -173,7 +177,6 @@ public class DefaultDataLoaderFactory extends AbstractDataLoaderFactory implemen
                         if (conflict.getResolveType() == ResolveConflict.NEWER_WINS &&
                                 conflict.getDetectType() != DetectConflict.USE_TIMESTAMP &&
                                 conflict.getDetectType() != DetectConflict.USE_VERSION) {
-                            DynamicDefaultDatabaseWriter writer = transformWriter.getNestedWriterOfType(DynamicDefaultDatabaseWriter.class);
                             Boolean isWinner = (Boolean) writer.getContext().get(DatabaseConstants.IS_CONFLICT_WINNER);
                             if (isWinner != null && isWinner == true) {
                                 writer.getContext().remove(DatabaseConstants.IS_CONFLICT_WINNER);

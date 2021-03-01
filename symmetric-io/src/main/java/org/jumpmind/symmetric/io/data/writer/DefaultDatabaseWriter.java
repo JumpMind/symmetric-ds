@@ -234,6 +234,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             if (isRequiresSavePointsInTransaction && conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                 statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
+                this.currentDmlStatement = null;
                 return LoadStatus.SUCCESS;
             }
 
@@ -307,6 +308,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             if (isRequiresSavePointsInTransaction && conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                 statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
+                this.currentDmlStatement = null;
                 return LoadStatus.SUCCESS;
             }
 
@@ -439,6 +441,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             if (isRequiresSavePointsInTransaction && conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                 statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
+                this.currentDmlStatement = null;
                 return LoadStatus.SUCCESS;
             }
 

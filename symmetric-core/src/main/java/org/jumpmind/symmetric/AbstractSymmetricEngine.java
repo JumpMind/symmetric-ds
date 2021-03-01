@@ -537,7 +537,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         if (node == null) {
             buildTablesFromDdlUtilXmlIfProvided();
             loadFromScriptIfProvided();
+            parameterService.setDatabaseHasBeenInitialized(true);
             parameterService.rereadParameters();
+            extensionService.refresh();
         }
 
         node = nodeService.findIdentity();
