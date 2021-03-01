@@ -162,9 +162,6 @@ public class ClusterService extends AbstractService implements IClusterService {
             instanceIdFile = defaultFile;
         } else {
             instanceIdURL = getClass().getClassLoader().getResource("/instance.uuid");
-            if (instanceIdURL == null) {
-                instanceIdFile = defaultFile;
-            }
         }
 
         if (instanceIdFile != null) {
@@ -194,12 +191,12 @@ public class ClusterService extends AbstractService implements IClusterService {
             if (newInstanceId == null) {
                 newInstanceId = generateInstanceId(AppUtils.getHostName());
             }
+            instanceId = newInstanceId;
+            isUpgradedInstanceId = true;
             if (instanceIdFile != null) {
                 try {            
                     instanceIdFile.getParentFile().mkdirs();
                     IOUtils.write(newInstanceId, new FileOutputStream(instanceIdFile), Charset.defaultCharset());
-                    instanceId = newInstanceId;
-                    isUpgradedInstanceId = true;
                 } catch (Exception ex) {
                     throw new SymmetricException("Failed to save file '" + instanceIdFile + "' Please correct and restart this node.", ex);
                 }
