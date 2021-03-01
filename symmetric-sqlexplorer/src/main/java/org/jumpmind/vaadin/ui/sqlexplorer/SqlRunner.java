@@ -321,6 +321,9 @@ public class SqlRunner extends Thread {
                                 }
                                 hasResults = stmt.getMoreResults();
                                 updateCount = stmt.getUpdateCount();
+                                if (db.getPlatform().getName().equals(DatabaseNamesConstants.FIREBIRD) && !hasResults && updateCount == 0) {
+                                    updateCount = -1;
+                                }
                             } finally {
                                 JdbcSqlTemplate.close(rs);
                                 firstTimeThrough = false;

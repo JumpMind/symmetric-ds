@@ -113,6 +113,8 @@ public class TabularResultLayout extends VerticalLayout {
     String sql;
 
     ResultSet rs;
+    
+    ResultSetMetaData meta;
 
     IDb db;
 
@@ -144,6 +146,7 @@ public class TabularResultLayout extends VerticalLayout {
         this.showSql = showSql;
         this.db = db;
         this.rs = rs;
+        this.meta = rs.getMetaData();
         this.listener = listener;
         this.user = user;
         this.settings = settings;
@@ -171,7 +174,6 @@ public class TabularResultLayout extends VerticalLayout {
             grid.setSizeFull();
             
             columnNameMap = new HashMap<Integer, String>();
-            ResultSetMetaData meta = rs.getMetaData();
             for (int i = 0; i < meta.getColumnCount(); i++) {
                 String realColumnName = meta.getColumnName(i + 1);
                 String columnName = realColumnName;
