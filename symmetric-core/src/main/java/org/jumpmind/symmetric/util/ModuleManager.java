@@ -304,7 +304,7 @@ public class ModuleManager {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(EXT_PROPERTIES);
+                return name.toLowerCase().endsWith(EXT_PROPERTIES) && modules.containsKey(name.substring(0, name.indexOf(".")));
             }
         };
         return dir.list(filter);
