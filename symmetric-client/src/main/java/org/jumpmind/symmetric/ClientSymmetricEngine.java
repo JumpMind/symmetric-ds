@@ -173,7 +173,12 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     protected void setDeploymentSubTypeByProperties(Properties properties) {
             if (properties != null) {
                 String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-            setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
+                
+                setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
+                boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
+                if (isLogBased) {
+                	setDeploymentSubType(Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED);
+                }
             }
     }
 
