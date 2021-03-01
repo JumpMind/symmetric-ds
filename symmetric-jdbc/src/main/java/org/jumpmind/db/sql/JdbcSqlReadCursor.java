@@ -140,7 +140,9 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
                 if (value != null) {
                     return value;
                 }
-            } 
+            }
+            JdbcSqlTemplate.close(rs);
+            rs = null;
             return null;
         } catch (SQLException ex) {
             throw sqlTemplate.translate(ex);
