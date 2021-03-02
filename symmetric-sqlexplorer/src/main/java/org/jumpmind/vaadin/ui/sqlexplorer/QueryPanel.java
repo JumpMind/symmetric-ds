@@ -63,6 +63,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
@@ -309,8 +310,11 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
             public void handleAction(Object sender, Object target) {
                 if (target instanceof Grid<?>) {
                     Grid<?> table = (Grid<?>) target;
-                    TabularResultLayout layout = (TabularResultLayout) table.getParent();
-                    reExecute(layout.getSql());
+                    HasComponents parent = table.getParent();
+                    if (parent instanceof TabularResultLayout) {
+                        TabularResultLayout layout = (TabularResultLayout) parent;
+                        reExecute(layout.getSql());
+                    }
                 } else if (target instanceof AceEditor) {
                     if (executeAtCursorButtonValue) {
                         if (execute(false) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
