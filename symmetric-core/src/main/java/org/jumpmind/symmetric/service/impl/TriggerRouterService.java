@@ -1971,6 +1971,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             String triggerSuffix2 = FormatUtils.replaceCharsToShortenName(trigger.getTriggerId());
             if (trigger.isSourceTableNameWildCarded()) {
                 triggerSuffix2 = FormatUtils.replaceCharsToShortenName(table.getName());
+            } else if (trigger.isSourceTableNameExpanded()) {
+            	triggerSuffix2 = FormatUtils.replaceCharsToShortenName(table.getName());
             }
             String triggerSuffix3 = FormatUtils.replaceCharsToShortenName("_"
                     + parameterService.getNodeGroupId());
