@@ -550,7 +550,8 @@ public class TransformService extends AbstractService implements ITransformServi
     public static class TransformTableNodeGroupLink extends TransformTable {
 
         protected NodeGroupLink nodeGroupLink;
-
+        protected boolean bound;
+        
         public void setNodeGroupLink(NodeGroupLink nodeGroupLink) {
             this.nodeGroupLink = nodeGroupLink;
         }
@@ -558,5 +559,15 @@ public class TransformService extends AbstractService implements ITransformServi
         public NodeGroupLink getNodeGroupLink() {
             return nodeGroupLink;
         }
+
+		public boolean isBound() {
+			return bound;
+		}
+
+		public void setBound(boolean bound) {
+			this.bound = bound;
+		}
+        
+        
     }
 }
