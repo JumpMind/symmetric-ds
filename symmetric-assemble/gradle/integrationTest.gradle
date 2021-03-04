@@ -50,7 +50,7 @@ task integrationTest(type: Test) {
     // The task requires us to define where both our classes and classpath reside,
     // which we can find from the SourceSet we defined previously.
 	
-    testClassesDir = sourceSets.integrationTest.output.classesDir
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 	
     // We must define the directories in which our test reports are written
@@ -59,8 +59,8 @@ task integrationTest(type: Test) {
     binResultsDir = file("$buildDir/integration-test-results/binary/integrationTest")
 	
     reports {
-        html.destination = "$buildDir/reports/integration-test"
-        junitXml.destination = "$buildDir/integration-test-results"
+        html.destination = file("$buildDir/reports/integration-test")
+        junitXml.destination = file("$buildDir/integration-test-results")
     }
 	
     // As we want our new task to execute after the unit tests,

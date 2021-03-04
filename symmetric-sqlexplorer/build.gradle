@@ -11,7 +11,7 @@ buildscript {
     dependencies { 
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'     
-        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.2.5'    
+        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:1.4.1'    
     }    
 }
 
@@ -24,13 +24,14 @@ apply plugin: 'propdeps-eclipse'
 configurations { deployerJars }
 
 vaadin.version = vaadinVersion
-vaadin.manageDependencies = false
+vaadin.manageDependencies = true
 vaadin.manageRepositories = false
 vaadin.logToConsole = true
 vaadinSourcesJar.enabled=false
 vaadinJavadocJar.enabled=false
 vaadin.push = true
 vaadinCompile.gwtSdkFirstInClasspath=false
+    
 artifacts {
    archives file("$buildDir/libs/${jar.baseName}-${jar.version}.${jar.extension}")
 }
