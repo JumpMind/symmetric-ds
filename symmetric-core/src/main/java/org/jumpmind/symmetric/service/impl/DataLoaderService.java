@@ -404,7 +404,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     public void loadDataFromPush(Node sourceNode, String queue, InputStream in, OutputStream out)
             throws IOException {
         Node local = nodeService.findIdentity();
-        if (local != null) {
+        if (local != null && local.getNodeId() != null && sourceNode != null && sourceNode.getNodeId() != null) {
             ProcessInfo transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(sourceNode
                     .getNodeId(), queue, local.getNodeId(), PUSH_HANDLER_TRANSFER));
             try {
