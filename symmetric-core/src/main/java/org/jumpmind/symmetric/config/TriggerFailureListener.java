@@ -41,17 +41,17 @@ public class TriggerFailureListener extends TriggerCreationAdapter implements IB
     }
 
     @Override
-    public void triggerCreated(Trigger trigger, TriggerHistory history) {
+    public void triggerCreated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory history) {
         failures.remove(trigger);
     }
 
     @Override
-    public void triggerInactivated(Trigger trigger, TriggerHistory oldHistory) {
+    public void triggerInactivated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory oldHistory) {
         this.failures.remove(trigger);
     }
 
     @Override
-    public void triggerFailed(Trigger trigger, Exception ex) {
+    public void triggerFailed(int triggersToSync, int triggersSynced, Trigger trigger, Exception ex) {
         this.failures.put(trigger, ex);
     }
 

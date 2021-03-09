@@ -31,16 +31,25 @@ import org.jumpmind.symmetric.model.TriggerHistory;
  */
 public class TriggerCreationAdapter implements ITriggerCreationListener {
 
-    public void tableDoesNotExist(Trigger trigger) {
+    public void syncTriggersStarted() {
     }
 
-    public void triggerCreated(Trigger trigger, TriggerHistory history) {
+    public void tableDoesNotExist(int triggersToSync, int triggersSynced, Trigger trigger) {
     }
 
-    public void triggerFailed(Trigger trigger, Exception ex) {
+    public void triggerCreated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory history) {
+    }
+    
+    public void triggerChecked(int triggersToSync, int triggersSynced) {
     }
 
-    public void triggerInactivated(Trigger trigger, TriggerHistory oldHistory) {
+    public void triggerFailed(int triggersToSync, int triggersSynced, Trigger trigger, Exception ex) {
+    }
+
+    public void triggerInactivated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory oldHistory) {
+    }
+
+    public void syncTriggersEnded() {
     }
     
 }
