@@ -110,6 +110,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private long triggersCacheTime;
     
     private long triggerRoutersCacheTime;
+    
+    private int triggersToSync;
+    
+    private int triggersSynced;
 
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
@@ -1261,6 +1265,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         configurationService.clearCache();
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+                        triggersToSync = triggersForCurrentNode.size();
+                        triggersSynced = 0;
+                        for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                            l.syncTriggersStarted();
+                        }
 
                         boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
@@ -1293,6 +1302,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             updateOrCreateDdlTriggers(sqlBuffer);
                         }
                     } finally {
+                        for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                            l.syncTriggersEnded();
+                        }
+                        
                         clusterService.unlock(ClusterConstants.SYNC_TRIGGERS);
                         log.info("Done synchronizing triggers");
                     }
@@ -1428,8 +1441,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     history.getNameForUpdateTrigger(), history.getSourceTableName());
 
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                triggersSynced++;
                 for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                    l.triggerInactivated(null, history);
+                    l.triggerInactivated(triggersToSync, triggersSynced, null, history);
                 }
             }
 
@@ -1649,8 +1663,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     "Could not find any database tables matching '{}' in the datasource that is configured",
                     trigger.qualifiedSourceTableName());
 
+            triggersSynced++;
             for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.tableDoesNotExist(trigger);
+                l.tableDoesNotExist(triggersToSync, triggersSynced, trigger);
             }
         }
     }
@@ -1673,6 +1688,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (listener != null) {
                 extensionService.addExtensionPoint(listener);
             }
+            
+            triggersToSync = triggersForCurrentNode.size();
+            triggersSynced = 0;
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.syncTriggersStarted();
+            }
 
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
             if (triggersForCurrentNode.contains(trigger)) {
@@ -1691,6 +1712,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
         } finally {
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.syncTriggersEnded();
+            }
             if (listener != null) {
                 extensionService.removeExtensionPoint(listener);
             }
@@ -1779,9 +1803,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    triggersSynced++;
                     for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                        l.triggerCreated(trigger, newestHistory);
+                        l.triggerCreated(triggersToSync, triggersSynced, trigger, newestHistory);
                     }
+                }
+            } else {
+                triggersSynced++;
+                for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                    l.triggerChecked(triggersToSync, triggersSynced);
                 }
             }
 
@@ -1805,8 +1835,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
 
+            triggersSynced++;
             for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.triggerFailed(trigger, ex);
+                l.triggerFailed(triggersToSync, triggersSynced, trigger, ex);
             }
         }
     }
