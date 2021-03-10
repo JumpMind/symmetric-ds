@@ -13,6 +13,7 @@ RUN unzip /app/symmetric-ds.zip
 RUN rm -f /app/symmetric-ds.zip
 RUN mkdir /opt/
 RUN mv symmetric-server* /opt/symmetric-ds
+RUN chmod -R u=rwX,g=,o= /opt/symmetric-ds/security
 
 ENV SYM_HOME /opt/symmetric-ds
 
