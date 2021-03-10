@@ -223,7 +223,7 @@ subprojects { subproject ->
         bshVersion = '2.0b6'
         commonsBeanUtilsVersion = '1.9.4'
         commonsCliVersion = '1.4'
-        commonsDbcpVersion = '1.4'
+        commonsDbcpVersion = '2.8.0'
         commonsFileuploadVersion = '1.4'
         commonsIoVersion = '2.8.0'
         commonsLangVersion = '3.11'

@@ -56,7 +56,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -618,7 +618,7 @@ public class SnapshotUtil {
                 BasicDataSource dbcp = (BasicDataSource) dataSource;
                 runtimeProperties.setProperty("connections.idle", String.valueOf(dbcp.getNumIdle()));
                 runtimeProperties.setProperty("connections.used", String.valueOf(dbcp.getNumActive()));
-                runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxActive()));
+                runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxTotal()));
             }
 
             Runtime rt = Runtime.getRuntime();

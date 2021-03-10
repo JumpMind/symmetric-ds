@@ -22,11 +22,9 @@ package org.jumpmind.db.util;
 
 import java.sql.SQLException;
 
-import org.apache.commons.dbcp.AbandonedConfig;
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.pool.KeyedObjectPoolFactory;
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
  * A subclass of {@link BasicDataSource} which allows for a data source to be
@@ -35,6 +33,8 @@ import org.apache.commons.pool.KeyedObjectPoolFactory;
  */
 public class ResettableBasicDataSource extends BasicDataSource {
 
+    protected boolean closed;
+
     public ResettableBasicDataSource() {
         setAccessToUnderlyingConnectionAllowed(true);
     }
@@ -42,42 +42,18 @@ public class ResettableBasicDataSource extends BasicDataSource {
     @Override
     public synchronized void close() {
         try {
-            try {
-                super.close();
-            } catch (SQLException e) {
-            }
-        } finally {
-            closed = false;
+            closed = true;
+            super.close();
+        } catch (SQLException e) {
         }
-
     }
-    
+
     @Override
-    protected void createPoolableConnectionFactory(ConnectionFactory driverConnectionFactory,
-            KeyedObjectPoolFactory statementPoolFactory, AbandonedConfig configuration) throws SQLException {
-        PoolableConnectionFactory connectionFactory = null;
-        try {
-            connectionFactory =
-                new PoolableConnectionFactory(driverConnectionFactory,
-                                              connectionPool,
-                                              statementPoolFactory,
-                                              validationQuery,
-                                              validationQueryTimeout,
-                                              connectionInitSqls,
-                                              defaultReadOnly,
-                                              defaultAutoCommit,
-                                              defaultTransactionIsolation,
-                                              defaultCatalog,
-                                              configuration);
-            validateConnectionFactory(connectionFactory);
-        } catch (Exception e) {
-            try {
-                connectionPool.close();
-            } catch (Exception e1) {
-            }
-            throw new SQLException("Cannot create PoolableConnectionFactory (" + e.getMessage() + ")", e);
+    protected DataSource createDataSource() throws SQLException {
+        if (closed) {
+            closed = false;
+            super.start();
         }
+        return super.createDataSource();
     }
-
-
 }

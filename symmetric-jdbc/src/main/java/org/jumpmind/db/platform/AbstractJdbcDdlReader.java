@@ -1731,6 +1731,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                         foreignTable.getSchema(), foreignTable.getName(), keyColumns,
                                         foreignTable.getColumns(), nullValues, null);
                                 Object[] selectValues = selectRow.toArray(selectRow.keySet().toArray(new String[0]));
+                                //platform.getObjectValues(BinaryEncoding.NONE, _defaultTableTypes, keyColumns);
                                 List<Row> rows = transaction.query(selectSt.getSql(), new RowMapper(), selectValues, selectSt.getTypes());
 
                                 if (rows != null) {
