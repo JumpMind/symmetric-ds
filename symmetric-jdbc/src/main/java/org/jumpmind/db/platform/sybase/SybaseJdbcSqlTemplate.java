@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Arrays;
 
@@ -143,7 +144,17 @@ public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTempla
         }
     }
  
-
+    @Override
+    protected int getUpdateCount(Statement stmt) throws SQLException {
+    	int updateCount;
+	    
+	    do{
+	        updateCount = stmt.getUpdateCount();
+	    }while(stmt.getMoreResults());
+	    return updateCount;
+    }
+    
+    
     private PreparedStatement getNativeStmt(PreparedStatement ps) {
         PreparedStatement stmt = ps;
         try {

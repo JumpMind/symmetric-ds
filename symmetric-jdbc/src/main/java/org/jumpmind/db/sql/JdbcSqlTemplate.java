@@ -357,6 +357,15 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
     public ISqlTransaction startSqlTransaction() {
         return new JdbcSqlTransaction(this);
     }
+    
+    protected int getUpdateCount(Statement stmt) throws SQLException {   
+    	int updateCount;
+	    
+	    do{
+	        updateCount = stmt.getUpdateCount();
+	    }while(stmt.getMoreResults() || stmt.getUpdateCount() != -1);
+	    return updateCount;
+    }
 
     public int update(final String sql, final Object[] args, final int[] types) {
         return execute(new IConnectionCallback<Integer>() {
@@ -371,13 +380,8 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         stmt.execute(sql);
                         long endTime = System.currentTimeMillis();
                         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
-
-                        int updateCount;
-                        do{
-                            updateCount = stmt.getUpdateCount();
-                        }while(stmt.getMoreResults() || stmt.getUpdateCount() != -1);
-
-                        return updateCount;
+                     
+                        return getUpdateCount(stmt); 
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
                     } finally {
@@ -400,12 +404,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                         long endTime = System.currentTimeMillis();
                         logSqlBuilder.logSql(log, sql, args, types, (endTime-startTime));
 
-                        int updateCount;
-                        do{
-                            updateCount = ps.getUpdateCount();
-                        }while(ps.getMoreResults() || ps.getUpdateCount() != -1);
-
-                        return updateCount;
+                        return getUpdateCount(ps);
                     } catch (SQLException e) {
                         throw logSqlBuilder.logSqlAfterException(log, sql, args, e);
                     } finally {
