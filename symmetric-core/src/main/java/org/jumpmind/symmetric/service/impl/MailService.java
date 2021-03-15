@@ -35,7 +35,6 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.properties.TypedProperties;
-import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -67,9 +66,8 @@ public class MailService extends AbstractService implements IMailService {
     }
     
     public String sendEmail(String subject, String text, String toRecipients, String ccRecipients, String bccRecipients) {
-        ParameterMetaData passwordMetaData = ParameterConstants.getParameterMetaData().get(ParameterConstants.SMTP_PASSWORD);
         String password = parameterService.getString(ParameterConstants.SMTP_PASSWORD);
-        if (passwordMetaData.isEncryptedType() && password.startsWith(SecurityConstants.PREFIX_ENC)) {
+        if (password != null && password.startsWith(SecurityConstants.PREFIX_ENC)) {
             password = securityService.decrypt(password.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         return sendEmail(subject, text, toRecipients, ccRecipients, bccRecipients, getJavaMailProperties(),
