@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
+import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -513,8 +514,15 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
                     log.debug("Alter SQL generated: {}", alterSql);
 
+                    ISqlResultsListener resultsInstallListener = resultsListener;
+                    List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
+                    if (installListeners != null && installListeners.size() > 0) {
+                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter);
+                        resultsInstallListener = new LogSqlResultsInstallListener(log, parameterService.getEngineName(),
+                                totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
+                    }
                     SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
-                    script.setListener(resultsListener);
+                    script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
 
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {

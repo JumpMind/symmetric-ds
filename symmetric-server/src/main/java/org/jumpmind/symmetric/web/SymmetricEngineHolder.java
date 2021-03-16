@@ -59,6 +59,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
+import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeGroup;
 import org.jumpmind.symmetric.model.NodeGroupLink;
@@ -346,6 +347,10 @@ public class SymmetricEngineHolder {
     }
 
     public ISymmetricEngine install(Properties passedInProperties) throws Exception {
+        return install(passedInProperties, null);
+    }
+    
+    public ISymmetricEngine install(Properties passedInProperties, IDatabaseInstallStatementListener listener) throws Exception {
         TypedProperties properties = new TypedProperties(passedInProperties);
         String password = properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         if (StringUtils.isNotBlank(password) && !password.startsWith(SecurityConstants.PREFIX_ENC)) {
@@ -451,6 +456,9 @@ public class SymmetricEngineHolder {
 
             engine = create(symmetricProperties.getAbsolutePath());
             if (engine != null) {
+                if (listener != null) {
+                    engine.getExtensionService().addExtensionPoint(listener);
+                }
                 engine.start();
             } else {
                 FileUtils.deleteQuietly(symmetricProperties);
