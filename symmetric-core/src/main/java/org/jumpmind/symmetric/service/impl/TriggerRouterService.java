@@ -211,7 +211,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public boolean doesTriggerExistForTable(String tableName) {
-        return sqlTemplate.queryForInt(getSql("countTriggerByTableNameSql"), tableName) > 0;
+        if (tableName.toLowerCase().startsWith(symmetricDialect.getTablePrefix().toLowerCase())) {
+            return doesTriggerExistForTable(tableName, true);
+        } else {
+            return doesTriggerExistForTable(tableName, false);
+        }
+    }
+    
+    public boolean doesTriggerExistForTable(String tableName, boolean useTriggerHist) {
+        if (useTriggerHist) {
+            return sqlTemplate.queryForInt(getSql("countTriggerByTableNameFromTriggerHistSql"), tableName.toLowerCase(), tableName.toUpperCase()) > 0;
+        } else {
+            return sqlTemplate.queryForInt(getSql("countTriggerByTableNameSql"), tableName.toLowerCase(), tableName.toUpperCase()) > 0;
+        }
     }
 
     public void deleteTrigger(Trigger trigger) {
@@ -443,7 +455,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
         return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                new TriggerHistoryMapper(), tableName);
+                new TriggerHistoryMapper(), tableName.toLowerCase(), tableName.toUpperCase());
     }
 
     protected List<Trigger> buildTriggersForSymmetricTables(String version,

@@ -315,6 +315,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName,
             ISqlTransaction transaction) {
+        log.info("Dropping {} trigger for {}", triggerName, (schemaName != null ? schemaName + "." : "") + tableName);
         String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
