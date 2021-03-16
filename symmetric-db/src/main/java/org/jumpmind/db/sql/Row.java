@@ -248,6 +248,16 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         }
     }
 
+    public Timestamp getTimestamp(String columnName) {
+        Object obj = this.get(columnName);
+        if (obj instanceof Timestamp) {
+            return (Timestamp) obj;
+        } else {
+            Date date = getDateTime(columnName);
+            return new Timestamp(date.getTime());
+        }
+    }
+
     public Date getDateTime(String columnName) {
         Object obj = this.get(columnName);
         if (obj instanceof Number) {

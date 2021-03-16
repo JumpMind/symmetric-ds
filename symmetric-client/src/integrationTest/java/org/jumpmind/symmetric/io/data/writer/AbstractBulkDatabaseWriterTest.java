@@ -33,8 +33,16 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
+import org.jumpmind.db.platform.mysql.MySqlDatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDatabasePlatform;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
+import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.io.AbstractWriterTest;
@@ -322,11 +330,14 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     }
     
     protected String[] massageExpectectedResultsForDialect(String[] values) {
-        if(values[5] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
-            // No time portion for a date field
-            values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d\\.000", "");
+        if (values[5] != null && (!(platform instanceof OracleDatabasePlatform || platform instanceof TiberoDatabasePlatform
+                || ((platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform)
+                        && !(platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform))
+                || platform instanceof AseDatabasePlatform || platform instanceof SqlAnywhereDatabasePlatform))) {
+            values[5] = values[5].replaceFirst(" \\d\\d:\\d\\d:\\d\\d.*", "");
         }
-        if(values[6] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform)) {
+        if(values[6] != null && (platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform 
+                || platform instanceof MySqlDatabasePlatform || platform instanceof PostgreSqlDatabasePlatform)) {
             if(values[6].length() == 23) {
                 values[6] = values[6] + "0000";
             }

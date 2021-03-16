@@ -537,8 +537,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     values[i] = row.getBoolean(name) ? "1" : "0";
                 } else if (column.isOfNumericType()) {
                     values[i] = row.getString(name);
-                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
+                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIME)) {
                     values[i] = getDateTimeStringValue(name, type, row, useVariableDates);
+                } else if (!column.isTimestampWithTimezone() && type == Types.TIMESTAMP) {
+                    values[i] = getTimestampStringValue(name, type, row, useVariableDates);
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (encoding == BinaryEncoding.NONE) {
@@ -573,8 +575,10 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     concatenatedRow.append(row.getString(name));
                 } else if (column.isOfNumericType()) {
                     concatenatedRow.append(row.getString(name));
-                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME)) {
+                } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIME)) {
                     concatenatedRow.append("\"").append(getDateTimeStringValue(name, type, row, false)).append("\"");
+                } else if (!column.isTimestampWithTimezone() && type == Types.TIMESTAMP) {
+                    concatenatedRow.append("\"").append(getTimestampStringValue(name, type, row, false)).append("\"");
                 } else if (type == Types.BOOLEAN || type == Types.BIT) {
                     concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfBinaryType()) {
@@ -609,6 +613,21 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 return "${curdate" + diff + "}";
             } else {
                 return FormatUtils.TIMESTAMP_FORMATTER.format(date);
+            }
+        }
+    }
+
+    protected String getTimestampStringValue(String name, int type, Row row, boolean useVariableDates) {
+        Object tsObj = row.get(name);
+        if (tsObj instanceof String) {
+            return (String) tsObj;
+        } else {
+            Timestamp ts = row.getTimestamp(name);
+            if (useVariableDates) {
+                long diff = ts.getTime() - System.currentTimeMillis();
+                return "${ts" + diff + "}";
+            } else {
+                return String.format("%tF %tT.%09d", ts, ts, ts.getNanos());
             }
         }
     }

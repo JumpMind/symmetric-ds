@@ -155,7 +155,7 @@ abstract public class AbstractTriggerTemplate {
                     || type == Types.NUMERIC || type == Types.BINARY || type == Types.VARBINARY
                     || (type == Types.BLOB && !requiresWrappedBlobTemplateForBlobType()) || type == Types.LONGVARBINARY
                     || type == Types.DECIMAL || type == Types.FLOAT || type == Types.DOUBLE
-                    || type == ColumnTypes.MSSQL_NTEXT) {
+                    || type == ColumnTypes.MSSQL_NTEXT || type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP) {
                 return false;
             }
         }
