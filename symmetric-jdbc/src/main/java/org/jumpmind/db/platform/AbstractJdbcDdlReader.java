@@ -1730,8 +1730,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                 DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable.getCatalog(),
                                         foreignTable.getSchema(), foreignTable.getName(), keyColumns,
                                         foreignTable.getColumns(), nullValues, null);
-                                Object[] selectValues = selectRow.toArray(selectRow.keySet().toArray(new String[0]));
-                                //platform.getObjectValues(BinaryEncoding.NONE, _defaultTableTypes, keyColumns);
+                                Object[] selectValues = platform.getObjectValues(BinaryEncoding.HEX, selectRow.toStringArray(selectRow.keySet().toArray(new String[0])),
+                                        keyColumns);
                                 List<Row> rows = transaction.query(selectSt.getSql(), new RowMapper(), selectValues, selectSt.getTypes());
 
                                 if (rows != null) {
@@ -1740,7 +1740,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                         DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
                                                 foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
                                                 foreignTable.getColumns(), nullValues, null);
-                                        String whereSql = whereSt.buildDynamicSql(BinaryEncoding.NONE, row, false, true, 
+                                        String whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, row, false, true, 
                                                 foreignTable.getPrimaryKeyColumns()).substring(6);
                                         String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                                         if (delimiter != null && delimiter.length() > 0) {

@@ -106,6 +106,8 @@ public class MySqlDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(false);
         databaseInfo.setCharColumnSpaceTrimmed(true);
         databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setBinaryQuoteStart("0x");
+        databaseInfo.setBinaryQuoteEnd("");
 
         // MySql 5.0 returns an empty string for default values for pk columns
         // which is different from the MySql 4 behaviour

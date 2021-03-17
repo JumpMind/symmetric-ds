@@ -177,6 +177,7 @@ public class DmlStatement {
             case DELETE:
                 return buildTypes(keys, isDateOverrideToTimestamp);
             case COUNT:
+            case SELECT:
                 return buildTypes(keys, isDateOverrideToTimestamp);
             default:
                 break;
