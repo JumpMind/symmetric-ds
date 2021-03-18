@@ -334,7 +334,7 @@ abstract public class AbstractWriterTest {
     }
 
     protected boolean isOracle() {
-        return DatabaseNamesConstants.ORACLE.equals(platform.getName());
+        return DatabaseNamesConstants.ORACLE.equals(platform.getName()) || DatabaseNamesConstants.ORACLE122.equals(platform.getName());
     }
 
     public void setErrorExpected(boolean errorExpected) {

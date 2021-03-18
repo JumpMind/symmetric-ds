@@ -200,8 +200,8 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected boolean isServerOracle() {
-        return DatabaseNamesConstants.ORACLE.equals(getServer().getSymmetricDialect().getPlatform()
-                .getName());
+        return DatabaseNamesConstants.ORACLE.equals(getServer().getSymmetricDialect().getPlatform().getName()) ||
+                DatabaseNamesConstants.ORACLE122.equals(getServer().getSymmetricDialect().getPlatform().getName());
     }
 
     protected boolean isClientInterbase() {

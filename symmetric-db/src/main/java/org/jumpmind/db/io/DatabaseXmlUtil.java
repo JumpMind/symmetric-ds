@@ -492,7 +492,7 @@ public class DatabaseXmlUtil {
             Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
                 .values();
             for(PlatformColumn col: platformColumns) {
-                if(col.getName().equals(DatabaseNamesConstants.ORACLE)) {
+                if(col.getName().equals(DatabaseNamesConstants.ORACLE) || col.getName().equals(DatabaseNamesConstants.ORACLE122)) {
                     return true;
                 }
             }
