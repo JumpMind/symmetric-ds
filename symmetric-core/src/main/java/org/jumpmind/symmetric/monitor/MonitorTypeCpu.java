@@ -93,8 +93,10 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         for (long threadId : threadBean.getAllThreadIds()) {
             ThreadInfo info = threadBean.getThreadInfo(threadId);
-            if (info.getThreadState() != Thread.State.TERMINATED) {
-                rankTopUsage(infos, cpuUsages, info, threadBean.getThreadCpuTime(threadId));
+            if (info != null) {
+                if (info.getThreadState() != Thread.State.TERMINATED) {
+                    rankTopUsage(infos, cpuUsages, info, threadBean.getThreadCpuTime(threadId));
+                }
             }
         }
 
