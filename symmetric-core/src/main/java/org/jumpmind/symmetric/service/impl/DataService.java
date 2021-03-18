@@ -2573,11 +2573,14 @@ public class DataService extends AbstractService implements IDataService {
                 return;
             }
             table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
-            Map<String, String> dataMap = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+            Object[] values = platform.getObjectValues(symmetricDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
     
             List<TableRow> tableRows = new ArrayList<TableRow>();
-            Row row = new Row(dataMap.size());
-            row.putAll(dataMap);
+            Row row = new Row(values.length);
+            int i = 0;
+            for (String columnName : table.getColumnNames()) {
+                row.put(columnName, values.length > i ? values[i++] : null);
+            }
             tableRows.add(new TableRow(table, row, null, null, null));
             List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), symmetricDialect.getBinaryEncoding());
             

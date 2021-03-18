@@ -516,7 +516,7 @@ public class DmlStatement {
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (encoding == BinaryEncoding.NONE) {
-                        newSql = newSql.replaceFirst(regex, quote + row.getString(name));
+                        newSql = newSql.replaceFirst(regex, quote + row.getString(name) + quote);
                     } else if (encoding == BinaryEncoding.BASE64) {
                         newSql = newSql.replaceFirst(regex,
                                 quote + new String(Base64.encodeBase64(bytes)) + quote);
