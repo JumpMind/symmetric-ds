@@ -102,14 +102,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
         sqlTemplates.put("updateTriggerTemplate" ,
 "create trigger $(triggerName) on $(schemaName)$(tableName) for update " + getOrderClause() + " as\n" +
 "                                begin                                                                                                                                                                  \n" +
-"                                  declare @LOCALROWCOUNT int                                                                                   \n" + 
-"                                  set @LOCALROWCOUNT=@@ROWCOUNT                                                                                \n" +
 "                                  set nocount on      \n" +
+"                                  declare @LOCALROWCOUNT int                                                                                   \n" + 
 "                                  declare @DataRow varchar(16384)                                                                                                                                      \n" +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   \n" +
 "                                  declare @clientapplname varchar(50)  \n" +
 "                                  declare @ChannelId varchar(128)   \n" +
+"                                  select @LOCALROWCOUNT = count(*) from inserted \n" +
 "                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)                                                                                                                                            \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
