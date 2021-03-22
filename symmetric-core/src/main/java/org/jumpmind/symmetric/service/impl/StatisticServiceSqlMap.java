@@ -49,6 +49,11 @@ public class StatisticServiceSqlMap extends AbstractSqlMap {
 "  from $(node_host_channel_stats)                                            " + 
 "  where  start_time >= ? and end_time <= ? and node_id=? order by start_time asc   " );
         
+        putSql("deleteChannelStatsSql" , "" +
+"delete                                                 " +
+"  from $(node_host_channel_stats)                      " +
+"  where start_time >= ? and end_time <= ? and node_id=?");
+        
         putSql("selectNodeStatsSql", "" + 
 "select node_id, start_time, end_time,                                                    " + 
 "  sum(data_routed) as data_routed, sum(data_unrouted) as data_unrouted,                  " +
