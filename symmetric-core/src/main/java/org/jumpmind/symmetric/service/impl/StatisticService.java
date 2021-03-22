@@ -90,6 +90,10 @@ public class StatisticService extends AbstractService implements IStatisticServi
                 new ChannelStatsMapper(), start, end, nodeId);        
         return new ChannelStatsByPeriodMap(start, end, list, periodSizeInMinutes);
     }    
+    
+    public void deleteChannelStatsForPeriod(Date start, Date end, String nodeId) {
+        sqlTemplate.update(getSql("deleteChannelStatsSql"), start, end, nodeId);
+    }
 
     public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end,
             String nodeId, int periodSizeInMinutes) {
