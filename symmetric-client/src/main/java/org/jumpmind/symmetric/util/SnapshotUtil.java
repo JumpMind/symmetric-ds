@@ -87,6 +87,7 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.monitor.MonitorTypeBlock;
 import org.jumpmind.symmetric.service.IClusterService;
+import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -110,6 +111,11 @@ public class SnapshotUtil {
     }
 
     public static File createSnapshot(ISymmetricEngine engine) {
+        
+        IExtensionService extensionService = engine.getExtensionService();
+        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
+            l.snapshotStepCompleted(0, 5);
+        }
 
         String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
@@ -137,6 +143,10 @@ public class SnapshotUtil {
             }
         } catch (Exception e) {
             log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
+        }
+        
+        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
+            l.snapshotStepCompleted(1, 5);
         }
 
         FileOutputStream fos = null;
@@ -208,6 +218,10 @@ public class SnapshotUtil {
                     fos.close();
                 } catch(IOException e) { }
             }
+        }
+        
+        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
+            l.snapshotStepCompleted(2, 5);
         }
 
         String tablePrefix = engine.getTablePrefix();
@@ -291,60 +305,7 @@ public class SnapshotUtil {
 
         extract(export, new File(tmpDir, "sym_node_host_channel_stats.csv"),
                 TableConstants.getTableName(tablePrefix, TableConstants.SYM_NODE_HOST_CHANNEL_STATS));
-
-        if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
-            final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements", "mon$io_stats",
-                    "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables" };
-            for (String table : monTables) {
-                extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
-            }
-        }
         
-        if (engine.getSymmetricDialect() instanceof MySqlSymmetricDialect) {
-            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
-                    "show processlist");
-            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-global-variables.csv",
-                    "show global variables");
-            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-session-variables.csv",
-                    "show session variables");
-        }
-
-        if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
-            try {
-                List<DataGap> gaps = engine.getRouterService().getDataGaps();
-                SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"));
-                fos.write("start_id,end_id,create_time\n".getBytes());
-                if (gaps != null) {
-                    for (DataGap gap : gaps) {
-                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\"" + "\"\n").getBytes());
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("Failed to export data gap information", e);
-            } finally {
-                if(fos != null) {
-                    try {
-                        fos.close();
-                    } catch(IOException e) { }
-                }
-            }            
-        }
-
-        createThreadsFile(tmpDir.getPath(), false);
-        createThreadsFile(tmpDir.getPath(), true);
-        createThreadStatsFile(tmpDir.getPath());
-        
-        try {
-            List<Transaction> transactions = engine.getDatabasePlatform().getTransactions();
-            if (!transactions.isEmpty()) {
-                createTransactionsFile(engine, tmpDir.getPath(), transactions);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to create transactions file", e);
-        }
-
-
         fos = null;
         try {
             fos = new FileOutputStream(new File(tmpDir, "parameters.properties"));
@@ -402,14 +363,7 @@ public class SnapshotUtil {
                 } catch(IOException e) { }
             }
         }
-
-        writeRuntimeStats(engine, tmpDir);
-        writeJobsStats(engine, tmpDir);
-
-        if ("true".equals(System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB))) {
-            writeDirectoryListing(engine, tmpDir);
-        }
-
+        
         fos = null;
         try {
             fos = new FileOutputStream(new File(tmpDir, "system.properties"));
@@ -424,6 +378,69 @@ public class SnapshotUtil {
                     fos.close();
                 } catch(IOException e) { }
             }
+        }
+
+        if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
+            final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements", "mon$io_stats",
+                    "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables" };
+            for (String table : monTables) {
+                extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
+            }
+        }
+        
+        if (engine.getSymmetricDialect() instanceof MySqlSymmetricDialect) {
+            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
+                    "show processlist");
+            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-global-variables.csv",
+                    "show global variables");
+            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-session-variables.csv",
+                    "show session variables");
+        }
+        
+        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
+            l.snapshotStepCompleted(3, 5);
+        }
+
+        if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
+            try {
+                List<DataGap> gaps = engine.getRouterService().getDataGaps();
+                SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+                fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"));
+                fos.write("start_id,end_id,create_time\n".getBytes());
+                if (gaps != null) {
+                    for (DataGap gap : gaps) {
+                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\"" + "\"\n").getBytes());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to export data gap information", e);
+            } finally {
+                if(fos != null) {
+                    try {
+                        fos.close();
+                    } catch(IOException e) { }
+                }
+            }            
+        }
+
+        createThreadsFile(tmpDir.getPath(), false);
+        createThreadsFile(tmpDir.getPath(), true);
+        createThreadStatsFile(tmpDir.getPath());
+        
+        try {
+            List<Transaction> transactions = engine.getDatabasePlatform().getTransactions();
+            if (!transactions.isEmpty()) {
+                createTransactionsFile(engine, tmpDir.getPath(), transactions);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to create transactions file", e);
+        }
+        
+        writeRuntimeStats(engine, tmpDir);
+        writeJobsStats(engine, tmpDir);
+
+        if ("true".equals(System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB))) {
+            writeDirectoryListing(engine, tmpDir);
         }
 
         File logDir = null;
@@ -472,6 +489,10 @@ public class SnapshotUtil {
                 }
             }
         }
+        
+        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
+            l.snapshotStepCompleted(4, 5);
+        }
 
         File jarFile = null;
         try {
@@ -484,6 +505,10 @@ public class SnapshotUtil {
             FileUtils.deleteDirectory(tmpDir);
         } catch (Exception e) {
             throw new IoException("Failed to package snapshot files into archive", e);
+        }
+        
+        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
+            l.snapshotStepCompleted(5, 5);
         }
         
         log.info("Done creating snapshot file");
@@ -567,7 +592,7 @@ public class SnapshotUtil {
             printDirectoryContents(home, output, fileComparator);
             FileUtils.write(new File(tmpDir, "directory-listing.txt"), output, Charset.defaultCharset(), false);
         } catch (Exception ex) {
-            log.warn("Failed to output the direcetory listing", ex);
+            log.warn("Failed to output the directory listing", ex);
         }
     }
 
