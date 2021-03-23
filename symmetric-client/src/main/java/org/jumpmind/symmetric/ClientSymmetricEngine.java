@@ -62,6 +62,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
+import org.jumpmind.symmetric.ext.IProgressListener;
 import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -546,8 +547,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return springContext;
     }
 
-    public File snapshot() {
-        return SnapshotUtil.createSnapshot(this);
+    public File snapshot(IProgressListener listener) {
+        return SnapshotUtil.createSnapshot(this, listener);
     }
 
     public IMonitorService getMonitorService() {

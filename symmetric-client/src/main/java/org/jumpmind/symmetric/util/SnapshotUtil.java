@@ -75,6 +75,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
+import org.jumpmind.symmetric.ext.IProgressListener;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.symmetric.job.IJob;
@@ -87,7 +88,6 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.monitor.MonitorTypeBlock;
 import org.jumpmind.symmetric.service.IClusterService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
@@ -110,11 +110,10 @@ public class SnapshotUtil {
         return snapshotsDir;
     }
 
-    public static File createSnapshot(ISymmetricEngine engine) {
-        
-        IExtensionService extensionService = engine.getExtensionService();
-        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
-            l.snapshotStepCompleted(0, 5);
+    public static File createSnapshot(ISymmetricEngine engine, IProgressListener listener) {
+
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 0, 5);
         }
 
         String dirName = engine.getEngineName().replaceAll(" ", "-") + "-" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
@@ -145,8 +144,8 @@ public class SnapshotUtil {
             log.warn("Failed to copy " + serviceConfFile.getName() + " to the snapshot directory", e);
         }
         
-        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
-            l.snapshotStepCompleted(1, 5);
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 1, 5);
         }
 
         FileOutputStream fos = null;
@@ -220,8 +219,8 @@ public class SnapshotUtil {
             }
         }
         
-        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
-            l.snapshotStepCompleted(2, 5);
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 2, 5);
         }
 
         String tablePrefix = engine.getTablePrefix();
@@ -397,8 +396,8 @@ public class SnapshotUtil {
                     "show session variables");
         }
         
-        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
-            l.snapshotStepCompleted(3, 5);
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 3, 5);
         }
 
         if (!engine.getParameterService().is(ParameterConstants.CLUSTER_LOCKING_ENABLED)) {
@@ -490,8 +489,8 @@ public class SnapshotUtil {
             }
         }
         
-        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
-            l.snapshotStepCompleted(4, 5);
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 4, 5);
         }
 
         File jarFile = null;
@@ -507,8 +506,8 @@ public class SnapshotUtil {
             throw new IoException("Failed to package snapshot files into archive", e);
         }
         
-        for (ISnapshotCreationListener l : extensionService.getExtensionPointList(ISnapshotCreationListener.class)) {
-            l.snapshotStepCompleted(5, 5);
+        if (listener != null) {
+            listener.checkpoint(engine.getEngineName(), 5, 5);
         }
         
         log.info("Done creating snapshot file");
