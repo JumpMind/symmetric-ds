@@ -111,7 +111,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
 
     @ManagedOperation(description = "Create a snapshot of the current state of the system")
     public String snapshot() {
-        File file = engine.snapshot();
+        File file = engine.snapshot(null);
         if (file != null) {
             return file.getAbsolutePath();
         } else {

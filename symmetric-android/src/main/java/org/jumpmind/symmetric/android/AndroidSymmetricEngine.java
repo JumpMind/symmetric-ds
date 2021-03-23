@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
+import org.jumpmind.symmetric.ext.IProgressListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -216,7 +217,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     }
 
-    public File snapshot() {
+    public File snapshot(IProgressListener listener) {
         return null;
     }
 
