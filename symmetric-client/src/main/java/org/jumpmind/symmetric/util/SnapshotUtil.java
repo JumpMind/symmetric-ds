@@ -75,7 +75,7 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
-import org.jumpmind.symmetric.ext.IProgressListener;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.symmetric.job.IJob;

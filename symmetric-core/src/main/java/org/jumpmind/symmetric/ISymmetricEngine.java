@@ -29,7 +29,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.ext.IProgressListener;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.NodeStatus;

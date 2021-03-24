@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
@@ -34,7 +35,6 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ITypedPropertiesFactory;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.sqlite.SqliteSymmetricDialect;
-import org.jumpmind.symmetric.ext.IProgressListener;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
