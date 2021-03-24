@@ -364,7 +364,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
         if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER)
                 || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_USER_HIST)
                 || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
-                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
+                || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                || tableMatches(dataMetaData, TableConstants.SYM_DESIGN_DIAGRAM)
+                || tableMatches(dataMetaData, TableConstants.SYM_DIAGRAM_GROUP)) {
             Set<Node> targetNodes = new HashSet<Node>(possibleTargetNodes.size());
             for (Node nodeThatMayBeRoutedTo : possibleTargetNodes) {
                 boolean isTargetProfessional = StringUtils.equals(nodeThatMayBeRoutedTo.getDeploymentType(), 
@@ -393,7 +395,9 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                         targetNodes.add(nodeThatMayBeRoutedTo);
                     }
                 } else if (tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE)
-                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)) {
+                        || tableMatches(dataMetaData, TableConstants.SYM_CONSOLE_ROLE_PRIVILEGE)
+                        || tableMatches(dataMetaData, TableConstants.SYM_DIAGRAM_GROUP)
+                        || tableMatches(dataMetaData, TableConstants.SYM_DESIGN_DIAGRAM)) {
                     if (nodeThatMayBeRoutedTo.isVersionGreaterThanOrEqualTo(3, 12, 0)) {
                         targetNodes.add(nodeThatMayBeRoutedTo);
                     }
