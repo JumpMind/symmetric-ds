@@ -2009,7 +2009,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (StringUtils.isBlank(triggerName)) {
-            String triggerPrefix1 = tablePrefix + "_";
+            String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX, tablePrefix);
+            String triggerPrefix1 = triggerPrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
             String triggerSuffix2 = FormatUtils.replaceCharsToShortenName(trigger.getTriggerId());
             if (trigger.isSourceTableNameWildCarded()) {
