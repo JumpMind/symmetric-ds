@@ -320,6 +320,7 @@ final public class ParameterConstants {
     public final static String DB_JNDI_NAME = "db.jndi.name";
     public final static String DB_SPRING_BEAN_NAME = "db.spring.bean.name";
 
+    public final static String RUNTIME_CONFIG_TRIGGER_PREFIX = "sync.trigger.prefix";
     public final static String RUNTIME_CONFIG_TABLE_PREFIX = "sync.table.prefix";
 
     public final static String NODE_ID_CREATOR_SCRIPT = "node.id.creator.script";
