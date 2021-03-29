@@ -386,7 +386,6 @@ abstract public class AbstractService implements IService {
                         localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
                 exception = null;
             } catch (Exception e) {
-                e.printStackTrace();
                 exception = e;
             }
             if (statusCode != WebConstants.SC_OK) {
