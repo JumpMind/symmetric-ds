@@ -29,7 +29,7 @@ import java.util.Date;
  * Definition of a channel and it's priority. A channel is a group of tables
  * that get synchronized together.
  */
-public class Channel implements Serializable {
+public class Channel implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -8183376200537307264L;
 
@@ -327,4 +327,14 @@ public class Channel implements Serializable {
             return super.toString();
         }        
     }
+    
+    public Channel copy() {
+        Channel channel = null;
+        try {
+            channel = (Channel) super.clone();
+        } catch (CloneNotSupportedException e) {
+        }
+        return channel;
+    }
+
 }

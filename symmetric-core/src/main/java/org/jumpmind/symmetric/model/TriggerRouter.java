@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Defines the trigger via which a table will be synchronized.
  */
-public class TriggerRouter implements Serializable {
+public class TriggerRouter implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -253,5 +253,16 @@ public class TriggerRouter implements Serializable {
         }
         this.router.setRouterId(routerId);
     }
-   
+
+    public TriggerRouter copy() {
+        TriggerRouter triggerRouter = null;
+        try {
+            triggerRouter = (TriggerRouter) super.clone();
+            triggerRouter.setTrigger(trigger.copy());
+            triggerRouter.setRouter(router.copy());
+        } catch (CloneNotSupportedException e) {
+        }
+        return triggerRouter;
+    }
+
 }
