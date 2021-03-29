@@ -211,5 +211,9 @@ public interface IDatabasePlatform {
     public boolean supportsLimitOffset();
     
     public String massageForLimitOffset(String sql, int limit, int offset);
+
+    public boolean supportsSliceTables();
     
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices);
+
 }

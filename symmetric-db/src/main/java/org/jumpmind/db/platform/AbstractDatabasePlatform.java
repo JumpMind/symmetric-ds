@@ -1280,4 +1280,13 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
     public String massageForLimitOffset(String sql, int limit, int offset) {
         return sql;
     }
+    
+    public boolean supportsSliceTables() {
+        return false;
+    }
+    
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
+        return "";
+    }
+
 }

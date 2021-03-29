@@ -251,4 +251,14 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
                "where row_num between " + (offset + 1) + " and " + (offset + limit);
     }
 
+    @Override
+    public boolean supportsSliceTables() {
+        return true;
+    }
+    
+    @Override
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
+        return "mod(ora_hash(rowid), " + totalSlices + ") = " + sliceNum;
+    }
+
 }

@@ -247,5 +247,14 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return sql + " limit " + offset + "," + limit;
     }
     
+    @Override
+    public boolean supportsSliceTables() {
+        return true;
+    }
+    
+    @Override
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
+        return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
+    }
     
 }

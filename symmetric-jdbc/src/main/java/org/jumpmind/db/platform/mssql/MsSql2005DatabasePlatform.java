@@ -120,4 +120,14 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
                "where RowNum between " + (offset + 1) + " and " + (offset + limit);
     }
 
+    @Override
+    public boolean supportsSliceTables() {
+        return true;
+    }
+    
+    @Override
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
+        return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
+    }
+
 }
