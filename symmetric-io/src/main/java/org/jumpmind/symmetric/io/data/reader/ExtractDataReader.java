@@ -193,6 +193,9 @@ public class ExtractDataReader implements IDataReader {
 
                 String sql = buildSelect(table, lobColumns, pkColumns);
                 Row row = sqlTemplate.queryForRow(sql, args);
+                if (row == null) {
+                    row = createRowForRequiredLobs(lobColumns);
+                }
                 if (row != null) {
                     for (Column lobColumn : lobColumns) {
                         String valueForCsv = null;
@@ -250,4 +253,30 @@ public class ExtractDataReader implements IDataReader {
         return sql.toString();
     }
 
+    /**
+     * When the row is missing because it was deleted, we need to temporarily satisfy not-null constraint at target 
+     */
+    protected Row createRowForRequiredLobs(List<Column> lobColumns) {
+        Row row = null;
+        boolean isRequired = false;
+        for (Column lobColumn : lobColumns) {
+            if (lobColumn.isRequired()) {
+                isRequired = true;
+                break;
+            }
+        }
+        if (isRequired) {
+            row = new Row(lobColumns.size());
+            for (Column lobColumn : lobColumns) {
+                if (lobColumn.isRequired()) {
+                    if (platform.isBlob(lobColumn.getMappedTypeCode())) {
+                        row.put(lobColumn.getName(), new byte[0]);
+                    } else {
+                        row.put(lobColumn.getName(), "");
+                    }
+                }
+            }
+        }
+        return row;
+    }
 }
