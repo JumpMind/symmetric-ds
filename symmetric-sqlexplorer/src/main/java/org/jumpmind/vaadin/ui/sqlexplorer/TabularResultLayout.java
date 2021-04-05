@@ -281,7 +281,7 @@ public class TabularResultLayout extends VerticalLayout {
                             types.add(resultTable.getColumnWithName(colName).getMappedTypeCode());
                         }
                     }
-                    String sql = buildUpdate(resultTable, colNames, resultTable.getPrimaryKeyColumnNames());
+                    String sql = buildUpdate(resultTable, colNames, unchangedValue[0], resultTable.getPrimaryKeyColumnNames());
                     log.warn(sql);
                     Object[] allParams;
                     int[] allTypes;
@@ -300,9 +300,11 @@ public class TabularResultLayout extends VerticalLayout {
                         for (int k = 0; k < unchangedValue[0].size(); k++) {
                             Object val = unchangedValue[0].get(k);
                             Column col = resultTable.getColumn(k);
-                            if (col.isRequired() && db.getPlatform().canColumnBeUsedInWhereClause(col)) {
-                                requiredColParams.add(val);
-                                requiredColTypes.add(col.getMappedTypeCode());
+                            if (db.getPlatform().canColumnBeUsedInWhereClause(col)) {
+                                if (!val.equals("<null>")) {
+                                    requiredColParams.add(val);
+                                    requiredColTypes.add(col.getMappedTypeCode());
+                                }
                             }
                         }
                         allParams = ArrayUtils.addAll(params.toArray(), requiredColParams.toArray());
@@ -800,7 +802,7 @@ public class TabularResultLayout extends VerticalLayout {
         return new String[0];
     }
     
-    protected String buildUpdate(Table table, List<String> columnNames, String[] pkColumnNames) {
+    protected String buildUpdate(Table table, List<String> columnNames, List<Object> originalValues, String[] pkColumnNames) {
         StringBuilder sql = new StringBuilder("update ");
         IDatabasePlatform platform = db.getPlatform();
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
@@ -823,12 +825,18 @@ public class TabularResultLayout extends VerticalLayout {
                 sql.append("=? and ");
             }
         } else {
-            for (Column col : table.getColumns()) {
-                if (col.isRequired() && platform.canColumnBeUsedInWhereClause(col)) {
+            Column[] cols = table.getColumns();
+            for (int i = 0; i < originalValues.size(); i++) {
+                Column col = cols[i];
+                if (platform.canColumnBeUsedInWhereClause(col)) {
                     sql.append(quote);
                     sql.append(col.getName());
                     sql.append(quote);
-                    sql.append("=? and ");
+                    if (!originalValues.get(i).equals("<null>")) {
+                        sql.append("=? and ");
+                    } else {
+                        sql.append(" is null and ");
+                    }
                 }
             }
         }

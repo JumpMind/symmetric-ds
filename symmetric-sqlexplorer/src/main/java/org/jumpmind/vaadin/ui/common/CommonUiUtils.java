@@ -257,10 +257,7 @@ public final class CommonUiUtils {
                             case Types.REAL:
                             case Types.NUMERIC:
                             case Types.DECIMAL:
-                                if (o == null) {
-                                    o = new BigDecimal(-1);
-                                }
-                                if (!(o instanceof BigDecimal)) {
+                                if (o != null && !(o instanceof BigDecimal)) {
                                     o = new BigDecimal(castToNumber(o.toString()));
                                 }
                                 break;
@@ -268,11 +265,7 @@ public final class CommonUiUtils {
                             case Types.SMALLINT:
                             case Types.BIGINT:
                             case Types.INTEGER:
-                                if (o == null) {
-                                    o = new Long(-1);
-                                }
-
-                                if (!(o instanceof Long)) {
+                                if (o != null && !(o instanceof Long)) {
                                     o = new Long(castToNumber(o.toString()));
                                 }
                                 break;
