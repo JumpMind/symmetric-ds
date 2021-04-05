@@ -329,6 +329,9 @@ public class TransformedData implements Cloneable {
     public CsvData buildTargetCsvData() {
 
         CsvData data = new CsvData(this.targetDmlType);
+        if (transformation != null) {
+            data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, transformation.getSourceTableName());
+        }
         if (targetDmlType != DataEventType.DELETE) {
             data.putParsedData(CsvData.ROW_DATA, getColumnValues());
         }
