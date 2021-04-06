@@ -898,7 +898,11 @@ public class DataService extends AbstractService implements IDataService {
                         transaction = platform.getSqlTemplate().startSqlTransaction();
 
                         if (loadId == 0) {
-                            loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                            if (platform.supportsMultiThreadedTransactions()) {
+                                loadId = engine.getSequenceService().nextVal(Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                            } else {
+                                loadId = engine.getSequenceService().nextVal(transaction, Constants.SEQUENCE_OUTGOING_BATCH_LOAD_ID);
+                            }
                         }
                         
                         processInfo.setCurrentLoadId(loadId);
