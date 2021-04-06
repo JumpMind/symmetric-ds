@@ -8,7 +8,7 @@ RUN apk add --no-cache nano
 RUN apk add --no-cache vim
 
 # Install SymmetricDS
-ADD https://sourceforge.net/projects/symmetricds/files/latest/download /app/symmetric-ds.zip
+RUN wget https://sourceforge.net/projects/symmetricds/files/latest/download -P /app -O symmetric-ds.zip
 RUN unzip /app/symmetric-ds.zip
 RUN rm -f /app/symmetric-ds.zip
 RUN mkdir /opt/
