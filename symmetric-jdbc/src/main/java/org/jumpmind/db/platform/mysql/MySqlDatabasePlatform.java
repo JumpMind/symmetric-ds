@@ -151,7 +151,8 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             for (Column column : table.getColumns()) {
                 try {
                     if (column.getMappedTypeCode() == Types.DATE 
-                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE) != null) {
+                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE) != null
+                            && column.findPlatformColumn(DatabaseNamesConstants.ORACLE122) != null) {
                         column.setMappedType(TypeMap.TIMESTAMP);
                         column.setMappedTypeCode(Types.TIMESTAMP);
                         column.setScale(6);
@@ -246,5 +247,14 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return sql + " limit " + offset + "," + limit;
     }
     
+    @Override
+    public boolean supportsSliceTables() {
+        return true;
+    }
+    
+    @Override
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
+        return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
+    }
     
 }

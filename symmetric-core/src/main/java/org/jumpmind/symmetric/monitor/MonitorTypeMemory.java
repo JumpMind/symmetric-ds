@@ -64,36 +64,45 @@ public class MonitorTypeMemory extends AbstractMonitorType implements IBuiltInEx
             usage = (long) ((double)tenuredPool.getUsage().getUsed() / (double)tenuredPool.getUsage().getMax() * 100);
         }
         event.setValue(usage);
+        event.setDetails(getMessage(0l, 0l, 0l));
         return event;
     }
 
     public String getMessage(long value, long threshold, long period) {
         long maxMemory = tenuredPool.getUsage().getMax();
         long usedMemory = tenuredPool.getUsage().getUsed();
-        String text = "Memory threshold exceeded, " + usedMemory + " of " + maxMemory;
+        StringBuilder text = new StringBuilder("Memory threshold exceeded, " + usedMemory + " of " + maxMemory);
+        text.append(System.lineSeparator()).append(System.lineSeparator());
 
         ThreadInfo infos[] = new ThreadInfo[TOP_THREADS];
         long byteUsages[] = new long[TOP_THREADS];
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         for (long threadId : threadBean.getAllThreadIds()) {
             ThreadInfo info = threadBean.getThreadInfo(threadId);
-            if (info.getThreadState() != Thread.State.TERMINATED) {
-                rankTopUsage(infos, byteUsages, info, getThreadAllocatedBytes(threadBean, threadId));
+            if (info != null) {
+                if (info.getThreadState() != Thread.State.TERMINATED) {
+                    rankTopUsage(infos, byteUsages, info, getThreadAllocatedBytes(threadBean, threadId));
+                }
             }
         }
 
         for (int i = 0; i < infos.length; i++) {
-            text += "Top #" + (i + 1) + " memory thread " + infos[i].getThreadId() + " is using "
-                    + String.format("%.1f", ((double) byteUsages[i] / 1048576f)) + "MB";
-            text += logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH));
+            if (infos[i] != null) {
+                text.append("Top #").append((i + 1)).append(" memory thread ").append(infos[i].getThreadName())
+                    .append(" (ID ").append(infos[i].getThreadId()).append(")")
+                    .append(" is using ").append(String.format("%.1f", ((double) byteUsages[i] / 1048576f))).append("MB")
+                    .append(System.lineSeparator());
+                text.append(logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH)))
+                    .append(System.lineSeparator()).append(System.lineSeparator());
+            }
         }
-        return text;
+        return text.toString();
     }
 
     protected long getThreadAllocatedBytes(ThreadMXBean threadBean, long threadId) {
         long size = 0;
         try {
-            Method method = threadBean.getClass().getMethod("getThreadAllocatedBytes");
+            Method method = threadBean.getClass().getMethod("getThreadAllocatedBytes", long.class);
             method.setAccessible(true);
             size = (Long) method.invoke(threadBean, threadId);
         } catch (Exception ignore) {

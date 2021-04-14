@@ -300,7 +300,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
     @Test
     public void test11BinaryColumnTypesForOracle() {
         ISymmetricDialect dialect = getDbDialect();
-        if (DatabaseNamesConstants.ORACLE.equals(dialect.getName())) {
+        if (DatabaseNamesConstants.ORACLE.equals(dialect.getName()) || DatabaseNamesConstants.ORACLE122.equals(dialect.getName())) {
             getSqlTemplate().update(CREATE_ORACLE_BINARY_TYPE);
             TriggerRouter trouter = new TriggerRouter();
             Trigger trigger = trouter.getTrigger();
@@ -411,6 +411,7 @@ abstract public class AbstractTriggerRouterServiceTest extends AbstractServiceTe
 
     protected static boolean isBooleanSupported(ISymmetricDialect dbDialect) {
         return !(DatabaseNamesConstants.ORACLE.equals(dbDialect.getPlatform().getName()) 
+                || DatabaseNamesConstants.ORACLE122.equals(dbDialect.getPlatform().getName())
                 || DatabaseNamesConstants.DB2.equals(dbDialect.getPlatform().getName())
                 || DatabaseNamesConstants.SQLANYWHERE.equals(dbDialect.getPlatform().getName()));
     }

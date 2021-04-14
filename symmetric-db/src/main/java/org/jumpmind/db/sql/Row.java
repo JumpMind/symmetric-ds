@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.exception.ParseException;
@@ -158,8 +159,12 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
     public String getString(String columnName, boolean checkForColumn) {
         Object obj = this.get(columnName);
         if (obj != null) {
-            if(obj instanceof BigDecimal) {
+            if (obj instanceof String) {
+                return (String) obj;
+            } else if (obj instanceof BigDecimal) {
                 return ((BigDecimal) obj).toPlainString();
+            } else if (obj instanceof byte[]) {
+                return Hex.encodeHexString((byte[]) obj);
             } else {
                 return obj.toString();
             }
@@ -245,6 +250,16 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         } else {
             Date date = getDateTime(columnName);
             return new Time(date.getTime());
+        }
+    }
+
+    public Timestamp getTimestamp(String columnName) {
+        Object obj = this.get(columnName);
+        if (obj instanceof Timestamp) {
+            return (Timestamp) obj;
+        } else {
+            Date date = getDateTime(columnName);
+            return new Timestamp(date.getTime());
         }
     }
 

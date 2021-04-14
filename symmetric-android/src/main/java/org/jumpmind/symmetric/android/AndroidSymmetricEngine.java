@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
@@ -216,7 +217,7 @@ public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
     }
 
-    public File snapshot() {
+    public File snapshot(IProgressListener listener) {
         return null;
     }
 

@@ -110,9 +110,17 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                 } else if (event.getType().equals("dataGap")) {
                     stackTrace.append(event.getValue()).append(" data gap(s) recorded.").append("\n");
                 } else if (event.getType().equals("cpu")) {
-                    stackTrace.append("CPU usage is at ").append(event.getValue()).append("%\n");
+                    String details = event.getDetails();
+                    if(details == null || details.length() == 0) {
+                        details = "CPU usage is at " + event.getValue() + "%\n";
+                    }
+                    stackTrace.append(details);
                 } else if (event.getType().equals("memory")) {
-                    stackTrace.append("Memory usage is at ").append(event.getValue()).append("%\n");
+                    String details = event.getDetails();
+                    if (details == null || details.length() == 0) {
+                        details = "Memory usage is at " + event.getValue() + "%\n";
+                    }
+                    stackTrace.append(details);
                 } else if (event.getType().equals("disk")) {
                     stackTrace.append("Disk usage is at ").append(event.getValue()).append("%\n");
                 }

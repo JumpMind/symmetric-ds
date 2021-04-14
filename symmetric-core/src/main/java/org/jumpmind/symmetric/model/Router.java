@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Metadata about how and when to route data to a node group or a specific node
  */
-public class Router implements Serializable {
+public class Router implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -263,4 +263,12 @@ public class Router implements Serializable {
         }
     }
 
+    public Router copy() {
+        Router router = null;
+        try {
+            router = (Router) super.clone();
+        } catch (CloneNotSupportedException e) {
+        }
+        return router;
+    }
 }

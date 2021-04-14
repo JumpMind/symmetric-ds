@@ -90,6 +90,8 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
+        databaseInfo.setBinaryQuoteStart("X'");
+        databaseInfo.setBinaryQuoteEnd("'");
 
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_REPEATABLE_READ);
         

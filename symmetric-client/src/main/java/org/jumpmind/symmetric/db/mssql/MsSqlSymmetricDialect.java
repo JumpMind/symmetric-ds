@@ -172,6 +172,14 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
     
     @Override
     public void createRequiredDatabaseObjects() {
+        createBase64EncodeFunction();
+
+        createTriggersDisabledFunction();
+
+        createNodeDisabledFunction();
+    }
+    
+    protected void createBase64EncodeFunction() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (!installed(SQL_FUNCTION_INSTALLED, encode)) {
             String sql = "create function dbo.$(functionName)(@data varbinary(max)) returns varchar(max)                                                                                                                         " + 
@@ -181,7 +189,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     "\n  end                                                                                                                                                                  ";
             install(sql, encode);
         }
-
+    }
+    
+    protected void createTriggersDisabledFunction() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             String sql = "create function dbo.$(functionName)() returns smallint                                                                                                                                                 " + 
@@ -194,7 +204,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     "\n  end                                                                                                                                                                    ";
             install(sql, triggersDisabled);
         }
-
+    }
+    
+    protected void createNodeDisabledFunction() {
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (!installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
             String sql = "create function dbo.$(functionName)() returns varchar(50)                                                                                                                                              " + 
@@ -205,26 +217,36 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     "\n  end                                                                                                                                                                    ";
             install(sql, nodeDisabled);
         }
-        
     }
     
     @Override
     public void dropRequiredDatabaseObjects() {
+        dropBase64EncodeFunction();
+
+        dropTriggersDisabledFunction();
+
+        dropNodeDisabledFunction();
+    }
+    
+    protected void dropBase64EncodeFunction() {
         String encode = this.parameterService.getTablePrefix() + "_" + "base64_encode";
         if (installed(SQL_FUNCTION_INSTALLED, encode)) {
             uninstall(SQL_DROP_FUNCTION, encode);
         }
-
+    }
+    
+    protected void dropTriggersDisabledFunction() {
         String triggersDisabled = this.parameterService.getTablePrefix() + "_" + "triggers_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, triggersDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggersDisabled);
         }
-
+    }
+    
+    protected void dropNodeDisabledFunction() {
         String nodeDisabled = this.parameterService.getTablePrefix() + "_" + "node_disabled";
         if (installed(SQL_FUNCTION_INSTALLED, nodeDisabled)) {
             uninstall(SQL_DROP_FUNCTION, nodeDisabled);
         }
-
     }
 
     protected boolean supportsDisableTriggers() {
@@ -242,7 +264,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return supportsDisableTriggers == null ? false : supportsDisableTriggers;
 
     }
-
+    
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, final String catalogName, String schemaName,
             final String triggerName, String tableName, ISqlTransaction transaction) {

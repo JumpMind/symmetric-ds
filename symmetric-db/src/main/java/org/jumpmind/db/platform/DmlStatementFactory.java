@@ -64,7 +64,7 @@ final public class DmlStatementFactory {
     public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType,
             String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, boolean[] nullKeyValues, IDdlBuilder ddlBuilder, String textColumnExpression) {
-        if (DatabaseNamesConstants.ORACLE.equals(databaseName)) {
+        if (DatabaseNamesConstants.ORACLE.equals(databaseName) || DatabaseNamesConstants.ORACLE122.equals(databaseName)) {
             return new OracleDmlStatement(dmlType, catalogName, schemaName, tableName, keys,
                     columns, nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);

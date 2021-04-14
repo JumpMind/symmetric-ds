@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Defines the trigger via which a table will be synchronized.
  */
-public class Trigger implements Serializable {
+public class Trigger implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
@@ -857,4 +857,12 @@ public class Trigger implements Serializable {
         }
     }
 
+    public Trigger copy() {
+        Trigger trigger = null;
+        try {
+            trigger = (Trigger) super.clone();
+        } catch (CloneNotSupportedException e) {
+        }
+        return trigger;
+    }
 }

@@ -13,7 +13,6 @@ import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.SymmetricException;
@@ -101,10 +100,8 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
         this.s3Bucket = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_BUCKET);
         this.s3AccessKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_ACCESS_KEY);
         
-        Map<String, ParameterMetaData> metaDataMap = ParameterConstants.getParameterMetaData();
-        ParameterMetaData secretKeyMetaData = metaDataMap.get(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
         String secretKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_S3_SECRET_KEY);
-        if (secretKeyMetaData.isEncryptedType() && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
+        if (secretKey != null && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
             secretKey = securityService.decrypt(secretKey.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         this.s3SecretKey = secretKey;
@@ -116,9 +113,8 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
         this.azureAccountKey = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_ACCOUNT_KEY);
         this.azureBlobContainer = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_BLOB_CONTAINER, "symmetricds");
         
-        ParameterMetaData tokenMetaData = metaDataMap.get(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
         String token = parameterService.getString(ParameterConstants.CLOUD_BULK_LOAD_AZURE_SAS_TOKEN);
-        if (tokenMetaData.isEncryptedType() && token.startsWith(SecurityConstants.PREFIX_ENC)) {
+        if (token != null && token.startsWith(SecurityConstants.PREFIX_ENC)) {
             token = securityService.decrypt(token.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         this.azureSasToken = token;

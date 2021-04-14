@@ -124,6 +124,18 @@ public class SqlScript {
 
     }
 
+    public static int calculateTotalStatements(String sqlScript, String delimiter) {
+        int count = 0;
+        try (SqlScriptReader scriptReader = new SqlScriptReader(new StringReader(sqlScript))) {
+            scriptReader.setDelimiter(delimiter);
+            while (scriptReader.readSqlStatement() != null) {
+                count++;
+            }
+        } catch (IOException e) {
+        }
+        return count;
+    }
+    
     public int getCommitRate() {
         return commitRate;
     }

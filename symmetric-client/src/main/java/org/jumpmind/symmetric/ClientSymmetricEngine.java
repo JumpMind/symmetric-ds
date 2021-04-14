@@ -40,7 +40,7 @@ import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
@@ -62,6 +62,7 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -546,8 +547,8 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return springContext;
     }
 
-    public File snapshot() {
-        return SnapshotUtil.createSnapshot(this);
+    public File snapshot(IProgressListener listener) {
+        return SnapshotUtil.createSnapshot(this, listener);
     }
 
     public IMonitorService getMonitorService() {

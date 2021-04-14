@@ -275,7 +275,7 @@ public class DatabasePlatformTest {
     }
     
     protected String getSequenceName(IDatabasePlatform platform) {
-        if (platform.getName().equals(DatabaseNamesConstants.ORACLE)) {
+        if (platform.getName().equals(DatabaseNamesConstants.ORACLE) || platform.getName().equals(DatabaseNamesConstants.ORACLE122)) {
             return "TEST_UPGRADE_ID";
         } else if (platform.getName().equals(DatabaseNamesConstants.INTERBASE)) {
             return "SEQ_TEST_UPGRADE_ID";

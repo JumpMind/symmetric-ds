@@ -46,6 +46,7 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseInfo;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
@@ -280,15 +281,35 @@ public class TabularResultLayout extends VerticalLayout {
                             types.add(resultTable.getColumnWithName(colName).getMappedTypeCode());
                         }
                     }
-                    String sql = buildUpdate(resultTable, colNames, resultTable.getPrimaryKeyColumnNames());
+                    String sql = buildUpdate(resultTable, colNames, unchangedValue[0], resultTable.getPrimaryKeyColumnNames());
                     log.warn(sql);
-                    Object[] allParams = ArrayUtils.addAll(params.toArray(), pkParams);
-                    int[] allTypes = ArrayUtils.addAll(types.stream().mapToInt(val -> val).toArray(), pkTypes);
-                    for (int k = 0; k < allTypes.length; k++) {
-                        if (allTypes[k] == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo()
-                                .isDateOverridesToTimestamp()) {
-                            allTypes[k] = Types.TIMESTAMP;
+                    Object[] allParams;
+                    int[] allTypes;
+                    if (pkParams.length > 0) {
+                        allParams = ArrayUtils.addAll(params.toArray(), pkParams);
+                        allTypes = ArrayUtils.addAll(types.stream().mapToInt(val -> val).toArray(), pkTypes);
+                        for (int k = 0; k < allTypes.length; k++) {
+                            if (allTypes[k] == Types.DATE && db.getPlatform().getDdlBuilder().getDatabaseInfo()
+                                    .isDateOverridesToTimestamp()) {
+                                allTypes[k] = Types.TIMESTAMP;
+                            }
                         }
+                    } else {
+                        List<Object> requiredColParams = new ArrayList<Object>();
+                        List<Integer> requiredColTypes = new ArrayList<Integer>();
+                        for (int k = 0; k < unchangedValue[0].size(); k++) {
+                            Object val = unchangedValue[0].get(k);
+                            Column col = resultTable.getColumn(k);
+                            if (db.getPlatform().canColumnBeUsedInWhereClause(col)) {
+                                if (!val.equals("<null>")) {
+                                    requiredColParams.add(val);
+                                    requiredColTypes.add(col.getMappedTypeCode());
+                                }
+                            }
+                        }
+                        allParams = ArrayUtils.addAll(params.toArray(), requiredColParams.toArray());
+                        allTypes = ArrayUtils.addAll(types.stream().mapToInt(val -> val).toArray(),
+                                requiredColTypes.stream().mapToInt(l -> l).toArray());
                     }
                     try {
                         db.getPlatform().getSqlTemplate().update(sql, allParams, allTypes);
@@ -781,10 +802,11 @@ public class TabularResultLayout extends VerticalLayout {
         return new String[0];
     }
     
-    protected String buildUpdate(Table table, List<String> columnNames, String[] pkColumnNames) {
+    protected String buildUpdate(Table table, List<String> columnNames, List<Object> originalValues, String[] pkColumnNames) {
         StringBuilder sql = new StringBuilder("update ");
-        DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
-        String quote = db.getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
+        IDatabasePlatform platform = db.getPlatform();
+        DatabaseInfo dbInfo = platform.getDatabaseInfo();
+        String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? dbInfo.getDelimiterToken() : "";
         sql.append(table.getQualifiedTableName(quote, dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()));
         sql.append(" set ");
         for (String col : columnNames) {
@@ -795,11 +817,28 @@ public class TabularResultLayout extends VerticalLayout {
         }
         sql.delete(sql.length() - 2, sql.length());
         sql.append(" where ");
-        for (String col : pkColumnNames) {
-            sql.append(quote);
-            sql.append(col);
-            sql.append(quote);
-            sql.append("=? and ");
+        if (pkColumnNames.length > 0) {
+            for (String col : pkColumnNames) {
+                sql.append(quote);
+                sql.append(col);
+                sql.append(quote);
+                sql.append("=? and ");
+            }
+        } else {
+            Column[] cols = table.getColumns();
+            for (int i = 0; i < originalValues.size(); i++) {
+                Column col = cols[i];
+                if (platform.canColumnBeUsedInWhereClause(col)) {
+                    sql.append(quote);
+                    sql.append(col.getName());
+                    sql.append(quote);
+                    if (!originalValues.get(i).equals("<null>")) {
+                        sql.append("=? and ");
+                    } else {
+                        sql.append(" is null and ");
+                    }
+                }
+            }
         }
         sql.delete(sql.length() - 5, sql.length());
         return sql.toString();

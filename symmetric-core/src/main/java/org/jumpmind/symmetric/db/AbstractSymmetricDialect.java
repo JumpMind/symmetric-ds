@@ -52,6 +52,7 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
+import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.Node;
@@ -314,9 +315,11 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName,
             ISqlTransaction transaction) {
+        log.info("Dropping {} trigger for {}", triggerName, (schemaName != null ? schemaName + "." : "") + tableName);
         String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("Removing {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
     }
@@ -512,8 +515,15 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
                     log.debug("Alter SQL generated: {}", alterSql);
 
+                    ISqlResultsListener resultsInstallListener = resultsListener;
+                    List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
+                    if (installListeners != null && installListeners.size() > 0) {
+                        int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter);
+                        resultsInstallListener = new LogSqlResultsInstallListener(log, parameterService.getEngineName(),
+                                totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
+                    }
                     SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);
-                    script.setListener(resultsListener);
+                    script.setListener(resultsInstallListener);
                     script.execute(platform.getDatabaseInfo().isRequiresAutoCommitForDdl());
 
                     for (IDatabaseUpgradeListener listener : databaseUpgradeListeners) {

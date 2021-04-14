@@ -102,9 +102,9 @@ public class BasicDataSourceFactory {
         dataSource.setPassword(password);
         dataSource.setInitialSize(properties.getInt(
                 BasicDataSourcePropertyConstants.DB_POOL_INITIAL_SIZE, 2));
-        dataSource.setMaxActive(properties.getInt(
+        dataSource.setMaxTotal(properties.getInt(
                 BasicDataSourcePropertyConstants.DB_POOL_MAX_ACTIVE, 10));
-        dataSource.setMaxWait(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_WAIT,
+        dataSource.setMaxWaitMillis(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_WAIT,
                 5000));
         dataSource.setMaxIdle(properties.getInt(BasicDataSourcePropertyConstants.DB_POOL_MAX_IDLE,
                 8));

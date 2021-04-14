@@ -100,7 +100,12 @@ public class HsqlDb2DatabasePlatform extends AbstractJdbcDatabasePlatform {
            
            return result;
     }
-    
+
+    @Override
+    public boolean supportsMultiThreadedTransactions() {
+        return false;
+    }
+
     @Override
     public boolean supportsLimitOffset() {
         return true;

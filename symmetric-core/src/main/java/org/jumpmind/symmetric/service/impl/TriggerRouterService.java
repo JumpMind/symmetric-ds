@@ -110,6 +110,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     private long triggersCacheTime;
     
     private long triggerRoutersCacheTime;
+    
+    private int triggersToSync;
+    
+    private int triggersSynced;
 
     private Map<String, TriggerRoutersCache> triggerRouterCacheByNodeGroupId = new HashMap<String, TriggerRoutersCache>();
 
@@ -207,7 +211,19 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public boolean doesTriggerExistForTable(String tableName) {
-        return sqlTemplate.queryForInt(getSql("countTriggerByTableNameSql"), tableName) > 0;
+        if (tableName.toLowerCase().startsWith(symmetricDialect.getTablePrefix().toLowerCase())) {
+            return doesTriggerExistForTable(tableName, true);
+        } else {
+            return doesTriggerExistForTable(tableName, false);
+        }
+    }
+    
+    public boolean doesTriggerExistForTable(String tableName, boolean useTriggerHist) {
+        if (useTriggerHist) {
+            return sqlTemplate.queryForInt(getSql("countTriggerByTableNameFromTriggerHistSql"), tableName, tableName.toLowerCase(), tableName.toUpperCase()) > 0;
+        } else {
+            return sqlTemplate.queryForInt(getSql("countTriggerByTableNameSql"), tableName, tableName.toLowerCase(), tableName.toUpperCase()) > 0;
+        }
     }
 
     public void deleteTrigger(Trigger trigger) {
@@ -439,7 +455,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
         return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                new TriggerHistoryMapper(), tableName);
+                new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
     }
 
     protected List<Trigger> buildTriggersForSymmetricTables(String version,
@@ -1261,6 +1277,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         configurationService.clearCache();
 
                         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
+                        triggersToSync = triggersForCurrentNode.size();
+                        triggersSynced = 0;
+                        for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                            l.syncTriggersStarted();
+                        }
 
                         boolean createTriggersForTables = false;
                         String nodeId = nodeService.findIdentityNodeId();
@@ -1293,6 +1314,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                             updateOrCreateDdlTriggers(sqlBuffer);
                         }
                     } finally {
+                        for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                            l.syncTriggersEnded();
+                        }
+                        
                         clusterService.unlock(ClusterConstants.SYNC_TRIGGERS);
                         log.info("Done synchronizing triggers");
                     }
@@ -1428,8 +1453,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     history.getNameForUpdateTrigger(), history.getSourceTableName());
 
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                triggersSynced++;
                 for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                    l.triggerInactivated(null, history);
+                    l.triggerInactivated(triggersToSync, triggersSynced, null, history);
                 }
             }
 
@@ -1649,8 +1675,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     "Could not find any database tables matching '{}' in the datasource that is configured",
                     trigger.qualifiedSourceTableName());
 
+            triggersSynced++;
             for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.tableDoesNotExist(trigger);
+                l.tableDoesNotExist(triggersToSync, triggersSynced, trigger);
             }
         }
     }
@@ -1673,6 +1700,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (listener != null) {
                 extensionService.addExtensionPoint(listener);
             }
+            
+            triggersToSync = triggersForCurrentNode.size();
+            triggersSynced = 0;
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.syncTriggersStarted();
+            }
 
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
             if (triggersForCurrentNode.contains(trigger)) {
@@ -1691,6 +1724,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
         } finally {
+            for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                l.syncTriggersEnded();
+            }
             if (listener != null) {
                 extensionService.removeExtensionPoint(listener);
             }
@@ -1779,9 +1815,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
                 newestHistory.setErrorMessage(errorMessage);
                 if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                    triggersSynced++;
                     for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                        l.triggerCreated(trigger, newestHistory);
+                        l.triggerCreated(triggersToSync, triggersSynced, trigger, newestHistory);
                     }
+                }
+            } else {
+                triggersSynced++;
+                for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
+                    l.triggerChecked(triggersToSync, triggersSynced);
                 }
             }
 
@@ -1805,8 +1847,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                 }
             }
 
+            triggersSynced++;
             for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
-                l.triggerFailed(trigger, ex);
+                l.triggerFailed(triggersToSync, triggersSynced, trigger, ex);
             }
         }
     }
@@ -1966,7 +2009,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (StringUtils.isBlank(triggerName)) {
-            String triggerPrefix1 = tablePrefix + "_";
+            String triggerPrefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TRIGGER_PREFIX, tablePrefix);
+            String triggerPrefix1 = triggerPrefix + "_";
             String triggerSuffix1 = "on_" + dml.getCode().toLowerCase() + "_for_";
             String triggerSuffix2 = FormatUtils.replaceCharsToShortenName(trigger.getTriggerId());
             if (trigger.isSourceTableNameWildCarded()) {

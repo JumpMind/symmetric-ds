@@ -88,7 +88,7 @@ public class OracleBulkDataLoaderFactory extends DefaultDataLoaderFactory {
     }
 
     public boolean isPlatformSupported(IDatabasePlatform platform) {
-        return DatabaseNamesConstants.ORACLE.equals(platform.getName());
+        return DatabaseNamesConstants.ORACLE.equals(platform.getName()) || DatabaseNamesConstants.ORACLE122.equals(platform.getName());
     }
 
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import javax.servlet.annotation.WebServlet;
 import javax.websocket.server.ServerContainer;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.atmosphere.container.JSR356AsyncSupport;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;

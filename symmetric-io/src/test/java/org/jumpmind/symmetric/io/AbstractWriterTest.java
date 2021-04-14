@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -305,8 +306,11 @@ abstract public class AbstractWriterTest {
                 if ((resultObj instanceof Double || resultObj instanceof BigDecimal) && expected[i].indexOf(decimal) != -1) {
                     DecimalFormat df = new DecimalFormat("0.00####################################");
                     resultValue = df.format(resultObj);
+                } else if (resultObj instanceof Timestamp) {
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0000000");
+                    resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Date) {
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.000");
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Boolean) {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";
@@ -330,7 +334,7 @@ abstract public class AbstractWriterTest {
     }
 
     protected boolean isOracle() {
-        return DatabaseNamesConstants.ORACLE.equals(platform.getName());
+        return DatabaseNamesConstants.ORACLE.equals(platform.getName()) || DatabaseNamesConstants.ORACLE122.equals(platform.getName());
     }
 
     public void setErrorExpected(boolean errorExpected) {

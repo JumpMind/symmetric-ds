@@ -71,6 +71,8 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
             event.setValue(value);
         }
         
+        event.setDetails(getNotificationMessage(value, 0l, 0l));
+        
         return event;
     }
 
@@ -91,17 +93,25 @@ public class MonitorTypeCpu extends AbstractMonitorType implements IBuiltInExten
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         for (long threadId : threadBean.getAllThreadIds()) {
             ThreadInfo info = threadBean.getThreadInfo(threadId);
-            if (info.getThreadState() != Thread.State.TERMINATED) {
-                rankTopUsage(infos, cpuUsages, info, threadBean.getThreadCpuTime(threadId));
+            if (info != null) {
+                if (info.getThreadState() != Thread.State.TERMINATED) {
+                    rankTopUsage(infos, cpuUsages, info, threadBean.getThreadCpuTime(threadId));
+                }
             }
         }
 
-        String text = "CPU usage is at " + value;
+        StringBuilder text = new StringBuilder("CPU usage is at ");
+        text.append(value).append(System.lineSeparator()).append(System.lineSeparator());
         for (int i = 0; i < infos.length; i++) {
-            text += "Top #" + (i + 1) + " CPU thread " + infos[i].getThreadId() + " is using " + (cpuUsages[i] / 1000000000f) + "s";
-            text += logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH));
+            if (infos[i] != null) {
+                text.append("Top #").append((i + 1)).append(" CPU thread ").append(infos[i].getThreadName())
+                    .append(" (ID ").append(infos[i].getThreadId()).append(") is using ").append((cpuUsages[i] / 1000000000f))
+                    .append("s").append(System.lineSeparator());
+                text.append(logStackTrace(threadBean.getThreadInfo(infos[i].getThreadId(), MAX_STACK_DEPTH)))
+                    .append(System.lineSeparator()).append(System.lineSeparator());
+            }
         }
-        return text;
+        return text.toString();
     }
 
     @Override

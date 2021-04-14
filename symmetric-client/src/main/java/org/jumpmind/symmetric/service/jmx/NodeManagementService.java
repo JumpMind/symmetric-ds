@@ -32,7 +32,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
@@ -111,7 +111,7 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
 
     @ManagedOperation(description = "Create a snapshot of the current state of the system")
     public String snapshot() {
-        File file = engine.snapshot();
+        File file = engine.snapshot(null);
         if (file != null) {
             return file.getAbsolutePath();
         } else {
@@ -259,11 +259,11 @@ public class NodeManagementService implements IBuiltInExtensionPoint, ISymmetric
         }
     }
 
-    @ManagedAttribute(description = "If a BasicDataSource, then show the number of active connections")
+    @ManagedAttribute(description = "If a BasicDataSource, then show the max number of total connections")
     public int getDatabaseConnectionsMax() {
         if (isBasicDataSource()) {
             DataSource dataSource = engine.getDataSource();
-            return ((BasicDataSource) dataSource).getMaxActive();
+            return ((BasicDataSource) dataSource).getMaxTotal();
         } else {
             return -1;
         }

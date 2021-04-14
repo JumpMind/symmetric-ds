@@ -21,7 +21,7 @@ public class SqliteJdbcSymmetricDialect extends SqliteSymmetricDialect {
         trans.executeCallback(new IConnectionCallback<Object>() {
             @Override
             public Object execute(Connection con) throws SQLException {
-                org.sqlite.SQLiteConnection unwrapped = ((org.sqlite.SQLiteConnection)((org.apache.commons.dbcp.DelegatingConnection)con).getInnermostDelegate());
+                org.sqlite.SQLiteConnection unwrapped = ((org.sqlite.SQLiteConnection)((org.apache.commons.dbcp2.DelegatingConnection)con).getInnermostDelegate());
                 
                 org.sqlite.Function.create(unwrapped, name, new org.sqlite.Function() {
                     @Override

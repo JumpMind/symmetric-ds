@@ -54,7 +54,7 @@ public class BulkDataLoaderFactory extends AbstractDataLoaderFactory implements 
                 || DatabaseNamesConstants.MSSQL2016.equals(platformName)) {
             return new MsSqlBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
-        } else if (DatabaseNamesConstants.ORACLE.equals(platformName)) {
+        } else if (DatabaseNamesConstants.ORACLE.equals(platformName) || DatabaseNamesConstants.ORACLE122.equals(platformName)) {
             return new OracleBulkDataLoaderFactory(engine).getDataWriter(sourceNodeId, symmetricDialect, transformWriter,
                     filters, errorHandlers, conflictSettings, resolvedData);
         } else if (DatabaseNamesConstants.TIBERO.equals(platformName)) {

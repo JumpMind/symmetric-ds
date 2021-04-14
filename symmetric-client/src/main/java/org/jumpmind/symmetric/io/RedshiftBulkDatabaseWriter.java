@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
-import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -78,10 +77,8 @@ public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             super.s3AccessKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_ACCESS_KEY);
         }
         
-        ParameterMetaData secretKeyMetaData = ParameterConstants.getParameterMetaData()
-                .get(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
         String secretKey = parameterService.getString(ParameterConstants.REDSHIFT_BULK_LOAD_S3_SECRET_KEY);
-        if (secretKeyMetaData.isEncryptedType() && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
+        if (secretKey != null && secretKey.startsWith(SecurityConstants.PREFIX_ENC)) {
             secretKey = securityService.decrypt(secretKey.substring(SecurityConstants.PREFIX_ENC.length()));
         }
         if (StringUtils.isNotBlank(secretKey)) {

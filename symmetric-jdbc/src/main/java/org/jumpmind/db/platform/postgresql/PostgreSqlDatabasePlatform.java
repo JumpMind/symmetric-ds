@@ -346,4 +346,15 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return sql + " limit " + limit + " offset " + offset;
     }
+    
+    @Override
+    public boolean supportsSliceTables() {
+        return true;
+    }
+    
+    @Override
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
+        return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
+    }
+
 }

@@ -1730,7 +1730,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                 DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable.getCatalog(),
                                         foreignTable.getSchema(), foreignTable.getName(), keyColumns,
                                         foreignTable.getColumns(), nullValues, null);
-                                Object[] selectValues = selectRow.toArray(selectRow.keySet().toArray(new String[0]));
+                                Object[] selectValues = platform.getObjectValues(BinaryEncoding.HEX, selectRow.toStringArray(selectRow.keySet().toArray(new String[0])),
+                                        keyColumns);
                                 List<Row> rows = transaction.query(selectSt.getSql(), new RowMapper(), selectValues, selectSt.getTypes());
 
                                 if (rows != null) {
@@ -1739,7 +1740,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                                         DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
                                                 foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
                                                 foreignTable.getColumns(), nullValues, null);
-                                        String whereSql = whereSt.buildDynamicSql(BinaryEncoding.NONE, row, false, true, 
+                                        String whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, row, false, true, 
                                                 foreignTable.getPrimaryKeyColumns()).substring(6);
                                         String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                                         if (delimiter != null && delimiter.length() > 0) {
@@ -1798,7 +1799,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                             DmlStatement whereSt = platform.createDmlStatement(DmlType.WHERE, foreignTable.getCatalog(),
                                     foreignTable.getSchema(), foreignTable.getName(), foreignTable.getPrimaryKeyColumns(),
                                     foreignTable.getColumns(), nullValues, null);
-                            String whereSql = whereSt.buildDynamicSql(BinaryEncoding.NONE, whereRow, false, true,
+                            String whereSql = whereSt.buildDynamicSql(BinaryEncoding.HEX, whereRow, false, true,
                                     foreignTable.getPrimaryKeyColumns()).substring(6);
                             String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
                             if (delimiter != null && delimiter.length() > 0) {
@@ -1807,9 +1808,8 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
 
                             Row foreignRow = new Row(foreignTable.getColumnCount());
                             DmlStatement selectSt = platform.createDmlStatement(DmlType.SELECT, foreignTable, null);
-                            String[] keysAsStrings = whereRow.toStringArray(foreignTable.getPrimaryKeyColumnNames());
 
-                            Object[] keys = platform.getObjectValues(encoding, keysAsStrings, foreignTable.getColumns());
+                            Object[] keys = whereRow.toArray(foreignTable.getPrimaryKeyColumnNames());
                             Map<String, Object> values = platform.getSqlTemplateDirty().queryForMap(selectSt.getSql(), keys);
                             if (values == null) {
                                 log.info("Unable to find missing foreign key data for table '{}', parent data not found.  Using sql='{}' with keys '{}'",

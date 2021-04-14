@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,8 +37,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.jumpmind.db.platform.AbstractDatabasePlatform;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.platform.ase.AseDatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2000DatabasePlatform;
+import org.jumpmind.db.platform.mssql.MsSql2005DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2008DatabasePlatform;
 import org.jumpmind.db.platform.mssql.MsSql2016DatabasePlatform;
+import org.jumpmind.db.platform.oracle.OracleDatabasePlatform;
+import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDatabasePlatform;
+import org.jumpmind.db.platform.tibero.TiberoDatabasePlatform;
 import org.jumpmind.symmetric.TestConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
@@ -654,6 +662,8 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
             expectedValues[2] = translateExpectedString(expectedValues[2], true);
             expectedValues[3] = translateExpectedCharString(expectedValues[3], 50, false);
             expectedValues[4] = translateExpectedCharString(expectedValues[4], 50, true);
+            expectedValues[5] = translateExpectedDate(expectedValues[5]);
+            expectedValues[6] = translateExpectedTimestamp(expectedValues[6]);
         }
         assertEquals(TEST_COLUMNS, expectedValues, results);
     }
@@ -671,8 +681,11 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 if ((resultObj instanceof Double || resultObj instanceof BigDecimal) && expected[i].indexOf(decimal) != -1) {
                     DecimalFormat df = new DecimalFormat("0.00####################################");
                     resultValue = df.format(resultObj);
+                } else if (resultObj instanceof Timestamp) {
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0");
+                    resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Date) {
-                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.000");
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                     resultValue = df.format(resultObj);
                 } else if (resultObj instanceof Boolean) {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";
@@ -726,6 +739,24 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
         } else if (value != null
                 && getDbDialect().getPlatform().getDatabaseInfo().isCharColumnSpaceTrimmed()) {
             return value.replaceFirst(" *$", "");
+        }
+        return value;
+    }
+
+    protected String translateExpectedDate(String value) {
+        IDatabasePlatform platform = engine.getDatabasePlatform();
+        if (value != null && (!(platform instanceof OracleDatabasePlatform || platform instanceof TiberoDatabasePlatform
+                || ((platform instanceof MsSql2000DatabasePlatform || platform instanceof MsSql2005DatabasePlatform)
+                        && !(platform instanceof MsSql2008DatabasePlatform || platform instanceof MsSql2016DatabasePlatform))
+                || platform instanceof AseDatabasePlatform || platform instanceof SqlAnywhereDatabasePlatform))) {
+            value = value.replaceAll(" 00:00:00\\.0*", "");
+        }
+        return value;
+    }
+
+    protected String translateExpectedTimestamp(String value) {
+        if (value != null) {
+            value = value.replaceAll("\\.0*", ".0");
         }
         return value;
     }

@@ -130,7 +130,8 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
         databaseInfo.setAutoIncrementUpdateAllowed(false);
-
+        databaseInfo.setBinaryQuoteStart("0x");
+        databaseInfo.setBinaryQuoteEnd("");
     }
 
     @Override

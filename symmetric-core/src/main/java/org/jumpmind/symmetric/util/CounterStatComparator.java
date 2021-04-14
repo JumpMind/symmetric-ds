@@ -18,42 +18,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.db.util;
+package org.jumpmind.symmetric.util;
 
-import java.sql.SQLException;
+import java.util.Comparator;
 
-import javax.sql.DataSource;
+public class CounterStatComparator implements Comparator<CounterStat> {
 
-import org.apache.commons.dbcp2.BasicDataSource;
+    protected boolean sortAscending = true;
 
-/**
- * A subclass of {@link BasicDataSource} which allows for a data source to be
- * closed (all underlying connections are closed) and then allows new
- * connections to be created.
- */
-public class ResettableBasicDataSource extends BasicDataSource {
-
-    protected boolean closed;
-
-    public ResettableBasicDataSource() {
-        setAccessToUnderlyingConnectionAllowed(true);
+    public CounterStatComparator() {
+    }
+    
+    public CounterStatComparator(boolean sortAscending) {
+       this.sortAscending = sortAscending; 
     }
 
     @Override
-    public synchronized void close() {
-        try {
-            closed = true;
-            super.close();
-        } catch (SQLException e) {
+    public int compare(CounterStat o1, CounterStat o2) {
+        int compare = 0;
+        if (o1 != null && o2 != null) {
+            if (o1.getCount() > o2.getCount()) {
+                compare = 1;
+            } else if (o1.getCount() < o2.getCount()) {
+                compare = -1;
+            }
+        } else if (o1 == null) {
+            compare = -1;
+        } else {
+            compare = 1;
         }
+        return sortAscending ? compare : compare * -1;
     }
 
-    @Override
-    protected DataSource createDataSource() throws SQLException {
-        if (closed) {
-            closed = false;
-            super.start();
-        }
-        return super.createDataSource();
-    }
 }

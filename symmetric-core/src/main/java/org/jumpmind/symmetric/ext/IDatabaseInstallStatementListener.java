@@ -18,32 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.config;
+package org.jumpmind.symmetric.ext;
 
 import org.jumpmind.extension.IExtensionPoint;
-import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 
-/**
- * An {@link IExtensionPoint} that allows a client to listen in on the trigger creation
- * process.
- *
- * 
- */
-public interface ITriggerCreationListener extends IExtensionPoint {
-
-    public void syncTriggersStarted();
+public interface IDatabaseInstallStatementListener extends IExtensionPoint {
     
-    public void triggerCreated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory history);
+    public void sqlApplied(String engineName, String sql, int statementNumber, int totalStatements);
     
-    public void triggerChecked(int triggersToSync, int triggersSynced);
-
-    public void triggerFailed(int triggersToSync, int triggersSynced, Trigger trigger, Exception ex);
-
-    public void triggerInactivated(int triggersToSync, int triggersSynced, Trigger trigger, TriggerHistory oldHistory);
-
-    public void tableDoesNotExist(int triggersToSync, int triggersSynced, Trigger trigger);
-    
-    public void syncTriggersEnded();
-
 }

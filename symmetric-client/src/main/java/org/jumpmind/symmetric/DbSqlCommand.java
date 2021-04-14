@@ -26,7 +26,7 @@ import java.io.FileReader;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.h2.tools.Shell;
 
 public class DbSqlCommand extends AbstractCommandLauncher {

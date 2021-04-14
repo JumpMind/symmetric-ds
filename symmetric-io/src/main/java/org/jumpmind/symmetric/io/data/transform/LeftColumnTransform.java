@@ -62,7 +62,7 @@ public class LeftColumnTransform implements ISingleNewAndOldValueColumnTransform
             }
         }
         
-        if (data.getTargetDmlType().equals(DataEventType.DELETE) && !column.isPk()) {
+        if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);
