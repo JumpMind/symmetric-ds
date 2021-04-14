@@ -243,8 +243,6 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
     
     protected void createStagingFile() {
-        //TODO: We should use constants for dir structure path, 
-        //      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 table.getName() + this.getBatch().getBatchId() + ".csv");
         log.debug("Using staging file {}", stagedInputFile.getFile().getPath());

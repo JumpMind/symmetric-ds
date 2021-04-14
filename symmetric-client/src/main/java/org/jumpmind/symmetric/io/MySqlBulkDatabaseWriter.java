@@ -298,18 +298,16 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         ArrayList<Integer> indexes = new ArrayList<Integer>();
         for (int i = 0; i < byteData.length; i++) {
             if (byteData[i] == '"' || byteData[i] == '\\') {
-                        indexes.add(i + indexes.size());
-                }
+                indexes.add(i + indexes.size());
+            }
         }
         for (Integer index : indexes) {
-                byteData = ArrayUtils.add(byteData, index, (byte) '\\');
+            byteData = ArrayUtils.insert(index, byteData, (byte) '\\');
         }
         return byteData;
     }
 
     protected void createStagingFile() {
-        //TODO: We should use constants for dir structure path, 
-        //      but we don't want to depend on symmetric core.
         this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 targetTable.getName() + this.getBatch().getBatchId() + ".csv");
     }
