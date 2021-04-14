@@ -19,6 +19,7 @@ import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.ResettableBasicDataSource;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -301,7 +302,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
     
     protected void createStagingFile() {
-        this.stagedInputFile = stagingManager.create("bulkloaddir",
+        this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 table.getName() + this.getBatch().getBatchId() + ".csv");
     }
 

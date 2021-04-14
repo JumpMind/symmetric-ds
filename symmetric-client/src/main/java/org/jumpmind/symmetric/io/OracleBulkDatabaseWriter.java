@@ -37,6 +37,7 @@ import org.jumpmind.db.model.ColumnTypes;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -142,7 +143,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
             }
             if (dataResource == null && !isFallBackToDefault()) {
-                dataResource = stagingManager.create("bulkloaddir", getBatch().getBatchId());
+                dataResource = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD, getBatch().getBatchId());
             }
             columnLengthsMap.clear();
             return true;
@@ -153,7 +154,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void createStagingFile() {
         long batchId = getBatch().getBatchId();
-        controlResource = stagingManager.create("bulkloaddir", StringUtils.leftPad(batchId + "-ctl", 14, "0"));
+        controlResource = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD, StringUtils.leftPad(batchId + "-ctl", 14, "0"));
         try {
             OutputStream out = controlResource.getOutputStream();
             out.write(("LOAD DATA\n").getBytes());
