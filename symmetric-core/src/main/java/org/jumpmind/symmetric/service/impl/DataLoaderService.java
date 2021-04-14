@@ -1099,6 +1099,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 log.info("Bulk loader failed in class {} with message: {}", e.getClass().getName(), e.getMessage());
                                 
                                 ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
+                                ctx.setLastError(null);
                                 listener.currentBatch.setStatus(Status.OK);
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
                                 try {
