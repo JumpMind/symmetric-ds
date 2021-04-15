@@ -27,11 +27,11 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
@@ -65,10 +65,10 @@ public class NotifyDialog extends ResizableWindow {
         final String message = text;
         
         final Label textLabel = new Label(message, ContentMode.HTML);
-        messageArea.addComponent(textLabel);
+        messageArea.add(textLabel);
         messageArea.setExpandRatio(textLabel, 1);
         
-        content.addComponent(messageArea);
+        content.add(messageArea);
         content.setExpandRatio(messageArea, 1);
 
         final Button detailsButton = new Button("Details");
@@ -100,7 +100,7 @@ public class NotifyDialog extends ResizableWindow {
             }
         });
 
-        content.addComponent(buildButtonFooter(detailsButton, buildCloseButton()));
+        content.add(buildButtonFooter(detailsButton, buildCloseButton()));
 
     }
 

@@ -67,7 +67,7 @@ import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.ui.Tree.TreeMultiSelectionModel;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -136,7 +136,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         leftLayout.setSizeFull();
         leftLayout.addStyleName(ValoTheme.MENU_ROOT);
 
-        leftLayout.addComponent(buildLeftMenu());
+        leftLayout.add(buildLeftMenu());
 
         Panel scrollable = new Panel();
         scrollable.setSizeFull();
@@ -144,7 +144,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         dbTree = buildDbTree();
         scrollable.setContent(dbTree);
 
-        leftLayout.addComponent(scrollable);
+        leftLayout.add(scrollable);
         leftLayout.setExpandRatio(scrollable, 1);
 
         VerticalLayout rightLayout = new VerticalLayout();
@@ -161,8 +161,8 @@ public class SqlExplorer extends HorizontalSplitPanel {
         contentMenuBar.setWidth(100, Unit.PERCENTAGE);
         addShowButton(contentMenuBar);
 
-        rightMenuWrapper.addComponent(contentMenuBar);
-        rightLayout.addComponent(rightMenuWrapper);
+        rightMenuWrapper.add(contentMenuBar);
+        rightLayout.add(rightMenuWrapper);
 
         contentTabs = new SqlExplorerTabPanel();
         contentTabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {
@@ -173,7 +173,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                 selectContentTab((IContentTab) contentTabs.getSelectedTab());
             }
         });
-        rightLayout.addComponent(contentTabs);
+        rightLayout.add(contentTabs);
         rightLayout.setExpandRatio(contentTabs, 1);
 
         addComponents(leftLayout, rightLayout);

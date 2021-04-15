@@ -25,14 +25,14 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.Serializable;
 
 import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.TextField;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -58,7 +58,7 @@ public class PromptDialog extends Window {
         setContent(layout);
 
         if (isNotBlank(text)) {
-            layout.addComponent(new Label(text));
+            layout.add(new Label(text));
         }
 
         final TextField field = new TextField();
@@ -67,7 +67,7 @@ public class PromptDialog extends Window {
         if (defaultValue != null) {
             field.setSelection(0, defaultValue.length());
         }
-        layout.addComponent(field);
+        layout.add(field);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
@@ -75,7 +75,7 @@ public class PromptDialog extends Window {
         buttonLayout.setWidth(100, Unit.PERCENTAGE);
 
         Label spacer = new Label(" ");
-        buttonLayout.addComponent(spacer);
+        buttonLayout.add(spacer);
         buttonLayout.setExpandRatio(spacer, 1);
 
         Button cancelButton = new Button("Cancel");
@@ -88,7 +88,7 @@ public class PromptDialog extends Window {
                 UI.getCurrent().removeWindow(PromptDialog.this);
             }
         });
-        buttonLayout.addComponent(cancelButton);
+        buttonLayout.add(cancelButton);
 
         Button okButton = new Button("Ok");
         okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -103,9 +103,9 @@ public class PromptDialog extends Window {
                 }
             }
         });
-        buttonLayout.addComponent(okButton);
+        buttonLayout.add(okButton);
 
-        layout.addComponent(buttonLayout);
+        layout.add(buttonLayout);
 
         field.focus();
 

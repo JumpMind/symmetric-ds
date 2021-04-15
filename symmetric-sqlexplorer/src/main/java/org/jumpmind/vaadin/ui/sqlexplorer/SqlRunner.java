@@ -52,9 +52,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Panel;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SqlRunner extends Thread {
 
@@ -412,7 +412,7 @@ public class SqlRunner extends Thread {
         if (StringUtils.isNotBlank(style)) {
             label.setStyleName(style);
         }
-        content.addComponent(label);
+        content.add(label);
         return panel;
     }
 

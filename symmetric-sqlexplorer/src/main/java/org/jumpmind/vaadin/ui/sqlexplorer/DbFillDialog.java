@@ -35,16 +35,16 @@ import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.shared.ui.ValueChangeMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.CheckBox;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.RadioButtonGroup;
-import com.vaadin.ui.TextField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class DbFillDialog extends ResizableWindow {
 
@@ -62,15 +62,15 @@ public class DbFillDialog extends ResizableWindow {
 
     private VerticalLayout optionLayout;
 
-    private CheckBox continueBox;
+    private Checkbox continueBox;
 
-    private CheckBox cascadeBox;
+    private Checkbox cascadeBox;
 
-    private CheckBox cascadeSelectBox;
+    private Checkbox cascadeSelectBox;
 
-    private CheckBox truncateBox;
+    private Checkbox truncateBox;
 
-    private CheckBox verboseBox;
+    private Checkbox verboseBox;
  
     private TextField countField;
 
@@ -114,7 +114,7 @@ public class DbFillDialog extends ResizableWindow {
 
         createOptionLayout();
 
-        addComponent(tableSelectionLayout, 1);
+        add(tableSelectionLayout, 1);
         addButtons();
         nextButton.setClickShortcut(KeyCode.ENTER);
         nextButton.focus();
@@ -187,7 +187,7 @@ public class DbFillDialog extends ResizableWindow {
         });
         fillButton.setVisible(false);
 
-        addComponent(buildButtonFooter(cancelButton, previousButton, nextButton, fillButton));
+        add(buildButtonFooter(cancelButton, previousButton, nextButton, fillButton));
 
     }
 
@@ -197,67 +197,67 @@ public class DbFillDialog extends ResizableWindow {
         optionLayout.setMargin(true);
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
-        optionLayout.addComponent(new Label("Please choose from the following options"));
+        optionLayout.add(new Label("Please choose from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.addComponent(formLayout);
+        optionLayout.add(formLayout);
         optionLayout.setExpandRatio(formLayout, 1);
 
         countField = new TextField("Count (# of rows to fill)");
         countField.setValue("1");
         countField.setValueChangeMode(ValueChangeMode.EAGER);
         countField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(countField);
+        formLayout.add(countField);
 
         intervalField = new TextField("Interval (ms)");
         intervalField.setValue("0");
         intervalField.setValueChangeMode(ValueChangeMode.EAGER);
         intervalField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(intervalField);
+        formLayout.add(intervalField);
 
         insertWeightField = new TextField("Insert Weight");
         insertWeightField.setValue("1");
         insertWeightField.setValueChangeMode(ValueChangeMode.EAGER);
         insertWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(insertWeightField);
+        formLayout.add(insertWeightField);
 
         updateWeightField = new TextField("Update Weight");
         updateWeightField.setValue("0");
         updateWeightField.setValueChangeMode(ValueChangeMode.EAGER);
         updateWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(updateWeightField);
+        formLayout.add(updateWeightField);
 
         deleteWeightField = new TextField("Delete Weight");
         deleteWeightField.setValue("0");
         deleteWeightField.setValueChangeMode(ValueChangeMode.EAGER);
         deleteWeightField.addValueChangeListener(event -> fillButton.setEnabled(enableFillButton()));
-        formLayout.addComponent(deleteWeightField);
+        formLayout.add(deleteWeightField);
 
-        continueBox = new CheckBox("Continue (ignore ANY errors and continue to modify)");
+        continueBox = new Checkbox("Continue (ignore ANY errors and continue to modify)");
         continueBox.setValue(true);
-        formLayout.addComponent(continueBox);
+        formLayout.add(continueBox);
 
-        cascadeBox = new CheckBox("Fill dependent tables also.");
+        cascadeBox = new Checkbox("Fill dependent tables also.");
         cascadeBox.setValue(false);
-        formLayout.addComponent(cascadeBox);
+        formLayout.add(cascadeBox);
 
-        cascadeSelectBox = new CheckBox("Fill dependent tables by selecting existing data.");
+        cascadeSelectBox = new Checkbox("Fill dependent tables by selecting existing data.");
         cascadeSelectBox.setValue(false);
-        formLayout.addComponent(cascadeSelectBox);
+        formLayout.add(cascadeSelectBox);
 
-        verboseBox = new CheckBox("Turn on verbose logging during fill.");
+        verboseBox = new Checkbox("Turn on verbose logging during fill.");
         verboseBox.setValue(false);
-        formLayout.addComponent(verboseBox);
+        formLayout.add(verboseBox);
 
-        truncateBox = new CheckBox("Truncate table(s) before filling.");
+        truncateBox = new Checkbox("Truncate table(s) before filling.");
         truncateBox.setValue(false);
-        formLayout.addComponent(truncateBox);
+        formLayout.add(truncateBox);
         
         oGroup = new RadioButtonGroup<String>();
         oGroup.setItems("Fill Table(s)", "Send to Sql Editor");
         oGroup.setSelectedItem("Fill Table(s)");
-        formLayout.addComponent(oGroup);
+        formLayout.add(oGroup);
 
     }
 
@@ -312,7 +312,7 @@ public class DbFillDialog extends ResizableWindow {
 
     protected void previous() {
         content.removeComponent(optionLayout);
-        content.addComponent(tableSelectionLayout, 0);
+        content.add(tableSelectionLayout, 0);
         content.setExpandRatio(tableSelectionLayout, 1);
         fillButton.setVisible(false);
         fillButton.removeClickShortcut();
@@ -324,7 +324,7 @@ public class DbFillDialog extends ResizableWindow {
 
     protected void next() {
         content.removeComponent(tableSelectionLayout);
-        content.addComponent(optionLayout, 0);
+        content.add(optionLayout, 0);
         content.setExpandRatio(optionLayout, 1);
         nextButton.setVisible(false);
         nextButton.removeClickShortcut();

@@ -14,7 +14,7 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
@@ -93,7 +93,7 @@ task publishSymmetric {
 
 task releaseSymmetric {
     dependsOn publishSymmetric
-    dependsOn task('symmetric-server:publishDoc') 
+    dependsOn tasks.getByPath('symmetric-server:publishDoc')
 	group = 'SymmetricDS'
 	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }

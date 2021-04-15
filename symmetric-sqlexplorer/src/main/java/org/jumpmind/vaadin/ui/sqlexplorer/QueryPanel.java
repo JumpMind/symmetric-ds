@@ -58,20 +58,20 @@ import com.vaadin.server.Resource;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -153,7 +153,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
         status = new Label("No Results");
         status.setStyleName(ValoTheme.LABEL_SMALL);
-        statusBar.addComponent(status);
+        statusBar.add(status);
 
         setSelectedTabChangeListener();
 
@@ -168,7 +168,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         emptyResults.setSizeFull();
         Label label = new Label("New results will appear here");
         label.setWidthUndefined();
-        emptyResults.addComponent(label);
+        emptyResults.add(label);
         emptyResults.setComponentAlignment(label, Alignment.MIDDLE_CENTER);
         resultStatuses.put(emptyResults, "No Results");
 
@@ -266,7 +266,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
     public void replaceGeneralResultsWith(Component newComponent, VaadinIcons icon) {
         ((VerticalLayout) generalResultsTab.getComponent()).removeAllComponents();
-        ((VerticalLayout) generalResultsTab.getComponent()).addComponent(newComponent);
+        ((VerticalLayout) generalResultsTab.getComponent()).add(newComponent);
         generalResultsTab.setIcon(icon);
     }
 
@@ -424,7 +424,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
             executingLayout.setSizeFull();
             final Label label = new Label("Executing:\n\n" + StringUtils.abbreviate(sqlText, 250), ContentMode.PREFORMATTED);
             label.setEnabled(false);
-            executingLayout.addComponent(label);
+            executingLayout.add(label);
             executingLayout.setComponentAlignment(label, Alignment.TOP_LEFT);
 
             final String sql = sqlText;
@@ -537,7 +537,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                     }).start();
                 }
             });
-            executingLayout.addComponent(cancel);
+            executingLayout.add(cancel);
 
             scheduled = true;
             runner.start();

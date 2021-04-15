@@ -13,12 +13,12 @@ import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class TriggerTableLayout extends VerticalLayout{
@@ -49,9 +49,9 @@ public class TriggerTableLayout extends VerticalLayout{
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
         final Label label = new Label(trigger.getFullyQualifiedName(), ContentMode.HTML);
-        leftBar.addComponent(label);
+        leftBar.add(label);
         
-        bar.addComponent(leftBar);
+        bar.add(leftBar);
         bar.setComponentAlignment(leftBar, Alignment.MIDDLE_LEFT);
         bar.setExpandRatio(leftBar, 1);
         
@@ -69,10 +69,10 @@ public class TriggerTableLayout extends VerticalLayout{
         });
         refreshButton.setIcon(VaadinIcons.REFRESH);
 
-        bar.addComponent(rightBar);
+        bar.add(rightBar);
         bar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
         
-        this.addComponent(bar);
+        this.add(bar);
         
         grid = fillGrid();
         grid.setSizeFull();
@@ -94,7 +94,7 @@ public class TriggerTableLayout extends VerticalLayout{
             }
         });
 
-        this.addComponent(grid);
+        this.add(grid);
         this.setExpandRatio(grid, 1);
     }
     

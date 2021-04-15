@@ -25,14 +25,14 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.Serializable;
 
 import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -60,7 +60,7 @@ public class ConfirmDialog extends Window {
             textLabel.setStyleName(ValoTheme.TEXTAREA_BORDERLESS);
             textLabel.setValue(text);
             textLabel.setReadOnly(true);
-            layout.addComponent(textLabel);
+            layout.add(textLabel);
             layout.setExpandRatio(textLabel, 1);
         }
 
@@ -70,7 +70,7 @@ public class ConfirmDialog extends Window {
         buttonLayout.setWidth(100, Unit.PERCENTAGE);
 
         Label spacer = new Label(" ");
-        buttonLayout.addComponent(spacer);
+        buttonLayout.add(spacer);
         buttonLayout.setExpandRatio(spacer, 1);
 
         Button cancelButton = new Button("Cancel");
@@ -83,7 +83,7 @@ public class ConfirmDialog extends Window {
                 UI.getCurrent().removeWindow(ConfirmDialog.this);
             }
         });
-        buttonLayout.addComponent(cancelButton);
+        buttonLayout.add(cancelButton);
 
         Button okButton = new Button("Ok");
         okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -98,9 +98,9 @@ public class ConfirmDialog extends Window {
                 }
             }
         });
-        buttonLayout.addComponent(okButton);
+        buttonLayout.add(okButton);
 
-        layout.addComponent(buttonLayout);
+        layout.add(buttonLayout);
         
         okButton.focus();
 

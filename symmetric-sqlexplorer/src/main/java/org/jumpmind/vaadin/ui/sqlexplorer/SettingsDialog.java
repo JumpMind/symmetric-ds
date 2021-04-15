@@ -40,17 +40,17 @@ import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.CheckBox;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.TextField;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SettingsDialog extends ResizableWindow {
 
@@ -62,21 +62,21 @@ public class SettingsDialog extends ResizableWindow {
     
     private Binder<Integer> binder;
 
-    private CheckBox autoCommitBox;
+    private Checkbox autoCommitBox;
 
-    private CheckBox autoCompleteBox;
+    private Checkbox autoCompleteBox;
 
     private TextField delimiterField;
 
     private TextField excludeTablesWithPrefixField;
 
-    private CheckBox resultAsTextBox;
+    private Checkbox resultAsTextBox;
 
-    private CheckBox ignoreErrorsWhenRunningScript;
+    private Checkbox ignoreErrorsWhenRunningScript;
 
-    private CheckBox showRowNumbersBox;
+    private Checkbox showRowNumbersBox;
 
-    private CheckBox showResultsInNewTabsBox;
+    private Checkbox showResultsInNewTabsBox;
 
     ISettingsProvider settingsProvider;
 
@@ -87,8 +87,8 @@ public class SettingsDialog extends ResizableWindow {
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
         setWidth(600, Unit.PIXELS);
-        addComponent(createSettingsLayout(), 1);
-        addComponent(createButtonLayout());
+        add(createSettingsLayout(), 1);
+        add(createButtonLayout());
     }
 
     protected AbstractLayout createSettingsLayout() {
@@ -115,72 +115,72 @@ public class SettingsDialog extends ResizableWindow {
                     }
                 }).bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
-        settingsLayout.addComponent(rowsToFetchField);
+        settingsLayout.add(rowsToFetchField);
 
         delimiterField = new TextField("Delimiter");
         delimiterField.setValue(properties.getProperty(SQL_EXPLORER_DELIMITER, ";"));
-        settingsLayout.addComponent(delimiterField);
+        settingsLayout.add(delimiterField);
 
         excludeTablesWithPrefixField = new TextField("Hide Tables (regex)");
         excludeTablesWithPrefixField.setValue(properties.getProperty(SQL_EXPLORER_EXCLUDE_TABLES_REGEX));
-        settingsLayout.addComponent(excludeTablesWithPrefixField);
+        settingsLayout.add(excludeTablesWithPrefixField);
 
-        resultAsTextBox = new CheckBox("Result As Text");
+        resultAsTextBox = new Checkbox("Result As Text");
         String resultAsTextValue = (properties.getProperty(SQL_EXPLORER_RESULT_AS_TEXT, "false"));
         if (resultAsTextValue.equals("true")) {
             resultAsTextBox.setValue(true);
         } else {
             resultAsTextBox.setValue(false);
         }
-        settingsLayout.addComponent(resultAsTextBox);
+        settingsLayout.add(resultAsTextBox);
 
-        ignoreErrorsWhenRunningScript = new CheckBox("Ignore Errors When Running Scripts");
+        ignoreErrorsWhenRunningScript = new Checkbox("Ignore Errors When Running Scripts");
         String ignoreErrorsWhenRunningScriptTextValue = (properties.getProperty(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS, "false"));
         if (ignoreErrorsWhenRunningScriptTextValue.equals("true")) {
             ignoreErrorsWhenRunningScript.setValue(true);
         } else {
             ignoreErrorsWhenRunningScript.setValue(false);
         }
-        settingsLayout.addComponent(ignoreErrorsWhenRunningScript);
+        settingsLayout.add(ignoreErrorsWhenRunningScript);
 
-        autoCommitBox = new CheckBox("Auto Commit");
+        autoCommitBox = new Checkbox("Auto Commit");
         String autoCommitValue = (properties.getProperty(SQL_EXPLORER_AUTO_COMMIT, "true"));
         if (autoCommitValue.equals("true")) {
             autoCommitBox.setValue(true);
         } else {
             autoCommitBox.setValue(false);
         }
-        settingsLayout.addComponent(autoCommitBox);
+        settingsLayout.add(autoCommitBox);
 
-        autoCompleteBox = new CheckBox("Auto Complete");
+        autoCompleteBox = new Checkbox("Auto Complete");
         String autoCompleteValue = (properties.getProperty(SQL_EXPLORER_AUTO_COMPLETE, "true"));
         if (autoCompleteValue.equals("true")) {
             autoCompleteBox.setValue(true);
         } else {
             autoCompleteBox.setValue(false);
         }
-        settingsLayout.addComponent(autoCompleteBox);
+        settingsLayout.add(autoCompleteBox);
 
-        showRowNumbersBox = new CheckBox("Show Row Numbers");
+        showRowNumbersBox = new Checkbox("Show Row Numbers");
         String showRowNumbersValue = (properties.getProperty(SQL_EXPLORER_SHOW_ROW_NUMBERS, "true"));
         if (showRowNumbersValue.equals("true")) {
             showRowNumbersBox.setValue(true);
         } else {
             showRowNumbersBox.setValue(false);
         }
-        settingsLayout.addComponent(showRowNumbersBox);
+        settingsLayout.add(showRowNumbersBox);
 
-        showResultsInNewTabsBox = new CheckBox("Always Put Results In New Tabs");
+        showResultsInNewTabsBox = new Checkbox("Always Put Results In New Tabs");
         String showResultsInNewTabsValue = (properties.getProperty(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS, "false"));
         if (showResultsInNewTabsValue.equals("true")) {
             showResultsInNewTabsBox.setValue(true);
         } else {
             showResultsInNewTabsBox.setValue(false);
         }
-        settingsLayout.addComponent(showResultsInNewTabsBox);
+        settingsLayout.add(showResultsInNewTabsBox);
 
-        layout.addComponent(settingsLayout, 0, 0, 0, 8);
-        layout.addComponent(rowsToFetchLabel, 1, 0);
+        layout.add(settingsLayout, 0, 0, 0, 8);
+        layout.add(rowsToFetchLabel, 1, 0);
         layout.setComponentAlignment(rowsToFetchLabel, Alignment.MIDDLE_LEFT);
         
         return layout;

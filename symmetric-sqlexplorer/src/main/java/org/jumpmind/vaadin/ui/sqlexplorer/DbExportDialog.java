@@ -45,15 +45,15 @@ import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.ComboBox;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.TextArea;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class DbExportDialog extends ResizableWindow {
@@ -74,17 +74,17 @@ public class DbExportDialog extends ResizableWindow {
 
     private ComboBox<Compatible> compatibilitySelect;
 
-    private CheckBox data;
+    private Checkbox data;
 
-    private CheckBox createInfo;
+    private Checkbox createInfo;
 
-    private CheckBox foreignKeys;
+    private Checkbox foreignKeys;
 
-    private CheckBox indices;
+    private Checkbox indices;
 
-    private CheckBox quotedIdentifiers;
+    private Checkbox quotedIdentifiers;
 
-    private CheckBox dropTables;
+    private Checkbox dropTables;
 
     private TextArea whereClauseField;
 
@@ -140,7 +140,7 @@ public class DbExportDialog extends ResizableWindow {
 
         createOptionLayout();
 
-        addComponent(tableSelectionLayout, 1);
+        add(tableSelectionLayout, 1);
 
         addButtons();
         
@@ -230,7 +230,7 @@ public class DbExportDialog extends ResizableWindow {
         });
         doneButton.setVisible(false);
 
-        addComponent(buildButtonFooter(new Button[] { selectAllLink, selectNoneLink },
+        add(buildButtonFooter(new Button[] { selectAllLink, selectNoneLink },
                 cancelButton, previousButton, nextButton, exportFileButton, exportEditorButton, doneButton));
 
     }
@@ -241,11 +241,11 @@ public class DbExportDialog extends ResizableWindow {
         optionLayout.setMargin(true);
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
-        optionLayout.addComponent(new Label("Please choose from the following options"));
+        optionLayout.add(new Label("Please choose from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.addComponent(formLayout);
+        optionLayout.add(formLayout);
         optionLayout.setExpandRatio(formLayout, 1);
 
         formatSelect = new ComboBox<DbExportFormat>("Format", Arrays.asList(DbExportFormat.values()));
@@ -284,37 +284,37 @@ public class DbExportDialog extends ResizableWindow {
             }
         });
         formatSelect.setSelectedItem(DbExportFormat.SQL);
-        formLayout.addComponent(formatSelect);
+        formLayout.add(formatSelect);
 
         compatibilitySelect = new ComboBox<Compatible>("Compatibility", Arrays.asList(Compatible.values()));
 
         compatibilitySelect.setEmptySelectionAllowed(false);
         setDefaultCompatibility();
-        formLayout.addComponent(compatibilitySelect);
+        formLayout.add(compatibilitySelect);
 
-        createInfo = new CheckBox("Create Tables");
-        formLayout.addComponent(createInfo);
+        createInfo = new Checkbox("Create Tables");
+        formLayout.add(createInfo);
 
-        dropTables = new CheckBox("Drop Tables");
-        formLayout.addComponent(dropTables);
+        dropTables = new Checkbox("Drop Tables");
+        formLayout.add(dropTables);
 
-        data = new CheckBox("Insert Data");
+        data = new Checkbox("Insert Data");
         data.setValue(true);
-        formLayout.addComponent(data);
+        formLayout.add(data);
 
-        foreignKeys = new CheckBox("Create Foreign Keys");
-        formLayout.addComponent(foreignKeys);
+        foreignKeys = new Checkbox("Create Foreign Keys");
+        formLayout.add(foreignKeys);
 
-        indices = new CheckBox("Create Indices");
-        formLayout.addComponent(indices);
+        indices = new Checkbox("Create Indices");
+        formLayout.add(indices);
 
-        quotedIdentifiers = new CheckBox("Qualify with Quoted Identifiers");
-        formLayout.addComponent(quotedIdentifiers);
+        quotedIdentifiers = new Checkbox("Qualify with Quoted Identifiers");
+        formLayout.add(quotedIdentifiers);
 
         whereClauseField = new TextArea("Where Clause");
         whereClauseField.setWidth(100, Unit.PERCENTAGE);
         whereClauseField.setRows(2);
-        formLayout.addComponent(whereClauseField);
+        formLayout.add(whereClauseField);
 
         exportFormatOptionGroup = new RadioButtonGroup<String>("Export Format");
         List<String> formatList = new ArrayList<String>();
@@ -325,7 +325,7 @@ public class DbExportDialog extends ResizableWindow {
         exportFormatOptionGroup.setItems(formatList);
         exportFormatOptionGroup.setValue(EXPORT_AS_A_FILE);
         exportFormatOptionGroup.addValueChangeListener(event -> setExportButtonsEnabled());
-        formLayout.addComponent(exportFormatOptionGroup);
+        formLayout.add(exportFormatOptionGroup);
 
     }
 
@@ -356,7 +356,7 @@ public class DbExportDialog extends ResizableWindow {
 
     protected void previous() {
         content.removeComponent(optionLayout);
-        content.addComponent(tableSelectionLayout, 0);
+        content.add(tableSelectionLayout, 0);
         content.setExpandRatio(tableSelectionLayout, 1);
         previousButton.setVisible(false);
         exportEditorButton.setVisible(false);
@@ -375,7 +375,7 @@ public class DbExportDialog extends ResizableWindow {
 
     protected void next() {
         content.removeComponent(tableSelectionLayout);
-        content.addComponent(optionLayout, 0);
+        content.add(optionLayout, 0);
         content.setExpandRatio(optionLayout, 1);
         nextButton.setVisible(false);
         nextButton.removeClickShortcut();

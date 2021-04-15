@@ -12,7 +12,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
@@ -21,7 +21,7 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 
@@ -49,7 +49,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
                 selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
             }
         });
-        addComponent(tabSheet);
+        add(tabSheet);
 
         refreshSource(trigger);
         refreshDetails(trigger, db, settings);
@@ -81,7 +81,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         editor.setMode(AceMode.sql);
         editor.setValue(sourceText);
         editor.setSizeFull();
-        source.addComponent(editor);
+        source.add(editor);
         source.setExpandRatio(editor, 1);
         
         HorizontalLayout bar = new HorizontalLayout();
@@ -102,10 +102,10 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         });
         wrapButton.setIcon(VaadinIcons.ALIGN_JUSTIFY);
         
-        bar.addComponent(wrapSelect);
+        bar.add(wrapSelect);
         bar.setComponentAlignment(wrapSelect, Alignment.TOP_RIGHT);
         bar.setHeight((float)(2.5), Unit.REM);
-        source.addComponent(bar);
+        source.add(bar);
         
         tabSheet.addTab(source, "Source");
         tabSheet.setSelectedTab(source);
@@ -283,7 +283,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         executingLayout.setSizeFull();
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
-        executingLayout.addComponent(p);
+        executingLayout.add(p);
         tabSheet.addTab(executingLayout, "Details", VaadinIcons.SPINNER, 0);
         tabSheet.setSelectedTab(executingLayout);
         
@@ -299,7 +299,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(true);
         layout.setSizeFull();
-        layout.addComponent(triggerTable);
+        layout.add(triggerTable);
         tabSheet.addTab(layout, "Details", null, 0);
         if (select) {
             tabSheet.setSelectedTab(layout);

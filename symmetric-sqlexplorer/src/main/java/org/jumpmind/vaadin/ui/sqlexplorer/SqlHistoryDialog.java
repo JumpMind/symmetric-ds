@@ -31,12 +31,12 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ResizableWindow;
 
 import com.vaadin.event.ShortcutAction.KeyCode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.components.grid.HeaderCell;
 import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.themes.ValoTheme;
@@ -60,7 +60,7 @@ public class SqlHistoryDialog extends ResizableWindow {
         mainLayout.setSizeFull();
         mainLayout.setMargin(false);
         mainLayout.setSpacing(true);
-        addComponent(mainLayout, 1);
+        add(mainLayout, 1);
 
         final Set<SqlHistory> sqlHistories = new TreeSet<SqlHistory>(settingsProvider.get().getSqlHistory());
 
@@ -101,7 +101,7 @@ public class SqlHistoryDialog extends ResizableWindow {
 
         grid.setSizeFull();
 
-        mainLayout.addComponent(grid);
+        mainLayout.add(grid);
         mainLayout.setExpandRatio(grid, 1);
         
         grid.setItems(sqlHistories);
@@ -125,7 +125,7 @@ public class SqlHistoryDialog extends ResizableWindow {
             }
         });
 
-        addComponent(buildButtonFooter(cancelButton, applyButton));
+        add(buildButtonFooter(cancelButton, applyButton));
 
     }
     

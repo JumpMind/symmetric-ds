@@ -41,13 +41,13 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Grid;
-import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.ui.ProgressBar;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
 
@@ -94,7 +94,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                 }
             }
         });
-        addComponent(tabSheet);
+        add(tabSheet);
 
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) db.getPlatform().getSqlTemplate();
 
@@ -147,7 +147,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         executingLayout.setSizeFull();
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
-        executingLayout.addComponent(p);
+        executingLayout.add(p);
         executingLayout.setData(isInit);
         tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcons.SPINNER, 1);
         if (!isInit) {
@@ -182,7 +182,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                                 layout.setMargin(true);
                                 layout.setSizeFull();
                                 if (results.size() > 0) {
-                                    layout.addComponent(results.get(0));
+                                    layout.add(results.get(0));
                                 }
                                 tabSheet.addTab(layout, "Data", null, 1);
                                 tabSheet.setSelectedTab(layout);
@@ -209,7 +209,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     protected void populate(VerticalLayout layout) {
         AbstractMetaDataGridCreator creator = (AbstractMetaDataGridCreator) layout.getData();
         Grid<List<Object>> grid = creator.create();
-        layout.addComponent(grid);
+        layout.add(grid);
         layout.setExpandRatio(grid, 1);
         layout.setData(null);
     }

@@ -28,14 +28,14 @@ import com.vaadin.event.ShortcutAction.ModifierKey;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Page;
 import com.vaadin.shared.ui.window.WindowMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -88,18 +88,18 @@ public class ResizableWindow extends Window {
         });
     }
     
-    protected void addComponent(Component component, int expandRatio) {
-        content.addComponent(component);
+    protected void add(Component component, int expandRatio) {
+        content.add(component);
         content.setExpandRatio(component, expandRatio);
     }
     
-    protected void addComponent(Component component) {
-        content.addComponent(component);
+    protected void add(Component component) {
+        content.add(component);
     }
     
     protected void addComponents(Component... components) {
         for (Component component : components) {
-            content.addComponent(component);    
+            content.add(component);    
         }        
     }
 

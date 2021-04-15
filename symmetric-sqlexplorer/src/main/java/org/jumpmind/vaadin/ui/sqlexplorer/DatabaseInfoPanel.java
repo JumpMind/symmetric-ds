@@ -23,7 +23,7 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Grid.SelectionMode;
 
 public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
@@ -56,7 +56,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
             }
         });
-        addComponent(tabSheet);
+        add(tabSheet);
         
         Connection c = null;
         try {
@@ -167,7 +167,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(false);
         layout.setSizeFull();
-        layout.addComponent(grid);
+        layout.add(grid);
         layout.setExpandRatio(grid, 1);
         return layout;
     }

@@ -33,15 +33,15 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.themes.ValoTheme;
-import com.vaadin.ui.ComboBox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.ui.Grid;
-import com.vaadin.ui.TextField;
+import com.vaadin.flow.component.textfield.TextField;
 
 public class TableSelectionLayout extends VerticalLayout {
 
@@ -96,22 +96,22 @@ public class TableSelectionLayout extends VerticalLayout {
 
     protected void createTableSelectionLayout(String titleKey) {
 
-        this.addComponent(new Label(titleKey));
+        this.add(new Label(titleKey));
 
         HorizontalLayout schemaChooserLayout = new HorizontalLayout();
         schemaChooserLayout.setWidth(100, Unit.PERCENTAGE);
         schemaChooserLayout.setSpacing(true);
-        this.addComponent(schemaChooserLayout);
+        this.add(schemaChooserLayout);
 
         catalogSelect = new ComboBox<String>("Catalog", getCatalogs());
-        schemaChooserLayout.addComponent(catalogSelect);
+        schemaChooserLayout.add(catalogSelect);
         if (selectedTablesSet.iterator().hasNext()) {
             catalogSelect.setSelectedItem(selectedTablesSet.iterator().next().getCatalog());
         } else {
             catalogSelect.setSelectedItem(databasePlatform.getDefaultCatalog());
         }
         schemaSelect = new ComboBox<String>("Schema", getSchemas());
-        schemaChooserLayout.addComponent(schemaSelect);
+        schemaChooserLayout.add(schemaSelect);
         if (selectedTablesSet.iterator().hasNext()) {
             schemaSelect.setSelectedItem(selectedTablesSet.iterator().next().getSchema());
         } else {
@@ -119,7 +119,7 @@ public class TableSelectionLayout extends VerticalLayout {
         }
 
         Label spacer = new Label();
-        schemaChooserLayout.addComponent(spacer);
+        schemaChooserLayout.add(spacer);
         schemaChooserLayout.setExpandRatio(spacer, 1);
 
         filterField = new TextField();
@@ -132,7 +132,7 @@ public class TableSelectionLayout extends VerticalLayout {
             refreshTableOfTables();
         });
 
-        schemaChooserLayout.addComponent(filterField);
+        schemaChooserLayout.add(filterField);
         schemaChooserLayout.setComponentAlignment(filterField, Alignment.BOTTOM_RIGHT);
         
         listOfTablesGrid = new Grid<String>();
@@ -155,7 +155,7 @@ public class TableSelectionLayout extends VerticalLayout {
         
         listOfTablesGrid.addColumn(table -> table);
         
-        this.addComponent(listOfTablesGrid);
+        this.add(listOfTablesGrid);
         this.setExpandRatio(listOfTablesGrid, 1);
 
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
@@ -176,10 +176,10 @@ public class TableSelectionLayout extends VerticalLayout {
         selectAllFooter.setSpacing(true);
         selectAllFooter.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
-        selectAllFooter.addComponent(selectAllLink);
-        selectAllFooter.addComponent(selectNoneLink);
+        selectAllFooter.add(selectAllLink);
+        selectAllFooter.add(selectNoneLink);
         
-        this.addComponent(selectAllFooter);
+        this.add(selectAllFooter);
         
         refreshTableOfTables();
 

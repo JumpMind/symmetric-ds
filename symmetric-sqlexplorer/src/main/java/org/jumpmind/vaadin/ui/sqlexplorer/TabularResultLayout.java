@@ -67,19 +67,19 @@ import com.vaadin.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.TextField;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.components.grid.Editor;
 import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.ui.Grid;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.html.Span;
 
 public class TabularResultLayout extends VerticalLayout {
 
@@ -325,7 +325,7 @@ public class TabularResultLayout extends VerticalLayout {
                 editor.setEnabled(true);
             }
             
-            this.addComponent(grid);
+            this.add(grid);
             this.setExpandRatio(grid, 1);
 
             long count = (grid.getDataProvider().fetch(new Query<>()).count());
@@ -350,13 +350,13 @@ public class TabularResultLayout extends VerticalLayout {
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
         resultLabel = new Label("", ContentMode.HTML);
-        leftBar.addComponent(resultLabel);
+        leftBar.add(resultLabel);
 
         final Label sqlLabel = new Label("", ContentMode.TEXT);
         sqlLabel.setWidth(800, Unit.PIXELS);
-        leftBar.addComponent(sqlLabel);
+        leftBar.add(sqlLabel);
 
-        resultBar.addComponent(leftBar);
+        resultBar.add(leftBar);
         resultBar.setComponentAlignment(leftBar, Alignment.MIDDLE_LEFT);
         resultBar.setExpandRatio(leftBar, 1);
 
@@ -413,10 +413,10 @@ public class TabularResultLayout extends VerticalLayout {
             sqlLabel.setValue(StringUtils.abbreviate(sql, 200));
         }
 
-        resultBar.addComponent(rightBar);
+        resultBar.add(rightBar);
         resultBar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
 
-        this.addComponent(resultBar, 0);
+        this.add(resultBar, 0);
     }
 
     protected TabularResultLayout refreshWithoutSaveButton() {

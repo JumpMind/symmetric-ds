@@ -52,19 +52,19 @@ import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
 import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
-import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.NativeSelect;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button.ClickListener;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.Upload.SucceededListener;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class ReadOnlyTextAreaDialog extends ResizableWindow {
@@ -75,7 +75,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
     VerticalLayout wrapper;
     protected HorizontalLayout buttonLayout;
     protected TextArea textField;
-    protected NativeSelect<String> displayBox;
+    protected Select<String> displayBox;
     protected Button downloadButton;
     protected Table table;
     protected Column column;
@@ -100,25 +100,25 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         textField = new TextArea();
         textField.setSizeFull();
         textField.setWordWrap(false);
-        wrapper.addComponent(textField);
-        addComponent(wrapper, 1);
+        wrapper.add(textField);
+        add(wrapper, 1);
 
         buttonLayout = new HorizontalLayout();
         buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidth(100, Unit.PERCENTAGE);
-        addComponent(buttonLayout);
+        add(buttonLayout);
 
         if (value != null && isEncodedInHex) {
             List<String> displayList = new ArrayList<String>();
             displayList.add("Hex");
             displayList.add("Text");
             displayList.add("Decimal");
-            displayBox = new NativeSelect<String>("Display As", displayList);
+            displayBox = new Select<String>("Display As", displayList);
             displayBox.setEmptySelectionAllowed(false);
             displayBox.setSelectedItem("Hex");
             displayBox.addValueChangeListener(event -> updateTextField((String) displayBox.getValue(), value));
-            buttonLayout.addComponent(displayBox);
+            buttonLayout.add(displayBox);
         }
         
         if (table != null && isLob) {
@@ -127,11 +127,11 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         }
 
         Label spacer = new Label();
-        buttonLayout.addComponent(spacer);
+        buttonLayout.add(spacer);
         buttonLayout.setExpandRatio(spacer, 1);
 
         Button closeButton = buildCloseButton();
-        buttonLayout.addComponent(closeButton);
+        buttonLayout.add(closeButton);
         buttonLayout.setComponentAlignment(closeButton, Alignment.BOTTOM_RIGHT);
 
         textField.setValue(value);
@@ -186,7 +186,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         });
         
         if (value != null) {
-            buttonLayout.addComponent(uploadButton);
+            buttonLayout.add(uploadButton);
             buttonLayout.setComponentAlignment(uploadButton, Alignment.BOTTOM_CENTER);
         } else {
             wrapper.replaceComponent(textField, upload);
@@ -209,7 +209,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
             }, title);
             FileDownloader fileDownloader = new FileDownloader(resource);
             fileDownloader.extend(downloadButton);
-            buttonLayout.addComponent(downloadButton);
+            buttonLayout.add(downloadButton);
             buttonLayout.setComponentAlignment(downloadButton, Alignment.BOTTOM_CENTER);
             
             long fileSize = lobData.length;
@@ -226,7 +226,7 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
                 sizeText = Math.round(fileSize / 1024.0) + " GB";
             }
             Label sizeLabel = new Label(sizeText);
-            buttonLayout.addComponent(sizeLabel);
+            buttonLayout.add(sizeLabel);
             buttonLayout.setExpandRatio(sizeLabel, 1.0f);
             buttonLayout.setComponentAlignment(sizeLabel, Alignment.BOTTOM_CENTER);
         }

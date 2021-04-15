@@ -44,21 +44,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.CheckBox;
-import com.vaadin.ui.ComboBox;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.TextField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.Upload.SucceededListener;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class DbImportDialog extends ResizableWindow {
@@ -79,11 +79,11 @@ public class DbImportDialog extends ResizableWindow {
 
     private ComboBox<DbImportFormat> formatSelect;
 
-    private CheckBox force;
+    private Checkbox force;
 
-    private CheckBox ignore;
+    private Checkbox ignore;
 
-    private CheckBox replace;
+    private Checkbox replace;
 
     private ComboBox<String> schemaSelect;
 
@@ -93,9 +93,9 @@ public class DbImportDialog extends ResizableWindow {
 
     private TextField commitField;
 
-    private CheckBox alter;
+    private Checkbox alter;
 
-    private CheckBox alterCase;
+    private Checkbox alterCase;
 
     private Button cancelButton;
 
@@ -131,11 +131,11 @@ public class DbImportDialog extends ResizableWindow {
         importLayout.setMargin(true);
         importLayout.setSpacing(true);
 
-        importLayout.addComponent(new Label("Please select from the following options"));
+        importLayout.add(new Label("Please select from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        importLayout.addComponent(formLayout);
+        importLayout.add(formLayout);
         importLayout.setExpandRatio(formLayout, 1);
 
         formatSelect = new ComboBox<>("Format");
@@ -169,12 +169,12 @@ public class DbImportDialog extends ResizableWindow {
                         break;
                 }
         });
-        formLayout.addComponent(formatSelect);
+        formLayout.add(formatSelect);
 
         catalogSelect = new ComboBox<>("Catalog");
         catalogSelect.setItems(getCatalogs());
         catalogSelect.setValue(databasePlatform.getDefaultCatalog());
-        formLayout.addComponent(catalogSelect);
+        formLayout.add(catalogSelect);
 
         schemaSelect = new ComboBox<>("Schema");
         schemaSelect.setItems(getSchemas());
@@ -188,7 +188,7 @@ public class DbImportDialog extends ResizableWindow {
                 populateListOfTablesSelect();
             
         });
-        formLayout.addComponent(schemaSelect);
+        formLayout.add(schemaSelect);
 
         listOfTablesSelect = new ComboBox<>("Tables");
         populateListOfTablesSelect();
@@ -206,7 +206,7 @@ public class DbImportDialog extends ResizableWindow {
                 this.selectedTablesSet.clear();
             }
         }
-        formLayout.addComponent(listOfTablesSelect);
+        formLayout.add(listOfTablesSelect);
 
         commitField = new TextField("Rows to Commit");
         commitField.addValueChangeListener((event) -> {
@@ -214,24 +214,24 @@ public class DbImportDialog extends ResizableWindow {
         });
         commitField.setValueChangeTimeout(200);
         commitField.setValue("10000");
-        formLayout.addComponent(commitField);
+        formLayout.add(commitField);
 
-        force = new CheckBox("Force");
-        formLayout.addComponent(force);
+        force = new Checkbox("Force");
+        formLayout.add(force);
 
-        ignore = new CheckBox("Ignore");
-        formLayout.addComponent(ignore);
+        ignore = new Checkbox("Ignore");
+        formLayout.add(ignore);
 
-        replace = new CheckBox("Replace");
-        formLayout.addComponent(replace);
+        replace = new Checkbox("Replace");
+        formLayout.add(replace);
 
-        alter = new CheckBox("Alter");
+        alter = new Checkbox("Alter");
         alter.setEnabled(false);
-        formLayout.addComponent(alter);
+        formLayout.add(alter);
 
-        alterCase = new CheckBox("Alter Case");
+        alterCase = new Checkbox("Alter Case");
         alterCase.setEnabled(false);
-        formLayout.addComponent(alterCase);
+        formLayout.add(alterCase);
 
         upload = new Upload(null, new Receiver() {
 
@@ -271,7 +271,7 @@ public class DbImportDialog extends ResizableWindow {
         });        
         upload.setButtonCaption("Import");
         upload.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        formLayout.addComponent(upload);
+        formLayout.add(upload);
 
         cancelButton = new Button("Cancel", new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
@@ -280,10 +280,10 @@ public class DbImportDialog extends ResizableWindow {
                 UI.getCurrent().removeWindow(DbImportDialog.this);
             }
         });
-        addComponent(importLayout, 1);
+        add(importLayout, 1);
         AbstractLayout buttonLayout = buildButtonFooter(cancelButton);
-        buttonLayout.addComponent(upload);
-        addComponent(buttonLayout);
+        buttonLayout.add(upload);
+        add(buttonLayout);
     }
 
     protected void deleteFileAndResource() {
