@@ -29,7 +29,7 @@ import com.sun.jna.win32.W32APIOptions;
 @IgnoreJRERequirement
 public interface Kernel32Ex extends Kernel32 {
 
-    Kernel32Ex INSTANCE = (Kernel32Ex) Native.loadLibrary("kernel32", Kernel32Ex.class,
+    Kernel32Ex INSTANCE = (Kernel32Ex) Native.load("kernel32", Kernel32Ex.class,
             W32APIOptions.UNICODE_OPTIONS);
 
     boolean SetCurrentDirectory(String directory);
