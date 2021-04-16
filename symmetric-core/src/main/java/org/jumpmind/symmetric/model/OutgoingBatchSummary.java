@@ -21,12 +21,12 @@
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Holder class for summary information about outgoing batches
  */
 public class OutgoingBatchSummary extends BatchSummary implements Serializable {
 
+	private static final long serialVersionUID = 1L;
     
 }

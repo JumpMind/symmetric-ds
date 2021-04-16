@@ -959,7 +959,7 @@ public class ReleaseNotesGenerator {
             int compareTo = 0;
             if (v1.length > index && v1.length > index) {
                 try {
-                    compareTo = new Integer(v1[index]).compareTo(new Integer(v2[index]));
+                    compareTo = Integer.compare(Integer.parseInt(v1[index]), Integer.parseInt(v2[index]));
                     if (compareTo == 0) {
                         compareTo = compareTo(v1, v2, index + 1);
                     }

@@ -639,7 +639,8 @@ public class SnapshotUtil {
 
             DataSource dataSource = engine.getDatabasePlatform().getDataSource();
             if (dataSource instanceof BasicDataSource) {
-                BasicDataSource dbcp = (BasicDataSource) dataSource;
+                @SuppressWarnings("resource")
+				BasicDataSource dbcp = (BasicDataSource) dataSource;
                 runtimeProperties.setProperty("connections.idle", String.valueOf(dbcp.getNumIdle()));
                 runtimeProperties.setProperty("connections.used", String.valueOf(dbcp.getNumActive()));
                 runtimeProperties.setProperty("connections.max", String.valueOf(dbcp.getMaxTotal()));

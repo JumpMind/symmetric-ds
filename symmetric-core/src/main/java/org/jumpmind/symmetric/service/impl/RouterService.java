@@ -837,7 +837,6 @@ public class RouterService extends AbstractService implements IRouterService {
 
     }
 
-    @SuppressWarnings("unchecked")
     protected int routeData(ProcessInfo processInfo, Data data, ChannelRouterContext context) {
         int numberOfDataEventsInserted = 0;
         List<TriggerRouter> triggerRouters = getTriggerRoutersForData(data);

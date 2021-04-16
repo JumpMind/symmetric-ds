@@ -150,9 +150,9 @@ public class DbCompareConfig {
     public void setConfigSource(String configName, String configSource) {
         configSources.put(configName, configSource);
     }
-    @SuppressWarnings("unchecked")
+
     public void setWhereClauses(Map<String, String> whereClauses) {
-        this.whereClauses = new CaseInsensitiveMap(whereClauses);
+        this.whereClauses = new CaseInsensitiveMap<String, String>(whereClauses);
     }
     public List<String> getSourceTableNames() {
         return sourceTableNames;

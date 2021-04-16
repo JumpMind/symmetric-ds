@@ -22,13 +22,8 @@ package org.jumpmind.symmetric.db.raima;
 
 import java.util.HashMap;
 
-import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
-import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.model.Channel;
-import org.jumpmind.symmetric.model.Trigger;
-import org.jumpmind.symmetric.model.TriggerHistory;
 
 public class RaimaTriggerTemplate extends AbstractTriggerTemplate {
 

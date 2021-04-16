@@ -46,7 +46,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.properties.TypedProperties;

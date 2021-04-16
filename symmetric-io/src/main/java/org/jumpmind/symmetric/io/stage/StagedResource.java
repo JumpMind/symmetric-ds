@@ -229,7 +229,6 @@ public class StagedResource implements IStagedResource {
     }
     
 
-    @SuppressWarnings("resource")
     public synchronized BufferedReader getReader() {
         refreshLastUpdateTime();
         Thread thread = Thread.currentThread();
@@ -347,7 +346,6 @@ public class StagedResource implements IStagedResource {
         return new BufferedOutputStream(new FileOutputStream(file));
     }
 
-    @SuppressWarnings("resource")
     public synchronized InputStream getInputStream() {
         refreshLastUpdateTime();
         Thread thread = Thread.currentThread();
