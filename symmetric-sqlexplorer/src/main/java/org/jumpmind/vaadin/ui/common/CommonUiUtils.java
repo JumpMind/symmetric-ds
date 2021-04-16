@@ -228,7 +228,7 @@ public final class CommonUiUtils {
                     }
                     columnNames.add(columnName);
                     
-                    Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
+                    int colNum = columnCounter[0] - 1 - skipColumnIndexes.size();
                     grid.addColumn(row -> row.get(colNum)).setId(columnName).setCaption(columnName).setHidable(true)
                             .setStyleGenerator(row -> {
                         if (row.get(colNum) == null) {
@@ -266,7 +266,7 @@ public final class CommonUiUtils {
                             case Types.BIGINT:
                             case Types.INTEGER:
                                 if (o != null && !(o instanceof Long)) {
-                                    o = new Long(castToNumber(o.toString()));
+                                    o = Long.parseLong(castToNumber(o.toString()));
                                 }
                                 break;
                             default:
