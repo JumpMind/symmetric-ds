@@ -158,25 +158,29 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
 
         // Leave this last in the sequence of steps to make sure to capture any DML changes done before this
         if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            // Drop triggers on sym tables
-            List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
-                    .getExtensionPointList(IAlterDatabaseInterceptor.class);
-            List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel, desiredModel,
-                    alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
-
-            MultiInstanceofPredicate predicate = new MultiInstanceofPredicate(
-                    new Class[] { RemovePrimaryKeyChange.class, AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class,
-                            AddColumnChange.class, ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
-            @SuppressWarnings("unchecked")
-            Collection<TableChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
-            Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
-            for (TableChange change : modelChangesAffectingTriggers) {
-                setOfTableNamesToDropTriggersFor.add(change.getChangedTable().getName());
-            }
-            engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
+        	dropSymTriggersIfNecessary(currentModel, desiredModel);
         }
 
         return sb.toString();
+    }
+
+    protected void dropSymTriggersIfNecessary(Database currentModel, Database desiredModel) {
+        List<IAlterDatabaseInterceptor> alterDatabaseInterceptors = engine.getExtensionService()
+                .getExtensionPointList(IAlterDatabaseInterceptor.class);
+        List<IModelChange> modelChanges = engine.getDatabasePlatform().getDdlBuilder().getDetectedChanges(currentModel, desiredModel,
+                alterDatabaseInterceptors.toArray(new IAlterDatabaseInterceptor[alterDatabaseInterceptors.size()]));
+
+        MultiInstanceofPredicate predicate = new MultiInstanceofPredicate(
+                new Class<?>[] { RemovePrimaryKeyChange.class, AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class,
+                        AddColumnChange.class, ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
+        Collection<IModelChange> modelChangesAffectingTriggers = CollectionUtils.select(modelChanges, predicate);
+        Set<String> setOfTableNamesToDropTriggersFor = new HashSet<String>();
+        for (IModelChange change : modelChangesAffectingTriggers) {
+        	if (change instanceof TableChange) {
+        		setOfTableNamesToDropTriggersFor.add(((TableChange)change).getChangedTable().getName());
+        	}
+        }
+        engine.getTriggerRouterService().dropTriggers(setOfTableNamesToDropTriggersFor);
     }
 
     @Override

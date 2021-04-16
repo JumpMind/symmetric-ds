@@ -19,9 +19,6 @@ package org.jumpmind.db.model;
  * under the License.
  */
 
-import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPLTZ;
-import static org.jumpmind.db.model.ColumnTypes.ORACLE_TIMESTAMPTZ;
-
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,57 +123,57 @@ public abstract class TypeMap
     private static HashMap<Integer, String> _typeCodeToTypeName = new HashMap<Integer, String>();
 
     /** Contains the types per category. */
-    private static HashMap<JdbcTypeCategoryEnum, Set<Integer>> _typesPerCategory = new HashMap<JdbcTypeCategoryEnum, Set<Integer>>();
+    private static HashMap<JdbcTypeCategory, Set<Integer>> _typesPerCategory = new HashMap<JdbcTypeCategory, Set<Integer>>();
 
     static
     {
-        registerJdbcType(Types.ARRAY,         ARRAY,         JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.BIGINT,        BIGINT,        JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.BINARY,        BINARY,        JdbcTypeCategoryEnum.BINARY);
-        registerJdbcType(Types.BIT,           BIT,           JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.BLOB,          BLOB,          JdbcTypeCategoryEnum.BINARY);
-        registerJdbcType(Types.CHAR,          CHAR,          JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(Types.CLOB,          CLOB,          JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(Types.DATE,          DATE,          JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(Types.DECIMAL,       DECIMAL,       JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.DISTINCT,      DISTINCT,      JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.DOUBLE,        DOUBLE,        JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.FLOAT,         FLOAT,         JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.INTEGER,       INTEGER,       JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.JAVA_OBJECT,   JAVA_OBJECT,   JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.LONGVARBINARY, LONGVARBINARY, JdbcTypeCategoryEnum.BINARY);
-        registerJdbcType(Types.LONGVARCHAR,   LONGVARCHAR,   JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(Types.NULL,          NULL,          JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.NUMERIC,       NUMERIC,       JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.OTHER,         OTHER,         JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.REAL,          REAL,          JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.REF,           REF,           JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.SMALLINT,      SMALLINT,      JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.STRUCT,        STRUCT,        JdbcTypeCategoryEnum.SPECIAL);
-        registerJdbcType(Types.TIME,          TIME,          JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(Types.TIMESTAMP,     TIMESTAMP,     JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(Types.TINYINT,       TINYINT,       JdbcTypeCategoryEnum.NUMERIC);
-        registerJdbcType(Types.VARBINARY,     VARBINARY,     JdbcTypeCategoryEnum.BINARY);
-        registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(ORACLE_TIMESTAMPTZ,  TIMESTAMPTZ,   JdbcTypeCategoryEnum.DATETIME);
-        registerJdbcType(ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ,  JdbcTypeCategoryEnum.DATETIME);
+        registerJdbcType(Types.ARRAY,         ARRAY,         JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.BIGINT,        BIGINT,        JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.BINARY,        BINARY,        JdbcTypeCategory.BINARY);
+        registerJdbcType(Types.BIT,           BIT,           JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.BLOB,          BLOB,          JdbcTypeCategory.BINARY);
+        registerJdbcType(Types.CHAR,          CHAR,          JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(Types.CLOB,          CLOB,          JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(Types.DATE,          DATE,          JdbcTypeCategory.DATETIME);
+        registerJdbcType(Types.DECIMAL,       DECIMAL,       JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.DISTINCT,      DISTINCT,      JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.DOUBLE,        DOUBLE,        JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.FLOAT,         FLOAT,         JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.INTEGER,       INTEGER,       JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.JAVA_OBJECT,   JAVA_OBJECT,   JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.LONGVARBINARY, LONGVARBINARY, JdbcTypeCategory.BINARY);
+        registerJdbcType(Types.LONGVARCHAR,   LONGVARCHAR,   JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(Types.NULL,          NULL,          JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.NUMERIC,       NUMERIC,       JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.OTHER,         OTHER,         JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.REAL,          REAL,          JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.REF,           REF,           JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.SMALLINT,      SMALLINT,      JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.STRUCT,        STRUCT,        JdbcTypeCategory.SPECIAL);
+        registerJdbcType(Types.TIME,          TIME,          JdbcTypeCategory.DATETIME);
+        registerJdbcType(Types.TIMESTAMP,     TIMESTAMP,     JdbcTypeCategory.DATETIME);
+        registerJdbcType(Types.TINYINT,       TINYINT,       JdbcTypeCategory.NUMERIC);
+        registerJdbcType(Types.VARBINARY,     VARBINARY,     JdbcTypeCategory.BINARY);
+        registerJdbcType(Types.VARCHAR,       VARCHAR,       JdbcTypeCategory.TEXTUAL);
+
+        registerJdbcType(ColumnTypes.ORACLE_TIMESTAMPTZ, TIMESTAMPTZ, JdbcTypeCategory.DATETIME);
+        registerJdbcType(ColumnTypes.ORACLE_TIMESTAMPLTZ, TIMESTAMPLTZ, JdbcTypeCategory.DATETIME);
+        registerJdbcType(ColumnTypes.SQLXML, SQLXML, JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(ColumnTypes.NCHAR, NCHAR, JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(ColumnTypes.NCLOB, NCLOB, JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(ColumnTypes.NVARCHAR, NVARCHAR, JdbcTypeCategory.TEXTUAL);
+        registerJdbcType(ColumnTypes.LONGNVARCHAR, LONGNVARCHAR, JdbcTypeCategory.TEXTUAL);
 
         // only available in JDK 1.4 and above:
         if (PlatformUtils.supportsJava14JdbcTypes())
         {
-            registerJdbcType(PlatformUtils.determineBooleanTypeCode(),  BOOLEAN,  JdbcTypeCategoryEnum.NUMERIC);
-            registerJdbcType(PlatformUtils.determineDatalinkTypeCode(), DATALINK, JdbcTypeCategoryEnum.SPECIAL);
+            registerJdbcType(PlatformUtils.determineBooleanTypeCode(),  BOOLEAN,  JdbcTypeCategory.NUMERIC);
+            registerJdbcType(PlatformUtils.determineDatalinkTypeCode(), DATALINK, JdbcTypeCategory.SPECIAL);
         }
 
         // Torque/Turbine extensions which we only support when reading from an XML schema
         _typeNameToTypeCode.put("BOOLEANINT",  Integer.valueOf(Types.TINYINT));
         _typeNameToTypeCode.put("BOOLEANCHAR", Integer.valueOf(Types.CHAR));
-
-        registerJdbcType(ColumnTypes.SQLXML, SQLXML, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(ColumnTypes.NCHAR, NCHAR, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(ColumnTypes.NCLOB, NCLOB, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(ColumnTypes.NVARCHAR, NVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
-        registerJdbcType(ColumnTypes.LONGNVARCHAR, LONGNVARCHAR, JdbcTypeCategoryEnum.TEXTUAL);
     }
 
     /**
@@ -188,7 +185,7 @@ public abstract class TypeMap
      */
     public static Integer getJdbcTypeCode(String typeName)
     {
-        return (Integer)_typeNameToTypeCode.get(typeName.toUpperCase());
+        return _typeNameToTypeCode.get(typeName.toUpperCase());
     }
     
     public static String getJdbcTypeDescriptions(int[] types) {
@@ -228,7 +225,7 @@ public abstract class TypeMap
      * @param typeName The type name (case is ignored)
      * @param category The type category
      */
-    protected static void registerJdbcType(int typeCode, String typeName, JdbcTypeCategoryEnum category)
+    protected static void registerJdbcType(int typeCode, String typeName, JdbcTypeCategory category)
     {
         Integer typeId = Integer.valueOf(typeCode);
 
@@ -254,7 +251,7 @@ public abstract class TypeMap
      */
     public static boolean isNumericType(int jdbcTypeCode)
     {
-        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.NUMERIC);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategory.NUMERIC);
 
         return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
@@ -268,7 +265,7 @@ public abstract class TypeMap
      */
     public static boolean isDateTimeType(int jdbcTypeCode)
     {
-        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.DATETIME);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategory.DATETIME);
 
         return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
@@ -282,7 +279,7 @@ public abstract class TypeMap
      */
     public static boolean isTextType(int jdbcTypeCode)
     {
-        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.TEXTUAL);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategory.TEXTUAL);
 
         return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
@@ -296,7 +293,7 @@ public abstract class TypeMap
      */
     public static boolean isBinaryType(int jdbcTypeCode)
     {
-        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.BINARY);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategory.BINARY);
 
         return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
@@ -310,7 +307,7 @@ public abstract class TypeMap
      */
     public static boolean isSpecialType(int jdbcTypeCode)
     {
-        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategoryEnum.SPECIAL);
+        Set<Integer> typesInCategory = _typesPerCategory.get(JdbcTypeCategory.SPECIAL);
 
         return typesInCategory == null ? false : typesInCategory.contains(Integer.valueOf(jdbcTypeCode));
     }
