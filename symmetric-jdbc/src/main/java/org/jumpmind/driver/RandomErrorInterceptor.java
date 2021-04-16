@@ -23,14 +23,10 @@ package org.jumpmind.driver;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RandomErrorInterceptor extends StatementInterceptor {
-    private final static Logger log = LoggerFactory.getLogger(RandomErrorInterceptor.class);
     
     private static AtomicInteger okCounter = new AtomicInteger(0);
     private static AtomicInteger errorCounter = new AtomicInteger(0);

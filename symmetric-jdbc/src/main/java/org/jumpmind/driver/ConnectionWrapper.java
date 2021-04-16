@@ -75,7 +75,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setReadOnly(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setReadOnly", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setReadOnly", null,startTime, endTime ,arg1);
     }
 
     public void close() throws SQLException {
@@ -86,7 +86,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.close();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("close", null,startTime, endTime );
+        interceptor.postExecute("close", null,startTime, endTime );
     }
 
     public boolean isReadOnly() throws SQLException {
@@ -112,7 +112,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.abort(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("abort", null,startTime, endTime ,arg1);
+        interceptor.postExecute("abort", null,startTime, endTime ,arg1);
     }
 
     public Statement createStatement() throws SQLException {
@@ -318,7 +318,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setAutoCommit(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setAutoCommit", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setAutoCommit", null,startTime, endTime ,arg1);
     }
 
     public boolean getAutoCommit() throws SQLException {
@@ -344,7 +344,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.commit();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("commit", null,startTime, endTime );
+        interceptor.postExecute("commit", null,startTime, endTime );
     }
 
     public void rollback(Savepoint arg1) throws SQLException {
@@ -355,7 +355,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.rollback(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("rollback", null,startTime, endTime ,arg1);
+        interceptor.postExecute("rollback", null,startTime, endTime ,arg1);
     }
 
     public void rollback() throws SQLException {
@@ -366,7 +366,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.rollback();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("rollback", null,startTime, endTime );
+        interceptor.postExecute("rollback", null,startTime, endTime );
     }
 
     public boolean isClosed() throws SQLException {
@@ -407,7 +407,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setCatalog(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setCatalog", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setCatalog", null,startTime, endTime ,arg1);
     }
 
     public String getCatalog() throws SQLException {
@@ -433,7 +433,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setTransactionIsolation(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setTransactionIsolation", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setTransactionIsolation", null,startTime, endTime ,arg1);
     }
 
     public int getTransactionIsolation() throws SQLException {
@@ -474,10 +474,11 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.clearWarnings();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("clearWarnings", null,startTime, endTime );
+        interceptor.postExecute("clearWarnings", null,startTime, endTime );
     }
 
-    public Map getTypeMap() throws SQLException {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public Map getTypeMap() throws SQLException {
         InterceptResult preResult = interceptor.preExecute("getTypeMap");
         if (preResult.isIntercepted()) {
             return (Map) preResult.getInterceptResult();
@@ -492,6 +493,7 @@ public class ConnectionWrapper implements Connection {
         return value;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setTypeMap(Map arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("setTypeMap", arg1);
         if (preResult.isIntercepted()) {
@@ -500,7 +502,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setTypeMap(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setTypeMap", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setTypeMap", null,startTime, endTime ,arg1);
     }
 
     public void setHoldability(int arg1) throws SQLException {
@@ -511,7 +513,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setHoldability(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setHoldability", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setHoldability", null,startTime, endTime ,arg1);
     }
 
     public int getHoldability() throws SQLException {
@@ -567,7 +569,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.releaseSavepoint(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("releaseSavepoint", null,startTime, endTime ,arg1);
+        interceptor.postExecute("releaseSavepoint", null,startTime, endTime ,arg1);
     }
 
     public Clob createClob() throws SQLException {
@@ -653,7 +655,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setClientInfo(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setClientInfo", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setClientInfo", null,startTime, endTime ,arg1);
     }
 
     public void setClientInfo(String arg1, String arg2) throws SQLClientInfoException {
@@ -664,7 +666,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setClientInfo(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setClientInfo", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setClientInfo", null,startTime, endTime ,arg1,arg2);
     }
 
     public Properties getClientInfo() throws SQLException {
@@ -735,7 +737,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setSchema(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setSchema", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setSchema", null,startTime, endTime ,arg1);
     }
 
     public String getSchema() throws SQLException {
@@ -761,7 +763,7 @@ public class ConnectionWrapper implements Connection {
         long startTime = System.currentTimeMillis();
         wrapped.setNetworkTimeout(arg1,arg2);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setNetworkTimeout", null,startTime, endTime ,arg1,arg2);
+        interceptor.postExecute("setNetworkTimeout", null,startTime, endTime ,arg1,arg2);
     }
 
     public int getNetworkTimeout() throws SQLException {
@@ -779,6 +781,7 @@ public class ConnectionWrapper implements Connection {
         return value;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object unwrap(Class arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("unwrap", arg1);
         if (preResult.isIntercepted()) {
@@ -794,6 +797,7 @@ public class ConnectionWrapper implements Connection {
         return value;
     }
 
+    @SuppressWarnings({ "rawtypes" })
     public boolean isWrapperFor(Class arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("isWrapperFor", arg1);
         if (preResult.isIntercepted()) {

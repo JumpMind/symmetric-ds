@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 
-@SuppressWarnings("deprecation")
 public class TiberoLobHandler extends SymmetricLobHandler {
 
     DefaultLobHandler longHandler = new DefaultLobHandler();

@@ -48,7 +48,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.close();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("close", null,startTime, endTime );
+        interceptor.postExecute("close", null,startTime, endTime );
     }
 
     public Connection getConnection() throws SQLException {
@@ -164,7 +164,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.clearWarnings();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("clearWarnings", null,startTime, endTime );
+        interceptor.postExecute("clearWarnings", null,startTime, endTime );
     }
 
     public ResultSet executeQuery(String arg1) throws SQLException {
@@ -265,7 +265,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setMaxFieldSize(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setMaxFieldSize", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setMaxFieldSize", null,startTime, endTime ,arg1);
     }
 
     public int getMaxRows() throws SQLException {
@@ -291,7 +291,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setMaxRows(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setMaxRows", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setMaxRows", null,startTime, endTime ,arg1);
     }
 
     public void setEscapeProcessing(boolean arg1) throws SQLException {
@@ -302,7 +302,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setEscapeProcessing(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setEscapeProcessing", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setEscapeProcessing", null,startTime, endTime ,arg1);
     }
 
     public int getQueryTimeout() throws SQLException {
@@ -328,7 +328,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setQueryTimeout(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setQueryTimeout", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setQueryTimeout", null,startTime, endTime ,arg1);
     }
 
     public void cancel() throws SQLException {
@@ -339,7 +339,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.cancel();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("cancel", null,startTime, endTime );
+        interceptor.postExecute("cancel", null,startTime, endTime );
     }
 
     public void setCursorName(String arg1) throws SQLException {
@@ -350,7 +350,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setCursorName(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setCursorName", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setCursorName", null,startTime, endTime ,arg1);
     }
 
     public ResultSet getResultSet() throws SQLException {
@@ -421,7 +421,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setFetchDirection(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setFetchDirection", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setFetchDirection", null,startTime, endTime ,arg1);
     }
 
     public int getFetchDirection() throws SQLException {
@@ -447,7 +447,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setFetchSize(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setFetchSize", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setFetchSize", null,startTime, endTime ,arg1);
     }
 
     public int getFetchSize() throws SQLException {
@@ -503,7 +503,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.addBatch(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("addBatch", null,startTime, endTime ,arg1);
+        interceptor.postExecute("addBatch", null,startTime, endTime ,arg1);
     }
 
     public void clearBatch() throws SQLException {
@@ -514,7 +514,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.clearBatch();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("clearBatch", null,startTime, endTime );
+        interceptor.postExecute("clearBatch", null,startTime, endTime );
     }
 
     public int[] executeBatch() throws SQLException {
@@ -570,7 +570,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.setPoolable(arg1);
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("setPoolable", null,startTime, endTime ,arg1);
+        interceptor.postExecute("setPoolable", null,startTime, endTime ,arg1);
     }
 
     public boolean isPoolable() throws SQLException {
@@ -596,7 +596,7 @@ public class StatementWrapper implements Statement {
         long startTime = System.currentTimeMillis();
         wrapped.closeOnCompletion();
         long endTime = System.currentTimeMillis();
-        InterceptResult postResult = interceptor.postExecute("closeOnCompletion", null,startTime, endTime );
+        interceptor.postExecute("closeOnCompletion", null,startTime, endTime );
     }
 
     public boolean isCloseOnCompletion() throws SQLException {
@@ -614,7 +614,8 @@ public class StatementWrapper implements Statement {
         return value;
     }
 
-    public Object unwrap(Class arg1) throws SQLException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public Object unwrap(Class arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("unwrap", arg1);
         if (preResult.isIntercepted()) {
             return (Object) preResult.getInterceptResult();
@@ -629,6 +630,7 @@ public class StatementWrapper implements Statement {
         return value;
     }
 
+    @SuppressWarnings({ "rawtypes" })
     public boolean isWrapperFor(Class arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("isWrapperFor", arg1);
         if (preResult.isIntercepted()) {
