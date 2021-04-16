@@ -255,8 +255,8 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         // First we drop primary keys as necessary
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
 
             if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
@@ -270,11 +270,11 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
             }
         }
 
-        HashMap columnChanges = new HashMap();
+        HashMap<Column, ArrayList<ColumnChange>> columnChanges = new HashMap<Column, ArrayList<ColumnChange>>();
 
         // Next we add/remove columns
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
 
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
@@ -303,22 +303,21 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
                 // TABLE ALTER COLUMN
                 // statement for them
                 ColumnChange columnChange = (ColumnChange) change;
-                ArrayList changesPerColumn = (ArrayList) columnChanges.get(columnChange
-                        .getChangedColumn());
+                ArrayList<ColumnChange> changesPerColumn = columnChanges.get(columnChange.getChangedColumn());
 
                 if (changesPerColumn == null) {
-                    changesPerColumn = new ArrayList();
+                    changesPerColumn = new ArrayList<ColumnChange>();
                     columnChanges.put(columnChange.getChangedColumn(), changesPerColumn);
                 }
-                changesPerColumn.add(change);
+                changesPerColumn.add(columnChange);
             }
         }
         if (columnChanges != null) {
-            for (Iterator changesPerColumnIt = columnChanges.entrySet().iterator(); changesPerColumnIt
+            for (Iterator<Map.Entry<Column, ArrayList<ColumnChange>>> changesPerColumnIt = columnChanges.entrySet().iterator(); changesPerColumnIt
                     .hasNext();) {
-                Map.Entry entry = (Map.Entry) changesPerColumnIt.next();
+                Map.Entry<Column, ArrayList<ColumnChange>> entry = changesPerColumnIt.next();
                 Column sourceColumn = (Column) entry.getKey();
-                ArrayList changesPerColumn = (ArrayList) entry.getValue();
+                ArrayList<ColumnChange> changesPerColumn = entry.getValue();
 
                 // Sybase does not like us to use the ALTER TABLE ALTER
                 // statement if we don't actually
@@ -336,15 +335,14 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
 
                     processColumnChange(sourceTable, targetTable, sourceColumn, targetColumn, ddl);
                 }
-                for (Iterator changeIt = changesPerColumn.iterator(); changeIt.hasNext();) {
-                    ((ColumnChange) changeIt.next()).apply(currentModel,
-                            delimitedIdentifierModeOn);
+                for (Iterator<ColumnChange> changeIt = changesPerColumn.iterator(); changeIt.hasNext();) {
+                    changeIt.next().apply(currentModel, delimitedIdentifierModeOn);
                 }
             }
         }
         // Finally we add primary keys
-        for (Iterator changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = (TableChange) changeIt.next();
+        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = changeIt.next();
 
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
