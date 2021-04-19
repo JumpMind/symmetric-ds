@@ -47,13 +47,15 @@ public class RouterServiceTest {
     }
     
     @Test
+    @SuppressWarnings("deprecation")
     public void testProducesCommonBatchesOneTableOneChannelDefaultRouter() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         triggerRouters.add(new TriggerRouter(new Trigger("a", CHANNEL_2_TEST.getChannelId()), new Router("test", SOURCE_NODE_GROUP, TARGET_NODE_GROUP, "default")));        
         assertTrue(routerService.producesCommonBatches(CHANNEL_2_TEST, SOURCE_NODE_GROUP, triggerRouters));
     }
     
-    @Test
+	@Test
+	@SuppressWarnings("deprecation")
     public void testNotProducesCommonBatchesOneTableOneChannelNonDefaultRouter() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         triggerRouters.add(new TriggerRouter(new Trigger("a", CHANNEL_2_TEST.getChannelId()), new Router("test", SOURCE_NODE_GROUP, TARGET_NODE_GROUP, "column")));        
@@ -61,6 +63,7 @@ public class RouterServiceTest {
     }
     
     @Test
+    @SuppressWarnings("deprecation")
     public void testProducesCommonBatchesMultipleTablesTwoChannelsMultipleRouters() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         triggerRouters.add(new TriggerRouter(new Trigger("a", CHANNEL_2_TEST.getChannelId()), new Router("test1", SOURCE_NODE_GROUP, TARGET_NODE_GROUP, "default")));
@@ -69,6 +72,7 @@ public class RouterServiceTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testProducesCommonBatchesMultipleTablesTwoChannelsMultipleRoutersBidirectional() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         triggerRouters.add(new TriggerRouter(new Trigger("a", CHANNEL_2_TEST.getChannelId()), new Router("test", SOURCE_NODE_GROUP, TARGET_NODE_GROUP, "default")));        
@@ -77,6 +81,7 @@ public class RouterServiceTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testNotProducesCommonBatchesMultipleTablesTwoChannelsMultipleRoutersSyncOnIncoming() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         Trigger tableTrigger = new Trigger("a", CHANNEL_2_TEST.getChannelId(), true);
@@ -86,6 +91,7 @@ public class RouterServiceTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testNotProducesCommonBatchesSameTablesTwoChannelsMultipleRoutersSameTableIncomingOnAnotherChannel() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         Trigger tableTrigger1 = new Trigger("a", CHANNEL_2_TEST.getChannelId(), true);
@@ -96,6 +102,7 @@ public class RouterServiceTest {
     }
     
     @Test
+    @SuppressWarnings("deprecation")
     public void testProducesCommonBatchesSameTablesTwoChannelsMultipleRoutersDifferentTableIncomingOnAnotherChannel() {
         List<TriggerRouter> triggerRouters = new ArrayList<TriggerRouter>();
         Trigger tableTrigger1 = new Trigger("a", CHANNEL_2_TEST.getChannelId(), true);
