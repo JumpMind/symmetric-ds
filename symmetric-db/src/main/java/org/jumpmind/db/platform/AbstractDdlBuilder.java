@@ -463,37 +463,37 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     			if (change.getClass().equals(changeType)) {
     				if (change.getClass().equals(AddTableChange.class)) {
     					processChange(currentModel, desiredModel, (AddTableChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
-    					processChange(currentModel, desiredModel, (RemoveTableChange) change, ddl);
     				} else if (change.getClass().equals(RemoveTableChange.class)) {
+    					processChange(currentModel, desiredModel, (RemoveTableChange) change, ddl);
+    				} else if (change.getClass().equals(AddIndexChange.class)) {
     					processChange(currentModel, desiredModel, (AddIndexChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(RemoveIndexChange.class)) {
     					processChange(currentModel, desiredModel, (RemoveIndexChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(AddForeignKeyChange.class)) {
     					processChange(currentModel, desiredModel, (AddForeignKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(RemoveForeignKeyChange.class)) {
     					processChange(currentModel, desiredModel, (RemoveForeignKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(AddPrimaryKeyChange.class)) {
     					processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(PrimaryKeyChange.class)) {
     					processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(RemovePrimaryKeyChange.class)) {
     					processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(AddColumnChange.class)) {
     					processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(RemoveColumnChange.class)) {
     					processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(ColumnAutoIncrementChange.class)) {
     					processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(ColumnDefaultValueChange.class)) {
     					processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(ColumnRequiredChange.class)) {
     					processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(ColumnDataTypeChange.class)) {
     					processChange(currentModel, desiredModel, (ColumnDataTypeChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(ColumnSizeChange.class)) {
     					processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
-    				} else if (change.getClass().equals(AddTableChange.class)) {
+    				} else if (change.getClass().equals(CopyColumnValueChange.class)) {
     					processChange(currentModel, desiredModel, (CopyColumnValueChange) change, ddl);
     				} else {
     					processChange(currentModel, desiredModel, change, ddl);
