@@ -84,6 +84,8 @@ public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
 "  other_row_count = ?, data_row_count = ?, data_insert_row_count = ?, data_update_row_count = ?, data_delete_row_count = ?, extract_row_count = ?, " +
 "  extract_insert_row_count = ?, extract_update_row_count = ?, extract_delete_row_count = ?, load_insert_row_count = ?, load_update_row_count = ?, load_delete_row_count = ?, " +
 "  failed_data_id = ? where batch_id = ? and node_id = ? " );
+        
+        putSql("statusNotOk", " and status not in ('OK', 'IG')");
 
         putSql("deleteIncomingBatchSql" ,"" + 
 "delete from $(incoming_batch) where batch_id = ? and node_id = ? " );

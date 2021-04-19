@@ -199,7 +199,11 @@ public class OutgoingBatchService extends AbstractService implements IOutgoingBa
     public void updateOutgoingBatch(ISqlTransaction transaction, OutgoingBatch outgoingBatch) {
         outgoingBatch.setLastUpdatedTime(new Date());
         outgoingBatch.setLastUpdatedHostName(clusterService.getServerId());
-        transaction.prepareAndExecute(getSql("updateOutgoingBatchSql"),
+        String sql = getSql("updateOutgoingBatchSql");
+        if (outgoingBatch.getStatus() != Status.OK) {
+        	sql += getSql("statusNotOk");
+        }
+        transaction.prepareAndExecute(sql,
                 new Object[] { outgoingBatch.getStatus().name(), outgoingBatch.getLoadId(), outgoingBatch.isExtractJobFlag() ? 1 : 0,
                         outgoingBatch.isLoadFlag() ? 1 : 0, outgoingBatch.isErrorFlag() ? 1 : 0, outgoingBatch.getByteCount(),
                         outgoingBatch.getExtractCount(), outgoingBatch.getSentCount(), outgoingBatch.getLoadCount(),
