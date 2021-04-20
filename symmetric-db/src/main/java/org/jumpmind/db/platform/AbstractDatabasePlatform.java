@@ -573,14 +573,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             if (row.get(name) != null) {
                 if (isColumnPositionUsingTemplate[i]) {
                     concatenatedRow.append(row.getString(name));
+                } else if (type == Types.BOOLEAN || type == Types.BIT) {
+                    concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfNumericType()) {
                     concatenatedRow.append(row.getString(name));
                 } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIME)) {
                     concatenatedRow.append("\"").append(getDateTimeStringValue(name, type, row, false)).append("\"");
                 } else if (!column.isTimestampWithTimezone() && type == Types.TIMESTAMP) {
                     concatenatedRow.append("\"").append(getTimestampStringValue(name, type, row, false)).append("\"");
-                } else if (type == Types.BOOLEAN || type == Types.BIT) {
-                    concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (bytes.length == 0) {
