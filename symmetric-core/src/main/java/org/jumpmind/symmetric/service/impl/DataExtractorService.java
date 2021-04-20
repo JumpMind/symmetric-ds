@@ -586,7 +586,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 BufferedWriter writer = transport.openWriter();
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                         writer, targetNode.requires13Compatiblity(), targetNode.allowCaptureTimeInProtocol(),
-                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME));
+                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME, true));
 
                 return extract(extractInfo, targetNode, activeBatches, dataWriter, writer, ExtractMode.FOR_SYM_CLIENT);
             }
@@ -675,7 +675,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (batch != null) {
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                         writer, targetNode.requires13Compatiblity(), targetNode.allowCaptureTimeInProtocol(),
-                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME));
+                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME, true));
                 List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(1);
                 batches.add(batch);
                 batches = extract(new ProcessInfo(), targetNode, batches, dataWriter, null,
@@ -1329,7 +1329,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     new ProcessInfoDataWriter(new StagingDataWriter(memoryThresholdInBytes, true, nodeService
                             .findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING,
                             stagingManager, targetNode.allowCaptureTimeInProtocol(),
-                            parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME)), processInfo));
+                            parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME, true)), processInfo));
         } else {
             transformExtractWriter = createTransformDataWriter(sourceNode, targetNode,
                     new ProcessInfoDataWriter(dataWriter, processInfo));
