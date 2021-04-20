@@ -109,6 +109,10 @@ public class DbFill {
     private boolean print = false;
     
     private boolean useRandomCount = false;
+
+    private int maxByteSize = 32;
+    
+    private int maxTextSize = 32;
     
     private String textColumnExpression;
     
@@ -935,11 +939,11 @@ public class DbFill {
                 || type == Types.VARBINARY ||
                 // SQLServer text type
                 type == -10) {
-            int maxLength = 32768;
-            if (type == Types.BINARY || type == Types.VARBINARY) {
-                maxLength = column.getSizeAsInt();
+            int size = maxByteSize;
+            if ((type == Types.BINARY || type == Types.VARBINARY) && size > column.getSizeAsInt()) {
+                size = column.getSizeAsInt();
             }
-            objectValue = randomBytes(maxLength);
+            objectValue = randomBytes(randomSize(column, size));
         } else if (type == Types.ARRAY) {
             objectValue = null;
         } else if (type == Types.VARCHAR || type == Types.LONGVARCHAR || type == Types.CHAR || type == Types.CLOB) {
@@ -951,27 +955,18 @@ public class DbFill {
             } else if ("TIME".equalsIgnoreCase(column.getJdbcTypeName())) {
                 objectValue = randomTimestamp();
             } else {
-                int size = 0;
+                int size = maxTextSize;
                 // Assume if the size is 0 there is no max size configured.
                 if (column.getSizeAsInt() != 0) {
                     Integer minSize = minColumnSizes.get(table.getQualifiedColumnName(column));
                     if (minSize != null) {
                         // use smallest size of related foreign key columns
                         size = minSize;
-                    } else {
-                        size = column.getSizeAsInt() > 32768 ? 32768 : column.getSizeAsInt();   
-                    }
-                } else {
-                    // No max length so default to 32k
-                    size = 32768;
-                }
-                if (!column.isPrimaryKey()) {
-                    size = getRand().nextInt(size);
-                    if (size == 0) {
-                        size = 1;
+                    } else if (size > column.getSizeAsInt()) {
+                        size = column.getSizeAsInt();   
                     }
                 }
-                objectValue = randomString(size);
+                objectValue = randomString(randomSize(column, size));
             }
         } else if (type == Types.OTHER) {
             if ("UUID".equalsIgnoreCase(column.getJdbcTypeName())) {
@@ -979,6 +974,16 @@ public class DbFill {
             }
         }
         return objectValue;
+    }
+
+    private int randomSize(Column column, int size) {
+        if (!column.isPrimaryKey()) {
+            size = getRand().nextInt(size);
+            if (size == 0) {
+                size = 1;
+            }
+        }
+        return size;
     }
 
     private Object randomSmallInt(boolean unsigned) {
@@ -1198,9 +1203,15 @@ public class DbFill {
 
         // Get list of local fk reference columns
         List<String> localFkRefColumns = getLocalFkRefColumns(table);
+        int numToUpdate = getRand().nextInt(columns.length);
+        if (numToUpdate == 0) {
+            numToUpdate = 1;
+        }
         for (int i = 0; i < columns.length; i++) {
             if (!(columns[i].isPrimaryKey() || localFkRefColumns.contains(columns[i].getName()))) {
-                row.put(columns[i].getName(), generateRandomValueForColumn(table, columns[i]));
+                if (numToUpdate-- > 0) {
+                    row.put(columns[i].getName(), generateRandomValueForColumn(table, columns[i]));
+                }
             }
         }
         currentRowValues.put(table.getName(), row);
@@ -1353,6 +1364,22 @@ public class DbFill {
     
     public String getTextColumnExpression() {
         return textColumnExpression;
+    }
+
+    public long getMaxByteSize() {
+        return maxByteSize;
+    }
+
+    public void setMaxByteSize(int maxByteSize) {
+        this.maxByteSize = maxByteSize;
+    }
+
+    public int getMaxTextSize() {
+        return maxTextSize;
+    }
+
+    public void setMaxTextSize(int maxTextSize) {
+        this.maxTextSize = maxTextSize;
     }
 
     static class ForeignKeyReference {
