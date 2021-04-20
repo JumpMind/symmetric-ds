@@ -128,6 +128,9 @@ abstract public class AbstractDatabaseWriterConflictResolver implements IDatabas
                             status = performChainedFallbackForDelete(writer, data, conflict);
                         } else {
                             status = writer.delete(data, false);
+                            if (status == LoadStatus.CONFLICT) {
+                                status = performChainedFallbackForDelete(writer, data, conflict);
+                            }
                         }
 
                         if (status == LoadStatus.CONFLICT) {
