@@ -454,8 +454,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }    
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
-        return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
+        if (tableName != null) {
+            return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
+                    new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
+        } else {
+            return new ArrayList<TriggerHistory>();
+        }
     }
 
     protected List<Trigger> buildTriggersForSymmetricTables(String version,

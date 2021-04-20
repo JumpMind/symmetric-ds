@@ -546,7 +546,7 @@ public class DataGapFastDetector extends DataGapDetector implements ISqlRowMappe
                 maxDate = dataGap.getCreateTime();
             }
             minDataId = Math.min(minDataId, dataGap.getStartId());
-            maxDataId = Math.min(maxDataId, dataGap.getEndId());
+            maxDataId = Math.max(maxDataId, dataGap.getEndId());
         }
         
         log.info("Expired {} data gap(s) between data_id {} and {} and between create_time {} and {}", 
