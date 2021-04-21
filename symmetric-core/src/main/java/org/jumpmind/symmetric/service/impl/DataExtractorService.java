@@ -1634,37 +1634,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     @Override
-    public void updateExtractRequestLoadTime(Date loadTime, OutgoingBatch outgoingBatch) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            
-            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
-                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
-                    outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
-                    outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
+    public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch outgoingBatch) {
+        transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
+                outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
+                outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
+                outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
-            TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
-                    outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
+        TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
+                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
 
-            if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
-                log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
-                nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
-            }
-
-            transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
+        if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
+            log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
+            nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
         }
     }
     

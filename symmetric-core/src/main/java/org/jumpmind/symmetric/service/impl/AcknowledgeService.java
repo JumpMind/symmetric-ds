@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.mapper.NumberMapper;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.Constants;
@@ -182,25 +183,41 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                     log.info("The outgoing batch {} received resend request", outgoingBatch.getNodeBatchId());
                 }
                 
-                outgoingBatchService.updateOutgoingBatch(outgoingBatch);
-
-                if (status == Status.OK) {
-                    if (isFirstTimeAsOkStatus) {
-                        if (outgoingBatch.getLoadId() > 0) {
-                            engine.getDataExtractorService().updateExtractRequestLoadTime(new Date(), outgoingBatch);
+                ISqlTransaction transaction = null;
+                try {
+                    transaction = sqlTemplate.startSqlTransaction();
+                    outgoingBatchService.updateOutgoingBatch(transaction, outgoingBatch);
+                    if (status == Status.OK && isFirstTimeAsOkStatus && outgoingBatch.getLoadId() > 0) {
+                        engine.getDataExtractorService().updateExtractRequestLoadTime(transaction, new Date(), outgoingBatch);
+                    }
+                    transaction.commit();
+                    if (status == Status.OK) {
+                        if (isFirstTimeAsOkStatus) {
+                            engine.getStatisticManager().incrementDataLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getLoadRowCount());
+                            engine.getStatisticManager().incrementDataBytesLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());
                         }
-                        engine.getStatisticManager().incrementDataLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getLoadRowCount());
-                        engine.getStatisticManager().incrementDataBytesLoadedOutgoing(outgoingBatch.getChannelId(), outgoingBatch.getByteCount());
+                        if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
+                            purgeBatchesFromStaging(outgoingBatch);
+                        }
+                        Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
+                        if (channel != null && channel.isFileSyncFlag()){
+                            /* Acknowledge the file_sync in case the file needs deleted. */
+                            engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
+                        }
+                        engine.getStatisticManager().removeRouterStatsByBatch(batch.getBatchId());
                     }
-                    if (parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED)) {
-                        purgeBatchesFromStaging(outgoingBatch);
+                } catch (Error ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
                     }
-                    Channel channel = engine.getConfigurationService().getChannel(outgoingBatch.getChannelId());
-                    if (channel != null && channel.isFileSyncFlag()){
-                        /* Acknowledge the file_sync in case the file needs deleted. */
-                        engine.getFileSyncService().acknowledgeFiles(outgoingBatch);
+                    throw ex;
+                } catch (RuntimeException ex) {
+                    if (transaction != null) {
+                        transaction.rollback();
                     }
-                    engine.getStatisticManager().removeRouterStatsByBatch(batch.getBatchId());
+                    throw ex;
+                } finally {
+                    close(transaction);
                 }
             } else if (outgoingBatch == null) {
                 log.error("Could not find batch {}-{} to acknowledge as {}", new Object[] {batch.getNodeId(), batch.getBatchId(),
