@@ -479,8 +479,12 @@ public class JdbcDatabasePlatformFactory {
         if (compatible != null) {
             String[] valueArr = compatible.split("\\.");
             if (valueArr != null) {
-                isOracle122 = (valueArr.length > 0 && Integer.parseInt(valueArr[0]) > 12) ||
-                        (valueArr.length > 1 && Integer.parseInt(valueArr[0]) == 12 && Integer.parseInt(valueArr[1]) >= 2);
+                try {
+                    isOracle122 = (valueArr.length > 0 && Integer.parseInt(valueArr[0]) > 12) ||
+                            (valueArr.length > 1 && Integer.parseInt(valueArr[0]) == 12 && Integer.parseInt(valueArr[1]) >= 2);
+                } catch (Exception e) {
+                    log.warn("Could not parse Oracle compatible version " + compatible + " because ", e.getMessage());
+                }
             }
         }
         return isOracle122;
