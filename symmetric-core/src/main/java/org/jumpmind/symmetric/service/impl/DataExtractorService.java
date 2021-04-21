@@ -1614,33 +1614,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     @Override
-    public void updateExtractRequestLoadTime(Date loadTime, OutgoingBatch outgoingBatch) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            
-            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
-                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
-                    outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
-                    outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
+    public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch outgoingBatch) {
+        transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
+                outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
+                outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
+                outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
-            dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);            
-            
-            
-            transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
-        }
+        dataService.updateTableReloadStatusDataLoaded(transaction, outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);            
     }
     
     @Override
