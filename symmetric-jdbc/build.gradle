@@ -4,7 +4,9 @@ apply from: symAssembleDir + '/common.gradle'
 
     dependencies {
         compile project(":symmetric-db")
-        compile "org.apache.commons:commons-dbcp2:$commonsDbcpVersion"
+        compile ("org.apache.commons:commons-dbcp2:$commonsDbcpVersion") {
+            exclude group: 'commons-logging'
+        }
         compile "org.springframework:spring-jdbc:$springVersion"
 
         compileOnly "com.h2database:h2:$h2Version"

@@ -9,6 +9,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile "commons-cli:commons-cli:$commonsCliVersion"
         compile ("org.apache.commons:commons-vfs2:$commonsVfs") {
             exclude group: "org.apache.hadoop"
+            exclude group: 'commons-logging'
         }
         compile "org.jdom:jdom2:$jdomVersion"
 

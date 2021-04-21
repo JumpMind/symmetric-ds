@@ -50,7 +50,9 @@ dependencies {
     compile project(":symmetric-io")
     
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
-    compile "org.apache.commons:commons-dbcp2:$commonsDbcpVersion"
+    compile ("org.apache.commons:commons-dbcp2:$commonsDbcpVersion") {
+        exclude group: 'commons-logging'
+    }
     compile "commons-io:commons-io:$commonsIoVersion"
     
     compile "org.springframework:spring-webmvc:$springVersion"
