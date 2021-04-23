@@ -79,6 +79,7 @@ import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -2268,10 +2269,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void releaseMissedExtractRequests() {
-        int missingCount = sqlTemplateDirty.queryForInt(getSql("countExtractChildRequestMissed"), Status.NE.name(), Status.OK.name());
-        if (missingCount > 0) {
-            log.info("Releasing {} child extract requests that missed processing by parent node", missingCount);
-            sqlTemplate.update(getSql("releaseExtractChildRequestMissed"), Status.NE.name(), Status.OK.name());
+        List<Long> requestIds = sqlTemplateDirty.query(getSql("selectExtractChildRequestIdsMissed"), new LongMapper(), Status.NE.name(), Status.OK.name());
+        if (requestIds != null && requestIds.size() > 0) {
+            log.info("Releasing {} child extract requests that missed processing by parent node", requestIds.size());
+            for (Long requestId : requestIds) {
+                sqlTemplate.update(getSql("releaseExtractChildRequestFromParent"), requestId);
+            }
         }
     }
     
