@@ -29,12 +29,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -62,20 +63,10 @@ import java.util.zip.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.jumpmind.db.io.DatabaseXmlUtil;
 import org.jumpmind.db.model.Column;
-import org.jumpmind.db.model.Database;
-import org.jumpmind.db.model.ForeignKey;
-import org.jumpmind.db.model.PlatformColumn;
-import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
-import org.jumpmind.db.platform.DatabaseInfo;
-import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.DdlBuilderFactory;
 import org.jumpmind.db.platform.IDdlBuilder;
-import org.jumpmind.db.sql.DmlStatement;
-import org.jumpmind.db.sql.DmlStatement.DmlType;
-import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
@@ -88,12 +79,13 @@ import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
-import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.extract.MultiBatchStagingWriter;
+import org.jumpmind.symmetric.extract.SelectFromSymDataSource;
+import org.jumpmind.symmetric.extract.SelectFromTableEvent;
+import org.jumpmind.symmetric.extract.SelectFromTableSource;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.CsvConstants;
-import org.jumpmind.symmetric.io.data.CsvData;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.DataProcessor;
@@ -103,7 +95,6 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.symmetric.io.data.ProtocolException;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.reader.ExtractDataReader;
-import org.jumpmind.symmetric.io.data.reader.IExtractDataReaderSource;
 import org.jumpmind.symmetric.io.data.reader.ProtocolDataReader;
 import org.jumpmind.symmetric.io.data.transform.TransformPoint;
 import org.jumpmind.symmetric.io.data.transform.TransformTable;
@@ -118,12 +109,10 @@ import org.jumpmind.symmetric.io.stage.IStagedResource.State;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.io.stage.StagingFileLock;
 import org.jumpmind.symmetric.io.stage.StagingLowFreeSpace;
-import org.jumpmind.symmetric.load.IReloadVariableFilter;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.Channel;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Data;
-import org.jumpmind.symmetric.model.DataMetaData;
 import org.jumpmind.symmetric.model.ExtractRequest;
 import org.jumpmind.symmetric.model.ExtractRequest.ExtractStatus;
 import org.jumpmind.symmetric.model.Node;
@@ -142,21 +131,16 @@ import org.jumpmind.symmetric.model.ProcessInfoKey;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatus;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.TableReloadRequest;
 import org.jumpmind.symmetric.model.TableReloadStatus;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.model.TriggerRouter;
-import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
-import org.jumpmind.symmetric.route.IDataRouter;
-import org.jumpmind.symmetric.route.SimpleRouterContext;
 import org.jumpmind.symmetric.service.ClusterConstants;
 import org.jumpmind.symmetric.service.IClusterService;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IDataExtractorService;
 import org.jumpmind.symmetric.service.IDataService;
-import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IInitialLoadService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeCommunicationService.INodeCommunicationExecutor;
@@ -171,12 +155,9 @@ import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.transport.BatchBufferedWriter;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
-import org.jumpmind.symmetric.util.CounterStat;
-import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.AppUtils;
 import org.jumpmind.util.CustomizableThreadFactory;
 import org.jumpmind.util.ExceptionUtils;
-import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.FutureImpl;
 import org.jumpmind.util.Statistics;
 import org.slf4j.MDC;
@@ -191,9 +172,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         
     protected enum ExtractMode { FOR_SYM_CLIENT, FOR_PAYLOAD_CLIENT, EXTRACT_ONLY };
 
-    private ISymmetricEngine engine;
+    protected ISymmetricEngine engine;
     
-    IOutgoingBatchService outgoingBatchService;
+    private IOutgoingBatchService outgoingBatchService;
 
     private IRouterService routerService;
 
@@ -211,15 +192,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     private INodeService nodeService;
 
-    IStatisticManager statisticManager;
+    private IStatisticManager statisticManager;
 
     private IStagingManager stagingManager;
 
     private INodeCommunicationService nodeCommunicationService;
 
     private IClusterService clusterService;
-    
-    private IExtensionService extensionService;
 
     private Map<String, BatchLock> locks = new ConcurrentHashMap<String, BatchLock>();
     
@@ -240,7 +219,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         this.nodeCommunicationService = engine.getNodeCommunicationService();
         this.clusterService = engine.getClusterService();
         this.sequenceService = engine.getSequenceService();
-        this.extensionService = engine.getExtensionService();
         this.initialLoadService = engine.getInitialLoadService();
         setSqlMap(new DataExtractorServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
@@ -415,7 +393,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
             }
 
-            SelectFromTableSource source = new SelectFromTableSource(batch, initialLoadEvents);
+            SelectFromTableSource source = new SelectFromTableSource(engine, batch, initialLoadEvents);
             source.setConfiguration(true);
             ExtractDataReader dataReader = new ExtractDataReader(
                     this.symmetricDialect.getPlatform(), source);
@@ -1291,13 +1269,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo) {
         return new ExtractDataReader(symmetricDialect.getPlatform(), 
-                new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo));
+                new SelectFromSymDataSource(engine, currentBatch, sourceNode, targetNode, processInfo));
     }
 
     protected ExtractDataReader buildExtractDataReader(Node sourceNode, Node targetNode, OutgoingBatch currentBatch, ProcessInfo processInfo,
             boolean containsBigLob) {
         return new ExtractDataReader(symmetricDialect.getPlatform(), 
-                new SelectFromSymDataSource(currentBatch, sourceNode, targetNode, processInfo, containsBigLob));
+                new SelectFromSymDataSource(engine, currentBatch, sourceNode, targetNode, processInfo, containsBigLob));
     }
 
     protected Statistics getExtractStats(IDataWriter writer, OutgoingBatch currentBatch) {
@@ -1358,8 +1336,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             writer.close();
         }
     }
-    
-    
 
     protected IStagedResource getStagedResource(OutgoingBatch currentBatch) {
         return stagingManager.find(Constants.STAGING_CATEGORY_OUTGOING,
@@ -1428,7 +1404,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                                         Constants.STAGING_CATEGORY_INCOMING, Batch.getStagedLocation(false, sourceNode.getNodeId(), currentBatch.getBatchId()), 
                                         currentBatch.getBatchId());
                                 try {
-                                    SymmetricUtils.copyFile(extractedBatch.getFile(), targetResource.getFile());
+                                    Files.copy(extractedBatch.getFile().toPath(), targetResource.getFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
                                     processInfo.setCurrentDataCount(currentBatch.getDataRowCount());
                                     if(log.isDebugEnabled()) {
                                         log.debug("Copied file to incoming staging of remote engine {}", targetResource.getFile().getAbsolutePath());
@@ -1621,7 +1597,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
         return index;
     }
-
     
     @Override
     public List<ExtractRequest> getPendingTablesForExtractByLoadId(long loadId) {
@@ -1759,7 +1734,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 if (targetNode != null) {
                     IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                            new SelectFromSymDataSource(batch, sourceNode, targetNode, new ProcessInfo()));
+                            new SelectFromSymDataSource(engine, batch, sourceNode, targetNode, new ProcessInfo()));
                     DataContext ctx = new DataContext();
                     ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                     ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -1789,7 +1764,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             }
             if (targetNode != null) {
                 IDataReader dataReader = new ExtractDataReader(symmetricDialect.getPlatform(),
-                        new SelectFromSymDataSource(outgoingBatch, sourceNode, targetNode, new ProcessInfo()));
+                        new SelectFromSymDataSource(engine, outgoingBatch, sourceNode, targetNode, new ProcessInfo()));
                 DataContext ctx = new DataContext();
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE, targetNode);
                 ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, nodeService.findIdentity());
@@ -1815,75 +1790,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         TransformWriter transformExtractWriter = new TransformWriter(symmetricDialect.getTargetPlatform(), TransformPoint.EXTRACT, extractWriter, 
                 transformService.getColumnTransforms(), transforms);
         return transformExtractWriter;
-    }
-
-    protected Table lookupAndOrderColumnsAccordingToTriggerHistory(String routerId,
-            TriggerHistory triggerHistory, Node sourceNode, Node targetNode, 
-            boolean setTargetTableName, boolean useDatabaseDefinition) {
-        String catalogName = triggerHistory.getSourceCatalogName();
-        String schemaName = triggerHistory.getSourceSchemaName();
-        String tableName = triggerHistory.getSourceTableName();
-        Table table = null;
-        if (useDatabaseDefinition) {
-            table = getTargetPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, false);
-            
-            if (table != null && table.getColumnCount() < triggerHistory.getParsedColumnNames().length) {
-                /*
-                 * If the column count is less than what trigger history reports, then
-                 * chances are the table cache is out of date.
-                 */
-                table = getTargetPlatform(tableName).getTableFromCache(catalogName, schemaName, tableName, true);
-            }
-
-            if (table != null) {
-                table = table.copyAndFilterColumns(triggerHistory.getParsedColumnNames(),
-                    triggerHistory.getParsedPkColumnNames(), true);
-            } else {
-                throw new SymmetricException("Could not find the following table.  It might have been dropped: %s", Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
-            }
-        } else {
-            table = new Table(tableName);
-            table.addColumns(triggerHistory.getParsedColumnNames());
-            table.setPrimaryKeys(triggerHistory.getParsedPkColumnNames());
-        }
-
-        Router router = triggerRouterService.getRouterById(routerId, false);        
-        if (router != null && setTargetTableName) {            
-            if (router.isUseSourceCatalogSchema()) {
-                table.setCatalog(catalogName);
-                table.setSchema(schemaName);
-            } else {
-                table.setCatalog(null);
-                table.setSchema(null);
-            }
-            
-            if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetCatalogName())) {
-                table.setCatalog(null);
-            } else if (StringUtils.isNotBlank(router.getTargetCatalogName())) {
-                table.setCatalog(replaceVariables(sourceNode, targetNode, router.getTargetCatalogName()));
-            }
-
-            if (StringUtils.equals(Constants.NONE_TOKEN, router.getTargetSchemaName())) {
-                table.setSchema(null);
-            } else if (StringUtils.isNotBlank(router.getTargetSchemaName())) {
-                table.setSchema(replaceVariables(sourceNode, targetNode, router.getTargetSchemaName()));
-            }
-
-            if (StringUtils.isNotBlank(router.getTargetTableName())) {
-                table.setName(router.getTargetTableName());
-            }
-        }
-        return table;
-    }
-
-    protected String replaceVariables(Node sourceNode, Node targetNode, String str) {
-        str = FormatUtils.replace("sourceNodeId", sourceNode.getNodeId(), str);
-        str = FormatUtils.replace("sourceExternalId", sourceNode.getExternalId(), str);
-        str = FormatUtils.replace("sourceNodeGroupId", sourceNode.getNodeGroupId(), str);
-        str = FormatUtils.replace("targetNodeId", targetNode.getNodeGroupId(), str);
-        str = FormatUtils.replace("targetExternalId", targetNode.getExternalId(), str);
-        str = FormatUtils.replace("targetNodeGroupId", targetNode.getNodeGroupId(), str);
-        return str;
     }
     
     public RemoteNodeStatuses queueWork(boolean force) {
@@ -2262,8 +2168,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             String sql = "delete from " + symIncomingBatch + " where node_id = '" + nodeIdentityId + 
                     "' and batch_id between " + extractRequest.getStartBatchId() + " and " + extractRequest.getEndBatchId();
             dataService.sendSQL(extractRequest.getNodeId(), sql);
-        }
-        
+        }        
         
         for (ExtractRequest extractRequest : allRequests) {
             
@@ -2282,8 +2187,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 outgoingBatchService.updateOutgoingBatch(batch);
             }
         }
-        
-        
+   
     }
 
     public void releaseMissedExtractRequests() {
@@ -2338,29 +2242,13 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, List<ExtractRequest> childRequests, Node sourceNode,
             Node targetNode, List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel, boolean isRestarted) {
-        MultiBatchStagingWriter multiBatchStatingWriter = new MultiBatchStagingWriter(this, request, childRequests, sourceNode.getNodeId(), stagingManager,
+        MultiBatchStagingWriter multiBatchStatingWriter = new MultiBatchStagingWriter(engine, request, childRequests, sourceNode.getNodeId(),
                 batches, channel.getMaxBatchSize(), processInfo, isRestarted);
         return multiBatchStatingWriter;
     }
     
     protected ProcessType getProcessType() {
         return ProcessType.INITIAL_LOAD_EXTRACT_JOB;
-    }
-    
-    protected boolean hasLobsThatNeedExtract(Table table, CsvData data) {
-        if (table.containsLobColumns(platform)) {
-            String[] colNames = table.getColumnNames();
-            Map<String, String> colMap = data.toColumnNameValuePairs(colNames, CsvData.ROW_DATA);
-
-            List<Column> lobColumns = table.getLobColumns(platform);
-            for (Column c : lobColumns) {
-                String value = colMap.get(c.getName());
-                if (value != null && (value.equals("\b") || value.equals("08"))) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     class ExtractRequestMapper implements ISqlRowMapper<ExtractRequest> {
@@ -2393,755 +2281,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             return request;
         }
     }
-
-    class ColumnsAccordingToTriggerHistory {
-        class CacheKey{
-            private String routerId;
-            private int triggerHistoryId;
-            private boolean setTargetTableName;
-            private boolean useDatabaseDefinition;
-            
-            public CacheKey(String routerId, int triggerHistoryId, boolean setTargetTableName,
-                    boolean useDatabaseDefinition) {
-                 this.routerId = routerId;
-                 this.triggerHistoryId = triggerHistoryId;
-                 this.setTargetTableName = setTargetTableName;
-                 this.useDatabaseDefinition = useDatabaseDefinition;
-            }
-            @Override
-            public int hashCode() {
-                final int prime = 31;
-                int result = 1;
-                result = prime * result + ((routerId == null) ? 0 : routerId.hashCode());
-                result = prime * result + (setTargetTableName ? 1231 : 1237);
-                result = prime * result + triggerHistoryId;
-                result = prime * result + (useDatabaseDefinition ? 1231 : 1237);
-                return result;
-            }
-            @Override
-            public boolean equals(Object obj) {
-                if (this == obj)
-                    return true;
-                if (obj == null)
-                    return false;
-                if (getClass() != obj.getClass())
-                    return false;
-                CacheKey other = (CacheKey) obj;
-                if (routerId == null) {
-                    if (other.routerId != null)
-                        return false;
-                } else if (!routerId.equals(other.routerId))
-                    return false;
-                if (setTargetTableName != other.setTargetTableName)
-                    return false;
-                if (triggerHistoryId != other.triggerHistoryId)
-                    return false;
-                if (useDatabaseDefinition != other.useDatabaseDefinition)
-                    return false;
-                return true;
-            }
-        }
-        
-        Map<CacheKey, Table> cache = new HashMap<CacheKey, Table>();
-        Node sourceNode;
-        Node targetNode;
-        
-        public ColumnsAccordingToTriggerHistory(Node sourceNode, Node targetNode) {
-            this.sourceNode = sourceNode;
-            this.targetNode = targetNode;
-        }
-        public Table lookup(String routerId, TriggerHistory triggerHistory, boolean setTargetTableName, boolean useDatabaseDefinition) {            
-            CacheKey key = new CacheKey(routerId, triggerHistory.getTriggerHistoryId(), setTargetTableName, useDatabaseDefinition);
-            Table table = cache.get(key);
-            if (table == null) {
-                table = lookupAndOrderColumnsAccordingToTriggerHistory(routerId, triggerHistory, sourceNode,
-                        targetNode, setTargetTableName, useDatabaseDefinition);
-                cache.put(key, table);
-            }
-            return table;
-        }
-    }
-    
-    class SelectFromSymDataSource implements IExtractDataReaderSource {
-
-        private Batch batch;
-
-        private OutgoingBatch outgoingBatch;
-
-        private Table targetTable;
-
-        private Table sourceTable;
-
-        private TriggerHistory lastTriggerHistory;
-        
-        private String lastRouterId;
-
-        private boolean requiresLobSelectedFromSource;
-
-        private ISqlReadCursor<Data> cursor;
-
-        private SelectFromTableSource reloadSource;
-
-        private Node targetNode;
-        
-        private ProcessInfo processInfo;
-        
-        private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
-        
-        private Map<Integer, TriggerRouter> triggerRoutersByTriggerHist;
-        
-        private Map<Integer, CounterStat> missingTriggerRoutersByTriggerHist = new HashMap<Integer, CounterStat>();
-        
-        private boolean containsBigLob;
-
-        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
-                Node sourceNode, Node targetNode, ProcessInfo processInfo, boolean containsBigLob) {
-            this.processInfo = processInfo;
-            this.outgoingBatch = outgoingBatch;
-            this.batch = new Batch(BatchType.EXTRACT, outgoingBatch.getBatchId(),
-                    outgoingBatch.getChannelId(), symmetricDialect.getBinaryEncoding(),
-                    sourceNode.getNodeId(), outgoingBatch.getNodeId(), outgoingBatch.isCommonFlag());
-            this.targetNode = targetNode;
-            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(sourceNode, targetNode);
-            this.outgoingBatch.resetExtractRowStats();
-            this.containsBigLob = containsBigLob;
-            this.triggerRoutersByTriggerHist = triggerRouterService.getTriggerRoutersByTriggerHist(targetNode.getNodeGroupId(), false);
-        }
-
-        public SelectFromSymDataSource(OutgoingBatch outgoingBatch, 
-                Node sourceNode, Node targetNode, ProcessInfo processInfo) {
-            this(outgoingBatch, sourceNode, targetNode, processInfo,
-                    configurationService.getNodeChannel(outgoingBatch.getChannelId(), false).getChannel().isContainsBigLob());
-        }
-
-        public Batch getBatch() {
-            return batch;
-        }
-
-        public Table getSourceTable() {
-            return sourceTable;
-        }
-
-        public Table getTargetTable() {
-            return targetTable;
-        }
-
-        public CsvData next() {
-            if (this.cursor == null) {
-                this.cursor = dataService.selectDataFor(batch.getBatchId(), batch.getTargetNodeId(), containsBigLob);
-            }
-
-            Data data = null;
-            if (reloadSource != null) {
-                data = (Data) reloadSource.next();
-                targetTable = reloadSource.getTargetTable();
-                sourceTable = reloadSource.getSourceTable();
-                if (data == null) {
-                    reloadSource.close();
-                    reloadSource = null;
-                } else {
-                    this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
-                }
-                lastTriggerHistory = null;
-            }
-
-            if (data == null) {
-                data = this.cursor.next();
-                if (data != null) {
-                    TriggerHistory triggerHistory = data.getTriggerHistory();
-                    TriggerRouter triggerRouter = triggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
-
-                    if (triggerRouter == null) {
-                        CounterStat counterStat = missingTriggerRoutersByTriggerHist.get(triggerHistory.getTriggerHistoryId());
-                        if (counterStat == null) {
-                            triggerRouter = triggerRouterService.getTriggerRouterByTriggerHist(targetNode.getNodeGroupId(), 
-                                    triggerHistory.getTriggerHistoryId(), true);
-                            if (triggerRouter == null) {
-                                counterStat = new CounterStat(data.getDataId(), 1);
-                                missingTriggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), counterStat);
-                                return next();
-                            }
-                        } else {
-                            counterStat.incrementCount();
-                            return next();
-                        }
-                        triggerRoutersByTriggerHist.put(triggerHistory.getTriggerHistoryId(), triggerRouter);
-                    }
-
-                    String routerId = triggerRouter.getRouterId();
-
-                    if (data.getDataEventType() == DataEventType.RELOAD) {
-                        processInfo.setCurrentTableName(triggerHistory.getSourceTableName());
-                        
-                        String initialLoadSelect = data.getRowData();
-                        if (initialLoadSelect == null && triggerRouter.getTrigger().isStreamRow()) {
-                            sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                                    .getRouter().getRouterId(), triggerHistory, false, true);
-                            Column[] columns = sourceTable.getPrimaryKeyColumns();
-                            String[] pkData = data.getParsedData(CsvData.PK_DATA);
-                            boolean[] nullKeyValues = new boolean[columns.length];
-                            for (int i = 0; i < columns.length; i++) {
-                                Column column = columns[i];
-                                nullKeyValues[i] = !column.isRequired()
-                                        && pkData[i] == null;
-                            }
-                            DmlStatement dmlStmt = platform.createDmlStatement(
-                                    DmlType.WHERE,
-                                    sourceTable.getCatalog(),
-                                    sourceTable.getSchema(),
-                                    sourceTable.getName(),
-                                    sourceTable.getPrimaryKeyColumns(),
-                                    sourceTable.getColumns(),
-                                    nullKeyValues,
-                                    null);
-                            Row row = new Row(columns.length);
-                            
-                            for (int i = 0; i < columns.length; i++) {
-                                row.put(columns[i].getName(), pkData[i]);
-                            }
-                            initialLoadSelect = dmlStmt.buildDynamicSql(batch.getBinaryEncoding(), row, false, true, columns);
-                            if (initialLoadSelect.endsWith(platform.getDatabaseInfo().getSqlCommandDelimiter())) {
-                                initialLoadSelect = initialLoadSelect.substring(0, 
-                                        initialLoadSelect.length() - platform.getDatabaseInfo().getSqlCommandDelimiter().length());
-                            }
-                        }
-                        
-                        SelectFromTableEvent event = new SelectFromTableEvent(targetNode,
-                                triggerRouter, triggerHistory, initialLoadSelect);
-                        this.reloadSource = new SelectFromTableSource(outgoingBatch, batch,
-                                event);
-                        data = (Data) this.reloadSource.next();
-                        this.sourceTable = reloadSource.getSourceTable();
-                        this.targetTable = this.reloadSource.getTargetTable();
-                        this.requiresLobSelectedFromSource = this.reloadSource.requiresLobsSelectedFromSource(data);
-                        
-                        if (data == null) {
-                            data = (Data)next();
-                        }
-                    } else {
-                        Trigger trigger = triggerRouter.getTrigger();
-                        boolean isFileParserRouter = triggerHistory.getTriggerId().equals(AbstractFileParsingRouter.TRIGGER_ID_FILE_PARSER);
-                        if (lastTriggerHistory == null || lastTriggerHistory.getTriggerHistoryId() != triggerHistory.getTriggerHistoryId() || 
-                                lastRouterId == null || !lastRouterId.equals(routerId)) {
-                            
-                            this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                                        routerId, triggerHistory, false, !isFileParserRouter);
-                            
-                            this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                                    routerId, triggerHistory, true, false);
-                            
-                            if (trigger != null && trigger.isUseStreamLobs() || (data.getRowData() != null && hasLobsThatNeedExtract(sourceTable, data))) {
-                                this.requiresLobSelectedFromSource = true;
-                            } else {
-                                this.requiresLobSelectedFromSource = false;
-                            }
-                        }
-
-                        data.setNoBinaryOldData(requiresLobSelectedFromSource
-                                || symmetricDialect.getName().equals(
-                                        DatabaseNamesConstants.MSSQL2000)
-                                || symmetricDialect.getName().equals(
-                                        DatabaseNamesConstants.MSSQL2005)
-                                || symmetricDialect.getName().equals(
-                                        DatabaseNamesConstants.MSSQL2008)
-                                || symmetricDialect.getName().equals(
-                                        DatabaseNamesConstants.MSSQL2016));
-                        
-                        outgoingBatch.incrementExtractRowCount();
-                        outgoingBatch.incrementExtractRowCount(data.getDataEventType());
-                        
-                        if (data.getDataEventType().equals(DataEventType.INSERT) || data.getDataEventType().equals(DataEventType.UPDATE)) {
-                            int expectedCommaCount = triggerHistory.getParsedColumnNames().length;
-                            int commaCount = StringUtils.countMatches(data.getRowData(), ",") + 1;
-                            if (commaCount < expectedCommaCount) {
-                                String message = "The extracted row for table %s had %d columns but expected %d.  ";
-                                if (containsBigLob) {
-                                    message += "Corrupted row for data ID " + data.getDataId() + ": " + data.getRowData();
-                                } else {
-                                    message += "If this happens often, it might be better to isolate the table with sym_channel.contains_big_lobs enabled.";
-                                }
-                                throw new ProtocolException(message, data.getTableName(), commaCount, expectedCommaCount);
-                            }
-                        }
-                            
-                        if (data.getDataEventType() == DataEventType.CREATE && StringUtils.isBlank(data.getCsvData(CsvData.ROW_DATA))) {                          
-                            String oldData = data.getCsvData(CsvData.OLD_DATA);
-                            boolean sendSchemaExcludeIndices = false;
-                            boolean sendSchemaExcludeForeignKeys = false;
-                            boolean sendSchemaExcludeDefaults = false;
-                            if (oldData != null && oldData.length() > 0) {
-                                String[] excludes = data.getCsvData(CsvData.OLD_DATA).split(",");
-                                for(String exclude : excludes) {
-                                    if (Constants.SEND_SCHEMA_EXCLUDE_INDICES.equals(exclude)) {
-                                        sendSchemaExcludeIndices = true;
-                                    } else if (Constants.SEND_SCHEMA_EXCLUDE_FOREIGN_KEYS.equals(exclude)) {
-                                        sendSchemaExcludeForeignKeys = true;
-                                    } else if (Constants.SEND_SCHEMA_EXCLUDE_DEFAULTS.equals(exclude)) {
-                                        sendSchemaExcludeDefaults = true;
-                                    }
-                                }
-                            }
-
-                            boolean excludeDefaults = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_DEFAULTS, false) | sendSchemaExcludeDefaults;
-                            boolean excludeForeignKeys = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_FOREIGN_KEYS, false) | sendSchemaExcludeForeignKeys;
-                            boolean excludeIndexes = parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_INDEXES, false) | sendSchemaExcludeIndices;
-                            boolean deferConstraints = outgoingBatch.isLoadFlag() && parameterService.is(ParameterConstants.INITIAL_LOAD_DEFER_CREATE_CONSTRAINTS, false);
-                            
-                            String[] pkData = data.getParsedData(CsvData.PK_DATA);
-                            if (pkData != null && pkData.length > 0) {
-                                outgoingBatch.setLoadId(Long.parseLong(pkData[0]));
-                                TableReloadStatus tableReloadStatus = dataService.getTableReloadStatusByLoadId(outgoingBatch.getLoadId());
-                                if (tableReloadStatus != null && tableReloadStatus.isCompleted()) {
-                                    // Ignore create table (indexes and foreign keys) at end of load if it was cancelled
-                                    return null;
-                                }
-                            }
-                            
-                            /*
-                             * Force a reread of table so new columns are picked up.  A create
-                             * event is usually sent after there is a change to the table so 
-                             * we want to make sure that the cache is updated
-                             */
-                            this.sourceTable = getTargetPlatform().getTableFromCache(sourceTable.getCatalog(), 
-                                    sourceTable.getSchema(), sourceTable.getName(), true);
-                            
-                            this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                                    routerId, triggerHistory, true, true);
-                            Table copyTargetTable = this.targetTable.copy();
-                            
-                            Database db = new Database();
-                            db.setName("dataextractor");                            
-                            db.setCatalog(copyTargetTable.getCatalog());
-                            db.setSchema(copyTargetTable.getSchema());
-                            db.addTable(copyTargetTable);
-                            if (excludeDefaults) {
-                                Column[] columns = copyTargetTable.getColumns();
-                                for (Column column : columns) {
-                                    column.setDefaultValue(null);
-                                    Map<String, PlatformColumn> platformColumns = column.getPlatformColumns();
-                                    if (platformColumns != null) {
-                                        Collection<PlatformColumn> cols = platformColumns.values();
-                                        for (PlatformColumn platformColumn : cols) {
-                                            platformColumn.setDefaultValue(null);
-                                        }
-                                    }
-                                }
-                            }
-                            if (excludeForeignKeys || deferConstraints) {
-                                copyTargetTable.removeAllForeignKeys();
-                            }
-                            if (excludeIndexes || deferConstraints) {
-                                copyTargetTable.removeAllIndexes();
-                            }
-                            
-                            if (parameterService.is(ParameterConstants.CREATE_TABLE_WITHOUT_PK_IF_SOURCE_WITHOUT_PK, false)
-                                && sourceTable.getPrimaryKeyColumnCount() == 0
-                                && copyTargetTable.getPrimaryKeyColumnCount() > 0) {
-                                
-                                for (Column column : copyTargetTable.getColumns()) {
-                                    column.setPrimaryKey(false);
-                                }
-                                
-                            }
-                            if (parameterService.is(ParameterConstants.MYSQL_TINYINT_DDL_TO_BOOLEAN, false)) {
-                                for (Column column : copyTargetTable.getColumns()) {
-                                    if (column.getJdbcTypeCode() == Types.TINYINT) {
-                                        column.setJdbcTypeCode(Types.BOOLEAN);
-                                        column.setMappedTypeCode(Types.BOOLEAN);
-                                    }
-                                }
-                            }
-                            data.setRowData(CsvUtils.escapeCsvData(DatabaseXmlUtil.toXml(db)));
-                        }
-                    }
-
-                    if (data != null) {
-                        lastTriggerHistory = data.getTriggerHistory();
-                        lastRouterId = routerId;
-                    }
-                } else {
-                    closeCursor();
-                }
-            }
-            return data;
-        }
-
-        public boolean requiresLobsSelectedFromSource(CsvData data) {
-            return requiresLobSelectedFromSource;
-        }
-
-        protected void closeCursor() {
-            if (this.cursor != null) {
-                this.cursor.close();
-                this.cursor = null;
-            }
-        }
-
-        public void close() {
-            closeCursor();
-            if (reloadSource != null) {
-                reloadSource.close();
-            }
-            
-            for (Map.Entry<Integer, CounterStat> entry : missingTriggerRoutersByTriggerHist.entrySet()) {
-                log.warn("Could not find trigger router for trigger hist of {}.  Skipped {} events starting with data id of {}",
-                        entry.getKey(), entry.getValue().getCount(), entry.getValue().getObject());
-            }
-        }
-
-    }
-
-    class SelectFromTableSource implements IExtractDataReaderSource {
-
-        private OutgoingBatch outgoingBatch;
-
-        private Batch batch;
-
-        private Table targetTable;
-
-        private Table sourceTable;
-
-        private List<SelectFromTableEvent> selectFromTableEventsToSend;
-
-        private SelectFromTableEvent currentInitialLoadEvent;
-
-        private ISqlReadCursor<Data> cursor;
-
-        private SimpleRouterContext routingContext;
-
-        private Node node;
-        
-        private Set<Node> nodeSet;
-
-        private TriggerRouter triggerRouter;
-        
-        private Map<String, IDataRouter> routers;
-        
-        private IDataRouter dataRouter;
-        
-        private ColumnsAccordingToTriggerHistory columnsAccordingToTriggerHistory;
-        
-        private String overrideSelectSql;
-        
-        private boolean initialLoadSelectUsed;
-
-        private boolean isSelfReferencingFk;
-        
-        private int selfRefLevel;
-        
-        private String selfRefParentColumnName;
-        
-        private String selfRefChildColumnName;
-        
-        boolean isFirstRow;
-        
-        boolean isLobFirstPass;
-
-        boolean isConfiguration;
-        
-        public SelectFromTableSource(OutgoingBatch outgoingBatch, Batch batch,
-                SelectFromTableEvent event) {
-            this.outgoingBatch = outgoingBatch;
-            List<SelectFromTableEvent> initialLoadEvents = new ArrayList<DataExtractorService.SelectFromTableEvent>(
-                    1);
-            initialLoadEvents.add(event);
-            this.outgoingBatch.resetExtractRowStats();
-            this.init(batch, initialLoadEvents);
-        }
-
-        public SelectFromTableSource(Batch batch, List<SelectFromTableEvent> initialLoadEvents) {
-            this.init(batch, initialLoadEvents);
-        }
-
-        protected void init(Batch batch, List<SelectFromTableEvent> initialLoadEvents) {
-            this.selectFromTableEventsToSend = new ArrayList<SelectFromTableEvent>(
-                    initialLoadEvents);
-            this.batch = batch;
-            this.node = nodeService.findNode(batch.getTargetNodeId(), true);
-            this.nodeSet = new HashSet<Node>(1);
-            this.nodeSet.add(node);
-            this.routers = routerService.getRouters();
-
-            if (node == null) {
-                throw new SymmetricException("Could not find a node represented by %s",
-                        this.batch.getTargetNodeId());
-            }
-            this.columnsAccordingToTriggerHistory = new ColumnsAccordingToTriggerHistory(nodeService.findIdentity(), node);
-        }
-
-        public Table getSourceTable() {
-            return sourceTable;
-        }
-
-        public Batch getBatch() {
-            return batch;
-        }
-
-        public Table getTargetTable() {
-            return targetTable;
-        }
-
-        public void setConfiguration(boolean isConfiguration) {
-            this.isConfiguration = isConfiguration;
-        }
-        
-        public CsvData next() {
-            CsvData data = null;
-            do {
-                data = selectNext();
-            } while (data != null && routingContext != null && !shouldDataBeRouted(data));
-
-            if (data != null && outgoingBatch != null && !outgoingBatch.isExtractJobFlag()) {
-                outgoingBatch.incrementExtractRowCount();
-                outgoingBatch.incrementExtractRowCount(data.getDataEventType());
-            }
-
-            return data;
-        }
-
-        public boolean shouldDataBeRouted(CsvData data) {
-            DataMetaData dataMetaData = new DataMetaData((Data) data, sourceTable, triggerRouter.getRouter(), routingContext.getChannel());
-            Collection<String> nodeIds = dataRouter.routeToNodes(routingContext, dataMetaData, nodeSet, true,
-                    initialLoadSelectUsed, triggerRouter);
-            return nodeIds != null && nodeIds.contains(node.getNodeId());
-        }
-
-        protected CsvData selectNext() {
-            CsvData data = null;
-            if (this.currentInitialLoadEvent == null && selectFromTableEventsToSend.size() > 0) {
-                this.currentInitialLoadEvent = selectFromTableEventsToSend.remove(0);
-                TriggerHistory history = this.currentInitialLoadEvent.getTriggerHistory();
-                this.isSelfReferencingFk = false;
-                this.isFirstRow = true;
-                if (this.currentInitialLoadEvent.containsData()) {
-                    data = this.currentInitialLoadEvent.getData();
-                    this.sourceTable = columnsAccordingToTriggerHistory.lookup(
-                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, false, true);
-                    this.targetTable = columnsAccordingToTriggerHistory.lookup(
-                            currentInitialLoadEvent.getTriggerRouter().getRouterId(), history, true, false);
-                    this.currentInitialLoadEvent = null;
-                } else {
-                    this.triggerRouter = this.currentInitialLoadEvent.getTriggerRouter();
-                    this.initialLoadSelectUsed = this.currentInitialLoadEvent.getInitialLoadSelect() != null && !this.currentInitialLoadEvent.getInitialLoadSelect().equals("1=1") 
-                            ? true : StringUtils.isNotBlank(this.triggerRouter.getInitialLoadSelect());
-
-                    Router router = triggerRouter.getRouter();
-                    if (!StringUtils.isBlank(router.getRouterType())) {
-                        this.dataRouter = routers.get(router.getRouterType());
-                    }
-                    if (dataRouter == null) {
-                        this.dataRouter = routers.get("default");
-                    }
-                    
-                    if (this.routingContext == null) {
-                        NodeChannel channel = batch != null ? configurationService.getNodeChannel(
-                                batch.getChannelId(), false) : new NodeChannel(this.triggerRouter
-                                .getTrigger().getChannelId());
-                        this.routingContext = new SimpleRouterContext(batch.getTargetNodeId(),
-                                channel);
-                    }
-                    this.sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                            .getRouter().getRouterId(), history, false, true);
-                    this.targetTable = columnsAccordingToTriggerHistory.lookup(triggerRouter
-                            .getRouter().getRouterId(), history, true, false);
-                    
-                    this.overrideSelectSql = currentInitialLoadEvent.getInitialLoadSelect();
-                    if (overrideSelectSql != null && overrideSelectSql.trim().toUpperCase().startsWith("WHERE")) {
-                        overrideSelectSql = overrideSelectSql.trim().substring(5);
-                    }
-
-                    if (parameterService.is(ParameterConstants.INITIAL_LOAD_RECURSION_SELF_FK)) {
-                        ForeignKey fk = this.sourceTable.getSelfReferencingForeignKey();
-                        if (fk != null) {
-                            Reference[] refs = fk.getReferences();
-                            if (refs.length == 1) {
-                                this.isSelfReferencingFk = true;
-                                this.selfRefParentColumnName = refs[0].getLocalColumnName();
-                                this.selfRefChildColumnName = refs[0].getForeignColumnName();
-                                this.selfRefLevel = 0;
-                                log.info("Ordering rows for table {} using self-referencing foreign key {} -> {}", 
-                                        this.sourceTable.getName(), this.selfRefParentColumnName, this.selfRefChildColumnName);
-                            } else {
-                                log.warn("Unable to order rows for self-referencing foreign key because it contains multiple columns");
-                            }
-                        }
-                    }
-
-                    ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
-                    if (this.routingContext.getChannel().isReloadFlag() && symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable)) {
-                        this.isLobFirstPass = true;
-                    }
-
-                    this.startNewCursor(history, triggerRouter);
-                }
-            }
-
-            if (this.cursor != null) {
-                data = this.cursor.next();
-                if (data == null) {
-                    closeCursor();
-                    ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
-                    if (isSelfReferencingFk && !this.isFirstRow) {
-                        this.selfRefLevel++;
-                        this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
-                        this.isFirstRow = true;
-                    } else if (symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable) && this.isLobFirstPass) {
-                        this.isLobFirstPass = false;
-                        this.startNewCursor(this.currentInitialLoadEvent.getTriggerHistory(), triggerRouter);
-                    } else {
-                        this.currentInitialLoadEvent = null;
-                    }
-                    data = next();
-                } else if (this.isFirstRow) {
-                    this.isFirstRow = false;
-                }
-            }
-
-            return data;
-        }
-
-        protected void closeCursor() {
-            if (this.cursor != null) {
-                this.cursor.close();
-                this.cursor = null;
-            }
-        }
-        
-        public ISymmetricDialect getSymmetricDialect() {
-            ISymmetricDialect dialect = null;
-            if (this.isConfiguration || (sourceTable != null && 
-                    sourceTable.getNameLowerCase().startsWith(parameterService.getTablePrefix().toLowerCase() + "_"))) {
-                dialect = symmetricDialect;
-            } else {
-                dialect = symmetricDialect.getTargetDialect();
-            }
-            return dialect;
-        }
-
-        protected void startNewCursor(final TriggerHistory triggerHistory,
-                final TriggerRouter triggerRouter) {
-            
-            ISymmetricDialect symmetricDialectToUse = getSymmetricDialect();
-
-            String selectSql = overrideSelectSql;
-            if (isSelfReferencingFk) {
-                if (selectSql == null) {
-                    selectSql = "";
-                } else if (StringUtils.isNotBlank(selectSql)) {
-                    selectSql += " and ";
-                }
-
-                if (selfRefLevel == 0) {
-                    selectSql += "(" + selfRefParentColumnName + " is null or " + selfRefParentColumnName + " = " + selfRefChildColumnName + ") ";
-                } else {
-                    DatabaseInfo info = symmetricDialectToUse.getPlatform().getDatabaseInfo();
-                    String tableName = Table.getFullyQualifiedTableName(sourceTable.getCatalog(), sourceTable.getSchema(),
-                            sourceTable.getName(), info.getDelimiterToken(), info.getCatalogSeparator(), info.getSchemaSeparator());                    
-                    String refSql= "select " + selfRefChildColumnName + " from " + tableName + 
-                            " where " + selfRefParentColumnName;
-                    selectSql += selfRefParentColumnName + " in (";
-
-                    for (int i = 1; i < selfRefLevel; i++) {
-                        selectSql += refSql + " in (";
-                    }
-                    selectSql += refSql + " is null or " + selfRefChildColumnName + " = " + selfRefParentColumnName + " ) and " + 
-                            selfRefParentColumnName + " != " + selfRefChildColumnName + StringUtils.repeat(")", selfRefLevel - 1);
-                }
-                log.info("Querying level {} for table {}: {}", selfRefLevel, sourceTable.getName(), selectSql);
-            }
-
-            Channel channel = configurationService.getChannel(triggerRouter.getTrigger().getReloadChannelId());
-            
-            if (channel.isReloadFlag() && symmetricDialectToUse.isInitialLoadTwoPassLob(this.sourceTable)) {
-                channel = new Channel();
-                channel.setContainsBigLob(!this.isLobFirstPass);
-                selectSql = symmetricDialectToUse.getInitialLoadTwoPassLobSql(selectSql, this.sourceTable, this.isLobFirstPass);
-                log.info("Querying {} pass LOB for table {}: {}", (this.isLobFirstPass ? "first" : "second"), sourceTable.getName(), selectSql);
-            }
-            
-            String sql = symmetricDialectToUse.createInitialLoadSqlFor(
-                    this.currentInitialLoadEvent.getNode(), triggerRouter, sourceTable, triggerHistory, channel, selectSql);
-
-            for (IReloadVariableFilter filter : extensionService.getExtensionPointList(IReloadVariableFilter.class)) {
-                sql = filter.filterInitalLoadSql(sql, node, targetTable);
-            }
-            
-            final String initialLoadSql = sql;
-            final int expectedCommaCount = triggerHistory.getParsedColumnNames().length - 1;
-            final boolean selectedAsCsv = symmetricDialectToUse.getParameterService().is(
-                    ParameterConstants.INITIAL_LOAD_CONCAT_CSV_IN_SQL_ENABLED); 
-            final boolean objectValuesWillNeedEscaped = !symmetricDialectToUse.getTriggerTemplate()
-                    .useTriggerTemplateForColumnTemplatesDuringInitialLoad();
-            final boolean[] isColumnPositionUsingTemplate = symmetricDialectToUse.getColumnPositionUsingTemplate(sourceTable, triggerHistory);
-            final boolean checkRowLength = parameterService.is(ParameterConstants.EXTRACT_CHECK_ROW_SIZE, false);
-            final long rowMaxLength = parameterService.getLong(ParameterConstants.EXTRACT_ROW_MAX_LENGTH, 1000000000);
-            log.debug(sql);
-            
-            this.cursor = symmetricDialectToUse.getPlatform().getSqlTemplate().queryForCursor(initialLoadSql, new ISqlRowMapper<Data>() {
-                public Data mapRow(Row row) {
-                    if (checkRowLength) {
-                        // Account for double byte characters and encoding
-                        long rowSize = row.getLength() * 2;
-                        
-                        if (rowSize > rowMaxLength) {
-                            StringBuffer pkValues = new StringBuffer();
-                            int i = 0;
-                            Object[] rowValues = row.values().toArray();
-                            for (String name : sourceTable.getPrimaryKeyColumnNames()) {
-                                pkValues.append(name).append("=").append(rowValues[i]);
-                                i++;
-                            }
-                            log.warn("Extract row max size exceeded, keys [" + pkValues.toString() + "], size=" + rowSize);
-                            Data data = new Data(0, null, "", DataEventType.SQL, triggerHistory
-                                    .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
-                                    null, null);
-                            return data;
-                        }
-                    }
-                    String csvRow = null;                    
-                    if (selectedAsCsv) {
-                        csvRow = row.stringValue();
-                        int commaCount = StringUtils.countMatches(csvRow, ",");
-                        if (commaCount < expectedCommaCount) {
-                            throw new SymmetricException(
-                                    "The extracted row data did not have the expected (%d) number of columns (actual=%s): %s.  The initial load sql was: %s",
-                                    expectedCommaCount, commaCount, csvRow, initialLoadSql);
-                        }
-                    } else if (objectValuesWillNeedEscaped) {
-                        csvRow = platform.getCsvStringValue(
-                                symmetricDialect.getBinaryEncoding(), sourceTable.getColumns(),
-                                row, isColumnPositionUsingTemplate);
-                    } else {
-                        csvRow = row.csvValue();
-                    }
-
-                    Data data = new Data(0, null, csvRow, DataEventType.INSERT, triggerHistory
-                            .getSourceTableName(), null, triggerHistory, batch.getChannelId(),
-                            null, null);
-                    return data;
-                }
-            }, checkRowLength && sourceTable.containsLobColumns(symmetricDialect.getPlatform()) && !sourceTable.getNameLowerCase().startsWith(symmetricDialect.getTablePrefix()));
-        }
-
-        public boolean requiresLobsSelectedFromSource(CsvData data) {
-            if (parameterService.is(ParameterConstants.INITIAL_LOAD_USE_COLUMN_TEMPLATES_ENABLED)
-                    && this.currentInitialLoadEvent != null
-                    && this.currentInitialLoadEvent.getTriggerRouter() != null) {
-                if (this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs()
-                        || (data != null && hasLobsThatNeedExtract(sourceTable, data))) {
-                    return true;
-                }
-                return this.currentInitialLoadEvent.getTriggerRouter().getTrigger().isUseStreamLobs();
-            } else {
-                return false;
-            }
-        }
-
-        public void close() {
-            closeCursor();
-        }
-
-    }
     
     @Override
     public void removeBatchFromStaging(OutgoingBatch batch) {
@@ -3151,59 +2290,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         } else {
             log.info("Could not remove batch {} from staging because it did not exist", batch.getNodeBatchId());
         }
-    }
-
-    class SelectFromTableEvent {
-
-        private TriggerRouter triggerRouter;
-        private TriggerHistory triggerHistory;
-        private Node node;
-        private Data data;
-        private String initialLoadSelect;
-
-        public SelectFromTableEvent(Node node, TriggerRouter triggerRouter,
-                TriggerHistory triggerHistory, String initialLoadSelect) {
-            this.node = node;
-            this.triggerRouter = triggerRouter;
-            this.initialLoadSelect = initialLoadSelect;
-            Trigger trigger = triggerRouter.getTrigger();
-            this.triggerHistory = triggerHistory != null ? triggerHistory : triggerRouterService
-                    .getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
-                            trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
-                            trigger.getSourceTableName());
-        }
-
-        public SelectFromTableEvent(Data data, TriggerRouter triggerRouter) {
-            this.data = data;
-            this.triggerHistory = data.getTriggerHistory();
-            this.triggerRouter = triggerRouter;
-        }
-
-        public TriggerHistory getTriggerHistory() {
-            return triggerHistory;
-        }
-
-        public TriggerRouter getTriggerRouter() {
-            return triggerRouter;
-        }
-
-        public Data getData() {
-            return data;
-        }
-
-        public Node getNode() {
-            return node;
-        }
-
-        public boolean containsData() {
-            return data != null;
-        }
-
-        public String getInitialLoadSelect() {
-            return initialLoadSelect;
-        }
-
-        
     }
 
     static class FutureExtractStatus {
@@ -3249,6 +2335,5 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
         StagingFileLock fileLock;
         int referenceCount = 0;
     }
-
 
 }

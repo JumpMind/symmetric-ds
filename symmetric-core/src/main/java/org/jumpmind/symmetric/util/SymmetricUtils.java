@@ -22,11 +22,7 @@ package org.jumpmind.symmetric.util;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,7 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.Version;
@@ -50,14 +45,6 @@ import org.slf4j.LoggerFactory;
 final public class SymmetricUtils {
 
     protected static final Logger log = LoggerFactory.getLogger(SymmetricUtils.class);
-
-    protected static boolean isJava7 = true;
-    
-    protected static Method copyMethod;
-    
-    protected static Method fileMethod; 
-    
-    protected static Object optionArray;
     
     protected static boolean isNoticeLogged;
 
@@ -71,34 +58,6 @@ final public class SymmetricUtils {
         } else {
             return name;
         }
-    }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static void copyFile(File source, File target) throws IOException {
-        if (isJava7) {
-            try {
-                if (copyMethod == null) {
-                    Class filesClass = Class.forName("java.nio.file.Files");
-                    Class pathClass = Class.forName("java.nio.file.Path");
-                    Class optionArrayClass = Class.forName("[Ljava.nio.file.CopyOption;");
-                    Class optionClass = Class.forName("java.nio.file.CopyOption");
-                    Class standardOptionClass = Class.forName("java.nio.file.StandardCopyOption");
-        
-                    copyMethod = filesClass.getMethod("copy", new Class[] { pathClass, pathClass, optionArrayClass });
-                    fileMethod = File.class.getMethod("toPath", (Class[]) null);
-                    optionArray = Array.newInstance(optionClass, 1);
-                    Array.set(optionArray, 0, Enum.valueOf(standardOptionClass, "REPLACE_EXISTING"));
-                }
-
-                Object sourcePath = fileMethod.invoke(source, (Object[]) null);
-                Object targetPath = fileMethod.invoke(target, (Object[]) null);
-                copyMethod.invoke(null, new Object[] { sourcePath, targetPath, optionArray });
-                return;
-            } catch (Exception e) {
-                isJava7 = false;
-            }
-        }
-        FileUtils.copyFile(source, target);
     }
     
     public static final void replaceSystemAndEnvironmentVariables(Properties properties) {

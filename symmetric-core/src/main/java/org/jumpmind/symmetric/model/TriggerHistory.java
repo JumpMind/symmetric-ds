@@ -48,6 +48,8 @@ public class TriggerHistory implements Serializable {
     private String triggerId;
 
     private String sourceTableName;
+    
+    private String sourceTableNameLowerCase;
 
     private String sourceSchemaName;
 
@@ -202,6 +204,14 @@ public class TriggerHistory implements Serializable {
 
     public void setSourceTableName(String tableName) {
         this.sourceTableName = tableName;
+        sourceTableNameLowerCase = null;
+    }
+
+    public String getSourceTableNameLowerCase() {
+    	if (sourceTableNameLowerCase == null) {
+    		sourceTableNameLowerCase = sourceTableName.toLowerCase();
+    	}
+        return sourceTableNameLowerCase;
     }
 
     public String getColumnNames() {

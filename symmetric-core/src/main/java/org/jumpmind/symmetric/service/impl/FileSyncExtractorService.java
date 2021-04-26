@@ -25,6 +25,7 @@ import java.util.List;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.extract.MultiBatchStagingWriter;
 import org.jumpmind.symmetric.file.FileSyncZipDataWriter;
 import org.jumpmind.symmetric.io.data.IDataProcessorListener;
 import org.jumpmind.symmetric.io.data.IDataWriter;
@@ -115,7 +116,7 @@ public class FileSyncExtractorService extends DataExtractorService {
     @Override
     protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, List<ExtractRequest> childRequests, final Node sourceNode, final Node targetNode, 
             List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel, boolean isRestarted) {
-        MultiBatchStagingWriter multiBatchStagingWriter = new MultiBatchStagingWriter(this, request, childRequests, sourceNode.getNodeId(), stagingManager,
+        MultiBatchStagingWriter multiBatchStagingWriter = new MultiBatchStagingWriter(engine, request, childRequests, sourceNode.getNodeId(),
                 batches, channel.getMaxBatchSize(), processInfo, isRestarted) {
             @Override
             protected IDataWriter buildWriter() {                
