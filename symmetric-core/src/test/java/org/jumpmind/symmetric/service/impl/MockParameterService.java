@@ -41,7 +41,7 @@ public class MockParameterService extends AbstractParameterService implements IP
       if (parameters != null) {
           String key = null;
           for (int i = 0; i < parameters.length; i++) {              
-              if (i % 2 == 1) {
+              if (i % 2 != 0) {
                   properties.setProperty(key, parameters[i]);
               } else {
                   key = parameters[0];

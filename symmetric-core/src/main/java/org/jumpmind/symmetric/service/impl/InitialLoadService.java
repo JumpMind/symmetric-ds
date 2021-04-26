@@ -100,7 +100,9 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     
                     processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 } catch (Exception e) {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                	if (processInfo != null) {
+                		processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                	}
                     log.error("Error while queuing initial loads", e);
                 } finally {
                     if (!force) {

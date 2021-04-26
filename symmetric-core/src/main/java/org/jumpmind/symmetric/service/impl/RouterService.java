@@ -510,14 +510,14 @@ public class RouterService extends AbstractService implements IRouterService {
             log.info("The routing process for the {} channel is being delayed.  {}", nodeChannel.getChannelId(), isNotBlank(ex.getMessage()) ? ex.getMessage() : "");
             if (context != null) {
                 context.rollback();
+                dataCount = context.getCommittedDataEventCount();
             }
-            return context.getCommittedDataEventCount();
         } catch (InterruptedException ex) {
             log.warn("The routing process was interrupted.  Rolling back changes");
             if (context != null) {
                 context.rollback();
+                dataCount = context.getCommittedDataEventCount();
             }
-            return context.getCommittedDataEventCount();
         } catch (SyntaxParsingException ex) {
             log.error(
                     String.format(
@@ -525,16 +525,17 @@ public class RouterService extends AbstractService implements IRouterService {
                             nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
+                dataCount = context.getCommittedDataEventCount();
             }
-            return context.getCommittedDataEventCount();
         } catch (ProtocolException ex) {
             if (context != null) {
                 context.rollback();
+                dataCount = context.getCommittedDataEventCount();
             }
             if (isOverrideContainsBigLob) {
                 log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
                 return context.getCommittedDataEventCount();
-            } else {
+            } else if (context != null) {
                 Map<String, OutgoingBatch> batchesByNodes = new HashMap<String, OutgoingBatch>(context.getBatchesByNodes());
                 Map<Integer, Map<String, OutgoingBatch>> batchesByGroups = new HashMap<Integer, Map<String, OutgoingBatch>>(context.getBatchesByGroups());
                 long batchId = -1;
@@ -555,21 +556,18 @@ public class RouterService extends AbstractService implements IRouterService {
                 gapDetector.afterRouting();
                 gapDetector.beforeRouting();
                 long dataCountWithBigLob = routeDataForChannel(processInfo, nodeChannel, sourceNode, true, batchesByNodes, batchesByGroups);
-                return context.getCommittedDataEventCount() + dataCountWithBigLob;
+                dataCount = context.getCommittedDataEventCount() + dataCountWithBigLob;
             }
         } catch (CommonBatchCollisionException e) {
             log.info(e.getMessage());
             gapDetector.setIsAllDataRead(false);
-            dataCount = context.getDataEventList().size(); // we prevented writing the collision, so commit what we have
-            return dataCount;
+            dataCount = context == null ? 0 : context.getDataEventList().size(); // we prevented writing the collision, so commit what we have
         } catch (Throwable ex) {
-            log.error(
-                    String.format("Failed to route and batch data on '%s' channel",
-                            nodeChannel.getChannelId()), ex);
+            log.error(String.format("Failed to route and batch data on '%s' channel", nodeChannel.getChannelId()), ex);
             if (context != null) {
                 context.rollback();
+                dataCount = context.getCommittedDataEventCount();
             }
-            return context.getCommittedDataEventCount();
         } finally {
             try {
                 if (dataCount > 0) {
@@ -617,6 +615,7 @@ public class RouterService extends AbstractService implements IRouterService {
                 }
             }
         }
+        return dataCount;
     }
 
     protected void completeBatchesAndCommit(ChannelRouterContext context) {
@@ -804,7 +803,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } while (data != null);
             
             long routeTime = System.currentTimeMillis() - startTime;
-            if (routeTime > 60000 && context != null) {
+            if (routeTime > 60000) {
                 log.info(
                         "Done routing for channel '{}' which took {} seconds",
                         new Object[] { context.getChannel().getChannelId(), ((System.currentTimeMillis() - startTime) / 1000) });

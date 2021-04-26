@@ -53,6 +53,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.BufferedSink;
 
 public class Http2Connection extends HttpConnection {
@@ -194,12 +195,27 @@ public class Http2Connection extends HttpConnection {
     public InputStream getInputStream() throws IOException {
         closeOutput();
         waitForResponse();
-        return getResponse().body().byteStream();
+        InputStream stream = null;
+        Response resp = getResponse();
+        if (resp != null) {
+        	ResponseBody respBody = response.body();
+        	if (respBody != null) {
+        		stream = respBody.byteStream();
+        	}
+        }
+        return stream;
     }
 
     public String getResponseBody() throws IOException {
         waitForResponse();
-        return response.body().string();
+        String body = null;
+        if (response != null) {
+        	ResponseBody responseBody = response.body();
+        	if (responseBody != null) {
+        		body = responseBody.string();
+        	}
+        }
+        return body;
     }
 
     protected void waitForResponse() throws IOException {

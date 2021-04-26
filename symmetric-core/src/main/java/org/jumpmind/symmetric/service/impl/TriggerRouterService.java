@@ -565,7 +565,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
-        trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
+        trigger.setLastUpdateTime(new Date(Version.version().hashCode() * 1000l));
         return trigger;
     }
 

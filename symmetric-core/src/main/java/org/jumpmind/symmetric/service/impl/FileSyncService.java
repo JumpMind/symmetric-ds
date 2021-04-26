@@ -791,10 +791,8 @@ INodeCommunicationExecutor {
             data = cursor.next();
         }
 
-        if (cursor != null) {
-            cursor.close();
-            cursor = null;
-        }
+        cursor.close();
+        cursor = null;
 
         if (filesToDelete != null && filesToDelete.size() > 0) {
             for (File file : filesToDelete) {

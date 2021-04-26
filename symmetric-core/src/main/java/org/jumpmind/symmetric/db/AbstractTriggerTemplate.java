@@ -239,14 +239,9 @@ abstract public class AbstractTriggerTemplate {
         if (StringUtils.isNotBlank(overrideSelectSql)) {
             initialLoadSelect = overrideSelectSql;
         }
-        sql = FormatUtils
-                .replace(
-                        "whereClause", initialLoadSelect
-                        , sql);
+        sql = FormatUtils.replace("whereClause", initialLoadSelect, sql);
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
-        sql = FormatUtils.replace("schemaName",
-                triggerHistory == null ? getSourceTablePrefix(originalTable)
-                        : getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaName", getSourceTablePrefix(triggerHistory), sql);
         sql = FormatUtils.replace(
                 "primaryKeyWhereString",
                 getPrimaryKeyWhereString(symmetricDialect.getInitialLoadTableAlias(),
@@ -366,9 +361,7 @@ abstract public class AbstractTriggerTemplate {
         sql = replaceOracleQueryHint(sql);
         
         sql = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), sql);
-        sql = FormatUtils.replace("schemaName",
-                triggerHistory == null ? getSourceTablePrefix(originalTable)
-                        : getSourceTablePrefix(triggerHistory), sql);
+        sql = FormatUtils.replace("schemaName", getSourceTablePrefix(triggerHistory), sql);
 
         sql = FormatUtils.replace("whereClause", whereClause, sql);
         sql = FormatUtils.replace(
@@ -492,8 +485,7 @@ abstract public class AbstractTriggerTemplate {
 
         ddl = FormatUtils.replace("triggerName", history.getTriggerNameForDmlType(dml), ddl);
         ddl = FormatUtils.replace("channelName", trigger.getChannelId(), ddl);
-        ddl = FormatUtils.replace("triggerHistoryId",
-                Integer.toString(history == null ? -1 : history.getTriggerHistoryId()), ddl);
+        ddl = FormatUtils.replace("triggerHistoryId", Integer.toString(history.getTriggerHistoryId()), ddl);
         String triggerExpression = symmetricDialect.getTransactionTriggerExpression(defaultCatalog,
                 defaultSchema, trigger);
         if (symmetricDialect.isTransactionIdOverrideSupported()
@@ -592,8 +584,7 @@ abstract public class AbstractTriggerTemplate {
 
         // some column templates need tableName and schemaName
         ddl = FormatUtils.replace("tableName", SymmetricUtils.quote(symmetricDialect, table.getName()), ddl);
-        ddl = FormatUtils.replace("schemaName", history == null ? getSourceTablePrefix(originalTable)
-                : getSourceTablePrefix(history), ddl);
+        ddl = FormatUtils.replace("schemaName", getSourceTablePrefix(history), ddl);
 
         Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
         ddl = FormatUtils.replace(

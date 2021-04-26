@@ -143,7 +143,9 @@ public class BandwidthService implements IBandwidthService {
             log.info("{} was calculated to have a upload bandwidth of {} kbps", remoteNode.getSyncUrl(), results.getKbps());
             return results;
         } finally {
-            outgoing.close();
+        	if (outgoing != null) {
+        		outgoing.close();
+        	}
         }
     }
     

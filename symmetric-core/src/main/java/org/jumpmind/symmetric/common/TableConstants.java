@@ -87,11 +87,11 @@ public class TableConstants {
     public static final String SYM_JOB = "job";
     public static final String SYM_TABLE_RELOAD_STATUS = "table_reload_status";
 
-    private static List<String> tablesWithPrefix;
+    private static volatile List<String> tablesWithPrefix;
 
-    private static List<String> configTablesWithPrefix;
+    private static volatile List<String> configTablesWithPrefix;
 
-    private static List<String> tablesWithoutPrefix;
+    private static volatile List<String> tablesWithoutPrefix;
 
     public static final List<String> getTables(String tablePrefix) {
         if (tablesWithPrefix == null) {

@@ -2552,7 +2552,9 @@ public class DataService extends AbstractService implements IDataService {
             cursor = selectDataFor(startBatchId, nodeId, false);
             data = cursor.next();
         } finally {
-            cursor.close();
+        	if (cursor != null) {
+        		cursor.close();
+        	}
         }
         if (data != null) {
             data.putCsvData(CsvData.ROW_DATA, rowData);

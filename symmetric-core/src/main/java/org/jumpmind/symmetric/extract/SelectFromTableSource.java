@@ -163,7 +163,7 @@ public class SelectFromTableSource extends SelectFromSource {
                 if (routingContext == null) {
                     NodeChannel channel = batch != null ? configurationService.getNodeChannel(batch.getChannelId(), false) : 
                     	new NodeChannel(triggerRouter.getTrigger().getChannelId());
-                    routingContext = new SimpleRouterContext(batch.getTargetNodeId(), channel);
+                    routingContext = new SimpleRouterContext(batch == null ? null : batch.getTargetNodeId(), channel);
                 }
                 sourceTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), history, false, true);
                 targetTable = columnsAccordingToTriggerHistory.lookup(triggerRouter.getRouter().getRouterId(), history, true, false);

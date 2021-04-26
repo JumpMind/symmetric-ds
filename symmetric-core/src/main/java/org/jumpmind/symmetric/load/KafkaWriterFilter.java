@@ -313,7 +313,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     }
                     avroRecord.put("data", dataCollection);
                     try {
-                        kafkaText.append(datumToByteArray(schema, avroRecord));
+                        kafkaDataList.add(new ProducerRecord<String, Object>(kafkaDataKey, kafkaKey,
+                        		datumToByteArray(schema, avroRecord)));
+                        return false;
                     } catch (IOException ioe) {
                         throw new RuntimeException("Unable to convert row data to an Avro record", ioe);
                     }
@@ -374,7 +376,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 log.debug("Looking for an exact match for a POJO based on tableName " + tableName);
                 classMatch = Class.forName(schemaPackage + "." + tableName);
             } catch (Exception e) {
-                if (schemaPackageClassNames == null || schemaPackageClassNames.size() == 0) {
+                if (schemaPackageClassNames.size() == 0) {
                     scanSchemaPackage();
                 }
                 String fullTableName = schemaPackage + "." + tableName;

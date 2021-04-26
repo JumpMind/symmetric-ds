@@ -41,6 +41,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.AbstractBatch;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -194,10 +195,8 @@ abstract public class AbstractService implements IService {
     
     protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
             List<?> statuses, List<Long> loads) {
-        boolean containsErrorStatus = statuses.contains(OutgoingBatch.Status.ER)
-                || statuses.contains(IncomingBatch.Status.ER);
-        boolean containsIgnoreStatus = statuses.contains(OutgoingBatch.Status.IG)
-                || statuses.contains(IncomingBatch.Status.IG);
+        boolean containsErrorStatus = statuses.contains(AbstractBatch.Status.ER);
+        boolean containsIgnoreStatus = statuses.contains(AbstractBatch.Status.IG);
 
         StringBuilder where = new StringBuilder();
         boolean needsAnd = false;
@@ -220,7 +219,7 @@ abstract public class AbstractService implements IService {
             where.append("load_id in (:LOADS)");
             needsAnd = true;
         }
-        if (statuses != null && statuses.size() > 0) {
+        if (statuses.size() > 0) {
             if (needsAnd) {
                 where.append(" and ");
             }
