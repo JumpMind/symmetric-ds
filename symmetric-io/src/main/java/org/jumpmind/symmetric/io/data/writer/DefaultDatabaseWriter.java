@@ -86,7 +86,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
     protected boolean isRequiresSavePointsInTransaction;
 
-    protected boolean isCteExpression;
+    protected Boolean isCteExpression;
     
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
@@ -101,7 +101,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         super(conflictResolver, settings);
         this.platform = platform;
         isRequiresSavePointsInTransaction = platform.getDatabaseInfo().isRequiresSavePointsInTransaction();
-        isCteExpression = getPlatform().getDdlBuilder().getDatabaseInfo().getCteExpression() != null;
     }
 
     public IDatabasePlatform getPlatform() {
@@ -223,8 +222,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         super.rollback();
     }
     
+    protected boolean isCteExpression() {
+    	if (isCteExpression == null) {
+    		isCteExpression = getPlatform().getDdlBuilder().getDatabaseInfo().getCteExpression() != null;
+    	}
+    	return isCteExpression;
+    }
+    
     protected void replaceCteExpression() {
-        if (isCteExpression) {
+        if (isCteExpression()) {
             this.currentDmlStatement.updateCteExpression(this.batch.getSourceNodeId());
         }
     }

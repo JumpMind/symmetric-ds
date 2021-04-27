@@ -125,7 +125,9 @@ public class IngresDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE PROCEDURE permission and/or DROP PROCEDURE permission");
         } finally {
-            transaction.close();
+        	if (transaction != null) {
+        		transaction.close();
+        	}
         }
         return result;
     }

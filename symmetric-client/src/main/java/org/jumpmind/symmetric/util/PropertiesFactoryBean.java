@@ -22,6 +22,9 @@ package org.jumpmind.symmetric.util;
 
 import java.util.Properties;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
+@SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_SUPERCLASS")
 public class PropertiesFactoryBean extends org.springframework.beans.factory.config.PropertiesFactoryBean {
 
     private static Properties localProperties;

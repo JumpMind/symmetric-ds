@@ -53,9 +53,6 @@ public class ConnectionWrapper implements Connection {
         // add system props.
         TypedProperties systemPlusEngineProperties = new TypedProperties();
         systemPlusEngineProperties.putAll(System.getProperties());
-        if (engineProperties != null) {
-            systemPlusEngineProperties.putAll(engineProperties);
-        }
         engineProperties = systemPlusEngineProperties;
         
         this.interceptor = WrapperInterceptor.createInterceptor(this, engineProperties);
