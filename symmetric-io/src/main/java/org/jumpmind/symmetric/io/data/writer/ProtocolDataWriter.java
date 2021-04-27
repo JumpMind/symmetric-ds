@@ -63,10 +63,12 @@ public class ProtocolDataWriter extends AbstractProtocolDataWriter {
     @Override
     protected void print(Batch batch, String data) {
         try {
-            if (log.isDebugEnabled() && data != null) {
-                log.debug("Writing data: {}", FormatUtils.abbreviateForLogging(data));
-            }
-            writer.write(data);
+        	if (data != null) {
+	            if (log.isDebugEnabled()) {
+	                log.debug("Writing data: {}", FormatUtils.abbreviateForLogging(data));
+	            }
+	            writer.write(data);
+        	}
         } catch (IOException e) {
             throw new IoException(e);
         }

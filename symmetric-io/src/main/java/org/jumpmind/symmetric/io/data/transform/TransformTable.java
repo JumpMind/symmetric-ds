@@ -251,7 +251,7 @@ public class TransformTable implements Cloneable {
                     }
                 }
                 String transformExpression = updateAction;
-                String methodName = String.format("transform_%d()", Math.abs(transformExpression.hashCode()));
+                String methodName = String.format("transform_%d()", Math.abs((long) transformExpression.hashCode()));
                 if (dataContext.get(methodName) == null) {
                     //create  BSH-Method if not exists in Context
                     interpreter.set("context", dataContext);

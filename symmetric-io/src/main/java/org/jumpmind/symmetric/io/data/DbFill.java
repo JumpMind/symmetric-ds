@@ -1053,7 +1053,10 @@ public class DbFill {
 
     private Date randomDate() {
         // Random date between 1970 and 2020
-        long l = Math.abs(getRand().nextLong());
+        long l = getRand().nextLong();
+        if (l < 0) {
+        	l *= -1l;
+        }
         long ms = (50L * 365 * 24 * 60 * 60 * 1000);
         return new Date(l % ms);
     }
@@ -1381,7 +1384,7 @@ public class DbFill {
         }
         
         public boolean equals(Object o) {
-            return o.hashCode() == hashCode(); 
+            return o != null && o.hashCode() == hashCode(); 
         }
     }
     

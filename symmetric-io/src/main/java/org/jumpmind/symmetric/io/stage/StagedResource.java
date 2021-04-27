@@ -327,8 +327,8 @@ public class StagedResource implements IStagedResource {
     public OutputStream getOutputStream() {
         refreshLastUpdateTime();
         try {
-            if (outputStream == null) {
-                if (file != null && file.exists()) {
+            if (outputStream == null && file != null) {
+                if (file.exists()) {
                     log.warn("getOutputStream had to delete {} because it already existed",
                             file.getAbsolutePath());
                     file.delete();
