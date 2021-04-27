@@ -58,13 +58,13 @@ public class SecurityService implements ISecurityService {
 
     protected Logger log = LoggerFactory.getLogger(SecurityService.class);
 
-    protected static SecretKey secretKey;
+    protected static volatile SecretKey secretKey;
 
     protected static String keyStoreFileName;
     
     protected static URL keyStoreURL;
 
-    protected static boolean hasInitKeyStore;
+    protected static volatile boolean hasInitKeyStore;
     
     protected static String trustStoreFileName;
     
@@ -216,7 +216,7 @@ public class SecurityService implements ISecurityService {
 
     protected void checkThatKeystoreFileExists() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (!hasInitKeyStore) {
-            synchronized (getClass()) {
+            synchronized (SecurityService.class) {
                 if (!hasInitKeyStore && keyStoreFileName != null && !new File(keyStoreFileName).exists()) {
                     String keyStoreType = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_TYPE, SecurityConstants.KEYSTORE_TYPE);
                     KeyStore ks = KeyStore.getInstance(keyStoreType);
@@ -333,7 +333,7 @@ public class SecurityService implements ISecurityService {
 
     protected void initializeSecretKey() throws Exception {
         if (secretKey == null) {
-            synchronized (getClass()) {
+            synchronized (SecurityService.class) {
                 if (secretKey == null) {
                     String password = getKeyStorePassword();
                     KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(password.toCharArray());
@@ -348,7 +348,7 @@ public class SecurityService implements ISecurityService {
                         log.debug("Retrieving secret key");
                     }
                     secretKey = entry.getSecretKey();
-                    log.info("Initialized with {} {}-bit", secretKey.getAlgorithm(), secretKey.getEncoded().length * 8);
+                    log.info("Initialized with {} {}-bit", entry.getSecretKey().getAlgorithm(), entry.getSecretKey().getEncoded().length * 8);
                 }
             }
         }
