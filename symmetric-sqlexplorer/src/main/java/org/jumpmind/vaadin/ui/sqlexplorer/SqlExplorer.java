@@ -102,7 +102,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
 
     float savedSplitPosition = DEFAULT_SPLIT_POS;
 
-    String user;
+    String user = "nouser";
 
     IDbMenuItem[] additionalMenuItems;
 

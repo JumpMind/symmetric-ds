@@ -116,7 +116,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         wrappedText = " "+wrappedText.replace('\n', ' ').trim()+" ";
         while (true) {
             String moreWrapped = wrappedText.replace("  ", " ");
-            if (moreWrapped==wrappedText) {
+            if (moreWrapped.equals(wrappedText)) {
                 break;
             }
             wrappedText = moreWrapped;
