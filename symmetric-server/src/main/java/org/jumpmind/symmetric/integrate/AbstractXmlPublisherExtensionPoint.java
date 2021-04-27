@@ -307,8 +307,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             current = in.charAt(i);
             if ((current == 0x9) || (current == 0xA) || (current == 0xD) ||
                 ((current >= 0x20) && (current <= 0xD7FF)) ||
-                ((current >= 0xE000) && (current <= 0xFFFD)) ||
-                ((current >= 0x10000) && (current <= 0x10FFFF))) {
+                ((current >= 0xE000) && (current <= 0xFFFD))) {
                 out.append(current);
             }
         }

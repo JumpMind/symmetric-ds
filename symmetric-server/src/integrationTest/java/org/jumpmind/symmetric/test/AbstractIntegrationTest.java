@@ -66,7 +66,7 @@ public abstract class AbstractIntegrationTest {
 
     protected static TestTablesService clientTestService;
 
-    protected ISymmetricEngine getClient() {
+    protected synchronized ISymmetricEngine getClient() {
         if (client == null) {
             EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(new URL[] {
                     TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
@@ -88,7 +88,7 @@ public abstract class AbstractIntegrationTest {
         return webServer != null ? webServer.getEngine() : null;
     }
 
-    protected SymmetricWebServer getWebServer() {
+    protected synchronized SymmetricWebServer getWebServer() {
         try {
             if (server == null) {
                 EnvironmentSpecificProperties properties = new EnvironmentSpecificProperties(

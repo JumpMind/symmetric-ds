@@ -24,11 +24,15 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jdom2.Element;
-import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.jumpmind.symmetric.model.*;
+import org.jumpmind.symmetric.model.Data;
+import org.jumpmind.symmetric.model.DataMetaData;
+import org.jumpmind.symmetric.model.Node;
+import org.jumpmind.symmetric.model.OutgoingBatch;
+import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.IDataRouter;
 import org.jumpmind.symmetric.route.SimpleRouterContext;
 
@@ -38,12 +42,9 @@ import org.jumpmind.symmetric.route.SimpleRouterContext;
  * {@link IPublisher} interface. The most common implementation of the
  * {@link IPublisher} is the {@link SimpleJmsPublisher}.
  */
-public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements
-        IDataRouter, ISymmetricEngineAware {
+public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint implements IDataRouter, ISymmetricEngineAware {
 
     boolean onePerBatch = false;
-
-    protected ISymmetricEngine engine;
 
     public void contextCommitted(SimpleRouterContext context) {
         if (doesXmlExistToPublish(context)) {
@@ -94,10 +95,6 @@ public class XmlPublisherDataRouter extends AbstractXmlPublisherExtensionPoint i
      */
     public void setOnePerBatch(boolean onePerBatch) {
         this.onePerBatch = onePerBatch;
-    }
-
-    public void setSymmetricEngine(ISymmetricEngine engine) {
-        this.engine = engine;
     }
 
     public boolean isConfigurable() {

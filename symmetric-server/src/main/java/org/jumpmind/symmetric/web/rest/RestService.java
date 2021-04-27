@@ -1394,7 +1394,6 @@ public class RestService {
 
             List<String> nodeIds = request.getNodeIdsToSendTo();
             if (nodeIds == null || nodeIds.size() == 0) {
-                nodeIds = new ArrayList<String>();
                 String nodeGroupIdToSendTo = request.getNodeGroupIdToSendTo();
                 if (isNotBlank(nodeGroupIdToSendTo)) {
                     NodeGroupLink link = configurationService.getNodeGroupLinkFor(
