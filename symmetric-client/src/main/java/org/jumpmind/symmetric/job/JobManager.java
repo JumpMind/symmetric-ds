@@ -184,7 +184,7 @@ public class JobManager extends AbstractService implements IJobManager {
                 public int compare(IJob job1, IJob job2) {
                     Integer job1Started = job1.isStarted() ? 1 : 0;
                     Integer job2Started = job2.isStarted() ? 1 : 0;
-                    if (job1Started == job2Started) {
+                    if (job1Started.equals(job2Started)) {
                         return -job1.getJobDefinition().getJobType().compareTo(job2.getJobDefinition().getJobType());
                     } else {
                         return -job1Started.compareTo(job2Started);

@@ -30,11 +30,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.symmetric.db.h2.H2Trigger;
 import org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger;
 
@@ -50,7 +50,7 @@ import org.jumpmind.symmetric.db.hsqldb.HsqlDbTrigger;
 abstract public class AbstractEmbeddedTrigger {
 
     protected static final char[] HEX = "0123456789abcdef".toCharArray();
-    protected static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    protected static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
     protected static final String KEY_CONDITION_SQL = "CONDITION_SQL";
     protected static final String KEY_INSERT_DATA_SQL = "INSERT_DATA_SQL";
     protected static final String TEMPLATE_TABLE_SUFFIX = "_CONFIG";
@@ -169,9 +169,7 @@ abstract public class AbstractEmbeddedTrigger {
             out.append("'");
         } else if (value instanceof Date) {
             out.append("'");
-            synchronized (DATE_FORMATTER) {
-                out.append(DATE_FORMATTER.format(value));
-            }
+            out.append(DATE_FORMATTER.format(value));
             out.append("'");
         } else if (value instanceof byte[]) {
             out.append("'");

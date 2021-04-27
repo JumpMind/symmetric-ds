@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -62,10 +63,10 @@ public class Message {
                     return String.format(locale, bundle.getString(key));
                 }
             } catch (RuntimeException e) {
-                return MESSAGE_KEY + key + ((args != null) ? args.toString() : "");
+                return MESSAGE_KEY + key + ((args != null) ? Arrays.toString(args) : "");
             }
         } else {
-            return MESSAGE_KEY + key + ((args != null) ? args.toString() : "");
+            return MESSAGE_KEY + key + ((args != null) ? Arrays.toString(args) : "");
         }
     }
 

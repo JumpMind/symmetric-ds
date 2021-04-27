@@ -26,8 +26,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -35,13 +33,9 @@ import org.hsqldb.DatabaseManager;
 import org.hsqldb.Trigger;
 import org.jumpmind.symmetric.db.AbstractEmbeddedTrigger;
 
-/**
- * 
- */
 public class HsqlDbTrigger extends AbstractEmbeddedTrigger implements Trigger {
 
     protected String triggerName;
-    protected Map<String, String> templates = new HashMap<String, String>();
 
     public void fire(int type, String triggerName, String tableName, Object[] oldRow,
             Object[] newRow) {
