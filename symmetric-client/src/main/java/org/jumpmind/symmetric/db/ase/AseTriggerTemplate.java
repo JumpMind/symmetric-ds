@@ -64,14 +64,13 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "create trigger $(triggerName) on $(schemaName)$(tableName) for insert " + getOrderClause() + " as\n" +
 "                                begin                                                                                                                                                                  \n" +
 "                                  set nocount on      \n" +
-"                                  declare @clientapplname varchar(50)  \n" +
-"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)             \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
 "                                      select @txid = $(txIdExpression)                              \n" +
 "                                  end                                                                                                                                                                \n" +
+"                                  declare @clientapplname varchar(50)  \n" +
 "                                  declare @clientname varchar(50)    \n" +
-"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
+"                                  select @clientapplname = clientapplname, @clientname = case when clientapplname = 'SymmetricDS' then clientname else null end from master.dbo.sysprocesses where spid = @@spid     \n" +
 "                                  declare @DataRow varchar(16384)  \n" + 
 "                                  declare @ChannelId varchar(128)   \n" +                                                                                             
 "                                  $(declareNewKeyVariables)                                                                                                                                            \n" +
@@ -108,16 +107,15 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  declare @DataRow varchar(16384)                                                                                                                                      \n" +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   \n" +
-"                                  declare @clientapplname varchar(50)  \n" +
 "                                  declare @ChannelId varchar(128)   \n" +
 "                                  select @LOCALROWCOUNT = count(*) from inserted \n" +
-"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)                                                                                                                                            \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
 "                                      select @txid = $(txIdExpression)                             \n" +
 "                                  end                                                                                                                                                                \n" +
+"                                  declare @clientapplname varchar(50)  \n" +
 "                                  declare @clientname varchar(50)    \n" +
-"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
+"                                  select @clientapplname = clientapplname, @clientname = case when clientapplname = 'SymmetricDS' then clientname else null end from master.dbo.sysprocesses where spid = @@spid     \n" +
 "                                  $(declareOldKeyVariables)                                                                                                                                            \n" +
 "                                  $(declareNewKeyVariables)                                                                                                                                            \n" +
 "                                  $(custom_before_update_text) \n" +
@@ -202,15 +200,14 @@ public class AseTriggerTemplate extends AbstractTriggerTemplate {
 "                                  set nocount on      \n" +
 "                                  declare @OldPk varchar(2000)                                                                                                                                         \n" +
 "                                  declare @OldDataRow varchar(16384)                                                                                                                                   \n" +
-"                                  declare @clientapplname varchar(50)  \n" +
 "                                  declare @ChannelId varchar(128)   \n" +
-"                                  select @clientapplname = clientapplname from master.dbo.sysprocesses where spid = @@spid   \n" +
 "                                  declare @txid varchar(50)                                                                                                                                            \n" +
 "                                  if (@@TRANCOUNT > 0) begin                                                                                                                                         \n" +
 "                                      select @txid = $(txIdExpression)                            \n" +
 "                                  end                                                                                                                                                                \n" +
+"                                  declare @clientapplname varchar(50)    \n" +
 "                                  declare @clientname varchar(50)    \n" +
-"                                  select @clientname = clientname from master.dbo.sysprocesses where spid = @@spid and clientapplname = 'SymmetricDS'     \n" +
+"                                  select @clientapplname = clientapplname, @clientname = case when clientapplname = 'SymmetricDS' then clientname else null end from master.dbo.sysprocesses where spid = @@spid     \n" +
 "                                  $(declareOldKeyVariables)                                                                                                                                            \n" +
 "                                  $(custom_before_delete_text) \n" +
 "                                  if ($(syncOnIncomingBatchCondition)) begin                                                                                                                           \n" +
