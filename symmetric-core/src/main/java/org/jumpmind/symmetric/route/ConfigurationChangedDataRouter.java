@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -348,7 +349,11 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
             if(transaction != null) {
                 transaction.rollback();
             }
-       }
+       } finally {
+            if (transaction != null) {
+                transaction.close();
+            }
+        }
     }
     
     private TriggerRouter findTriggerRouter(List<TriggerRouter> triggerRouters, String tableName, String symTablePrefix) {
