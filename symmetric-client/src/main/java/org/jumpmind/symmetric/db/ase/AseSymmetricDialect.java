@@ -263,7 +263,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     public boolean isTransactionIdOverrideSupported() {
-        return false;
+        return true;
     }
 
     public void cleanDatabase() {
