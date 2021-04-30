@@ -109,6 +109,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsSubselectsInUpdate = true;
 
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
+    
+    protected String tablePrefixLowerCase;
 
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
@@ -125,7 +127,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.databaseProductVersion = sqlTemplate.getDatabaseProductVersion();
         this.driverName = sqlTemplate.getDriverName();
         this.driverVersion = sqlTemplate.getDriverVersion();
-
+        tablePrefixLowerCase = parameterService.getTablePrefix().toLowerCase();
     }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {
@@ -603,6 +605,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         return targetDialect.getPlatform();
     }
 
+    @Override
+    public IDatabasePlatform getTargetPlatform(String tableName) {
+        if (tableName.toLowerCase().startsWith(tablePrefixLowerCase)) {
+            return platform;
+        }
+        return targetDialect.getPlatform();
+    }
+
     public String getName() {
         if (!this.equals(targetDialect)) {
             return targetDialect.getName();
@@ -941,6 +951,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     @Override
     public ISymmetricDialect getTargetDialect() {
+        return targetDialect;
+    }
+
+    @Override
+    public ISymmetricDialect getTargetDialect(String tableName) {
+        if (tableName.toLowerCase().startsWith(tablePrefixLowerCase)) {
+            return this;
+        }
         return targetDialect;
     }
 

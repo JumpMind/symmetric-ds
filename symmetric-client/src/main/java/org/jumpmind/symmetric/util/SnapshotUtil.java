@@ -64,18 +64,20 @@ import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jumpmind.db.model.CatalogSchema;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Transaction;
+import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.exception.IoException;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.properties.DefaultParameterParser.ParameterMetaData;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.csv.CsvWriter;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.firebird.FirebirdSymmetricDialect;
 import org.jumpmind.symmetric.db.mysql.MySqlSymmetricDialect;
-import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.symmetric.job.IJob;
@@ -148,24 +150,29 @@ public class SnapshotUtil {
             listener.checkpoint(engine.getEngineName(), 1, 5);
         }
 
+        IDatabasePlatform targetPlatform = engine.getSymmetricDialect().getTargetPlatform();
+        ISymmetricDialect targetDialect = engine.getTargetDialect();
         FileOutputStream fos = null;
         try {
             HashMap<CatalogSchema, List<Table>> catalogSchemas = new HashMap<CatalogSchema, List<Table>>();
             ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
             List<TriggerHistory> triggerHistories = triggerRouterService.getActiveTriggerHistories();
+            String tablePrefix = engine.getTablePrefix().toUpperCase();
             for (TriggerHistory triggerHistory : triggerHistories) {
-                Table table = engine.getDatabasePlatform().getTableFromCache(triggerHistory.getSourceCatalogName(),
-                        triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
-                if (table != null && !table.getName().toUpperCase().startsWith(engine.getSymmetricDialect().getTablePrefix().toUpperCase())) {
-                    addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
+                if (!triggerHistory.getSourceTableName().toUpperCase().startsWith(tablePrefix)) {
+                    Table table = targetPlatform.getTableFromCache(triggerHistory.getSourceCatalogName(),
+                            triggerHistory.getSourceSchemaName(), triggerHistory.getSourceTableName(), false);
+                    if (table != null) {
+                        addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
+                    }
                 }
             }
 
-            List<String> catalogNames = engine.getDatabasePlatform().getDdlReader().getCatalogNames();
+            List<String> catalogNames = targetPlatform.getDdlReader().getCatalogNames();
             List<Trigger> triggers = triggerRouterService.getTriggers();
             for (Trigger trigger : triggers) {
                 if (StringUtils.isBlank(trigger.getSourceCatalogName()) || catalogNames.contains(trigger.getSourceCatalogName())) {
-                    Table table = engine.getDatabasePlatform().getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
+                    Table table = targetPlatform.getTableFromCache(trigger.getSourceCatalogName(), trigger.getSourceSchemaName(),
                             trigger.getSourceTableName(), false);
                     if (table != null) {
                         addTableToMap(catalogSchemas, new CatalogSchema(table.getCatalog(), table.getSchema()), table);
@@ -174,9 +181,9 @@ public class SnapshotUtil {
             }
 
             for (CatalogSchema catalogSchema : catalogSchemas.keySet()) {
-                DbExport export = new DbExport(engine.getDatabasePlatform());
-                boolean isDefaultCatalog = StringUtils.equalsIgnoreCase(catalogSchema.getCatalog(), engine.getDatabasePlatform().getDefaultCatalog());
-                boolean isDefaultSchema = StringUtils.equalsIgnoreCase(catalogSchema.getSchema(), engine.getDatabasePlatform().getDefaultSchema());
+                DbExport export = new DbExport(targetPlatform);
+                boolean isDefaultCatalog = StringUtils.equalsIgnoreCase(catalogSchema.getCatalog(), targetPlatform.getDefaultCatalog());
+                boolean isDefaultSchema = StringUtils.equalsIgnoreCase(catalogSchema.getSchema(), targetPlatform.getDefaultSchema());
 
                 try {
                     if (isDefaultCatalog && isDefaultSchema) {
@@ -379,20 +386,24 @@ public class SnapshotUtil {
             }
         }
 
-        if (engine.getSymmetricDialect() instanceof FirebirdSymmetricDialect) {
+        if (targetDialect instanceof FirebirdSymmetricDialect) {
             final String[] monTables = { "mon$database", "mon$attachments", "mon$transactions", "mon$statements", "mon$io_stats",
                     "mon$record_stats", "mon$memory_usage", "mon$call_stack", "mon$context_variables" };
+            DbExport dbexport = new DbExport(targetPlatform);
+            dbexport.setFormat(Format.CSV);
+            dbexport.setNoCreateInfo(true);
+
             for (String table : monTables) {
-                extract(export, new File(tmpDir, "firebird-" + table + ".csv"), table);
+                extract(dbexport, new File(tmpDir, "firebird-" + table + ".csv"), table);
             }
         }
         
-        if (engine.getSymmetricDialect() instanceof MySqlSymmetricDialect) {
-            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
+        if (targetDialect instanceof MySqlSymmetricDialect) {
+            extractQuery(targetPlatform.getSqlTemplate(), tmpDir + File.separator + "mysql-processlist.csv",
                     "show processlist");
-            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-global-variables.csv",
+            extractQuery(targetPlatform.getSqlTemplate(), tmpDir + File.separator + "mysql-global-variables.csv",
                     "show global variables");
-            extractQuery(engine.getSqlTemplate(), tmpDir + File.separator + "mysql-session-variables.csv",
+            extractQuery(targetPlatform.getSqlTemplate(), tmpDir + File.separator + "mysql-session-variables.csv",
                     "show session variables");
         }
         
@@ -427,7 +438,7 @@ public class SnapshotUtil {
         createThreadStatsFile(tmpDir.getPath());
         
         try {
-            List<Transaction> transactions = engine.getDatabasePlatform().getTransactions();
+            List<Transaction> transactions = targetPlatform.getTransactions();
             if (!transactions.isEmpty()) {
                 createTransactionsFile(engine, tmpDir.getPath(), transactions);
             }
@@ -673,7 +684,7 @@ public class SnapshotUtil {
                     engine.getLastRestartTime().toString() : "");
 
             runtimeProperties.setProperty("time.server", new Date().toString());
-            runtimeProperties.setProperty("time.database", new Date(engine.getSymmetricDialect().getDatabaseTime()).toString());
+            runtimeProperties.setProperty("time.database", new Date(engine.getTargetDialect().getDatabaseTime()).toString());
             runtimeProperties.setProperty("batch.unrouted.data.count", df.format(engine.getRouterService().getUnroutedDataCount()));
             runtimeProperties.setProperty("batch.outgoing.errors.count",
                     df.format(engine.getOutgoingBatchService().countOutgoingBatchesInError()));
