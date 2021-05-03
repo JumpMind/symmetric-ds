@@ -68,7 +68,7 @@ import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.ui.Tree.TreeMultiSelectionModel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.ui.themes.ValoTheme;
 
 @StyleSheet({ "sqlexplorer.css" })
@@ -134,7 +134,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         leftLayout.setMargin(false);
         leftLayout.setSpacing(false);
         leftLayout.setSizeFull();
-        leftLayout.addStyleName(ValoTheme.MENU_ROOT);
+        leftLayout.addClassName(ValoTheme.MENU_ROOT);
 
         leftLayout.add(buildLeftMenu());
 
@@ -154,11 +154,11 @@ public class SqlExplorer extends HorizontalSplitPanel {
 
         VerticalLayout rightMenuWrapper = new VerticalLayout();
         rightMenuWrapper.setMargin(false);
-        rightMenuWrapper.setWidth(100, Unit.PERCENTAGE);
-        rightMenuWrapper.addStyleName(ValoTheme.MENU_ROOT);
+        rightMenuWrapper.setWidthFull();
+        rightMenuWrapper.addClassName(ValoTheme.MENU_ROOT);
         contentMenuBar = new MenuBar();
-        contentMenuBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        contentMenuBar.setWidth(100, Unit.PERCENTAGE);
+        contentMenuBar.addClassName(ValoTheme.MENUBAR_BORDERLESS);
+        contentMenuBar.setWidthFull();
         addShowButton(contentMenuBar);
 
         rightMenuWrapper.add(contentMenuBar);
@@ -183,8 +183,8 @@ public class SqlExplorer extends HorizontalSplitPanel {
 
     protected MenuBar buildLeftMenu() {
         MenuBar leftMenu = new MenuBar();
-        leftMenu.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        leftMenu.setWidth(100, Unit.PERCENTAGE);
+        leftMenu.addClassName(ValoTheme.MENUBAR_BORDERLESS);
+        leftMenu.setWidthFull();
         MenuItem hideButton = leftMenu.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
 
@@ -451,7 +451,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     }
                 }
                 for (IContentTab panel : infoTabs) {
-                    contentTabs.removeComponent(panel);
+                    contentTabs.remove(panel);
                 }
                 infoTabs.clear();
                 dbTree.refresh(true);
@@ -485,7 +485,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                 String selectedTabCaption = null;
                 for (IInfoPanel panel : infoTabs) {
                     selectedTabCaption = panel.getSelectedTabCaption();
-                    contentTabs.removeComponent(panel);
+                    contentTabs.remove(panel);
                 }
                 infoTabs.clear();
 

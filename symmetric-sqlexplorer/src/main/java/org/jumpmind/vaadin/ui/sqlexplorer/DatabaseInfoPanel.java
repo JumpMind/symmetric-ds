@@ -18,13 +18,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
 import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 
 public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
 

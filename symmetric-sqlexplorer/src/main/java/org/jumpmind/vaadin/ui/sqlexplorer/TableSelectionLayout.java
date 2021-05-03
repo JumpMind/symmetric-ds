@@ -30,17 +30,17 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
-import com.vaadin.data.provider.Query;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.ui.Grid;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.textfield.TextField;
 
 public class TableSelectionLayout extends VerticalLayout {
@@ -99,7 +99,7 @@ public class TableSelectionLayout extends VerticalLayout {
         this.add(new Label(titleKey));
 
         HorizontalLayout schemaChooserLayout = new HorizontalLayout();
-        schemaChooserLayout.setWidth(100, Unit.PERCENTAGE);
+        schemaChooserLayout.setWidthFull();
         schemaChooserLayout.setSpacing(true);
         this.add(schemaChooserLayout);
 
@@ -123,7 +123,7 @@ public class TableSelectionLayout extends VerticalLayout {
         schemaChooserLayout.setExpandRatio(spacer, 1);
 
         filterField = new TextField();
-        filterField.addStyleName(ValoTheme.TEXTFIELD_INLINE_ICON);
+        filterField.addClassName(ValoTheme.TEXTFIELD_INLINE_ICON);
         filterField.setIcon(VaadinIcons.SEARCH);
         filterField.setPlaceholder("Filter Tables");
         filterField.setValueChangeTimeout(200);
@@ -163,18 +163,18 @@ public class TableSelectionLayout extends VerticalLayout {
         catalogSelect.addValueChangeListener(event -> refreshTableOfTables());
 
         Button selectAllLink = new Button("Select All");
-        selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectAllLink.addClassName(ValoTheme.BUTTON_LINK);
         selectAllLink.addClickListener((event) -> selectAll());
 
         Button selectNoneLink = new Button("Select None");
-        selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectNoneLink.addClassName(ValoTheme.BUTTON_LINK);
         selectNoneLink.addClickListener((event) -> selectNone());
         
         HorizontalLayout selectAllFooter = new HorizontalLayout();
 
         selectAllFooter.setWidth("100%");
         selectAllFooter.setSpacing(true);
-        selectAllFooter.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        selectAllFooter.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         selectAllFooter.add(selectAllLink);
         selectAllFooter.add(selectNoneLink);

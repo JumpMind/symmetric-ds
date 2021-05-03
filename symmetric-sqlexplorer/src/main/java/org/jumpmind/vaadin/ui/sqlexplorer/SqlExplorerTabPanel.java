@@ -30,7 +30,7 @@ public class SqlExplorerTabPanel extends TabSheet {
                             "You must commit or rollback queries before closing this tab.",
                             null, Type.WARNING_MESSAGE);
                 } else {
-                    tabsheet.removeComponent(tabContent);
+                    tabsheet.remove(tabContent);
                 }
             }
         });

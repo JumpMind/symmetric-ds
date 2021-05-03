@@ -10,13 +10,13 @@ import org.vaadin.aceeditor.AceMode;
 
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.ProgressBar;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
@@ -85,12 +85,12 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         source.setExpandRatio(editor, 1);
         
         HorizontalLayout bar = new HorizontalLayout();
-        bar.setWidth(100, Unit.PERCENTAGE);
+        bar.setWidthFull();
         bar.setMargin(new MarginInfo(false, true, false, true));
         
         MenuBar wrapSelect = new MenuBar();
-        wrapSelect.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        wrapSelect.addStyleName(ValoTheme.MENUBAR_SMALL);
+        wrapSelect.addClassName(ValoTheme.MENUBAR_BORDERLESS);
+        wrapSelect.addClassName(ValoTheme.MENUBAR_SMALL);
         MenuItem wrapButton = wrapSelect.addItem("Wrap text", new Command() {
             private static final long serialVersionUID = 1L;
             @Override
@@ -295,7 +295,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         });
         
         boolean select = tabSheet.getSelectedTab().equals(executingLayout);
-        tabSheet.removeComponent(executingLayout);
+        tabSheet.remove(executingLayout);
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(true);
         layout.setSizeFull();

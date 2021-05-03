@@ -61,12 +61,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.contextmenu.ContextMenu;
-import com.vaadin.data.Binder;
-import com.vaadin.data.Binder.Binding;
-import com.vaadin.data.provider.Query;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Binder.Binding;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.MenuBar.Command;
@@ -78,7 +78,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.components.grid.Editor;
 import com.vaadin.ui.themes.ValoTheme;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Grid;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 
 public class TabularResultLayout extends VerticalLayout {
@@ -344,7 +344,7 @@ public class TabularResultLayout extends VerticalLayout {
 
     private void createMenuBar() {
         HorizontalLayout resultBar = new HorizontalLayout();
-        resultBar.setWidth(100, Unit.PERCENTAGE);
+        resultBar.setWidthFull();
         resultBar.setMargin(new MarginInfo(false, true, false, true));
 
         HorizontalLayout leftBar = new HorizontalLayout();
@@ -361,8 +361,8 @@ public class TabularResultLayout extends VerticalLayout {
         resultBar.setExpandRatio(leftBar, 1);
 
         MenuBar rightBar = new MenuBar();
-        rightBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        rightBar.addStyleName(ValoTheme.MENUBAR_SMALL);
+        rightBar.addClassName(ValoTheme.MENUBAR_BORDERLESS);
+        rightBar.addClassName(ValoTheme.MENUBAR_SMALL);
 
         MenuBar.MenuItem refreshButton = rightBar.addItem("", new Command() {
             private static final long serialVersionUID = 1L;
@@ -421,7 +421,7 @@ public class TabularResultLayout extends VerticalLayout {
 
     protected TabularResultLayout refreshWithoutSaveButton() {
         isInQueryGeneralResults = false;
-        this.removeComponent(this.getComponent(0));
+        this.remove(this.getComponent(0));
         createMenuBar();
         return this;
     }

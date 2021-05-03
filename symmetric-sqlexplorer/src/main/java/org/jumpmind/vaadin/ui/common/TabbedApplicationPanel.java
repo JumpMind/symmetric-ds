@@ -55,10 +55,10 @@ public class TabbedApplicationPanel extends TabSheet {
             public void onTabClose(TabSheet tabsheet, Component tabContent) {
                 if (tabContent instanceof IUiPanel) {
                     if (((IUiPanel)tabContent).closing()) {
-                        tabsheet.removeComponent(tabContent);
+                        tabsheet.remove(tabContent);
                     }
                 } else {
-                    tabsheet.removeComponent(tabContent);
+                    tabsheet.remove(tabContent);
                 }
             }
         });

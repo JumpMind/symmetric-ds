@@ -23,7 +23,7 @@ package org.jumpmind.vaadin.ui.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.flow.component.Key;
 import com.vaadin.event.ShortcutAction.ModifierKey;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.Page;
@@ -34,7 +34,7 @@ import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
@@ -105,7 +105,7 @@ public class ResizableWindow extends Window {
 
     protected Button buildCloseButton() {
         Button closeButton = new Button("Close");
-        closeButton.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        closeButton.addClassName(ValoTheme.BUTTON_PRIMARY);
         closeButton.addClickListener(new CloseButtonListener());
         closeButton.focus();
         return closeButton;
@@ -120,7 +120,7 @@ public class ResizableWindow extends Window {
 
         footer.setWidth("100%");
         footer.setSpacing(true);
-        footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        footer.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         if (toTheLeftButtons != null) {
             footer.addComponents(toTheLeftButtons);
@@ -156,7 +156,7 @@ public class ResizableWindow extends Window {
     }
     
     public void showAtSize(double percentOfBrowserSize) {
-        Page page = Page.getCurrent();
+        Page page = UI.getCurrent().getPage();
 
         setWindowMode(WindowMode.NORMAL);
 

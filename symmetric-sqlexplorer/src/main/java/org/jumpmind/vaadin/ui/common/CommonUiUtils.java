@@ -52,9 +52,9 @@ import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.Position;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.Column;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
@@ -76,9 +76,9 @@ public final class CommonUiUtils {
 
     public static void styleTabSheet(TabSheet tabSheet) {
         tabSheet.setSizeFull();
-        tabSheet.addStyleName(ValoTheme.TABSHEET_FRAMED);
-        tabSheet.addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
-        tabSheet.addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);
+        tabSheet.addClassName(ValoTheme.TABSHEET_FRAMED);
+        tabSheet.addClassName(ValoTheme.TABSHEET_COMPACT_TABBAR);
+        tabSheet.addClassName(ValoTheme.TABSHEET_PADDED_TABBAR);
     }
 
     public static TabSheet createTabSheet() {
@@ -96,7 +96,7 @@ public final class CommonUiUtils {
         if (listener != null) {
             button.addClickListener(listener);
         }
-        button.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        button.addClassName(ValoTheme.BUTTON_PRIMARY);
         return button;
     }
 
@@ -135,7 +135,7 @@ public final class CommonUiUtils {
     }
 
     public static void notify(String caption, String message, Throwable ex, Type type) {
-        Page page = Page.getCurrent();
+        Page page = UI.getCurrent().getPage();
         if (page != null) {
             Notification notification = new Notification(caption, contactWithLineFeed(FormatUtils.wordWrap(message, 150)),
                     Type.HUMANIZED_MESSAGE);
@@ -149,7 +149,7 @@ public final class CommonUiUtils {
                 style = ValoTheme.NOTIFICATION_WARNING;
             }
             notification.setStyleName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE + " " + style);
-            notification.show(Page.getCurrent());
+            notification.show(UI.getCurrent().getPage());
         }
     }
 
@@ -205,7 +205,7 @@ public final class CommonUiUtils {
         if (rs != null) {
             grid.addColumn(row -> {
                 return outerList.indexOf(row) + 1;
-            }).setCaption("#").setId("#").setHidden(!showRowNumbers).setStyleGenerator(row -> {
+            }).setCaption("#").setId("#").setHidden(!showRowNumbers).setClassNameGenerator(row -> {
                 if (!grid.getSelectedItems().contains(row)) {
                     return "rowheader";
                 }
@@ -230,7 +230,7 @@ public final class CommonUiUtils {
                     
                     Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
                     grid.addColumn(row -> row.get(colNum)).setId(columnName).setCaption(columnName).setHidable(true)
-                            .setStyleGenerator(row -> {
+                            .setClassNameGenerator(row -> {
                         if (row.get(colNum) == null) {
                             return "italics";
                         }
@@ -280,11 +280,11 @@ public final class CommonUiUtils {
                 outerList.add(innerList);
                 
                 if (rowNumber < 100) {
-                    grid.getColumn("#").setWidth(75);
+                    grid.getColumnByKey("#").setWidth(75);
                 } else if (rowNumber < 1000) {
-                    grid.getColumn("#").setWidth(95);
+                    grid.getColumnByKey("#").setWidth(95);
                 } else {
-                    grid.getColumn("#").setWidth(115);
+                    grid.getColumnByKey("#").setWidth(115);
                 }
 
                 if (showRowNumbers) {
@@ -406,8 +406,8 @@ public final class CommonUiUtils {
     public static Label createSeparator() {
         Label separator = new Label(" ");
         separator.setStyleName("vrule");
-        separator.setHeight(100, Unit.PERCENTAGE);
-        separator.setWidthUndefined();
+        separator.setHeightFull();
+        separator.setWidth(null);
         return separator;
     }
 }

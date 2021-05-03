@@ -40,9 +40,9 @@ import org.vaadin.aceeditor.AceMode;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.ui.ProgressBar;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
@@ -177,7 +177,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
 
                             @Override
                             public void run() {
-                                tabSheet.removeComponent(executingLayout);
+                                tabSheet.remove(executingLayout);
                                 VerticalLayout layout = new VerticalLayout();
                                 layout.setMargin(true);
                                 layout.setSizeFull();

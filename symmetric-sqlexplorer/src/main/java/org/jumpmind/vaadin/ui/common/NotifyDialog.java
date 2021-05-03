@@ -33,7 +33,7 @@ import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 public class NotifyDialog extends ResizableWindow {
 
@@ -51,7 +51,7 @@ public class NotifyDialog extends ResizableWindow {
         setHeight(300, Unit.PIXELS);
 
         final HorizontalLayout messageArea = new HorizontalLayout();
-        messageArea.addStyleName("v-scrollable");
+        messageArea.addClassName("v-scrollable");
         messageArea.setMargin(true);
         messageArea.setSpacing(true);
         messageArea.setSizeFull();

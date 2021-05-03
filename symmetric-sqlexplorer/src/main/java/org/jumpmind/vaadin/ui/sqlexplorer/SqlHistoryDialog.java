@@ -30,11 +30,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ResizableWindow;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.components.grid.HeaderCell;
@@ -82,7 +82,7 @@ public class SqlHistoryDialog extends ResizableWindow {
         HeaderCell logTextFilterCell = filteringHeader.getCell("sqlStatement");
         TextField filterField = new TextField();
         filterField.setPlaceholder("Filter");
-        filterField.addStyleName(ValoTheme.TEXTFIELD_TINY);
+        filterField.addClassName(ValoTheme.TEXTFIELD_TINY);
         filterField.setWidth("100%");
 
         // Update filter When the filter input is changed

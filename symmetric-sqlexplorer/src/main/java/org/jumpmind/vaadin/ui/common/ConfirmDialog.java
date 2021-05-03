@@ -24,14 +24,14 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
@@ -67,7 +67,7 @@ public class ConfirmDialog extends Window {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
-        buttonLayout.setWidth(100, Unit.PERCENTAGE);
+        buttonLayout.setWidthFull();
 
         Label spacer = new Label(" ");
         buttonLayout.add(spacer);

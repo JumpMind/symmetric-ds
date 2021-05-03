@@ -41,7 +41,7 @@ import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.flow.component.Key;
 import com.vaadin.server.FileDownloader;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
@@ -49,10 +49,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.ui.FormLayout;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.RadioButtonGroup;
-import com.vaadin.ui.TextArea;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
 
@@ -150,7 +150,7 @@ public class DbExportDialog extends ResizableWindow {
 
     protected void addButtons() {
         selectAllLink = new Button("Select All");
-        selectAllLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectAllLink.addClassName(ValoTheme.BUTTON_LINK);
         selectAllLink.addClickListener(new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -160,7 +160,7 @@ public class DbExportDialog extends ResizableWindow {
         });
 
         selectNoneLink = new Button("Select None");
-        selectNoneLink.addStyleName(ValoTheme.BUTTON_LINK);
+        selectNoneLink.addClassName(ValoTheme.BUTTON_LINK);
         selectNoneLink.addClickListener(new Button.ClickListener() {
             private static final long serialVersionUID = 1L;
 
@@ -237,7 +237,7 @@ public class DbExportDialog extends ResizableWindow {
 
     protected void createOptionLayout() {
         optionLayout = new VerticalLayout();
-        optionLayout.addStyleName("v-scrollable");
+        optionLayout.addClassName("v-scrollable");
         optionLayout.setMargin(true);
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
@@ -312,7 +312,7 @@ public class DbExportDialog extends ResizableWindow {
         formLayout.add(quotedIdentifiers);
 
         whereClauseField = new TextArea("Where Clause");
-        whereClauseField.setWidth(100, Unit.PERCENTAGE);
+        whereClauseField.setWidthFull();
         whereClauseField.setRows(2);
         formLayout.add(whereClauseField);
 
@@ -355,7 +355,7 @@ public class DbExportDialog extends ResizableWindow {
     }
 
     protected void previous() {
-        content.removeComponent(optionLayout);
+        content.remove(optionLayout);
         content.add(tableSelectionLayout, 0);
         content.setExpandRatio(tableSelectionLayout, 1);
         previousButton.setVisible(false);
@@ -374,7 +374,7 @@ public class DbExportDialog extends ResizableWindow {
     }
 
     protected void next() {
-        content.removeComponent(tableSelectionLayout);
+        content.remove(tableSelectionLayout);
         content.add(optionLayout, 0);
         content.setExpandRatio(optionLayout, 1);
         nextButton.setVisible(false);

@@ -10,9 +10,9 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.shared.MouseEventDetails.MouseButton;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.Grid.SelectionMode;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.MenuBar;
@@ -43,7 +43,7 @@ public class TriggerTableLayout extends VerticalLayout{
         this.setSpacing(false);
         
         HorizontalLayout bar = new HorizontalLayout();
-        bar.setWidth(100, Unit.PERCENTAGE);
+        bar.setWidthFull();
         bar.setMargin(new MarginInfo(false, true, false, true));
 
         HorizontalLayout leftBar = new HorizontalLayout();
@@ -56,8 +56,8 @@ public class TriggerTableLayout extends VerticalLayout{
         bar.setExpandRatio(leftBar, 1);
         
         MenuBar rightBar = new MenuBar();
-        rightBar.addStyleName(ValoTheme.MENUBAR_BORDERLESS);
-        rightBar.addStyleName(ValoTheme.MENUBAR_SMALL);
+        rightBar.addClassName(ValoTheme.MENUBAR_BORDERLESS);
+        rightBar.addClassName(ValoTheme.MENUBAR_SMALL);
 
         MenuItem refreshButton = rightBar.addItem("", new Command() {
             private static final long serialVersionUID = 1L;

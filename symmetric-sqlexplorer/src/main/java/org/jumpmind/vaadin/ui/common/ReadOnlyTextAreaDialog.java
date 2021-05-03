@@ -51,7 +51,7 @@ import com.vaadin.server.FileDownloader;
 import com.vaadin.server.Resource;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResource.StreamSource;
-import com.vaadin.ui.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.flow.component.button.Button.ClickListener;
@@ -59,7 +59,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TextArea;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
@@ -104,9 +104,9 @@ public class ReadOnlyTextAreaDialog extends ResizableWindow {
         add(wrapper, 1);
 
         buttonLayout = new HorizontalLayout();
-        buttonLayout.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
-        buttonLayout.setWidth(100, Unit.PERCENTAGE);
+        buttonLayout.setWidthFull();
         add(buttonLayout);
 
         if (value != null && isEncodedInHex) {

@@ -33,17 +33,17 @@ import org.jumpmind.vaadin.ui.common.ConfirmDialog;
 import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.flow.component.Key;
 import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.ui.FormLayout;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.RadioButtonGroup;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class DbFillDialog extends ResizableWindow {
@@ -193,7 +193,7 @@ public class DbFillDialog extends ResizableWindow {
 
     protected void createOptionLayout() {
         optionLayout = new VerticalLayout();
-        optionLayout.addStyleName("v-scrollable");
+        optionLayout.addClassName("v-scrollable");
         optionLayout.setMargin(true);
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
@@ -311,7 +311,7 @@ public class DbFillDialog extends ResizableWindow {
     }
 
     protected void previous() {
-        content.removeComponent(optionLayout);
+        content.remove(optionLayout);
         content.add(tableSelectionLayout, 0);
         content.setExpandRatio(tableSelectionLayout, 1);
         fillButton.setVisible(false);
@@ -323,7 +323,7 @@ public class DbFillDialog extends ResizableWindow {
     }
 
     protected void next() {
-        content.removeComponent(tableSelectionLayout);
+        content.remove(tableSelectionLayout);
         content.add(optionLayout, 0);
         content.setExpandRatio(optionLayout, 1);
         nextButton.setVisible(false);

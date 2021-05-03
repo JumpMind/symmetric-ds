@@ -49,11 +49,11 @@ import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.ui.FormLayout;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.ui.Notification;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.SucceededEvent;
@@ -127,7 +127,7 @@ public class DbImportDialog extends ResizableWindow {
     protected void createImportLayout() {
         importLayout = new VerticalLayout();
         importLayout.setSizeFull();
-        importLayout.addStyleName("v-scrollable");
+        importLayout.addClassName("v-scrollable");
         importLayout.setMargin(true);
         importLayout.setSpacing(true);
 

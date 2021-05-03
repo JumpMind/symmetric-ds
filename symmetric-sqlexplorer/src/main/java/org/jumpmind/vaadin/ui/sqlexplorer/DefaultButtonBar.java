@@ -183,7 +183,7 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         });
 
         for (IDbMenuItem item : additionalMenuItems) {
-            optionsButton.addItem(item.getCaption(), item.getIcon(), item.getCommand());
+            optionsButton.addItem(item.getCaption(), item.getIcon(), item.getListener());
         }
     }
 }

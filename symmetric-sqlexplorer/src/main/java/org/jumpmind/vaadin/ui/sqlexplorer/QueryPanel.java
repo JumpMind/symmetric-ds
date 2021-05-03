@@ -50,19 +50,19 @@ import org.vaadin.aceeditor.Suggestion;
 import org.vaadin.aceeditor.SuggestionExtension;
 import org.vaadin.aceeditor.TextRange;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
+import com.vaadin.flow.component.Key;
 import com.vaadin.event.ShortcutAction.ModifierKey;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Resource;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Grid;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
@@ -148,8 +148,8 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
         HorizontalLayout statusBar = new HorizontalLayout();
         statusBar.setMargin(false);
-        statusBar.addStyleName(ValoTheme.PANEL_WELL);
-        statusBar.setWidth(100, Unit.PERCENTAGE);
+        statusBar.addClassName(ValoTheme.PANEL_WELL);
+        statusBar.setWidthFull();
 
         status = new Label("No Results");
         status.setStyleName(ValoTheme.LABEL_SMALL);
@@ -167,7 +167,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         emptyResults = new VerticalLayout();
         emptyResults.setSizeFull();
         Label label = new Label("New results will appear here");
-        label.setWidthUndefined();
+        label.setWidth(null);
         emptyResults.add(label);
         emptyResults.setComponentAlignment(label, Alignment.MIDDLE_CENTER);
         resultStatuses.put(emptyResults, "No Results");
@@ -253,7 +253,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                 addResultsTab(((TabularResultLayout) content).refreshWithoutSaveButton(),
                         StringUtils.abbreviate(((TabularResultLayout) content).getSql(), 20), generalResultsTab.getIcon(), 0);
             }
-            resultsTabs.removeComponent(generalResultsTab.getComponent());
+            resultsTabs.remove(generalResultsTab.getComponent());
             generalResultsTab = null;
         }
     }
@@ -265,7 +265,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     }
 
     public void replaceGeneralResultsWith(Component newComponent, VaadinIcons icon) {
-        ((VerticalLayout) generalResultsTab.getComponent()).removeAllComponents();
+        ((VerticalLayout) generalResultsTab.getComponent()).removeAll();
         ((VerticalLayout) generalResultsTab.getComponent()).add(newComponent);
         generalResultsTab.setIcon(icon);
     }
@@ -527,7 +527,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                 public void buttonClick(ClickEvent event) {
                     log.info("Canceling sql: " + sql);
                     label.setValue("Canceling" + label.getValue().substring(9));
-                    executingLayout.removeComponent(cancel);
+                    executingLayout.remove(cancel);
                     canceled = true;
                     new Thread(new Runnable() {
                         @Override

@@ -35,21 +35,21 @@ import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.data.Binder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.GridLayout;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.GridLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SettingsDialog extends ResizableWindow {
@@ -103,13 +103,13 @@ public class SettingsDialog extends ResizableWindow {
         rowsToFetchField = new TextField("Max Results");
         rowsToFetchField.setWidth(6, Unit.EM);
         Label rowsToFetchLabel = new Label();
-        rowsToFetchLabel.addStyleName("v-label-marked");
+        rowsToFetchLabel.addClassName("v-label-marked");
         binder = new Binder<Integer>();
         binder.forField(rowsToFetchField).withConverter(new StringToIntegerConverter("Could not convert value to Integer"))
                 .withValidator(value -> value != null, "Invalid value").withValidationStatusHandler(event -> {
                     rowsToFetchLabel.setValue(event.getMessage().orElse(""));
                     if (event.isError()) {
-                        rowsToFetchField.addStyleName("v-textfield-error");
+                        rowsToFetchField.addClassName("v-textfield-error");
                     } else {
                         rowsToFetchField.removeStyleName("v-textfield-error");
                     }

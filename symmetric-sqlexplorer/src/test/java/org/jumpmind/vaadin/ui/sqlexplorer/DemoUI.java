@@ -29,7 +29,7 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.ui.UI;
+import com.vaadin.flow.component.UI;
 
 @Title("SQL Explorer Demo")
 @Theme("sqlexplorer")
