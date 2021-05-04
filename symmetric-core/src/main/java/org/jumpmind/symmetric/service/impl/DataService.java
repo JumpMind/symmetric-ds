@@ -3245,14 +3245,14 @@ public class DataService extends AbstractService implements IDataService {
                     List<TriggerHistory> activeTriggerHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
                     triggerHistory = new TriggerHistory(table, trigger, engine.getSymmetricDialect().getTriggerTemplate());
                     triggerHistory.setTriggerHistoryId(triggerHistId);
-                    triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSIG);
+                    triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSING);
                     triggerHistory.setNameForInsertTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.INSERT,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
                     triggerHistory.setNameForUpdateTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.UPDATE,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
                     triggerHistory.setNameForDeleteTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.DELETE,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
-                    log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
+                    log.warn("Could not find a trigger history row for the table {} for data_id {}.  Generating a new trigger history row.", tableName, data.getDataId());
                     engine.getTriggerRouterService().insert(triggerHistory);
                 } else {
                     if (missingConfigTriggerHist == null) {

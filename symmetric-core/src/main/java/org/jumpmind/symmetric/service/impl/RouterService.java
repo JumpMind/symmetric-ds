@@ -66,6 +66,7 @@ import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.Router;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
+import org.jumpmind.symmetric.model.TriggerReBuildReason;
 import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.route.AbstractFileParsingRouter;
 import org.jumpmind.symmetric.route.AuditTableDataRouter;
@@ -110,6 +111,8 @@ public class RouterService extends AbstractService implements IRouterService {
     protected Map<Integer, CounterStat> missingTriggerRouter = new HashMap<Integer, CounterStat>();
     
     protected Map<String, CounterStat> invalidRouterType = new HashMap<String, CounterStat>();
+    
+    protected Map<Integer, CounterStat> missingColumns = new HashMap<Integer, CounterStat>();
     
     protected long triggerRouterCacheTime = 0;
 
@@ -247,6 +250,15 @@ public class RouterService extends AbstractService implements IRouterService {
                                 data.getTableName(), data.getDataId(), data.getTriggerHistory().getTriggerHistoryId(), counterStat.getCount());
                     }
                     missingTriggerRouter.clear();
+
+                    for (CounterStat counterStat : missingColumns.values()) {
+                        Data data = (Data) counterStat.getObject();
+                        log.warn("Ignoring data captured for table '{}' with trigger hist id {} because the number of columns and values don't match.  "
+                                + "This can happen when you manually remove rows from sym_trigger_hist.  "
+                                + "Starting with data id {}, there were {} occurrences.",
+                                data.getTableName(), data.getTriggerHistory().getTriggerHistoryId(), data.getDataId(), counterStat.getCount());
+                    }
+                    missingColumns.clear();
                 }
             }
         }
@@ -866,6 +878,14 @@ public class RouterService extends AbstractService implements IRouterService {
                                     "None of the target nodes specified in the data.node_list field ({}) were qualified nodes. Data id {} for table '{}' will not be routed using the {} router",
                                     new Object[] {targetNodeIds, data.getDataId(), data.getTableName(), triggerRouter.getRouter().getRouterId() });
                         }
+                    } else if (data.getTriggerHistory().getLastTriggerBuildReason() == TriggerReBuildReason.TRIGGER_HIST_MISSING && !doesColumnCountMatchValues(dataMetaData, data)) {
+                        Integer triggerHistId = data.getTriggerHistory().getTriggerHistoryId();
+                        CounterStat counterStat = missingColumns.get(triggerHistId);
+                        if (counterStat == null) {
+                            counterStat = new CounterStat(data);
+                            missingColumns.put(triggerHistId, counterStat);
+                        }
+                        counterStat.incrementCount();
                     } else {
                         try {
                             IDataRouter dataRouter = getDataRouter(triggerRouter.getRouter());
@@ -886,12 +906,8 @@ public class RouterService extends AbstractService implements IRouterService {
                                 throw ex;
                             }
 
-                            StringBuilder failureMessage = new StringBuilder(
-                                    "Failed to route data: ");
-                            failureMessage.append(data.getDataId());
-                            failureMessage.append(" for table: ");
-                            failureMessage.append(data.getTableName());
-                            failureMessage.append(".\n");
+                            StringBuilder failureMessage = new StringBuilder("Failed to route data: ");
+                            failureMessage.append(data.getDataId()).append(" for table: ").append(data.getTableName()).append(".\n");
                             data.writeCsvDataDetails(failureMessage);
                             throw new SymmetricException(failureMessage.toString(), ex);
                         }
@@ -1166,4 +1182,17 @@ public class RouterService extends AbstractService implements IRouterService {
         return table;
     }
 
+    protected boolean doesColumnCountMatchValues(DataMetaData dataMetaData, Data data) {
+        if (data.getCreateTime() == null || data.getTriggerHistory().getCreateTime() == null || 
+                data.getTriggerHistory().getCreateTime().compareTo(data.getCreateTime()) > 0) {
+            String[] rowData = null;
+            if (dataMetaData.getData().getDataEventType() == DataEventType.DELETE) {
+                rowData = dataMetaData.getData().toParsedOldData();                
+            } else {
+                rowData = dataMetaData.getData().toParsedRowData();
+            }
+            return dataMetaData.getTable().getColumnCount() == rowData.length;
+        }
+        return true;
+    }
 }
