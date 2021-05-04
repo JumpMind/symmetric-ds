@@ -1228,7 +1228,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public String getLastException() {
-        return lastException.getMessage();
+        return lastException == null ? null : lastException.getMessage();
     }
     
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
