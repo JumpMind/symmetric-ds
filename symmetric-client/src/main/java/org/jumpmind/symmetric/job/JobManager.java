@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -40,7 +39,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  */
 public class JobManager extends AbstractService implements IJobManager {
 
-    static final Logger log = LoggerFactory.getLogger(JobManager.class);
+    private static final Logger log = LoggerFactory.getLogger(JobManager.class);
 
     private List<IJob> jobs;
     private ThreadPoolTaskScheduler taskScheduler;
@@ -61,14 +60,6 @@ public class JobManager extends AbstractService implements IJobManager {
         this.taskScheduler.setPoolSize(20);
         this.taskScheduler.initialize();    
     }
-    
-    @Override
-    protected Map<String, String> createSqlReplacementTokens() {
-        Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
-                .getDatabaseInfo().getDelimiterToken(), symmetricDialect.getPlatform());
-        replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
-        return replacementTokens;
-    }    
     
     @Override
     public void init() {

@@ -28,13 +28,13 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
@@ -273,13 +273,9 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     }
 
     public BufferedWriter openWriter() {
-        try {
-            OutputStreamWriter wout = new OutputStreamWriter(openStream(), IoConstants.ENCODING);
-            writer = new BufferedWriter(wout);
-            return writer;
-        } catch (IOException ex) {
-            throw new IoException(ex);
-        }
+        OutputStreamWriter wout = new OutputStreamWriter(openStream(), StandardCharsets.UTF_8);
+        writer = new BufferedWriter(wout);
+        return writer;
     }
     
     @Override
@@ -291,7 +287,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
      * @throws {@link ConnectionRejectedException}
      * @throws {@link AuthenticationException}
      */
-    private void analyzeResponseCode(int code) throws IOException {
+    private void analyzeResponseCode(int code) {
         if (WebConstants.SC_SERVICE_BUSY == code) {
             throw new ConnectionRejectedException();
         } else if (WebConstants.SC_SERVICE_UNAVAILABLE == code) {

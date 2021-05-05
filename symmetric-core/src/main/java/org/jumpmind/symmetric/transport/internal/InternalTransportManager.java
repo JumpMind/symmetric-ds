@@ -27,12 +27,12 @@ import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.ChannelMap;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    static final Logger log = LoggerFactory.getLogger(InternalTransportManager.class);
+    private static final Logger log = LoggerFactory.getLogger(InternalTransportManager.class);
 
     protected ISymmetricEngine symmetricEngine;
 
@@ -102,7 +102,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
                 IOutgoingTransport transport = new InternalOutgoingTransport(respOs,
-                        suspendIgnoreChannels, IoConstants.ENCODING);
+                        suspendIgnoreChannels, StandardCharsets.UTF_8.name());
                 ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                         new ProcessInfoKey(engine.getNodeService().findIdentityNodeId(), local
                                 .getNodeId(), ProcessType.PULL_HANDLER_EXTRACT));
@@ -156,8 +156,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
         final PipedInputStream respIs = new PipedInputStream(respOs);
 
         runAtClient(targetNode.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
-            public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
-                    throws Exception {
+            public void run(ISymmetricEngine engine, InputStream is, OutputStream os) {
                 // This should be basically what the push servlet does ...
                 engine.getFileSyncService().loadFilesFromPush(sourceNode.getNodeId(), is, os);
             }
@@ -217,7 +216,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list,
             Node local, String securityToken) throws IOException {
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, IoConstants.ENCODING), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), true);
         pw.println(getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list));
         pw.close();
     }

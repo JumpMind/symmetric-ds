@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class DBFReader {
 
-    static final Logger log = LoggerFactory.getLogger(DBFReader.class);
+    private static final Logger log = LoggerFactory.getLogger(DBFReader.class);
     
     private DataInputStream stream;
     private DBFField fields[];
@@ -89,38 +89,26 @@ public class DBFReader {
 
     private int readHeader() throws IOException, DBFException {
         byte abyte0[] = new byte[16];
-        try {
-            stream.readFully(abyte0);
-        } catch (EOFException eofexception) {
-            throw new DBFException("Unexpected end of file reached.");
-        }
+        stream.readFully(abyte0);
         int i = abyte0[8];
         if (i < 0)
             i += 256;
         i += 256 * abyte0[9];
         i = --i / 32;
         i--;
-        try {
-            stream.readFully(abyte0);
-        } catch (EOFException eofexception1) {
-            throw new DBFException("Unexpected end of file reached.");
-        }
+        stream.readFully(abyte0);
         return i;
     }
 
     private DBFField readFieldHeader() throws IOException, DBFException {
         byte abyte0[] = new byte[16];
-        try {
-            stream.readFully(abyte0);
-        } catch (EOFException eofexception) {
-            throw new DBFException("Unexpected end of file reached.");
-        }
+        stream.readFully(abyte0);
         if (abyte0[0] == 0X0D || abyte0[0] == 0X00) {
             stream.readFully(abyte0);
             return null;
         }
 
-        StringBuffer stringbuffer = new StringBuffer(10);
+        StringBuilder stringbuffer = new StringBuilder(10);
         int i = 0;
         for (i = 0; i < 10; i++) {
             if (abyte0[i] == 0)
@@ -129,11 +117,7 @@ public class DBFReader {
         stringbuffer.append(new String(abyte0, 0, i));
 
         char c = (char) abyte0[11];
-        try {
-            stream.readFully(abyte0);
-        } catch (EOFException eofexception1) {
-            throw new DBFException("Unexpected end of file reached.");
-        }
+        stream.readFully(abyte0);
 
         int j = abyte0[0];
         int k = abyte0[1];
@@ -192,7 +176,7 @@ public class DBFReader {
         int i = 1;
         for (int j = 0; j < aobj.length; j++) {
             int k = fields[j].getLength();
-            StringBuffer stringbuffer = new StringBuffer(k);
+            StringBuilder stringbuffer = new StringBuilder(k);
             stringbuffer.append(new String(nextRecord, i, k, charset));
             aobj[j] = fields[j].parse(stringbuffer.toString());
             i += fields[j].getLength();
@@ -224,7 +208,5 @@ public class DBFReader {
     public void setValidate(boolean validate) {
         this.validate = validate;
     }
-    
-    
 
 }

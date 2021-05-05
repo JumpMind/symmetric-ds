@@ -179,8 +179,8 @@ public class ModuleManager {
         try {
             FileWriter writer = new FileWriter(joinDirName(modulesDir, moduleId + EXT_PROPERTIES));
             Properties prop = new Properties();
-            prop.put(PROP_VERSION, Version.version());
-            prop.put(moduleId, properties.get(moduleId));
+            prop.setProperty(PROP_VERSION, Version.version());
+            prop.setProperty(moduleId, properties.getProperty(moduleId));
             prop.store(writer, "");
             log.info("Successfully installed module {}", moduleId);
         } catch (IOException e) {

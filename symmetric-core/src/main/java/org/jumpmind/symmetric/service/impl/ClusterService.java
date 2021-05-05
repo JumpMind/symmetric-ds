@@ -254,7 +254,7 @@ public class ClusterService extends AbstractService implements IClusterService {
         }
     }
 
-    protected void initCache() {
+    protected final void initCache() {
         lockCache .clear();
         for (String action : actions) {
             Lock lock = new Lock();

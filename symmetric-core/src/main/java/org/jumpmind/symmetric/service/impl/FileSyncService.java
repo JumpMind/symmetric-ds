@@ -646,8 +646,8 @@ INodeCommunicationExecutor {
                         throw new IoException(e);
                     }
                 } else {
-                    log.error("Missing staged ZIP file for target node {}: {}", targetNode.toString(), 
-                            stagedResource == null ? "<null>" : stagedResource.toString());
+                    log.error("Missing staged ZIP file for target node {}: {}", targetNode, 
+                            stagedResource == null ? "<null>" : stagedResource);
                 }
 
                 for (int i = 0; i < batchesToProcess.size(); i++) {

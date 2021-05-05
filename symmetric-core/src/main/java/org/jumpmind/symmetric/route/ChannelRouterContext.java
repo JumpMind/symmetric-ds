@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.route;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -93,8 +92,7 @@ public class ChannelRouterContext extends SimpleRouterContext {
     private IBatchAlgorithm batchAlgorithm;
     private Map<Long, DataMetaData> configDataIdsProcessed = new HashMap<Long, DataMetaData>();
 
-    public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction, IBatchAlgorithm batchAlgorithm)
-            throws SQLException {
+    public ChannelRouterContext(String nodeId, NodeChannel channel, ISqlTransaction transaction, IBatchAlgorithm batchAlgorithm) {
         super(nodeId, channel);
         this.sqlTransaction = transaction;
         this.sqlTransaction.setInBatchMode(true);

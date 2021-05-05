@@ -1389,12 +1389,7 @@ public class CsvReader {
         dataBuffer.ColumnStart = dataBuffer.Position + 1;
     }
 
-    /**
-     * @exception IOException
-     *                    Thrown if an error occurs while reading data from the
-     *                    source stream.
-     */
-    private void endRecord() throws IOException {
+    private void endRecord() {
         // this flag is used as a loop exit condition
         // during parsing
 

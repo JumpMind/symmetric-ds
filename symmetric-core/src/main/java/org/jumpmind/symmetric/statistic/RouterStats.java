@@ -52,7 +52,7 @@ public class RouterStats {
     @Override
     public String toString() {
         return "{ startDataId: " + startDataId + ", endDataId: " + endDataId + ", dataReadCount: " + dataReadCount +
-                ", peekAheadFillCount: " + peekAheadFillCount + ", dataGaps: " + dataGaps.toString() + " }";
+                ", peekAheadFillCount: " + peekAheadFillCount + ", dataGaps: " + dataGaps + " }";
     }
 
     public long getStartDataId() {

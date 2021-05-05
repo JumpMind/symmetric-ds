@@ -214,7 +214,7 @@ public class NetworkedNode implements Comparable<NetworkedNode> {
         if (children != null) {
             Collection<NetworkedNode> set = children.values();
             for (NetworkedNode networkedNode : set) {
-                string.append("\n").append(networkedNode.toString());
+                string.append("\n").append(networkedNode);
             }
         }
         return string.toString();

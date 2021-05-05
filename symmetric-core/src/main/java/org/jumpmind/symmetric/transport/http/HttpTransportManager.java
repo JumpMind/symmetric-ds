@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,6 @@ import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HttpTransportManager extends AbstractTransportManager implements ITransportManager {
 
-    protected static final Logger log = LoggerFactory.getLogger(HttpTransportManager.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpTransportManager.class);
 
     protected ISymmetricEngine engine;
     
@@ -174,7 +174,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         } else {
             conn = new HttpConnection(url);
         }
-        conn.setRequestProperty(WebConstants.HEADER_ACCEPT_CHARSET, IoConstants.ENCODING);
+        conn.setRequestProperty(WebConstants.HEADER_ACCEPT_CHARSET, StandardCharsets.UTF_8.name());
 
         boolean hasSession = false;
         if (useSessionAuth) {
@@ -207,7 +207,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected String getUri(HttpConnection conn) {
-        String uri = conn.getURL().toString();
+        String uri = conn.getURL().toExternalForm();
         uri = uri.substring(0, uri.lastIndexOf("/"));
         return uri;
     }
@@ -239,7 +239,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     public void writeMessage(OutputStream out, String data) throws IOException {
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, IoConstants.ENCODING), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8), true);
         pw.println(data);
         pw.flush();
     }
@@ -326,7 +326,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
     }
 
-    public static String buildRegistrationUrl(String baseUrl, Node node) throws IOException {
+    public static String buildRegistrationUrl(String baseUrl, Node node) {
         if (baseUrl == null) {
             baseUrl = "";
         }
@@ -416,7 +416,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         sb.append(key);
         sb.append("=");
         try {
-            sb.append(URLEncoder.encode(value, IoConstants.ENCODING));
+            sb.append(URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
             throw new IoException(e);
         }

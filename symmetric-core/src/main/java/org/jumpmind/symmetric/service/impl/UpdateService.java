@@ -34,10 +34,10 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -113,7 +113,7 @@ public class UpdateService extends AbstractService implements IUpdateService {
     public void checkForUpdates() {
         try {
             log.debug("Starting check for updates");
-            Properties prop = getProperties();
+            Map<String, Object> prop = getProperties();
             if (sendUsage) {
                 addUsageProperties(prop);
             }
@@ -132,11 +132,11 @@ public class UpdateService extends AbstractService implements IUpdateService {
         }
     }
 
-    protected byte[] getPostData(Properties prop) throws UnsupportedEncodingException {
+    protected byte[] getPostData(Map<String, Object> prop) throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         for (Object key : prop.keySet()) {
-            sb.append(URLEncoder.encode(key.toString(), "UTF-8")).append("=");
-            sb.append(URLEncoder.encode(prop.get(key).toString(), "UTF-8")).append("&");
+            sb.append(URLEncoder.encode(key.toString(), StandardCharsets.UTF_8.name())).append("=");
+            sb.append(URLEncoder.encode(prop.get(key).toString(), StandardCharsets.UTF_8.name())).append("&");
         }
         return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -167,26 +167,26 @@ public class UpdateService extends AbstractService implements IUpdateService {
         String fieldName = "";
         while (reader.hasNext()) {
             JsonToken jsonToken = reader.peek();
-            if (JsonToken.BEGIN_OBJECT.equals(jsonToken)) {
+            if (jsonToken == JsonToken.BEGIN_OBJECT) {
                 reader.beginObject();
-            } else if (JsonToken.NAME.equals(jsonToken)) {
+            } else if (jsonToken == JsonToken.NAME) {
                 fieldName = reader.nextName();
-            } else if (JsonToken.STRING.equals(jsonToken)) {
+            } else if (jsonToken == JsonToken.STRING) {
                 String value = reader.nextString();
                 if ("version".equals(fieldName)) {
                     latestVersion = value;
                 } else if ("link".equals(fieldName)) {
                     downloadUrl = value;
                 }
-            } else if (JsonToken.NUMBER.equals(jsonToken)) {
+            } else if (jsonToken == JsonToken.NUMBER) {
                 reader.nextLong();
             }
         }
         reader.close();
     }
 
-    protected Properties getProperties() {
-        Properties prop = new Properties();
+    protected Map<String, Object> getProperties() {
+    	Map<String, Object> prop = new HashMap<String, Object>();
 
         IContextService contextService = engine.getContextService();
         String guid = contextService.getString(ContextConstants.GUID);
@@ -200,7 +200,7 @@ public class UpdateService extends AbstractService implements IUpdateService {
         return prop;
     }
 
-    protected void addUsageProperties(Properties prop) {
+    protected void addUsageProperties(Map<String, Object> prop) {
         Node node = engine.getNodeService().findIdentity();
         prop.put("node_id", node.getNodeId());
         prop.put("node_group_id", node.getNodeGroupId());

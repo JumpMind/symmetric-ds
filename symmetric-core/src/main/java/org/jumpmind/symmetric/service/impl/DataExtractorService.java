@@ -1899,7 +1899,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     request.getNodeId().equals(info.getTargetNodeId()) && 
                     info.getCurrentBatchId() >= request.getStartBatchId() &&
                     info.getCurrentBatchId() <= request.getEndBatchId()) {
-                    log.info("Sending interrupt to " + info.getKey().toString());
+                    log.info("Sending interrupt to " + info.getKey());
                     info.getThread().interrupt();
                 }
             }

@@ -815,7 +815,7 @@ public class RouterService extends AbstractService implements IRouterService {
                         }
                         sb.append(entry.getKey()).append("=").append(entry.getValue());
                     }
-                    log.info("Router times for channel '{}': {}", context.getChannel().getChannelId(), sb.toString());
+                    log.info("Router times for channel '{}': {}", context.getChannel().getChannelId(), sb);
                 }
                 ts = System.currentTimeMillis();
             }

@@ -21,7 +21,7 @@
 package org.jumpmind.symmetric.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -103,15 +103,15 @@ public class OutgoingBatchesTest {
         assertEquals(20, batches.getBatches().size());
 
         for (OutgoingBatch b : batches.getBatches()) {
-            assertFalse(b.getChannelId().equals("testChannel3"));
+            assertNotEquals(b.getChannelId(), "testChannel3");
         }
 
         batches.filterBatchesForChannel(new Channel("testChannel4", 1));
         assertEquals(15, batches.getBatches().size());
 
         for (OutgoingBatch b : batches.getBatches()) {
-            assertFalse(b.getChannelId().equals("testChannel3"));
-            assertFalse(b.getChannelId().equals("testChannel4"));
+            assertNotEquals(b.getChannelId(), "testChannel3");
+            assertNotEquals(b.getChannelId(), "testChannel4");
         }
         Set<String> channels = new HashSet<String>();
 

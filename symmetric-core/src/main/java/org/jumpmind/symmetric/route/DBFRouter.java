@@ -71,7 +71,7 @@ public class DBFRouter extends AbstractFileParsingRouter implements IDataRouter,
     
     @Override
     public String getColumnNames() {
-        StringBuffer columns = new StringBuffer();
+    	StringBuilder columns = new StringBuilder();
         try {
             for (int i = 0; i < dbfReader.getFieldCount(); i++) {
                 if (i > 0) { columns.append(","); }

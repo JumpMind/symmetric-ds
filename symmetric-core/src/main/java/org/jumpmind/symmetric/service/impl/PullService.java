@@ -143,7 +143,7 @@ public class PullService extends AbstractOfflineDetectorService implements IPull
             long end = 0;
             
             do {
-                log.debug("Pull requested for {}", node.toString());                
+                log.debug("Pull requested for {}", node);                
                 if (lastBatchesProcessed > 0) {
                     if (nodeService.isDataLoadStarted()) {
                         log.info("Immediate pull requested while in reload mode");

@@ -182,7 +182,7 @@ public class Http2Connection extends HttpConnection {
             }
         }
         sb.append("}");
-        log.debug(name + " headers: {}", sb.toString());
+        log.debug(name + " headers: {}", sb);
     }
 
     @Override

@@ -55,7 +55,7 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     
     private List<OutgoingBatch> processedBatches;
     
-    public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) throws IOException {
+    public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) {
         this.outgoingDir = outgoingDir;
         this.fileName = outgoingDir + File.separator + localNode.getNodeGroupId() + "-" + localNode.getNodeId() + "_to_" + 
                 remoteNode.getNodeGroupId() + "-" + remoteNode.getNodeId() + "_" + System.currentTimeMillis();

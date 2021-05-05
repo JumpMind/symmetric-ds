@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.io.data.reader;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class XmlDataReaderTest {
 
         Map<String, String> data2 = dataRead.get(2).toColumnNameValuePairs(writer.getLastTableRead().getColumnNames(), CsvData.ROW_DATA);
         assertEquals("2", data2.get("id"));
-        assertEquals(null, data2.get("my_value"));
+        assertNull(data2.get("my_value"));
 
     }
 }

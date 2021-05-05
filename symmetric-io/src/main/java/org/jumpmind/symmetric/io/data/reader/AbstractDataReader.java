@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.util.FormatUtils;
@@ -73,7 +73,7 @@ public abstract class AbstractDataReader {
     protected static Reader toReader(File file) {
         try {
             FileInputStream fis = new FileInputStream(file);
-            InputStreamReader in = new InputStreamReader(fis, IoConstants.ENCODING);
+            InputStreamReader in = new InputStreamReader(fis, StandardCharsets.UTF_8.name());
             return new BufferedReader(in);
         } catch (IOException ex) {
             throw new IoException(ex);
@@ -82,7 +82,7 @@ public abstract class AbstractDataReader {
 
     protected static Reader toReader(InputStream is) {
         try {
-            return new BufferedReader(new InputStreamReader(is, IoConstants.ENCODING));
+            return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8.name()));
         } catch (IOException ex) {
             throw new IoException(ex);
         }

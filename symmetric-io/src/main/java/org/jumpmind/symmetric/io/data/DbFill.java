@@ -332,7 +332,7 @@ public class DbFill {
                         }
                     }
                     if (verbose) {
-                        log.info("Common dependency for table {}: {}", table.getName(), sb.toString());
+                        log.info("Common dependency for table {}: {}", table.getName(), sb);
                     }
                 }
             }
@@ -608,7 +608,7 @@ public class DbFill {
             int rowNum = getRand().nextInt(rows.size());
             row = rows.get(rowNum);
             if (verbose) {
-                log.info("Row from " + table.getName() + ": " + row.toString());
+                log.info("Row from " + table.getName() + ": " + row);
             }
         } else {
             if (cascading) {
@@ -1185,7 +1185,7 @@ public class DbFill {
         }
         
         if (verbose) {
-            log.info("Generated row for " + table.getName() + " " + row.toString());
+            log.info("Generated row for " + table.getName() + " " + row);
         }
         currentRowValues.put(table.getName(), row);
         return row;

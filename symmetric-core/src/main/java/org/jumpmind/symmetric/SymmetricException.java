@@ -26,7 +26,7 @@ package org.jumpmind.symmetric;
  */
 public class SymmetricException extends RuntimeException {
 
-    private static final long serialVersionUID = -3111453874504638368L;
+    private static final long serialVersionUID = 1L;
 
     public SymmetricException() {
         super();

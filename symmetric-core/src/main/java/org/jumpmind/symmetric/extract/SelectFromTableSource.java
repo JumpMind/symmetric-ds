@@ -96,7 +96,7 @@ public class SelectFromTableSource extends SelectFromSource {
         init(batch, initialLoadEvents);
     }
 
-    protected void init(Batch batch, List<SelectFromTableEvent> initialLoadEvents) {
+    protected final void init(Batch batch, List<SelectFromTableEvent> initialLoadEvents) {
         this.batch = batch;
         selectFromTableEventsToSend = new ArrayList<SelectFromTableEvent>(initialLoadEvents);
         node = nodeService.findNode(batch.getTargetNodeId(), true);
@@ -304,7 +304,7 @@ public class SelectFromTableSource extends SelectFromSource {
                     long rowSize = row.getLength() * 2;
                     
                     if (rowSize > rowMaxLength) {
-                        StringBuffer pkValues = new StringBuffer();
+                    	StringBuilder pkValues = new StringBuilder();
                         int i = 0;
                         Object[] rowValues = row.values().toArray();
                         for (String name : sourceTable.getPrimaryKeyColumnNames()) {

@@ -85,7 +85,7 @@ public class FilterCriterion {
 
     @Override
     public String toString() {
-        return propertyId + " " + option.toAbbrev() + " " + values.toString();
+        return propertyId + " " + option.toAbbrev() + " " + values;
     }
 
     public String toAbbrevString() {

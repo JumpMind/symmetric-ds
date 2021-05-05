@@ -99,7 +99,7 @@ public class OfflinePullService extends AbstractService implements IOfflinePullS
             long batchesProcessedCount = 0;
             do {
                 batchesProcessedCount = status.getBatchesProcessed();
-                log.debug("Offline pull requested for {}", node.toString());               
+                log.debug("Offline pull requested for {}", node);               
                 FileIncomingTransport transport = (FileIncomingTransport) transportManager.getPullTransport(node, local, null, null, null);
                 dataLoaderService.loadDataFromOfflineTransport(node, status, transport);
                 

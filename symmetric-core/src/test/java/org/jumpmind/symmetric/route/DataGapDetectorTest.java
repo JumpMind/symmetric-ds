@@ -439,7 +439,7 @@ public class DataGapDetectorTest {
         verifyNoMoreInteractions(dataService);
 
         runGapDetector(dataGaps, new ArrayList<Long>(), true);
-        Assert.assertTrue(detector.getLastBusyExpireRunTime() == 0);
+        Assert.assertEquals(detector.getLastBusyExpireRunTime(), 0);
         verifyNoMoreInteractions(dataService);
 
         dataGaps.add(new DataGap(3, 3));

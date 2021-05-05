@@ -29,12 +29,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jumpmind.exception.HttpException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.RegistrationNotOpenException;
 import org.jumpmind.symmetric.service.RegistrationPendingException;
@@ -246,12 +246,12 @@ public class HttpIncomingTransport implements IIncomingTransport {
                 }
                 sb.append(requestProperty.getKey()).append("=");
                 if (requestProperty.getValue() != null && !requestProperty.getValue().equals("")) {
-                    sb.append(URLEncoder.encode(requestProperty.getValue(), IoConstants.ENCODING));
+                    sb.append(URLEncoder.encode(requestProperty.getValue(), StandardCharsets.UTF_8.name()));
                 }
             }
 
             try (OutputStream os = connection.getOutputStream()) {
-                PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, IoConstants.ENCODING), true);
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
                 pw.println(sb.toString());
                 pw.flush();
             }

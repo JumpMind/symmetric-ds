@@ -30,8 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
-
-import org.jumpmind.symmetric.io.IoConstants;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Write to an internal buffer up until the threshold. When the threshold is
@@ -101,12 +100,12 @@ public class ThresholdFileWriter extends Writer {
     }
     
     protected BufferedWriter getWriter() throws IOException {
-         return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), IoConstants.ENCODING));
+         return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8.name()));
     }
 
     public BufferedReader getReader() throws IOException {
         if (file != null && file.exists()) {
-            return new BufferedReader(new InputStreamReader(new FileInputStream(file), IoConstants.ENCODING));
+            return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8.name()));
         } else {
             return new BufferedReader(new StringReader(buffer.toString()));
         }

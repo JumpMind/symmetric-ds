@@ -264,7 +264,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             foundNode.setDeploymentType(nodePriorToRegistration.getDeploymentType());
             foundNode.setDatabaseName(nodePriorToRegistration.getDatabaseName());
             nodeService.save(foundNode);
-            log.info("Completed registration of node " + foundNode.toString());
+            log.info("Completed registration of node " + foundNode);
             
             /**
              * Only send automatic initial load once or if the client is really
@@ -290,8 +290,7 @@ public class RegistrationService extends AbstractService implements IRegistratio
             
         } catch (RegistrationNotOpenException ex) {
             if (StringUtils.isNotBlank(ex.getMessage())) {
-                log.warn("Registration not allowed for {} because {}",
-                        nodePriorToRegistration.toString(), ex.getMessage());
+                log.warn("Registration not allowed for {} because {}", nodePriorToRegistration, ex.getMessage());
             }
             return processedNode;
         }

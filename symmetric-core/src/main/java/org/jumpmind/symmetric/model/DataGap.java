@@ -46,7 +46,7 @@ public class DataGap implements Serializable, Comparable<DataGap> {
 
     @Override
     public String toString() {
-        return "{ startId: " + startId + ", endId: " + endId + ", createTime: \"" + createTime.toString() + "\" }";
+        return "{ startId: " + startId + ", endId: " + endId + ", createTime: \"" + createTime + "\" }";
     }
     
     public long getEndId() {

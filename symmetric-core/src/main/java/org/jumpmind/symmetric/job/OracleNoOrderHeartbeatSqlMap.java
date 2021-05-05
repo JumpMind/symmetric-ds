@@ -18,26 +18,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.symmetric.android;
+package org.jumpmind.symmetric.job;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.symmetric.service.impl.AbstractSqlMap;
 
-import android.database.sqlite.SQLiteOpenHelper;
+public class OracleNoOrderHeartbeatSqlMap extends AbstractSqlMap {
 
-public class SQLiteOpenHelperRegistry {
-    
-    static private Map<String, SQLiteOpenHelper> sqliteOpenHelpers = new HashMap<String, SQLiteOpenHelper>();
-    
-    public static void register(String name, SQLiteOpenHelper helper) {
-        sqliteOpenHelpers.put(name, helper);
-    }
-    
-    public static SQLiteOpenHelper lookup(String name) {
-        return sqliteOpenHelpers.get(name);
-    }
+    public OracleNoOrderHeartbeatSqlMap(IDatabasePlatform platform, String tablePrefix) {
+        super(platform, tablePrefix);
+        
+        putSql("updateNodeHost", "update $(node_host) set heartbeat_time = ? where node_id = ? and host_name = ?");
 
-    public static void clear() {
-    	sqliteOpenHelpers.clear();
     }
 }

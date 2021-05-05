@@ -256,8 +256,7 @@ public class StagedResource implements IStagedResource {
     }
     
     protected BufferedReader createReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(new FileInputStream(file),
-                IoConstants.ENCODING));
+        return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8.name()));
     }
 
     private synchronized final void createReadersMap() {
