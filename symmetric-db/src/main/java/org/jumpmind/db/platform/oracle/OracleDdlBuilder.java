@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.alter.AddColumnChange;
 import org.jumpmind.db.alter.AddPrimaryKeyChange;
 import org.jumpmind.db.alter.ColumnAutoIncrementChange;
@@ -262,6 +263,16 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     public void dropExternalForeignKeys(Table table, StringBuilder ddl) {
         // no need to as we drop the table with CASCASE CONSTRAINTS
+    }
+
+    @Override
+    protected String getFullyQualifiedIndexNameShorten(Table table, IIndex index) {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isNotBlank(table.getSchema())) {
+            sb.append(getDelimitedIdentifier(table.getSchema())).append(databaseInfo.getSchemaSeparator());
+        }
+        sb.append(getDelimitedIdentifier(getIndexName(index)));
+        return sb.toString();
     }
 
     /**
