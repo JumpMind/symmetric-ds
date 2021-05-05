@@ -66,6 +66,8 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     private String functionTemplateKeySuffix = null;
     
     private boolean isConvertZeroDateToNull;
+    
+    private String characterSet;
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -82,7 +84,6 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 log.warn("Cannot convert zero dates to null because unable to verify sql_mode: {}", e.getMessage());
             }
         }
-        this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull);
 
         int[] versions = Version.parseVersion(getProductVersion());        
         if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
@@ -91,7 +92,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             this.functionTemplateKeySuffix = PRE_5_7_6;
         } else {
             this.functionTemplateKeySuffix = POST_5_7_6;
-        }        
+        }
+
+        characterSet = parameterService.getString(ParameterConstants.DB_MASTER_COLLATION, Version.isOlderThanVersion(getProductVersion(), "5.5.3") ? "utf8" : "utf8mb4");
+        this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull, characterSet);
     }
 
     @Override
