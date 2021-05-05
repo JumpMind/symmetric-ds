@@ -2296,7 +2296,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             ddl.append(" FULLTEXT");
         }
         ddl.append(" INDEX ");
-        printIdentifier(getIndexName(index), ddl);
+        ddl.append(getFullyQualifiedIndexNameShorten(table, index));
         ddl.append(" ON ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" (");
@@ -2317,6 +2317,10 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
 
         ddl.append(")");
+    }
+
+    protected String getFullyQualifiedIndexNameShorten(Table table, IIndex index) {
+        return getDelimitedIdentifier(getIndexName(index));
     }
 
     protected boolean isFullTextIndex(IIndex index) {
