@@ -558,7 +558,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
         tableRows.add(new TableRow(targetTable, values, null, null, null));
         List<TableRow> foreignTableRows = doInTransaction(platform, databaseWriter, new ITransactionCallback<List<TableRow>>() {
             public List<TableRow> execute(ISqlTransaction transaction) {
-                return platform.getDdlReader().getExportedForeignTableRows(transaction, tableRows, new HashSet<TableRow>());
+                return platform.getDdlReader().getExportedForeignTableRows(transaction, tableRows, new HashSet<TableRow>(), databaseWriter.getBatch().getBinaryEncoding());
             }
         });
         

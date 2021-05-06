@@ -818,7 +818,7 @@ public class DbFill {
     private void deleteForeignKeyChildren(ISqlTransaction tran, Table table, Row row) {
         List<TableRow> tableRows = new ArrayList<TableRow>();
         tableRows.add(new TableRow(table, row, null, null, null));
-        tableRows = platform.getDdlReader().getExportedForeignTableRows(tran, tableRows, new HashSet<TableRow>());
+        tableRows = platform.getDdlReader().getExportedForeignTableRows(tran, tableRows, new HashSet<TableRow>(), BinaryEncoding.HEX);
         if (!tableRows.isEmpty()) {
             Collections.reverse(tableRows);
             Set<TableRow> visited = new HashSet<TableRow>();
