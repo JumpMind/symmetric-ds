@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.nuodb;
 
 import java.util.List;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -129,6 +130,7 @@ public class NuoDbSymmetricDialect extends AbstractSymmetricDialect implements I
         final String sql = "drop trigger " + triggerName;
         logSql(sql, sqlBuffer); 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
     }

@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.db.raima;
 
 import java.sql.Types;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -91,6 +92,7 @@ public class RaimaSymmetricDialect extends AbstractSymmetricDialect implements I
         logSql(sql, sqlBuffer);         
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             try {
+                log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                 platform.getSqlTemplate().update(sql);
             } catch (Exception e) {
                 log.warn("Trigger does not exist");

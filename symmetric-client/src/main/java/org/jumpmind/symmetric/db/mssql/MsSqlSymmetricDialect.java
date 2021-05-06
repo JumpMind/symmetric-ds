@@ -273,6 +273,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             ((JdbcSqlTransaction) transaction)
                     .executeCallback(new IConnectionCallback<Boolean>() {
                         public Boolean execute(Connection con) throws SQLException {

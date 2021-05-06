@@ -57,7 +57,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
                 && (platform.getSqlTemplate().queryForInt("select count(*) from INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? and (TABLE_CATALOG=? or ? is null) and (TABLE_SCHEMA=? or ? is null)",
                         new Object[] { String.format("%s_CONFIG", triggerName), catalogName, catalogName, schemaName, schemaName }) > 0);
 
-        if (!exists && !StringUtils.isBlank(triggerName)) {
+        if (exists && !StringUtils.isBlank(triggerName)) {
             removeTrigger(new StringBuilder(), catalogName, schemaName, triggerName, tableName);
         }
         return exists;
@@ -76,7 +76,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         logSql(dropTable, sqlBuffer);
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.debug("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+            log.info("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(dropSql);
             transaction.execute(dropTable);
         }
