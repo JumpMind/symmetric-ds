@@ -42,7 +42,7 @@ public class Trigger implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Logger log = LoggerFactory.getLogger(Trigger.class);
+    private static final Logger log = LoggerFactory.getLogger(Trigger.class);
 
     private static final String DEFAULT_CONDITION = "1=1";
 

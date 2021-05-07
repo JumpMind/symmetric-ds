@@ -26,8 +26,6 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.DataEventType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Defines the trigger via which a table will be synchronized.
@@ -36,8 +34,6 @@ public class TriggerRouter implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Logger logger = LoggerFactory.getLogger(TriggerRouter.class);
-    
     private boolean enabled =  true;
 
     /**

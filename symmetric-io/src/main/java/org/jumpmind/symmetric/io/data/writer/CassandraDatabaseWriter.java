@@ -20,6 +20,8 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.cassandra.CassandraPlatform;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.DataType;
@@ -30,6 +32,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
+
+	private static final Logger log = LoggerFactory.getLogger(CassandraDatabaseWriter.class);
 
     protected Gson gson = new Gson();
 

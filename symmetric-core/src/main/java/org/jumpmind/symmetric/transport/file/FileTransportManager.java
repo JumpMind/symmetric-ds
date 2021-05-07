@@ -43,9 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class FileTransportManager extends HttpTransportManager implements ITransportManager {
 
-    static final Logger log = LoggerFactory.getLogger(FileTransportManager.class);
-
-    IParameterService parameterService;
+    protected IParameterService parameterService;
     
     public FileTransportManager(ISymmetricEngine engine) {
         super(engine);

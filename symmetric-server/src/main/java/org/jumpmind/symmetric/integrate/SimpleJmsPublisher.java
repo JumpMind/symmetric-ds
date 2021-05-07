@@ -35,7 +35,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 @ManagedResource(description = "The management interface for an jms publisher")
 public class SimpleJmsPublisher implements IPublisher, BeanFactoryAware {
 
-    static final Logger log = LoggerFactory.getLogger(SimpleJmsPublisher.class);
+	private static final Logger log = LoggerFactory.getLogger(SimpleJmsPublisher.class);
 
     private BeanFactory beanFactory;
 

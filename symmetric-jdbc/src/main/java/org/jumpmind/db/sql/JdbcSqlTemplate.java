@@ -67,7 +67,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 
 public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate {
 
-    static final Logger log = LoggerFactory.getLogger(JdbcSqlTemplate.class);
+	private static final Logger log = LoggerFactory.getLogger(JdbcSqlTemplate.class);
 
     protected DataSource dataSource;
 

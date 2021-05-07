@@ -37,9 +37,13 @@ import org.jumpmind.symmetric.ClientSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.ServerConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 public class ServerSymmetricEngine extends ClientSymmetricEngine {
+
+	private static final Logger log = LoggerFactory.getLogger(ServerSymmetricEngine.class);
 
     protected List<IUriHandler> uriHandlers;
     

@@ -17,9 +17,12 @@ import org.apache.hadoop.hbase.client.Table;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
 
+	private static final Logger log = LoggerFactory.getLogger(HbaseDatabaseWriter.class);
     private Configuration config;
     private Connection connection;
     private Table table; 

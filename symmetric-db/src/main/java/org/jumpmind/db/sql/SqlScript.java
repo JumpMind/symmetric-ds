@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SqlScript {
     
-    final static Logger log = LoggerFactory.getLogger(SqlScript.class);
+	private final static Logger log = LoggerFactory.getLogger(SqlScript.class);
 
     private ISqlTemplate sqlTemplate;
 

@@ -58,7 +58,7 @@ import com.vaadin.ui.VerticalLayout;
 
 public class SqlRunner extends Thread {
 
-    protected static final Logger log = LoggerFactory.getLogger(SqlRunner.class);
+	private static final Logger log = LoggerFactory.getLogger(SqlRunner.class);
     
     private SqlExplorer explorer;
 

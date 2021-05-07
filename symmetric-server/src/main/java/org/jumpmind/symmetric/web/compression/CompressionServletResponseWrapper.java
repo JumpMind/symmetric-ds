@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 
 public class CompressionServletResponseWrapper extends HttpServletResponseWrapper {
 
-    static final Logger log = LoggerFactory.getLogger(CompressionServletResponseWrapper.class);
+	private static final Logger log = LoggerFactory.getLogger(CompressionServletResponseWrapper.class);
 
     int compressionLevel = Deflater.DEFAULT_COMPRESSION;
 

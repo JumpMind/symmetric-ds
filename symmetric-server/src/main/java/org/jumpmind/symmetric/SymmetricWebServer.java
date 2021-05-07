@@ -73,7 +73,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class SymmetricWebServer {
 
-    protected static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
+	private static final Logger log = LoggerFactory.getLogger(SymmetricWebServer.class);
 
     protected static final String DEFAULT_WEBAPP_DIR = System.getProperty(SystemConstants.SYSPROP_WEB_DIR, AppUtils.getSymHome() + "/web");
 

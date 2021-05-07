@@ -14,8 +14,12 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.model.BatchId;
 import org.jumpmind.symmetric.service.ClusterConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BatchStagingManager extends StagingManager {
+
+	private static final Logger log = LoggerFactory.getLogger(BatchStagingManager.class);
 
     ISymmetricEngine engine;
 

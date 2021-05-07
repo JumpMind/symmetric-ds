@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWriterConflictResolver {
 
-    protected static final Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
+	private static final Logger log = LoggerFactory.getLogger(DefaultDatabaseWriterConflictResolver.class);
 
     @Override
     protected boolean isTimestampNewer(Conflict conflict, AbstractDatabaseWriter writer, CsvData data) {

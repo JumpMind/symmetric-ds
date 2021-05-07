@@ -42,13 +42,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.jumpmind.exception.IoException;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StagedResource implements IStagedResource {
 
-    static final Logger log = LoggerFactory.getLogger(StagedResource.class);
+	private static final Logger log = LoggerFactory.getLogger(StagedResource.class);
     
     private AtomicInteger references = new AtomicInteger(0);
 

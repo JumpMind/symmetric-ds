@@ -28,6 +28,8 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -50,6 +52,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 
 
 public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
+	private static final Logger log = LoggerFactory.getLogger(CloudBulkDatabaseWriter.class);
     protected IStagingManager stagingManager;
     protected IStagedResource stagedInputFile;
     protected boolean needsBinaryConversion;

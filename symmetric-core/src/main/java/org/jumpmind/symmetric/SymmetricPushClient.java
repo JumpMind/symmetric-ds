@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 public class SymmetricPushClient {
 
-    protected static final Logger log = LoggerFactory.getLogger(SymmetricPushClient.class);
+	private static final Logger log = LoggerFactory.getLogger(SymmetricPushClient.class);
 
     protected String nodeId;
 

@@ -43,7 +43,7 @@ public class Db2zOsDmlStatement extends DmlStatement {
    private static final FastDateFormat DATE_FORMATTER = FastDateFormat
             .getInstance("yyyy-MM-dd");
    
-   protected static final Logger log = LoggerFactory.getLogger(Db2zOsDmlStatement.class);
+   private static final Logger log = LoggerFactory.getLogger(Db2zOsDmlStatement.class);
 
     public Db2zOsDmlStatement(DmlType type, String catalogName, String schemaName, String tableName, Column[] keysColumns, Column[] columns,
             boolean[] nullKeyValues, DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {

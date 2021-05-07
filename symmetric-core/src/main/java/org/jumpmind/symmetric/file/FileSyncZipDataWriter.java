@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 
 public class FileSyncZipDataWriter implements IDataWriter {
 
-    static final Logger log = LoggerFactory.getLogger(FileSyncZipDataWriter.class);
+	private static final Logger log = LoggerFactory.getLogger(FileSyncZipDataWriter.class);
 
     protected long byteCount;
     protected long maxBytesToSync;

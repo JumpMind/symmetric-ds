@@ -26,8 +26,6 @@ import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.util.FormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Metadata about how and when to route data to a node group or a specific node
@@ -35,8 +33,6 @@ import org.slf4j.LoggerFactory;
 public class Router implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
-
-    static final Logger logger = LoggerFactory.getLogger(Router.class);
 
     private static int maxRouterId;
 

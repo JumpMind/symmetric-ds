@@ -77,7 +77,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
-    protected static final Logger log = LoggerFactory.getLogger(QueryPanel.class);
+	private static final Logger log = LoggerFactory.getLogger(QueryPanel.class);
 
     private static final long serialVersionUID = 1L;
 

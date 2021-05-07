@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DmlStatement {
     
-    protected static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
+	private static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
 
     public enum DmlType {
         INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, WHERE, SELECT, SELECT_ALL, UNKNOWN

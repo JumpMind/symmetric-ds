@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
-    protected final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
+	private final static Logger log = LoggerFactory.getLogger(DefaultDatabaseWriter.class);
     
     public static final String CUR_DATA = "DatabaseWriter.CurData";
 

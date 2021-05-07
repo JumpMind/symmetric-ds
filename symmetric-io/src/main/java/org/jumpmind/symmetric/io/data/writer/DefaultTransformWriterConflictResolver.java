@@ -27,8 +27,12 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.transform.TransformedData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWriterConflictResolver {
+
+	private static final Logger log = LoggerFactory.getLogger(DefaultTransformWriterConflictResolver.class);
 
     protected TransformWriter transformWriter;
 

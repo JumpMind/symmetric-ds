@@ -28,9 +28,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * Implementation of <b>ServletOutputStream</b> that works with the
@@ -44,8 +41,6 @@ import org.slf4j.LoggerFactory;
  * @author Dmitri Valdin
  */
 public class CompressionResponseStream extends ServletOutputStream {
-
-    static final Logger logger = LoggerFactory.getLogger(CompressionResponseStream.class);
 
     /**
      * The underlying gzip output stream to which we should write data.

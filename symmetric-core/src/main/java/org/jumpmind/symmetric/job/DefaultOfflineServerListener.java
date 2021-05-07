@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultOfflineServerListener implements IOfflineServerListener,
  IBuiltInExtensionPoint {
 
-    protected final static Logger log = LoggerFactory.getLogger(DefaultOfflineServerListener.class);
+	private final static Logger log = LoggerFactory.getLogger(DefaultOfflineServerListener.class);
 
     protected IStatisticManager statisticManager;
     protected INodeService nodeService;

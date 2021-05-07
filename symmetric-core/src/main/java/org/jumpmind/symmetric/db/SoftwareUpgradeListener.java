@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymmetricEngineAware, IBuiltInExtensionPoint {
 
-    protected static final Logger log = LoggerFactory.getLogger(SoftwareUpgradeListener.class);
+	private static final Logger log = LoggerFactory.getLogger(SoftwareUpgradeListener.class);
 
     ISymmetricEngine engine;
     

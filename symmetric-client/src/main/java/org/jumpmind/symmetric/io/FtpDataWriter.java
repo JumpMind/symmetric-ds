@@ -60,7 +60,7 @@ public class FtpDataWriter implements IDataWriter {
         FTP, SFTP
     }
 
-    protected static final Logger logger = LoggerFactory.getLogger(FtpDataWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(FtpDataWriter.class);
 
     protected String server;
 

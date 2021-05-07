@@ -63,7 +63,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public final class CommonUiUtils {
 
-    final static Logger log = LoggerFactory.getLogger(CommonUiUtils.class);
+	private final static Logger log = LoggerFactory.getLogger(CommonUiUtils.class);
 
     static final FastDateFormat DATETIMEFORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
 

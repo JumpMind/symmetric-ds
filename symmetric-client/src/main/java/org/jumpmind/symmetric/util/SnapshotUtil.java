@@ -102,7 +102,7 @@ import org.slf4j.LoggerFactory;
 @IgnoreJRERequirement
 public class SnapshotUtil {
 
-    protected static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
+	private static final Logger log = LoggerFactory.getLogger(SnapshotUtil.class);
 
     protected static final int THREAD_INDENT_SPACE = 50;
 

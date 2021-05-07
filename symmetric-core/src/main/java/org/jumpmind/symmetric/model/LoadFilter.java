@@ -23,15 +23,10 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class LoadFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    static final Logger logger = LoggerFactory.getLogger(LoadFilter.class);
-    
     public enum LoadFilterType { BSH, JAVA, SQL };
 
     private String loadFilterId;

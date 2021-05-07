@@ -48,10 +48,12 @@ import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
-
+	private static final Logger log = LoggerFactory.getLogger(MySqlBulkDatabaseWriter.class);
     protected int maxRowsBeforeFlush;
     protected long maxBytesBeforeFlush;
     protected boolean isLocal;

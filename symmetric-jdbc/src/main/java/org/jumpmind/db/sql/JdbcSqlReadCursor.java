@@ -27,12 +27,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
-    
-    static final Logger log = LoggerFactory.getLogger(JdbcSqlReadCursor.class);
     
     protected Connection c;
 

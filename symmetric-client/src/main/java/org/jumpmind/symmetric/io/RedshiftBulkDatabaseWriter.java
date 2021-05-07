@@ -40,9 +40,13 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
 
+	private static final Logger log = LoggerFactory.getLogger(RedshiftBulkDatabaseWriter.class);
+			
     private String appendToCopyCommand;
     
     public RedshiftBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,

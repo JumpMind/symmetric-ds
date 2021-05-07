@@ -28,8 +28,6 @@ import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A convenience class that allows the end user to template a message using
@@ -45,8 +43,6 @@ import org.slf4j.LoggerFactory;
  * interface and map your formatter to the column you want to 'massage.'
  */
 public class TemplatedPublisherDataLoaderFilter extends AbstractTextPublisherDataLoaderFilter {
-
-    static final Logger logger = LoggerFactory.getLogger(TemplatedPublisherDataLoaderFilter.class);
 
     private String headerTableTemplate;
     private String footerTableTemplate;

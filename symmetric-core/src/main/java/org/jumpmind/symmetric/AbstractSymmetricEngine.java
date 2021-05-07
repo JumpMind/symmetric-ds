@@ -145,7 +145,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     private static Map<String, ISymmetricEngine> registeredEnginesByName = new ConcurrentHashMap<String, ISymmetricEngine>();
 
-    protected static final Logger log = LoggerFactory.getLogger(AbstractSymmetricEngine.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractSymmetricEngine.class);
 
     private boolean started = false;
 

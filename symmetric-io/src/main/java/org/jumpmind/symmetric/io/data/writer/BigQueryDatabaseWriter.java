@@ -13,6 +13,8 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.InsertAllRequest;
@@ -20,6 +22,7 @@ import com.google.cloud.bigquery.InsertAllRequest.RowToInsert;
 import com.google.cloud.bigquery.TableId;
 
 public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
+	private static final Logger log = LoggerFactory.getLogger(BigQueryDatabaseWriter.class);
     BigQuery bigquery;
     InsertAllRequest.Builder insertAllRequestBuilder;
     TableId currentTableId;

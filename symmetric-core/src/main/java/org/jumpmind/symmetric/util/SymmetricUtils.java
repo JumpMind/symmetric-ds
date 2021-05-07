@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 final public class SymmetricUtils {
 
-    protected static final Logger log = LoggerFactory.getLogger(SymmetricUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(SymmetricUtils.class);
     
     protected static boolean isNoticeLogged;
 

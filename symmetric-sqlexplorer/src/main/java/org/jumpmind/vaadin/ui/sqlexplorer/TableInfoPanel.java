@@ -51,7 +51,7 @@ import com.vaadin.ui.VerticalLayout;
 
 public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
 
-    protected static final Logger log = LoggerFactory.getLogger(TableInfoPanel.class);
+	private static final Logger log = LoggerFactory.getLogger(TableInfoPanel.class);
 
     private static final long serialVersionUID = 1L;
     

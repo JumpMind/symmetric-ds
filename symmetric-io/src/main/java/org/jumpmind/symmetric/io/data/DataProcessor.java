@@ -35,7 +35,7 @@ public class DataProcessor {
     private static final String STAT_WRITE_DATA = "statWriteData";
     private static final String STAT_READ_DATA = "statReadData";
 
-    static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(DataProcessor.class);
 
     protected IDataReader dataReader;
 

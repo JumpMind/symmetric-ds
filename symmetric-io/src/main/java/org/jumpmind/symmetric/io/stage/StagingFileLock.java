@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 public class StagingFileLock {
     
-    protected static final Logger log = LoggerFactory.getLogger(StagingFileLock.class);
+	private static final Logger log = LoggerFactory.getLogger(StagingFileLock.class);
     
     boolean acquired = false;
     private File lockFile;    

@@ -44,7 +44,7 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
  */
 public class JdbcSqlTransaction implements ISqlTransaction {
 
-    protected final static Logger log = LoggerFactory.getLogger(JdbcSqlTransaction.class);
+	private final static Logger log = LoggerFactory.getLogger(JdbcSqlTransaction.class);
 
     protected boolean inBatchMode = false;
 

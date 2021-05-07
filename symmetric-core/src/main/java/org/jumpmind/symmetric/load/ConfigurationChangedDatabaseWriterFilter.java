@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilterAdapter implements
         IBuiltInExtensionPoint, ILoadSyncLifecycleListener {
 
-    static final Logger log = LoggerFactory.getLogger(ConfigurationChangedDatabaseWriterFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(ConfigurationChangedDatabaseWriterFilter.class);
 
     final String CTX_KEY_RESYNC_NEEDED = "Resync."
             + ConfigurationChangedDatabaseWriterFilter.class.getSimpleName() + hashCode();

@@ -49,7 +49,7 @@ import bsh.Interpreter;
 
 abstract public class AbstractDatabaseWriter implements IDataWriter {
 
-    protected final static Logger log = LoggerFactory.getLogger(AbstractDatabaseWriter.class);
+	private final static Logger log = LoggerFactory.getLogger(AbstractDatabaseWriter.class);
 
     public static final String CONFLICT_ERROR = "DatabaseWriter.ConflictError";
     

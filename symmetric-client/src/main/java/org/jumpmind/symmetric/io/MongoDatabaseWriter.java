@@ -29,6 +29,8 @@ import org.jumpmind.symmetric.io.data.writer.AbstractDatabaseWriter;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterConflictResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -64,6 +66,8 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
      * http://api.mongodb.org/java/current/com/mongodb
      * /WriteConcern.html#ACKNOWLEDGED
      */
+	
+	private static final Logger log = LoggerFactory.getLogger(MongoDatabaseWriter.class);
 
     protected IMongoClientManager clientManager;
 

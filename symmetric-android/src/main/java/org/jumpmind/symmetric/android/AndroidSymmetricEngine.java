@@ -59,12 +59,16 @@ import org.jumpmind.symmetric.service.impl.NodeCommunicationService;
 import org.jumpmind.symmetric.service.impl.RouterService;
 import org.jumpmind.symmetric.statistic.IStatisticManager;
 import org.jumpmind.symmetric.statistic.StatisticManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidSymmetricEngine extends AbstractSymmetricEngine {
 
+	private static final Logger log = LoggerFactory.getLogger(AndroidSymmetricEngine.class);
+			
     protected String registrationUrl;
     protected String externalId;
     protected String nodeGroupId;

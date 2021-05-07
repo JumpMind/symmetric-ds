@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 
 public class TransformWriter extends NestedDataWriter {
 
-    protected static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
+	private static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
 
     protected TransformPoint transformPoint;
     protected IDatabasePlatform platform;

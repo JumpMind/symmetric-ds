@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class DbCompareDiffWriter {
     
-    final static Logger log = LoggerFactory.getLogger(DbCompareDiffWriter.class);
+	private final static Logger log = LoggerFactory.getLogger(DbCompareDiffWriter.class);
     
     // Continue after parsing errors
     private boolean continueAfterError = false;

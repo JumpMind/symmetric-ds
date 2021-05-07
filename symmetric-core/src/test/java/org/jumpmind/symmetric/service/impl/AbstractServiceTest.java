@@ -53,7 +53,7 @@ public abstract class AbstractServiceTest {
 
     static protected ISymmetricEngine engine;
 
-    protected final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
+    private final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
     
     @BeforeClass
     public static void setup() throws Exception {

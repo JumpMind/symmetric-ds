@@ -26,9 +26,13 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.DynamicDefaultDatabaseWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractBulkDatabaseWriter extends DynamicDefaultDatabaseWriter{
     
+	private static final Logger log = LoggerFactory.getLogger(AbstractBulkDatabaseWriter.class);
+
     public AbstractBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String tablePrefix){
         super(symmetricPlatform, targetPlatform, tablePrefix);
     }

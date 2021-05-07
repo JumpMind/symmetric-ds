@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 public class LogSqlBuilder {
 
-    final static Logger log = LoggerFactory.getLogger(LogSqlBuilder.class);
+	private final static Logger log = LoggerFactory.getLogger(LogSqlBuilder.class);
     
     protected BinaryEncoding encoding = BinaryEncoding.HEX;
     protected boolean useJdbcTimestampFormat = true;

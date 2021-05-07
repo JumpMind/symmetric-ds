@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LookupTableDataRouter extends AbstractDataRouter implements IDataRouter, IBuiltInExtensionPoint {
 
-    final static Logger log = LoggerFactory.getLogger(LookupTableDataRouter.class);
+	private final static Logger log = LoggerFactory.getLogger(LookupTableDataRouter.class);
 
     public final static String PARAM_LOOKUP_TABLE = "LOOKUP_TABLE";
     public final static String PARAM_KEY_COLUMN = "KEY_COLUMN";

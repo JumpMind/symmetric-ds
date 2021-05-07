@@ -15,7 +15,7 @@ import org.vaadin.aceeditor.Suggestion;
 
 public class SqlSuggester implements Suggester {
     
-    static final protected Logger logger = LoggerFactory.getLogger(SqlSuggester.class);
+	private static final Logger logger = LoggerFactory.getLogger(SqlSuggester.class);
 
     public final static String[] TABLE_TYPES = new String[] { "TABLE",
         "SYSTEM TABLE", "SYSTEM VIEW" };

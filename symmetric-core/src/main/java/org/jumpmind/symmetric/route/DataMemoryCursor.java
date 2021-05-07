@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 public class DataMemoryCursor implements ISqlReadCursor<Data> {
 
-    protected final static Logger log = LoggerFactory.getLogger(DataMemoryCursor.class);
+	private final static Logger log = LoggerFactory.getLogger(DataMemoryCursor.class);
     
     public final static Comparator<Data> SORT_BY_TIME = new DataByTimeComparator();
     

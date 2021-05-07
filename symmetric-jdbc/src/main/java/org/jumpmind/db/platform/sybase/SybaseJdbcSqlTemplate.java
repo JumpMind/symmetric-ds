@@ -45,7 +45,7 @@ import com.sybase.jdbc4.jdbc.SybPreparedStatement;
 
 public class SybaseJdbcSqlTemplate extends JdbcSqlTemplate implements ISqlTemplate {
 
-    static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
+	private static final Logger log = LoggerFactory.getLogger(SybaseJdbcSqlTemplate.class);
 
     int jdbcMajorVersion;
 

@@ -42,7 +42,7 @@ import org.slf4j.MDC;
  */
 public class SymmetricLauncher extends AbstractCommandLauncher {
 
-    static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
+	private static final Logger log = LoggerFactory.getLogger(SymmetricLauncher.class);
 
     private static final String OPTION_PORT_SERVER = "port";
 

@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DataGapRouteReader implements IDataToRouteReader {
 
-    protected final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
+	private final static Logger log = LoggerFactory.getLogger(DataGapRouteReader.class);
 
     protected List<DataGap> dataGaps;
 

@@ -50,8 +50,12 @@ import org.jumpmind.util.FormatUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DbExportImportTest extends AbstractServiceTest {
+
+	private static final Logger logger = LoggerFactory.getLogger(DbExportImportTest.class);
 
     private static final String SELECT_FROM_TEST_DB_IMPORT_1_ORDER_BY_ID = "select * from test_db_import_1 order by id";
 

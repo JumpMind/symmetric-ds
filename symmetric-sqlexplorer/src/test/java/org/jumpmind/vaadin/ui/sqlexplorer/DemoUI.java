@@ -37,7 +37,7 @@ import com.vaadin.ui.UI;
 @Push(value=PushMode.AUTOMATIC)
 public class DemoUI extends UI implements IDbProvider {
 
-    static final Logger log = LoggerFactory.getLogger(DemoUI.class);
+	private static final Logger log = LoggerFactory.getLogger(DemoUI.class);
 
     private static final long serialVersionUID = 1L;
 

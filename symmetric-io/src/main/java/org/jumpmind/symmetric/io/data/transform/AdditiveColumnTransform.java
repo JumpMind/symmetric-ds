@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
 
-    static final Logger log = LoggerFactory.getLogger(AdditiveColumnTransform.class);
+	private static final Logger log = LoggerFactory.getLogger(AdditiveColumnTransform.class);
     
     public static final String NAME = "additive";
     

@@ -43,12 +43,8 @@ import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.util.CollectionUtils;
 import org.jumpmind.util.FormatUtils;
 import org.jumpmind.util.Statistics;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ExtractDataReader implements IDataReader {
-    
-    protected static final Logger log = LoggerFactory.getLogger(ExtractDataReader.class);    
     
     public static final String DATA_CONTEXT_CURRENT_CSV_DATA = "csvData"; 
 

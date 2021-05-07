@@ -38,7 +38,7 @@ public class TypedProperties extends Properties {
 
     private static final long serialVersionUID = 1L;
 
-    protected static Logger log = LoggerFactory.getLogger(TypedProperties.class);
+    private static Logger log = LoggerFactory.getLogger(TypedProperties.class);
 
     public TypedProperties(InputStream is) {
         try {

@@ -44,7 +44,7 @@ public class StagingManager implements IStagingManager {
 
     protected static final String LOCK_EXTENSION = ".lock";
 
-    protected static final Logger log = LoggerFactory.getLogger(StagingManager.class);
+    private static final Logger log = LoggerFactory.getLogger(StagingManager.class);
 
     protected File directory;
 

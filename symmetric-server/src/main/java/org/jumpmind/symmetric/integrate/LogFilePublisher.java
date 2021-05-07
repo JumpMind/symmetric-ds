@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 public class LogFilePublisher implements IPublisher {
 
-    static final Logger log = LoggerFactory.getLogger(LogFilePublisher.class);
+	private static final Logger log = LoggerFactory.getLogger(LogFilePublisher.class);
     
     @Override
     public void publish(Context context, String text) {

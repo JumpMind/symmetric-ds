@@ -44,8 +44,12 @@ import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
+
+	private static final Logger log = LoggerFactory.getLogger(PostgresBulkDatabaseWriter.class);
 
     protected int maxRowsBeforeFlush;
 

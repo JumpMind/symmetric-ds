@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Database implements Serializable, Cloneable {
 
-    protected static final Logger log = LoggerFactory.getLogger(Database.class);
+    private static final Logger log = LoggerFactory.getLogger(Database.class);
 
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = -3160443396757573868L;

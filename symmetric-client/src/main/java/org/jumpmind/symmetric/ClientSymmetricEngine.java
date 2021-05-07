@@ -80,6 +80,8 @@ import org.jumpmind.symmetric.util.SnapshotUtil;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.symmetric.util.TypedPropertiesFactory;
 import org.jumpmind.util.AppUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -92,6 +94,8 @@ import org.xml.sax.InputSource;
  * to embed SymmetricDS into another application.
  */
 public class ClientSymmetricEngine extends AbstractSymmetricEngine {
+
+	private static final Logger log = LoggerFactory.getLogger(ClientSymmetricEngine.class);
 
     public static final String DEPLOYMENT_TYPE_CLIENT = "client";
     
