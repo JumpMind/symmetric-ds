@@ -293,7 +293,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 cmd.addAll(sqlLoaderOptions);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Working dir: {} ", parentDir.getAbsolutePath());
-                    logger.debug("Running: {} ", cmd.toString());
+                    logger.debug("Running: {} ", cmd);
                 }
                 ProcessBuilder pb = new ProcessBuilder(cmd);
                 pb.directory(parentDir);

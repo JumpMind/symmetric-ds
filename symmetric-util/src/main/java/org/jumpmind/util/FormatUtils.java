@@ -381,7 +381,7 @@ public final class FormatUtils {
             } else {
                 sb.append(", ");
             }
-            sb.append(obj.toString());
+            sb.append(obj);
             if (sb.length() >= maxCharsToLog) {
                 sb.append("...");
                 break;

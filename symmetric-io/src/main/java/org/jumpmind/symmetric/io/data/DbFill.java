@@ -636,7 +636,7 @@ public class DbFill {
                 sb = (sb == null) ? new StringBuilder() : sb.append(", ");
                 sb.append(keyColumns[i].getName()).append("=").append(values[i]);
             }
-            log.info("Selecting from {} where {}", table.getName(), sb.toString());
+            log.info("Selecting from {} where {}", table.getName(), sb);
         }
 
         List<Row> rows = queryForRows(tran, stmt.getSql(), values, stmt.getTypes());
@@ -650,7 +650,7 @@ public class DbFill {
                 sb = (sb == null) ? new StringBuilder() : sb.append(", ");
                 sb.append(keyColumns[i].getName()).append("=").append(values[i]);
             }
-            log.warn("Unable to find row from {} where {}", table.getName(), sb.toString());
+            log.warn("Unable to find row from {} where {}", table.getName(), sb);
         }
         return row;
     }
@@ -1227,7 +1227,7 @@ public class DbFill {
             sb = (sb == null) ? new StringBuilder() : sb.append(",");
             sb.append(name).append("=").append(row.get(name));
         }
-        log.info("The row data was: {} ", sb.toString());
+        log.info("The row data was: {} ", sb);
     }
 
     public void setPlatform(IDatabasePlatform platform) {
