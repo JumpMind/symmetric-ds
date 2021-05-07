@@ -52,7 +52,7 @@ abstract public class PlatformUtils {
         try {
             return Types.class.getField(TypeMap.BOOLEAN).getInt(null);
         } catch (Exception ex) {
-            throw new UnsupportedOperationException("The jdbc type BOOLEAN is not supported");
+            throw new UnsupportedOperationException("The jdbc type BOOLEAN is not supported", ex);
         }
     }
 
@@ -67,7 +67,7 @@ abstract public class PlatformUtils {
         try {
             return Types.class.getField(TypeMap.DATALINK).getInt(null);
         } catch (Exception ex) {
-            throw new UnsupportedOperationException("The jdbc type DATALINK is not supported");
+            throw new UnsupportedOperationException("The jdbc type DATALINK is not supported", ex);
         }
     }
 

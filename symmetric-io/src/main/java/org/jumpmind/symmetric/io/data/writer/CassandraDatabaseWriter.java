@@ -160,19 +160,19 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
                 try {
                     bstmt.setTimestamp(i, tsFormat.parse(values[i]));
                 } catch (ParseException e) {
-                    throw new RuntimeException("Unable to bind timestamp column " + columns[i].getName() + " with value " + values[i]);
+                    throw new RuntimeException("Unable to bind timestamp column " + columns[i].getName() + " with value " + values[i], e);
                 }
             } else if (Types.DATE == type) {
                 try {
                     bstmt.setDate(i, LocalDate.fromMillisSinceEpoch(dateFormat.parse(values[i]).getTime()));
                 } catch (ParseException e) {
-                    throw new RuntimeException("Unable to bind date column " + columns[i].getName() + " with value " + values[i]);
+                    throw new RuntimeException("Unable to bind date column " + columns[i].getName() + " with value " + values[i], e);
                 }
             } else if (Types.TIME == type) {
                 try     {
                     bstmt.setTime(i, LocalTime.parse(values[i], timeFormat).toNanoOfDay());
                 } catch (DateTimeParseException e) {
-                    throw new RuntimeException("Unable to bind time column " + columns[i].getName() + " with value " + values[i]);
+                    throw new RuntimeException("Unable to bind time column " + columns[i].getName() + " with value " + values[i], e);
                 }
             } else if (Types.BOOLEAN == type) {
                 bstmt.setBool(i, Boolean.parseBoolean(values[i]));

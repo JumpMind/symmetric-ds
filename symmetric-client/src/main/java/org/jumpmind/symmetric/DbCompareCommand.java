@@ -114,27 +114,19 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         if (!StringUtils.isEmpty(numericScaleArg)) {            
             try {
                 config.setNumericScale(Integer.parseInt(numericScaleArg.trim()));
-            } catch (Exception ex) {
-                throw new ParseException("Failed to parse arg [" + numericScaleArg + "] " + ex);
+            } catch (NumberFormatException ex) {
+                throw new RuntimeException("Failed to parse arg [" + numericScaleArg + "] ", ex);
             }
         }
         
         String dateTimeFormatArg = getOptionValue(OPTION_DATE_TIME_FORMAT, "dateTimeFormat", line, config);
         if (!StringUtils.isEmpty(dateTimeFormatArg)) {
-            try {
-                config.setDateTimeFormat(dateTimeFormatArg);
-            } catch (Exception ex) {
-                throw new ParseException("Failed to parse arg [" + dateTimeFormatArg + "]" + ex);
-            }
+            config.setDateTimeFormat(dateTimeFormatArg);
         }
         
         String continueAfterError = getOptionValue(OPTION_CONTINUE_AFTER_ERROR, "continueAfterError", line, config);
-        if(!StringUtils.isEmpty(continueAfterError)) {
-            try {
-                config.setContinueAfterError(Boolean.parseBoolean(continueAfterError));
-            } catch(Exception ex) {
-                throw new ParseException("Failed to parse arg [" + continueAfterError + "]" + ex);
-            }
+        if (!StringUtils.isEmpty(continueAfterError)) {
+            config.setContinueAfterError(Boolean.parseBoolean(continueAfterError));
         }
 
         ISymmetricEngine sourceEngine = new ClientSymmetricEngine(sourceProperies);

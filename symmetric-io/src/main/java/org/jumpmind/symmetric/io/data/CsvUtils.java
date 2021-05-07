@@ -115,7 +115,7 @@ public class CsvUtils {
             try {
                 writer.write(s, true);
             } catch (IOException e) {
-                throw new IoException();
+                throw new IoException(e);
             }
         }
         writer.close();
@@ -148,7 +148,7 @@ public class CsvUtils {
         try {
             writer.writeRecord(data, true);
         } catch (IOException e) {
-            throw new IoException();
+            throw new IoException(e);
         }
         writer.close();
         return out.toString();

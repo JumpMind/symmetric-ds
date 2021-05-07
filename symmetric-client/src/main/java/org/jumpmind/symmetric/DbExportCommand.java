@@ -139,11 +139,19 @@ public class DbExportCommand extends AbstractCommandLauncher {
         }
         
         if (line.hasOption(OPTION_COMPATIBLE)) {
-            try {
-                dbExport.setCompatible(Compatible.valueOf(line.getOptionValue(OPTION_COMPATIBLE).toUpperCase()));
-            } catch (IllegalArgumentException ex) {
-                throw new SymmetricException("Invalid compatible database option: %s", line.getOptionValue(OPTION_COMPATIBLE));
-            }
+        	String compatibleStr = line.getOptionValue(OPTION_COMPATIBLE).toUpperCase();
+        	Compatible compatible = null;
+        	for (Compatible c: Compatible.values()) {
+        		if (c.name().equals(compatibleStr)) {
+        			compatible = c;
+        			break;
+        		}
+        	}
+        	if (compatible != null) {
+        		dbExport.setCompatible(compatible);
+        	} else {
+        		throw new SymmetricException("Invalid compatible database option: %s", line.getOptionValue(OPTION_COMPATIBLE));
+        	}
         }
         if (line.hasOption(OPTION_ADD_DROP_TABLE)) {
             dbExport.setAddDropTable(true);

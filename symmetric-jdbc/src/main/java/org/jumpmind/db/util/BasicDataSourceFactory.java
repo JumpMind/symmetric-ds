@@ -79,7 +79,7 @@ public class BasicDataSourceFactory {
             prepareDriver(dataSource.getDriverClassName());
         } catch (Exception e) {
             if (e instanceof ClassNotFoundException) {
-                throw new IllegalStateException("Missing JDBC driver for '" + dataSource.getDriverClassName() + "'.  Either provide the JAR or use 'symadmin module convert' command to find and install missing driver.");                
+                throw new IllegalStateException("Missing JDBC driver for '" + dataSource.getDriverClassName() + "'.  Either provide the JAR or use 'symadmin module convert' command to find and install missing driver.", e);
             }
             throw new IllegalStateException("Had trouble registering the JDBC driver: " + dataSource.getDriverClassName(), e);
         }

@@ -79,7 +79,7 @@ public class MathColumnTransform implements ISingleNewAndOldValueColumnTransform
                 return new NewAndOldValue(result, null);
             }
         } catch (EvaluationException e) {
-            throw new RuntimeException("Unable to evaluate transform expression: " + transformExpression);
+            throw new RuntimeException("Unable to evaluate transform expression: " + transformExpression, e);
         }
     }
 

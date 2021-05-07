@@ -250,7 +250,7 @@ public abstract class WrapperService {
             try {                
                 logger.log(Level.SEVERE, "Exception caught.\r\n" + getStackTrace(ex));
                 updateStatus(Status.STOPPED);
-                throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Exception caught.");                
+                throw new WrapperException(Constants.RC_SERVER_EXITED, child.exitValue(), "Exception caught.", ex);
             } catch (Throwable ex2) {
                 ex2.printStackTrace();
             }

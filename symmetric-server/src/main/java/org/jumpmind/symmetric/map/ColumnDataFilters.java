@@ -87,7 +87,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                                     causedBy = ex.getCause();
                                     if (causedBy instanceof ScriptCompilationException) {
                                         log.error("{}", causedBy.getMessage());
-                                        throw new RuntimeException(causedBy.getMessage());
+                                        throw new RuntimeException(causedBy.getMessage(), ex);
                                     }
                                 } while (causedBy != null);
                                 throw ex;

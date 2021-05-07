@@ -30,7 +30,7 @@ public class WrapperException extends RuntimeException {
     
     private String message;
     
-    private Exception cause;
+    private Throwable cause;
 
     public WrapperException(int errorCode, int nativeErrorCode, String message) {
         this.errorCode = errorCode;
@@ -38,7 +38,7 @@ public class WrapperException extends RuntimeException {
         this.message = message;
     }
     
-    public WrapperException(int errorCode, int nativeErrorCode, String message, Exception cause) {
+    public WrapperException(int errorCode, int nativeErrorCode, String message, Throwable cause) {
         this.cause = cause;
     }
 
@@ -67,7 +67,7 @@ public class WrapperException extends RuntimeException {
     }
 
     @Override
-    public Exception getCause() {
+    public Throwable getCause() {
         return cause;
     }
 }
