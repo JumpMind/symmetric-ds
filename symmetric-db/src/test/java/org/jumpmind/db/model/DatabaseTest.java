@@ -246,11 +246,11 @@ public class DatabaseTest {
         
         assertTrue(list.toString(), list.indexOf(t1) < list.indexOf(t4));
         
-        assertTrue(missingDependencyMap.size() == 1);
+        assertEquals(missingDependencyMap.size(), 1);
         assertTrue(missingDependencyMap.containsKey(t1));
         Iterator<String> i = missingDependencyMap.get(t1).iterator();
-        assertTrue(i.next().equals("2"));
-        assertTrue(i.next().equals("3"));
+        assertEquals(i.next(), "2");
+        assertEquals(i.next(), "3");
         
     }
     
@@ -284,7 +284,7 @@ public class DatabaseTest {
         
         list = Database.sortByForeignKeys(list, null, dependencyMap, null);
         
-        assertTrue(dependencyMap.size() == 3);
+        assertEquals(dependencyMap.size(), 3);
     }
     
     @Test

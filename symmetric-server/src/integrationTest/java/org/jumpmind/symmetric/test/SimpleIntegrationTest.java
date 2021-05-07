@@ -324,8 +324,8 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     @Test(timeout = 900000)
     public void test08InsertSqlEvent() {
         logTestRunning();
-        assertTrue(getClient().getSqlTemplate().queryForInt(
-                "select count(*) from sym_node where schema_version='test'") == 0);
+        assertEquals(getClient().getSqlTemplate().queryForInt(
+                "select count(*) from sym_node where schema_version='test'"), 0);
         getServer()
 
         .getDataService().insertSqlEvent(TestConstants.TEST_CLIENT_NODE,
@@ -840,12 +840,12 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
     public void test21OneColumnTableWithPrimaryKeyUpdate() throws Exception {
         logTestRunning();
         getServer().getSqlTemplate().update("insert into one_column_table values(1)");
-        assertTrue(getClient().getSqlTemplate().queryForInt(
-                "select count(*) from one_column_table where my_one_column=1") == 0);
+        assertEquals(getClient().getSqlTemplate().queryForInt(
+                "select count(*) from one_column_table where my_one_column=1"), 0);
         clientPull();
 
-        assertTrue(getClient().getSqlTemplate().queryForInt(
-                "select count(*) from one_column_table where my_one_column=1") == 1);
+        assertEquals(getClient().getSqlTemplate().queryForInt(
+                "select count(*) from one_column_table where my_one_column=1"), 1);
 
         getServer().getSqlTemplate().update(
                 "update one_column_table set my_one_column=1 where my_one_column=1");
@@ -1019,10 +1019,10 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         parameterService.saveParameter(ParameterConstants.PURGE_RETENTION_MINUTES, purgeRetentionMinues, "test");
 
         int count = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event where batch_id = ?", batchId);
-        assertTrue(count == 0);
+        assertEquals(count, 0);
         
         int newTotalCount = getServer().getSqlTemplate().queryForInt("select count(*) from sym_data_event");
-        assertTrue(newTotalCount == totalCount - purgeCount);
+        assertEquals(newTotalCount, totalCount - purgeCount);
         
     }
 
