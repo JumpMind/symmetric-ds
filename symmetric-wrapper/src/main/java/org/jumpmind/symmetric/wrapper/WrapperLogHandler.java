@@ -49,7 +49,7 @@ public class WrapperLogHandler extends StreamHandler {
         executor.scheduleWithFixedDelay(new LogFlushTask(), 0, 2000, TimeUnit.MILLISECONDS);
     }
 
-    protected void rotate() throws IOException {
+    protected final void rotate() throws IOException {
         if (writer != null) {
             writer.close();
         }

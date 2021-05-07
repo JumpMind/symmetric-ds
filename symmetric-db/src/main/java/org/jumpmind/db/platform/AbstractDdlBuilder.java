@@ -288,7 +288,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @param escapedVersion
      *            The escaped version
      */
-    protected void addEscapedCharSequence(String charSequence, String escapedVersion) {
+    protected final void addEscapedCharSequence(String charSequence, String escapedVersion) {
         charSequencesToEscape.put(charSequence, escapedVersion);
     }
 

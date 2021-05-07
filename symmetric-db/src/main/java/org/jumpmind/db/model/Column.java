@@ -124,14 +124,14 @@ public class Column implements Cloneable, Serializable {
     }
 
     public Column(String name, boolean primaryKey) {
-        setName(name);
-        setPrimaryKey(primaryKey);
+        this.name = name;
+        this.primaryKey = primaryKey;
     }
 
     public Column(String name, boolean primaryKey, int typeCode, int size, int scale) {
-        setName(name);
-        setPrimaryKey(primaryKey);
-        setRequired(primaryKey);
+        this.name = name;
+        this.primaryKey = primaryKey;
+        this.required = primaryKey;
         setTypeCode(typeCode);
         setSizeAndScale(size, scale);
     }
@@ -290,7 +290,7 @@ public class Column implements Cloneable, Serializable {
      * @param typeCode
      *            The type code
      */
-    public void setMappedTypeCode(int typeCode) {
+    public final void setMappedTypeCode(int typeCode) {
         this.mappedType = TypeMap.getJdbcTypeName(typeCode);
         if (this.mappedType == null) {
             throw new ModelException("Unknown JDBC type code " + typeCode + " for : " + toString());
@@ -433,7 +433,7 @@ public class Column implements Cloneable, Serializable {
      * @param scale
      *            The scale
      */
-    public void setSizeAndScale(int size, int scale) {
+    public final void setSizeAndScale(int size, int scale) {
         sizeAsInt = Integer.valueOf(size);
         this.scale = scale;
         this.size = String.valueOf(size);
@@ -726,12 +726,12 @@ public class Column implements Cloneable, Serializable {
         this.distributionKey = distributionKey;
     }
     
-    public void setTypeCode(int typeCode) {
+    public final void setTypeCode(int typeCode) {
         this.setMappedTypeCode(typeCode);
         this.setJdbcTypeCode(typeCode);
     }
 
-    public void setJdbcTypeCode(int jdbcTypeCode) {
+    public final void setJdbcTypeCode(int jdbcTypeCode) {
         this.jdbcTypeCode = jdbcTypeCode;
     }        
 

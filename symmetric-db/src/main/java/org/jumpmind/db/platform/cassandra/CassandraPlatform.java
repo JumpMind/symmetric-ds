@@ -99,7 +99,7 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
         this.metaData = metaData;
     }
 
-    protected void buildMetaData() {
+    protected final void buildMetaData() {
         for (KeyspaceMetadata keystoreMeta : cluster.getMetadata().getKeyspaces()) {
             metaData.put(keystoreMeta.getName(), new HashMap<String, Table>());
             for (TableMetadata tableMeta : keystoreMeta.getTables()) {

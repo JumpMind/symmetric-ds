@@ -73,7 +73,7 @@ public class TransformWriter extends NestedDataWriter {
         this.transformsBySourceTable = toMap(transforms);
     }
     
-    protected Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
+    protected final Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
         Map<String, List<TransformTable>> transformsByTable = new HashMap<String, List<TransformTable>>();
         if (transforms != null) {
             for (TransformTable transformTable : transforms) {

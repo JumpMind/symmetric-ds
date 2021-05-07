@@ -147,7 +147,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public ClientSymmetricEngine(File propertiesFile, boolean registerEngine) {
         super(registerEngine);
-        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        this.deploymentType = DEPLOYMENT_TYPE_CLIENT;
         setDeploymentSubTypeByProperties(properties);
         this.propertiesFile = propertiesFile;
         this.init();
@@ -159,7 +159,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     
     public ClientSymmetricEngine(File propertiesFile, ApplicationContext springContext) {
         super(true);
-        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        this.deploymentType = DEPLOYMENT_TYPE_CLIENT;
         setDeploymentSubTypeByProperties(properties);
         this.propertiesFile = propertiesFile;
         this.springContext = springContext;
@@ -169,22 +169,22 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     public ClientSymmetricEngine(Properties properties, boolean registerEngine) {
         super(registerEngine);
-        setDeploymentType(DEPLOYMENT_TYPE_CLIENT);
+        this.deploymentType = DEPLOYMENT_TYPE_CLIENT;
         setDeploymentSubTypeByProperties(properties);
         this.properties = properties;
         this.init();
     }
     
-    protected void setDeploymentSubTypeByProperties(Properties properties) {
-            if (properties != null) {
-                String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-                
-                setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
-                boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
-                if (isLogBased) {
-                	setDeploymentSubType(Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED);
-                }
+    protected final void setDeploymentSubTypeByProperties(Properties properties) {
+        if (properties != null) {
+            String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
+            
+            setDeploymentSubType(loadOnly != null && loadOnly.equals("true") ? Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY : null);
+            boolean isLogBased = Boolean.valueOf(properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false"));
+            if (isLogBased) {
+            	setDeploymentSubType(Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED);
             }
+        }
     }
 
     public ClientSymmetricEngine(Properties properties) {

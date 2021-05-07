@@ -133,7 +133,7 @@ public class StagedResource implements IStagedResource {
         return memoryBuffer != null && memoryBuffer.length() > 0;
     }
 
-    protected File buildFile(State state) {
+    protected final File buildFile(State state) {
         return new File(directory, String.format("%s.%s", path, state.getExtensionName()));
     }
 

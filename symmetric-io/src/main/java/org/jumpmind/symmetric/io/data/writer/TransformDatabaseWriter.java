@@ -38,7 +38,7 @@ public class TransformDatabaseWriter extends TransformWriter {
         getDatabaseWriter().setConflictResolver(new DefaultTransformWriterConflictResolver(this));
     }
 
-    public DefaultDatabaseWriter getDatabaseWriter() {
+    public final DefaultDatabaseWriter getDatabaseWriter() {
         return getNestedWriterOfType(DefaultDatabaseWriter.class);
     }
 

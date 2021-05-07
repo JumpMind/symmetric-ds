@@ -38,7 +38,7 @@ public class EngineList {
         this.engines = new ArrayList<Engine>();
     }
 
-    public void setEngines(Engine[] engines) {
+    public final void setEngines(Engine[] engines) {
         this.engines = new ArrayList<Engine>();
         for (Engine engine : engines) {
             this.engines.add(engine);

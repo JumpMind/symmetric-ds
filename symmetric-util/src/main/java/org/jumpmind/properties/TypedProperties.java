@@ -88,7 +88,7 @@ public class TypedProperties extends Properties {
         putAll(properties);
     }
 
-    public void putAll(Properties properties) {
+    public final void putAll(Properties properties) {
         for (Object key : properties.keySet()) {
             put((String) key, properties.getProperty((String) key));
         }

@@ -163,7 +163,7 @@ public class SymmetricWebServer {
         initFromProperties();
     }
 
-    protected void initFromProperties() {
+    protected final void initFromProperties() {
 
         try {
             Class.forName(AbstractCommandLauncher.class.getName());

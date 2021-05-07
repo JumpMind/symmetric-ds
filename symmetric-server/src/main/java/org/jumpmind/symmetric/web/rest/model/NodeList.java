@@ -38,7 +38,7 @@ public class NodeList {
         this.nodes = new ArrayList<Node>();
     }
 
-    public void setNodes(Node[] nodes) {
+    public final void setNodes(Node[] nodes) {
         this.nodes = new ArrayList<Node>();
         for (Node node : nodes) {
             this.nodes.add(node);

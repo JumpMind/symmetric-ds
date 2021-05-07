@@ -48,10 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-
-//    protected final static String FIELD_TERMINATOR = "|}";
-//
-//    protected final static String LINE_TERMINATOR = "|>";
     
     private IDatabasePlatform targetPlatform;
 
@@ -116,10 +112,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 this.sqlLoaderOptions.add(option);
             }
         }
-        init();
-    }
-    
-    protected void init() {
+
         if (StringUtils.isBlank(this.sqlLoaderCommand)) {
             String oracleHome = System.getenv("ORACLE_HOME");
             if (StringUtils.isNotBlank(oracleHome)) {
@@ -348,7 +341,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         }
     }
 
-    protected String getConnectString(String dbUrl) {
+    protected final String getConnectString(String dbUrl) {
         String ezConnect = null;
         int index = dbUrl.indexOf("@//");
         if (index != -1) {

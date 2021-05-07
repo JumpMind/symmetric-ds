@@ -173,7 +173,7 @@ public class TiberoTriggerTemplate extends AbstractTriggerTemplate {
 "select $(oracleToClob)$(columns) from $(schemaName)$(tableName) t  where $(whereClause)                                                                                                                " );
     }
     
-    protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
+    protected final String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
         String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
         if (StringUtils.isEmpty(timezone)) {
             return "CURRENT_TIMESTAMP";

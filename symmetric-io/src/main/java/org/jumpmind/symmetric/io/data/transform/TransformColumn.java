@@ -97,7 +97,7 @@ public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
         return sourceColumnNameLowerCase;
     }
 
-    public void setSourceColumnName(String sourceColumnName) {
+    public final void setSourceColumnName(String sourceColumnName) {
         this.sourceColumnName = sourceColumnName;
         this.sourceColumnNameLowerCase = sourceColumnName == null ? null : sourceColumnName.toLowerCase();
     }
@@ -110,7 +110,7 @@ public class TransformColumn implements Comparable<TransformColumn>, Cloneable {
         return targetColumnNameLowerCase;
     }
 
-    public void setTargetColumnName(String targetColumnName) {
+    public final void setTargetColumnName(String targetColumnName) {
         this.targetColumnName = targetColumnName;
         this.targetColumnNameLowerCase = targetColumnName == null ? null : targetColumnName.toLowerCase();
     }

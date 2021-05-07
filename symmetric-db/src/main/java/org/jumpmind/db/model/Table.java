@@ -306,7 +306,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      * @param column
      *            The column
      */
-    public void addColumn(Column column) {
+    public final void addColumn(Column column) {
         if (column != null) {
             columns.add(column);
             lobColumns = null;
@@ -1148,7 +1148,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         return getFullyQualifiedTablePrefix(new StringBuilder(), catalog, schema, quoteString, catalogSeparator, schemaSeparator);
     }
 
-    public Column getColumnWithName(String name) {
+    public final Column getColumnWithName(String name) {
         Column[] columns = getColumns();
         if (columns != null) {
             for (Column column : columns) {

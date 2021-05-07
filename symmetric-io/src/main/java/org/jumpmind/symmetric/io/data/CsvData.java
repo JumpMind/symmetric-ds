@@ -182,7 +182,7 @@ public class CsvData {
         return changedDataIndicators;
     }
 
-    public void putParsedData(String key, String[] data) {
+    public final void putParsedData(String key, String[] data) {
         removeAllData(key);
         if (parsedCsvData == null) {
             parsedCsvData = new HashMap<String, String[]>(2);

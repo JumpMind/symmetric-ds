@@ -102,7 +102,7 @@ public class DmlStatement {
 
     }
         
-    protected void init(DmlType type, String catalogName, String schemaName, String tableName,
+    protected final void init(DmlType type, String catalogName, String schemaName, String tableName,
             Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression, 
             boolean namedParameters) {

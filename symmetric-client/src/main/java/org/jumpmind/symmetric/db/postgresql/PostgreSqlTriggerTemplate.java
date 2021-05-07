@@ -229,7 +229,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         return true;
     }
     
-    protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
+    protected final String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
         String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
         if (StringUtils.isEmpty(timezone)) {
             return "CURRENT_TIMESTAMP";
@@ -238,7 +238,7 @@ public class PostgreSqlTriggerTemplate extends AbstractTriggerTemplate {
         }    
     }
     
-    protected String getSecurityClause() {
+    protected final String getSecurityClause() {
         if (symmetricDialect.getParameterService().is(ParameterConstants.POSTGRES_SECURITY_DEFINER, false)) {
             return " security definer";
         }

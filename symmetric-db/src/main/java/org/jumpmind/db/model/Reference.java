@@ -100,7 +100,7 @@ public class Reference implements Cloneable, Serializable
      *
      * @param localColumn The local column
      */
-    public void setLocalColumn(Column localColumn)
+    public final void setLocalColumn(Column localColumn)
     {
         _localColumn     = localColumn;
         _localColumnName = (localColumn == null ? null : localColumn.getName());
@@ -121,7 +121,7 @@ public class Reference implements Cloneable, Serializable
      *
      * @param foreignColumn The foreign column
      */
-    public void setForeignColumn(Column foreignColumn)
+    public final void setForeignColumn(Column foreignColumn)
     {
         _foreignColumn     = foreignColumn;
         _foreignColumnName = (foreignColumn == null ? null : foreignColumn.getName());

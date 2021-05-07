@@ -155,7 +155,7 @@ public class JdbcSqlReadCursor<T> implements ISqlReadCursor<T> {
         return mapOfColValues;
     }
 
-    public void close() {
+    public final void close() {
         if (this.connectionHandler != null) {
             this.connectionHandler.after(c);
         }

@@ -74,7 +74,7 @@ public class GenericJdbcDdlBuilder extends AbstractDdlBuilder {
          */        
     }
     
-    protected boolean setNativeMapping(int targetJdbcType, DatabaseMetaData meta, int acceptableType) throws SQLException {
+    protected final boolean setNativeMapping(int targetJdbcType, DatabaseMetaData meta, int acceptableType) throws SQLException {
         ResultSet rs = null;
         try {
             rs = meta.getTypeInfo();

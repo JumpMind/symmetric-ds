@@ -28,11 +28,10 @@ public class Engine {
     private String name;
 
     public Engine(String name) {
-        setName(name);
+    	this.name = name;
     }
 
     public Engine() {
-
     }
 
     public String getName() {

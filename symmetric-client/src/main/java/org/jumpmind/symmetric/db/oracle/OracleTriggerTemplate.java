@@ -253,14 +253,14 @@ public class OracleTriggerTemplate extends AbstractTriggerTemplate {
 "select $(oracleQueryHint) $(oracleToClob)$(columns) from $(schemaName)$(tableName) t where $(whereClause)");
     }
 
-    protected String getNumberConversionString() {
+    protected final String getNumberConversionString() {
         if (symmetricDialect.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_TEMPLATE_NUMBER_TEXT_MINIMUM)) {
             return "to_char($(tableAlias).\"$(columnName)\", 'TM')";
         } else {
             return "cast($(tableAlias).\"$(columnName)\" as number(" + symmetricDialect.getTemplateNumberPrecisionSpec() + "))";
         }
     }
-    protected String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
+    protected final String getCreateTimeExpression(ISymmetricDialect symmetricDialect) {
         String timezone = symmetricDialect.getParameterService().getString(ParameterConstants.DATA_CREATE_TIME_TIMEZONE);
         if (StringUtils.isEmpty(timezone)) {
             return "CURRENT_TIMESTAMP";

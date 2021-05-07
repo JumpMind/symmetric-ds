@@ -39,16 +39,14 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
                 dbUser, dbPassword, dbUrl, dbName, sqlLoaderInfileCharset, fieldTerminator, lineTerminator, settings,
                 delimitTokens);
         logger = LoggerFactory.getLogger(getClass());
-    }
+        ezConnectString = StringUtils.defaultIfBlank(dbName, getDbConnectString(dbUrl));
 
-    @Override
-    protected void init() {
-        if (StringUtils.isBlank(this.sqlLoaderCommand)) {
+        if (StringUtils.isBlank(sqlLoaderCommand)) {
             String tiberoHome = System.getenv("TB_HOME");
             if (StringUtils.isNotBlank(tiberoHome)) {
-                this.sqlLoaderCommand = tiberoHome + File.separator + "client" + File.separator + "bin" + File.separator + "tbloader";
+                sqlLoaderCommand = tiberoHome + File.separator + "client" + File.separator + "bin" + File.separator + "tbloader";
             } else {
-                this.sqlLoaderCommand = "tbloader";
+                sqlLoaderCommand = "tbloader";
             }
         }
     }
@@ -68,8 +66,7 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
         return "TBLoader";
     }
 
-    @Override
-    protected String getConnectString(String dbUrl) {
+    protected final String getDbConnectString(String dbUrl) {
         String connectStr = "";
         int index = dbUrl.lastIndexOf(":");
         if (index != -1) {

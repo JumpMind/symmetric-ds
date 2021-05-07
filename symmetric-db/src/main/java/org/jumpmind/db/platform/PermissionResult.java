@@ -60,8 +60,7 @@ public class PermissionResult {
     }
 
     public PermissionResult(PermissionType permissionType, String testDetails) {
-        this.setPermissionType(permissionType);
-        this.setStatus(status);
+    	this.permissionType = permissionType;
         this.category = categories.get(permissionType);
         this.testDetails = testDetails;
     }

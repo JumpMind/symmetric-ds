@@ -107,7 +107,7 @@ public class LinkedCaseInsensitiveMap<V> extends LinkedHashMap<String, V> {
     }
     
     @Override
-    public void putAll(Map<? extends String, ? extends V> map) {
+    public final void putAll(Map<? extends String, ? extends V> map) {
         if (map != null) {
             Set<? extends String> keys = map.keySet();
             for (String key : keys) {

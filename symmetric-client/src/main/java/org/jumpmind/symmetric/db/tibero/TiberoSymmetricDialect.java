@@ -41,14 +41,14 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     public TiberoSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new TiberoTriggerTemplate(this);
-        try {
-            areDatabaseTransactionsPendingSince(System.currentTimeMillis());
-            supportsTransactionViews = true;
-        } catch (Exception ex) {
-            if (parameterService.is(ParameterConstants.DBDIALECT_TIBERO_USE_TRANSACTION_VIEW)) {
-                log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
-            }
-        }
+		if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
+			try {
+				areDatabaseTransactionsPendingSince(System.currentTimeMillis());
+				supportsTransactionViews = true;
+			} catch (Exception ex) {
+				log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
+			}
+		}
     }
     
     @Override
@@ -275,7 +275,7 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     }
 
     @Override
-    public boolean areDatabaseTransactionsPendingSince(long time) {
+    public final boolean areDatabaseTransactionsPendingSince(long time) {
         String returnValue = platform.getSqlTemplate().queryForObject(SQL_SELECT_TRANSACTIONS,
                 String.class);
         if (returnValue != null) {
@@ -284,7 +284,7 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
                 date = DateUtils.parseDate(returnValue, new String[] { "MM/dd/yy HH:mm:ss" });
                 return date.getTime() < time;
             } catch (ParseException e) {
-                log.error("", e);
+                log.error("Could not parse the pending transactions date", e);
                 return true;
             }
         } else {
@@ -306,12 +306,6 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
             }
         }
         return date;
-    }
-
-    @Override
-    public boolean supportsTransactionViews() {
-        return supportsTransactionViews
-                && parameterService.is(ParameterConstants.DBDIALECT_TIBERO_USE_TRANSACTION_VIEW);
     }
 
     @Override

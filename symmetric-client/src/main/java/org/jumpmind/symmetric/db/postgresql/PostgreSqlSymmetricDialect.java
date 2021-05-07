@@ -245,7 +245,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
     }
 
     @Override
-    public Date getEarliestTransactionStartTime() {
+    public final Date getEarliestTransactionStartTime() {
         Date minStartTime = platform.getSqlTemplate().queryForObject(SQL_SELECT_TRANSACTIONS, Date.class);
         if (minStartTime == null) {
             minStartTime = new Date();

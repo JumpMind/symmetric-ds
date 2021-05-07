@@ -106,11 +106,10 @@ public class Node {
     }
 
     public Node(String nodeId) {
-        setNodeId(nodeId);
+        this.nodeId = nodeId;
     }
 
     public Node() {
-
     }
 
     public String getNodeId() {

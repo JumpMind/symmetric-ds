@@ -90,10 +90,6 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
 
     public MsSql2000DdlBuilder() {
         super(DatabaseNamesConstants.MSSQL2000);
-        setup();
-    }
-    
-    protected void setup() {
         databaseInfo.setMaxIdentifierLength(128);
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "IMAGE", Types.LONGVARBINARY);
         // BIGINT will be mapped back to BIGINT by the model reader

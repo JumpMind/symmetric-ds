@@ -86,7 +86,7 @@ public class EnvironmentSpecificProperties extends TypedProperties {
         throw new NotImplementedException();
     }
 
-    protected void activate() {
+    protected final void activate() {
         this.clear();
         if (this.original != null) {
             Set<String> properties = new HashSet<String>(this.propertiesForEnvironment);

@@ -85,7 +85,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
         listeners.add(listener);
     }
 
-    protected void init() {
+    protected final void init() {
         if (this.connection != null) {
             close();
         }
