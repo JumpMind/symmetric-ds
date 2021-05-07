@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class SqlScript {
         try {
             String fileName = url.getFile();
             fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-            init(new InputStreamReader(url.openStream(), "UTF-8"), sqlTemplate, failOnError, true, true, 
+            init(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8.name()), sqlTemplate, failOnError, true, true, 
                     delimiter, replacementTokens);
         } catch (IOException ex) {
             throw new RuntimeException(ex);

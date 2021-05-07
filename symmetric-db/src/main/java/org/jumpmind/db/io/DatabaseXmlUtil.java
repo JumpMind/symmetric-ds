@@ -33,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 
@@ -97,7 +98,7 @@ public class DatabaseXmlUtil {
 
     public static Database read(InputStream is) {
         try {
-            return read(new InputStreamReader(is, "UTF-8"));
+            return read(new InputStreamReader(is, StandardCharsets.UTF_8.name()));
         } catch (IOException e) {
             throw new IoException(e);
         }
