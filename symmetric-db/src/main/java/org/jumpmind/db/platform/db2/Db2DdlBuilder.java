@@ -137,7 +137,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
                 if (sizeSpec == null) {
                     sizeSpec = databaseInfo.getDefaultSize(targetColumn.getMappedTypeCode());
                 }
-                type = "CHAR(" + sizeSpec.toString() + ")";
+                type = "CHAR(" + sizeSpec + ")";
             }
 
             ddl.append("CAST(");

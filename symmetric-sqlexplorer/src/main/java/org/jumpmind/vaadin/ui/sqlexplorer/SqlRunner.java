@@ -408,7 +408,7 @@ public class SqlRunner extends Thread {
         VerticalLayout content = new VerticalLayout();        
         content.setMargin(true);
         panel.setContent(content);
-        Label label = new Label("<pre>" + text.toString() + "</pre>", ContentMode.HTML);
+        Label label = new Label("<pre>" + text + "</pre>", ContentMode.HTML);
         if (StringUtils.isNotBlank(style)) {
             label.setStyleName(style);
         }

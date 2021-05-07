@@ -1455,11 +1455,11 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
                     "Failed to determine auto increment columns using this query: '" + query
                             + "'.  This is probably not harmful, but should be fixed.  ");
             msg.append("\n");
-            msg.append(table.toString());
+            msg.append(table);
             if (columnsToCheck != null) {
                 for (Column col : columnsToCheck) {
                     msg.append("\n");
-                    msg.append(col.toString());
+                    msg.append(col);
                 }
             }
             log.warn(msg.toString(), ex);

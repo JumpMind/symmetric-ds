@@ -1536,7 +1536,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 // ?
                 result.append(getValueDateFormat().format(value));
             } else {
-                result.append(value.toString());
+                result.append(value);
             }
             result.append(databaseInfo.getValueQuoteToken());
             break;
@@ -1547,7 +1547,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 // ?
                 result.append(getValueTimeFormat().format(value));
             } else {
-                result.append(value.toString());
+                result.append(value);
             }
             result.append(databaseInfo.getValueQuoteToken());
             break;
@@ -1556,7 +1556,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             // TODO: SimpleDateFormat does not support nano seconds so we
             // would
             // need a custom date formatter for timestamps
-            result.append(value.toString());
+            result.append(value);
             result.append(databaseInfo.getValueQuoteToken());
             break;
         case Types.REAL:
@@ -1568,7 +1568,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             if (!(value instanceof String) && (getValueNumberFormat() != null)) {
                 result.append(getValueNumberFormat().format(value));
             } else {
-                result.append(value.toString());
+                result.append(value);
             }
             result.append(databaseInfo.getValueQuoteToken());
             break;
@@ -1867,7 +1867,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             if (databaseInfo.hasSize(column.getMappedTypeCode())) {
                 if (size > 0) {
                     sqlType.append("(");
-                    sqlType.append(size.toString());
+                    sqlType.append(size);
                     sqlType.append(")");
                 }
             } else if (databaseInfo.hasPrecisionAndScale(column.getMappedTypeCode())) {

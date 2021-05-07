@@ -210,7 +210,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 if (!(value instanceof String) && (getValueNumberFormat() != null)) {
                     result.append(getValueNumberFormat().format(value));
                 } else {
-                    result.append(value.toString());
+                    result.append(value);
                 }
                 break;
             case Types.DATE:
@@ -232,7 +232,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             case Types.TIMESTAMP:
                 result.append("CAST(");
                 result.append(databaseInfo.getValueQuoteToken());
-                result.append(value.toString());
+                result.append(value);
                 result.append(databaseInfo.getValueQuoteToken());
                 result.append(" AS datetime)");
                 break;

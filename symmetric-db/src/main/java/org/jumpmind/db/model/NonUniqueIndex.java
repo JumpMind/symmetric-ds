@@ -112,7 +112,7 @@ public class NonUniqueIndex extends IndexImpBase {
         result.append("] columns:");
         for (int idx = 0; idx < getColumnCount(); idx++) {
             result.append(" ");
-            result.append(getColumn(idx).toString());
+            result.append(getColumn(idx));
         }
 
         return result.toString();

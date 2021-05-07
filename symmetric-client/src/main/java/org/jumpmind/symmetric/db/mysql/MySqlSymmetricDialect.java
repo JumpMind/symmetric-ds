@@ -282,7 +282,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
         return platform.getSqlTemplate().queryForLong("select auto_increment from information_schema.tables where table_schema = ? and table_name = ?",
-                platform.getDefaultCatalog(), parameterService.getTablePrefix() + "_" + identifier.toString());
+                platform.getDefaultCatalog(), parameterService.getTablePrefix() + "_" + identifier);
     }
 
     @Override

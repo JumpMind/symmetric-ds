@@ -63,7 +63,7 @@ public class Db2As400DdlBuilder extends Db2DdlBuilder {
                 if (sizeSpec == null) {
                     sizeSpec = databaseInfo.getDefaultSize(targetColumn.getMappedTypeCode());
                 }
-                type = "CHAR(" + sizeSpec.toString() + ")";
+                type = "CHAR(" + sizeSpec + ")";
 
             }
 

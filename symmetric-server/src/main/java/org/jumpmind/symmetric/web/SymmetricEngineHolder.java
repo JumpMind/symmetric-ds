@@ -509,7 +509,7 @@ public class SymmetricEngineHolder {
                     checkDuplicate(userUrl, KEY, dbToPropertyFiles, file);
                 } catch (Exception ex) {
                     if (ex instanceof SymmetricException) {
-                        log.error("**** FATAL **** error " + ex.toString()); // Jetty logs the stack at WARN level.
+                        log.error("**** FATAL **** error " + ex); // Jetty logs the stack at WARN level.
                         throw (SymmetricException)ex;
                     } else {                        
                         log.warn("Failed to validate engine properties file " + file, ex);

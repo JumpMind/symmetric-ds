@@ -464,7 +464,7 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
-        return platform.getSqlTemplate().queryForLong("select ident_current('" + parameterService.getTablePrefix() + "_" + identifier.toString() + "')");
+        return platform.getSqlTemplate().queryForLong("select ident_current('" + parameterService.getTablePrefix() + "_" + identifier + "')");
     }
 
     @Override

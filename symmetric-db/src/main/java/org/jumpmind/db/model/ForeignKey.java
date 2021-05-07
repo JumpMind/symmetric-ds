@@ -531,7 +531,7 @@ public class ForeignKey implements Cloneable, Serializable {
         result.append("] references:");
         for (int idx = 0; idx < getReferenceCount(); idx++) {
             result.append(" ");
-            result.append(getReference(idx).toString());
+            result.append(getReference(idx));
         }
 
         return result.toString();

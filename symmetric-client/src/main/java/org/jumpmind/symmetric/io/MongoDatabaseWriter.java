@@ -117,7 +117,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
             if (results.getModifiedCount() == 1 || results.getUpsertedId() != null) {
                 return LoadStatus.SUCCESS;
             } else {
-                throw new SymmetricException("Failed to write data: " + object.toString());
+                throw new SymmetricException("Failed to write data: " + object);
             }
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -141,7 +141,7 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
                     .mapToDocument(sourceTable, newData, oldData, pkData, true);
             DeleteResult results = collection.deleteOne(query);
             if (results.getDeletedCount() != 1) {
-                log.warn("Attempted to remove a single object" + query.toString()
+                log.warn("Attempted to remove a single object" + query
                         + ".  Instead removed: " + results.getDeletedCount());
             }
             return LoadStatus.SUCCESS;

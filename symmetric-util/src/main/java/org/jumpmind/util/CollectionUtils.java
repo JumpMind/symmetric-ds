@@ -158,7 +158,7 @@ public class CollectionUtils {
                      csv.append(",");
                  }
                  if (array[i] != null) {
-                     csv.append(array[i].toString());
+                     csv.append(array[i]);
                  }
             }
         }
