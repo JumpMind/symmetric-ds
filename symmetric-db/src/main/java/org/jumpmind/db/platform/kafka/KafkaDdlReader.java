@@ -8,7 +8,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -17,8 +16,8 @@ import org.jumpmind.db.util.TableRow;
 public class KafkaDdlReader implements IDdlReader {
     protected KafkaPlatform platform;
     
-    public KafkaDdlReader(IDatabasePlatform platform) {
-        this.platform = (KafkaPlatform) platform;
+    public KafkaDdlReader(KafkaPlatform platform) {
+        this.platform = platform;
     }
 
     @Override

@@ -9,7 +9,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Trigger;
-import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -18,8 +17,8 @@ import org.jumpmind.db.util.TableRow;
 public class CassandraDdlReader implements IDdlReader {
     protected CassandraPlatform platform;
     
-    public CassandraDdlReader(IDatabasePlatform platform) {
-        this.platform = (CassandraPlatform) platform;
+    public CassandraDdlReader(CassandraPlatform platform) {
+        this.platform = platform;
     }
     
     @Override

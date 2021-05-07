@@ -221,15 +221,18 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
      */
     private void checkTimestampTZ(Object value, Connection oracleConnection, final String... expectedValues)
             throws SQLException {
-        TIMESTAMPTZ timestamp = (TIMESTAMPTZ) value;
-        String actualTimestampString = timestamp.stringValue(oracleConnection);
+        String actualTimestampString = null;
         boolean match = false;
-        for (String expectedValue : expectedValues) {
-            if (StringUtils.equals(expectedValue, actualTimestampString)) {
-                match = true;
-                break;
-            }
-        }
+    	if (value instanceof TIMESTAMPTZ) {
+	        TIMESTAMPTZ timestamp = (TIMESTAMPTZ) value;
+	        actualTimestampString = timestamp.stringValue(oracleConnection);
+	        for (String expectedValue : expectedValues) {
+	            if (StringUtils.equals(expectedValue, actualTimestampString)) {
+	                match = true;
+	                break;
+	            }
+	        }
+    	}
         
         Assert.assertTrue(actualTimestampString + 
                 " not found in " + Arrays.toString(expectedValues), match);
@@ -237,15 +240,18 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     
     private void checkTimestampLTZ(Object value, Connection oracleConnection, final String... expectedValues)
             throws SQLException {
-        TIMESTAMPLTZ timestamp = (TIMESTAMPLTZ) value;
-        String actualTimestampString = timestamp.stringValue(oracleConnection);
-        boolean match = false;
-        for (String expectedValue : expectedValues) {
-            if (StringUtils.equals(expectedValue, actualTimestampString)) {
-                match = true;
-                break;
-            }
-        }
+    	String actualTimestampString = null;
+    	boolean match = false;
+    	if (value instanceof TIMESTAMPLTZ) {
+	        TIMESTAMPLTZ timestamp = (TIMESTAMPLTZ) value;
+	        actualTimestampString = timestamp.stringValue(oracleConnection);
+	        for (String expectedValue : expectedValues) {
+	            if (StringUtils.equals(expectedValue, actualTimestampString)) {
+	                match = true;
+	                break;
+	            }
+	        }
+    	}
         
         Assert.assertTrue(actualTimestampString + 
                 " not found in " + Arrays.toString(expectedValues), match);
