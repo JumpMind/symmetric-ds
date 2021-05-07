@@ -110,7 +110,7 @@ abstract public class AbstractJob implements Runnable, IJob {
             if (isCronSchedule()) {
                 String cronExpression = getSchedule();
                 cronTrigger = new CronTrigger(cronExpression);
-                log.info("Starting job '{}' with cron expression: '{}'", jobName, cronExpression, cronTrigger.nextExecutionTime(new SimpleTriggerContext()));
+                log.info("Starting job '{}' on cron schedule '{}' with the first run at {}", jobName, cronExpression, cronTrigger.nextExecutionTime(new SimpleTriggerContext()));
                 try {                    
                     this.scheduledJob = taskScheduler.schedule(this, cronTrigger);
                 } catch (Exception ex) {
@@ -139,7 +139,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                     }
                 }
                 periodicFirstRunTime = new Date(lastRunTime + timeBetweenRunsInMs + startDelay);
-                log.info("Starting {} on periodic schedule: every {}ms with the first run at {}", new Object[] {jobName,
+                log.info("Starting job '{}' on periodic schedule every {}ms with the first run at {}", new Object[] {jobName,
                         timeBetweenRunsInMs, periodicFirstRunTime});
                 this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
                         periodicFirstRunTime, timeBetweenRunsInMs);

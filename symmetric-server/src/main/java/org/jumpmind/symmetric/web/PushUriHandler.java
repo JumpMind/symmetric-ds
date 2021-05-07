@@ -74,7 +74,7 @@ public class PushUriHandler extends AbstractUriHandler {
         }
 
         res.flushBuffer();
-        log.debug("Push completed for {} at remote address", nodeId, req.getRemoteAddr());
+        log.debug("Push completed for {} at remote address {}", nodeId, req.getRemoteAddr());
     }
     
     protected int push(String sourceNodeId, String channelId, InputStream inputStream, OutputStream outputStream) throws IOException {

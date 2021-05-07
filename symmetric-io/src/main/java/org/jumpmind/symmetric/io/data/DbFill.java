@@ -744,7 +744,7 @@ public class DbFill {
                 }
             }
             if (count == 0 && cascading) {
-                log.info("Failed to insert non-conflicting row into {}: {}", table.getName());
+                log.info("Failed to insert non-conflicting row into {}", table.getName());
                 if (debug) {
                     logRow(row);
                     log.info("Failed SQL: " + insertStatement.getSql());

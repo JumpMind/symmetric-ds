@@ -169,7 +169,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             container.createIfNotExists(BlobContainerPublicAccessType.CONTAINER, new BlobRequestOptions(), new OperationContext());
             azureBlobReference.uploadFromFile(this.stagedInputFile.getFile().getPath());
         } catch (Exception e) {
-            log.warn("Unable to copy staged file to Azure ", this.fileName);
+            log.warn("Unable to copy staged file to Azure {}", this.fileName);
         }
     }
     

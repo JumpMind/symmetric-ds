@@ -1067,41 +1067,39 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     @Override
     protected Table lookupTableAtTarget(Table sourceTable) {
-        String tableNameKey = sourceTable.getTableKey();
-        Table table = targetTables.get(tableNameKey);
-        if (table == null) {
-                try {
-                table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
-                        sourceTable.getName(), false);
-                if (table != null) {
-                    table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
-                            sourceTable.getPrimaryKeyColumnNames(),
-                            writerSettings.isUsePrimaryKeysFromSource());
-    
-                    Column[] columns = table.getColumns();
-                    for (Column column : columns) {
-                        if (column != null) {
-                            int typeCode = column.getMappedTypeCode();
-                            if (writerSettings.isTreatDateTimeFieldsAsVarchar()
-                                    && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
-                                column.setMappedTypeCode(Types.VARCHAR);
-                            }
-                        }
-                    }
-    
-                    targetTables.put(tableNameKey, table);
-                }
-                } 
-                catch (SqlException sqle) { 
-                    log.warn("Unable to read target table." ,sqle.getMessage());
-            }
-            if (table == null && this instanceof DynamicDefaultDatabaseWriter) {
-                    if (((DynamicDefaultDatabaseWriter)this).isLoadOnly()) {
-                        table = sourceTable;
-                    }
-                }
-        }
-        return table;
+		String tableNameKey = sourceTable.getTableKey();
+		Table table = targetTables.get(tableNameKey);
+		if (table == null) {
+			try {
+				table = getPlatform(sourceTable).getTableFromCache(sourceTable.getCatalog(), sourceTable.getSchema(),
+						sourceTable.getName(), false);
+				if (table != null) {
+					table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
+							sourceTable.getPrimaryKeyColumnNames(), writerSettings.isUsePrimaryKeysFromSource());
+
+					Column[] columns = table.getColumns();
+					for (Column column : columns) {
+						if (column != null) {
+							int typeCode = column.getMappedTypeCode();
+							if (writerSettings.isTreatDateTimeFieldsAsVarchar() && (typeCode == Types.DATE
+									|| typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
+								column.setMappedTypeCode(Types.VARCHAR);
+							}
+						}
+					}
+
+					targetTables.put(tableNameKey, table);
+				}
+			} catch (SqlException sqle) {
+				log.warn("Unable to read target table because {}", sqle.getMessage());
+			}
+			if (table == null && this instanceof DynamicDefaultDatabaseWriter) {
+				if (((DynamicDefaultDatabaseWriter) this).isLoadOnly()) {
+					table = sourceTable;
+				}
+			}
+		}
+		return table;
     }
 
     public DmlStatement getCurrentDmlStatement() {

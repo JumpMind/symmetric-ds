@@ -121,7 +121,7 @@ abstract public class AbstractDatabaseWriter implements IDataWriter {
         try {
             this.targetTable = lookupTableAtTarget(this.sourceTable);
         } catch (SqlException sqle) {
-            log.warn("Unable to read target table.", sqle.getMessage());
+            log.warn("Unable to read target table because {}", sqle.getMessage());
         }
         if (this.targetTable == null && this instanceof DynamicDefaultDatabaseWriter) {
             if (((DynamicDefaultDatabaseWriter) this).isLoadOnly()) {

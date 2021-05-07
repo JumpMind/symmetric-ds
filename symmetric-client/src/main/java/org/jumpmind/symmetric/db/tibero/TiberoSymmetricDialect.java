@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -83,13 +84,15 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
         } catch (SqlException ex) {
             if (ex.getErrorCode() == 4095) {
                 try {
-                    // a trigger of the same name must already exist on a table
-                    log.warn(
-                            "TriggerAlreadyExists",
-                            platform.getSqlTemplate().queryForMap(
-                                    "select * " + SQL_SELECT_TRIGGERS,
-                                    new Object[] { history.getTriggerNameForDmlType(dml),
-                                            history.getSourceTableName(), history.getSourceSchemaName() }));
+                    // a trigger of the same name exists on another table
+                    Map<String, Object> map = platform.getSqlTemplate().queryForMap("select * " + SQL_SELECT_TRIGGERS, 
+                    		new Object[] { history.getTriggerNameForDmlType(dml), history.getSourceTableName(), history.getSourceSchemaName() });
+                    if (map != null) {
+                    	log.warn("Trigger named {} already exists on table {}.{} and it cannot be replaced", 
+                    			history.getTriggerNameForDmlType(dml), map.get("TABLE_OWNER"), map.get("TABLE_NAME"));
+                    } else {
+                    	log.warn("Trigger named {} already exists on another table and it cannot be replaced", history.getTriggerNameForDmlType(dml));
+                    }
                 } catch (SqlException e) {
                 }
             }
