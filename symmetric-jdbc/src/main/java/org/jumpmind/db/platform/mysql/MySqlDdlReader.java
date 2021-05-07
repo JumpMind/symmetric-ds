@@ -264,9 +264,9 @@ public class MySqlDdlReader extends AbstractJdbcDdlReader {
 
                     ref.setForeignColumnName((String) values.get("REFERENCED_COLUMN_NAME"));
                     ref.setLocalColumnName((String) values.get("COLUMN_NAME"));
-                    if (values.containsKey("POSITION_IN_UNIQUE_CONSTRAINT")) {
-                        ref.setSequenceValue(((Number) values.get("POSITION_IN_UNIQUE_CONSTRAINT"))
-                                .intValue());
+                    Object pos = values.get("POSITION_IN_UNIQUE_CONSTRAINT");
+                    if (pos instanceof Number) {
+                        ref.setSequenceValue(((Number) pos).intValue());
                     }
                     fk.addReference(ref);
                 }

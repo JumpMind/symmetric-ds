@@ -262,23 +262,25 @@ public class ReleaseNotesGenerator {
             parameters.sort(new StringComparator());
             
             for (String parameter : parameters) {
-                if (currentProParamMap.containsKey(parameter)) {
+            	ParameterMetaData metaData = currentProParamMap.get(parameter);
+                if (metaData != null) {
                     writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
                     writer.println(String.format(ReleaseNotesConstants.PARAMETER_PRO_FORMAT, parameter));
                     writer.println();
-                    writer.println(currentProParamMap.get(parameter).getDescription() != null
+                    writer.println(metaData.getDescription() != null
                             ? String.format(ReleaseNotesConstants.PARAMETER_DESC_FORMAT,
-                                    currentProParamMap.get(parameter).getDescription().trim(),
-                                    currentProParamMap.get(parameter).getDefaultValue())
+                            		metaData.getDescription().trim(),
+                            		metaData.getDefaultValue())
                             : "");
                     writer.println(ReleaseNotesConstants.PRO_TOKEN_END);
                 } else {
+                	metaData = currentParamMap.get(parameter);
                     writer.println(String.format(ReleaseNotesConstants.PARAMETER_FORMAT, parameter));
                     writer.println();
-                    writer.println(currentParamMap.get(parameter).getDescription() != null
+                    writer.println(metaData.getDescription() != null
                             ? String.format(ReleaseNotesConstants.PARAMETER_DESC_FORMAT,
-                                    currentParamMap.get(parameter).getDescription().trim(),
-                                    currentParamMap.get(parameter).getDefaultValue())
+                            		metaData.getDescription().trim(),
+                            		metaData.getDefaultValue())
                             : "");
                 }
                 writer.println();
@@ -302,25 +304,27 @@ public class ReleaseNotesGenerator {
             parameters.sort(new StringComparator());
 
             for (String parameter : parameters) {
-                if (currentProParamMap.containsKey(parameter)) {
+            	ParameterMetaData metaData = currentProParamMap.get(parameter);
+                if (metaData != null) {
                     writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
                     writer.println(String.format(ReleaseNotesConstants.PARAMETER_PRO_FORMAT, parameter));
                     writer.println();
-                    writer.println(currentProParamMap.get(parameter).getDescription() != null
+                    writer.println(metaData.getDescription() != null
                             ? String.format(ReleaseNotesConstants.PARAMETER_DESC_MOD_FORMAT,
-                                    currentProParamMap.get(parameter).getDescription().trim(),
+                            		metaData.getDescription().trim(),
                                     previousProParamMap.get(parameter).getDefaultValue(),
-                                    currentProParamMap.get(parameter).getDefaultValue())
+                                    metaData.getDefaultValue())
                             : "");
                     writer.println(ReleaseNotesConstants.PRO_TOKEN_END);
                 } else {
+                	metaData = currentParamMap.get(parameter);
                     writer.println(String.format(ReleaseNotesConstants.PARAMETER_FORMAT, parameter));
                     writer.println();
-                    writer.println(currentParamMap.get(parameter).getDescription() != null
+                    writer.println(metaData.getDescription() != null
                             ? String.format(ReleaseNotesConstants.PARAMETER_DESC_MOD_FORMAT,
-                                    currentParamMap.get(parameter).getDescription().trim(),
+                            		metaData.getDescription().trim(),
                                     previousParamMap.get(parameter).getDefaultValue(),
-                                    currentParamMap.get(parameter).getDefaultValue())
+                                    metaData.getDefaultValue())
                             : "");
                 }
                 writer.println();
