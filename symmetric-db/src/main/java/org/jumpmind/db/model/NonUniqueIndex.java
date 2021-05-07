@@ -30,7 +30,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class NonUniqueIndex extends IndexImpBase {
 
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = -3591499395114850301L;
+    private static final long serialVersionUID = 1L;
 
     public NonUniqueIndex() {
     }

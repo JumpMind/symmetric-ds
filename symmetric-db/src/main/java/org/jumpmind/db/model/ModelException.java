@@ -29,7 +29,7 @@ import org.jumpmind.db.platform.DdlException;
 public class ModelException extends DdlException 
 {
     /** Constant for serializing instances of this class. */
-    private static final long serialVersionUID = -694578915559780711L;
+    private static final long serialVersionUID = 1L;
     
     /**
      * Creates a new empty exception object.

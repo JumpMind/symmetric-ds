@@ -44,7 +44,7 @@ import org.jumpmind.util.FormatUtils;
 public class Column implements Cloneable, Serializable {
     
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = -6226348998874210093L;
+    private static final long serialVersionUID = 1L;
 
     /** The name of the column. */
     private String name;

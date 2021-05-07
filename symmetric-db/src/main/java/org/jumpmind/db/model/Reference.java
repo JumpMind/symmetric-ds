@@ -32,7 +32,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class Reference implements Cloneable, Serializable
 {
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = 6062467640266171664L;
+    private static final long serialVersionUID = 1L;
 
     /** The sequence value within the key. */
     private int    _sequenceValue;

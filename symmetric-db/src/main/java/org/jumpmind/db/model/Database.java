@@ -47,7 +47,7 @@ public class Database implements Serializable, Cloneable {
     private static final Logger log = LoggerFactory.getLogger(Database.class);
 
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = -3160443396757573868L;
+    private static final long serialVersionUID = 1L;
 
     /** The name of the database model. */
     private String name;

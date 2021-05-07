@@ -29,7 +29,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class IndexColumn implements Cloneable, Serializable {
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = -5009366896427504739L;
+    private static final long serialVersionUID = 1L;
 
     /** The position within the owning index. */
     private int ordinalPosition;

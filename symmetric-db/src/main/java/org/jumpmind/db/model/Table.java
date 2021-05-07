@@ -49,7 +49,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     private final static Logger log = LoggerFactory.getLogger(Table.class);
     
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = -5541154961302342608L;
+    private static final long serialVersionUID = 1L;
 
     private String oldCatalog = null;
 

@@ -30,7 +30,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  */
 public class UniqueIndex extends IndexImpBase {
     /** Unique ID for serialization purposes. */
-    private static final long serialVersionUID = -4097003126550294993L;
+    private static final long serialVersionUID = 1L;
 
     public UniqueIndex() {
 

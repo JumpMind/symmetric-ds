@@ -26,7 +26,7 @@ package org.jumpmind.db.platform;
 public class DdlException extends RuntimeException 
 {
     /** Constant for serializing instances of this class. */
-    private static final long serialVersionUID = 5624776387174310551L;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Creates a new empty exception object.
