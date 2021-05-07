@@ -38,8 +38,8 @@ public class FirebirdDialect1DdlBuilder extends FirebirdDdlBuilder {
             } else if (change instanceof ColumnDefaultValueChange) {
                 ColumnDefaultValueChange defaultValueChange = (ColumnDefaultValueChange) change;
                 if (defaultValueChange.getChangedColumn().getMappedTypeCode() == Types.DOUBLE &&
-                        new BigDecimal(defaultValueChange.getNewDefaultValue()).equals(
-                                new BigDecimal(defaultValueChange.getChangedColumn().getDefaultValue()))) {
+                        new BigDecimal(defaultValueChange.getNewDefaultValue()).compareTo(
+                                new BigDecimal(defaultValueChange.getChangedColumn().getDefaultValue())) == 0) {
                     iter.remove();
                 }
             }
