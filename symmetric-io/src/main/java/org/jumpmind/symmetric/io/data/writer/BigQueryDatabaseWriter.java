@@ -33,8 +33,7 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
     int deleteCount;
    
     public BigQueryDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String prefix,
-            IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings, int maxRowsPerRpc) 
-                    throws FileNotFoundException, IOException {
+            IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings, int maxRowsPerRpc) {
         super(symmetricPlatform, targetPlatform, prefix, conflictResolver, settings);
         this.maxRowsToInsertPerRPC = maxRowsPerRpc;
         bigquery = ((BigQueryPlatform) targetPlatform).getBigQuery();

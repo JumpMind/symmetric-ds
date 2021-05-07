@@ -507,7 +507,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
 
     public void testConnection() {
         execute(new IConnectionCallback<Boolean>() {
-            public Boolean execute(Connection con) throws SQLException {
+            public Boolean execute(Connection con) {
                 return true;
             }
         });

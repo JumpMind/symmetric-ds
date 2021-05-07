@@ -46,8 +46,7 @@ public class XmlPublisherFilterTest {
 
     private Table table;
 
-    public XmlPublisherFilterTest() throws Exception {
-        super();
+    public XmlPublisherFilterTest() {
     }
 
     @Before

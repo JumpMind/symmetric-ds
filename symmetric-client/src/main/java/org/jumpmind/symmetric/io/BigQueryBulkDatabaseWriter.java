@@ -35,8 +35,7 @@ public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
     public BigQueryBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
-            ISecurityService securityService, DatabaseWriterSettings writerSettings, BigQuery bq)
-            throws FileNotFoundException, IOException {
+            ISecurityService securityService, DatabaseWriterSettings writerSettings, BigQuery bq) {
         super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService,
                 securityService, writerSettings);
         fieldTerminator = ",";

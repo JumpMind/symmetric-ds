@@ -135,7 +135,7 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
                     return baseTypeName;
                 }
 
-                public void free() throws SQLException {
+                public void free() {
                 }
 
                 public int getBaseType() {

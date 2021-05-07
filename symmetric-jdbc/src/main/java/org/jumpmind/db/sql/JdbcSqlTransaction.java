@@ -347,7 +347,7 @@ public class JdbcSqlTransaction implements ISqlTransaction {
     public int prepareAndExecute(final String sql, final Map<String, Object> args) {
         
         return executeCallback(new IConnectionCallback<Integer>() {
-            public Integer execute(Connection con) throws SQLException {
+            public Integer execute(Connection con) {
                 
                 Integer rowsUpdated = null;
                 NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(new SingleConnectionDataSource(con,true));

@@ -58,8 +58,7 @@ public class XmlPublisherDataRouterTest {
     private Table table;
     private Output output;
 
-    public XmlPublisherDataRouterTest() throws Exception {
-        super();
+    public XmlPublisherDataRouterTest() {
     }
 
     @Before
