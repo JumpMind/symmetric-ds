@@ -33,7 +33,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.exception.ParseException;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

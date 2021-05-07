@@ -16,6 +16,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.security.ISecurityService;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.SymmetricException;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
@@ -371,7 +372,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
 
     protected void createStagingFile() {
         this.fileName = table.getName() + this.getBatch().getBatchId() + ".csv";
-        stagedInputFile = stagingManager.create("bulkloaddir", this.fileName);
+        stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD, this.fileName);
     }
 
 }

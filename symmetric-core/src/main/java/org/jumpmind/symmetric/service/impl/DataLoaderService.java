@@ -37,6 +37,7 @@ import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -68,7 +69,6 @@ import org.jumpmind.symmetric.common.ContextConstants;
 import org.jumpmind.symmetric.common.ErrorConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.ext.INodeRegistrationListener;
-import org.jumpmind.symmetric.io.IoConstants;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.Batch.BatchType;
 import org.jumpmind.symmetric.io.data.DataContext;
@@ -567,12 +567,10 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 ctx.put(Constants.DATA_CONTEXT_TARGET_NODE_EXTERNAL_ID, targetNode.getExternalId());
             }
 
-            if (sourceNode != null) {
-                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
-                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
-                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
-                ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
-            }
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE, sourceNode);
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_ID, sourceNode.getNodeId());
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_GROUP_ID, sourceNode.getNodeGroupId());
+            ctx.put(Constants.DATA_CONTEXT_SOURCE_NODE_EXTERNAL_ID, sourceNode.getExternalId());
 
             for (ILoadSyncLifecycleListener l : extensionService
                     .getExtensionPointList(ILoadSyncLifecycleListener.class)) {
@@ -606,14 +604,14 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                 OutputStreamWriter outWriter = null;
                 if (out != null) {
                     try {                        
-                        outWriter = new OutputStreamWriter(out, IoConstants.ENCODING);
+                        outWriter = new OutputStreamWriter(out, StandardCharsets.UTF_8);
                         long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
                         while (!executor.awaitTermination(keepAliveMillis, TimeUnit.MILLISECONDS)) {
                             outWriter.write("1=1&");
                             outWriter.flush();
                         }
                     } catch (Exception ex) {
-                        log.warn("Failed to send keep alives to " + sourceNode + " " + ex.toString());
+                        log.warn("Failed to send keep alives to " + sourceNode + " " + ex);
                         awaitTermination(executor);          
                     }
                 } else {
@@ -1099,6 +1097,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                                 log.info("Bulk loader failed in class {} with message: {}", e.getClass().getName(), e.getMessage());
                                 
                                 ctx.put(ContextConstants.CONTEXT_BULK_WRITER_TO_USE, "default");
+                                ctx.setLastError(null);
                                 listener.currentBatch.setStatus(Status.OK);
                                 processor.setDataReader(buildDataReader(batchInStaging, resource));
                                 try {

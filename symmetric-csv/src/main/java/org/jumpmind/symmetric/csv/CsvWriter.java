@@ -586,7 +586,7 @@ public class CsvWriter {
         int found = original.indexOf(pattern);
 
         if (found > -1) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             int start = 0;
 
             while (found != -1) {

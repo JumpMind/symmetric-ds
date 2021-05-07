@@ -20,15 +20,40 @@
  */
 package org.jumpmind.symmetric.model;
 
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.COMMON_FLAG;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_DELETE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_INSERT_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_UPDATE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_MILLIS;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.FAILED_DATA_ID;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.LOAD_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.LOAD_FLAG;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.LOAD_ID;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.OTHER_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.RELOAD_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.ROUTER_MILLIS;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.SENT_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.TRANSFORM_LOAD_MILLIS;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.FALLBACKINSERTCOUNT;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.FALLBACKUPDATECOUNT;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.FILTERMILLIS;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.LOADMILLIS;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.ROWCOUNT;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.TRANSFORMMILLIS;
+
 import java.util.Date;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.util.Statistics;
-import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.*;
-import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.*;
 
 public class IncomingBatch extends AbstractBatch {
 
@@ -151,17 +176,4 @@ public class IncomingBatch extends AbstractBatch {
         return "IncomingBatch " + getBatchId();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || !(o instanceof IncomingBatch)) {
-            return false;
-        }
-        IncomingBatch b = (IncomingBatch) o;
-        return getBatchId() == b.getBatchId() && StringUtils.equals(getNodeId(), b.getNodeId());
-    }
-
-    @Override
-    public int hashCode() {
-        return (String.valueOf(getBatchId()) + "-" + getNodeId()).hashCode();
-    }
 }

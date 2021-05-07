@@ -175,7 +175,7 @@ public class AcknowledgeService extends AbstractService implements IAcknowledgeS
                                 (batch.getSqlCode() != 0 ? "[" + batch.getSqlState() + "," + batch.getSqlCode() + "] " : ""), batch.getSqlMessage());
                         RouterStats routerStats = engine.getStatisticManager().getRouterStatsByBatch(batch.getBatchId());
                         if (routerStats != null) {
-                            log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats.toString());
+                            log.info("Router stats for batch " + outgoingBatch.getBatchId() + ": " + routerStats);
                         }
                     }
                 } else if (status == Status.RS) {

@@ -6,7 +6,7 @@ import java.util.List;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 
-public class BatchErrorWrapper implements Comparable {
+public class BatchErrorWrapper implements Comparable<Object> {
     List<OutgoingBatch> outgoingErrors;
     List<IncomingBatch> incomingErrors;
     

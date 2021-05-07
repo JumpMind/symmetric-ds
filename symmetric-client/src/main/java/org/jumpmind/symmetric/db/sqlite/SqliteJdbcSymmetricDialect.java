@@ -3,11 +3,14 @@ package org.jumpmind.symmetric.db.sqlite;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.apache.commons.dbcp2.DelegatingConnection;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.sqlite.Function;
+import org.sqlite.SQLiteConnection;
 
 public class SqliteJdbcSymmetricDialect extends SqliteSymmetricDialect {
 
@@ -21,9 +24,10 @@ public class SqliteJdbcSymmetricDialect extends SqliteSymmetricDialect {
         trans.executeCallback(new IConnectionCallback<Object>() {
             @Override
             public Object execute(Connection con) throws SQLException {
-                org.sqlite.SQLiteConnection unwrapped = ((org.sqlite.SQLiteConnection)((org.apache.commons.dbcp2.DelegatingConnection)con).getInnermostDelegate());
+                @SuppressWarnings("rawtypes")
+				SQLiteConnection unwrapped = ((SQLiteConnection)((DelegatingConnection)con).getInnermostDelegate());
                 
-                org.sqlite.Function.create(unwrapped, name, new org.sqlite.Function() {
+                Function.create(unwrapped, name, new Function() {
                     @Override
                     protected void xFunc() throws SQLException {
                         this.result(result);

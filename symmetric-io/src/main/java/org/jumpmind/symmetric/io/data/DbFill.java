@@ -332,7 +332,7 @@ public class DbFill {
                         }
                     }
                     if (verbose) {
-                        log.info("Common dependency for table {}: {}", table.getName(), sb.toString());
+                        log.info("Common dependency for table {}: {}", table.getName(), sb);
                     }
                 }
             }
@@ -608,7 +608,7 @@ public class DbFill {
             int rowNum = getRand().nextInt(rows.size());
             row = rows.get(rowNum);
             if (verbose) {
-                log.info("Row from " + table.getName() + ": " + row.toString());
+                log.info("Row from " + table.getName() + ": " + row);
             }
         } else {
             if (cascading) {
@@ -1053,7 +1053,10 @@ public class DbFill {
 
     private Date randomDate() {
         // Random date between 1970 and 2020
-        long l = Math.abs(getRand().nextLong());
+        long l = getRand().nextLong();
+        if (l < 0) {
+        	l *= -1l;
+        }
         long ms = (50L * 365 * 24 * 60 * 60 * 1000);
         return new Date(l % ms);
     }
@@ -1182,7 +1185,7 @@ public class DbFill {
         }
         
         if (verbose) {
-            log.info("Generated row for " + table.getName() + " " + row.toString());
+            log.info("Generated row for " + table.getName() + " " + row);
         }
         currentRowValues.put(table.getName(), row);
         return row;
@@ -1381,7 +1384,7 @@ public class DbFill {
         }
         
         public boolean equals(Object o) {
-            return o.hashCode() == hashCode(); 
+            return o != null && o.hashCode() == hashCode(); 
         }
     }
     

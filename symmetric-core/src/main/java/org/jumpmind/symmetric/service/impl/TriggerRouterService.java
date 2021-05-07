@@ -454,8 +454,12 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }    
 
     public List<TriggerHistory> getActiveTriggerHistories(String tableName) {
-        return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
-                new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
+        if (tableName != null) {
+            return sqlTemplate.query(getSql("allTriggerHistSql", "triggerHistBySourceTableWhereSql"),
+                    new TriggerHistoryMapper(), tableName, tableName.toLowerCase(), tableName.toUpperCase());
+        } else {
+            return new ArrayList<TriggerHistory>();
+        }
     }
 
     protected List<Trigger> buildTriggersForSymmetricTables(String version,
@@ -561,7 +565,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
         // little trick to force the rebuild of SymmetricDS triggers every time
         // there is a new version of SymmetricDS
-        trigger.setLastUpdateTime(new Date(Version.version().hashCode()));
+        trigger.setLastUpdateTime(new Date(Version.version().hashCode() * 1000l));
         return trigger;
     }
 

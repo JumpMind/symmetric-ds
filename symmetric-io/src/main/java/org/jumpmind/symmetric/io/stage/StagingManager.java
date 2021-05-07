@@ -125,12 +125,14 @@ public class StagingManager implements IStagingManager {
             } else {     
                 try {
                     String parentDirectory = "";
-                    if (entry.getParent() != null) {
-                        parentDirectory = entry.getParent().toString();
+                    Path parentPath = entry.getParent();
+                    if (parentPath != null) {
+                        parentDirectory = parentPath.toString();
                     }
                     String entryName = "";
-                    if (entry.getFileName() != null) {
-                        entryName = entry.getFileName().toString();
+                    Path entryPath = entry.getFileName();
+                    if (entryPath != null) {
+                        entryName = entryPath.toString();
                     }
                     String stagingPath = StagedResource.toPath(directory, 
                             new File((parentDirectory + "/" + entryName)));

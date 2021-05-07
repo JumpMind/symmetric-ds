@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,10 +36,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.common.Constants;
-import org.jumpmind.symmetric.io.IoConstants;
+import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
-import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.web.WebConstants;
 import org.slf4j.Logger;
@@ -151,7 +151,7 @@ abstract public class AbstractTransportManager {
             if (value == null) {
                 value = "";
             }
-            builder.append(name).append("=").append(URLEncoder.encode(value.toString(), IoConstants.ENCODING));
+            builder.append(name).append("=").append(URLEncoder.encode(value.toString(), StandardCharsets.UTF_8.name()));
         } catch (IOException ex) {
             throw new IoException(ex);
         }
@@ -220,7 +220,7 @@ abstract public class AbstractTransportManager {
         for (String param : tokens) {
             String[] nameValuePair = param.split("=");
             if (nameValuePair.length == 2) {
-                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], IoConstants.ENCODING));
+                parameters.put(nameValuePair[0], URLDecoder.decode(nameValuePair[1], StandardCharsets.UTF_8.name()));
             }
         }
         return parameters;

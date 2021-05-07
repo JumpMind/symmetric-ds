@@ -27,7 +27,6 @@ import java.sql.DataTruncation;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -1564,7 +1563,7 @@ public class DataService extends AbstractService implements IDataService {
                             requests.put(triggerHistory.getTriggerHistoryId(), request);
                         }
                     } else {
-                        log.warn("The table defined by trigger_hist row %d no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());                            
+                        log.warn("The table defined by trigger_hist row {} no longer exists.  A load will not be queue'd up for the table", triggerHistory.getTriggerHistoryId());                            
                     }
                     if (!transactional) {     
                         transaction.commit();
@@ -1660,8 +1659,8 @@ public class DataService extends AbstractService implements IDataService {
                     return totalBatchCount;
                 }
                 
-                List<TriggerHistory> triggerHistories = Arrays.asList(fileSyncSnapshotHistory);
-                List<TriggerRouter> triggerRouters = Arrays.asList(fileSyncSnapshotTriggerRouter);
+                List<TriggerHistory> triggerHistories = Collections.singletonList(fileSyncSnapshotHistory);
+                List<TriggerRouter> triggerRouters = Collections.singletonList(fileSyncSnapshotTriggerRouter);
                 Map<Integer, List<TriggerRouter>> triggerRoutersByHistoryId = new HashMap<Integer, List<TriggerRouter>>();
                 triggerRoutersByHistoryId.put(fileSyncSnapshotHistory.getTriggerHistoryId(), triggerRouters);
                 
@@ -2552,7 +2551,9 @@ public class DataService extends AbstractService implements IDataService {
             cursor = selectDataFor(startBatchId, nodeId, false);
             data = cursor.next();
         } finally {
-            cursor.close();
+        	if (cursor != null) {
+        		cursor.close();
+        	}
         }
         if (data != null) {
             data.putCsvData(CsvData.ROW_DATA, rowData);
@@ -3009,15 +3010,13 @@ public class DataService extends AbstractService implements IDataService {
             return extensionService.getExtensionPointList(IHeartbeatListener.class);
         } else {
             List<IHeartbeatListener> listeners = new ArrayList<IHeartbeatListener>();
-            if (listeners != null) {
-                long ts = System.currentTimeMillis();
-                for (IHeartbeatListener iHeartbeatListener : extensionService.getExtensionPointList(IHeartbeatListener.class)) {
-                    Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
-                    if (lastHeartbeatTimestamp == null
-                            || lastHeartbeatTimestamp <= ts
-                                    - (iHeartbeatListener.getTimeBetweenHeartbeatsInSeconds() * 1000)) {
-                        listeners.add(iHeartbeatListener);
-                    }
+            long ts = System.currentTimeMillis();
+            for (IHeartbeatListener iHeartbeatListener : extensionService.getExtensionPointList(IHeartbeatListener.class)) {
+                Long lastHeartbeatTimestamp = lastHeartbeatTimestamps.get(iHeartbeatListener);
+                if (lastHeartbeatTimestamp == null
+                        || lastHeartbeatTimestamp <= ts
+                                - (iHeartbeatListener.getTimeBetweenHeartbeatsInSeconds() * 1000)) {
+                    listeners.add(iHeartbeatListener);
                 }
             }
             return listeners;

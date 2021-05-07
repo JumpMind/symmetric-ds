@@ -89,7 +89,7 @@ public class NodeConcurrencyInterceptor implements IInterceptor {
                 }
             }
 
-            if (configurationService.isMasterToMaster() & nodeService.isDataLoadStarted()) {
+            if (configurationService.isMasterToMaster() && nodeService.isDataLoadStarted()) {
                 NodeSecurity identity = nodeService.findNodeSecurity(nodeService.findIdentityNodeId(), true);
                 if (identity != null && nodeId != null && "registration".equals(identity.getInitialLoadCreateBy()) && 
                         !nodeId.equals(identity.getCreatedAtNodeId())) {

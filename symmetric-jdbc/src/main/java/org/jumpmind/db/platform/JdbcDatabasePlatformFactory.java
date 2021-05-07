@@ -439,8 +439,12 @@ public class JdbcDatabasePlatformFactory {
             // a greenplum database
         } finally {
             try {
-                rs.close();
-                stmt.close();
+            	if (rs != null) {
+            		rs.close();
+            	}
+            	if (stmt != null) {
+            		stmt.close();
+            	}
             } catch (SQLException ex) {
             }
         }

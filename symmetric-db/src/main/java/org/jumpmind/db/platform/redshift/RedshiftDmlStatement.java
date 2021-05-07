@@ -69,7 +69,6 @@ public class RedshiftDmlStatement extends DmlStatement {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         if (dmlType == DmlType.INSERT) {

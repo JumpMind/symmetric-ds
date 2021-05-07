@@ -167,7 +167,7 @@ public abstract class AbstractFileParsingRouter extends AbstractDataRouter {
     }
     
     public String buildNodeList(Set<Node> nodes) {
-        StringBuffer sb = new StringBuffer();
+    	StringBuilder sb = new StringBuilder();
         for (Node n : nodes) {
             if (sb.length() > 0) {
                 sb.append(",");

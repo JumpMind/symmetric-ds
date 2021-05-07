@@ -235,7 +235,7 @@ public class TabularResultLayout extends VerticalLayout {
             for (Grid.Column<List<Object>, ?> col : grid.getColumns()) {
                 String colId = col.getId();
                 if (colId == null || !colId.equals("#")) {
-                    Integer index = new Integer(i);
+                    Integer index = i;
                     Binding<List<Object>, String> binding = binder.bind(new TextField(),
                             list -> list.get(index).toString(), (list, value) -> list.set(index, value));
                     col.setEditorBinding(binding);

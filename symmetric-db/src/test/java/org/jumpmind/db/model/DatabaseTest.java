@@ -233,8 +233,6 @@ public class DatabaseTest {
         
         List<Table> list = new ArrayList<Table>(4);
         Table t1 = new Table("1");
-        Table t2 = new Table("2");
-        Table t3 = new Table("3");
         Table t4 = new Table("4");
         
         t1.addForeignKey(new ForeignKey("2","2"));
@@ -250,7 +248,7 @@ public class DatabaseTest {
         
         assertTrue(missingDependencyMap.size() == 1);
         assertTrue(missingDependencyMap.containsKey(t1));
-        Iterator i = missingDependencyMap.get(t1).iterator();
+        Iterator<String> i = missingDependencyMap.get(t1).iterator();
         assertTrue(i.next().equals("2"));
         assertTrue(i.next().equals("3"));
         

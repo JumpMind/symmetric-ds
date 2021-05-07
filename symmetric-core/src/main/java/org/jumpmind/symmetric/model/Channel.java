@@ -31,7 +31,7 @@ import java.util.Date;
  */
 public class Channel implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = -8183376200537307264L;
+    private static final long serialVersionUID = 1L;
 
     private String channelId;
 

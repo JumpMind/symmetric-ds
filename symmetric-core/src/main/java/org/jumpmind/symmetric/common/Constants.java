@@ -64,6 +64,8 @@ final public class Constants {
     public static final String STAGING_CATEGORY_INCOMING = "incoming";
     
     public static final String STAGING_CATEGORY_LOG_MINER = "logminer";
+    
+    public static final String STAGING_CATEGORY_BULK_LOAD = "bulkloaddir";
 
     public static final String CLIENT_SPRING_XML = "classpath:/symmetric-client.xml";
     

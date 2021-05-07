@@ -286,14 +286,14 @@ public class PostgreSqlDdlBuilder extends AbstractDdlBuilder {
     
     @Override
     protected void writeCastExpression(Column sourceColumn, Column targetColumn, StringBuilder ddl) {
-        if(sourceColumn != null && sourceColumn.getMappedTypeCode() == Types.TIME &&
-                targetColumn != null && targetColumn.getMappedTypeCode() == Types.TIMESTAMP)
-        {
-            ddl.append("date_trunc('DAY', localtimestamp) + ");
-            printIdentifier(getColumnName(sourceColumn), ddl);
-        } else {
-            super.writeCastExpression(sourceColumn, targetColumn, ddl);
-        }
+    	if (sourceColumn != null && targetColumn != null) {
+	        if (sourceColumn.getMappedTypeCode() == Types.TIME && targetColumn.getMappedTypeCode() == Types.TIMESTAMP) {
+	            ddl.append("date_trunc('DAY', localtimestamp) + ");
+	            printIdentifier(getColumnName(sourceColumn), ddl);
+	        } else {
+	            super.writeCastExpression(sourceColumn, targetColumn, ddl);
+	        }
+    	}
     }
 
     @Override

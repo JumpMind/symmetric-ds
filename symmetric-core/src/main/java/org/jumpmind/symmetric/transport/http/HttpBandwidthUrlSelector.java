@@ -71,7 +71,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
     }
 
     public String resolveUrl(URI uri) {
-        if (uri.toString().startsWith(Constants.PROTOCOL_EXT)) {
+        if (uri.toASCIIString().startsWith(Constants.PROTOCOL_EXT)) {
             Map<String, String> params = getParameters(uri);
             List<SyncUrl> urls = null;
             if (!cachedUrls.containsKey(uri)) {

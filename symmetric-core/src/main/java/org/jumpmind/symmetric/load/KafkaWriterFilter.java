@@ -46,7 +46,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.properties.TypedProperties;
@@ -184,11 +183,11 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                 rowData = data.getParsedData(CsvData.OLD_DATA);
             }
 
-            StringBuffer kafkaText = new StringBuffer();
+            StringBuilder kafkaText = new StringBuilder();
             String kafkaKey = null;
 
             if (messageBy.equals(KAFKA_MESSAGE_BY_ROW)) {
-                StringBuffer sb = new StringBuffer();
+            	StringBuilder sb = new StringBuilder();
                 sb.append(table.getName()).append(":");
                 for (int i = 0; i < table.getPrimaryKeyColumnNames().length; i++) {
                     sb.append(":").append(rowData[i]);
@@ -314,7 +313,9 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     }
                     avroRecord.put("data", dataCollection);
                     try {
-                        kafkaText.append(datumToByteArray(schema, avroRecord));
+                        kafkaDataList.add(new ProducerRecord<String, Object>(kafkaDataKey, kafkaKey,
+                        		datumToByteArray(schema, avroRecord)));
+                        return false;
                     } catch (IOException ioe) {
                         throw new RuntimeException("Unable to convert row data to an Avro record", ioe);
                     }
@@ -326,17 +327,17 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public String getTableName(String dbTableName) {
-        if (tableNameCache.containsKey(dbTableName)) {
-            return tableNameCache.get(dbTableName);
-        } else {
+    	String name = tableNameCache.get(dbTableName);
+        if (name == null) {
             String[] split = dbTableName.split("_");
-            StringBuffer tableName = new StringBuffer();
+            StringBuilder tableName = new StringBuilder();
             for (String part : split) {
                 tableName.append(StringUtils.capitalize(part.toLowerCase()));
             }
             tableNameCache.put(dbTableName, tableName.toString());
-            return tableName.toString();
+            name = tableName.toString();
         }
+        return name;
     }
 
     public String getColumnName(String dbTableName, String dbColumnName, Object bean) {
@@ -352,6 +353,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             for (PropertyDescriptor pd : PropertyUtils.getPropertyDescriptors(bean)) {
                 if (pd.getName().toLowerCase().equals(dbColumnNameSimple)) {
                     columnName = pd.getName();
+                    break;
                 }
             }
 
@@ -365,17 +367,14 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
     }
 
     public Class<?> getClassByTableName(String tableName) {
-        Class<?> classMatch = null;
+        Class<?> classMatch = tableClassCache.get(tableName);
 
-        if (tableClassCache.containsKey(tableName)) {
-            classMatch = tableClassCache.get(tableName);
-        } else {
-
+        if (classMatch == null) {
             try {
                 log.debug("Looking for an exact match for a POJO based on tableName " + tableName);
                 classMatch = Class.forName(schemaPackage + "." + tableName);
             } catch (Exception e) {
-                if (schemaPackageClassNames == null || schemaPackageClassNames.size() == 0) {
+                if (schemaPackageClassNames.size() == 0) {
                     scanSchemaPackage();
                 }
                 String fullTableName = schemaPackage + "." + tableName;

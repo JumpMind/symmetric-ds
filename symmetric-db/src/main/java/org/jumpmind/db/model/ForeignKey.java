@@ -67,7 +67,7 @@ public class ForeignKey implements Cloneable, Serializable {
     private String foreignTableName;
 
     /** The references between local and remote columns. */
-    private ListOrderedSet references = new ListOrderedSet();
+    private ListOrderedSet<Reference> references = new ListOrderedSet<Reference>();
 
     /** Whether this foreign key has an associated auto-generated index. */
     private boolean autoIndexPresent;
@@ -321,14 +321,14 @@ public class ForeignKey implements Cloneable, Serializable {
 
         result.name = name;
         result.foreignTableName = foreignTableName;
-        result.references = new ListOrderedSet();
+        result.references = new ListOrderedSet<Reference>();
         result.foreignTableCatalog = foreignTableCatalog;
         result.foreignTableSchema = foreignTableSchema;
         result.onDeleteAction = getOnDeleteAction();
         result.onUpdateAction = getOnUpdateAction();
         
-        for (Iterator<?> it = references.iterator(); it.hasNext();) {
-            result.references.add(((Reference) it.next()).clone());
+        for (Iterator<Reference> it = references.iterator(); it.hasNext();) {
+            result.references.add((Reference) it.next().clone());
         }
 
         return result;
@@ -395,7 +395,6 @@ public class ForeignKey implements Cloneable, Serializable {
      * @return <code>true</code> if this foreign key is equal (ignoring case) to
      *         the given one
      */
-    @SuppressWarnings("unchecked")
     public boolean equalsIgnoreCase(ForeignKey otherFk) {
         boolean checkName = isCheckName(otherFk);
 

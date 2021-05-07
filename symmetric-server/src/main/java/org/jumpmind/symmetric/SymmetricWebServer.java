@@ -305,7 +305,11 @@ public class SymmetricWebServer {
     public RestService getRestService() {
         ServletContext servletContext = getServletContext();
         WebApplicationContext rootContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-        return rootContext.getBean(RestService.class);
+        RestService restService = null;
+        if (rootContext != null) {
+        	restService = rootContext.getBean(RestService.class);
+        }
+        return restService;
     }
 
     public ISymmetricEngine getEngine() {

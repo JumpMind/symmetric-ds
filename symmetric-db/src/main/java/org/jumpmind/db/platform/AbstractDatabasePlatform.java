@@ -59,8 +59,8 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.IIndex;
 import org.jumpmind.db.model.IndexColumn;
 import org.jumpmind.db.model.Reference;
-import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.DmlStatement;
@@ -419,15 +419,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             if (type == Types.DATE || type == Types.TIMESTAMP || type == Types.TIME) {
                 objectValue = parseDate(type, value, useVariableDates);
             } else if (type == Types.CHAR) {
-                String charValue = value.toString();
-                if ((StringUtils.isBlank(charValue) && getDdlBuilder().getDatabaseInfo().isBlankCharColumnSpacePadded())
-                        || (StringUtils.isNotBlank(charValue) && getDdlBuilder().getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
+                if ((StringUtils.isBlank(value) && getDdlBuilder().getDatabaseInfo().isBlankCharColumnSpacePadded())
+                        || (StringUtils.isNotBlank(value) && getDdlBuilder().getDatabaseInfo().isNonBlankCharColumnSpacePadded())) {
                     if (column.getSizeAsInt() != column.getCharOctetLength()) {
                         // using multiple-byte character set, the size is maximum number of characters
-                        objectValue = StringUtils.rightPad(charValue, column.getSizeAsInt(), ' ');
+                        objectValue = StringUtils.rightPad(value, column.getSizeAsInt(), ' ');
                     } else {
                         // single-byte character set or field defined as number of bytes
-                        objectValue = charValue + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes().length);
+                        objectValue = value + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes().length);
                     }
                 }
             } else if (type == Types.BIGINT) {
@@ -573,14 +572,14 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
             if (row.get(name) != null) {
                 if (isColumnPositionUsingTemplate[i]) {
                     concatenatedRow.append(row.getString(name));
+                } else if (type == Types.BOOLEAN || type == Types.BIT) {
+                    concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfNumericType()) {
                     concatenatedRow.append(row.getString(name));
                 } else if (!column.isTimestampWithTimezone() && (type == Types.DATE || type == Types.TIME)) {
                     concatenatedRow.append("\"").append(getDateTimeStringValue(name, type, row, false)).append("\"");
                 } else if (!column.isTimestampWithTimezone() && type == Types.TIMESTAMP) {
                     concatenatedRow.append("\"").append(getTimestampStringValue(name, type, row, false)).append("\"");
-                } else if (type == Types.BOOLEAN || type == Types.BIT) {
-                    concatenatedRow.append(row.getBoolean(name) ? "1" : "0");
                 } else if (column.isOfBinaryType()) {
                     byte[] bytes = row.getBytes(name);
                     if (bytes.length == 0) {

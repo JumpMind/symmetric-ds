@@ -164,7 +164,7 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                             String[] columnValues = rowData.values().toArray(
                                     new String[rowData.values().size()]);
                             data.putParsedData(CsvData.ROW_DATA, columnValues);
-                            rowData = new LinkedHashMap<String, String>();
+                            rowData.clear();
                             if (lastTable == null || !lastTable.equals(table)) {
                                 return table;
                             } else {

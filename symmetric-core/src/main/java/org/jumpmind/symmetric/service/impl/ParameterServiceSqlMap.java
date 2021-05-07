@@ -20,14 +20,12 @@
  */
 package org.jumpmind.symmetric.service.impl;
 
-import java.util.Map;
-
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class ParameterServiceSqlMap extends AbstractSqlMap {
 
-    public ParameterServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) { 
-        super(platform, replacementTokens);
+    public ParameterServiceSqlMap(IDatabasePlatform platform, String tablePrefix) { 
+        super(platform, tablePrefix);
 
         putSql("updateParameterSql" ,"" + 
 "update $(parameter) set param_value=?, last_update_by=?, last_update_time=current_timestamp " +

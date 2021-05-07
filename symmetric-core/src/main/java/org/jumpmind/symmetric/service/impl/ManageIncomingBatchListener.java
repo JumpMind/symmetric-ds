@@ -218,7 +218,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 }
 
                 Batch batch = context.getBatch();
-                isNewErrorForCurrentBatch = batch.getLineCount() != currentBatch.getFailedLineNumber();
+                isNewErrorForCurrentBatch = batch != null && batch.getLineCount() != currentBatch.getFailedLineNumber();
     
                 if (context.getWriter() != null
                         && context.getReader().getStatistics().get(batch) != null

@@ -113,7 +113,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
     Label status;
 
-    SqlSuggester suggester;
+    transient SqlSuggester suggester;
 
     boolean canceled = false;
 

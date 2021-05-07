@@ -141,41 +141,40 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
          * ProtocolVersion.V3), TUPLE(49, ProtocolVersion.V3),
          */
         
-        if (dataType == DataType.Name.INT.name()) {
+        if (dataType.equals(DataType.Name.INT.name())) {
             return Types.INTEGER;
-        } else if (dataType == DataType.Name.BIGINT.name()) {
+        } else if (dataType.equals(DataType.Name.BIGINT.name())) {
             return Types.BIGINT;
-        } else if (dataType == DataType.Name.SMALLINT.name()) {
+        } else if (dataType.equals(DataType.Name.SMALLINT.name())) {
             return Types.SMALLINT;
-        } else if (dataType == DataType.Name.TINYINT.name()) {
+        } else if (dataType.equals(DataType.Name.TINYINT.name())) {
             return Types.TINYINT;
-        } else if (dataType == DataType.Name.BOOLEAN.name()) {
+        } else if (dataType.equals(DataType.Name.BOOLEAN.name())) {
             return Types.BOOLEAN;
-        } else if (dataType == DataType.Name.DECIMAL.name()) {
+        } else if (dataType.equals(DataType.Name.DECIMAL.name())) {
             return Types.DECIMAL;
-        } else if (dataType == DataType.Name.DOUBLE.name()) {
+        } else if (dataType.equals(DataType.Name.DOUBLE.name())) {
             return Types.DOUBLE;
-        } else if (dataType == DataType.Name.FLOAT.name()) {
+        } else if (dataType.equals(DataType.Name.FLOAT.name())) {
             return Types.FLOAT;
-        } else if (dataType == DataType.Name.TIMESTAMP.name()) {
+        } else if (dataType.equals(DataType.Name.TIMESTAMP.name())) {
             return Types.TIMESTAMP;
-        } else if (dataType == DataType.Name.DATE.name()) {
+        } else if (dataType.equals(DataType.Name.DATE.name())) {
             return Types.DATE;
-        } else if (dataType == DataType.Name.TIME.name()) {
+        } else if (dataType.equals(DataType.Name.TIME.name())) {
             return Types.TIME;
-        } else if (dataType == DataType.Name.VARCHAR.name() || dataType == DataType.Name.TEXT.name()) {
+        } else if (dataType.equals(DataType.Name.VARCHAR.name()) || dataType.equals(DataType.Name.TEXT.name())) {
             return Types.VARCHAR;
-        } else if (dataType == DataType.Name.UUID.name()) {
+        } else if (dataType.equals(DataType.Name.UUID.name())) {
             return Types.JAVA_OBJECT;
-        } else if (dataType == DataType.Name.LIST.name()) {
+        } else if (dataType.equals(DataType.Name.LIST.name())) {
             return Types.STRUCT;
-        } else if (dataType == DataType.Name.SET.name()) {
+        } else if (dataType.equals(DataType.Name.SET.name())) {
             return Types.REF;
-        } else if (dataType == DataType.Name.MAP.name()) {
+        } else if (dataType.equals(DataType.Name.MAP.name())) {
             return Types.OTHER;
         }
         return Types.VARCHAR;
-
     }
 
 }

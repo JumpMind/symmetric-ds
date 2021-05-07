@@ -216,11 +216,10 @@ public class SymmetricEngineHolder {
                         if (enginesDir != null) {
                             files = enginesDir.listFiles();
                         }
-                    }
-                    
-                    validateEngineFiles(files); 
+                    } 
 
                     if (files != null) {
+                    	validateEngineFiles(files);
                         boolean found = false;
                         for (int i = 0; i < files.length; i++) {
                             File file = files[i];
@@ -292,14 +291,12 @@ public class SymmetricEngineHolder {
         File file = new File(propertiesFile);
         String engineName = FilenameUtils.removeExtension(file.getName());
         try {
-
             Properties engineProperties = getEngineProperties(file);
             TypedProperties properties = new TypedProperties(engineProperties);
             engineName = getEngineName(properties);
             validateRequiredProperties(properties);
             
-            engine = new ServerSymmetricEngine(propertiesFile != null ? file
-                    : null, springContext, this);
+            engine = new ServerSymmetricEngine(file, springContext, this);
             engine.setDeploymentType(deploymentType);
             
             String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
@@ -326,7 +323,6 @@ public class SymmetricEngineHolder {
                             + "has already been started. Please set the engine.name property in the properties file to a unique name.");
                     enginesFailed.put(file.getName(), values);
                 }
-
             }
             return engine;
         } catch (Exception e) {

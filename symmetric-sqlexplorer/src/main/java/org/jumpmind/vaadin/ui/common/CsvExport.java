@@ -122,8 +122,12 @@ public class CsvExport {
             log.error("", e);
         } finally {
             try {
-                file.delete();
-                outStream.close();
+            	if (file != null) {
+            		file.delete();
+            	}
+            	if (outStream != null) {
+            		outStream.close();
+            	}
             } catch (IOException e) {
                 log.error("Problem closing File Stream", e);
             }

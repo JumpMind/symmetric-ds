@@ -43,7 +43,7 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
 
     boolean open = true;
 
-    InternalOutgoingWithResponseTransport(OutputStream os, InputStream respIs) throws IOException {
+    InternalOutgoingWithResponseTransport(OutputStream os, InputStream respIs) {
         this.os = os;
         this.writer = TransportUtils.toWriter(os);
         this.reader = TransportUtils.toReader(respIs);

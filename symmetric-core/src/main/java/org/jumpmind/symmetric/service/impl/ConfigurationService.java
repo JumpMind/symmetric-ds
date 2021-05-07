@@ -82,7 +82,7 @@ public class ConfigurationService extends AbstractService implements IConfigurat
                 createSqlReplacementTokens()));
     }
 
-    protected void createDefaultChannels() {
+    protected final void createDefaultChannels() {
          Map<String, Channel> updatedDefaultChannels = new LinkedHashMap<String, Channel>();
         updatedDefaultChannels.put(Constants.CHANNEL_CONFIG, 
                 new Channel(Constants.CHANNEL_CONFIG, 0, 2000, 100, true, 0, true));

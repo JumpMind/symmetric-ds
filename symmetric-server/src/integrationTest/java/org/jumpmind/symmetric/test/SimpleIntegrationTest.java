@@ -1127,7 +1127,9 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         IDataService rootDataService = getServer().getDataService();
         IOutgoingBatchService rootOutgoingBatchService = getServer().getOutgoingBatchService();
-        testFlag = false;
+        synchronized(SimpleIntegrationTest.class) {
+        	testFlag = false;
+        }
         String scriptData = "org.jumpmind.symmetric.test.SimpleIntegrationTest.testFlag=true;";
         rootDataService.sendScript(TestConstants.TEST_CLIENT_EXTERNAL_ID, scriptData, false);
         clientPull();

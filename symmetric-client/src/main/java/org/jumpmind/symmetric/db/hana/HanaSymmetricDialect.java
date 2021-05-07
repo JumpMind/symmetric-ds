@@ -3,10 +3,8 @@ package org.jumpmind.symmetric.db.hana;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.Version;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
-import org.jumpmind.symmetric.db.mysql.MySqlTriggerTemplate;
 import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IParameterService;
 
@@ -90,14 +88,8 @@ public class HanaSymmetricDialect extends AbstractSymmetricDialect {
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalogName, String schema, String tableName, String triggerName) {
-        schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform
-                .getDefaultSchema()) : schema;
-
-        return platform
-                .getSqlTemplate()
-                .queryForInt(
-                        "select count(*) from triggers where trigger_name like ? and subject_table_name like ?", 
-                        new Object[] { triggerName, tableName.toUpperCase() }) > 0;
+        return platform.getSqlTemplate().queryForInt("select count(*) from triggers where trigger_name like ? and subject_table_name like ?",
+        		new Object[] { triggerName, tableName.toUpperCase() }) > 0;
     }
     
     @Override

@@ -175,11 +175,11 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         StringBuilder stackTrace = new StringBuilder();
         int count = 0;
         for (LogSummary summary : deserializeLogSummary(event)) {
-            if(summary.getMessage() != null) {
+            if (summary.getMessage() != null) {
                 stackTrace.append(summary.getMessage());
                 count++;
             }
-            if(summary.getStackTrace() != null) {
+            if (summary.getStackTrace() != null) {
                 stackTrace.append(summary.getStackTrace());
                 count++;
             }
@@ -192,18 +192,18 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
     
     protected static List<String> deserializeOfflineNodes(MonitorEvent event) throws IOException {
         List<String> nodes = null;
-        if(event.getDetails() != null) {
+        if (event.getDetails() != null) {
             new Gson().fromJson(event.getDetails(), new TypeToken<List<String>>(){}.getType());
         }
-        if(nodes == null) {
+        if (nodes == null) {
             nodes = Collections.emptyList();
         }
         return nodes;
     }
     
-    protected static BatchErrorWrapper deserializeBatches(MonitorEvent event) throws IOException {
+    protected static BatchErrorWrapper deserializeBatches(MonitorEvent event) {
         BatchErrorWrapper batches = null;
-        if(event.getDetails() != null) {
+        if (event.getDetails() != null) {
             batches = new Gson().fromJson(event.getDetails(), BatchErrorWrapper.class);
         }
         return batches;

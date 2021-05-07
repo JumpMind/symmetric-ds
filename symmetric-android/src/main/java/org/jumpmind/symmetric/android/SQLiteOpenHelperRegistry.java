@@ -37,4 +37,7 @@ public class SQLiteOpenHelperRegistry {
         return sqliteOpenHelpers.get(name);
     }
 
+    public static void clear() {
+    	sqliteOpenHelpers.clear();
+    }
 }

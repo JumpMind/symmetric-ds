@@ -13,6 +13,7 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.csv.CsvWriter;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import nl.cad.tpsparse.tps.TpsFile;
 import nl.cad.tpsparse.tps.record.DataRecord;
 import nl.cad.tpsparse.tps.record.FieldDefinitionRecord;
@@ -148,7 +149,7 @@ public class TPSRouter extends AbstractFileParsingRouter implements IDataRouter,
     }
     @Override
     public String getColumnNames() {
-        StringBuffer columns = new StringBuffer();
+    	StringBuilder columns = new StringBuilder();
         try {
             for (int i = 0; i < fields.size(); i++) {
                 if (i > 0) { columns.append(","); }
@@ -162,6 +163,7 @@ public class TPSRouter extends AbstractFileParsingRouter implements IDataRouter,
     }
 
     @Override
+    @SuppressFBWarnings("ITU_INAPPROPRIATE_TOSTRING_USE")
     public Map<Integer, String> getTableNames(String tableName, File file) throws IOException {
         tpsFile = new TpsFile(file);
         Map<Integer,String> tableNames = new HashMap<Integer, String>();

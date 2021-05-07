@@ -182,7 +182,7 @@ public class DbValueComparator {
         } else if (sourceValue instanceof String) {
             return ((String)sourceValue).compareTo((String)targetValue);
         } else {
-            if (sourceValue.equals(targetValue)) {
+            if (sourceValue != null && sourceValue.equals(targetValue)) {
                 return 0;
             } else {
                 return 1;

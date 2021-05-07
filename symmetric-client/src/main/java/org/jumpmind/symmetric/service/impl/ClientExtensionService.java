@@ -27,6 +27,7 @@ import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -48,10 +49,10 @@ public class ClientExtensionService extends ExtensionService {
         if (springContext != null) {
             Map<String, IExtensionPoint> extensionPointMap = new TreeMap<String, IExtensionPoint>();
             extensionPointMap.putAll(springContext.getBeansOfType(IExtensionPoint.class));
-            if (springContext.getParentBeanFactory() != null
-                    && springContext.getParentBeanFactory() instanceof ListableBeanFactory) {
-                extensionPointMap.putAll(((ListableBeanFactory) springContext.getParentBeanFactory())
-                        .getBeansOfType(IExtensionPoint.class));
+            BeanFactory factory = springContext.getParentBeanFactory();
+            if (factory != null && factory instanceof ListableBeanFactory) {
+            	ListableBeanFactory beanFactory = (ListableBeanFactory) factory;
+            	extensionPointMap.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
             }
             
             log.info("Found {} extension points from spring that will be registered", extensionPointMap.size());

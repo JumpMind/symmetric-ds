@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections4.Closure;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang3.StringUtils;
@@ -66,7 +65,6 @@ import org.jumpmind.db.model.PlatformColumn;
 import org.jumpmind.db.model.Reference;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.util.CallbackClosure;
 import org.jumpmind.db.util.MultiInstanceofPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -407,36 +405,6 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
     }
 
     /**
-     * Calls the given closure for all changes that are of one of the given types,
-     * and then removes them from the changes collection.
-     *
-     * @param changes
-     *            The changes
-     * @param changeTypes
-     *            The types to search for
-     * @param closure
-     *            The closure to invoke
-     */
-    protected void applyForSelectedChanges(Collection<IModelChange> changes, Class<?>[] changeTypes,
-            final Closure closure) {
-        final Predicate predicate = new MultiInstanceofPredicate(changeTypes);
-
-        // basically we filter the changes for all objects where the above
-        // predicate returns true, and for these filtered objects we invoke the
-        // given closure
-        CollectionUtils.filter(changes, new Predicate() {
-            public boolean evaluate(Object obj) {
-                if (predicate.evaluate(obj)) {
-                    closure.execute(obj);
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        });
-    }
-
-    /**
      * Processes the changes. The default argument performs several passes:
      * <ol>
      * <li>{@link org.jumpmind.db.alter.RemoveForeignKeyChange} and
@@ -465,22 +433,16 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * table/column/primary key additions or changes.</li>
      * </ol>
      */
-    @SuppressWarnings("unchecked")
     protected void processChanges(Database currentModel, Database desiredModel, List<IModelChange> changes,
             StringBuilder ddl) {
-        CallbackClosure callbackClosure = new CallbackClosure(this, "processChange",
-                new Class[] { Database.class, Database.class, null, StringBuilder.class },
-                new Object[] { currentModel, desiredModel, null, ddl });
-
         // 1st pass: removing external constraints and indices
-        applyForSelectedChanges(changes, new Class[] { RemoveForeignKeyChange.class, RemoveIndexChange.class },
-                callbackClosure);
+        processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { RemoveForeignKeyChange.class, RemoveIndexChange.class });
 
         // 2nd pass: removing tables
-        applyForSelectedChanges(changes, new Class[] { RemoveTableChange.class }, callbackClosure);
+        processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { RemoveTableChange.class });
 
         // 3rd pass: changing the structure of tables
-        Predicate predicate = new MultiInstanceofPredicate(new Class[] { RemovePrimaryKeyChange.class,
+        Predicate<IModelChange> predicate = new MultiInstanceofPredicate(new Class<?>[] { RemovePrimaryKeyChange.class,
                 AddPrimaryKeyChange.class, PrimaryKeyChange.class, RemoveColumnChange.class, AddColumnChange.class,
                 ColumnAutoIncrementChange.class, ColumnDefaultValueChange.class, ColumnRequiredChange.class,
                 ColumnDataTypeChange.class, ColumnSizeChange.class, CopyColumnValueChange.class });
@@ -488,12 +450,59 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         processTableStructureChanges(currentModel, desiredModel, CollectionUtils.select(changes, predicate), ddl);
 
         // 4th pass: adding tables
-        applyForSelectedChanges(changes, new Class[] { AddTableChange.class }, callbackClosure);
+        processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { AddTableChange.class });
+        
         // 5th pass: adding external constraints and indices
-        applyForSelectedChanges(changes, new Class[] { AddForeignKeyChange.class, AddIndexChange.class },
-                callbackClosure);
+        processChanges(currentModel, desiredModel, changes, ddl, new Class<?>[] { AddForeignKeyChange.class, AddIndexChange.class });
     }
 
+    protected void processChanges(Database currentModel, Database desiredModel, List<IModelChange> changes,
+            StringBuilder ddl, Class<?>[] changeTypes) {
+    	for (IModelChange change : changes) {
+    		for (Class<?> changeType : changeTypes) {
+    			if (change.getClass().equals(changeType)) {
+    				if (change.getClass().equals(AddTableChange.class)) {
+    					processChange(currentModel, desiredModel, (AddTableChange) change, ddl);
+    				} else if (change.getClass().equals(RemoveTableChange.class)) {
+    					processChange(currentModel, desiredModel, (RemoveTableChange) change, ddl);
+    				} else if (change.getClass().equals(AddIndexChange.class)) {
+    					processChange(currentModel, desiredModel, (AddIndexChange) change, ddl);
+    				} else if (change.getClass().equals(RemoveIndexChange.class)) {
+    					processChange(currentModel, desiredModel, (RemoveIndexChange) change, ddl);
+    				} else if (change.getClass().equals(AddForeignKeyChange.class)) {
+    					processChange(currentModel, desiredModel, (AddForeignKeyChange) change, ddl);
+    				} else if (change.getClass().equals(RemoveForeignKeyChange.class)) {
+    					processChange(currentModel, desiredModel, (RemoveForeignKeyChange) change, ddl);
+    				} else if (change.getClass().equals(AddPrimaryKeyChange.class)) {
+    					processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
+    				} else if (change.getClass().equals(PrimaryKeyChange.class)) {
+    					processChange(currentModel, desiredModel, (PrimaryKeyChange) change, ddl);
+    				} else if (change.getClass().equals(RemovePrimaryKeyChange.class)) {
+    					processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
+    				} else if (change.getClass().equals(AddColumnChange.class)) {
+    					processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
+    				} else if (change.getClass().equals(RemoveColumnChange.class)) {
+    					processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
+    				} else if (change.getClass().equals(ColumnAutoIncrementChange.class)) {
+    					processChange(currentModel, desiredModel, (ColumnAutoIncrementChange) change, ddl);
+    				} else if (change.getClass().equals(ColumnDefaultValueChange.class)) {
+    					processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
+    				} else if (change.getClass().equals(ColumnRequiredChange.class)) {
+    					processChange(currentModel, desiredModel, (ColumnRequiredChange) change, ddl);
+    				} else if (change.getClass().equals(ColumnDataTypeChange.class)) {
+    					processChange(currentModel, desiredModel, (ColumnDataTypeChange) change, ddl);
+    				} else if (change.getClass().equals(ColumnSizeChange.class)) {
+    					processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
+    				} else if (change.getClass().equals(CopyColumnValueChange.class)) {
+    					processChange(currentModel, desiredModel, (CopyColumnValueChange) change, ddl);
+    				} else {
+    					processChange(currentModel, desiredModel, change, ddl);
+    				}
+    			}
+    		}
+    	}
+    }
+    
     /**
      * This is a fall-through callback which generates a warning because a specific
      * change type wasn't handled.
@@ -591,7 +600,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
 
-    protected void filterChanges(Collection<TableChange> changes) {
+    protected void filterChanges(Collection<IModelChange> changes) {
 
     }
 
@@ -606,7 +615,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The change objects
      */
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Collection<TableChange> changes, StringBuilder ddl) {
+            Collection<IModelChange> changes, StringBuilder ddl) {
 
         filterChanges(changes);
 
@@ -617,8 +626,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         // we first sort the changes for the tables
         // however since the changes might contain source or target tables
         // we use the names rather than the table objects
-        for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
-            TableChange change = changeIt.next();
+        for (Iterator<IModelChange> changeIt = changes.iterator(); changeIt.hasNext();) {
+            TableChange change = (TableChange) changeIt.next();
             String name = change.getChangedTable().getName();
 
             if (!caseSensitive) {

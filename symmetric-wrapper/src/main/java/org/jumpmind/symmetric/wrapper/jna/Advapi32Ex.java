@@ -36,7 +36,7 @@ import com.sun.jna.win32.W32APIOptions;
 
 @IgnoreJRERequirement
 public interface Advapi32Ex extends Advapi32 {
-    Advapi32Ex INSTANCE = (Advapi32Ex) Native.loadLibrary("Advapi32", Advapi32Ex.class,
+    Advapi32Ex INSTANCE = (Advapi32Ex) Native.load("Advapi32", Advapi32Ex.class,
             W32APIOptions.UNICODE_OPTIONS);
 
     boolean ChangeServiceConfig2(SC_HANDLE service, int infoLevel, SERVICE_INFO info);

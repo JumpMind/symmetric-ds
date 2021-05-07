@@ -110,7 +110,10 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
 
     @Override
     protected Table lookupTableAtTarget(Table sourceTable) {
-        if (sourceTable != null && isSymmetricTable(sourceTable.getName())) {
+    	if (sourceTable == null) {
+    		throw new RuntimeException("Source table is null");
+    	}
+        if (isSymmetricTable(sourceTable.getName())) {
             return super.lookupTableAtTarget(sourceTable);
         }
         String keyspace = sourceTable.getCatalog() == null ? sourceTable.getSchema() : sourceTable.getCatalog();

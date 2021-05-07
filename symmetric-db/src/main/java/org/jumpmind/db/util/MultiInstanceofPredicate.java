@@ -20,49 +20,42 @@ package org.jumpmind.db.util;
  */
 
 import org.apache.commons.collections4.Predicate;
+import org.jumpmind.db.alter.IModelChange;
 
 /**
- * A predicate that tests whether the object is of one of the configured types. 
+ * A predicate that tests whether the object is of one of the configured types.
  * 
  * @version $Revision: $
  */
-public class MultiInstanceofPredicate implements Predicate
-{
-    /** The types to check. */
-    private Class[] _typesToCheck;
+public class MultiInstanceofPredicate implements Predicate<IModelChange> {
+	/** The types to check. */
+	private Class<?>[] _typesToCheck;
 
-    /**
-     * Creates a new predicate.
-     * 
-     * @param typesToCheck The types to check
-     */
-    public MultiInstanceofPredicate(Class[] typesToCheck)
-    {
-        _typesToCheck = typesToCheck;
-    }
+	/**
+	 * Creates a new predicate.
+	 * 
+	 * @param typesToCheck The types to check
+	 */
+	public MultiInstanceofPredicate(Class<?>[] typesToCheck) {
+		_typesToCheck = typesToCheck;
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean evaluate(Object obj)
-    {
-        if ((_typesToCheck == null) || (_typesToCheck.length == 0))
-        {
-            return true;
-        }
-        else
-        {
-            Class typeOfObj = obj.getClass();
-    
-            for (int idx = 0; idx < _typesToCheck.length; idx++)
-            {
-                if (_typesToCheck[idx].isAssignableFrom(typeOfObj))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean evaluate(IModelChange obj) {
+		if (_typesToCheck == null || _typesToCheck.length == 0) {
+			return true;
+		} else {
+			Class<?> typeOfObj = obj.getClass();
+
+			for (int idx = 0; idx < _typesToCheck.length; idx++) {
+				if (_typesToCheck[idx].isAssignableFrom(typeOfObj)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
 
 }

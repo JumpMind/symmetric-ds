@@ -115,16 +115,14 @@ public class NuoDbDdlReader extends AbstractJdbcDdlReader {
     }
     
     @Override
-    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
-            Map<String, Object> values) throws SQLException {
+    protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
 
         Table table = super.readTable(connection, metaData, values);
 
         if (table != null) {
-            determineAutoIncrementFromResultSetMetaData(connection, table,
-                    table.getColumns());
+            determineAutoIncrementFromResultSetMetaData(connection, table, table.getColumns());
+            table.setCatalog(null);
         }
-        table.setCatalog(null);
         return table;
     }
 

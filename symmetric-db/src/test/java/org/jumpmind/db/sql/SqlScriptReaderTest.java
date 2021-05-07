@@ -26,7 +26,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-@SuppressWarnings("resource")
 public class SqlScriptReaderTest {
         
     @Test

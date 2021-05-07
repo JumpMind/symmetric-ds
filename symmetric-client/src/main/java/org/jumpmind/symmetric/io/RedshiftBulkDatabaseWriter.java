@@ -38,16 +38,10 @@ import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterSettings;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterErrorHandler;
 import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
-import org.jumpmind.symmetric.io.stage.IStagedResource;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class RedshiftBulkDatabaseWriter extends CloudBulkDatabaseWriter {
-
-    protected IStagingManager stagingManager;
-    protected IStagedResource stagedInputFile;
-    protected boolean needsExplicitIds;
-    protected Table table = null;
 
     private String appendToCopyCommand;
     

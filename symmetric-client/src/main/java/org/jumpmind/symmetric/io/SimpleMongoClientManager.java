@@ -53,7 +53,7 @@ public class SimpleMongoClientManager implements IMongoClientManager {
     }
 
     @Override
-    public synchronized  MongoClient getClient(String databaseName) {
+    public synchronized MongoClient getClient(String databaseName) {
         MongoClient client = clients.get(name);
         if (client == null) {
             int port = 27017;
@@ -68,17 +68,17 @@ public class SimpleMongoClientManager implements IMongoClientManager {
             if (parameterService != null) {
                 dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
                 username = parameterService.getString(this.name + MongoConstants.USERNAME, username);
-                String passwordString = parameterService.getString(this.name + MongoConstants.PASSWORD,
-                        null);
+                String passwordString = parameterService.getString(this.name + MongoConstants.PASSWORD, null);
                 if (passwordString != null) {
                     password = passwordString.toCharArray();
                 }
             }
-            MongoCredential credential = null;
-            credential = MongoCredential.createCredential(username, databaseName, password);
-            client = new MongoClient(Arrays.asList(new ServerAddress(host, port)),
-                    credential, new MongoClientOptions.Builder().build());
-            clients.put(name, client);
+            if (databaseName != null) {
+	            MongoCredential credential = MongoCredential.createCredential(username, databaseName, password);
+	            client = new MongoClient(Arrays.asList(new ServerAddress(host, port)),
+	                    credential, new MongoClientOptions.Builder().build());
+	            clients.put(name, client);
+            }
         }
         return client;
     }

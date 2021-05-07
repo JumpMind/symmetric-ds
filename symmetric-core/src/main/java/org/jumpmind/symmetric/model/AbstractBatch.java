@@ -726,13 +726,19 @@ public class AbstractBatch implements Serializable {
     public void setProcessedRowCount(long processedRowCount) {
         this.processedRowCount = processedRowCount;
     }
-    
+
     @Override
-    public boolean equals(Object other) {
-        if (other instanceof AbstractBatch) {
-            AbstractBatch otherBatch = (AbstractBatch) other;
-            return getNodeBatchId().equals(otherBatch.getNodeBatchId());
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof AbstractBatch)) {
+            return false;
         }
-        return false;
+        AbstractBatch b = (AbstractBatch) o;
+        return getBatchId() == b.getBatchId() && StringUtils.equals(getNodeId(), b.getNodeId());
     }
+
+    @Override
+    public int hashCode() {
+        return (String.valueOf(getBatchId()) + "-" + getNodeId()).hashCode();
+    }
+
 }

@@ -100,7 +100,9 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     
                     processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 } catch (Exception e) {
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                	if (processInfo != null) {
+                		processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                	}
                     log.error("Error while queuing initial loads", e);
                 } finally {
                     if (!force) {
@@ -116,7 +118,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
     	List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
         for (ProcessInfo info : infos) {
             if (info.getCurrentLoadId() == status.getLoadId()) {
-                log.info("Sending interrupt to " + info.getKey().toString());
+                log.info("Sending interrupt to " + info.getKey());
                 info.getThread().interrupt();
             }
         }
@@ -292,7 +294,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                 || targetNodeSecurity.getNodeId().equals(targetNodeSecurity.getCreatedAtNodeId()));
                         if (registered) {
                             // Make loads unique to the target and create time
-                            String key = load.getTargetNodeId() + "::" + load.getCreateTime().toString();
+                            String key = load.getTargetNodeId() + "::" + load.getCreateTime();
                             if (!requestsSplitByLoad.containsKey(key)) {
                                 requestsSplitByLoad.put(key, new ArrayList<TableReloadRequest>());
                             }

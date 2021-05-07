@@ -22,8 +22,7 @@ package org.jumpmind.symmetric.job;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Calendar;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,13 +30,15 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.impl.ISqlMap;
 import org.jumpmind.util.AppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExtensionPoint {
 
@@ -46,10 +47,13 @@ public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExten
     private ISymmetricEngine engine;
     
     private IParameterService parameterService;
+    
+    private ISqlMap sqlMap;
 
     public OracleNoOrderHeartbeat(ISymmetricEngine engine) {
         this.engine = engine;
         this.parameterService = engine.getParameterService();
+        sqlMap = new OracleNoOrderHeartbeatSqlMap(engine.getDatabasePlatform(), parameterService.getTablePrefix());
     }
 
     public void heartbeat(Node me) {
@@ -73,35 +77,21 @@ public class OracleNoOrderHeartbeat implements IHeartbeatListener, IBuiltInExten
             log.info("Connecting for heartbeat on {} RAC nodes", dbUrlArray.length);
 
             for (String dbUrl : dbUrlArray) {
-                Connection conn = null;
-                PreparedStatement ps = null;
+                SingleConnectionDataSource ds = null;
                 try {
                     log.debug("Connecting to {}", dbUrl);
-                    conn = DriverManager.getConnection(dbUrl.trim(), user, password);
-                    ps = conn.prepareStatement("update " + parameterService.getTablePrefix() + "_" + TableConstants.SYM_NODE_HOST +
-                            " set heartbeat_time = ? where node_id = ? and host_name = ?");
-                    ps.setTimestamp(1,  new java.sql.Timestamp(cal.getTimeInMillis()));
-                    ps.setString(2, me.getNodeId());
-                    ps.setString(3, AppUtils.getHostName());
-                    int count = ps.executeUpdate();
+                    Connection conn = DriverManager.getConnection(dbUrl.trim(), user, password);
+                    ds = new SingleConnectionDataSource(conn, true);
+                    JdbcTemplate sqlTemplate = new JdbcTemplate(ds);
+                    int count = sqlTemplate.update(sqlMap.getSql("updateNodeHost"), new Timestamp(cal.getTimeInMillis()), me.getNodeId(),
+                    		AppUtils.getHostName());
                     log.debug("Updated {} rows for heartbeat", count);
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     log.error("Unable to update heartbeat time", e);
                 } finally {
-                    if (ps != null) {
-                        try {
-                            ps.close();
-                            ps = null;
-                        } catch (Exception ee) {
-                        }
-                    }
-                    if (conn != null) {
-                        try {
-                            conn.close();
-                            conn = null;
-                        } catch (Exception ee) {
-                        }
-                    }                    
+                	if (ds != null) {
+                		ds.destroy();
+                	}
                 }
             }
         }

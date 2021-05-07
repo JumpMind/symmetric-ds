@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -477,7 +478,7 @@ public class DbExport {
         public WriterWrapper(OutputStream os) {
             if (StringUtils.isBlank(dir) && os != null) {
                 try {
-                    writer = new OutputStreamWriter(os, IoConstants.ENCODING);
+                    writer = new OutputStreamWriter(os, StandardCharsets.UTF_8.name());
                 } catch (UnsupportedEncodingException e) {
                     throw new IoException(e);
                 }

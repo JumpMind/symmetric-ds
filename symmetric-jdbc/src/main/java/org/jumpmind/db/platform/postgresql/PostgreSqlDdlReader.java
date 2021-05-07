@@ -135,12 +135,12 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
         Column column = super.readColumn(metaData, values);
         
         PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
-        if (platformColumn != null && "serial".equals(platformColumn.getType()) ||
-                "serial4".equals(platformColumn.getType())) {
-            platformColumn.setType("int4");
-        } else if (platformColumn != null && "bigserial".equals(platformColumn.getType()) ||
-                "serial8".equals(platformColumn.getType())) {
-            platformColumn.setType("int8");            
+        if (platformColumn != null) {
+	        if ("serial".equals(platformColumn.getType()) || "serial4".equals(platformColumn.getType())) {
+	            platformColumn.setType("int4");
+	        } else if ("bigserial".equals(platformColumn.getType()) || "serial8".equals(platformColumn.getType())) {
+	            platformColumn.setType("int8");
+	        }
         }
 
         if (column.getSize() != null) {

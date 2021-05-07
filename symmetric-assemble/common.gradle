@@ -244,6 +244,7 @@ subprojects { subproject ->
         jacksonVersion = '2.11.3'
         guavaVersion = '29.0-android'
         junitVersion = '4.13'
+        spotBugsVersion = '4.2.3'
         log4jVersion = '2.13.3'
         slf4jVersion = '1.7.30'
         mockitoVersion = '3.2.4'
@@ -270,6 +271,7 @@ subprojects { subproject ->
         compile "org.slf4j:slf4j-api:$slf4jVersion"
         compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
         compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+        compileOnly "com.github.spotbugs:spotbugs-annotations:$spotBugsVersion"
 
         testCompile fileTree(dir: System.getProperty("user.home") + '/.symmetricds/lib', include: '*.jar')
         testCompile "junit:junit:$junitVersion"

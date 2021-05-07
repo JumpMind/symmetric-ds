@@ -259,7 +259,6 @@ public class SymmetricLauncher extends AbstractCommandLauncher {
         }
     }
 
-    @SuppressWarnings("unused")
     protected String chooseWebDir(CommandLine line, String webDir) {
         return webDir;
     }

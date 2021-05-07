@@ -36,6 +36,7 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
@@ -242,9 +243,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
     
     protected void createStagingFile() {
-        //TODO: We should use constants for dir structure path, 
-        //      but we don't want to depend on symmetric core.
-        this.stagedInputFile = stagingManager.create("bulkloaddir",
+        this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 table.getName() + this.getBatch().getBatchId() + ".csv");
         log.debug("Using staging file {}", stagedInputFile.getFile().getPath());
     }

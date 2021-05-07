@@ -2,16 +2,13 @@ package org.jumpmind.db.platform.bigquery;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.io.FileInputStream;
 import java.util.UUID;
 
 import org.jumpmind.db.sql.AbstractJavaDriverSqlTemplate;
 import org.jumpmind.db.sql.ISqlResultsListener;
 import org.jumpmind.db.sql.ISqlStatementSource;
 
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;

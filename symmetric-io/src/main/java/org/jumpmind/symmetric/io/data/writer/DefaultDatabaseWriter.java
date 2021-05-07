@@ -86,7 +86,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     
     protected boolean isRequiresSavePointsInTransaction;
 
-    protected boolean isCteExpression;
+    protected Boolean isCteExpression;
     
     public DefaultDatabaseWriter(IDatabasePlatform platform) {
         this(platform, null, null);
@@ -101,7 +101,6 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         super(conflictResolver, settings);
         this.platform = platform;
         isRequiresSavePointsInTransaction = platform.getDatabaseInfo().isRequiresSavePointsInTransaction();
-        isCteExpression = getPlatform().getDdlBuilder().getDatabaseInfo().getCteExpression() != null;
     }
 
     public IDatabasePlatform getPlatform() {
@@ -131,15 +130,15 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     public void open(DataContext context) {
         super.open(context);
-        this.transaction = this.platform.getSqlTemplate().startSqlTransaction();
+        transaction = platform.getSqlTemplate().startSqlTransaction();
     }
 
     @Override
     public boolean start(Table table) {
-        this.currentDmlStatement = null;
+        currentDmlStatement = null;
         boolean process = super.start(table);
         if (process && targetTable != null) {
-            allowInsertIntoAutoIncrementColumns(true, this.targetTable);
+            allowInsertIntoAutoIncrementColumns(true, targetTable);
         } 
         return process;
     }    
@@ -147,16 +146,16 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     public void end(Table table) {
         super.end(table);
-        if (this.transaction.isAllowInsertIntoAutoIncrement()) {
+        if (transaction.isAllowInsertIntoAutoIncrement()) {
             // SQL Server using JDBC Batch loading requires a flush before turning off the identity insert.
-            this.transaction.flush();
+            transaction.flush();
         }
-        allowInsertIntoAutoIncrementColumns(false, this.targetTable);
+        allowInsertIntoAutoIncrementColumns(false, targetTable);
     }
 
     @Override
     public void end(Batch batch, boolean inError) {
-        this.currentDmlStatement = null;
+        currentDmlStatement = null;
         if (inError) {
             allowInsertIntoAutoIncrementColumns(false, targetTable);
         }
@@ -166,17 +165,17 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     @Override
     public void close() {
         super.close();
-        if (this.transaction != null) {
-            this.transaction.close();
+        if (transaction != null) {
+            transaction.close();
         }
     }
 
     @Override
     protected void commit(boolean earlyCommit) {
-        if (this.transaction != null) {
+        if (transaction != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-                this.transaction.commit();
+                transaction.commit();
                 if (!earlyCommit) {
                    notifyFiltersBatchCommitted();
                 } else {
@@ -191,7 +190,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
     
     protected void commit(boolean earlyCommit, ISqlTransaction newTransaction) {
-        if (this.transaction != null) {
+        if (transaction != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
                 newTransaction.commit();
@@ -210,10 +209,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
     @Override
     protected void rollback() {
-        if (this.transaction != null) {
+        if (transaction != null) {
             try {
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-                this.transaction.rollback();
+                transaction.rollback();
                 notifyFiltersBatchRolledback();
             } finally {
                 statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -223,9 +222,16 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         super.rollback();
     }
     
+    protected boolean isCteExpression() {
+    	if (isCteExpression == null) {
+    		isCteExpression = getPlatform().getDdlBuilder().getDatabaseInfo().getCteExpression() != null;
+    	}
+    	return isCteExpression;
+    }
+    
     protected void replaceCteExpression() {
-        if (isCteExpression) {
-            this.currentDmlStatement.updateCteExpression(this.batch.getSourceNodeId());
+        if (isCteExpression()) {
+            currentDmlStatement.updateCteExpression(batch.getSourceNodeId());
         }
     }
 
@@ -234,26 +240,25 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             if (isRequiresSavePointsInTransaction && conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                 statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
-                this.currentDmlStatement = null;
+                currentDmlStatement = null;
                 return LoadStatus.SUCCESS;
             }
 
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             if (requireNewStatement(DmlType.INSERT, data, false, true, null)) {
-                this.lastUseConflictDetection = true;
-                this.currentDmlStatement = getPlatform()
-                        .createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
+                lastUseConflictDetection = true;
+                currentDmlStatement = getPlatform().createDmlStatement(DmlType.INSERT, targetTable, writerSettings.getTextColumnExpression());
                 replaceCteExpression();
                 if (log.isDebugEnabled()) {
-                    log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
+                    log.debug("Preparing dml: " + currentDmlStatement.getSql());
                 }
                 prepare();
             }
             boolean isFindAndThrowException = false;
             try {
-                Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
+                Conflict conflict = writerSettings.pickConflict(targetTable, batch);
                 String[] values = (String[]) ArrayUtils.addAll(getRowData(data, CsvData.ROW_DATA),
-                        this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data, conflict)));
+                        currentDmlStatement.getLookupKeyData(getLookupDataMap(data, conflict)));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
                 statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.INSERTCOUNT), count);
@@ -308,16 +313,16 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             if (isRequiresSavePointsInTransaction && conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                 statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
-                this.currentDmlStatement = null;
+                currentDmlStatement = null;
                 return LoadStatus.SUCCESS;
             }
 
             statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
-            Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
+            Conflict conflict = writerSettings.pickConflict(targetTable, batch);
             Map<String, String> lookupDataMap = null;
             if (requireNewStatement(DmlType.DELETE, data, useConflictDetection, useConflictDetection,
                     conflict.getDetectType())) {
-                this.lastUseConflictDetection = useConflictDetection;
+                lastUseConflictDetection = useConflictDetection;
                 List<Column> lookupKeys = null;
                 if (!useConflictDetection) {
                     lookupKeys = targetTable.getPrimaryKeyColumnsAsList();
@@ -394,18 +399,18 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             && lookupDataMap.get(column.getName()) == null;
                 }
 
-                this.currentDmlStatement = getPlatform().createDmlStatement(DmlType.DELETE,
+                currentDmlStatement = getPlatform().createDmlStatement(DmlType.DELETE,
                         targetTable.getCatalog(), targetTable.getSchema(), targetTable.getName(),
                         lookupKeys.toArray(new Column[lookupKeys.size()]), null, nullKeyValues, writerSettings.getTextColumnExpression());
                 replaceCteExpression();
                 if (log.isDebugEnabled()) {
-                    log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
+                    log.debug("Preparing dml: " + currentDmlStatement.getSql());
                 }
                 prepare();
             }
             try {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
-                long count = execute(data, this.currentDmlStatement.getLookupKeyData(lookupDataMap));
+                long count = execute(data, currentDmlStatement.getLookupKeyData(lookupDataMap));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
                 statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.DELETECOUNT), count);
                 if (count > 0) {
@@ -441,7 +446,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         try {
             if (isRequiresSavePointsInTransaction && conflictResolver != null && conflictResolver.isIgnoreRow(this, data)) {
                 statistics.get(batch).increment(DataWriterStatisticConstants.IGNOREROWCOUNT);
-                this.currentDmlStatement = null;
+                currentDmlStatement = null;
                 return LoadStatus.SUCCESS;
             }
 
@@ -464,7 +469,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
 
             if (changedColumnNameList.size() > 0) {
                 Map<String, String> lookupDataMap = null;
-                Conflict conflict = writerSettings.pickConflict(this.targetTable, batch);
+                Conflict conflict = writerSettings.pickConflict(targetTable, batch);
                 if (requireNewStatement(DmlType.UPDATE, data, applyChangesOnly,
                         useConflictDetection, conflict.getDetectType())) {
                     lastApplyChangesOnly = applyChangesOnly;
@@ -567,7 +572,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                                 && lookupDataMap.get(column.getName()) == null;
                     }
 
-                    this.currentDmlStatement = getPlatform().createDmlStatement(DmlType.UPDATE,
+                    currentDmlStatement = getPlatform().createDmlStatement(DmlType.UPDATE,
                             targetTable.getCatalog(), targetTable.getSchema(),
                             targetTable.getName(),
                             lookupKeys.toArray(new Column[lookupKeys.size()]),
@@ -575,7 +580,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                             nullKeyValues, writerSettings.getTextColumnExpression());
                     replaceCteExpression();
                     if (log.isDebugEnabled()) {
-                        log.debug("Preparing dml: " + this.currentDmlStatement.getSql());
+                        log.debug("Preparing dml: " + currentDmlStatement.getSql());
                     }
                     prepare();
                 }
@@ -584,7 +589,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         .toArray(new String[changedColumnValueList.size()]);
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
                 String[] values = (String[]) ArrayUtils.addAll(rowData,
-                        this.currentDmlStatement.getLookupKeyData(lookupDataMap));
+                        currentDmlStatement.getLookupKeyData(lookupDataMap));
 
                 try {
                     long count = execute(data, values);
@@ -827,25 +832,25 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
         failureMessage.append(batch.getChannelId());
         failureMessage.append("'.\n");
         
-        if (logLastDmlDetails && this.currentDmlStatement != null) {
+        if (logLastDmlDetails && currentDmlStatement != null) {
             failureMessage.append("Failed sql was: ");
-            String dynamicSQL = logSqlBuilder.buildDynamicSqlForLog(this.currentDmlStatement.getSql(), currentDmlValues, this.currentDmlStatement.getTypes());
+            String dynamicSQL = logSqlBuilder.buildDynamicSqlForLog(currentDmlStatement.getSql(), currentDmlValues, currentDmlStatement.getTypes());
             failureMessage.append(dynamicSQL);
-            if (!dynamicSQL.equals(this.currentDmlStatement.getSql())) {                
+            if (!dynamicSQL.equals(currentDmlStatement.getSql())) {                
                 failureMessage.append("\n");
                 failureMessage.append("Failed raw sql was: ");
-                failureMessage.append(this.currentDmlStatement.getSql());
+                failureMessage.append(currentDmlStatement.getSql());
             }
             failureMessage.append("\n");
         }
         
-        if (logLastDmlDetails && this.currentDmlValues != null && this.currentDmlStatement != null) {
+        if (logLastDmlDetails && currentDmlValues != null && currentDmlStatement != null) {
             failureMessage.append("Failed sql parameters: ");
-            failureMessage.append(StringUtils.abbreviate("[" + dmlValuesToString(currentDmlValues, this.currentDmlStatement.getTypes()) + "]", 
+            failureMessage.append(StringUtils.abbreviate("[" + dmlValuesToString(currentDmlValues, currentDmlStatement.getTypes()) + "]", 
                     CsvData.MAX_DATA_SIZE_TO_PRINT_TO_LOG));
             failureMessage.append("\n");
             failureMessage.append("Failed sql parameters types: ");
-            failureMessage.append("[" + TypeMap.getJdbcTypeDescriptions(this.currentDmlStatement.getTypes()) + "]");
+            failureMessage.append("[" + TypeMap.getJdbcTypeDescriptions(currentDmlStatement.getTypes()) + "]");
             failureMessage.append("\n");
         }
         
@@ -1042,7 +1047,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
     }
 
     protected void prepare() {
-        getTransaction().prepare(this.currentDmlStatement.getSql());
+        getTransaction().prepare(currentDmlStatement.getSql());
     }
     
     protected void prepare(String sql, CsvData data) {
@@ -1054,10 +1059,10 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 currentDmlStatement.getMetaData(), false, writerSettings.isFitToColumn());
         if (log.isDebugEnabled()) {
             log.debug("Submitting data [{}] with types [{}]", 
-                    dmlValuesToString(currentDmlValues, this.currentDmlStatement.getTypes()),
-                    TypeMap.getJdbcTypeDescriptions(this.currentDmlStatement.getTypes()));
+                    dmlValuesToString(currentDmlValues, currentDmlStatement.getTypes()),
+                    TypeMap.getJdbcTypeDescriptions(currentDmlStatement.getTypes()));
         }
-        return getTransaction().addRow(data, currentDmlValues, this.currentDmlStatement.getTypes());
+        return getTransaction().addRow(data, currentDmlValues, currentDmlStatement.getTypes());
     }
 
     @Override
@@ -1071,13 +1076,13 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 if (table != null) {
                     table = table.copyAndFilterColumns(sourceTable.getColumnNames(),
                             sourceTable.getPrimaryKeyColumnNames(),
-                            this.writerSettings.isUsePrimaryKeysFromSource());
+                            writerSettings.isUsePrimaryKeysFromSource());
     
                     Column[] columns = table.getColumns();
                     for (Column column : columns) {
                         if (column != null) {
                             int typeCode = column.getMappedTypeCode();
-                            if (this.writerSettings.isTreatDateTimeFieldsAsVarchar()
+                            if (writerSettings.isTreatDateTimeFieldsAsVarchar()
                                     && (typeCode == Types.DATE || typeCode == Types.TIME || typeCode == Types.TIMESTAMP)) {
                                 column.setMappedTypeCode(Types.VARCHAR);
                             }

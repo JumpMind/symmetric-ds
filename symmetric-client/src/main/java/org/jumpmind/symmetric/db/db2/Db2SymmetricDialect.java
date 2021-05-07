@@ -60,10 +60,16 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName, String triggerName) {
-        schema = schema == null ? (platform.getDefaultSchema() == null ? null : platform.getDefaultSchema()) : schema;
+    	if (schema == null) {
+    		schema = platform.getDefaultSchema();
+    	}
+    	if (schema != null) {
+    		schema = schema.toUpperCase();
+    	}
+    	triggerName = triggerName == null ? null : triggerName.toUpperCase();
         return platform.getSqlTemplate().queryForInt(
                 "SELECT COUNT(*) FROM " + getSystemSchemaName() + ".SYSTRIGGERS WHERE NAME = ? AND SCHEMA = ?",
-                new Object[] { triggerName.toUpperCase(), schema.toUpperCase() }) > 0;
+                new Object[] { triggerName, schema }) > 0;
     }
 
     @Override

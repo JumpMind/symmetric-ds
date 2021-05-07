@@ -112,7 +112,7 @@ public class DemoUI extends UI implements IDbProvider {
         servletHolder.setAsyncSupported(true);
         servletHolder.setInitParameter("org.atmosphere.cpr.asyncSupport", JSR356AsyncSupport.class.getName());
         server.setHandler(webapp);
-        ServerContainer webSocketServer = WebSocketServerContainerInitializer.configureContext(webapp);
+        ServerContainer webSocketServer = WebSocketServerContainerInitializer.initialize(webapp);
         webSocketServer.setDefaultMaxSessionIdleTimeout(10000000);        
         server.start();
         log.info("Browse http://localhost:9090 to see the demo");

@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.io.data;
 import static org.junit.Assert.*;
 
 import org.jumpmind.symmetric.csv.CsvWriter;
-import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.junit.Test;
 
 public class CsvUtilsTest {    

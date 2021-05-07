@@ -208,7 +208,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         List<Class> classList = new ArrayList<Class>();
         List<Class<?>> interfaces = ClassUtils.getAllInterfaces(ext.getClass());
         for (Class clazz : interfaces) {
-            if (IExtensionPoint.class.isAssignableFrom(clazz) && ! clazz.getName().equals(IExtensionPoint.class.getName())) {
+            if (IExtensionPoint.class.isAssignableFrom(clazz) && ! clazz.equals(IExtensionPoint.class)) {
                 classList.add(clazz);
             }
         }

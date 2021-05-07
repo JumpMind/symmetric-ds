@@ -297,8 +297,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         // Jaybird is not able to read indices when delimited identifiers are
         // turned on,
         // so we gather the data manually using Firebird's system tables
-        @SuppressWarnings("unchecked")
-        Map<String, IIndex> indices = new ListOrderedMap();
+        Map<String, IIndex> indices = new ListOrderedMap<String, IIndex>();
         StringBuilder query = new StringBuilder();
 
         query.append("SELECT a.RDB$INDEX_NAME, b.RDB$RELATION_NAME, b.RDB$UNIQUE_FLAG,    ");
@@ -337,8 +336,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
     @Override
     protected Collection<ForeignKey> readForeignKeys(Connection connection, DatabaseMetaDataWrapper metaData,
             String tableName) throws SQLException {
-        @SuppressWarnings("unchecked")
-        Map<String,ForeignKey> fks = new ListOrderedMap();
+        Map<String,ForeignKey> fks = new ListOrderedMap<String,ForeignKey>();
         ResultSet fkData = null;
 
         try {

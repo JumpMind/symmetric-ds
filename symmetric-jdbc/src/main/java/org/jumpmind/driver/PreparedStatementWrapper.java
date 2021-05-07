@@ -1257,6 +1257,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         return value;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Object unwrap(Class arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("unwrap", arg1);
         if (preResult.isIntercepted()) {
@@ -1272,6 +1273,7 @@ public class PreparedStatementWrapper implements PreparedStatement {
         return value;
     }
 
+    @SuppressWarnings({ "rawtypes" })
     public boolean isWrapperFor(Class arg1) throws SQLException {
         InterceptResult preResult = interceptor.preExecute("isWrapperFor", arg1);
         if (preResult.isIntercepted()) {

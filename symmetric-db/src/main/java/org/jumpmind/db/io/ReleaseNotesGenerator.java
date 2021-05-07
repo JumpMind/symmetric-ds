@@ -734,9 +734,9 @@ public class ReleaseNotesGenerator {
             return true;
         } else if (previous == null && current == null) {
             return false;
-        } else if (previous.equalsIgnoreCase(current)) {
+        } else if (previous != null && previous.equalsIgnoreCase(current)) {
             return false;
-        } else if (!previous.equalsIgnoreCase(current)) {
+        } else if (previous != null && !previous.equalsIgnoreCase(current)) {
             return true;
         } else {
             return false;
@@ -957,9 +957,9 @@ public class ReleaseNotesGenerator {
         
         private int compareTo(String[] v1, String[] v2, int index) {
             int compareTo = 0;
-            if (v1.length > index && v1.length > index) {
+            if (v1.length > index) {
                 try {
-                    compareTo = new Integer(v1[index]).compareTo(new Integer(v2[index]));
+                    compareTo = Integer.compare(Integer.parseInt(v1[index]), Integer.parseInt(v2[index]));
                     if (compareTo == 0) {
                         compareTo = compareTo(v1, v2, index + 1);
                     }

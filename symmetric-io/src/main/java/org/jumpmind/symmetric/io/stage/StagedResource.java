@@ -229,7 +229,6 @@ public class StagedResource implements IStagedResource {
     }
     
 
-    @SuppressWarnings("resource")
     public synchronized BufferedReader getReader() {
         refreshLastUpdateTime();
         Thread thread = Thread.currentThread();
@@ -257,8 +256,7 @@ public class StagedResource implements IStagedResource {
     }
     
     protected BufferedReader createReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(new FileInputStream(file),
-                IoConstants.ENCODING));
+        return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8.name()));
     }
 
     private synchronized final void createReadersMap() {
@@ -328,8 +326,8 @@ public class StagedResource implements IStagedResource {
     public OutputStream getOutputStream() {
         refreshLastUpdateTime();
         try {
-            if (outputStream == null) {
-                if (file != null && file.exists()) {
+            if (outputStream == null && file != null) {
+                if (file.exists()) {
                     log.warn("getOutputStream had to delete {} because it already existed",
                             file.getAbsolutePath());
                     file.delete();
@@ -347,7 +345,6 @@ public class StagedResource implements IStagedResource {
         return new BufferedOutputStream(new FileOutputStream(file));
     }
 
-    @SuppressWarnings("resource")
     public synchronized InputStream getInputStream() {
         refreshLastUpdateTime();
         Thread thread = Thread.currentThread();

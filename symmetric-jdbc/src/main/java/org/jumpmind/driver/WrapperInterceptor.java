@@ -23,13 +23,8 @@ package org.jumpmind.driver;
 import java.lang.reflect.Constructor;
 
 import org.jumpmind.properties.TypedProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public abstract class WrapperInterceptor {
-    
-    private static Logger log = LoggerFactory.getLogger(WrapperInterceptor.class);
     
     public static WrapperInterceptor createInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
         String property = wrapped.getClass().getName() + ".interceptor";
@@ -68,5 +63,4 @@ public abstract class WrapperInterceptor {
         return wrapped;
     }
 
-    
 }

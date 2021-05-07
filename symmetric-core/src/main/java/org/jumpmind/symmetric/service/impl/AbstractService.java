@@ -32,15 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.ParameterConstants;
-import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
+import org.jumpmind.symmetric.model.AbstractBatch;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
 import org.jumpmind.symmetric.model.BatchAck;
 import org.jumpmind.symmetric.model.IncomingBatch;
@@ -125,23 +124,7 @@ abstract public class AbstractService implements IService {
     }
 
     protected Map<String, String> createSqlReplacementTokens() {
-        Map<String, String> replacementTokens = createSqlReplacementTokens(this.tablePrefix, symmetricDialect.getPlatform()
-                .getDatabaseInfo().getDelimiterToken(), symmetricDialect.getPlatform());
-        replacementTokens.putAll(symmetricDialect.getSqlReplacementTokens());
-        return replacementTokens;
-    }
-
-    public static Map<String, String> createSqlReplacementTokens(String tablePrefix,
-            String quotedIdentifier, IDatabasePlatform platform) {
-        Map<String, String> map = new HashMap<String, String>();
-        List<String> tables = TableConstants.getTablesWithoutPrefix();
-
-            for (String table : tables) {
-                map.put(table, String.format("%s%s%s", tablePrefix,
-                        StringUtils.isNotBlank(tablePrefix) ? "_" : "", table));
-            } 
-      
-        return map;
+    	return AbstractSqlMap.mergeSqlReplacementTokens(symmetricDialect.getSqlReplacementTokens(), tablePrefix);
     }
 
     public String getSql(String... keys) {
@@ -194,10 +177,8 @@ abstract public class AbstractService implements IService {
     
     protected String buildBatchWhere(List<String> nodeIds, List<String> channels,
             List<?> statuses, List<Long> loads) {
-        boolean containsErrorStatus = statuses.contains(OutgoingBatch.Status.ER)
-                || statuses.contains(IncomingBatch.Status.ER);
-        boolean containsIgnoreStatus = statuses.contains(OutgoingBatch.Status.IG)
-                || statuses.contains(IncomingBatch.Status.IG);
+        boolean containsErrorStatus = statuses.contains(AbstractBatch.Status.ER);
+        boolean containsIgnoreStatus = statuses.contains(AbstractBatch.Status.IG);
 
         StringBuilder where = new StringBuilder();
         boolean needsAnd = false;
@@ -220,7 +201,7 @@ abstract public class AbstractService implements IService {
             where.append("load_id in (:LOADS)");
             needsAnd = true;
         }
-        if (statuses != null && statuses.size() > 0) {
+        if (statuses.size() > 0) {
             if (needsAnd) {
                 where.append(" and ");
             }
@@ -283,11 +264,11 @@ abstract public class AbstractService implements IService {
                     prefix = "last_update_time " + optionSql;
             }
             if (prefix != null) {
-                if (option.equals(FilterOption.IN_LIST) || option.equals(FilterOption.NOT_IN_LIST)) {
+                if (option == FilterOption.IN_LIST || option == FilterOption.NOT_IN_LIST) {
                     where.append(prefix + " (:" + id++ + ")");
                 } else {
                     where.append(prefix + " :" + id++);
-                    if (option.equals(FilterOption.BETWEEN)) {
+                    if (option == FilterOption.BETWEEN) {
                         where.append(" and :" + id++);
                     }
                 }
@@ -317,23 +298,23 @@ abstract public class AbstractService implements IService {
                     break;
                 case "createTime":
                 case "lastUpdatedTime":
-                    if (option.equals(FilterOption.IN_LIST) || option.equals(FilterOption.NOT_IN_LIST)) {
+                    if (option == FilterOption.IN_LIST || option == FilterOption.NOT_IN_LIST) {
                         params.put(String.valueOf(id++), values);
                     } else {
                         params.put(String.valueOf(id++), new Timestamp(((Date) values.get(0)).getTime()));
-                        if (option.equals(FilterOption.BETWEEN)) {
+                        if (option == FilterOption.BETWEEN) {
                             params.put(String.valueOf(id++), new Timestamp(((Date) values.get(1)).getTime()));
                         }
                     }
                     break;
                 default:
-                    if (option.equals(FilterOption.IN_LIST) || option.equals(FilterOption.NOT_IN_LIST)) {
+                    if (option == FilterOption.IN_LIST || option == FilterOption.NOT_IN_LIST) {
                         params.put(String.valueOf(id++), values);
-                    } else if (option.equals(FilterOption.CONTAINS) || option.equals(FilterOption.NOT_CONTAINS)) {
+                    } else if (option == FilterOption.CONTAINS || option == FilterOption.NOT_CONTAINS) {
                         params.put(String.valueOf(id++), "%" + values.get(0) + "%");
                     } else {
                         params.put(String.valueOf(id++), values.get(0));
-                        if (option.equals(FilterOption.BETWEEN)) {
+                        if (option == FilterOption.BETWEEN) {
                             params.put(String.valueOf(id++), values.get(1));
                         }
                     }
@@ -477,8 +458,7 @@ abstract public class AbstractService implements IService {
     }
     
     protected void logOnce(String message) {
-        if (!logOnce.contains(message)) {
-            logOnce.add(message);
+        if (!logOnce.add(message)) {
             log.info(message);
         }
     }

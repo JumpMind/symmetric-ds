@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import org.jumpmind.db.alter.ColumnDataTypeChange;
 import org.jumpmind.db.alter.ColumnDefaultValueChange;
-import org.jumpmind.db.alter.TableChange;
+import org.jumpmind.db.alter.IModelChange;
 import org.jumpmind.db.model.Database;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
@@ -25,10 +25,10 @@ public class FirebirdDialect1DdlBuilder extends FirebirdDdlBuilder {
     }
 
     protected void processTableStructureChanges(Database currentModel, Database desiredModel,
-            Collection<TableChange> changes, StringBuilder ddl) {
-        Iterator<TableChange> iter = changes.iterator();
+            Collection<IModelChange> changes, StringBuilder ddl) {
+        Iterator<IModelChange> iter = changes.iterator();
         while (iter.hasNext()) {
-            TableChange change = iter.next();
+        	IModelChange change = iter.next();
             if (change instanceof ColumnDataTypeChange) {
                 ColumnDataTypeChange dataTypeChange = (ColumnDataTypeChange) change;
                 if (dataTypeChange.getNewTypeCode() == Types.BIGINT &&
