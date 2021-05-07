@@ -50,32 +50,18 @@ import org.vaadin.aceeditor.Suggestion;
 import org.vaadin.aceeditor.SuggestionExtension;
 import org.vaadin.aceeditor.TextRange;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
-import com.vaadin.event.ShortcutAction.ModifierKey;
-import com.vaadin.event.ShortcutListener;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.Resource;
-import com.vaadin.shared.Registration;
-import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.flow.component.button.Button.ClickListener;
-import com.vaadin.ui.Component;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.ui.HasComponents;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.VerticalSplitPanel;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
 
-public class QueryPanel extends VerticalSplitPanel implements IContentTab {
+public class QueryPanel extends SplitLayout implements IContentTab {
 
     protected static final Logger log = LoggerFactory.getLogger(QueryPanel.class);
 
@@ -111,7 +97,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
     Connection connection;
 
-    Label status;
+    Span status;
 
     SqlSuggester suggester;
 
@@ -137,6 +123,8 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         this.sqlArea = buildSqlEditor();
         this.shortCutListeners.put(createExecuteSqlShortcutListener(), null);
         this.shortCutListeners.put(createExecuteSqlScriptShortcutListener(), null);
+        
+        this.setOrientation(Orientation.VERTICAL);
 
         VerticalLayout resultsLayout = new VerticalLayout();
         resultsLayout.setMargin(false);
@@ -151,25 +139,26 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         statusBar.addClassName(ValoTheme.PANEL_WELL);
         statusBar.setWidthFull();
 
-        status = new Label("No Results");
-        status.setStyleName(ValoTheme.LABEL_SMALL);
+        status = new Span("No Results");
+        status.setClassName(ValoTheme.LABEL_SMALL);
         statusBar.add(status);
 
         setSelectedTabChangeListener();
 
-        resultsLayout.addComponents(resultsTabs, statusBar);
-        resultsLayout.setExpandRatio(resultsTabs, 1);
+        resultsLayout.add(resultsTabs, statusBar);
+        resultsLayout.expand(resultsTabs);
 
-        addComponents(sqlArea, resultsLayout);
+        addToPrimary(sqlArea);
+        addToSecondary(resultsLayout);
 
-        setSplitPosition(400, Unit.PIXELS);
+        setSplitterPosition(50);
 
         emptyResults = new VerticalLayout();
         emptyResults.setSizeFull();
-        Label label = new Label("New results will appear here");
-        label.setWidth(null);
-        emptyResults.add(label);
-        emptyResults.setComponentAlignment(label, Alignment.MIDDLE_CENTER);
+        Span span = new Span("New results will appear here");
+        span.setWidth(null);
+        emptyResults.add(span);
+        emptyResults.setHorizontalComponentAlignment(Alignment.CENTER, span);
         resultStatuses.put(emptyResults, "No Results");
 
         if (!settingsProvider.get().getProperties().is(SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS)) {
@@ -184,21 +173,15 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
     protected AceEditor buildSqlEditor() {
         editor = CommonUiUtils.createAceEditor();
         editor.setMode(AceMode.sql);
-        editor.addValueChangeListener(new com.vaadin.data.HasValue.ValueChangeListener<String>() {
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void valueChange(com.vaadin.data.HasValue.ValueChangeEvent<String> event) {
-                if (!editor.getValue().equals("")) {
-                    executeAtCursorButtonValue = true;
-                    executeScriptButtonValue = true;
-                } else {
-                    executeAtCursorButtonValue = false;
-                    executeScriptButtonValue = false;
-                }
-                setButtonsEnabled();
+        editor.addValueChangeListener(event -> {
+            if (!editor.getValue().equals("")) {
+                executeAtCursorButtonValue = true;
+                executeScriptButtonValue = true;
+            } else {
+                executeAtCursorButtonValue = false;
+                executeScriptButtonValue = false;
             }
+            setButtonsEnabled();
         });
 
         boolean autoSuggestEnabled = settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMPLETE);
@@ -248,7 +231,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
 
     public void removeGeneralResultsTab() {
         if (generalResultsTab != null) {
-            Component content = ((VerticalLayout) generalResultsTab.getComponent()).getComponent(0);
+            Component content = ((VerticalLayout) generalResultsTab.getComponent()).getComponentAt(0);
             if (content instanceof TabularResultLayout) {
                 addResultsTab(((TabularResultLayout) content).refreshWithoutSaveButton(),
                         StringUtils.abbreviate(((TabularResultLayout) content).getSql(), 20), generalResultsTab.getIcon(), 0);
@@ -264,7 +247,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         }
     }
 
-    public void replaceGeneralResultsWith(Component newComponent, VaadinIcons icon) {
+    public void replaceGeneralResultsWith(Component newComponent, VaadinIcon icon) {
         ((VerticalLayout) generalResultsTab.getComponent()).removeAll();
         ((VerticalLayout) generalResultsTab.getComponent()).add(newComponent);
         generalResultsTab.setIcon(icon);
@@ -280,7 +263,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
         }
 
         setButtonsEnabled();
-        sqlArea.focus();
+        sqlArea.focus()
     }
 
     @Override
@@ -422,10 +405,10 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
             final HorizontalLayout executingLayout = new HorizontalLayout();
             executingLayout.setMargin(true);
             executingLayout.setSizeFull();
-            final Label label = new Label("Executing:\n\n" + StringUtils.abbreviate(sqlText, 250), ContentMode.PREFORMATTED);
-            label.setEnabled(false);
-            executingLayout.add(label);
-            executingLayout.setComponentAlignment(label, Alignment.TOP_LEFT);
+            final Span span = new Span("Executing:\n\n" + StringUtils.abbreviate(sqlText, 250), ContentMode.PREFORMATTED);
+            span.setEnabled(false);
+            executingLayout.add(span);
+            executingLayout.setVerticalComponentAlignment(Alignment.START, span);
 
             final String sql = sqlText;
             final Tab executingTab;
@@ -471,7 +454,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                                     rollbackButtonValue = true;
                                     commitButtonValue = true;
                                     setButtonsEnabled();
-                                    sqlArea.setStyleName("transaction-in-progress");
+                                    sqlArea.setClassName("transaction-in-progress");
                                     connection = runner.getConnection();
                                 }
 
@@ -526,7 +509,7 @@ public class QueryPanel extends VerticalSplitPanel implements IContentTab {
                 @Override
                 public void buttonClick(ClickEvent event) {
                     log.info("Canceling sql: " + sql);
-                    label.setValue("Canceling" + label.getValue().substring(9));
+                    span.setValue("Canceling" + span.getValue().substring(9));
                     executingLayout.remove(cancel);
                     canceled = true;
                     new Thread(new Runnable() {

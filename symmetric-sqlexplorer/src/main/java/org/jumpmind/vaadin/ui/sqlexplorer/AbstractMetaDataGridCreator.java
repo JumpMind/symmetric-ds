@@ -35,7 +35,7 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.Grid;
+import com.vaadin.flow.component.grid.Grid;
 
 abstract public class AbstractMetaDataGridCreator {
 

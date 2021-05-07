@@ -31,28 +31,24 @@ import java.text.DecimalFormat;
 
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.ui.AbstractLayout;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.grid.GridLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class SettingsDialog extends ResizableWindow {
+public class SettingsDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -86,14 +82,14 @@ public class SettingsDialog extends ResizableWindow {
         super("Settings");
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
-        setWidth(600, Unit.PIXELS);
+        setWidth("600px");
         add(createSettingsLayout(), 1);
         add(createButtonLayout());
     }
 
     protected AbstractLayout createSettingsLayout() {
         GridLayout layout = new GridLayout(2, 9);
-        layout.setWidth(700, Unit.PIXELS);
+        layout.setWidth("700px");
         layout.setMargin(new MarginInfo(false, true, false, true));
         FormLayout settingsLayout = new FormLayout();
 
@@ -101,17 +97,17 @@ public class SettingsDialog extends ResizableWindow {
         TypedProperties properties = settings.getProperties();
 
         rowsToFetchField = new TextField("Max Results");
-        rowsToFetchField.setWidth(6, Unit.EM);
-        Label rowsToFetchLabel = new Label();
-        rowsToFetchLabel.addClassName("v-label-marked");
+        rowsToFetchField.setWidth("6em");
+        Span rowsToFetchSpan = new Span();
+        rowsToFetchSpan.addClassName("v-label-marked");
         binder = new Binder<Integer>();
         binder.forField(rowsToFetchField).withConverter(new StringToIntegerConverter("Could not convert value to Integer"))
                 .withValidator(value -> value != null, "Invalid value").withValidationStatusHandler(event -> {
-                    rowsToFetchLabel.setValue(event.getMessage().orElse(""));
+                    rowsToFetchSpan.setText(event.getMessage().orElse(""));
                     if (event.isError()) {
                         rowsToFetchField.addClassName("v-textfield-error");
                     } else {
-                        rowsToFetchField.removeStyleName("v-textfield-error");
+                        rowsToFetchField.removeClassName("v-textfield-error");
                     }
                 }).bind(integer -> integer, (integer, value) -> integer = value);
         rowsToFetchField.setValue(properties.getProperty(SQL_EXPLORER_MAX_RESULTS, "100"));
@@ -180,21 +176,17 @@ public class SettingsDialog extends ResizableWindow {
         settingsLayout.add(showResultsInNewTabsBox);
 
         layout.add(settingsLayout, 0, 0, 0, 8);
-        layout.add(rowsToFetchLabel, 1, 0);
-        layout.setComponentAlignment(rowsToFetchLabel, Alignment.MIDDLE_LEFT);
+        layout.add(rowsToFetchSpan, 1, 0);
+        layout.setComponentAlignment(rowsToFetchSpan, Alignment.MIDDLE_LEFT);
         
         return layout;
 
     }
 
-    protected AbstractLayout createButtonLayout() {
-        Button saveButton = CommonUiUtils.createPrimaryButton("Save", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                if (save()) {
-                    UI.getCurrent().removeWindow(SettingsDialog.this);
-                }
+    protected HorizontalLayout createButtonLayout() {
+        Button saveButton = CommonUiUtils.createPrimaryButton("Save", event -> {
+            if (save()) {
+                close();
             }
         });
 
@@ -225,7 +217,7 @@ public class SettingsDialog extends ResizableWindow {
                 return false;
             }
         }
-        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", Type.WARNING_MESSAGE);
+        CommonUiUtils.notify("Save Failed", "Ensure that all fields are valid", NotificationVariant.LUMO_CONTRAST);
         return false;
     }
 }

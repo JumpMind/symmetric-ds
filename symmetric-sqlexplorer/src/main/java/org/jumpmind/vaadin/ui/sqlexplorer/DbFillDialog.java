@@ -30,33 +30,35 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DbFill;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 
 import com.vaadin.flow.component.Key;
-import com.vaadin.shared.ui.ValueChangeMode;
+import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class DbFillDialog extends ResizableWindow {
+public class DbFillDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
     private Button cancelButton;
 
     private Button nextButton;
+    
+    private ShortcutRegistration nextShortcutRegistration;
 
     private Button previousButton;
 
     private Button fillButton;
+    
+    private ShortcutRegistration fillShortcutRegistration;
 
     private TableSelectionLayout tableSelectionLayout;
 
@@ -98,8 +100,8 @@ public class DbFillDialog extends ResizableWindow {
             QueryPanel queryPanel, String excludeTablesRegex) {
         super("Database Fill");
         setModal(true);
-        setHeight(500, Unit.PIXELS);
-        setWidth(605, Unit.PIXELS);
+        setHeight("500px");
+        setWidth("605px");
 
         this.databasePlatform = databasePlatform;
         this.queryPanel = queryPanel;
@@ -116,73 +118,49 @@ public class DbFillDialog extends ResizableWindow {
 
         add(tableSelectionLayout, 1);
         addButtons();
-        nextButton.setClickShortcut(KeyCode.ENTER);
+        nextShortcutRegistration = nextButton.addClickShortcut(Key.ENTER);
         nextButton.focus();
     }
 
     protected void addButtons() {
-        nextButton = CommonUiUtils.createPrimaryButton("Next", new ClickListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                next();
-            }
-        });
+        nextButton = CommonUiUtils.createPrimaryButton("Next", event -> next());
         nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
 
-        cancelButton = new Button("Close", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
+        cancelButton = new Button("Close", event -> close());
 
-            public void buttonClick(ClickEvent event) {
-                close();
-            }
-        });
-
-        previousButton = new Button("Previous", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                previous();
-            }
-        });
+        previousButton = new Button("Previous", event -> previous());
         previousButton.setVisible(false);
 
-        fillButton = CommonUiUtils.createPrimaryButton("Fill...", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                createDbFill();
-                if (dbFill.getPrint() == false) {
-                    confirm();
-                } else {
-                    List<String> tables = getSelectedTables();
-                    for (String tableName : tables) {
-                        Table table = databasePlatform.getTableFromCache(
-                                tableSelectionLayout.catalogSelect.getValue() != null ? tableSelectionLayout.catalogSelect
-                                        .getValue().toString() : null,
-                                tableSelectionLayout.schemaSelect.getValue() != null ? tableSelectionLayout.schemaSelect
-                                        .getValue().toString() : null, tableName, false);
-                        if (table != null) {
-                            for (int i = 0; i < dbFill.getRecordCount(); i++) {
-                                for (int j = 0; j < dbFill.getInsertWeight(); j++) {
-                                    String sql = dbFill.createDynamicRandomInsertSql(table);
-                                    queryPanel.appendSql(sql);
-                                }
-                                for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
-                                    String sql = dbFill.createDynamicRandomUpdateSql(table);
-                                    queryPanel.appendSql(sql);
-                                }
-                                for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
-                                    String sql = dbFill.createDynamicRandomDeleteSql(table);
-                                    queryPanel.appendSql(sql);
-                                }
+        fillButton = CommonUiUtils.createPrimaryButton("Fill...", event -> {
+            createDbFill();
+            if (dbFill.getPrint() == false) {
+                confirm();
+            } else {
+                List<String> tables = getSelectedTables();
+                for (String tableName : tables) {
+                    Table table = databasePlatform.getTableFromCache(
+                            tableSelectionLayout.catalogSelect.getValue() != null ? tableSelectionLayout.catalogSelect
+                                    .getValue().toString() : null,
+                            tableSelectionLayout.schemaSelect.getValue() != null ? tableSelectionLayout.schemaSelect
+                                    .getValue().toString() : null, tableName, false);
+                    if (table != null) {
+                        for (int i = 0; i < dbFill.getRecordCount(); i++) {
+                            for (int j = 0; j < dbFill.getInsertWeight(); j++) {
+                                String sql = dbFill.createDynamicRandomInsertSql(table);
+                                queryPanel.appendSql(sql);
+                            }
+                            for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
+                                String sql = dbFill.createDynamicRandomUpdateSql(table);
+                                queryPanel.appendSql(sql);
+                            }
+                            for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
+                                String sql = dbFill.createDynamicRandomDeleteSql(table);
+                                queryPanel.appendSql(sql);
                             }
                         }
                     }
-                    UI.getCurrent().removeWindow(DbFillDialog.this);
                 }
+                close();
             }
         });
         fillButton.setVisible(false);
@@ -197,12 +175,12 @@ public class DbFillDialog extends ResizableWindow {
         optionLayout.setMargin(true);
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
-        optionLayout.add(new Label("Please choose from the following options"));
+        optionLayout.add(new Span("Please choose from the following options"));
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
         optionLayout.add(formLayout);
-        optionLayout.setExpandRatio(formLayout, 1);
+        optionLayout.expand(formLayout);
 
         countField = new TextField("Count (# of rows to fill)");
         countField.setValue("1");
@@ -256,7 +234,7 @@ public class DbFillDialog extends ResizableWindow {
         
         oGroup = new RadioButtonGroup<String>();
         oGroup.setItems("Fill Table(s)", "Send to Sql Editor");
-        oGroup.setSelectedItem("Fill Table(s)");
+        oGroup.setValue("Fill Table(s)");
         formLayout.add(oGroup);
 
     }
@@ -312,25 +290,27 @@ public class DbFillDialog extends ResizableWindow {
 
     protected void previous() {
         content.remove(optionLayout);
-        content.add(tableSelectionLayout, 0);
-        content.setExpandRatio(tableSelectionLayout, 1);
+        content.addComponentAtIndex(0, tableSelectionLayout);
+        content.expand(tableSelectionLayout);
         fillButton.setVisible(false);
-        fillButton.removeClickShortcut();
+        if (fillShortcutRegistration != null) {
+            fillShortcutRegistration.remove();
+        }
         previousButton.setVisible(false);
         nextButton.setVisible(true);
-        nextButton.setClickShortcut(KeyCode.ENTER);
+        nextButton.addClickShortcut(Key.ENTER);
         nextButton.focus();
     }
 
     protected void next() {
         content.remove(tableSelectionLayout);
-        content.add(optionLayout, 0);
-        content.setExpandRatio(optionLayout, 1);
+        content.addComponentAtIndex(0, optionLayout);
+        content.expand(optionLayout);
         nextButton.setVisible(false);
-        nextButton.removeClickShortcut();
+        nextShortcutRegistration.remove();
         previousButton.setVisible(true);
         fillButton.setVisible(true);
-        fillButton.setClickShortcut(KeyCode.ENTER);
+        fillShortcutRegistration = fillButton.addClickShortcut(Key.ENTER);
         fillButton.focus();
     }
 

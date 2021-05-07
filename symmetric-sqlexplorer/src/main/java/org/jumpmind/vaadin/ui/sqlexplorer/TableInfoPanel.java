@@ -37,16 +37,12 @@ import org.slf4j.LoggerFactory;
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
@@ -114,7 +110,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         refreshData(table, user, db, settings, true);
         
         AceEditor editor = new AceEditor();
-        editor.setData(true);
+        ComponentUtil.setData(editor, "data", true);
         tabSheet.addTab(editor, "Source");
         
         Iterator<Component> i = tabSheet.iterator();
@@ -148,8 +144,8 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
         executingLayout.add(p);
-        executingLayout.setData(isInit);
-        tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcons.SPINNER, 1);
+        ComponentUtil.setData(executingLayout, "isInit", isInit);
+        tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcon.SPINNER, 1);
         if (!isInit) {
             tabSheet.setSelectedTab(executingLayout);
         }
@@ -170,7 +166,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                     }
 
                     @Override
-                    public void finished(final VaadinIcons icon, final List<Component> results,
+                    public void finished(final VaadinIcon icon, final List<Component> results,
                             long executionTimeInMs, boolean transactionStarted,
                             boolean transactionEnded) {
                         TableInfoPanel.this.getUI().access(new Runnable() {
@@ -198,20 +194,20 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         
     }
 
-    protected AbstractLayout create(AbstractMetaDataGridCreator creator) {
+    protected VerticalLayout create(AbstractMetaDataGridCreator creator) {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(false);
         layout.setSizeFull();
-        layout.setData(creator);
+        ComponentUtil.setData(layout, "creator", creator);
         return layout;
     }
     
     protected void populate(VerticalLayout layout) {
-        AbstractMetaDataGridCreator creator = (AbstractMetaDataGridCreator) layout.getData();
+        AbstractMetaDataGridCreator creator = (AbstractMetaDataGridCreator) ComponentUtil.getData(layout, "creator");
         Grid<List<Object>> grid = creator.create();
         layout.add(grid);
-        layout.setExpandRatio(grid, 1);
-        layout.setData(null);
+        layout.expand(grid);
+        ComponentUtil.setData(layout, "creator", null);
     }
     
     protected void populateSource(org.jumpmind.db.model.Table table, IDb db, AceEditor oldTab) {
@@ -226,7 +222,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
             AceEditor editor = CommonUiUtils.createAceEditor();
             editor.setMode(AceMode.sql);
             editor.setValue(export.exportTables(new org.jumpmind.db.model.Table[] { table }));
-            editor.setData(false);
+            ComponentUtil.setData(editor, "data", false);
             tabSheet.addTab(editor, "Source");
             tabSheet.setSelectedTab(editor);
         } catch (IOException e) {

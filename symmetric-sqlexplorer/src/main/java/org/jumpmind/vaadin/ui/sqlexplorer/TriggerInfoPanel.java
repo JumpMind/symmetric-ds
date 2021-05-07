@@ -8,21 +8,15 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.ui.Component;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.Command;
-import com.vaadin.ui.MenuBar.MenuItem;
 import com.vaadin.flow.component.progressbar.ProgressBar;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
 
 
 public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
@@ -82,7 +76,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         editor.setValue(sourceText);
         editor.setSizeFull();
         source.add(editor);
-        source.setExpandRatio(editor, 1);
+        source.expand(editor);
         
         HorizontalLayout bar = new HorizontalLayout();
         bar.setWidthFull();
@@ -91,20 +85,16 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         MenuBar wrapSelect = new MenuBar();
         wrapSelect.addClassName(ValoTheme.MENUBAR_BORDERLESS);
         wrapSelect.addClassName(ValoTheme.MENUBAR_SMALL);
-        MenuItem wrapButton = wrapSelect.addItem("Wrap text", new Command() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                wrapSourceText = !wrapSourceText;
-                tabSheet.removeTab(tabSheet.getTab(1));
-                refreshSource(trigger);                
-            }
+        MenuItem wrapButton = wrapSelect.addItem("Wrap text", event -> {
+            wrapSourceText = !wrapSourceText;
+            tabSheet.removeTab(tabSheet.getTab(1));
+            refreshSource(trigger);
         });
-        wrapButton.setIcon(VaadinIcons.ALIGN_JUSTIFY);
+        wrapButton.addComponentAsFirst(new Icon(VaadinIcon.ALIGN_JUSTIFY));
         
         bar.add(wrapSelect);
-        bar.setComponentAlignment(wrapSelect, Alignment.TOP_RIGHT);
-        bar.setHeight((float)(2.5), Unit.REM);
+        bar.setVerticalComponentAlignment(Alignment.START, wrapSelect);
+        bar.setHeight("2.5rem");
         source.add(bar);
         
         tabSheet.addTab(source, "Source");
@@ -284,7 +274,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
         executingLayout.add(p);
-        tabSheet.addTab(executingLayout, "Details", VaadinIcons.SPINNER, 0);
+        tabSheet.addTab(executingLayout, "Details", VaadinIcon.SPINNER, 0);
         tabSheet.setSelectedTab(executingLayout);
         
         TriggerTableLayout triggerTable = new TriggerTableLayout(trigger, settings, new Refresher() {

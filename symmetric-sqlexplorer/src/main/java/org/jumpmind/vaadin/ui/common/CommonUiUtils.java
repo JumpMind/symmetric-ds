@@ -47,19 +47,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.aceeditor.AceEditor;
 
-import com.vaadin.server.Page;
-import com.vaadin.server.Sizeable.Unit;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.shared.Position;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.page.Page;
 
 public final class CommonUiUtils {
 
@@ -69,7 +68,7 @@ public final class CommonUiUtils {
 
     static final FastDateFormat TIMEFORMAT = FastDateFormat.getInstance("HH:mm:ss.SSS");
 
-    static final String NULL_TEXT = "<null>";
+    public static final String NULL_TEXT = "<null>";
 
     private CommonUiUtils() {
     }
@@ -91,7 +90,7 @@ public final class CommonUiUtils {
         return createPrimaryButton(name, null);
     }
 
-    public static Button createPrimaryButton(String name, Button.ClickListener listener) {
+    public static Button createPrimaryButton(String name, ComponentEventListener<ClickEvent<Button>> listener) {
         Button button = new Button(name);
         if (listener != null) {
             button.addClickListener(listener);
@@ -119,37 +118,31 @@ public final class CommonUiUtils {
     }
 
     public static void notify(String message) {
-        notify("", message, Type.HUMANIZED_MESSAGE);
+        notify("", message, NotificationVariant.LUMO_SUCCESS);
     }
 
     public static void notify(String caption, String message) {
-        notify(caption, message, Type.HUMANIZED_MESSAGE);
+        notify(caption, message, NotificationVariant.LUMO_SUCCESS);
     }
 
-    public static void notify(String message, Type type) {
+    public static void notify(String message, NotificationVariant type) {
         notify("", message, type);
     }
 
-    public static void notify(String caption, String message, Type type) {
+    public static void notify(String caption, String message, NotificationVariant type) {
         notify(caption, message, null, type);
     }
 
-    public static void notify(String caption, String message, Throwable ex, Type type) {
+    public static void notify(String caption, String message, Throwable ex, NotificationVariant type) {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
             Notification notification = new Notification(caption, contactWithLineFeed(FormatUtils.wordWrap(message, 150)),
-                    Type.HUMANIZED_MESSAGE);
-            notification.setPosition(Position.MIDDLE_CENTER);
-            notification.setDelayMsec(-1);
-
-            String style = ValoTheme.NOTIFICATION_SUCCESS;
-            if (type == Type.ERROR_MESSAGE) {
-                style = ValoTheme.NOTIFICATION_FAILURE;
-            } else if (type == Type.WARNING_MESSAGE) {
-                style = ValoTheme.NOTIFICATION_WARNING;
-            }
-            notification.setStyleName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE + " " + style);
-            notification.show(UI.getCurrent().getPage());
+                    NotificationVariant.LUMO_SUCCESS);
+            notification.setPosition(Position.MIDDLE);
+            notification.setDuration(-1);
+            notification.setStyleName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE);
+            notification.addThemeVariants(type);
+            notification.open();
         }
     }
 
@@ -162,11 +155,11 @@ public final class CommonUiUtils {
     }
 
     public static void notify(String message, Throwable ex) {
-        notify("An error occurred", message, ex, Type.ERROR_MESSAGE);
+        notify("An error occurred", message, ex, NotificationVariant.LUMO_ERROR);
     }
 
     public static void notify(Throwable ex) {
-        notify("An unexpected error occurred", "See the log file for additional details", ex, Type.ERROR_MESSAGE);
+        notify("An unexpected error occurred", "See the log file for additional details", ex, NotificationVariant.LUMO_ERROR);
     }
 
     public static Object getObject(ResultSet rs, int i) throws SQLException {
@@ -183,7 +176,7 @@ public final class CommonUiUtils {
 
     public static String[] getHeaderCaptions(Grid<?> grid) {
         List<String> headers = new ArrayList<String>();
-        for (Column<?, ?> column : grid.getColumns()) {
+        for (Column<?> column : grid.getColumns()) {
             headers.add(column.getCaption());
         }
         return headers.toArray(new String[headers.size()]);
@@ -205,12 +198,12 @@ public final class CommonUiUtils {
         if (rs != null) {
             grid.addColumn(row -> {
                 return outerList.indexOf(row) + 1;
-            }).setCaption("#").setId("#").setHidden(!showRowNumbers).setClassNameGenerator(row -> {
+            }).setHeader("#").setKey("#").setClassNameGenerator(row -> {
                 if (!grid.getSelectedItems().contains(row)) {
                     return "rowheader";
                 }
                 return null;
-            });
+            }).setFrozen(true).setVisible(showRowNumbers);
             
             final ResultSetMetaData meta = rs.getMetaData();
             int totalColumns = meta.getColumnCount();
@@ -229,13 +222,12 @@ public final class CommonUiUtils {
                     columnNames.add(columnName);
                     
                     Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
-                    grid.addColumn(row -> row.get(colNum)).setId(columnName).setCaption(columnName).setHidable(true)
-                            .setClassNameGenerator(row -> {
+                    grid.addColumn(row -> row.get(colNum)).setKey(columnName).setHeader(columnName).setClassNameGenerator(row -> {
                         if (row.get(colNum) == null) {
                             return "italics";
                         }
                         return null;
-                    });
+                    }).setVisible(false);
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {
@@ -280,19 +272,15 @@ public final class CommonUiUtils {
                 outerList.add(innerList);
                 
                 if (rowNumber < 100) {
-                    grid.getColumnByKey("#").setWidth(75);
+                    grid.getColumnByKey("#").setWidth("75px");
                 } else if (rowNumber < 1000) {
-                    grid.getColumnByKey("#").setWidth(95);
+                    grid.getColumnByKey("#").setWidth("95px");
                 } else {
-                    grid.getColumnByKey("#").setWidth(115);
-                }
-
-                if (showRowNumbers) {
-                    grid.setFrozenColumnCount(1);
+                    grid.getColumnByKey("#").setWidth("115px");
                 }
             }
         } else {
-            grid.addColumn(row -> row.get(0)).setCaption("Status");
+            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status");
             List<Object> innerList = new ArrayList<Object>();
             innerList.add("Metadata unavailable");
             outerList.add(innerList);
@@ -301,7 +289,7 @@ public final class CommonUiUtils {
         return grid;
     }
 
-    protected static String castToNumber(String value) {
+    public static String castToNumber(String value) {
         if ("NO".equalsIgnoreCase(value) || "FALSE".equalsIgnoreCase(value)) {
             return "0";
         } else if ("YES".equalsIgnoreCase(value) || "TRUE".equalsIgnoreCase(value)) {
@@ -403,9 +391,9 @@ public final class CommonUiUtils {
         return value;
     }
 
-    public static Label createSeparator() {
-        Label separator = new Label(" ");
-        separator.setStyleName("vrule");
+    public static Span createSeparator() {
+        Span separator = new Span(" ");
+        separator.setClassName("vrule");
         separator.setHeightFull();
         separator.setWidth(null);
         return separator;

@@ -49,11 +49,9 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.ContentMode;
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.Panel;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SqlRunner extends Thread {
@@ -202,7 +200,7 @@ public class SqlRunner extends Thread {
         boolean ignoreWhenRunAsScript = properties.is(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS);
 
         List<Component> resultComponents = new ArrayList<Component>();
-        VaadinIcons icon = VaadinIcons.CHECK_CIRCLE;
+        VaadinIcon icon = VaadinIcon.CHECK_CIRCLE;
         rowsUpdated = false;
         boolean committed = false;
         boolean autoCommitBefore = true;
@@ -340,7 +338,7 @@ public class SqlRunner extends Thread {
                     String canceledMessage = "Canceled successfully.\n\n"+sqlText;
                     resultComponents.add(wrapTextInComponent(canceledMessage));
                 } else {
-                    icon = VaadinIcons.BAN;
+                    icon = VaadinIcon.BAN;
                     resultComponents.add(wrapTextInComponent(buildErrorMessage(ex), "marked"));
                 }
             } finally {
@@ -360,7 +358,7 @@ public class SqlRunner extends Thread {
             }
 
             if (resultComponents.size() == 0 && StringUtils.isNotBlank(results.toString())) {
-                resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcons.BAN ? "marked" : null));
+                resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcon.BAN ? "marked" : null));
             }
 
         } finally {
@@ -408,11 +406,12 @@ public class SqlRunner extends Thread {
         VerticalLayout content = new VerticalLayout();        
         content.setMargin(true);
         panel.setContent(content);
-        Label label = new Label("<pre>" + text.toString() + "</pre>", ContentMode.HTML);
+        Span span = new Span();
+        span.getElement().setProperty("innerHTML", "<pre>" + text.toString() + "</pre>");
         if (StringUtils.isNotBlank(style)) {
-            label.setStyleName(style);
+            span.setClassName(style);
         }
-        content.add(label);
+        content.add(span);
         return panel;
     }
 
@@ -522,7 +521,7 @@ public class SqlRunner extends Thread {
 
         public void reExecute(String sql);
 
-        public void finished(VaadinIcons icon, List<Component> results, long executionTimeInMs, boolean transactionStarted,
+        public void finished(VaadinIcon icon, List<Component> results, long executionTimeInMs, boolean transactionStarted,
                 boolean transactionEnded);
     }
 

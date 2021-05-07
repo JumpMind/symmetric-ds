@@ -92,16 +92,14 @@ public class CsvExport {
     }
 
     public void addHeaders() {
-        if (gridData.isHeaderVisible()) {
-            Iterator<?> iterator = gridData.getColumns().iterator();
-            while (iterator.hasNext()) {
-                Object col = iterator.next();
-                String value = gridData.getHeaderValue(col);
-                if (iterator.hasNext()) {
-                    cellData.append(value + ",");
-                } else {
-                    cellData.append(value + "\n");
-                }
+        Iterator<?> iterator = gridData.getColumns().iterator();
+        while (iterator.hasNext()) {
+            Object col = iterator.next();
+            String value = gridData.getKeyValue(col);
+            if (iterator.hasNext()) {
+                cellData.append(value + ",");
+            } else {
+                cellData.append(value + "\n");
             }
         }
     }

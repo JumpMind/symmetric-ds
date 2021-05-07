@@ -20,8 +20,6 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
-import com.vaadin.ui.renderers.DateRenderer;
-
 final public class UiConstants {
     private UiConstants() {
     }

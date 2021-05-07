@@ -36,11 +36,9 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.data.TreeData;
-import com.vaadin.data.provider.TreeDataProvider;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.Tree;
-import com.vaadin.ui.StyleGenerator;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 
 public class DbTree extends Tree<DbTreeNode> {
 
@@ -76,7 +74,7 @@ public class DbTree extends Tree<DbTreeNode> {
     public DbTree(IDbProvider databaseProvider, ISettingsProvider settingsProvider) {
         this.databaseProvider = databaseProvider;
         this.settingsProvider = settingsProvider;
-        setWidth(100, Unit.PERCENTAGE);
+        setWidthFull();
         setStyleGenerator(getStyleGenerator());
         setStyleGenerator(new DbTreeStyleGenerator());
         setItemIconGenerator(node -> node.getIcon());
@@ -142,7 +140,7 @@ public class DbTree extends Tree<DbTreeNode> {
             expandedNodes.clear();
             rootNodes = new LinkedHashSet<DbTreeNode>();
             for (IDb database : databases) {
-                DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcons.DATABASE, null);
+                DbTreeNode databaseNode = new DbTreeNode(this, database.getName(), NODE_TYPE_DATABASE, VaadinIcon.DATABASE, null);
                 treeData.addItem(null, databaseNode);
                 treeData.addItem(databaseNode, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, databaseNode));
                 rootNodes.add(databaseNode);
@@ -286,7 +284,7 @@ public class DbTree extends Tree<DbTreeNode> {
                     && !tableName.toLowerCase().matches(excludeRegex)) {
 
                 DbTreeNode treeNode = new DbTreeNode(this, tableName,
-                        NODE_TYPE_TABLE, VaadinIcons.TABLE, parent);
+                        NODE_TYPE_TABLE, VaadinIcon.TABLE, parent);
                 if (catalogName != null) {
                     treeNode.getProperties().setProperty(PROPERTY_CATALOG_NAME, catalogName);
                 }
@@ -318,7 +316,7 @@ public class DbTree extends Tree<DbTreeNode> {
             log.warn("Unable to look up triggers for catalog, schema, table : " + catalogName + "." + schemaName + "." + parent.getName());
         }
         for (Trigger trigger : triggers) {
-            DbTreeNode treeNode = new DbTreeNode(this, trigger.getName(), NODE_TYPE_TRIGGER, VaadinIcons.CROSSHAIRS, parent);
+            DbTreeNode treeNode = new DbTreeNode(this, trigger.getName(), NODE_TYPE_TRIGGER, VaadinIcon.CROSSHAIRS, parent);
             if (catalogName != null) {
                 treeNode.getProperties().setProperty(PROPERTY_CATALOG_NAME, catalogName);
             }
@@ -343,7 +341,7 @@ public class DbTree extends Tree<DbTreeNode> {
             catalogs.add(0, platform.getDefaultCatalog());
         }
         for (String catalog : catalogs) {
-            DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, VaadinIcons.BOOK, parent);
+            DbTreeNode catalogNode = new DbTreeNode(this, catalog, NODE_TYPE_CATALOG, VaadinIcon.BOOK, parent);
             parent.getChildren().add(catalogNode);
         }
     }
@@ -354,7 +352,7 @@ public class DbTree extends Tree<DbTreeNode> {
             schemas.add(0, platform.getDefaultSchema());
         }
         for (String schema : schemas) {
-            DbTreeNode schemaNode = new DbTreeNode(this, schema, NODE_TYPE_SCHEMA, VaadinIcons.BOOK, parent);
+            DbTreeNode schemaNode = new DbTreeNode(this, schema, NODE_TYPE_SCHEMA, VaadinIcon.BOOK, parent);
             parent.getChildren().add(schemaNode);
         }
     }

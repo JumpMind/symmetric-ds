@@ -23,23 +23,19 @@ package org.jumpmind.vaadin.ui.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
-import com.vaadin.event.ShortcutAction.ModifierKey;
-import com.vaadin.event.ShortcutListener;
-import com.vaadin.server.Page;
-import com.vaadin.shared.ui.window.WindowMode;
+import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.flow.component.button.Button.ClickListener;
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.ValoTheme;
 
-public class ResizableWindow extends Window {
+public class ResizableDialog extends Dialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -47,11 +43,11 @@ public class ResizableWindow extends Window {
     
     protected VerticalLayout content;
 
-    public ResizableWindow() {
+    public ResizableDialog() {
         this("");
     }
     
-    public ResizableWindow(String caption) {
+    public ResizableDialog(String caption) {
         setCaption(caption);
         setModal(true);
         setResizable(true);
@@ -60,37 +56,24 @@ public class ResizableWindow extends Window {
         content.setSizeFull();
         content.setMargin(false);
         content.setSpacing(false);
-        setContent(content);
+        add(content);
         
-        addShortcutListener(new ShortcutListener("Maximize", KeyCode.M,
-                new int[] { ModifierKey.CTRL }) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void handleAction(Object sender, Object target) {
-                if (ResizableWindow.this.getWindowMode() != WindowMode.MAXIMIZED) {
-                    ResizableWindow.this.setWindowMode(WindowMode.MAXIMIZED);
-                } else {
-                    ResizableWindow.this.setWindowMode(WindowMode.NORMAL);
-                }
+        UI.getCurrent().addShortcutListener(() -> {
+            if (!"100%".equals(getWidth())) {
+                setWidth("100%");
+                setHeight("100%");
+            } else {
+                setWidth(null);
+                setHeight(null);
             }
-        });
+        }, Key.KEY_M, KeyModifier.CONTROL);
         
-        addShortcutListener(new ShortcutListener("Close", KeyCode.ESCAPE, null) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void handleAction(Object sender, Object target) {
-                close();
-            }
-        });
+        UI.getCurrent().addShortcutListener(() -> close(), Key.ESCAPE);
     }
     
     protected void add(Component component, int expandRatio) {
         content.add(component);
-        content.setExpandRatio(component, expandRatio);
+        content.setFlexGrow(expandRatio, component);
     }
     
     protected void add(Component component) {
@@ -111,11 +94,11 @@ public class ResizableWindow extends Window {
         return closeButton;
     }
     
-    protected HorizontalLayout buildButtonFooter(Button... toTheRightButtons) {
-        return buildButtonFooter((Button[])null, toTheRightButtons);
+    protected HorizontalLayout buildButtonFooter(Component... toTheRightButtons) {
+        return buildButtonFooter((Component[])null, toTheRightButtons);
     }
 
-    protected HorizontalLayout buildButtonFooter(Button[] toTheLeftButtons, Button... toTheRightButtons) {
+    protected HorizontalLayout buildButtonFooter(Component[] toTheLeftButtons, Component... toTheRightButtons) {
         HorizontalLayout footer = new HorizontalLayout();
 
         footer.setWidth("100%");
@@ -123,48 +106,35 @@ public class ResizableWindow extends Window {
         footer.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         if (toTheLeftButtons != null) {
-            footer.addComponents(toTheLeftButtons);
+            footer.add(toTheLeftButtons);
         }
         
-        Label footerText = new Label("");
+        Span footerText = new Span("");
         footerText.setSizeUndefined();
 
-        footer.addComponents(footerText);
-        footer.setExpandRatio(footerText, 1);
+        footer.add(footerText);
+        footer.expand(footerText);
 
         if (toTheRightButtons != null) {
-            footer.addComponents(toTheRightButtons);
+            footer.add(toTheRightButtons);
         }
 
 
         return footer;
     }
-
-    protected void grabFocus() {
-        this.focus();
-    }
     
     protected boolean onClose() { return true;}
 
     public void show() {
-        if (!UI.getCurrent().getWindows().contains(this)) {
-            UI.getCurrent().addWindow(this);
-            grabFocus();
-        }
-        
+        open();
         center();
     }
     
     public void showAtSize(double percentOfBrowserSize) {
-        Page page = UI.getCurrent().getPage();
-
-        setWindowMode(WindowMode.NORMAL);
-
-        int pageHeight = page.getBrowserWindowHeight();
-        int pageWidth = page.getBrowserWindowWidth();
-
-        setHeight((int) (pageHeight * percentOfBrowserSize), Unit.PIXELS);
-        setWidth((int) (pageWidth * percentOfBrowserSize), Unit.PIXELS);
+        UI.getCurrent().getPage().retrieveExtendedClientDetails(details -> {
+            setHeight((details.getWindowInnerHeight() * percentOfBrowserSize) + "px");
+            setWidth((details.getWindowInnerWidth() * percentOfBrowserSize) + "px");
+        });
 
         show();       
        
@@ -172,17 +142,17 @@ public class ResizableWindow extends Window {
 
     @Override
     public void bringToFront() {
-        if (isAttached()) {
-           super.bringToFront();
+        if (getElement().getNode().isAttached()) {
+           super.getElement().executeJs("$0._bringOverlayToFront()");
         }
     }
     
-    public class CloseButtonListener implements ClickListener {
+    public class CloseButtonListener implements ComponentEventListener<ClickEvent<Button>> {
 
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void buttonClick(ClickEvent event) {
+        public void onComponentEvent(ClickEvent<Button> event) {
             if (onClose()) {
                 close();
             }

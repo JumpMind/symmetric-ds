@@ -16,13 +16,8 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.AbstractLayout;
-import com.vaadin.ui.Component;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 
@@ -163,12 +158,12 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         }
     }
     
-    public AbstractLayout createTabData(Grid<?> grid) {
+    public VerticalLayout createTabData(Grid<?> grid) {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(false);
         layout.setSizeFull();
         layout.add(grid);
-        layout.setExpandRatio(grid, 1);
+        layout.expand(grid);
         return layout;
     }
     
@@ -183,8 +178,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             }
         });
         
-        grid.addColumn(row -> row.get(0)).setCaption("Property").setWidth(400);
-        grid.addColumn(row -> row.get(1)).setCaption("Value");
+        grid.addColumn(row -> row.get(0)).setHeader("Property").setWidth("400px");
+        grid.addColumn(row -> row.get(1)).setHeader("Value");
         
         List<List<Object>> outerList = new ArrayList<List<Object>>();
         Method[] methods = reflectionClass.getMethods();
@@ -239,7 +234,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             }
         });
         
-        grid.addColumn(row -> row).setCaption(columnName);
+        grid.addColumn(row -> row).setHeader(columnName);
         
         List<String> values = new ArrayList<String>();
         int lastComma = 0;

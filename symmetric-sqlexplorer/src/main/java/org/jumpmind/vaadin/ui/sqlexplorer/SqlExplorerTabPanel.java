@@ -2,10 +2,8 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import org.jumpmind.vaadin.ui.common.NotifyDialog;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.TabSheet;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
 public class SqlExplorerTabPanel extends TabSheet {
     
@@ -28,7 +26,7 @@ public class SqlExplorerTabPanel extends TabSheet {
                 if (tabContent instanceof QueryPanel && ((QueryPanel) tabContent).commitButtonValue) {
                     NotifyDialog.show("Cannot Close Tab",
                             "You must commit or rollback queries before closing this tab.",
-                            null, Type.WARNING_MESSAGE);
+                            null, NotificationVariant.LUMO_CONTRAST);
                 } else {
                     tabsheet.remove(tabContent);
                 }

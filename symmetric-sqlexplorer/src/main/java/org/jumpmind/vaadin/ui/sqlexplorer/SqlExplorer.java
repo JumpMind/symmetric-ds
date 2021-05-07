@@ -49,36 +49,26 @@ import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.contextmenu.TreeContextMenu;
-import com.vaadin.event.selection.MultiSelectionEvent;
-import com.vaadin.event.selection.SelectionListener;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.Resource;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HorizontalSplitPanel;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.Command;
-import com.vaadin.ui.MenuBar.MenuItem;
-import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
-import com.vaadin.ui.TabSheet.SelectedTabChangeListener;
-import com.vaadin.ui.TabSheet.Tab;
-import com.vaadin.ui.Tree.TreeMultiSelectionModel;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.data.selection.MultiSelectionEvent;
+import com.vaadin.flow.data.selection.SelectionListener;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
 
-@StyleSheet({ "sqlexplorer.css" })
-public class SqlExplorer extends HorizontalSplitPanel {
+@StyleSheet("sqlexplorer.css")
+public class SqlExplorer extends SplitLayout {
 
     private static final long serialVersionUID = 1L;
 
     final Logger log = LoggerFactory.getLogger(getClass());
 
-    final static VaadinIcons QUERY_ICON = VaadinIcons.FILE_O;
+    final static VaadinIcon QUERY_ICON = VaadinIcon.FILE_O;
 
     final static float DEFAULT_SPLIT_POS = 225;
 
@@ -90,7 +80,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
 
     DbTree dbTree;
     
-    SelectionListener<DbTreeNode> listener;
+    SelectionListener<?, DbTreeNode> listener;
     
     Registration listenerRegistration;
 
@@ -128,7 +118,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         this.additionalMenuItems = additionalMenuItems;
 
         setSizeFull();
-        addStyleName("sqlexplorer");
+        addClassName("sqlexplorer");
 
         VerticalLayout leftLayout = new VerticalLayout();
         leftLayout.setMargin(false);
@@ -145,7 +135,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         scrollable.setContent(dbTree);
 
         leftLayout.add(scrollable);
-        leftLayout.setExpandRatio(scrollable, 1);
+        leftLayout.expand(scrollable);
 
         VerticalLayout rightLayout = new VerticalLayout();
         rightLayout.setMargin(false);
@@ -174,110 +164,73 @@ public class SqlExplorer extends HorizontalSplitPanel {
             }
         });
         rightLayout.add(contentTabs);
-        rightLayout.setExpandRatio(contentTabs, 1);
+        rightLayout.expand(contentTabs);
 
-        addComponents(leftLayout, rightLayout);
+        addToPrimary(leftLayout);
+        addToSecondary(rightLayout);
 
-        setSplitPosition(savedSplitPosition, Unit.PIXELS);
+        setSplitterPosition(savedSplitPosition, Unit.PIXELS);
     }
 
     protected MenuBar buildLeftMenu() {
         MenuBar leftMenu = new MenuBar();
         leftMenu.addClassName(ValoTheme.MENUBAR_BORDERLESS);
         leftMenu.setWidthFull();
-        MenuItem hideButton = leftMenu.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                savedSplitPosition = getSplitPosition() > 10 ? getSplitPosition() : DEFAULT_SPLIT_POS;
-                setSplitPosition(0);
-                setLocked(true);
-                showButton.setVisible(true);
-            }
+        MenuItem hideButton = leftMenu.addItem(new Icon(VaadinIcon.MENU), event -> {
+            savedSplitPosition = getSplitPosition() > 10 ? getSplitPosition() : DEFAULT_SPLIT_POS;
+            setSplitterPosition(0);
+            setPrimaryStyle("max-width", "0%");
+            showButton.setVisible(true);
         });
-        hideButton.setDescription("Hide the database explorer");
-        hideButton.setIcon(VaadinIcons.MENU);
+        hideButton.getElement().setAttribute("title", "Hide the database explorer");
 
-        MenuItem refreshButton = leftMenu.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                dbTree.refresh(true);
-                Component tab = contentTabs.getSelectedTab();
-                if (tab instanceof QueryPanel) {
-                    if (findQueryPanelForDb(((QueryPanel) tab).db).suggester != null) {
-                        findQueryPanelForDb(((QueryPanel) tab).db).suggester.clearCaches();
-                    }
+        MenuItem refreshButton = leftMenu.addItem(new Icon(VaadinIcon.REFRESH), event -> {
+            dbTree.refresh(true);
+            Component tab = contentTabs.getSelectedTab();
+            if (tab instanceof QueryPanel) {
+                if (findQueryPanelForDb(((QueryPanel) tab).db).suggester != null) {
+                    findQueryPanelForDb(((QueryPanel) tab).db).suggester.clearCaches();
                 }
             }
         });
-        refreshButton.setIcon(VaadinIcons.REFRESH);
-        refreshButton.setDescription("Refresh the database explorer");
+        refreshButton.getElement().setAttribute("title", "Refresh the database explorer");
 
-        MenuItem selectionMode = leftMenu.addItem("");
-        selectionMode.setCommand(new Command () {
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                if (dbTree.getSelectionModel() instanceof TreeMultiSelectionModel) {
-                    dbTree.setSelectionMode(SelectionMode.SINGLE);
-                    selectionMode.setIcon(VaadinIcons.GRID_BIG_O);
-                    selectionMode.setDescription("Switch to multi-select mode");
-                } else {
-                    dbTree.setSelectionMode(SelectionMode.MULTI);
-                    selectionMode.setIcon(VaadinIcons.THIN_SQUARE);
-                    selectionMode.setDescription("Switch to single-select mode");
-                }
-                listenerRegistration.remove();
-                listenerRegistration = dbTree.addSelectionListener(listener);
+        MenuItem selectionMode = leftMenu.addItem(new Icon(VaadinIcon.GRID_BIG_O), event -> {
+            selectionMode.removeAll();
+            if (dbTree.getSelectionModel() instanceof TreeMultiSelectionModel) {
+                dbTree.setSelectionMode(SelectionMode.SINGLE);
+                selectionMode.add(new Icon(VaadinIcon.GRID_BIG_O));
+                selectionMode.getElement().setAttribute("title", "Switch to multi-select mode");
+            } else {
+                dbTree.setSelectionMode(SelectionMode.MULTI);
+                selectionMode.add(new Icon(VaadinIcon.THIN_SQUARE));
+                selectionMode.getElement().setAttribute("title", "Switch to single-select mode");
             }
+            listenerRegistration.remove();
+            listenerRegistration = dbTree.addSelectionListener(listener);
         });
-        selectionMode.setIcon(VaadinIcons.GRID_BIG_O);
-        selectionMode.setDescription("Switch to multi-select mode");
+        selectionMode.getElement().setAttribute("title", "Switch to multi-select mode");
         
-        MenuItem openQueryTab = leftMenu.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
+        MenuItem openQueryTab = leftMenu.addItem(new Icon(QUERY_ICON), event -> openQueryWindow(dbTree.getSelectedItems()));
+        openQueryTab.getElement().setAttribute("title", "Open a query tab");
 
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                openQueryWindow(dbTree.getSelectedItems());
-            }
+        MenuItem settings = leftMenu.addItem(new Icon(VaadinIcon.COG), event -> {
+            SettingsDialog dialog = new SettingsDialog(SqlExplorer.this);
+            dialog.showAtSize(.5);
         });
-        openQueryTab.setIcon(QUERY_ICON);
-        openQueryTab.setDescription("Open a query tab");
-
-        MenuItem settings = leftMenu.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                SettingsDialog dialog = new SettingsDialog(SqlExplorer.this);
-                dialog.showAtSize(.5);
-            }
-        });
-        settings.setIcon(VaadinIcons.COG);
-        settings.setDescription("Modify sql explorer settings");
+        settings.getElement().setAttribute("title", "Modify sql explorer settings");
         
         return leftMenu;
     }
 
     protected void addShowButton(MenuBar contentMenuBar) {
         boolean visible = showButton != null ? showButton.isVisible() : false;
-        showButton = contentMenuBar.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                setSplitPosition(savedSplitPosition, Unit.PIXELS);
-                setLocked(false);
-                showButton.setVisible(false);
-            }
+        showButton = contentMenuBar.addItem(new Icon(VaadinIcon.MENU), event -> {
+            setSplitterPosition(savedSplitPosition, Unit.PIXELS);
+            setPrimaryStyle("max-width", "100%");
+            showButton.setVisible(false);
         });
-        showButton.setIcon(VaadinIcons.MENU);
-        showButton.setDescription("Show the database explorer");
+        showButton.getElement().setAttribute("title", "Show the database explorer");
         showButton.setVisible(visible);
     }
 
@@ -286,7 +239,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
             selected.unselected();
         }
         contentTabs.setSelectedTab(tab);
-        contentMenuBar.removeItems();
+        contentMenuBar.removeAll();
         addShowButton(contentMenuBar);
         if (tab instanceof QueryPanel) {
             ((DefaultButtonBar) ((QueryPanel) tab).getButtonBar()).populate(contentMenuBar);
@@ -446,7 +399,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                         db.getPlatform().dropTables(false, table);
                     } catch (Exception e) {
                         String msg = "Failed to drop " + table.getFullyQualifiedTableName() + ".  ";
-                        CommonUiUtils.notify(msg + "See log file for more details", Type.WARNING_MESSAGE);
+                        CommonUiUtils.notify(msg + "See log file for more details", NotificationVariant.LUMO_CONTRAST);
                         log.warn(msg, e);
                     }
                 }
@@ -465,9 +418,9 @@ public class SqlExplorer extends HorizontalSplitPanel {
 
         final DbTree tree = new DbTree(databaseProvider, settingsProvider);
         listener = event -> {
-            MultiSelectionEvent<DbTreeNode> multiSelectEvent = null;
-            if (event instanceof MultiSelectionEvent<?>) {
-                multiSelectEvent = (MultiSelectionEvent<DbTreeNode>) event;
+            MultiSelectionEvent<?, DbTreeNode> multiSelectEvent = null;
+            if (event instanceof MultiSelectionEvent<?, ?>) {
+                multiSelectEvent = (MultiSelectionEvent<?, DbTreeNode>) event;
             }
             Set<DbTreeNode> nodes = dbTree.getSelectedItems();
             if (nodes != null && (multiSelectEvent == null || !multiSelectEvent.getAddedSelection().isEmpty())) {
@@ -499,7 +452,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                     if (treeNode != null && treeNode.getType().equals(DbTree.NODE_TYPE_DATABASE)) {
                         IDb db = dbTree.getDbForNode(treeNode);
                         DatabaseInfoPanel databaseInfoTab = new DatabaseInfoPanel(db, settingsProvider.get(), selectedTabCaption);
-                        Tab tab = contentTabs.addTab(databaseInfoTab, db.getName(), VaadinIcons.DATABASE, 0);
+                        Tab tab = contentTabs.addTab(databaseInfoTab, db.getName(), VaadinIcon.DATABASE, 0);
                         tab.setClosable(true);
                         infoTabs.add(databaseInfoTab);
                     }
@@ -509,7 +462,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                             IDb db = dbTree.getDbForNode(treeNode);
                             TableInfoPanel tableInfoTab = new TableInfoPanel(table, user, db, settingsProvider.get(), SqlExplorer.this,
                                     selectedTabCaption);
-                            Tab tab = contentTabs.addTab(tableInfoTab, table.getFullyQualifiedTableName(), VaadinIcons.TABLE, 0);
+                            Tab tab = contentTabs.addTab(tableInfoTab, table.getFullyQualifiedTableName(), VaadinIcon.TABLE, 0);
                             tab.setClosable(true);
                             infoTabs.add(tableInfoTab);
                             selectContentTab(tableInfoTab);
@@ -522,7 +475,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
                             IDb db = dbTree.getDbForNode(treeNode);
                             TriggerInfoPanel triggerInfoTab = new TriggerInfoPanel(trigger, db, settingsProvider.get(),
                                     selectedTabCaption);
-                            Tab tab = contentTabs.addTab(triggerInfoTab, trigger.getName(), VaadinIcons.CROSSHAIRS, 0);
+                            Tab tab = contentTabs.addTab(triggerInfoTab, trigger.getName(), VaadinIcon.CROSSHAIRS, 0);
                             tab.setClosable(true);
                             infoTabs.add(triggerInfoTab);
                             selectContentTab(triggerInfoTab);
@@ -668,7 +621,7 @@ public class SqlExplorer extends HorizontalSplitPanel {
         dbTree.focus();
     }
 
-    public void addResultsTab(String caption, Resource icon, IContentTab panel) {
+    public void addResultsTab(String caption, Icon icon, IContentTab panel) {
         Tab tab = contentTabs.addTab(panel, caption);
         tab.setClosable(true);
         tab.setIcon(icon);

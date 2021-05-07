@@ -21,15 +21,13 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.annotations.PreserveOnRefresh;
-import com.vaadin.annotations.Push;
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.theme.Theme;
 
 @Title("SQL Explorer Demo")
 @Theme("sqlexplorer")

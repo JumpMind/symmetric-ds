@@ -23,20 +23,20 @@ package org.jumpmind.vaadin.ui.common;
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
-public class SqlEntryWindow extends ResizableWindow {
+public class SqlEntryDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
     protected AceEditor editor;
 
-    public SqlEntryWindow(String sql) {
+    public SqlEntryDialog(String sql) {
         setCaption("Edit SQL");
         editor = CommonUiUtils.createAceEditor();
         editor.setMode(AceMode.sql);
         editor.setValue(sql);
         editor.setSizeFull();
-        content.addComponents(editor, buildButtonFooter(buildCloseButton()));
-        content.setExpandRatio(editor, 1);
+        content.add(editor, buildButtonFooter(buildCloseButton()));
+        content.expand(editor);
     }
     
     public String getSQL() {

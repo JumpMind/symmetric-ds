@@ -29,7 +29,7 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.properties.TypedProperties;
 
-import com.vaadin.server.Resource;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class DbTreeNode implements Serializable {
 
@@ -41,7 +41,7 @@ public class DbTreeNode implements Serializable {
 
     protected String type;
 
-    protected Resource icon;
+    protected VaadinIcon icon;
 
     protected TypedProperties properties = new TypedProperties();
 
@@ -51,7 +51,7 @@ public class DbTreeNode implements Serializable {
 
     protected DbTree dbTree;
 
-    public DbTreeNode(DbTree dbTree, String name, String type, Resource icon,
+    public DbTreeNode(DbTree dbTree, String name, String type, VaadinIcon icon,
             DbTreeNode parent) {
         this.name = name;
         this.type = type;
@@ -172,11 +172,11 @@ public class DbTreeNode implements Serializable {
         return description;
     }
 
-    public void setIcon(Resource icon) {
+    public void setIcon(VaadinIcon icon) {
         this.icon = icon;
     }
 
-    public Resource getIcon() {
+    public VaadinIcon getIcon() {
         return icon;
     }
 

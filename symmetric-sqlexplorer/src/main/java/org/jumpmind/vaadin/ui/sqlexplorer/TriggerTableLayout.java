@@ -6,20 +6,16 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.TriggerInfoPanel.Refresher;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.MouseEventDetails.MouseButton;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.MenuBar.Command;
-import com.vaadin.ui.MenuBar.MenuItem;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
 
 public class TriggerTableLayout extends VerticalLayout{
 
@@ -48,29 +44,22 @@ public class TriggerTableLayout extends VerticalLayout{
 
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
-        final Label label = new Label(trigger.getFullyQualifiedName(), ContentMode.HTML);
-        leftBar.add(label);
+        final Span span = new Span();
+        span.getElement().setProperty("innerHTML", trigger.getFullyQualifiedName());
+        leftBar.add(span);
         
         bar.add(leftBar);
-        bar.setComponentAlignment(leftBar, Alignment.MIDDLE_LEFT);
-        bar.setExpandRatio(leftBar, 1);
+        bar.setVerticalComponentAlignment(Alignment.CENTER, leftBar);
+        bar.expand(leftBar);
         
         MenuBar rightBar = new MenuBar();
         rightBar.addClassName(ValoTheme.MENUBAR_BORDERLESS);
         rightBar.addClassName(ValoTheme.MENUBAR_SMALL);
 
-        MenuItem refreshButton = rightBar.addItem("", new Command() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void menuSelected(MenuItem selectedItem) {
-                refresher.refresh();
-            }
-        });
-        refreshButton.setIcon(VaadinIcons.REFRESH);
+        MenuItem refreshButton = rightBar.addItem(new Icon(VaadinIcon.REFRESH), event -> refresher.refresh());
 
         bar.add(rightBar);
-        bar.setComponentAlignment(rightBar, Alignment.MIDDLE_RIGHT);
+        bar.setVerticalComponentAlignment(Alignment.CENTER, rightBar);
         
         this.add(bar);
         
@@ -78,13 +67,12 @@ public class TriggerTableLayout extends VerticalLayout{
         grid.setSizeFull();
         
         grid.addItemClickListener(event -> {
-            MouseButton button = event.getMouseEventDetails().getButton();
-            if (button == MouseButton.LEFT && event.getColumn() != null) {
-                if (event.getMouseEventDetails().isDoubleClick()) {
-                    String colId = event.getColumn().getId();
-                    if (colId.equals("property")) {
+            if (event.getButton() == 0 && event.getColumn() != null) {
+                if (event.getClickCount() == 2) {
+                    String colKey = event.getColumn().getKey();
+                    if (colKey.equals("property")) {
                         ReadOnlyTextAreaDialog.show("Property", event.getItem(), false);
-                    } else if (colId.equals("value")) {
+                    } else if (colKey.equals("value")) {
                         ReadOnlyTextAreaDialog.show("Value", (String) trigger.getMetaData().get(event.getItem()), false);
                     }
                 } else {
@@ -95,7 +83,7 @@ public class TriggerTableLayout extends VerticalLayout{
         });
 
         this.add(grid);
-        this.setExpandRatio(grid, 1);
+        this.expand(grid);
     }
     
     private Grid<String> fillGrid() {
@@ -104,8 +92,8 @@ public class TriggerTableLayout extends VerticalLayout{
         grid.setColumnReorderingAllowed(false);
         
         Map<String, Object> metaData = trigger.getMetaData();
-        grid.addColumn(property -> property).setId("property").setCaption("Property").setWidth(250);
-        grid.addColumn(property -> String.valueOf(metaData.get(property))).setId("value").setCaption("Value");
+        grid.addColumn(property -> property).setKey("property").setHeader("Property").setWidth("250px");
+        grid.addColumn(property -> String.valueOf(metaData.get(property))).setKey("value").setHeader("Value");
         
         grid.setItems(metaData.keySet());
         

@@ -39,29 +39,26 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DbImport;
 import org.jumpmind.symmetric.io.data.DbImport.Format;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.ui.AbstractLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.ui.Notification.Type;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.Notification;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Receiver;
+import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.UI;
-import com.vaadin.ui.Upload;
-import com.vaadin.ui.Upload.Receiver;
-import com.vaadin.ui.Upload.SucceededEvent;
-import com.vaadin.ui.Upload.SucceededListener;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.themes.ValoTheme;
 
-public class DbImportDialog extends ResizableWindow {
+public class DbImportDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -136,11 +133,10 @@ public class DbImportDialog extends ResizableWindow {
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
         importLayout.add(formLayout);
-        importLayout.setExpandRatio(formLayout, 1);
+        importLayout.expand(formLayout);
 
         formatSelect = new ComboBox<>("Format");
         formatSelect.setItems( DbImportFormat.values());
-        formatSelect.setEmptySelectionAllowed(false);
         formatSelect.setValue(DbImportFormat.SQL);
         formatSelect.addValueChangeListener((e) -> {
                 DbImportFormat format = (DbImportFormat) formatSelect.getValue();
@@ -233,7 +229,7 @@ public class DbImportDialog extends ResizableWindow {
         alterCase.setEnabled(false);
         formLayout.add(alterCase);
 
-        upload = new Upload(null, new Receiver() {
+        upload = new Upload(new Receiver() {
 
             private static final long serialVersionUID = 1L;
 
@@ -250,38 +246,30 @@ public class DbImportDialog extends ResizableWindow {
                 return null;
             }
         });
-        upload.addSucceededListener(new SucceededListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void uploadSucceeded(SucceededEvent event) {
-                createDbImport();
-                try {
-                    doDbImport();
-                    close();
-                    Notification.show("Successful Import", Type.HUMANIZED_MESSAGE);
-                } catch (Exception e) {
-                    log.warn(e.getMessage(), e);
-                    Notification.show(e.getMessage(), Type.ERROR_MESSAGE);
-                } finally {
-                    deleteFileAndResource();
-                }
+        upload.addSucceededListener(event -> {
+            createDbImport();
+            try {
+                doDbImport();
+                close();
+                Notification successNotification = new Notification("Successful Import");
+                successNotification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                successNotification.open();
+            } catch (Exception e) {
+                log.warn(e.getMessage(), e);
+                Notification errorNotification = new Notification(e.getMessage());
+                errorNotification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                errorNotification.open();
+            } finally {
+                deleteFileAndResource();
             }
         });        
-        upload.setButtonCaption("Import");
-        upload.setStyleName(ValoTheme.BUTTON_PRIMARY);
+        upload.setUploadButton(new Button("Import"));
+        upload.setClassName(ValoTheme.BUTTON_PRIMARY);
         formLayout.add(upload);
 
-        cancelButton = new Button("Cancel", new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                UI.getCurrent().removeWindow(DbImportDialog.this);
-            }
-        });
+        cancelButton = new Button("Cancel", event -> close());
         add(importLayout, 1);
-        AbstractLayout buttonLayout = buildButtonFooter(cancelButton);
+        HorizontalLayout buttonLayout = buildButtonFooter(cancelButton);
         buttonLayout.add(upload);
         add(buttonLayout);
     }

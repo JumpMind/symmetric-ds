@@ -5,8 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import com.vaadin.server.DownloadStream;
-import com.vaadin.server.StreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 public class ExportFileDownloader extends StreamResource {
     private static final long serialVersionUID = 1L;
@@ -14,11 +13,18 @@ public class ExportFileDownloader extends StreamResource {
     protected String fileName;
 
     public ExportFileDownloader(final String fileName, final String contentType, final File file) throws FileNotFoundException {
-        super(new FileStreamSource(file),fileName);
+        //super(new FileStreamSource(file),fileName);
+        super(fileName, () -> {
+            try {
+                return new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                return null;
+            }
+        });
         this.contentType = contentType;
         this.fileName = fileName;
     }
-    
+    /*
     @Override
     public DownloadStream getStream() {
         DownloadStream download = new DownloadStream(super.getStreamSource().getStream(),contentType,fileName);
@@ -40,5 +46,5 @@ public class ExportFileDownloader extends StreamResource {
             return stream;
         }
 
-    }
+    }*/
 }

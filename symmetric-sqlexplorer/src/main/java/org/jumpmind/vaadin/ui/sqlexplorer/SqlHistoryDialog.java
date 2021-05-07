@@ -28,20 +28,18 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
+import org.jumpmind.vaadin.ui.common.ResizableDialog;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.components.grid.HeaderCell;
-import com.vaadin.ui.components.grid.HeaderRow;
-import com.vaadin.ui.themes.ValoTheme;
 
-public class SqlHistoryDialog extends ResizableWindow {
+public class SqlHistoryDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -67,19 +65,20 @@ public class SqlHistoryDialog extends ResizableWindow {
         grid = new Grid<SqlHistory>();
         grid.setSelectionMode(SelectionMode.MULTI);
 
-        grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setId("sqlStatement").setCaption("SQL");
+        grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setKey("sqlStatement").setHeader("SQL");
 
         grid.addColumn(history -> String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS", history.getLastExecuteTime()))
-                .setCaption("Time").setWidth(150).setMaximumWidth(200);
+                .setHeader("Time").setWidth("150px").setMaximumWidth(200);
 
-        grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setCaption("Duration").setWidth(120);
+        grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setHeader("Duration")
+                .setWidth("120px");
 
-        grid.addColumn(history -> history.getExecuteCount()).setCaption("Count").setWidth(120);
+        grid.addColumn(history -> history.getExecuteCount()).setHeader("Count").setWidth("120px");
         
         grid.setDescriptionGenerator(history -> history.getSqlStatement());
 
         HeaderRow filteringHeader = grid.appendHeaderRow();
-        HeaderCell logTextFilterCell = filteringHeader.getCell("sqlStatement");
+        HeaderCell logTextFilterCell = filteringHeader.getCell(grid.getColumnByKey("sqlStatement"));
         TextField filterField = new TextField();
         filterField.setPlaceholder("Filter");
         filterField.addClassName(ValoTheme.TEXTFIELD_TINY);
@@ -94,7 +93,7 @@ public class SqlHistoryDialog extends ResizableWindow {
                 grid.deselectAll();
                 grid.select(event.getItem());
             }
-            if (event.getMouseEventDetails().isDoubleClick()) {
+            if (event.getClickCount() == 2) {
                 select();
             }
         });
@@ -102,28 +101,16 @@ public class SqlHistoryDialog extends ResizableWindow {
         grid.setSizeFull();
 
         mainLayout.add(grid);
-        mainLayout.setExpandRatio(grid, 1);
+        mainLayout.expand(grid);
         
         grid.setItems(sqlHistories);
 
         Button cancelButton = new Button("Cancel");
-        cancelButton.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                close();
-            }
-        });
+        cancelButton.addClickListener(event -> close());
 
         Button applyButton = CommonUiUtils.createPrimaryButton("Select");
-        applyButton.setClickShortcut(KeyCode.ENTER);
-        applyButton.addClickListener(new Button.ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            public void buttonClick(ClickEvent event) {
-                select();
-            }
-        });
+        applyButton.addClickShortcut(Key.ENTER);
+        applyButton.addClickListener(event -> select());
 
         add(buildButtonFooter(cancelButton, applyButton));
 

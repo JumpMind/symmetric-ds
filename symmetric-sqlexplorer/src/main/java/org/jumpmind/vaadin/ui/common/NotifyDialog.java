@@ -24,31 +24,27 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.shared.ui.MarginInfo;
-import com.vaadin.shared.ui.ContentMode;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.ui.Notification.Type;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.UI;
 
-public class NotifyDialog extends ResizableWindow {
+public class NotifyDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
     boolean detailsMode = false;
 
     public NotifyDialog(String text, Throwable ex) {
-        this("Error", text, ex, Type.ERROR_MESSAGE);
+        this("Error", text, ex, NotificationVariant.LUMO_ERROR);
     }
 
-    public NotifyDialog(String caption, String text, final Throwable ex, Type type) {
+    public NotifyDialog(String caption, String text, final Throwable ex, NotificationVariant type) {
         super(caption);
-        setWidth(400, Unit.PIXELS);
-        setHeight(300, Unit.PIXELS);
+        setWidth("400px");
+        setHeight("300px");
 
         final HorizontalLayout messageArea = new HorizontalLayout();
         messageArea.addClassName("v-scrollable");
@@ -58,45 +54,40 @@ public class NotifyDialog extends ResizableWindow {
         
         text = isNotBlank(text) ? text : (ex != null ? ex.getMessage()
                 : "");
-        if (type == Type.ERROR_MESSAGE) {
-            setIcon(VaadinIcons.BAN);
+        if (type == NotificationVariant.LUMO_ERROR) {
+            setIcon(VaadinIcon.BAN);
         }
         
         final String message = text;
         
-        final Label textLabel = new Label(message, ContentMode.HTML);
-        messageArea.add(textLabel);
-        messageArea.setExpandRatio(textLabel, 1);
+        final Span textSpan = new Span();
+        textSpan.getElement().setProperty("innerHTML", message);
+        messageArea.add(textSpan);
+        messageArea.expand(textSpan);
         
         content.add(messageArea);
-        content.setExpandRatio(messageArea, 1);
+        content.expand(messageArea);
 
         final Button detailsButton = new Button("Details");
         detailsButton.setVisible(ex != null);
-        detailsButton.addClickListener(new ClickListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                detailsMode = !detailsMode;
-                if (detailsMode) {
-                    String msg = "<pre>" + ExceptionUtils.getStackTrace(ex).trim() + "</pre>";
-                    msg = msg.replace("\t", "    ");
-                    textLabel.setValue(msg);
-                    detailsButton.setCaption("Message");
-                    messageArea.setMargin(new MarginInfo(false, false, false, true));
-                    setHeight(600, Unit.PIXELS);
-                    setWidth(1000, Unit.PIXELS);
-                    setPosition(getPositionX()-300, getPositionY()-150);
-                } else {
-                    textLabel.setValue(message);
-                    detailsButton.setCaption("Details");
-                    messageArea.setMargin(true);
-                    setWidth(400, Unit.PIXELS);
-                    setHeight(300, Unit.PIXELS);
-                    setPosition(getPositionX()+300, getPositionY()+150);
-                }
+        detailsButton.addClickListener(event -> {
+            detailsMode = !detailsMode;
+            if (detailsMode) {
+                String msg = "<pre>" + ExceptionUtils.getStackTrace(ex).trim() + "</pre>";
+                msg = msg.replace("\t", "    ");
+                textSpan.getElement().setProperty("innerHTML", msg);
+                detailsButton.setText("Message");
+                messageArea.setMargin(new MarginInfo(false, false, false, true));
+                setHeight("600px");
+                setWidth("1000px");
+                setPosition(getPositionX()-300, getPositionY()-150);
+            } else {
+                textSpan.getElement().setProperty("innerHTML", message);
+                detailsButton.setText("Details");
+                messageArea.setMargin(true);
+                setWidth("400px");
+                setHeight("300px");
+                setPosition(getPositionX()+300, getPositionY()+150);
             }
         });
 
@@ -104,8 +95,8 @@ public class NotifyDialog extends ResizableWindow {
 
     }
 
-    public static void show(String caption, String text, Throwable throwable, Type type) {
-        UI.getCurrent().addWindow(new NotifyDialog(caption, text, throwable, type));
+    public static void show(String caption, String text, Throwable throwable, NotificationVariant type) {
+        new NotifyDialog(caption, text, throwable, type).open();
     }
 
 }

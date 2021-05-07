@@ -26,15 +26,11 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.Button.ClickEvent;
-import com.vaadin.flow.component.button.Button.ClickListener;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.ui.Window;
-import com.vaadin.ui.themes.ValoTheme;
 
 public class PromptDialog extends Window {
 
@@ -58,7 +54,7 @@ public class PromptDialog extends Window {
         setContent(layout);
 
         if (isNotBlank(text)) {
-            layout.add(new Label(text));
+            layout.add(new Span(text));
         }
 
         final TextField field = new TextField();
@@ -74,33 +70,21 @@ public class PromptDialog extends Window {
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
 
-        Label spacer = new Label(" ");
+        Span spacer = new Span(" ");
         buttonLayout.add(spacer);
-        buttonLayout.setExpandRatio(spacer, 1);
+        buttonLayout.expand(spacer);
 
         Button cancelButton = new Button("Cancel");
-        cancelButton.setClickShortcut(KeyCode.ESCAPE);
-        cancelButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                UI.getCurrent().removeWindow(PromptDialog.this);
-            }
-        });
+        cancelButton.addClickShortcut(Key.ESCAPE);
+        cancelButton.addClickListener(event -> UI.getCurrent().removeWindow(PromptDialog.this));
         buttonLayout.add(cancelButton);
 
         Button okButton = new Button("Ok");
-        okButton.setStyleName(ValoTheme.BUTTON_PRIMARY);
-        okButton.setClickShortcut(KeyCode.ENTER);
-        okButton.addClickListener(new ClickListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void buttonClick(ClickEvent event) {
-                if (promptListener.onOk(field.getValue())) {
-                    UI.getCurrent().removeWindow(PromptDialog.this);
-                }
+        okButton.setClassName(ValoTheme.BUTTON_PRIMARY);
+        okButton.addClickShortcut(Key.ENTER);
+        okButton.addClickListener(event -> {
+            if (promptListener.onOk(field.getValue())) {
+                UI.getCurrent().removeWindow(PromptDialog.this);
             }
         });
         buttonLayout.add(okButton);
