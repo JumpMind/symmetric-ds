@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlReadCursor;
 import org.jumpmind.db.sql.ISqlRowMapper;
@@ -62,8 +61,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-//@RunWith(PowerMockRunner.class)
-//@PrepareForTest({ TransformedData.class })
 @RunWith(MockitoJUnitRunner.class)
 public class DataGapRouteReaderTest {
     
@@ -92,31 +89,17 @@ public class DataGapRouteReaderTest {
     }
 
     protected DataGapRouteReader buildReader(int peekAheadMemoryThreshold, List<DataGap> dataGaps) throws Exception {
-
         when(parameterService.getEngineName()).thenReturn(ENGINE_NAME);
         when(parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)).thenReturn(true);
-//        when(parameterService.getInt(ParameterConstants.ROUTING_WAIT_FOR_DATA_TIMEOUT_SECONDS))
-//                .thenReturn(330);
         when(parameterService.getInt(ParameterConstants.ROUTING_PEEK_AHEAD_MEMORY_THRESHOLD))
                 .thenReturn(peekAheadMemoryThreshold);
-//        when(parameterService.getInt(ParameterConstants.ROUTING_MAX_GAPS_TO_QUALIFY_IN_SQL))
-//                .thenReturn(100);
-//        when(
-//                parameterService
-//                        .getInt(ParameterConstants.ROUTING_DATA_READER_THRESHOLD_GAPS_TO_USE_GREATER_QUERY))
-//                .thenReturn(100);
-//        when(parameterService.is(ParameterConstants.ROUTING_DATA_READER_ORDER_BY_DATA_ID_ENABLED))
-//                .thenReturn(true);
 
         IStatisticManager statisticManager = mock(StatisticManager.class);
         when(statisticManager.newProcessInfo((ProcessInfoKey) any())).thenReturn(new ProcessInfo());
 
         INodeService nodeService = mock(NodeService.class);
-//        when(nodeService.findIdentity()).thenReturn(new Node(NODE_ID, NODE_GROUP_ID));
-
         IDatabasePlatform platform = mock(IDatabasePlatform.class);
         when(platform.getSqlTemplate()).thenReturn(sqlTemplate);
-        when(platform.getDatabaseInfo()).thenReturn(new DatabaseInfo());
 
         ISymmetricDialect symmetricDialect = mock(AbstractSymmetricDialect.class);
         when(symmetricDialect.supportsTransactionId()).thenReturn(true);

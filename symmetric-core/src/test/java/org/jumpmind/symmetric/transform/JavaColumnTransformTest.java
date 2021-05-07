@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -47,7 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-//@RunWith(PowerMockRunner.class)
 @RunWith(MockitoJUnitRunner.class)
 public class JavaColumnTransformTest {
 
@@ -65,12 +63,10 @@ public class JavaColumnTransformTest {
         IDatabasePlatform platform = mock(IDatabasePlatform.class);
         ISymmetricDialect dialect = mock(ISymmetricDialect.class);
         when(dialect.getPlatform()).thenReturn(platform);
-        when(platform.getDatabaseInfo()).thenReturn(new DatabaseInfo());
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getSymmetricDialect()).thenReturn(dialect);
 
         extensionService = new ExtensionService(engine);
-//        when(engine.getExtensionService()).thenReturn(extensionService);
         
         context = mock(DataContext.class);
         when(context.findTransaction()).thenReturn(sqlTransaction);
