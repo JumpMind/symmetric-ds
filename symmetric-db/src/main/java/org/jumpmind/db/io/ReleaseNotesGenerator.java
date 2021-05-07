@@ -622,7 +622,7 @@ public class ReleaseNotesGenerator {
             }
         }
 
-        if (newTables.size() > 0 || tableColMap.keySet().size() > 0 || tableChangeMap.size() > 0) {
+        if (newTables.size() > 0 || tableColMap.size() > 0 || tableChangeMap.size() > 0) {
             if (tablesProCurrent.containsAll(newTables) && tablesProCurrent.containsAll(tableColMap.keySet())
                     && tablesProCurrent.containsAll(tableChangeMap.keySet())) {
                 writer.println(ReleaseNotesConstants.PRO_TOKEN_START);
@@ -664,7 +664,7 @@ public class ReleaseNotesGenerator {
                 }
             }
 
-            if (tableColMap.keySet().size() > 0) {
+            if (tableColMap.size() > 0) {
                 writer.println(ReleaseNotesConstants.TABLES_NEW_COL_HEADER);
                 writer.println();
                 List<Table> tables = new ArrayList<Table>(tableColMap.keySet());

@@ -157,12 +157,12 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                         name = parser.getName();
                         if ("row".equalsIgnoreCase(name)) {
                             String[] columnNames = rowData.keySet().toArray(
-                                    new String[rowData.keySet().size()]);
+                                    new String[rowData.size()]);
                             for (String colName : columnNames) {
                                 table.addColumn(new Column(colName));
                             }
                             String[] columnValues = rowData.values().toArray(
-                                    new String[rowData.values().size()]);
+                                    new String[rowData.size()]);
                             data.putParsedData(CsvData.ROW_DATA, columnValues);
                             rowData.clear();
                             if (lastTable == null || !lastTable.equals(table)) {
