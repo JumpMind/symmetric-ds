@@ -2391,9 +2391,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void awaitTermination(ExecutorService executor, List<Future<?>> futures) {
+        long timeout = parameterService.getLong(ParameterConstants.SYNC_TRIGGERS_TIMEOUT_IN_SECONDS, 3600);
         executor.shutdown();
         try {
-            if (executor.awaitTermination(1, TimeUnit.HOURS)) {
+            if (executor.awaitTermination(timeout, TimeUnit.SECONDS)) {
                 for (Future<?> future : futures) {
                     if (future.isDone()) {
                         future.get();

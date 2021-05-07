@@ -439,6 +439,7 @@ final public class ParameterConstants {
     public final static String LOG_SQL_PARAMETERS_INLINE = "log.sql.parameters.inline";
     
     public final static String SYNC_TRIGGERS_THREAD_COUNT_PER_SERVER = "sync.triggers.thread.count.per.server";
+    public final static String SYNC_TRIGGERS_TIMEOUT_IN_SECONDS = "sync.triggers.timeout.in.seconds";
 
     public static final String SMTP_HOST = "smtp.host";
     public static final String SMTP_TRANSPORT = "smtp.transport";
