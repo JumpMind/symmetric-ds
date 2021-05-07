@@ -87,8 +87,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
 
     private ISymmetricDialect symmetricDialect;
 
-    private ISqlTemplate sqlTemplate;
-
     private IDataLoaderService dataLoaderService;
 
     public ManageIncomingBatchListener(ProcessInfo processInfo, ISymmetricEngine engine) {
@@ -96,7 +94,6 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
         this.engine = engine;
         this.parameterService = engine.getParameterService();
         this.symmetricDialect = engine.getSymmetricDialect();
-        this.sqlTemplate = symmetricDialect.getPlatform().getSqlTemplate();
         this.dataLoaderService = engine.getDataLoaderService();
         this.incomingBatchService = engine.getIncomingBatchService();
         this.statisticManager = engine.getStatisticManager();
@@ -272,6 +269,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         this.currentBatch.setSqlState(sqlState);
                         this.currentBatch.setSqlCode(se.getErrorCode());
                         this.currentBatch.setSqlMessage(se.getMessage());
+                        ISqlTemplate sqlTemplate = symmetricDialect.getTargetPlatform(context.getTable().getName()).getSqlTemplate();
                         if (sqlTemplate.isForeignKeyViolation(se)) {
                             this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
                             this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);

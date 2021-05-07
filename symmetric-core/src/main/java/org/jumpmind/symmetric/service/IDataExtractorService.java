@@ -76,7 +76,7 @@ public interface IDataExtractorService {
     
     public List<ExtractRequest> getCompletedTablesForExtractByLoadId(long loadId);
     
-    public void updateExtractRequestLoadTime(Date loadTime, OutgoingBatch batch);
+    public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch batch);
     
     public void updateExtractRequestTransferred(OutgoingBatch batch, long transferMillis);
     

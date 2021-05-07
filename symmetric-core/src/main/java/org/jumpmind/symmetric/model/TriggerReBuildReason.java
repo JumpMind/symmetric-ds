@@ -32,7 +32,7 @@ public enum TriggerReBuildReason {
     FORCED("F"),
     TRIGGERS_MISSING("T"),
     TRIGGER_TEMPLATE_CHANGED("E"),
-    TRIGGER_HIST_MISSIG("H");
+    TRIGGER_HIST_MISSING("H");
 
     private String code;
 
@@ -54,8 +54,12 @@ public enum TriggerReBuildReason {
                 return TABLE_SYNC_CONFIGURATION_CHANGED;
             } else if (code.equals(FORCED.code)) {
                 return FORCED;
+            } else if (code.equals(TRIGGERS_MISSING.code)) {
+                return TRIGGERS_MISSING;
             } else if (code.equals(TRIGGER_TEMPLATE_CHANGED.code)) {
                 return TRIGGER_TEMPLATE_CHANGED;
+            } else if (code.equals(TRIGGER_HIST_MISSING.code)) {
+                return TRIGGER_HIST_MISSING;
             }
         }
         return null;

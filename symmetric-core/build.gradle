@@ -10,7 +10,9 @@ apply from: symAssembleDir + '/common.gradle'
         compile "org.springframework:spring-core:$springVersion"
 
         compileOnly "org.eclipse.jetty:jetty-alpn-conscrypt-server:$jettyVersion"
-        compile "com.squareup.okhttp3:okhttp:4.9.0"
+        // force okhttp3 to use newer version of kotlin
+        compile "org.jetbrains.kotlin:kotlin-stdlib:1.4.32"
+        compile "com.squareup.okhttp3:okhttp:4.9.1"
         
         compileOnly ("nl.cad:tps-parse:1.0.15-SNAPSHOT") {
             exclude group: 'commons-lang', module: 'commons-lang'

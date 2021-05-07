@@ -7,6 +7,7 @@ apply from: symAssembleDir + '/common.gradle'
         compile "net.sf.kxml:kxml2:2.3.0" // Used by ddlutils / DatabaseXmlUtil
         compile ("commons-beanutils:commons-beanutils:$commonsBeanUtilsVersion") {
             exclude group: "commons-collections"
+            exclude group: 'commons-logging'
         }
         
         compileOnly ("com.datastax.cassandra:cassandra-driver-core:3.1.4") {

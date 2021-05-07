@@ -68,6 +68,10 @@ public class DbFillCommand extends AbstractCommandLauncher {
     private static final String OPTION_ROLLBACK = "rollback";
     
     private static final String OPTION_TRUNCATE = "truncate";
+    
+    private static final String OPTION_MAX_TEXT_SIZE = "max-text-size";
+    
+    private static final String OPTION_MAX_BYTE_SIZE = "max-byte-size";
 
     public DbFillCommand() {
         super("dbfill", "[tablename...]", "DbFill.Option.");
@@ -114,6 +118,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
         addOption(options, null, OPTION_COMMIT_DELAY, true);
         addOption(options, null, OPTION_ROLLBACK, true);
         addOption(options, null, OPTION_TRUNCATE, false);
+        addOption(options, null, OPTION_MAX_TEXT_SIZE, true);
+        addOption(options, null, OPTION_MAX_BYTE_SIZE, true);
     }
 
     @Override
@@ -187,6 +193,12 @@ public class DbFillCommand extends AbstractCommandLauncher {
         if (line.hasOption(OPTION_TRUNCATE)) {
             dbFill.setTruncate(true);
         }
+        if (line.hasOption(OPTION_MAX_TEXT_SIZE)) {
+            dbFill.setMaxTextSize(Integer.parseInt(line.getOptionValue(OPTION_MAX_TEXT_SIZE)));
+        }        
+        if (line.hasOption(OPTION_MAX_BYTE_SIZE)) {
+            dbFill.setMaxByteSize(Integer.parseInt(line.getOptionValue(OPTION_MAX_BYTE_SIZE)));
+        }        
 
         // Ignore the Symmetric config tables.
         getSymmetricEngine();

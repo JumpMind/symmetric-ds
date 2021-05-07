@@ -551,6 +551,13 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
         return SnapshotUtil.createSnapshot(this, listener);
     }
 
+    @Override
+    public void clearCaches() {
+        super.clearCaches();
+        monitorService.flushMonitorCache();
+        monitorService.flushNotificationCache();
+    }
+
     public IMonitorService getMonitorService() {
         return monitorService;
     }

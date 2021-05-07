@@ -28,6 +28,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -126,7 +127,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
           ((JdbcSqlTransaction) transaction)
             .executeCallback(new IConnectionCallback<Boolean>() {
                 public Boolean execute(Connection con) throws SQLException {

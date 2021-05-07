@@ -109,6 +109,8 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     protected boolean supportsSubselectsInUpdate = true;
 
     protected Map<String, String> sqlReplacementTokens = new HashMap<String, String>();
+    
+    protected String tablePrefixLowerCase;
 
     public AbstractSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         this.parameterService = parameterService;
@@ -125,7 +127,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
         this.databaseProductVersion = sqlTemplate.getDatabaseProductVersion();
         this.driverName = sqlTemplate.getDriverName();
         this.driverVersion = sqlTemplate.getDriverVersion();
-
+        tablePrefixLowerCase = parameterService.getTablePrefix().toLowerCase();
     }
 
     public boolean requiresAutoCommitFalseToSetFetchSize() {
@@ -315,11 +317,10 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName,
             ISqlTransaction transaction) {
-        log.info("Dropping {} trigger for {}", triggerName, (schemaName != null ? schemaName + "." : "") + tableName);
         String sql = getDropTriggerSql(sqlBuffer, catalogName, schemaName, triggerName, tableName);
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.info("Removing {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
     }
@@ -600,6 +601,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     public IDatabasePlatform getTargetPlatform() {
+        return targetDialect.getPlatform();
+    }
+
+    @Override
+    public IDatabasePlatform getTargetPlatform(String tableName) {
+        if (tableName.toLowerCase().startsWith(tablePrefixLowerCase)) {
+            return platform;
+        }
         return targetDialect.getPlatform();
     }
 
@@ -941,6 +950,14 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
 
     @Override
     public ISymmetricDialect getTargetDialect() {
+        return targetDialect;
+    }
+
+    @Override
+    public ISymmetricDialect getTargetDialect(String tableName) {
+        if (tableName.toLowerCase().startsWith(tablePrefixLowerCase)) {
+            return this;
+        }
         return targetDialect;
     }
 

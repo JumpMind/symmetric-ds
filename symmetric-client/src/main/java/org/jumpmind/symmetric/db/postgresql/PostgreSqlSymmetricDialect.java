@@ -194,6 +194,7 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
                     + "() cascade";
             logSql(dropFunction, sqlBuffer);
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+                log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
                 transaction.execute(dropSql);
                 transaction.execute(dropFunction);
             }

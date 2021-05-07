@@ -34,8 +34,6 @@ set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
 -Djavax.net.ssl.trustStore="%SYM_HOME%\security\cacerts" ^
 -Djavax.net.ssl.keyStorePassword=changeit ^
 -Dlog4j2.configurationFile="file:///%SYM_HOME%\conf\log4j2.xml" ^
--Djava.util.logging.config.file=conf/logging.properties ^
--Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager ^
 -Dsun.net.client.defaultReadTimeout=300000 ^
 -Dsun.net.client.defaultConnectTimeout=300000 ^
 -Djava.net.preferIPv4Stack=true ^

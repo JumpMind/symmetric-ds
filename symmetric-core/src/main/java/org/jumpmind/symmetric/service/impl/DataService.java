@@ -62,6 +62,7 @@ import org.jumpmind.symmetric.SymmetricException;
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
+import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.SequenceIdentifier;
 import org.jumpmind.symmetric.ext.IHeartbeatListener;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -2572,13 +2573,15 @@ public class DataService extends AbstractService implements IDataService {
         try {
             log.debug("reloadMissingForeignKeyRows for batch {} table {}", batchName, data.getTableName());
             TriggerHistory hist = data.getTriggerHistory();
-            Table table = platform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
+            IDatabasePlatform targetPlatform = getTargetPlatform(data.getTableName());
+            ISymmetricDialect targetDialect = symmetricDialect.getTargetDialect(data.getTableName());
+            Table table = targetPlatform.getTableFromCache(hist.getSourceCatalogName(), hist.getSourceSchemaName(), hist.getSourceTableName(), false);
             if (table == null) {
                 log.info("Unable to lookup table " + hist.getFullyQualifiedSourceTableName());
                 return;
             }
             table = table.copyAndFilterColumns(hist.getParsedColumnNames(), hist.getParsedPkColumnNames(), true);
-            Object[] values = platform.getObjectValues(symmetricDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
+            Object[] values = targetPlatform.getObjectValues(targetDialect.getBinaryEncoding(), data.getParsedData(CsvData.ROW_DATA), table.getColumns());
     
             List<TableRow> tableRows = new ArrayList<TableRow>();
             Row row = new Row(values.length);
@@ -2587,7 +2590,7 @@ public class DataService extends AbstractService implements IDataService {
                 row.put(columnName, values.length > i ? values[i++] : null);
             }
             tableRows.add(new TableRow(table, row, null, null, null));
-            List<TableRow> foreignTableRows = platform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), symmetricDialect.getBinaryEncoding());
+            List<TableRow> foreignTableRows = targetPlatform.getDdlReader().getImportedForeignTableRows(tableRows, new HashSet<TableRow>(), targetDialect.getBinaryEncoding());
             
             if (foreignTableRows.isEmpty()) {
                 log.info("Could not determine foreign table rows to fix foreign key violation for "
@@ -2613,9 +2616,9 @@ public class DataService extends AbstractService implements IDataService {
                         Table foreignTable = foreignTableRow.getTable();
                         String catalog = foreignTable.getCatalog();
                         String schema = foreignTable.getSchema();
-                        if (StringUtils.equals(platform.getDefaultCatalog(), catalog)) {
+                        if (StringUtils.equals(targetPlatform.getDefaultCatalog(), catalog)) {
                             catalog = null;
-                            if (StringUtils.equals(platform.getDefaultSchema(), schema)) {
+                            if (StringUtils.equals(targetPlatform.getDefaultSchema(), schema)) {
                                 schema = null;
                             }
                         }
@@ -3241,14 +3244,14 @@ public class DataService extends AbstractService implements IDataService {
                     List<TriggerHistory> activeTriggerHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
                     triggerHistory = new TriggerHistory(table, trigger, engine.getSymmetricDialect().getTriggerTemplate());
                     triggerHistory.setTriggerHistoryId(triggerHistId);
-                    triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSIG);
+                    triggerHistory.setLastTriggerBuildReason(TriggerReBuildReason.TRIGGER_HIST_MISSING);
                     triggerHistory.setNameForInsertTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.INSERT,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
                     triggerHistory.setNameForUpdateTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.UPDATE,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
                     triggerHistory.setNameForDeleteTrigger(engine.getTriggerRouterService().getTriggerName(DataEventType.DELETE,
                             symmetricDialect.getMaxTriggerNameLength(), trigger, table, activeTriggerHistories, null));
-                    log.warn("Could not find a trigger history row for the table {} for data_id {}.  \"Attempting\" to generate a new trigger history row", tableName, data.getDataId());
+                    log.warn("Could not find a trigger history row for the table {} for data_id {}.  Generating a new trigger history row.", tableName, data.getDataId());
                     engine.getTriggerRouterService().insert(triggerHistory);
                 } else {
                     if (missingConfigTriggerHist == null) {

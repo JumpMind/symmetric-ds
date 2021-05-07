@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.sql.ISqlTemplate;
+import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.AbstractBatch.Status;
@@ -66,6 +68,8 @@ public class AckUriHandlerTest {
         IOutgoingBatchService outgoingBatchService = mock(IOutgoingBatchService.class);
         IConfigurationService configService = mock(IConfigurationService.class);
         IStatisticManager statMan = mock(StatisticManager.class);
+        ISqlTemplate sqlTemplate = mock(ISqlTemplate.class);
+        ISqlTransaction sqlTransaction = mock(ISqlTransaction.class);
         batch = new OutgoingBatch(NODE_ID, CHANNEL_ID, Status.LD);
         batch.setBatchId(BATCH_ID);
         when(outgoingBatchService.findOutgoingBatch(BATCH_ID, NODE_ID)).thenReturn(batch);
@@ -80,6 +84,8 @@ public class AckUriHandlerTest {
         when(engine.getOutgoingBatchService()).thenReturn(outgoingBatchService);
         when(engine.getConfigurationService()).thenReturn(configService);
         when(engine.getStatisticManager()).thenReturn(statMan);
+        when(symmetricDialect.getPlatform().getSqlTemplate()).thenReturn(sqlTemplate);
+        when(sqlTemplate.startSqlTransaction()).thenReturn(sqlTransaction);
 
         paramMap = new HashMap<String, String[]>();
         request = mock(HttpServletRequest.class);

@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -136,6 +137,7 @@ public class SqlAnywhereSymmetricDialect extends AbstractSymmetricDialect implem
         final String sql = "drop trigger " + schemaName + triggerName;
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             ((JdbcSqlTransaction) transaction)
             .executeCallback(new IConnectionCallback<Boolean>() {
                 public Boolean execute(Connection con) throws SQLException {

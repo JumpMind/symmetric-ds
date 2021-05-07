@@ -76,7 +76,7 @@ public class H2SymmetricDialect extends AbstractEmbeddedSymmetricDialect impleme
         logSql(dropTable, sqlBuffer);
 
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
-            log.debug("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
+            log.info("Dropping trigger {} for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(dropSql);
             transaction.execute(dropTable);
         }

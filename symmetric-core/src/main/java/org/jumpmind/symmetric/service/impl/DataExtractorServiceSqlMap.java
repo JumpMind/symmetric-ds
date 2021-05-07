@@ -42,13 +42,12 @@ public class DataExtractorServiceSqlMap extends AbstractSqlMap {
 
         putSql("selectExtractChildRequestsByParentSql", "select * from $(extract_request) where parent_request_id = ?");
 
-        putSql("countExtractChildRequestMissed",
-                "select count(*) from $(extract_request) where status = ? and parent_request_id > 0 " 
+        putSql("selectExtractChildRequestIdsMissed",
+                "select request_id from $(extract_request) where status = ? and parent_request_id > 0 " 
                 + "and parent_request_id in (select request_id from $(extract_request) where parent_request_id = 0 and status = ?)");
 
-        putSql("releaseExtractChildRequestMissed",
-                "update $(extract_request) set parent_request_id = 0 where status = ? and parent_request_id > 0 " 
-                + "and parent_request_id in (select request_id from $(extract_request) where parent_request_id = 0 and status = ?)");
+        putSql("releaseExtractChildRequestFromParent",
+                "update $(extract_request) set parent_request_id = 0 where request_id = ?");
         
         putSql("insertExtractRequestSql", "insert into $(extract_request) (request_id, node_id, queue, status, start_batch_id, end_batch_id, trigger_id, router_id, load_id, table_name, total_rows, parent_request_id, last_update_time, create_time) "
                 + " values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp, current_timestamp)");

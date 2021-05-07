@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.PermissionType;
 import org.jumpmind.db.sql.ISqlTransaction;
@@ -65,6 +66,8 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     private String functionTemplateKeySuffix = null;
     
     private boolean isConvertZeroDateToNull;
+    
+    private String characterSet;
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
@@ -81,7 +84,6 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 log.warn("Cannot convert zero dates to null because unable to verify sql_mode: {}", e.getMessage());
             }
         }
-        this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull);
 
         int[] versions = Version.parseVersion(getProductVersion());        
         if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
@@ -90,7 +92,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             this.functionTemplateKeySuffix = PRE_5_7_6;
         } else {
             this.functionTemplateKeySuffix = POST_5_7_6;
-        }        
+        }
+
+        characterSet = parameterService.getString(ParameterConstants.DB_MASTER_COLLATION, Version.isOlderThanVersion(getProductVersion(), "5.5.3") ? "utf8" : "utf8mb4");
+        this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull, characterSet);
     }
 
     @Override
@@ -201,30 +206,17 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     @Override
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName,
             String triggerName, String tableName, ISqlTransaction transaction) {
-        boolean ignoreCase =
-                parameterService.is(ParameterConstants.DB_METADATA_IGNORE_CASE);
-        if (catalogName == null ||
-                (ignoreCase && catalogName.equalsIgnoreCase(platform.getDefaultCatalog())) ||
-                (!ignoreCase && catalogName.equals(platform.getDefaultCatalog())))
-        {
-            catalogName = "";
-        } else {
-            if (ignoreCase) {
-                catalogName =
-                        platform.alterCaseToMatchDatabaseDefaultCase(catalogName);
-            }
-            catalogName =
-                    platform.getDatabaseInfo().getDelimiterToken() + catalogName +
-                    platform.getDatabaseInfo().getDelimiterToken() + ".";
-        }
-        String sql = "drop trigger if exists " + catalogName + triggerName;
+        String quote = platform.getDatabaseInfo().getDelimiterToken();
+        String catalogPrefix = StringUtils.isBlank(catalogName) ? "" : (quote + catalogName + quote + ".");
+        String sql = "drop trigger if exists " + catalogPrefix + triggerName;
 
         if (getMajorVersion() < 5 || (getMajorVersion() == 5 && getMinorVersion() == 0 && Version.parseVersion(getProductVersion())[2] < 32)) {
-            sql = "drop trigger " + catalogName + triggerName;
+            sql = "drop trigger " + catalogPrefix + triggerName;
         }
 
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+            log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
             transaction.execute(sql);
         }
     }

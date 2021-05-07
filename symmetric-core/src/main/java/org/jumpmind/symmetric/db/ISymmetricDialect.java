@@ -90,6 +90,8 @@ public interface ISymmetricDialect {
     public IDatabasePlatform getPlatform();
     
     public IDatabasePlatform getTargetPlatform();
+    
+    public IDatabasePlatform getTargetPlatform(String tableName);
 
     public String getName();
 
@@ -271,6 +273,8 @@ public interface ISymmetricDialect {
     public PermissionType[] getSymTablePermissions();
 
     public ISymmetricDialect getTargetDialect();
+    
+    public ISymmetricDialect getTargetDialect(String tableName);
     
     public void setTargetDialect(ISymmetricDialect targetDialect);
     

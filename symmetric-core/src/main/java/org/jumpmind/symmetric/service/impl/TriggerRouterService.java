@@ -1836,7 +1836,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                     String.format("Failed to create triggers for %s",
                             trigger.qualifiedSourceTableName()), ex);
 
-            if (newestHistory != null) {
+            boolean usingTargetDialect = (!getSymmetricDialect().equals(getTargetDialect()) && !trigger.getSourceTableName().startsWith(getSymmetricDialect().getTablePrefix()));
+
+            if (newestHistory != null && !usingTargetDialect) {
                 // Make sure all the triggers are removed from the
                 // table
                 try {

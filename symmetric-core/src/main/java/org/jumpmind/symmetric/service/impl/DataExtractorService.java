@@ -70,6 +70,7 @@ import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.sql.ISqlRowMapper;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.sql.Row;
+import org.jumpmind.db.sql.mapper.LongMapper;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.AbstractSymmetricEngine;
 import org.jumpmind.symmetric.ISymmetricEngine;
@@ -564,7 +565,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 BufferedWriter writer = transport.openWriter();
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                         writer, targetNode.requires13Compatiblity(), targetNode.allowCaptureTimeInProtocol(),
-                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME));
+                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME, true));
 
                 return extract(extractInfo, targetNode, activeBatches, dataWriter, writer, ExtractMode.FOR_SYM_CLIENT);
             }
@@ -653,7 +654,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             if (batch != null) {
                 IDataWriter dataWriter = new ProtocolDataWriter(nodeService.findIdentityNodeId(),
                         writer, targetNode.requires13Compatiblity(), targetNode.allowCaptureTimeInProtocol(),
-                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME));
+                        parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME, true));
                 List<OutgoingBatch> batches = new ArrayList<OutgoingBatch>(1);
                 batches.add(batch);
                 batches = extract(new ProcessInfo(), targetNode, batches, dataWriter, null,
@@ -1307,7 +1308,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     new ProcessInfoDataWriter(new StagingDataWriter(memoryThresholdInBytes, true, nodeService
                             .findIdentityNodeId(), Constants.STAGING_CATEGORY_OUTGOING,
                             stagingManager, targetNode.allowCaptureTimeInProtocol(),
-                            parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME)), processInfo));
+                            parameterService.is(ParameterConstants.EXTRACT_ROW_CAPTURE_TIME, true)), processInfo));
         } else {
             transformExtractWriter = createTransformDataWriter(sourceNode, targetNode,
                     new ProcessInfoDataWriter(dataWriter, processInfo));
@@ -1609,37 +1610,18 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     @Override
-    public void updateExtractRequestLoadTime(Date loadTime, OutgoingBatch outgoingBatch) {
-        ISqlTransaction transaction = null;
-        try {
-            transaction = sqlTemplate.startSqlTransaction();
-            
-            transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
-                    outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
-                    outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
-                    outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
+    public void updateExtractRequestLoadTime(ISqlTransaction transaction, Date loadTime, OutgoingBatch outgoingBatch) {
+        transaction.prepareAndExecute(getSql("updateExtractRequestLoadTime"), outgoingBatch.getBatchId(), 
+                outgoingBatch.getReloadRowCount() > 0 ? outgoingBatch.getDataRowCount() : 0, 
+                outgoingBatch.getLoadMillis(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(), outgoingBatch.getBatchId(),
+                outgoingBatch.getNodeId(), outgoingBatch.getLoadId());
 
-            TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
-                    outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
+        TableReloadStatus status = dataService.updateTableReloadStatusDataLoaded(transaction,
+                outgoingBatch.getLoadId(), outgoingBatch.getBatchId(), 1);
 
-            if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
-                log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
-                nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
-            }
-
-            transaction.commit();
-        } catch (Error ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } catch (RuntimeException ex) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            throw ex;
-        } finally {
-            close(transaction);
+        if (status != null && status.isFullLoad() && (status.isCancelled() || status.isCompleted())) {
+            log.info("Initial load ended for node {}", outgoingBatch.getNodeId());
+            nodeService.setInitialLoadEnded(transaction, outgoingBatch.getNodeId());
         }
     }
     
@@ -2191,10 +2173,12 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     public void releaseMissedExtractRequests() {
-        int missingCount = sqlTemplateDirty.queryForInt(getSql("countExtractChildRequestMissed"), Status.NE.name(), Status.OK.name());
-        if (missingCount > 0) {
-            log.info("Releasing {} child extract requests that missed processing by parent node", missingCount);
-            sqlTemplate.update(getSql("releaseExtractChildRequestMissed"), Status.NE.name(), Status.OK.name());
+        List<Long> requestIds = sqlTemplateDirty.query(getSql("selectExtractChildRequestIdsMissed"), new LongMapper(), Status.NE.name(), Status.OK.name());
+        if (requestIds != null && requestIds.size() > 0) {
+            log.info("Releasing {} child extract requests that missed processing by parent node", requestIds.size());
+            for (Long requestId : requestIds) {
+                sqlTemplate.update(getSql("releaseExtractChildRequestFromParent"), requestId);
+            }
         }
     }
     

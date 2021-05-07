@@ -1043,8 +1043,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         getNodeService().flushNodeGroupCache();
         getJobManager().restartJobs();
         getLoadFilterService().clearCache();
-        getMonitorService().flushMonitorCache();
-        getMonitorService().flushNotificationCache();
         getFileSyncService().clearCache();
     }
 
@@ -1230,7 +1228,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
     }
     
     public String getLastException() {
-        return lastException.getMessage();
+        return lastException == null ? null : lastException.getMessage();
     }
     
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
