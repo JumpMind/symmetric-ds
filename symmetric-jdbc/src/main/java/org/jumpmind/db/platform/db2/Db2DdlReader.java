@@ -139,7 +139,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 
                 // Db2 returns "HH24.MI.SS"
                 if (matcher.matches()) {
-                    StringBuffer newDefault = new StringBuffer();
+                	StringBuilder newDefault = new StringBuilder();
 
                     newDefault.append("'");
                     // the hour
@@ -160,7 +160,7 @@ public class Db2DdlReader extends AbstractJdbcDdlReader {
 
                 // Db2 returns "YYYY-MM-DD-HH24.MI.SS.FF"
                 if (matcher.matches()) {
-                    StringBuffer newDefault = new StringBuffer();
+                	StringBuilder newDefault = new StringBuilder();
 
                     newDefault.append("'");
                     // group 1 is the date which has the correct format

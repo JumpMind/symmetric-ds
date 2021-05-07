@@ -293,7 +293,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     }
     
     protected String buildSql() {
-        StringBuffer sql = new StringBuffer("(");
+    	StringBuilder sql = new StringBuilder("(");
         for (int i = 0; i < this.getTargetTable().getColumnCount(); i++) {
             if (i > 0) {
                 sql.append(",");

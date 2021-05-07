@@ -353,7 +353,7 @@ public class WindowsService extends WrapperService {
                 
                 String dependencies = null;
                 if (config.getDependencies() != null && config.getDependencies().size() > 0) {
-                    StringBuffer sb = new StringBuffer();
+                	StringBuilder sb = new StringBuilder();
                     for (String dependency : config.getDependencies()) {
                         sb.append(dependency).append("\0");
                     }

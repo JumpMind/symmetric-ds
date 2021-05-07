@@ -171,7 +171,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         // Sql Server generates an index "PK__[table name]__[hex number]"
-        StringBuffer pkIndexName = new StringBuffer();
+    	StringBuilder pkIndexName = new StringBuilder();
 
         pkIndexName.append("PK__");
         pkIndexName.append(table.getName());

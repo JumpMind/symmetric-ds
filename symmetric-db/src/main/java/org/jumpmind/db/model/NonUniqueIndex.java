@@ -93,7 +93,7 @@ public class NonUniqueIndex extends IndexImpBase {
     }
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Index [name=");
         result.append(getName());
@@ -105,7 +105,7 @@ public class NonUniqueIndex extends IndexImpBase {
     }
 
     public String toVerboseString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Index [");
         result.append(getName());

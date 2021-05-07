@@ -1364,7 +1364,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The insertion sql
      */
     public String getInsertSql(Table table, Map<String, Object> columnValues, boolean genPlaceholders) {
-        StringBuffer buffer = new StringBuffer("INSERT INTO ");
+    	StringBuilder buffer = new StringBuilder("INSERT INTO ");
         boolean addComma = false;
 
         buffer.append(getFullyQualifiedTableNameShorten(table));
@@ -1426,7 +1426,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The update sql
      */
     public String getUpdateSql(Table table, Map<String, Object> columnValues, boolean genPlaceholders) {
-        StringBuffer buffer = new StringBuffer("UPDATE ");
+    	StringBuilder buffer = new StringBuilder("UPDATE ");
         boolean addSep = false;
 
         buffer.append(getFullyQualifiedTableNameShorten(table));
@@ -1485,7 +1485,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The delete sql
      */
     public String getDeleteSql(Table table, Map<String, Object> pkValues, boolean genPlaceholders) {
-        StringBuffer buffer = new StringBuffer("DELETE FROM ");
+    	StringBuilder buffer = new StringBuilder("DELETE FROM ");
         boolean addSep = false;
 
         buffer.append(getFullyQualifiedTableNameShorten(table));
@@ -1525,7 +1525,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
             return "NULL";
         }
 
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         // TODO: Handle binary types (BINARY, VARBINARY, LONGVARBINARY, BLOB)
         switch (column.getMappedTypeCode()) {
@@ -1636,7 +1636,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         int delta = originalLength - desiredLength;
         int startCut = desiredLength / 2;
 
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         result.append(name.substring(0, startCut));
         if (((startCut == 0) || (name.charAt(startCut - 1) != '_'))
@@ -2122,7 +2122,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         boolean needsName = (fkName == null) || (fkName.length() == 0);
 
         if (needsName) {
-            StringBuffer name = new StringBuffer();
+        	StringBuilder name = new StringBuilder();
 
             for (int idx = 0; idx < fk.getReferenceCount(); idx++) {
                 name.append(fk.getReference(idx).getLocalColumnName());
@@ -2156,7 +2156,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      * @return The constraint name
      */
     public String getConstraintName(String prefix, Table table, String secondPart, String suffix) {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         if (prefix != null) {
             result.append(prefix);

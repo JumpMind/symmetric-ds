@@ -300,7 +300,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             return "";
         }
         
-        StringBuffer out = new StringBuffer();
+        StringBuilder out = new StringBuilder();
         char current;
         for (int i = 0; i < in.length(); i++) {
             current = in.charAt(i);

@@ -113,7 +113,7 @@ public class CassandraPlatform extends AbstractDatabasePlatform {
                     column.setName(columnMeta.getName());
                     column.setMappedTypeCode(getMappedTypeCode(columnMeta.getType().getName().name()));
                     if (columnMeta.getType().getTypeArguments() != null) {
-                        StringBuffer types = new StringBuffer();
+                    	StringBuilder types = new StringBuilder();
                         for (DataType dt : columnMeta.getType().getTypeArguments()) {
                             if (types.length() > 0) { 
                                 types.append(",");

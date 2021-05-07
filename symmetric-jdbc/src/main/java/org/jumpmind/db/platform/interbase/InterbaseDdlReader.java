@@ -133,7 +133,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
      * @param table The table
      */
     protected void determineExtraColumnInfo(Connection connection, Table table) throws SQLException {
-        StringBuffer query = new StringBuffer();
+    	StringBuilder query = new StringBuilder();
 
         query.append("SELECT a.RDB$FIELD_NAME, a.RDB$DEFAULT_SOURCE, b.RDB$FIELD_PRECISION, b.RDB$FIELD_SCALE,");
         query.append(" b.RDB$FIELD_TYPE, b.RDB$FIELD_SUB_TYPE FROM RDB$RELATION_FIELDS a, RDB$FIELDS b");
@@ -373,7 +373,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         InterbaseDdlBuilder builder = (InterbaseDdlBuilder) getPlatform().getDdlBuilder();
         String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
-        StringBuffer query = new StringBuffer();
+        StringBuilder query = new StringBuilder();
 
         query.append("SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$INDEX_NAME=?");
 
@@ -404,7 +404,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
         String tableName = builder.getTableName(table.getName());
         String indexName = builder.getIndexName(index);
         String fkName = builder.getForeignKeyName(table, fk);
-        StringBuffer query = new StringBuffer();
+        StringBuilder query = new StringBuilder();
 
         query.append("SELECT RDB$CONSTRAINT_NAME FROM RDB$RELATION_CONSTRAINTS where RDB$RELATION_NAME=? AND RDB$CONSTRAINT_TYPE=? AND RDB$CONSTRAINT_NAME=? AND RDB$INDEX_NAME=?");
 

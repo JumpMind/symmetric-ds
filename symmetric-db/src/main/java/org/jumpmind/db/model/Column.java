@@ -662,7 +662,7 @@ public class Column implements Cloneable, Serializable {
      * {@inheritDoc}
      */
     public String toString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Column [name=");
         result.append(getName());
@@ -681,7 +681,7 @@ public class Column implements Cloneable, Serializable {
      * @return The string representation
      */
     public String toVerboseString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Column [name=");
         result.append(getName());

@@ -123,7 +123,7 @@ public class ReleaseNotesGenerator {
         }
         InputStreamReader in = new InputStreamReader(conn.getInputStream());
         BufferedReader br = new BufferedReader(in);
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("[");
         String output;
         while ((output = br.readLine()) != null) {
@@ -462,8 +462,8 @@ public class ReleaseNotesGenerator {
                     }
 
                     // Primary Keys
-                    StringBuffer added = new StringBuffer();
-                    StringBuffer removed = new StringBuffer();
+                    StringBuilder added = new StringBuilder();
+                    StringBuilder removed = new StringBuilder();
                     boolean addedAny = false;
                     boolean removedAny = false;
 

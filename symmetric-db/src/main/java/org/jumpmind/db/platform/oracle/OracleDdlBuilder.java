@@ -327,7 +327,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         Column[] columns = table.getAutoIncrementColumns();
 
         if (columns.length > 0) {
-            StringBuffer result = new StringBuffer();
+        	StringBuilder result = new StringBuilder();
 
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {

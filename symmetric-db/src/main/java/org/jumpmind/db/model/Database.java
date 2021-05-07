@@ -277,7 +277,7 @@ public class Database implements Serializable, Cloneable {
     }
     
     public static String printTables(List<Table> tables) {
-        StringBuffer sb = new StringBuffer();
+    	StringBuilder sb = new StringBuilder();
         for (Table t : tables) {
             sb.append(t.getName() + ",");
         }
@@ -810,7 +810,7 @@ public class Database implements Serializable, Cloneable {
      * {@inheritDoc}
      */
     public String toString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Database [name=").append(name);
         result.append("; catalog=").append(catalog);
@@ -827,7 +827,7 @@ public class Database implements Serializable, Cloneable {
      * @return The string representation
      */
     public String toVerboseString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Database [");
         result.append(getName());

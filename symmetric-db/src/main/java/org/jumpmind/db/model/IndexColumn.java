@@ -198,7 +198,7 @@ public class IndexColumn implements Cloneable, Serializable {
     }
 
     public String toString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Index column [name=");
         result.append(getName());

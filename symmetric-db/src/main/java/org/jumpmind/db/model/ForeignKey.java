@@ -482,7 +482,7 @@ public class ForeignKey implements Cloneable, Serializable {
      * {@inheritDoc}
      */
     public String toString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Foreign key [");
         if ((getName() != null) && (getName().length() > 0)) {
@@ -511,7 +511,7 @@ public class ForeignKey implements Cloneable, Serializable {
      * @return The string representation
      */
     public String toVerboseString() {
-        StringBuffer result = new StringBuffer();
+    	StringBuilder result = new StringBuilder();
 
         result.append("Foreign key [");
         if ((getName() != null) && (getName().length() > 0)) {

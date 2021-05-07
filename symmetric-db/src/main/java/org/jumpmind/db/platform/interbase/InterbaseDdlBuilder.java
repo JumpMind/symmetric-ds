@@ -236,7 +236,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         if (columns.length == 0) {
             return null;
         } else {
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
 
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {
@@ -255,7 +255,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         if (columns.length == 0) {
             return null;
         } else {
-            StringBuffer result = new StringBuffer();
+        	StringBuilder result = new StringBuilder();
 
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {

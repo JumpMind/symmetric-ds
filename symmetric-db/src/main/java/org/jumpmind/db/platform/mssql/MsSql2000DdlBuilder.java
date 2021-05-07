@@ -198,7 +198,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
             return "NULL";
         }
 
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         switch (column.getMappedTypeCode()) {
             case Types.REAL:
