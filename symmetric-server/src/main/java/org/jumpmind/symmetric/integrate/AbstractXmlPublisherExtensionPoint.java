@@ -146,9 +146,8 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
                 finalizeXmlAndPublish(context);
                 return true;
             } else {
-                log.warn(String.format(
-                        "Failed to resend message for tables %s, columns %s, and args %s",
-                        tableNamesToPublishAsGroup, groupByColumnNames, args));
+                log.warn("Failed to resend message for tables {}, columns {}, and args {}",
+                        tableNamesToPublishAsGroup, groupByColumnNames, args);
             }
         } catch (RuntimeException ex) {
             log.error(String.format(

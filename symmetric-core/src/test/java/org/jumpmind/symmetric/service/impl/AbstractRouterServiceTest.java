@@ -382,7 +382,7 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
         getConfigurationService().saveChannel(testChannel, true);
         final int ROWS_TO_INSERT = 1000;
         final int NODES_TO_INSERT = 10;
-        logger.info(String.format("About to insert %s nodes", NODES_TO_INSERT));
+        logger.info("About to insert %s nodes", NODES_TO_INSERT);
         for (int i = 0; i < 1000; i++) {
             String nodeId = String.format("100%s", i);
             getRegistrationService().openRegistration(TestConstants.TEST_CLIENT_NODE_GROUP, nodeId);
@@ -390,11 +390,11 @@ abstract public class AbstractRouterServiceTest extends AbstractServiceTest {
             node.setSyncEnabled(true);
             getNodeService().save(node);
         }
-        logger.info(String.format("Done inserting %s nodes", NODES_TO_INSERT));
+        logger.info("Done inserting %s nodes", NODES_TO_INSERT);
 
-        logger.info(String.format("About to insert %s rows", ROWS_TO_INSERT));
+        logger.info("About to insert %s rows", ROWS_TO_INSERT);
         insert(TEST_TABLE_1, ROWS_TO_INSERT, false);
-        logger.info(String.format("Done inserting %s rows", ROWS_TO_INSERT));
+        logger.info("Done inserting %s rows", ROWS_TO_INSERT);
 
         logger.info("About to route data");
         getRouterService().routeData(true);

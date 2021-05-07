@@ -727,10 +727,10 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
             }
             return table;
         } catch (RuntimeException ex) {
-            log.error(String.format("Failed to read table: %s.  Error: %s", tableName, ex.getMessage()));
+            log.error("Failed to read table: {}.  Error: {}", tableName, ex.getMessage());
             throw ex;
         } catch (SQLException ex) {
-            log.error(String.format("Failed to read table: %s.  Error: %s", tableName, ex.getMessage()));
+            log.error("Failed to read table: {}.  Error: {}", tableName, ex.getMessage());
             throw ex;
         }
     }

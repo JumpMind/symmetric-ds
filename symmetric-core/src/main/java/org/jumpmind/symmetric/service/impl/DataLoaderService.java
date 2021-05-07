@@ -673,7 +673,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
     private void awaitTermination(ExecutorService executor) throws InterruptedException {
         long hours = 1;
         while (!executor.awaitTermination(1, TimeUnit.HOURS)) {
-            log.info(String.format("Executor has been awaiting loader termination for %d hour(s).", hours));
+            log.info("Executor has been awaiting loader termination for {} hour(s).", hours);
             hours++;
         }
     }

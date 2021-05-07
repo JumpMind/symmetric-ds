@@ -209,7 +209,7 @@ public class AseSymmetricDialect extends AbstractSymmetricDialect implements ISy
                                 PreparedStatement stmt2 = con
                                         .prepareStatement(String.format("select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = ?", catalogName));
                                 stmt2.setString(1, triggerName);
-                                log.debug(String.format("TRY AGAIN Exceute:  select count(*) from %s.dbo.sysobjects where type = 'TR' AND name ='%s'", catalogName, triggerName));
+                                log.debug("TRY AGAIN Exceute:  select count(*) from {}.dbo.sysobjects where type = 'TR' AND name ='{}'", catalogName, triggerName);
                                 rs = stmt2.executeQuery();
                             } catch (Exception ex2) {
                                 log.error(String.format("Failed again with catalog... select count(*) from %s.dbo.sysobjects where type = 'TR' AND name = '%s'", catalogName, triggerName), ex2);

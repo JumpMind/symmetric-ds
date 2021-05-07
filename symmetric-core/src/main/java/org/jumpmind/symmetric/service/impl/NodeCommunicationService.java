@@ -606,9 +606,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 }
                 unlocked = true;
                 if (attempts > 1) {
-                    log.info(String.format("Successfully unlocked %s node communication record for %s and channel %s after %d attempts", 
+                    log.info("Successfully unlocked {} node communication record for {} and channel {} after {} attempts", 
                             nodeCommunication.getCommunicationType().name(),
-                            nodeCommunication.getNodeId(), nodeCommunication.getQueue(), attempts));
+                            nodeCommunication.getNodeId(), nodeCommunication.getQueue(), attempts);
                 }
             } catch (Throwable e) {
                 log.error(String.format(

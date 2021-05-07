@@ -282,7 +282,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                     }
 
                     if (ex instanceof TableNotFoundException) {
-                        log.error(String.format("The incoming batch %s failed: %s", this.currentBatch.getNodeBatchId(), ex.getMessage()));
+                        log.error("The incoming batch {} failed: {}", this.currentBatch.getNodeBatchId(), ex.getMessage());
                     } else if (isNewErrorForCurrentBatch && (this.currentBatch.getSqlCode() == ErrorConstants.FK_VIOLATION_CODE
                             || this.currentBatch.getSqlCode() == ErrorConstants.DEADLOCK_CODE
                             || this.currentBatch.getSqlCode() == ErrorConstants.CONFLICT_CODE)) {

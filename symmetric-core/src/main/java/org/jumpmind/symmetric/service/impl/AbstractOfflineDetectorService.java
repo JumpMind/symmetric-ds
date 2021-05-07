@@ -85,7 +85,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             if (shouldLogTransportError(remoteNode.getNodeId())) {
                 log.warn(String.format("Could not communicate with %s at %s because: %s", remoteNode, syncUrl, exception), exception);
             } else {
-                log.info(String.format("Could not communicate with %s at %s because: %s", remoteNode, syncUrl, exception));
+                log.info("Could not communicate with {} at {} because: {}", remoteNode, syncUrl, exception);
             }
             status.setStatus(Status.OFFLINE);
         } else if (isServiceUnavailable(exception)) {
@@ -132,7 +132,7 @@ public abstract class AbstractOfflineDetectorService extends AbstractService imp
             if (shouldLogTransportError(remoteNode.getNodeId())) {
                 log.warn(String.format("Could not communicate with %s at %s because it returned HTTP code %s", remoteNode, syncUrl, http.getCode()), exception);
             } else {
-                log.info(String.format("Could not communicate with %s at %s because it returned HTTP code %s", remoteNode, syncUrl, http.getCode()));
+                log.info("Could not communicate with {} at {} because it returned HTTP code {}", remoteNode, syncUrl, http.getCode());
             }
         } else {
             log.warn(String.format("Could not communicate with node '%s' at %s because of unexpected error", remoteNode, syncUrl), exception);

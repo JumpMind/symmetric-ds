@@ -373,7 +373,7 @@ public class SymmetricWebServer {
             http.setHost(host);
             http.setIdleTimeout(maxIdleTime);
             connectors.add(http);
-            log.info(String.format("About to start %s web server on %s:%s:%s", name, host == null ? "default" : host, port, "HTTP/1.1"));
+            log.info("About to start {} web server on {}:{}:{}", name, host == null ? "default" : host, port, "HTTP/1.1");
         }
         if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER,
@@ -429,8 +429,8 @@ public class SymmetricWebServer {
             https.setIdleTimeout(maxIdleTime);
             https.setHost(host);
             connectors.add(https);
-            log.info(String.format("About to start %s web server on %s:%s:%s", name, host == null ? "default" : host,
-                    securePort, protocolName));
+            log.info("About to start {} web server on {}:{}:{}", name, host == null ? "default" : host,
+                    securePort, protocolName);
         }
         return connectors.toArray(new Connector[connectors.size()]);
     }
