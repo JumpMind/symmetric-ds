@@ -429,7 +429,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         objectValue = value + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes().length);
                     }
                 } else if (getDdlBuilder().getDatabaseInfo().isCharColumnSpaceTrimmed()) {
-                    objectValue = StringUtils.stripEnd(charValue, " ");
+                    objectValue = StringUtils.stripEnd(value, " ");
                 }
             } else if (type == Types.BIGINT) {
                 objectValue = parseBigInteger(value);
