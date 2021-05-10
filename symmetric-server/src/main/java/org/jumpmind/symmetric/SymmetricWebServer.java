@@ -359,7 +359,7 @@ public class SymmetricWebServer {
         ArrayList<Connector> connectors = new ArrayList<Connector>();
 
         HttpConfiguration httpConfig = new HttpConfiguration();
-        if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
+        if (mode == Mode.HTTPS || mode == Mode.MIXED) {
             httpConfig.setSecureScheme("https");
             httpConfig.setSecurePort(securePort);
         }
@@ -367,7 +367,7 @@ public class SymmetricWebServer {
         httpConfig.setSendServerVersion(false);
         httpConfig.setOutputBufferSize(32768);
 
-        if (mode.equals(Mode.HTTP) || mode.equals(Mode.MIXED)) {
+        if (mode == Mode.HTTP || mode == Mode.MIXED) {
             ServerConnector http = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
             http.setPort(port);
             http.setHost(host);
@@ -375,7 +375,7 @@ public class SymmetricWebServer {
             connectors.add(http);
             log.info("About to start {} web server on {}:{}:{}", name, host == null ? "default" : host, port, "HTTP/1.1");
         }
-        if (mode.equals(Mode.HTTPS) || mode.equals(Mode.MIXED)) {
+        if (mode == Mode.HTTPS || mode == Mode.MIXED) {
             ISecurityService securityService = SecurityServiceFactory.create(SecurityServiceType.SERVER,
                     new TypedProperties(System.getProperties()));
             securityService.installDefaultSslCert(host);

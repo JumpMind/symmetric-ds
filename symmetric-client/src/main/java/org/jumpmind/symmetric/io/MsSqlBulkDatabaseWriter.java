@@ -87,7 +87,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         if (super.start(table)) {
             if (isFallBackToDefault()) { return true; }
             needsBinaryConversion = false;
-            if (! batch.getBinaryEncoding().equals(BinaryEncoding.HEX) && targetTable != null) {
+            if (batch.getBinaryEncoding() != BinaryEncoding.HEX && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
                     if (column.isOfBinaryType()) {
                         needsBinaryConversion = true;
@@ -144,7 +144,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         Column[] columns = targetTable.getColumns();
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64) && parsedData[i] != null) {
+                                if (batch.getBinaryEncoding() == BinaryEncoding.BASE64 && parsedData[i] != null) {
                                     parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
                                 }
                             }

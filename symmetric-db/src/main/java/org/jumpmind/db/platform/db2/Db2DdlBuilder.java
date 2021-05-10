@@ -305,7 +305,7 @@ public class Db2DdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // DB2 only supports RESTRICT and NO ACTION for ON UPDATE
-        if(key.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) || key.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)) {
+        if (key.getOnUpdateAction() == ForeignKeyAction.RESTRICT || key.getOnUpdateAction() == ForeignKeyAction.NOACTION) {
             super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
         }
     }

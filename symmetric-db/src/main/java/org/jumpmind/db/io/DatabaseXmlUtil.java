@@ -656,10 +656,7 @@ public class DatabaseXmlUtil {
     public static String writeForeignKeyOnUpdateClause(ForeignKey fk) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         StringBuilder sb = new StringBuilder();
-        if(! (fk.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) ||
-              fk.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)
-             ))
-        {
+        if (fk.getOnUpdateAction() != ForeignKeyAction.RESTRICT && fk.getOnUpdateAction() != ForeignKeyAction.NOACTION) {
             sb.append(" foreignOnUpdateAction=\"" +
                 StringEscapeUtils.escapeXml10(fk.getOnUpdateAction().getForeignKeyActionName()) + "\"");
         }
@@ -669,10 +666,7 @@ public class DatabaseXmlUtil {
     public static String writeForeignKeyOnDeleteClause(ForeignKey fk) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         StringBuilder sb = new StringBuilder();
-        if(! (fk.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) ||
-                fk.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)
-               ))
-        {
+        if (fk.getOnDeleteAction() != ForeignKeyAction.RESTRICT && fk.getOnDeleteAction() != ForeignKeyAction.NOACTION) {
             sb.append(" foreignOnDeleteAction=\"" +
                 StringEscapeUtils.escapeXml10(fk.getOnDeleteAction().getForeignKeyActionName()) + "\"");
         }

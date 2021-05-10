@@ -354,20 +354,20 @@ public class ForeignKey implements Cloneable, Serializable {
             
             // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
             ForeignKeyAction otherForeignKeyDeleteAction = otherFk.getOnDeleteAction();
-            if(otherForeignKeyDeleteAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (otherForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
                 otherForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
             }
             ForeignKeyAction myForeignKeyDeleteAction = getOnDeleteAction();
-            if(myForeignKeyDeleteAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (myForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
                 myForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
             }
             
             ForeignKeyAction otherForeignKeyUpdateAction = otherFk.getOnUpdateAction();
-            if(otherForeignKeyUpdateAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (otherForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
                 otherForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
             }
             ForeignKeyAction myForeignKeyUpdateAction = getOnUpdateAction();
-            if(myForeignKeyUpdateAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (myForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
                 myForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
             }
             
@@ -402,25 +402,25 @@ public class ForeignKey implements Cloneable, Serializable {
                 && foreignTableName.equalsIgnoreCase(otherFk.foreignTableName)) {
             // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
             ForeignKeyAction otherForeignKeyDeleteAction = otherFk.getOnDeleteAction();
-            if(otherForeignKeyDeleteAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (otherForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
                 otherForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
             }
             ForeignKeyAction myForeignKeyDeleteAction = getOnDeleteAction();
-            if(myForeignKeyDeleteAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (myForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
                 myForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
             }
-            if(! otherForeignKeyDeleteAction.equals(myForeignKeyDeleteAction)) {
+            if (otherForeignKeyDeleteAction != myForeignKeyDeleteAction) {
                 return false;
             }
             ForeignKeyAction otherForeignKeyUpdateAction = otherFk.getOnUpdateAction();
-            if(otherForeignKeyUpdateAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (otherForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
                 otherForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
             }
             ForeignKeyAction myForeignKeyUpdateAction = getOnUpdateAction();
-            if(myForeignKeyUpdateAction.equals(ForeignKeyAction.RESTRICT)) {
+            if (myForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
                 myForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
             }
-            if(! otherForeignKeyUpdateAction.equals(myForeignKeyUpdateAction)) {
+            if (otherForeignKeyUpdateAction != myForeignKeyUpdateAction) {
                 return false;
             }
             HashSet<Reference> otherRefs = new HashSet<Reference>();
@@ -465,12 +465,12 @@ public class ForeignKey implements Cloneable, Serializable {
         }
      // RESTRICT and NOACTION mean the same functionally, so change RESTRICT to NOACTION
         ForeignKeyAction myForeignKeyDeleteAction = getOnDeleteAction();
-        if(myForeignKeyDeleteAction.equals(ForeignKeyAction.RESTRICT)) {
+        if (myForeignKeyDeleteAction == ForeignKeyAction.RESTRICT) {
             myForeignKeyDeleteAction = ForeignKeyAction.NOACTION;
         }
         
         ForeignKeyAction myForeignKeyUpdateAction = getOnUpdateAction();
-        if(myForeignKeyUpdateAction.equals(ForeignKeyAction.RESTRICT)) {
+        if (myForeignKeyUpdateAction == ForeignKeyAction.RESTRICT) {
             myForeignKeyUpdateAction = ForeignKeyAction.NOACTION;
         }
         builder.append(myForeignKeyDeleteAction);
@@ -493,10 +493,10 @@ public class ForeignKey implements Cloneable, Serializable {
         result.append("foreign table=");
         result.append(getForeignTableName());
         result.append("; ");
-        if(! (getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) || getOnDeleteAction().equals(ForeignKeyAction.NOACTION))) {
+        if (getOnDeleteAction() != ForeignKeyAction.RESTRICT && getOnDeleteAction() != ForeignKeyAction.NOACTION) {
             result.append("ON DELETE " + getOnDeleteAction().getForeignKeyActionName()).append("; ");
         }
-        if(! (getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) || getOnUpdateAction().equals(ForeignKeyAction.NOACTION))) {
+        if (getOnUpdateAction() != ForeignKeyAction.RESTRICT && getOnUpdateAction() != ForeignKeyAction.NOACTION) {
             result.append("ON UPDATE " + getOnUpdateAction().getForeignKeyActionName()).append(";");
         }
         result.append(getReferenceCount());
@@ -522,10 +522,10 @@ public class ForeignKey implements Cloneable, Serializable {
         result.append("foreign table=");
         result.append(getForeignTableName());
         result.append(";");
-        if(! (getOnDeleteAction().equals(ForeignKeyAction.RESTRICT) || getOnDeleteAction().equals(ForeignKeyAction.NOACTION))) {
+        if (getOnDeleteAction() != ForeignKeyAction.RESTRICT && getOnDeleteAction() != ForeignKeyAction.NOACTION) {
             result.append(" ON DELETE " + getOnDeleteAction().getForeignKeyActionName());
         }
-        if(! (getOnUpdateAction().equals(ForeignKeyAction.RESTRICT) || getOnUpdateAction().equals(ForeignKeyAction.NOACTION))) {
+        if (getOnUpdateAction() != ForeignKeyAction.RESTRICT && getOnUpdateAction() != ForeignKeyAction.NOACTION) {
             result.append(" ON UPDATE " + getOnUpdateAction().getForeignKeyActionName());
         }
         result.append("] references:");

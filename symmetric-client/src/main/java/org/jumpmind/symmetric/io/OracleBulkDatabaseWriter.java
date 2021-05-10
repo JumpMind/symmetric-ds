@@ -127,7 +127,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.table = table;
         if (super.start(table) && targetTable != null) {
             hasBinaryType = false;
-            if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
+            if (batch.getBinaryEncoding() != BinaryEncoding.NONE) {
                 for (Column column : targetTable.getColumns()) {
                     if (column.isOfBinaryType()) {
                         hasBinaryType = true;
@@ -228,9 +228,9 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     if (parsedData[i] != null) {
                         byte[] bytesToWrite = null;
                         if (hasBinaryType && columns[i].isOfBinaryType()) {
-                            if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                            if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
                                 bytesToWrite = Base64.decodeBase64(parsedData[i].getBytes());
-                            } else if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+                            } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                 bytesToWrite = Hex.decodeHex(parsedData[i].toCharArray());
                             }
                         } else {

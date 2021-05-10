@@ -75,9 +75,9 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
         DataEventType dataEventType = data.getDataEventType();
 
-        if (targetTable != null || dataEventType.equals(DataEventType.CREATE)) {
+        if (targetTable != null || dataEventType == DataEventType.CREATE) {
             needsBinaryConversion = false;
-            if (!batch.getBinaryEncoding().equals(BinaryEncoding.NONE) && targetTable != null) {
+            if (batch.getBinaryEncoding() != BinaryEncoding.NONE && targetTable != null) {
                 for (Column column : targetTable.getColumns()) {
                     if (column.isOfBinaryType()) {
                         needsBinaryConversion = true;
@@ -94,9 +94,9 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                             Column[] columns = targetTable.getColumns();
                             for (int i = 0; i < columns.length; i++) {
                                 if (columns[i].isOfBinaryType() && parsedData[i] != null) {
-                                    if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+                                    if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                         parsedData[i] = encode(Hex.decodeHex(parsedData[i].toCharArray()));
-                                    } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                                    } else if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
                                         parsedData[i] = encode(Base64.decodeBase64(parsedData[i].getBytes()));
                                     }
                                 }

@@ -303,7 +303,7 @@ public class RaimaDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // Raima does not support ON UPDATE SET DEFAULT
-        if(! key.getOnUpdateAction().equals(ForeignKeyAction.SETDEFAULT)) {
+        if (key.getOnUpdateAction() != ForeignKeyAction.SETDEFAULT) {
             super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
         }
     }
@@ -311,7 +311,7 @@ public class RaimaDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Raima does not support ON DELETE SET DEFAULT
-        if(! key.getOnDeleteAction().equals(ForeignKeyAction.SETDEFAULT)) {
+        if (key.getOnDeleteAction() != ForeignKeyAction.SETDEFAULT) {
             super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }

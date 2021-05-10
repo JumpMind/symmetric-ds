@@ -666,7 +666,7 @@ public class SnapshotUtil {
             List<MemoryPoolMXBean> memoryPools = new ArrayList<MemoryPoolMXBean>(ManagementFactory.getMemoryPoolMXBeans());
             long usedHeapMemory = 0;
             for (MemoryPoolMXBean memoryPool : memoryPools) {
-                if (memoryPool.getType().equals(MemoryType.HEAP)) {
+                if (memoryPool.getType() == MemoryType.HEAP) {
                     MemoryUsage memoryUsage = memoryPool.getCollectionUsage();
                     runtimeProperties.setProperty("memory.heap." + memoryPool.getName().toLowerCase().replaceAll(" ", "."),
                             df.format(memoryUsage.getUsed()));

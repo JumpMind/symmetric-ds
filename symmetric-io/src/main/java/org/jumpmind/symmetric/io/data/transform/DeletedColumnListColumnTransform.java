@@ -49,7 +49,7 @@ public class DeletedColumnListColumnTransform implements ISingleNewAndOldValueCo
         
         StringBuilder deleteList = new StringBuilder();
 
-        if (data.getSourceDmlType().equals(DataEventType.UPDATE)) {
+        if (data.getSourceDmlType() == DataEventType.UPDATE) {
             Map<String, String> oldValues = data.getOldSourceValues();
             
             for (String name : sourceValues.keySet()) {

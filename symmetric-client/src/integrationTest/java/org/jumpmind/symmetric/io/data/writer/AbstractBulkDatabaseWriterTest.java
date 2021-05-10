@@ -316,8 +316,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
             expectedValues[3] = translateExpectedCharString(expectedValues[3], 50, false);
             expectedValues[4] = translateExpectedCharString(expectedValues[4], 50, true);
             if (expectedValues[11] != null) {
-                if (encoding.equals(BinaryEncoding.HEX))
-                {
+                if (encoding == BinaryEncoding.HEX) {
                     expectedValues[11] = new String(expectedValues[11]);
                     results.put(TEST_COLUMNS[11], new String(Hex.encodeHex((byte[]) results.get(TEST_COLUMNS[11]))));
                 } else {

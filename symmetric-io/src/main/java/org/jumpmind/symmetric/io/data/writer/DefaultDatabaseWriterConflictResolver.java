@@ -186,7 +186,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 }
             }
 
-            if (!data.getDataEventType().equals(DataEventType.DELETE)) {
+            if (data.getDataEventType() != DataEventType.DELETE) {
                 isWinnerByUk = isCaptureTimeNewerForUk(writer, data);
             }
         }
@@ -375,8 +375,8 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             boolean isUniqueKeyBlocking = false;
             boolean isPrimaryKeyBlocking = false;
 
-            if ((!isFallback && data.getDataEventType().equals(DataEventType.UPDATE)) || 
-                    (isFallback && data.getDataEventType().equals(DataEventType.INSERT))) {
+            if ((!isFallback && data.getDataEventType() == DataEventType.UPDATE) || 
+                    (isFallback && data.getDataEventType() == DataEventType.INSERT)) {
                 Map<String, String> pkValues = data.toColumnNameValuePairs(targetTable.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
                 boolean isPkChanged = false;
                 for (Map.Entry<String, String> entry : pkValues.entrySet()) {
@@ -391,13 +391,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                 } else {
                     isUniqueKeyBlocking = true;
                 }
-            } else if (isFallback && data.getDataEventType().equals(DataEventType.UPDATE)) {
+            } else if (isFallback && data.getDataEventType() == DataEventType.UPDATE) {
                 if (pkCount > 0) {
                     isPrimaryKeyBlocking = true;
                 } else {
                     isUniqueKeyBlocking = true;
                 }
-            } else if (!isFallback && data.getDataEventType().equals(DataEventType.INSERT) && pkCount == 0) {
+            } else if (!isFallback && data.getDataEventType() == DataEventType.INSERT && pkCount == 0) {
                 isUniqueKeyBlocking = true;
             }
 
@@ -545,7 +545,7 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
 
     protected boolean deleteForeignKeyChildren(IDatabasePlatform platform, ISqlTemplate sqlTemplate, DefaultDatabaseWriter databaseWriter, Table targetTable, CsvData data) {        
         Map<String, String> values = null;
-        if (data.getDataEventType().equals(DataEventType.INSERT)) {
+        if (data.getDataEventType() == DataEventType.INSERT) {
             values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.ROW_DATA);
         } else {
             values = data.toColumnNameValuePairs(databaseWriter.getSourceTable().getColumnNames(), CsvData.OLD_DATA);

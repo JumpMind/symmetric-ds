@@ -90,7 +90,7 @@ public class AuthenticationInterceptor implements IInterceptor {
                 status = nodeService.getAuthenticationStatus(nodeId, securityToken);
             }
             
-            if (status == null || AuthenticationStatus.FORBIDDEN.equals(status) || (AuthenticationStatus.ACCEPTED.equals(status)
+            if (status == null || status == AuthenticationStatus.FORBIDDEN || (status == AuthenticationStatus.ACCEPTED
                     && sessionExpireMillis > 0 && System.currentTimeMillis() - session.getCreationTime() > sessionExpireMillis)) {
                 log.debug("Node '{}' needs to renew authentication", nodeId);
                 sessions.remove(session.getId());
@@ -111,7 +111,7 @@ public class AuthenticationInterceptor implements IInterceptor {
     
             status = nodeService.getAuthenticationStatus(nodeId, securityToken);
             
-            if (useSessionAuth && AuthenticationStatus.ACCEPTED.equals(status)) {
+            if (useSessionAuth && status == AuthenticationStatus.ACCEPTED) {
                 session = getSession(req, true);
                 session.setAttribute(WebConstants.NODE_ID, nodeId);
                 session.setAttribute(WebConstants.SECURITY_TOKEN, securityToken);
@@ -119,20 +119,20 @@ public class AuthenticationInterceptor implements IInterceptor {
             }
         }
         
-        if (AuthenticationStatus.ACCEPTED.equals(status)) {
+        if (status == AuthenticationStatus.ACCEPTED) {
             log.debug("Node '{}' successfully authenticated", nodeId);
             nodeService.resetNodeFailedLogins(nodeId);
             return true;
-        } else if (AuthenticationStatus.REGISTRATION_REQUIRED.equals(status)) {
+        } else if (status == AuthenticationStatus.REGISTRATION_REQUIRED) {
             log.debug("Node '{}' failed to authenticate.  It was not registered", nodeId);
             ServletUtils.sendError(resp, WebConstants.REGISTRATION_REQUIRED);
             return false;
-        } else if (AuthenticationStatus.SYNC_DISABLED.equals(status)) {
+        } else if (status == AuthenticationStatus.SYNC_DISABLED) {
             log.debug("Node '{}' failed to authenticate.  It was not enabled", nodeId);
             ServletUtils.sendError(resp, WebConstants.SYNC_DISABLED);
             return false;
         } else {
-            if (AuthenticationStatus.LOCKED.equals(status)) {
+            if (status == AuthenticationStatus.LOCKED) {
                 log.warn("Node '{}' failed to authenticate.  It had too many login attempts", nodeId);
             } else {
                 log.warn("Node '{}' failed to authenticate.  It had the wrong password", nodeId);

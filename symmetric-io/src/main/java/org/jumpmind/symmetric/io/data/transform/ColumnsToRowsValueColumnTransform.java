@@ -82,9 +82,9 @@ public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTran
             if (value != null) {
                 String srcNewValue = data.getSourceValues().get(value);
                 String srcOldValue = data.getOldSourceValues() != null ? data.getOldSourceValues().get(value) : null;
-                if (isIgnoreNulls && DataEventType.INSERT.equals(data.getSourceDmlType()) && (StringUtils.trimToNull(srcNewValue) == null)) {
+                if (isIgnoreNulls && DataEventType.INSERT == data.getSourceDmlType() && (StringUtils.trimToNull(srcNewValue) == null)) {
                     throw new IgnoreRowException();
-                } else if (DataEventType.UPDATE.equals(data.getSourceDmlType())) {
+                } else if (DataEventType.UPDATE == data.getSourceDmlType()) {
                     if (isChangesOnly && StringUtils.trimToEmpty(srcNewValue).equals(StringUtils.trimToEmpty(srcOldValue))) {
                         throw new IgnoreRowException();
                     } else if (isIgnoreNulls && StringUtils.trimToNull(srcNewValue) == null) { 

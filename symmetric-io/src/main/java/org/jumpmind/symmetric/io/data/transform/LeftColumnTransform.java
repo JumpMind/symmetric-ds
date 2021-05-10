@@ -49,7 +49,7 @@ public class LeftColumnTransform implements ISingleNewAndOldValueColumnTransform
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
 
-        String value = data.getSourceDmlType().equals(DataEventType.DELETE) ? oldValue : newValue;
+        String value = data.getSourceDmlType() == DataEventType.DELETE ? oldValue : newValue;
         
         if (StringUtils.isNotBlank(value)) {
             String expression = column.getTransformExpression();
@@ -62,7 +62,7 @@ public class LeftColumnTransform implements ISingleNewAndOldValueColumnTransform
             }
         }
         
-        if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
+        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);

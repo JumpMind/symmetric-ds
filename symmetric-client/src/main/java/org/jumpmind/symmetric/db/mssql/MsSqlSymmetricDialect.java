@@ -347,9 +347,9 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
             }
     
             String triggerName = null;
-            if (dml.equals(DataEventType.INSERT)) {
+            if (dml == DataEventType.INSERT) {
                 triggerName = hist.getNameForInsertTrigger();
-            } else if (dml.equals(DataEventType.UPDATE)) {
+            } else if (dml == DataEventType.UPDATE) {
                 triggerName = hist.getNameForUpdateTrigger();
             } else {
                 triggerName = hist.getNameForDeleteTrigger();

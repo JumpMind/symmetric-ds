@@ -314,7 +314,7 @@ public class DatabasePlatformTest {
         List<PermissionResult> results = platform.checkSymTablePermissions(PermissionType.values());
         
         for (PermissionResult result : results) {
-            assertTrue(result.toString(), !result.getStatus().equals(Status.FAIL));
+            assertTrue(result.toString(), result.getStatus() != Status.FAIL);
         }
     }
     

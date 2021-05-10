@@ -140,7 +140,7 @@ public class InformixDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Informix only supports ON DELETE CASCADE
-        if(key.getOnDeleteAction().equals(ForeignKeyAction.CASCADE)) {
+        if (key.getOnDeleteAction() == ForeignKeyAction.CASCADE) {
             super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }

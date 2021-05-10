@@ -79,7 +79,7 @@ public class CassandraDatabaseWriter extends DynamicDefaultDatabaseWriter {
      * send sql.
      */
     protected boolean isUserSendSql(String sql, CsvData data) {
-        return data.getDataEventType().equals(DataEventType.SQL) 
+        return data.getDataEventType() == DataEventType.SQL 
                 && this.targetTable.getNameLowerCase().equals(this.getTablePrefix().toLowerCase() + "_node")
                 && !sql.toLowerCase().contains("from " + this.getTablePrefix().toLowerCase() + "_node");
     }

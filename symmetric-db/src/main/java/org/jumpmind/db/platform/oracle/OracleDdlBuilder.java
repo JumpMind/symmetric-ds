@@ -579,7 +579,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Oracle only supports CASCADE and SET NULL
-        if(key.getOnDeleteAction().equals(ForeignKeyAction.CASCADE) || key.getOnDeleteAction().equals(ForeignKeyAction.SETNULL)) {
+        if (key.getOnDeleteAction() == ForeignKeyAction.CASCADE || key.getOnDeleteAction() == ForeignKeyAction.SETNULL) {
             super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }

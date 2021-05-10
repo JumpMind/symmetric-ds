@@ -84,7 +84,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.table = table;
         if (super.start(table) && targetTable != null) {
             needsBinaryConversion = false;
-            if (! batch.getBinaryEncoding().equals(BinaryEncoding.NONE)) {
+            if (batch.getBinaryEncoding() != BinaryEncoding.NONE) {
                     for (Column column : targetTable.getColumns()) {
                         if (column.isOfBinaryType()) {
                             needsBinaryConversion = true;
@@ -139,9 +139,9 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                                     out.write(',');
                                 }
                                 out.write('"');
-                                if (batch.getBinaryEncoding().equals(BinaryEncoding.HEX)) {
+                                if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                     out.write(parsedData[i].getBytes());                                
-                                } else if (batch.getBinaryEncoding().equals(BinaryEncoding.BASE64)) {
+                                } else if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
                                     out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes()))).getBytes());
                                 }
                                 out.write('"');

@@ -60,7 +60,7 @@ public class ClarionDateTimeColumnTransform implements ISingleNewAndOldValueColu
         }
         String value = convertClarionDate(newValue, clarionTimeStr);
         
-        if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
+        if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);

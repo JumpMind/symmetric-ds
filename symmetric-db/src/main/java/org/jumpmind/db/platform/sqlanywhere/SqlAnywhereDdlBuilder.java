@@ -499,7 +499,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // SQLAnywhere does not support ON UPDATE NO ACTION, but NOACTION is just like RESTRICT
         ForeignKeyAction original = key.getOnUpdateAction();
-        if(key.getOnUpdateAction().equals(ForeignKeyAction.NOACTION)) {
+        if (key.getOnUpdateAction() == ForeignKeyAction.NOACTION) {
             key.setOnUpdateAction(ForeignKeyAction.RESTRICT);
         }
         super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
@@ -510,7 +510,7 @@ public class SqlAnywhereDdlBuilder extends AbstractDdlBuilder {
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Firebird does not support ON DELETE NO ACTION, but NOACTION is just like RESTRICT
         ForeignKeyAction original = key.getOnDeleteAction();
-        if(key.getOnDeleteAction().equals(ForeignKeyAction.NOACTION)) {
+        if (key.getOnDeleteAction() == ForeignKeyAction.NOACTION) {
             key.setOnDeleteAction(ForeignKeyAction.RESTRICT);
         }
         super.writeCascadeAttributesForForeignKeyDelete(key, ddl);

@@ -757,7 +757,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // MSSQL does not support ON UPDATE RESTRICT, but RESTRICT is just like NOACTION
         ForeignKeyAction original = key.getOnUpdateAction();
-        if(key.getOnUpdateAction().equals(ForeignKeyAction.RESTRICT)) {
+        if (key.getOnUpdateAction() == ForeignKeyAction.RESTRICT) {
             key.setOnUpdateAction(ForeignKeyAction.NOACTION);
         }
         super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
@@ -768,7 +768,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // MSSQL does not support ON DELETE RESTRICT, but RESTRICT is just like NOACTION
         ForeignKeyAction original = key.getOnDeleteAction();
-        if(key.getOnDeleteAction().equals(ForeignKeyAction.RESTRICT)) {
+        if (key.getOnDeleteAction() == ForeignKeyAction.RESTRICT) {
             key.setOnDeleteAction(ForeignKeyAction.NOACTION);
         }
         super.writeCascadeAttributesForForeignKeyDelete(key, ddl);

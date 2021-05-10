@@ -59,7 +59,7 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
      * send sql.
      */
     protected boolean isUserSendSql(String sql, CsvData data) {
-        return data.getDataEventType().equals(DataEventType.SQL) 
+        return data.getDataEventType() == DataEventType.SQL 
                 && this.targetTable.getNameLowerCase().equals(this.getTablePrefix().toLowerCase() + "_node")
                 && !sql.toLowerCase().contains("from " + this.getTablePrefix().toLowerCase() + "_node");
     }
@@ -75,7 +75,7 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
             return super.execute(data, values);
         } 
         
-        if (this.currentDmlStatement.getDmlType().equals(DmlType.INSERT)) {
+        if (this.currentDmlStatement.getDmlType() == DmlType.INSERT) {
         
             if (currentTableId == null) {
                 currentTableId = TableId.of(this.targetTable.getSchema(), this.targetTable.getName());
@@ -98,9 +98,9 @@ public class BigQueryDatabaseWriter extends DynamicDefaultDatabaseWriter {
                 rowsAdded = 0;
                 insertAllRequestBuilder = null;
             }
-        } else if (this.currentDmlStatement.getDmlType().equals(DmlType.UPDATE)) {
+        } else if (this.currentDmlStatement.getDmlType() == DmlType.UPDATE) {
             updateCount++;
-        } else if (this.currentDmlStatement.getDmlType().equals(DmlType.DELETE)) {
+        } else if (this.currentDmlStatement.getDmlType() == DmlType.DELETE) {
             deleteCount++;
         }
         
