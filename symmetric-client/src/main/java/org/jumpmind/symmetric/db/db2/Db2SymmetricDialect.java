@@ -49,7 +49,7 @@ public class Db2SymmetricDialect extends AbstractSymmetricDialect implements ISy
     public boolean createOrAlterTablesIfNecessary(String... tables) {
         boolean tablesCreated = super.createOrAlterTablesIfNecessary(tables);
         if (tablesCreated) {
-            log.info("Resetting auto increment columns for {}", parameterService.getTablePrefix() + "_data");
+            log.info("Resetting auto increment columns for {}{}", parameterService.getTablePrefix(), "_data");
             long dataId = platform.getSqlTemplate().queryForLong("select max(data_id) from " + parameterService.getTablePrefix() + "_data")
                     + 1;
             platform.getSqlTemplate()
