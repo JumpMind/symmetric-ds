@@ -82,8 +82,7 @@ public class XmlPublisherFilterTest {
             filter.batchComplete(context);
         }
 
-        assertEquals(TEST_SIMPLE_TRANSFORM_RESULTS.trim(), output.toString().trim());
-
+        assertEquals(TEST_SIMPLE_TRANSFORM_RESULTS, output.toString().trim());
     }
 
     static class Output implements IPublisher {

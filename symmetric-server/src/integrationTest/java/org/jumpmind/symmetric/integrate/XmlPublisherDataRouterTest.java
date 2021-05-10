@@ -97,7 +97,7 @@ public class XmlPublisherDataRouterTest {
         router.routeToNodes(context, new DataMetaData(data, table, null, null), null, false, false, null);
         router.contextCommitted(context);
 
-        assertEquals(INSERT_XML.trim(), output.toString().trim());
+        assertEquals(INSERT_XML, output.toString().trim());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class XmlPublisherDataRouterTest {
         router.routeToNodes(context, new DataMetaData(data, table, null, null), null, false, false, null);
         router.contextCommitted(context);
 
-        assertEquals(UPDATE_XML.trim(), output.toString().trim());
+        assertEquals(UPDATE_XML, output.toString().trim());
     }
 
     @Test
@@ -125,7 +125,7 @@ public class XmlPublisherDataRouterTest {
         router.routeToNodes(context, new DataMetaData(data, table, null, null), null, false, false, null);
         router.contextCommitted(context);
 
-        assertEquals(DELETE_XML.trim(), output.toString().trim());
+        assertEquals(DELETE_XML, output.toString().trim());
     }
 
     static class Output implements IPublisher {

@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultParameterParser {
 
-    private static final String COMMENT = "# ";
+    private static final String COMMENT = "#";
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
     private static final String TYPE = "Type:";
@@ -109,7 +109,7 @@ public class DefaultParameterParser {
                     } else {
                         currentMetaData.appendDescription(line);
                     }
-                } else if (!line.trim().startsWith(COMMENT.trim()) && line.contains("=")) {
+                } else if (!line.trim().startsWith(COMMENT) && line.contains("=")) {
                     String key = line.substring(0, line.indexOf("="));
                     String defaultValue = line.substring(line.indexOf("=") + 1);
                     currentMetaData.setKey(key);
