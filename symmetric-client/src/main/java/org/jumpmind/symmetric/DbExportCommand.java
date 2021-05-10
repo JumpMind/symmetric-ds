@@ -125,7 +125,7 @@ public class DbExportCommand extends AbstractCommandLauncher {
             if (new File(dir).exists()) {
                 dbExport.setDir(line.getOptionValue(OPTION_DIR));    
             } else {
-                throw new ParseException(String.format("The directory you chose, {}, does not exist", dir));
+                throw new ParseException(String.format("The directory does not exist: %s", dir));
             }            
         }
         

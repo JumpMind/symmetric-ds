@@ -68,7 +68,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             source = getOptionValue(OPTION_SOURCE, "source", line, config);
         }
         if (StringUtils.isEmpty(source)) {
-            throw new ParseException(String.format("-source properties file is required."));   
+            throw new ParseException("-source properties file is required.");   
         }
 
         File sourceProperies = new File(source);
@@ -81,7 +81,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             target = getOptionValue(OPTION_TARGET, "target", line, config);
         }
         if (StringUtils.isEmpty(target)) {
-            throw new ParseException(String.format("-target properties file is required."));   
+            throw new ParseException("-target properties file is required.");   
         }        
 
         File targetProperties = new File(target);
