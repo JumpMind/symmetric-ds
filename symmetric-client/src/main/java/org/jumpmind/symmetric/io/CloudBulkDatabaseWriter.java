@@ -212,10 +212,9 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
             if (sourceTable != null && targetTable == null) {
                 String qualifiedName = sourceTable.getFullyQualifiedTableName();
                 if (writerSettings.isIgnoreMissingTables()) {                    
-                    if (!missingTables.contains(qualifiedName)) {
+                    if (missingTables.add(qualifiedName)) {
                         log.info("Did not find the {} table in the target database. This might have been part of a sql "
                                 + "command (truncate) but will work if the fully qualified name was in the sql provided", qualifiedName);
-                        missingTables.add(qualifiedName);
                     }
                 } else {
                     throw new SymmetricException("Could not load the %s table.  It is not in the target database", qualifiedName);

@@ -56,9 +56,8 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
             if (sourceTable != null && targetTable == null) {
                 String qualifiedName = sourceTable.getFullyQualifiedTableName();
                 if (writerSettings.isIgnoreMissingTables()) {                    
-                    if (!missingTables.contains(qualifiedName)) {
+                    if (missingTables.add(qualifiedName)) {
                         log.warn("Did not find the {} table in the target database", qualifiedName);
-                        missingTables.add(qualifiedName);
                     }
                 } else {
                     throw new SymmetricException("Could not load the %s table.  It is not in the target database", qualifiedName);

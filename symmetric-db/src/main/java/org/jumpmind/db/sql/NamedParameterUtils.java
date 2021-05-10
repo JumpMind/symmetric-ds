@@ -99,8 +99,7 @@ public abstract class NamedParameterUtils {
                 }
                 if (j - i > 1) {
                     String parameter = sql.substring(i + 1, j);
-                    if (!namedParameters.contains(parameter)) {
-                        namedParameters.add(parameter);
+                    if (namedParameters.add(parameter)) {
                         namedParameterCount++;
                     }
                     parsedSql.addNamedParameter(parameter, i, j);

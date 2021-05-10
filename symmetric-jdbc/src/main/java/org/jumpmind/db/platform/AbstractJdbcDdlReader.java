@@ -1698,8 +1698,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {
-            if (!visited.contains(tableRow)) {
-                visited.add(tableRow);
+            if (visited.add(tableRow)) {
                 Collection<ForeignKey> exportedKeys = getExportedKeys(tableRow.getTable());
                 if (exportedKeys != null) {
                     for (ForeignKey fk : exportedKeys) {
@@ -1773,8 +1772,7 @@ public abstract class AbstractJdbcDdlReader implements IDdlReader {
     protected List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding, int depth, int maxDepth) {
         List<TableRow> fkDepList = new ArrayList<TableRow>();
         for (TableRow tableRow : tableRows) {
-            if (!visited.contains(tableRow)) {
-                visited.add(tableRow);
+            if (visited.add(tableRow)) {
                 for (ForeignKey fk : tableRow.getTable().getForeignKeys()) {
                     Table foreignTable = lookupForeignTable(platform, fk, tableRow, true);
                     if (foreignTable != null) {
