@@ -326,7 +326,7 @@ public class RestService {
      * 
      */
     @ApiOperation(value = "Execute the specified SQL statement on the single engine")
-    @RequestMapping(value = "engine/querynode", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "engine/querynode", method = {RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@RequestParam(value = "query") String sql, @RequestParam(value = "isquery", defaultValue = "true") boolean isQuery) {
@@ -337,7 +337,7 @@ public class RestService {
      * Executes a select statement on the node and returns results.
      */
     @ApiOperation(value = "Execute the specified SQL statement for the specified engine")
-    @RequestMapping(value = "engine/{engine}/querynode", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "engine/{engine}/querynode", method = {RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@PathVariable("engine") String engineName,
@@ -352,7 +352,7 @@ public class RestService {
     @ApiOperation(value = "Execute the named job.  This can be used to control when jobs are run via and external application.  "
             + "You would typically disable the job first so it no longer runs automatically.  Jobs you might want to control include: "
             + "job.route, job.push, job.pull, job.offline.push, job.offline.pull")
-    @RequestMapping(value = "engine/{engine}/invokejob", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "engine/{engine}/invokejob", method = {RequestMethod.POST})
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public boolean invokeJob(@PathVariable("engine") String engineName, @RequestParam("jobname") String jobName) {
