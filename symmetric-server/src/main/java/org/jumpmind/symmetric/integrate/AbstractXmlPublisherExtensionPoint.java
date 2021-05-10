@@ -234,7 +234,7 @@ abstract public class AbstractXmlPublisherExtensionPoint implements IExtensionPo
             log.debug("Sending XML to IPublisher: {}", xml);
             iterator.remove();
             long ts = System.currentTimeMillis();
-            publisher.publish(context, xml.toString());
+            publisher.publish(context, xml);
             amountOfTimeToPublishMessagesSinceLastPrintTime += (System.currentTimeMillis() - ts);
             numberOfMessagesPublishedSinceLastPrintTime++;
         }

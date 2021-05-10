@@ -1498,7 +1498,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 if (addSep) {
                     buffer.append(" AND ");
                 }
-                buffer.append(getDelimitedIdentifier(entry.getKey().toString()));
+                buffer.append(getDelimitedIdentifier(entry.getKey()));
                 buffer.append(" = ");
                 if (genPlaceholders) {
                     buffer.append("?");

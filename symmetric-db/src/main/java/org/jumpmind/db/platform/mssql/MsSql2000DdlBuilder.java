@@ -244,7 +244,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                         .getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(),
-                    column.getMappedTypeCode(), Types.SMALLINT).toString();
+                    column.getMappedTypeCode(), Types.SMALLINT);
         }
         if ((column.getMappedTypeCode() == Types.TIMESTAMP) || (column.getMappedTypeCode() == Types.TIME) || (column.getMappedTypeCode() == Types.DATE)) {
             String defaultValue = super.getNativeDefaultValue(column);

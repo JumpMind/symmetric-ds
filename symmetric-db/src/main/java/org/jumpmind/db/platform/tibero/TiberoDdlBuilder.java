@@ -255,7 +255,7 @@ public class TiberoDdlBuilder extends AbstractDdlBuilder {
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(),
-                    column.getMappedTypeCode(), Types.SMALLINT).toString();
+                    column.getMappedTypeCode(), Types.SMALLINT);
         }
         /*
          * Tibero does not accept ISO formats, so we have to convert an ISO spec

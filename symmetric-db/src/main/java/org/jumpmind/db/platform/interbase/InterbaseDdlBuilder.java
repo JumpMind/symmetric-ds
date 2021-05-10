@@ -122,7 +122,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(),
-                    column.getMappedTypeCode(), Types.SMALLINT).toString();
+                    column.getMappedTypeCode(), Types.SMALLINT);
         } else {
             return super.getNativeDefaultValue(column);
         }

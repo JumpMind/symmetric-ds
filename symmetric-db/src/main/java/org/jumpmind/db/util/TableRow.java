@@ -87,7 +87,7 @@ public class TableRow {
         if (o instanceof TableRow) {
             TableRow tr = (TableRow) o;
             return tr.table.equals(table) && tr.whereSql.equals(whereSql)
-                    && tr.getFkColumnValues().equals(getFkColumnValues().toString());
+                    && tr.getFkColumnValues().equals(getFkColumnValues());
         }
         return false;
     }

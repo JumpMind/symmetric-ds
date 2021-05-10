@@ -235,7 +235,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
-                    Types.SMALLINT).toString();
+                    Types.SMALLINT);
         } else {
             return super.getNativeDefaultValue(column);
         }

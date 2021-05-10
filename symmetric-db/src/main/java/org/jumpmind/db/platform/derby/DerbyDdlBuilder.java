@@ -86,7 +86,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
                 || (PlatformUtils.supportsJava14JdbcTypes() && (column.getMappedTypeCode() == PlatformUtils
                         .determineBooleanTypeCode()))) {
             return getDefaultValueHelper().convert(column.getDefaultValue(), column.getMappedTypeCode(),
-                    Types.SMALLINT).toString();
+                    Types.SMALLINT);
         } else {
             return super.getNativeDefaultValue(column);
         }
@@ -174,7 +174,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // Derby does not support ON UPDATE SET DEFAULT
-        if(! key.getOnUpdateAction().equals(ForeignKeyAction.SETDEFAULT)) {
+        if (key.getOnUpdateAction() != ForeignKeyAction.SETDEFAULT) {
             super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
         }
     }
@@ -182,7 +182,7 @@ public class DerbyDdlBuilder extends AbstractDdlBuilder {
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Derby does not support ON DELETE SET DEFAULT
-        if(! key.getOnDeleteAction().equals(ForeignKeyAction.SETDEFAULT)) {
+        if (key.getOnDeleteAction() != ForeignKeyAction.SETDEFAULT) {
             super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }
