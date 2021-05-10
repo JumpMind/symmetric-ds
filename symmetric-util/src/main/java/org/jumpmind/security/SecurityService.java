@@ -46,7 +46,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.KeyManagerFactory;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -162,7 +161,7 @@ public class SecurityService implements ISecurityService {
             KeyStore keyStore = getTrustStore();
             String alias = keyStore.getCertificateAlias(entry.getTrustedCertificate());
             if (alias == null) {
-                alias = new String(Base64.encodeBase64(DigestUtils.sha1(entry.getTrustedCertificate().getEncoded()), false), Charset.defaultCharset());
+                alias = String.valueOf(entry.getTrustedCertificate().hashCode());
                 keyStore.setEntry(alias, entry, null);
                 log.info("Installing trusted certificate: {}", ((X509Certificate) entry.getTrustedCertificate()).getSubjectDN().getName());
                 saveTrustStore(keyStore);
