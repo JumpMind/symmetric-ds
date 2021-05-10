@@ -50,7 +50,7 @@ public class ClientExtensionService extends ExtensionService {
             Map<String, IExtensionPoint> extensionPointMap = new TreeMap<String, IExtensionPoint>();
             extensionPointMap.putAll(springContext.getBeansOfType(IExtensionPoint.class));
             BeanFactory factory = springContext.getParentBeanFactory();
-            if (factory != null && factory instanceof ListableBeanFactory) {
+            if (factory instanceof ListableBeanFactory) {
             	ListableBeanFactory beanFactory = (ListableBeanFactory) factory;
             	extensionPointMap.putAll(beanFactory.getBeansOfType(IExtensionPoint.class));
             }

@@ -56,7 +56,7 @@ public class PostgresBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTe
     }
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
-        return platform != null && platform instanceof PostgreSqlDatabasePlatform;
+        return platform instanceof PostgreSqlDatabasePlatform;
     }
 
     protected AbstractDatabaseWriter create(){

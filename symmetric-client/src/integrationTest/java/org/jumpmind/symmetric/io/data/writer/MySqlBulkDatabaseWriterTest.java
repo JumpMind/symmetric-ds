@@ -55,7 +55,7 @@ public class MySqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
-        return platform != null && platform instanceof MySqlDatabasePlatform;
+        return platform instanceof MySqlDatabasePlatform;
     }
 
     @Override

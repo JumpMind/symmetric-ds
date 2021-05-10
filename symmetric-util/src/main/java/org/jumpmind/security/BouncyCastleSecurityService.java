@@ -245,7 +245,7 @@ public class BouncyCastleSecurityService extends SecurityService {
             KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(getKeyStorePassword().toCharArray());
             String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY);
             Entry entry = keyStore.getEntry(alias, param);
-            if (entry != null && entry instanceof PrivateKeyEntry) {
+            if (entry instanceof PrivateKeyEntry) {
                 cert = (X509Certificate) keyStore.getCertificate(alias);
             }
         } catch (RuntimeException e) {
@@ -264,7 +264,7 @@ public class BouncyCastleSecurityService extends SecurityService {
             KeyStore.ProtectionParameter param = new KeyStore.PasswordProtection(getKeyStorePassword().toCharArray());
             String alias = System.getProperty(SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS, SecurityConstants.ALIAS_SYM_PRIVATE_KEY);
             Entry entry = keyStore.getEntry(alias, param);
-            if (entry != null && entry instanceof PrivateKeyEntry) {
+            if (entry instanceof PrivateKeyEntry) {
                 X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
 
                 String nl = System.getProperty("line.separator");
@@ -295,7 +295,7 @@ public class BouncyCastleSecurityService extends SecurityService {
         try {
             KeyStore keyStore = getTrustStore();
             Entry entry = keyStore.getEntry(alias, null);
-            if (entry != null && entry instanceof TrustedCertificateEntry) {
+            if (entry instanceof TrustedCertificateEntry) {
                 X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
 
                 String nl = System.getProperty("line.separator");
