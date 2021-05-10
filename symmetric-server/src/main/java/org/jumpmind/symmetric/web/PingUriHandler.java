@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jumpmind.symmetric.service.IParameterService;
 
 /**
@@ -50,7 +51,7 @@ public class PingUriHandler extends AbstractUriHandler {
         Long start = System.currentTimeMillis();
         long end = start + 5000;
         while (System.currentTimeMillis() < end) {
-            res.getWriter().write(        RandomStringUtils.randomAlphabetic(600));
+            res.getWriter().write(StringEscapeUtils.escapeHtml4(RandomStringUtils.randomAlphabetic(600)));
         }
     }
 

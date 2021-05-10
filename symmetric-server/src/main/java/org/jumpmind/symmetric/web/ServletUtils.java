@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * Utility methods for working with {@link Servlet}s
@@ -84,7 +85,7 @@ public class ServletUtils {
             throws IOException {
         boolean retVal = false;
         if (!resp.isCommitted()) {
-            resp.sendError(statusCode, message);
+            resp.sendError(statusCode, StringEscapeUtils.escapeHtml4(message));
             retVal = true;
         }
         return retVal;
