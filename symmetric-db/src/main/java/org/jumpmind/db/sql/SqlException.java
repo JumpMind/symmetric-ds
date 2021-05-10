@@ -59,7 +59,7 @@ public class SqlException extends RuntimeException {
             cause = cause.getCause();
         }
         
-        if (rootCause != null) {
+        if (rootCause == null) {
             rootCause = this;
         }
         return rootCause;
