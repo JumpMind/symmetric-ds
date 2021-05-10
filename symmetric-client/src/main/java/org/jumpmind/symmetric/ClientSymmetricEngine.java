@@ -37,6 +37,7 @@ import java.util.Properties;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -54,6 +55,7 @@ import org.jumpmind.db.sql.LogSqlBuilder;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.util.BasicDataSourceFactory;
 import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
+import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityServiceFactory;
 import org.jumpmind.security.SecurityServiceFactory.SecurityServiceType;
@@ -62,7 +64,6 @@ import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.SystemConstants;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.db.JdbcSymmetricDialectFactory;
-import org.jumpmind.extension.IProgressListener;
 import org.jumpmind.symmetric.io.stage.BatchStagingManager;
 import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.job.IJobManager;
@@ -237,6 +238,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                     factory.setValidating(false);
                     factory.setNamespaceAware(true);
+                    factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     // the "parse" method also validates XML, will throw an exception if misformatted
                     builder.parse(new InputSource(new StringReader(xml)));               
