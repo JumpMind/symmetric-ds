@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -270,13 +271,13 @@ public class BouncyCastleSecurityService extends SecurityService {
                 String nl = System.getProperty("line.separator");
                 StringWriter writer = new StringWriter();
                 writer.write("-----BEGIN CERTIFICATE-----" + nl);
-                writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true)));
+                writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true), Charset.defaultCharset()));
                 writer.write("-----END CERTIFICATE-----" + nl);
 
                 if (includePrivateKey) {
                     PrivateKeyEntry key = (PrivateKeyEntry) entry;
                     writer.write("-----BEGIN PRIVATE KEY-----" + nl);
-                    writer.write(new String(Base64.encodeBase64(key.getPrivateKey().getEncoded(), true)));
+                    writer.write(new String(Base64.encodeBase64(key.getPrivateKey().getEncoded(), true), Charset.defaultCharset()));
                     writer.write("-----END PRIVATE KEY-----" + nl);
                 }
                 pem = writer.toString();
@@ -301,7 +302,7 @@ public class BouncyCastleSecurityService extends SecurityService {
                 String nl = System.getProperty("line.separator");
                 StringWriter writer = new StringWriter();
                 writer.write("-----BEGIN CERTIFICATE-----" + nl);
-                writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true)));
+                writer.write(new String(Base64.encodeBase64(cert.getEncoded(), true), Charset.defaultCharset()));
                 writer.write("-----END CERTIFICATE-----" + nl);
 
                 pem = writer.toString();

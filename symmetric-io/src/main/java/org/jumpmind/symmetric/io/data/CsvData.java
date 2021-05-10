@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data;
 
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -305,7 +306,7 @@ public class CsvData {
             Collection<String> values = csvData.values();
             for (String string : values) {
                 if (string != null) {
-                    size += string.getBytes().length;
+                    size += string.getBytes(Charset.defaultCharset()).length;
                 }
             }
         }

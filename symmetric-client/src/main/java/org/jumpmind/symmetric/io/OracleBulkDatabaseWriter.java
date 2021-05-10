@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,17 +151,17 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         controlResource = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD, StringUtils.leftPad(batchId + "-ctl", 14, "0"));
         try {
             OutputStream out = controlResource.getOutputStream();
-            out.write(("LOAD DATA\n").getBytes());
+            out.write(("LOAD DATA\n").getBytes(Charset.defaultCharset()));
             if(StringUtils.isNotEmpty(sqlLoaderInfileCharset)) {
-                out.write(("CHARACTERSET " + sqlLoaderInfileCharset + "\n").getBytes());
+                out.write(("CHARACTERSET " + sqlLoaderInfileCharset + "\n").getBytes(Charset.defaultCharset()));
             }
-            out.write(getInfileControl().getBytes());
-            out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes());
+            out.write(getInfileControl().getBytes(Charset.defaultCharset()));
+            out.write(("APPEND INTO TABLE " + targetTable.getQualifiedTableName("\"", ".", ".") + "\n").getBytes(Charset.defaultCharset()));
 
-            out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes());
-            out.write(getLineTerminatedByControl().getBytes());
+            out.write(("FIELDS TERMINATED BY '" + fieldTerminator + "'\n").getBytes(Charset.defaultCharset()));
+            out.write(getLineTerminatedByControl().getBytes(Charset.defaultCharset()));
             
-            out.write("TRAILING NULLCOLS\n".getBytes());
+            out.write("TRAILING NULLCOLS\n".getBytes(Charset.defaultCharset()));
 
             String quote = "";
             if(delimitTokens) {
@@ -189,7 +190,7 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 }
             }
             columns.append(")\n");
-            out.write(columns.toString().getBytes());
+            out.write(columns.toString().getBytes(Charset.defaultCharset()));
             controlResource.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -229,12 +230,12 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         byte[] bytesToWrite = null;
                         if (hasBinaryType && columns[i].isOfBinaryType()) {
                             if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                bytesToWrite = Base64.decodeBase64(parsedData[i].getBytes());
+                                bytesToWrite = Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset()));
                             } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                 bytesToWrite = Hex.decodeHex(parsedData[i].toCharArray());
                             }
                         } else {
-                            bytesToWrite = parsedData[i].getBytes();
+                            bytesToWrite = parsedData[i].getBytes(Charset.defaultCharset());
                         }
                         if(bytesToWrite != null) {
                             out.write(bytesToWrite);
@@ -247,11 +248,11 @@ public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         }
                     }
                     if (i + 1 < parsedData.length) {
-                        out.write(fieldTerminator.getBytes());
+                        out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
                     }
                 }
 
-                out.write(lineTerminator.getBytes());
+                out.write(lineTerminator.getBytes(Charset.defaultCharset()));
                 rows++;
             } catch (Exception ex) {
                 throw getPlatform().getSqlTemplate().translate(ex);

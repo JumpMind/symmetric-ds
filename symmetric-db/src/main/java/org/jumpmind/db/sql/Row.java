@@ -22,6 +22,7 @@ package org.jumpmind.db.sql;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -74,7 +75,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
                     throw new SqlException(e);
                 }
             } else if (obj instanceof String) {
-                return obj.toString().getBytes();
+                return obj.toString().getBytes(Charset.defaultCharset());
             } else {
                 throw new IllegalStateException(String.format(
                         "Cannot translate a %s into a byte[]", obj.getClass().getName()));

@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data;
 
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -223,9 +224,9 @@ public class Batch {
     public String encodeBinary(String value) {
         if (value != null) {
             if (binaryEncoding == BinaryEncoding.HEX) {
-                value = new String(Hex.encodeHex(value.getBytes()));
+                value = new String(Hex.encodeHex(value.getBytes(Charset.defaultCharset())));
             } else if (binaryEncoding == BinaryEncoding.BASE64) {
-                value = new String(Base64.encodeBase64(value.getBytes()));
+                value = new String(Base64.encodeBase64(value.getBytes(Charset.defaultCharset())), Charset.defaultCharset());
             }
         }
         return value;
@@ -237,9 +238,9 @@ public class Batch {
                 if (binaryEncoding == BinaryEncoding.HEX) {
                     return Hex.decodeHex(value.toCharArray());
                 } else if (binaryEncoding == BinaryEncoding.BASE64) {
-                    return Base64.decodeBase64(value.getBytes());
+                    return Base64.decodeBase64(value.getBytes(Charset.defaultCharset()));
                 } else {
-                    return value.getBytes();
+                    return value.getBytes(Charset.defaultCharset());
                 }
             } catch (DecoderException e) {
                 throw new RuntimeException(e);

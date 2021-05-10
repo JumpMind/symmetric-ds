@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.io;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -110,7 +111,7 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
                                 if (batch.getBinaryEncoding() == BinaryEncoding.BASE64 && parsedData[i] != null) {
-                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset()))));
                                 }
                             }
                         }
@@ -120,33 +121,33 @@ public class TeradataBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         String[] columnNames = targetTable.getColumnNames();
                         for (int i = 0; i < columnNames.length; i++) {
                             if (columnNames[i] != null) {
-                                out.write(columnNames[i].getBytes());
-                                totalBytes+=columnNames[i].getBytes().length;
+                                out.write(columnNames[i].getBytes(Charset.defaultCharset()));
+                                totalBytes += columnNames[i].getBytes(Charset.defaultCharset()).length;
                             }
                             if (i + 1 < columnNames.length) {
-                                out.write(fieldTerminator.getBytes());
-                                totalBytes+=fieldTerminator.getBytes().length;
+                                out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
+                                totalBytes += fieldTerminator.getBytes(Charset.defaultCharset()).length;
                             }
                         }
-                        out.write(rowTerminator.getBytes());
-                        totalBytes+=rowTerminator.getBytes().length;
+                        out.write(rowTerminator.getBytes(Charset.defaultCharset()));
+                        totalBytes += rowTerminator.getBytes(Charset.defaultCharset()).length;
                         
                         columnHeaderWritten=true;
                     } 
                     
                     for (int i = 0; i < parsedData.length; i++) {
                         if (parsedData[i] != null) {
-                            out.write(parsedData[i].getBytes());
-                            totalBytes+=parsedData[i].getBytes().length;
+                            out.write(parsedData[i].getBytes(Charset.defaultCharset()));
+                            totalBytes += parsedData[i].getBytes(Charset.defaultCharset()).length;
                         }
                         if (i + 1 < parsedData.length) {
-                            out.write(fieldTerminator.getBytes());
-                            totalBytes+=fieldTerminator.getBytes().length;
+                            out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
+                            totalBytes += fieldTerminator.getBytes(Charset.defaultCharset()).length;
                         }
                     }
                     
-                    out.write(rowTerminator.getBytes());
-                    totalBytes+=(rowTerminator.getBytes().length);
+                    out.write(rowTerminator.getBytes(Charset.defaultCharset()));
+                    totalBytes += (rowTerminator.getBytes(Charset.defaultCharset()).length);
                     
                     loadedRows++;
                 } catch (Exception ex) {

@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.reader;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -199,11 +200,11 @@ public class ExtractDataReader implements IDataReader {
                             byte[] binaryData = row.getBytes(lobColumn.getName());
                             if (binaryData != null) {
                                 if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                    valueForCsv = new String(Base64.encodeBase64(binaryData));
+                                    valueForCsv = new String(Base64.encodeBase64(binaryData), Charset.defaultCharset());
                                 } else if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                     valueForCsv = new String(Hex.encodeHex(binaryData));
                                 } else {
-                                    valueForCsv = new String(binaryData);
+                                    valueForCsv = new String(binaryData, Charset.defaultCharset());
                                 }
                                 binaryData = null;
                             }

@@ -29,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
@@ -390,7 +391,7 @@ public class SimpleIntegrationTest extends AbstractIntegrationTest {
         logTestRunning();
         String bigString = StringUtils.rightPad("Feeling tired... ", 6000, "Z");
         Customer customer = new Customer(400, "Eric", true, "100 Main Street", "Columbus", "OH",
-                43082, new Date(), new Date(), bigString, bigString.getBytes());
+                43082, new Date(), new Date(), bigString, bigString.getBytes(Charset.defaultCharset()));
         serverTestService.insertCustomer(customer);
         clientPull();
     }

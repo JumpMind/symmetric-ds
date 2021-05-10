@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io;
 
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -145,7 +146,7 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         for (int i = 0; i < columns.length; i++) {
                             if (columns[i].isOfBinaryType()) {
                                 if (batch.getBinaryEncoding() == BinaryEncoding.BASE64 && parsedData[i] != null) {
-                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                                    parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset()))));
                                 }
                             }
                         }
@@ -157,23 +158,23 @@ public class MsSqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                         for (int i = 0; i < columnNames.length; i++) {
                             String columnData = mapData.get(columnNames[i]);
                             if (columnData != null) {
-                                out.write(columnData.getBytes());
+                                out.write(columnData.getBytes(Charset.defaultCharset()));
                             }
                             if (i + 1 < columnNames.length) {
-                                out.write(fieldTerminator.getBytes());
+                                out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
                             }
                         }
                     } else {
                         for (int i = 0; i < parsedData.length; i++) {
                             if (parsedData[i] != null) {
-                                out.write(parsedData[i].getBytes());
+                                out.write(parsedData[i].getBytes(Charset.defaultCharset()));
                             }
                             if (i + 1 < parsedData.length) {
-                                out.write(fieldTerminator.getBytes());
+                                out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
                             }
                         }
                     }
-                    out.write(rowTerminator.getBytes());
+                    out.write(rowTerminator.getBytes(Charset.defaultCharset()));
                     loadedRows++;
                 } catch (Exception ex) {
                     throw getPlatform(table).getSqlTemplate().translate(ex);

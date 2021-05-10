@@ -21,6 +21,7 @@
 package org.jumpmind.db.platform.sqlite;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -101,7 +102,7 @@ public class SqliteJdbcSqlTemplate extends JdbcSqlTemplate {
             if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                 lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
             } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
-                lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
+                lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes(Charset.defaultCharset()));
             } else if (argType == Types.CLOB && lobHandler != null) {
                 lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
             } else if (arg!=null && argType == Types.DATE && arg instanceof Date) {

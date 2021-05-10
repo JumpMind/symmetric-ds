@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.KeyStoreException;
@@ -161,7 +162,7 @@ public class SecurityService implements ISecurityService {
             KeyStore keyStore = getTrustStore();
             String alias = keyStore.getCertificateAlias(entry.getTrustedCertificate());
             if (alias == null) {
-                alias = new String(Base64.encodeBase64(DigestUtils.sha1(entry.getTrustedCertificate().getEncoded()), false));
+                alias = new String(Base64.encodeBase64(DigestUtils.sha1(entry.getTrustedCertificate().getEncoded()), false), Charset.defaultCharset());
                 keyStore.setEntry(alias, entry, null);
                 log.info("Installing trusted certificate: {}", ((X509Certificate) entry.getTrustedCertificate()).getSubjectDN().getName());
                 saveTrustStore(keyStore);
@@ -246,7 +247,7 @@ public class SecurityService implements ISecurityService {
     public String decrypt(String encText) {
         try {
             checkThatKeystoreFileExists();
-            byte[] dec = Base64.decodeBase64(encText.getBytes());
+            byte[] dec = Base64.decodeBase64(encText.getBytes(Charset.defaultCharset()));
             byte[] bytes = getCipher(Cipher.DECRYPT_MODE).doFinal(dec);
             return new String(bytes, SecurityConstants.CHARSET);
         } catch (RuntimeException e) {
@@ -257,11 +258,11 @@ public class SecurityService implements ISecurityService {
     }
 
     public String obfuscate(String plainText) {
-        return new String(Base64.encodeBase64(rot13(plainText).getBytes()));
+        return new String(Base64.encodeBase64(rot13(plainText).getBytes(Charset.defaultCharset())), Charset.defaultCharset());
     }
 
     public String unobfuscate(String obfText) {
-        return new String(rot13(new String(Base64.decodeBase64(obfText.getBytes()))));
+        return new String(rot13(new String(Base64.decodeBase64(obfText.getBytes(Charset.defaultCharset())), Charset.defaultCharset())));
     }
 
     private String unobfuscateIfNeeded(String systemPropertyName) {
@@ -397,7 +398,7 @@ public class SecurityService implements ISecurityService {
             SecureRandom random = new SecureRandom();
             random.nextBytes(bytes);
         } else {
-            byte[] password = getKeyStorePassword().getBytes();
+            byte[] password = getKeyStorePassword().getBytes(Charset.defaultCharset());
             for (int i = 0; i < byteSize; i++) {
                 bytes[i] = password[i];
             }

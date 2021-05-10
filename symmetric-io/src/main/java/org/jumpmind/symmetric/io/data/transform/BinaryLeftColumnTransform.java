@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io.data.transform;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,8 +67,8 @@ public class BinaryLeftColumnTransform implements ISingleNewAndOldValueColumnTra
     
     public String bleft(String value, int maxBytes) {
         StringBuilder ret = new StringBuilder();
-        for(int i = 0;i < value.length(); i++) {
-            if((maxBytes -= value.substring(i, i+1).getBytes().length) < 0) break;
+        for (int i = 0;i < value.length(); i++) {
+            if ((maxBytes -= value.substring(i, i+1).getBytes(Charset.defaultCharset()).length) < 0) break;
             ret.append(value.charAt(i));
         }
         return ret.toString();

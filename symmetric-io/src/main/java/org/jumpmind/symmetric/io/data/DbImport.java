@@ -44,6 +44,7 @@ package org.jumpmind.symmetric.io.data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,7 +125,7 @@ public class DbImport {
 
     public void importTables(String importData, String tableName) {
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
+            ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes(Charset.defaultCharset()));
             importTables(in, tableName);
             in.close();
         } catch (IOException e) {
@@ -135,7 +136,7 @@ public class DbImport {
 
     public void importTables(String importData) {
         try {
-            ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes());
+            ByteArrayInputStream in = new ByteArrayInputStream(importData.getBytes(Charset.defaultCharset()));
             importTables(in);
             in.close();
         } catch (IOException e) {

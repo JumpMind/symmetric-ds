@@ -21,6 +21,7 @@
 package org.jumpmind.db.sql;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -209,7 +210,7 @@ public class LogSqlBuilder {
         }
                     
         if (encoding == BinaryEncoding.BASE64) {
-            return "'" + new String(Base64.encodeBase64(bytes)) + "'";
+            return "'" + new String(Base64.encodeBase64(bytes), Charset.defaultCharset()) + "'";
         } else if (encoding == BinaryEncoding.HEX) {
             return "'"+ new String(Hex.encodeHex(bytes)) + "'";
         }

@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 
 import javax.servlet.ServletException;
@@ -98,7 +99,7 @@ public class BandwidthSamplerUriHandler extends AbstractUriHandler {
         }
         bwtr.stop();
         log.debug(gson.toJson(bwtr));
-        outputStream.write(gson.toJson(bwtr).getBytes());
+        outputStream.write(gson.toJson(bwtr).getBytes(Charset.defaultCharset()));
     }
     
     protected InputStream createInputStream(HttpServletRequest req) throws IOException {

@@ -20,6 +20,8 @@
  */
 package org.jumpmind.symmetric.io.data.reader;
 
+import java.nio.charset.Charset;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
@@ -110,7 +112,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         for (int i = 0; i < columns.length; i++) {            
             Object value = row.get(columns[i].getName());
             if (value instanceof byte[]) {
-                stringValues[i] = new String(Base64.encodeBase64((byte[])value));
+                stringValues[i] = new String(Base64.encodeBase64((byte[])value), Charset.defaultCharset());
             } else if (value != null) {
                 stringValues[i] = value.toString();
             }

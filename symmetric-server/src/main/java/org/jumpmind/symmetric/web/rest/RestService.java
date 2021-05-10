@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -1506,7 +1507,7 @@ public class RestService {
         IDataLoaderService dataLoaderService = engine.getDataLoaderService();
         boolean inError = false;
         try {
-            String content = new String(file.getBytes());
+            String content = new String(file.getBytes(), Charset.defaultCharset());
             List<IncomingBatch> batches = dataLoaderService.loadDataBatch(content);
             for (IncomingBatch batch : batches) {
                 if (batch.getStatus() == Status.ER) {

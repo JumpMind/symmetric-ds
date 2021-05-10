@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.data.writer;
 import static org.junit.Assert.fail;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     protected abstract boolean shouldTestRun(IDatabasePlatform platform);
 
     protected String encodeBase64(String str) {
-        return new String(Base64.encodeBase64(str.getBytes()));
+        return new String(Base64.encodeBase64(str.getBytes(Charset.defaultCharset())), Charset.defaultCharset());
     }
 
     protected String encodeBase64(int[] bytes) {
@@ -75,7 +76,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         for (int b : bytes) {
             bb.put((byte) b);
         }
-        return new String(Base64.encodeBase64(bb.array()));
+        return new String(Base64.encodeBase64(bb.array()), Charset.defaultCharset());
     }
     
     protected String encodeHex(int[] bytes) {
@@ -106,7 +107,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
     {
         if (values[11] != null)
         {
-            values[elementToEncode] = new String(Hex.encodeHex(values[elementToEncode].getBytes()));
+            values[elementToEncode] = new String(Hex.encodeHex(values[elementToEncode].getBytes(Charset.defaultCharset())));
             insertAndVerify(values, BinaryEncoding.HEX);
             values[0] = getNextId();
             values[elementToEncode] = new String(encodeBase64(values[elementToEncode]));
@@ -320,7 +321,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
                     expectedValues[11] = new String(expectedValues[11]);
                     results.put(TEST_COLUMNS[11], new String(Hex.encodeHex((byte[]) results.get(TEST_COLUMNS[11]))));
                 } else {
-                    expectedValues[11] = new String(Hex.encodeHex(Base64.decodeBase64(expectedValues[11].getBytes())));
+                    expectedValues[11] = new String(Hex.encodeHex(Base64.decodeBase64(expectedValues[11].getBytes(Charset.defaultCharset()))));
                     results.put(TEST_COLUMNS[11], new String(Hex.encodeHex((byte[]) results.get(TEST_COLUMNS[11]))));
                 }
             }

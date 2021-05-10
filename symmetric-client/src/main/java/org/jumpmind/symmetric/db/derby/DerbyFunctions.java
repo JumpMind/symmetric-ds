@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.db.derby;
 
+import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -241,7 +242,7 @@ public class DerbyFunctions {
                     }
                 }
                 if (bytes != null) {
-                    str = new String(Base64.encodeBase64(bytes));
+                    str = new String(Base64.encodeBase64(bytes), Charset.defaultCharset());
                 }
             }
             ps.close();

@@ -1,5 +1,7 @@
 package org.jumpmind.db.platform.interbase;
 
+import java.nio.charset.Charset;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -154,7 +156,7 @@ public class InterbaseDdlReader extends AbstractJdbcDdlReader {
 
                 if (column != null) {
                     byte[] defaultBytes = rs.getBytes(2);
-                    String defaultValue = defaultBytes != null ? new String(defaultBytes) : null;
+                    String defaultValue = defaultBytes != null ? new String(defaultBytes, Charset.defaultCharset()) : null;
 
                     if (!rs.wasNull() && (defaultValue != null)) {
                         defaultValue = defaultValue.trim();

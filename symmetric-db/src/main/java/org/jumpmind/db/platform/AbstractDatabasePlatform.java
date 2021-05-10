@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.sql.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -426,7 +427,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                         objectValue = StringUtils.rightPad(value, column.getSizeAsInt(), ' ');
                     } else {
                         // single-byte character set or field defined as number of bytes
-                        objectValue = value + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes().length);
+                        objectValue = value + StringUtils.repeat(" ", column.getCharOctetLength() - value.getBytes(Charset.defaultCharset()).length);
                     }
                 } else if (getDdlBuilder().getDatabaseInfo().isCharColumnSpaceTrimmed()) {
                     objectValue = StringUtils.stripEnd(value, " ");
@@ -447,9 +448,9 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     // SQLServer ntext type
                             type == -10)) {
                 if (encoding == BinaryEncoding.NONE) {
-                    objectValue = value.getBytes();
+                    objectValue = value.getBytes(Charset.defaultCharset());
                 } else if (encoding == BinaryEncoding.BASE64) {
-                    objectValue = Base64.decodeBase64(value.getBytes());
+                    objectValue = Base64.decodeBase64(value.getBytes(Charset.defaultCharset()));
                 } else if (encoding == BinaryEncoding.HEX) {
                     objectValue = Hex.decodeHex(value.toCharArray());
                 }
@@ -547,7 +548,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     if (encoding == BinaryEncoding.NONE) {
                         values[i] = row.getString(name);
                     } else if (encoding == BinaryEncoding.BASE64) {
-                        values[i] = new String(Base64.encodeBase64(bytes));
+                        values[i] = new String(Base64.encodeBase64(bytes), Charset.defaultCharset());
                     } else if (encoding == BinaryEncoding.HEX) {
                         values[i] = new String(Hex.encodeHex(bytes));
                     }
@@ -589,7 +590,7 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                     } else if (encoding == BinaryEncoding.NONE) {
                         concatenatedRow.append(row.getString(name));
                     } else if (encoding == BinaryEncoding.BASE64) {
-                        concatenatedRow.append(new String(Base64.encodeBase64(bytes)));
+                        concatenatedRow.append(new String(Base64.encodeBase64(bytes), Charset.defaultCharset()));
                     } else if (encoding == BinaryEncoding.HEX) {
                         concatenatedRow.append(new String(Hex.encodeHex(bytes)));
                     }

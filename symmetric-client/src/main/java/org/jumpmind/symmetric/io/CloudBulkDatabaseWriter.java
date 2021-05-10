@@ -3,6 +3,7 @@ package org.jumpmind.symmetric.io;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -280,7 +281,7 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                                 for (int i = 0; i < columns.length; i++) {
                                     if (columns[i].isOfBinaryType()) {
                                         if (batch.getBinaryEncoding() == BinaryEncoding.BASE64 && parsedData[i] != null) {
-                                            parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes())));
+                                            parsedData[i] = new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset()))));
                                         }
                                     }
                                 }
@@ -292,31 +293,31 @@ public abstract class CloudBulkDatabaseWriter extends AbstractBulkDatabaseWriter
                                 for (int i = 0; i < columnNames.length; i++) {
                                     String columnData = mapData.get(columnNames[i]);
                                     if (columnData != null) {
-                                        out.write(columnData.getBytes());
-                                        loadedBytes += columnData.getBytes().length;
+                                        out.write(columnData.getBytes(Charset.defaultCharset()));
+                                        loadedBytes += columnData.getBytes(Charset.defaultCharset()).length;
                                     }
                                     if (i + 1 < columnNames.length) {
-                                        out.write(fieldTerminator.getBytes());
-                                        loadedBytes += fieldTerminator.getBytes().length;
+                                        out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
+                                        loadedBytes += fieldTerminator.getBytes(Charset.defaultCharset()).length;
                                     }
                                     
                                 }
                             } else {
                                 for (int i = 0; i < parsedData.length; i++) {
                                     if (parsedData[i] != null) {
-                                        out.write(parsedData[i].getBytes());
-                                        loadedBytes += parsedData[i].getBytes().length;
+                                        out.write(parsedData[i].getBytes(Charset.defaultCharset()));
+                                        loadedBytes += parsedData[i].getBytes(Charset.defaultCharset()).length;
                                     }
                                     if (i + 1 < parsedData.length) {
-                                        out.write(fieldTerminator.getBytes());
-                                        loadedBytes += fieldTerminator.getBytes().length;
+                                        out.write(fieldTerminator.getBytes(Charset.defaultCharset()));
+                                        loadedBytes += fieldTerminator.getBytes(Charset.defaultCharset()).length;
                                     }
                                 }
                             }
                             
                             
-                            out.write(rowTerminator.getBytes());
-                            loadedBytes += rowTerminator.getBytes().length;
+                            out.write(rowTerminator.getBytes(Charset.defaultCharset()));
+                            loadedBytes += rowTerminator.getBytes(Charset.defaultCharset()).length;
                             loadedRows++;
                         } catch (Exception ex) {
                             throw getPlatform().getSqlTemplate().translate(ex);

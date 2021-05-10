@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.io;
 
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -97,14 +98,14 @@ public class PostgresBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                                     if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                         parsedData[i] = encode(Hex.decodeHex(parsedData[i].toCharArray()));
                                     } else if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                        parsedData[i] = encode(Base64.decodeBase64(parsedData[i].getBytes()));
+                                        parsedData[i] = encode(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset())));
                                     }
                                 }
                             }
                         }
                         String formattedData = CsvUtils.escapeCsvData(parsedData, '\n', '\'', CsvWriter.ESCAPE_MODE_DOUBLED);
                         formattedData = removeIllegalCharacters(formattedData);
-                        byte[] dataToLoad = formattedData.getBytes();
+                        byte[] dataToLoad = formattedData.getBytes(Charset.defaultCharset());
                         copyIn.writeToCopy(dataToLoad, 0, dataToLoad.length);
                         loadedRows++;
                     } catch (Exception ex) {

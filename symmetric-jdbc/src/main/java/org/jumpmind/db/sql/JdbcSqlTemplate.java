@@ -594,7 +594,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
         if (readStringsAsBytes && TypeMap.isTextType(jdbcType)) {
             byte[] bytes = rs.getBytes(index);
             if (bytes != null) {
-                obj = new String(bytes);
+                obj = new String(bytes, Charset.defaultCharset());
             }
         } else {
             obj = rs.getObject(index);
@@ -1105,7 +1105,7 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
                 if (argType == Types.BLOB && lobHandler != null && arg instanceof byte[]) {
                     lobHandler.getLobCreator().setBlobAsBytes(ps, i, (byte[]) arg);
                 } else if (argType == Types.BLOB && lobHandler != null && arg instanceof String) {
-                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes());
+                    lobHandler.getLobCreator().setBlobAsBytes(ps, i, arg.toString().getBytes(Charset.defaultCharset()));
                 } else if (argType == Types.CLOB && lobHandler != null) {
                     lobHandler.getLobCreator().setClobAsString(ps, i, (String) arg);
                 } else if ((argType == Types.DECIMAL || argType == Types.NUMERIC) && arg != null) {

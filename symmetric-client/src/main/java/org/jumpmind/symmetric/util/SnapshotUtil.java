@@ -416,10 +416,10 @@ public class SnapshotUtil {
                 List<DataGap> gaps = engine.getRouterService().getDataGaps();
                 SimpleDateFormat dformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                 fos = new FileOutputStream(new File(tmpDir, "sym_data_gap_cache.csv"));
-                fos.write("start_id,end_id,create_time\n".getBytes());
+                fos.write("start_id,end_id,create_time\n".getBytes(Charset.defaultCharset()));
                 if (gaps != null) {
                     for (DataGap gap : gaps) {
-                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\"" + "\"\n").getBytes());
+                        fos.write((gap.getStartId() + "," + gap.getEndId() + ",\"" + dformat.format(gap.getCreateTime()) + "\",\"" + "\"\n").getBytes(Charset.defaultCharset()));
                     }
                 }
             } catch (Exception e) {

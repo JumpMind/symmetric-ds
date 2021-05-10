@@ -1,6 +1,7 @@
 package org.jumpmind.symmetric.io;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
     protected LoadStatus put(CsvData data) {
         try {
             setup();
-            Put put = new Put(data.getPkData(this.targetTable)[0].getBytes());
+            Put put = new Put(data.getPkData(this.targetTable)[0].getBytes(Charset.defaultCharset()));
             
             String[] values = data.getParsedData(CsvData.ROW_DATA);
             Column[] columns = sourceTable.getColumns();
@@ -66,10 +67,10 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
                 if (columns[i].getName().contains(":")) {
                     log.debug("Preparing put statement into Hbase.");
                     String[] split = columns[i].getName().split(":");
-                    byte[] columnFamily = split[0].getBytes();
-                    byte[] columnName = split[1].getBytes();
+                    byte[] columnFamily = split[0].getBytes(Charset.defaultCharset());
+                    byte[] columnName = split[1].getBytes(Charset.defaultCharset());
                     
-                    byte[] value = StringUtils.isEmpty(values[i]) ? new byte[0] : values[i].getBytes();
+                    byte[] value = StringUtils.isEmpty(values[i]) ? new byte[0] : values[i].getBytes(Charset.defaultCharset());
                     put.addColumn(columnFamily, columnName, value);
                     putList.add(put);
                 }
@@ -98,7 +99,7 @@ public class HbaseDatabaseWriter extends AbstractDatabaseWriter {
         
         String[] pkData = data.getParsedData(CsvData.PK_DATA);
         if (pkData != null && pkData.length == 1) {
-            Delete delete = new Delete(pkData[0].getBytes());
+            Delete delete = new Delete(pkData[0].getBytes(Charset.defaultCharset()));
             try {
                 table.delete(delete);
             } catch (IOException e) {

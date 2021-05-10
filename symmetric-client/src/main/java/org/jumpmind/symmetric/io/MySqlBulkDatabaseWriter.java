@@ -22,6 +22,7 @@ package org.jumpmind.symmetric.io;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -140,9 +141,9 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                                 }
                                 out.write('"');
                                 if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
-                                    out.write(parsedData[i].getBytes());                                
+                                    out.write(parsedData[i].getBytes(Charset.defaultCharset()));
                                 } else if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                    out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes()))).getBytes());
+                                    out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset())))).getBytes(Charset.defaultCharset()));
                                 }
                                 out.write('"');
                             } else {
@@ -156,7 +157,7 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                     } else {
                         String[] rowData = getRowData(data, CsvData.ROW_DATA);
                         String formattedData = CsvUtils.escapeCsvData(rowData, '\n', '"', CsvWriter.ESCAPE_MODE_BACKSLASH, "\\N");
-                        byteData = formattedData.getBytes();
+                        byteData = formattedData.getBytes(Charset.defaultCharset());
                     }
                     this.stagedInputFile.getOutputStream().write(byteData);
                     loadedRows++;

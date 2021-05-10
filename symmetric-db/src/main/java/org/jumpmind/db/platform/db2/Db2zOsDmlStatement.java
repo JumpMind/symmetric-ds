@@ -20,6 +20,7 @@
  */
 package org.jumpmind.db.platform.db2;
 
+import java.nio.charset.Charset;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -114,7 +115,7 @@ public class Db2zOsDmlStatement extends DmlStatement {
                         newSql = newSql.replaceFirst(regex, quote + row.getString(name));
                     } else if (encoding == BinaryEncoding.BASE64) {
                         newSql = newSql.replaceFirst(regex,
-                                quote + new String(Base64.encodeBase64(bytes)) + quote);
+                                quote + new String(Base64.encodeBase64(bytes), Charset.defaultCharset()) + quote);
                     } else if (encoding == BinaryEncoding.HEX) {
                         newSql = newSql.replaceFirst(regex, binaryQuoteStart
                                 + new String(Hex.encodeHex(bytes)) + binaryQuoteEnd);
