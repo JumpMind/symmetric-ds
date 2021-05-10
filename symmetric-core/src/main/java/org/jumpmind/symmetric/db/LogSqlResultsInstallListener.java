@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.jumpmind.db.sql.LogSqlResultsListener;
 import org.jumpmind.symmetric.ext.IDatabaseInstallStatementListener;
-import org.slf4j.Logger;
 
 public class LogSqlResultsInstallListener extends LogSqlResultsListener {
 
@@ -34,8 +33,7 @@ public class LogSqlResultsInstallListener extends LogSqlResultsListener {
 
     protected List<IDatabaseInstallStatementListener> listeners;
     
-    public LogSqlResultsInstallListener(Logger log, String engineName, int totalStatements, List<IDatabaseInstallStatementListener> listeners) {
-        super(log);
+    public LogSqlResultsInstallListener(String engineName, int totalStatements, List<IDatabaseInstallStatementListener> listeners) {
         this.engineName = engineName;
         this.totalStatements = totalStatements;
         this.listeners = listeners;

@@ -498,7 +498,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
             if (builder.isAlterDatabase(modelFromDatabase, modelFromXml, interceptors)) {
                 String delimiter = platform.getDatabaseInfo().getSqlCommandDelimiter();
 
-                ISqlResultsListener resultsListener = new LogSqlResultsListener(log);
+                ISqlResultsListener resultsListener = new LogSqlResultsListener();
                 List<IDatabaseUpgradeListener> databaseUpgradeListeners = extensionService
                         .getExtensionPointList(IDatabaseUpgradeListener.class);
 
@@ -520,7 +520,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
                     List<IDatabaseInstallStatementListener> installListeners = extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class);
                     if (installListeners != null && installListeners.size() > 0) {
                         int totalStatements = SqlScript.calculateTotalStatements(alterSql, delimiter);
-                        resultsInstallListener = new LogSqlResultsInstallListener(log, parameterService.getEngineName(),
+                        resultsInstallListener = new LogSqlResultsInstallListener(parameterService.getEngineName(),
                                 totalStatements, extensionService.getExtensionPointList(IDatabaseInstallStatementListener.class));
                     }
                     SqlScript script = new SqlScript(alterSql, getPlatform().getSqlTemplate(), true, false, false, delimiter, null);

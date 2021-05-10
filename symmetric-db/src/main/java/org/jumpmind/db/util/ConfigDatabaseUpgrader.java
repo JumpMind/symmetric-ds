@@ -59,7 +59,7 @@ public class ConfigDatabaseUpgrader {
                 SqlScript script = new SqlScript(alterSql, configDatabasePlatform.getSqlTemplate(),
                         true, false, false, delimiter, null);
                 if (logOutput) {
-                    script.setListener(new LogSqlResultsListener(log));
+                    script.setListener(new LogSqlResultsListener());
                 }
                 script.execute(configDatabasePlatform.getDatabaseInfo()
                         .isRequiresAutoCommitForDdl());

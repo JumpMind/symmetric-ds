@@ -21,13 +21,13 @@
 package org.jumpmind.db.sql;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LogSqlResultsListener implements ISqlResultsListener {
 
-    Logger log;
+    private static final Logger log = LoggerFactory.getLogger(LogSqlResultsListener.class);
 
-    public LogSqlResultsListener(Logger log) {
-        this.log = log;
+    public LogSqlResultsListener() {
     }
 
     public void sqlErrored(String sql, SqlException ex, int lineNumber, boolean dropStatement,
