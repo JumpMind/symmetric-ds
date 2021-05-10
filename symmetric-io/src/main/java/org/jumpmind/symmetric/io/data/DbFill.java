@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.io.data;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -36,7 +37,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -96,7 +96,7 @@ public class DbFill {
 
     private int percentRollback = 0;
 
-    private Random rand = null;
+    private SecureRandom rand = null;
 
     private int interval = 0;
 
@@ -907,7 +907,7 @@ public class DbFill {
         Object objectValue = null;
         int type = column.getMappedTypeCode();
         if (column.getPlatformColumns() != null && column.getPlatformColumns().get(platform.getName()) != null && column.getPlatformColumns().get(platform.getName()).isEnum()) {
-            objectValue = column.getPlatformColumns().get(platform.getName()).getEnumValues()[new Random().nextInt(column.getPlatformColumns().get(platform.getName()).getEnumValues().length)];
+            objectValue = column.getPlatformColumns().get(platform.getName()).getEnumValues()[getRand().nextInt(column.getPlatformColumns().get(platform.getName()).getEnumValues().length)];
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().equals("uniqueidentifier")) {
             objectValue = randomUUID();
         } else if (column.isTimestampWithTimezone()) {
@@ -1001,7 +1001,7 @@ public class DbFill {
 
     private Object randomDouble() {
         final long places = 1000000000l;
-        double d = Math.random()*places;
+        double d = getRand().nextDouble()*places;
         long l = Math.round(d);
         return ((double)l)/(double)places+2 + (double)randomInt();
     }
@@ -1298,9 +1298,9 @@ public class DbFill {
         this.interval = interval;
     }
 
-    public Random getRand() {
+    public SecureRandom getRand() {
         if (rand == null) {
-            rand = ThreadLocalRandom.current();
+            rand = new SecureRandom();
         }
         return rand;
     }

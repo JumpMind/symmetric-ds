@@ -20,7 +20,8 @@
  */
 package org.jumpmind.util;
 
-import java.util.Random;
+import java.nio.charset.Charset;
+import java.security.SecureRandom;
 
 /**
  * Use runtime configuration specific seeding to get a random number for use in
@@ -28,24 +29,18 @@ import java.util.Random;
  */
 public class RandomTimeSlot {
 
-    int maxValue = -1;
+    protected int maxValue = -1;
 
-    Random random;
+    protected SecureRandom random;
 
     public RandomTimeSlot() {
-        random = new Random();
+        random = new SecureRandom();
     }
 
     public RandomTimeSlot(String externalId, int maxValue) {
         this.maxValue = maxValue;
-        random = new Random(fromExternalId(externalId));
-    }
-
-    private long fromExternalId(String externalId) {
-        if (externalId != null && externalId.hashCode() != Integer.MIN_VALUE) {
-            return Math.abs(externalId.hashCode());
-        } else {
-            return Integer.MAX_VALUE;
+        if (externalId != null) {
+        	random = new SecureRandom(externalId.getBytes(Charset.defaultCharset()));
         }
     }
 

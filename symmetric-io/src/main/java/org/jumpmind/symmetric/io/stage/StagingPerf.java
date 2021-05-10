@@ -23,11 +23,11 @@ package org.jumpmind.symmetric.io.stage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jumpmind.db.util.BinaryEncoding;
@@ -76,7 +76,7 @@ public class StagingPerf {
         log.info("Starting staging test, duration of {} seconds", seconds);
         
         try {
-            Random random = new Random();
+            SecureRandom random = new SecureRandom();
             long startBatchId = random.nextInt(999999) + 1;
             long endBatchId = startBatchId + (seconds * 500);
             for (long batchId = startBatchId; batchId < endBatchId; batchId++) {

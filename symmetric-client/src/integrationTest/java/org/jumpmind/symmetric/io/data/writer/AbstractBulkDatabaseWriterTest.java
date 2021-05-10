@@ -24,10 +24,10 @@ import static org.junit.Assert.fail;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -246,7 +246,7 @@ public abstract class AbstractBulkDatabaseWriterTest extends AbstractWriterTest 
         if (shouldTestRun(platform)) {
             String[] values = { getNextId(), null, "x", null, "x", null, null, null, null, null, null, null};
             int[] bytes = new int[8192];
-            Random randomGenerator = new Random();
+            SecureRandom randomGenerator = new SecureRandom();
             for (int i = 0; i < bytes.length; ++i) {
                 bytes[i] = randomGenerator.nextInt(256);
             }

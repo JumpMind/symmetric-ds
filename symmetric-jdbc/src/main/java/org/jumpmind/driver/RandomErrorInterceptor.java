@@ -20,7 +20,7 @@
  */
 package org.jumpmind.driver;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jumpmind.db.sql.SqlException;
@@ -35,7 +35,7 @@ public class RandomErrorInterceptor extends StatementInterceptor {
     private static final int MAX = 1000;
     private static final int ERROR_THRESHOLD = (int)(MAX * 0.01);
     
-    private Random random = new Random();
+    private SecureRandom random = new SecureRandom();
 
     public RandomErrorInterceptor(Object wrapped, TypedProperties properties) {
         super(wrapped, properties);
