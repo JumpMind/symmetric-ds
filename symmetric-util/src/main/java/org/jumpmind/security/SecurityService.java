@@ -34,14 +34,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.KeyManagerFactory;
 
@@ -290,26 +287,12 @@ public class SecurityService implements ISecurityService {
     public Cipher getCipher(int mode) throws Exception {
         initializeSecretKey();
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
-        initializeCipher(cipher, mode);
+        cipher.init(mode, secretKey);
         if (log.isDebugEnabled()) {
             log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(), 
                     secretKey.getEncoded().length * 8, cipher.getProvider().getName());
         }
         return cipher;
-    }
-
-    protected void initializeCipher(Cipher cipher, int mode) throws Exception {
-        AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
-
-        if (paramSpec instanceof PBEParameterSpec || cipher.getAlgorithm().startsWith("PBE")) {
-            paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
-            cipher.init(mode, secretKey, paramSpec);
-        } else if (paramSpec instanceof IvParameterSpec) {
-            paramSpec = new IvParameterSpec(SecurityConstants.SALT);
-            cipher.init(mode, secretKey, paramSpec);
-        } else {
-            cipher.init(mode, secretKey);
-        }
     }
 
     protected String getTrustStorePassword() {
@@ -379,7 +362,6 @@ public class SecurityService implements ISecurityService {
                 } else {
                     secretKey = new SecretKeySpec(getBytes(SecurityConstants.BYTESIZES[i]), SecurityConstants.KEYSPECS[i]);
                 }
-                initializeCipher(Cipher.getInstance(SecurityConstants.CIPHERS[i]), Cipher.ENCRYPT_MODE);
                 log.info("Generated secret key using {} {}", SecurityConstants.CIPHERS[i],
                         SecurityConstants.BYTESIZES[i] * 8);
                 break;
