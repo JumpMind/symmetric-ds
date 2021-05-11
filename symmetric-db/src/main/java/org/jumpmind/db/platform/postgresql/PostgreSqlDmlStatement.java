@@ -124,20 +124,14 @@ public class PostgreSqlDmlStatement extends DmlStatement {
 
     @Override
     protected void appendColumnParameter(StringBuilder sql, Column column) {
-        if (column.isTimestampWithTimezone()) {
-            sql.append("cast(? as timestamp with time zone)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
-            sql.append("cast(? as uuid)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
-            sql.append("cast(? as bit varying)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-            sql.append("cast(? as interval)").append(",");
+        String typeToCast = getTypeToCast(column);
+
+        if (typeToCast != null) {
+            sql.append("cast(? as ").append(typeToCast).append(")").append(",");
         } else if (column.getJdbcTypeName() != null && (
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
-        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
-            sql.append("cast(? as tsvector)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
@@ -145,27 +139,44 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     
     @Override
     protected void appendColumnEquals(StringBuilder sql, Column column) {
-        if (column.isTimestampWithTimezone()) {
+        String typeToCast = getTypeToCast(column);
+
+        if (typeToCast != null) {
             sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as timestamp with time zone)");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
-            sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as uuid)");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
-            sql.append(quote).append(column.getName()).append(quote)
-                    .append(" = cast(? as bit varying)");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
-            sql.append(quote).append(column.getName()).append(quote)
-                  .append(" = cast(? as interval)");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
-                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY)) {
-            sql.append(quote).append(column.getName()).append(quote)
-            .append(" = ST_GEOMFROMTEXT(?)");
-        } else if (column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
-            sql.append(quote).append(column.getName()).append(quote).append(" = cast(? as tsvector)");
+                    .append(" = cast(? as ").append(typeToCast).append(")").append(",");
+        } else if (column.getJdbcTypeName() != null && (
+                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
+                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
+            sql.append(" = ST_GEOMFROMTEXT(?)");
         } else {
             super.appendColumnEquals(sql, column);
         }
+    }
+
+    private String getTypeToCast(Column column) {
+        String typeToCast = null;
+
+        if (column.isTimestampWithTimezone()) {
+            typeToCast = "timestamp with time zone";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
+            typeToCast = "uuid";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.VARBIT)) {
+            typeToCast = "bit varying";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.INTERVAL)) {
+            typeToCast = "interval";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.TSVECTOR)) {
+            typeToCast = "tsvector";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSONB)) {
+            typeToCast = "json";
+        } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSON)) {
+            typeToCast = "json";
+        }
+
+        if (typeToCast != null && column.getMappedType() != null && column.getMappedType().equals(TypeMap.ARRAY)) {
+            typeToCast = typeToCast + "[]";
+        }
+
+        return typeToCast;
     }
 
     @Override
