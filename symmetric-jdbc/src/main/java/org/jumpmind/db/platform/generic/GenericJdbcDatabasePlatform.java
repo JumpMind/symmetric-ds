@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
+import org.jumpmind.db.platform.DatabaseVersion;
 import org.jumpmind.db.platform.IDdlBuilder;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.platform.JdbcDatabasePlatformFactory;
@@ -18,8 +19,8 @@ public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public GenericJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         try {
-            String nameVersion[] = JdbcDatabasePlatformFactory.determineDatabaseNameVersionSubprotocol(dataSource);
-            name = String.format("%s%s", nameVersion[0], nameVersion[1]).toLowerCase();
+            DatabaseVersion nameVersion = JdbcDatabasePlatformFactory.determineDatabaseNameVersionSubprotocol(dataSource);
+            name = String.format("%s%s", nameVersion.getName(), nameVersion.getVersionAsString()).toLowerCase();
         } catch (Exception e) {
             name = DatabaseNamesConstants.GENERIC;
             log.info("Unable to determine database name and version, " + e.getMessage());

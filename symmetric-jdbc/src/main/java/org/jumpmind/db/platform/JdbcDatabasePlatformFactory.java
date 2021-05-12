@@ -180,7 +180,7 @@ public class JdbcDatabasePlatformFactory {
 
         // connects to the database and uses actual metadata info to get db name
         // and version to determine platform
-        String[] nameVersion = determineDatabaseNameVersionSubprotocol(dataSource, isLoadOnly);
+        DatabaseVersion nameVersion = determineDatabaseNameVersionSubprotocol(dataSource, isLoadOnly);
 
         Class<? extends IDatabasePlatform> clazz =  findPlatformClass(nameVersion);
 
@@ -194,22 +194,20 @@ public class JdbcDatabasePlatformFactory {
             platform.getDdlBuilder().initCteExpression();
             return platform;
         } catch (Exception e) {
-            throw new DdlException("Could not create a platform of type " + nameVersion[0], e);
+            throw new DdlException("Could not create a platform of type " + nameVersion.getName(), e);
         }
     }
 
-
-    protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(
-            String[] nameVersion) {
+    protected static synchronized Class<? extends IDatabasePlatform> findPlatformClass(DatabaseVersion nameVersion) {
         Class<? extends IDatabasePlatform> platformClass = platforms.get(String.format("%s%s",
-                nameVersion[0], nameVersion[1]).toLowerCase());
+                nameVersion.getName(), nameVersion.getVersionAsString()).toLowerCase());
 
         if (platformClass == null) {
-            platformClass = platforms.get(nameVersion[0].toLowerCase());
+            platformClass = platforms.get(nameVersion.getName().toLowerCase());
         }
 
         if (platformClass == null) {
-            platformClass = jdbcSubProtocolToPlatform.get(nameVersion[2]);
+            platformClass = jdbcSubProtocolToPlatform.get(nameVersion.getProtocol());
         }
 
         if (platformClass == null) {
@@ -219,18 +217,18 @@ public class JdbcDatabasePlatformFactory {
         return platformClass;
     }
 
-    public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
-            return determineDatabaseNameVersionSubprotocol(dataSource, false);
+    public static DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource) {
+    	return determineDatabaseNameVersionSubprotocol(dataSource, false);
     }
     
-    public static String[] determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
+    public static DatabaseVersion determineDatabaseNameVersionSubprotocol(DataSource dataSource, boolean isLoadOnly) {
         Connection connection = null;
-        String[] nameVersion = new String[3];
+        DatabaseVersion nameVersion = new DatabaseVersion();
         try {
             connection = dataSource.getConnection();
             DatabaseMetaData metaData = connection.getMetaData();
-            nameVersion[0] = metaData.getDatabaseProductName();
-            nameVersion[1] = Integer.toString(metaData.getDatabaseMajorVersion());
+            nameVersion.setName(metaData.getDatabaseProductName());
+            nameVersion.setVersion(metaData.getDatabaseMajorVersion());
             final String PREFIX = "jdbc:";
             String url = metaData.getURL();
             if (StringUtils.isNotBlank(url) && url.length() > PREFIX.length()) {
@@ -239,22 +237,22 @@ public class JdbcDatabasePlatformFactory {
                     url = url.substring(0, url.indexOf(":"));
                 }
             }
-            nameVersion[2] = url;
+            nameVersion.setProtocol(url);
             
             /*
              * if the productName is PostgreSQL, it could be either PostgreSQL
              * or Greenplum
              */
             /* query the metadata to determine which one it is */
-            if (nameVersion[0].equalsIgnoreCase("PostgreSql")) {
+            if (nameVersion.getName().equalsIgnoreCase("PostgreSql")) {
                 if (isGreenplumDatabase(connection)) {
-                    nameVersion[0] = DatabaseNamesConstants.GREENPLUM;
-                    nameVersion[1] = Integer.toString(getGreenplumVersion(connection));
+                    nameVersion.setName(DatabaseNamesConstants.GREENPLUM);
+                    nameVersion.setVersion(getGreenplumVersion(connection));
                 } else if (isRedshiftDatabase(connection)) {
-                    nameVersion[0] = DatabaseNamesConstants.REDSHIFT;
+                    nameVersion.setName(DatabaseNamesConstants.REDSHIFT);
                 } else if (metaData.getDatabaseMajorVersion() > 9
                         || (metaData.getDatabaseMajorVersion() == 9 && metaData.getDatabaseMinorVersion() >= 5)) {
-                    nameVersion[0] = DatabaseNamesConstants.POSTGRESQL95;
+                    nameVersion.setName(DatabaseNamesConstants.POSTGRESQL95);
                 }
             }
 
@@ -262,46 +260,46 @@ public class JdbcDatabasePlatformFactory {
              * if the productName is MySQL, it could be either MysSQL or MariaDB
              * query the metadata to determine which one it is
              */
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
+            if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.MYSQL)) {
                 if (isMariaDBDatabase(connection)) {
-                    nameVersion[0] = DatabaseNamesConstants.MARIADB;
+                    nameVersion.setName(DatabaseNamesConstants.MARIADB);
                 }
             }
 
-            if (nameVersion[2].equalsIgnoreCase("as400")) {
-                nameVersion[0] = DatabaseNamesConstants.DB2AS400;
+            if (nameVersion.getProtocol().equalsIgnoreCase("as400")) {
+                nameVersion.setName(DatabaseNamesConstants.DB2AS400);
             }
 
-            if (nameVersion[0].toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion[2].equalsIgnoreCase("db2")) {
+            if (nameVersion.getName().toLowerCase().indexOf(DatabaseNamesConstants.DB2) != -1 && nameVersion.getProtocol().equalsIgnoreCase("db2")) {
                 String productVersion = getDatabaseProductVersion(dataSource);
-                if (nameVersion[0].toUpperCase().indexOf("Z") != -1
+                if (nameVersion.getName().toUpperCase().indexOf("Z") != -1
                         || (productVersion != null && productVersion.startsWith("DSN"))) {
-                    nameVersion[0] = DatabaseNamesConstants.DB2ZOS;
+                    nameVersion.setName(DatabaseNamesConstants.DB2ZOS);
                 } else {
-                    nameVersion[0] = DatabaseNamesConstants.DB2;
+                    nameVersion.setName(DatabaseNamesConstants.DB2);
                 }
             }
-            if (nameVersion[0].equalsIgnoreCase("AS") && nameVersion[2].equalsIgnoreCase("db2")) {
-                nameVersion[0] = DatabaseNamesConstants.DB2AS400;
+            if (nameVersion.getName().equalsIgnoreCase("AS") && nameVersion.getProtocol().equalsIgnoreCase("db2")) {
+                nameVersion.setName(DatabaseNamesConstants.DB2AS400);
             }
 
-            if (nameVersion[0].toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
+            if (nameVersion.getName().toLowerCase().startsWith(DatabaseNamesConstants.FIREBIRD)) {
                 if (isFirebirdDialect1(connection)) {
-                    nameVersion[0] = DatabaseNamesConstants.FIREBIRD_DIALECT1;
+                    nameVersion.setName(DatabaseNamesConstants.FIREBIRD_DIALECT1);
                 }
             }
             
-            if (nameVersion[0].equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
+            if (nameVersion.getName().equalsIgnoreCase(DatabaseNamesConstants.ORACLE)) {
                 int majorVersion = Integer.valueOf(metaData.getDatabaseMajorVersion());
                 int minorVersion = Integer.valueOf(metaData.getDatabaseMinorVersion());
                 if (majorVersion > 12 || (majorVersion == 12 && minorVersion >= 2)) {
                     if (isOracle122Compatible(connection)) {
-                        nameVersion[0] = DatabaseNamesConstants.ORACLE122;
+                        nameVersion.setName(DatabaseNamesConstants.ORACLE122);
                     }
                 }
             }
             
-            log.info("Detected database '" + nameVersion[0] + "', version '" + nameVersion[1] + "', protocol '" + nameVersion[2] + "'");
+            log.info("Detected database '" + nameVersion.getName() + "', version '" + nameVersion.getVersion() + "', protocol '" + nameVersion.getProtocol() + "'");
 
             return nameVersion;
         } catch (Throwable ex) {
