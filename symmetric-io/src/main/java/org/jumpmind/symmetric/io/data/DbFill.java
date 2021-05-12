@@ -118,7 +118,7 @@ public class DbFill {
     
     // Weights given to insert, update, and delete commands when
     // randomly selecting a command for any given table.
-    private int[] dmlWeight = {1,0,0};
+    private DmlWeight dmlWeight = new DmlWeight(1, 0, 0);
     
     // All tables from database [Table name -> Table]
     private Map<String, Table> allDbTablesCache = null;
@@ -169,7 +169,7 @@ public class DbFill {
         fillTables(tableNames, null);
     }
 
-    public void fillTables(String[] tableNames, Map<String,int[]> tableProperties) {
+    public void fillTables(String[] tableNames, Map<String, DmlWeight> tableProperties) {
         List<Table> tablesToFill = new ArrayList<Table>();
         if (verbose) {
             log.info("Looking up table definitions from database");
@@ -446,7 +446,7 @@ public class DbFill {
      * @param tableProperties Map indicating IUD weights for each table name provided
      *          in the properties file.
      */
-    private void fillTables(List<Table> tablesToFill, List<Table> orderedTables, Map<String,int[]> tableProperties) {       
+    private void fillTables(List<Table> tablesToFill, List<Table> orderedTables, Map<String, DmlWeight> tableProperties) {       
         if (truncate) {
             ListIterator<Table> iterator = tablesToFill.listIterator(tablesToFill.size());
             while (iterator.hasPrevious()) {
@@ -575,18 +575,15 @@ public class DbFill {
      * @param iudWeight
      * @return
      */
-    private int randomIUD(int[] iudWeight) {
-        if (iudWeight.length != 3) {
-            throw new RuntimeException("Incorrect number of IUD weights provided.");
-        }
-        int total = iudWeight[0] + iudWeight[1] + iudWeight[2];
+    private int randomIUD(DmlWeight iudWeight) {
+        int total = iudWeight.getInsertWeight() + iudWeight.getUpdateWeight() + iudWeight.getDeleteWeight();
         if (total == 0) {
             return INSERT;
         }
         int rVal = getRand().nextInt(total);
-        if (rVal < iudWeight[0]) {
+        if (rVal < iudWeight.getInsertWeight()) {
             return INSERT;
-        } else if (rVal < iudWeight[0] + iudWeight[1]) {
+        } else if (rVal < iudWeight.getInsertWeight() + iudWeight.getUpdateWeight()) {
             return UPDATE;
         }
         return DELETE;
@@ -1313,7 +1310,7 @@ public class DbFill {
         this.verbose = verbose;
     }
 
-    public void setDmlWeight(int[] dmlWeight) {
+    public void setDmlWeight(DmlWeight dmlWeight) {
         this.dmlWeight = dmlWeight;
     }
 
@@ -1350,15 +1347,15 @@ public class DbFill {
     }
 
     public int getInsertWeight() {
-        return dmlWeight[0];
+        return dmlWeight.getInsertWeight();
     }
     
     public int getUpdateWeight() {
-        return dmlWeight[1];
+        return dmlWeight.getUpdateWeight();
     }
     
     public int getDeleteWeight() {
-        return dmlWeight[2];
+        return dmlWeight.getDeleteWeight();
     }
 
     public void setTextColumnExpression(String textColumnExpression) {

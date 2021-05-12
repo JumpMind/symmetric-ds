@@ -28,10 +28,11 @@ import java.util.Set;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.symmetric.io.data.DbFill;
+import org.jumpmind.symmetric.io.data.DmlWeight;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog;
-import org.jumpmind.vaadin.ui.common.ResizableWindow;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
+import org.jumpmind.vaadin.ui.common.ResizableWindow;
 
 import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.shared.ui.ValueChangeMode;
@@ -300,11 +301,8 @@ public class DbFillDialog extends ResizableWindow {
         //dbFill.setTruncate(truncateBox.getValue());
         dbFill.setRecordCount(Integer.parseInt(countField.getValue().toString()));
         dbFill.setInterval(Integer.parseInt(intervalField.getValue().toString()));
-        int[] weights = new int[3];
-        weights[0] = Integer.parseInt(insertWeightField.getValue().toString());
-        weights[1] = Integer.parseInt(updateWeightField.getValue().toString());
-        weights[2] = Integer.parseInt(deleteWeightField.getValue().toString());
-        dbFill.setDmlWeight(weights);
+        dbFill.setDmlWeight(new DmlWeight(Integer.parseInt(insertWeightField.getValue()), Integer.parseInt(updateWeightField.getValue()),
+        		Integer.parseInt(deleteWeightField.getValue())));
         if (oGroup.getValue().toString().equals("Send to Sql Editor")) {
             dbFill.setPrint(true);
         }

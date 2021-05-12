@@ -31,6 +31,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.io.data.DbFill;
+import org.jumpmind.symmetric.io.data.DmlWeight;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class DbFillCommand extends AbstractCommandLauncher {
@@ -145,14 +146,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
             dbFill.setInterval(Integer.parseInt(line.getOptionValue(OPTION_INTERVAL)));
         }
         if (line.hasOption(OPTION_WEIGHTS)) {
-            int[] dmlWeight = {0,0,0};
-            String[] strWeight = line.getOptionValue(OPTION_WEIGHTS).split(",");
-            if (strWeight != null && strWeight.length == 3) {
-                for (int i=0; i<3; i++) {
-                    dmlWeight[i] = Integer.valueOf(strWeight[i]);
-                }
-                dbFill.setDmlWeight(dmlWeight);
-            }
+            dbFill.setDmlWeight(new DmlWeight(line.getOptionValue(OPTION_WEIGHTS)));
         }
         if (line.hasOption(OPTION_DEBUG)) {
             dbFill.setDebug(true);
@@ -207,7 +201,7 @@ public class DbFillCommand extends AbstractCommandLauncher {
         dbFill.setIgnore((String[])ArrayUtils.add(ignore, cfgPrefix));
         dbFill.setPrefixed(prefixed);
         
-        Map<String,int[]> tableProperties = parseTableProperties();
+        Map<String, DmlWeight> tableProperties = parseTableProperties();
         
         // If tables are provided in the property file, ignore the tables provided at the command line.
         String[] tableNames = null;
@@ -245,8 +239,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
         return true;
     }
     
-    private Map<String,int[]> parseTableProperties() {
-        Map<String,int[]> tableProperties = new HashMap<String,int[]>();
+    private Map<String, DmlWeight> parseTableProperties() {
+        Map<String, DmlWeight> tableProperties = new HashMap<String, DmlWeight>();
         Properties properties = engine.getProperties();
         Enumeration<Object> keys = properties.keys();
         while (keys.hasMoreElements()) {
@@ -255,12 +249,8 @@ public class DbFillCommand extends AbstractCommandLauncher {
             if (key.startsWith("fill.")) {
                 String tableName = null;
                 tableName = key.substring(key.lastIndexOf(".") + 1);
-                int[] iudVal = new int[3];
-                int i = 0;
-                for (String str : value.split(",")) {
-                    iudVal[i++] = Integer.valueOf(str).intValue();
-                }
-                tableProperties.put(tableName, iudVal);
+                DmlWeight dmlWeight = new DmlWeight(value);
+                tableProperties.put(tableName, dmlWeight);
             }
         }
         return tableProperties;
