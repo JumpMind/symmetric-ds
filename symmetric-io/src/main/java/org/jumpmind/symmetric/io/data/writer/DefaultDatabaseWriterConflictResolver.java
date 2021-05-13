@@ -279,7 +279,15 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
                             databaseWriter.getWriterSettings().getTextColumnExpression());
-                    count = databaseWriter.getTransaction().prepareAndExecute(st.getSql(), ArrayUtils.addAll(values, values));                    
+                    Object[] args = values;
+                    if (values != null) {
+                        for (Object arg : values) {
+                            if (arg != null) {
+                                args = ArrayUtils.addAll(args, arg);                                
+                            }
+                        }
+                    }
+                    count = databaseWriter.getTransaction().prepareAndExecute(st.getSql(), args);                    
                 }
 
                 if (count > 0) {
