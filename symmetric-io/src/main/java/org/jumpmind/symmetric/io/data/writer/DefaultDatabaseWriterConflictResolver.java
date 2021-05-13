@@ -273,21 +273,13 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.COUNT, targetTable.getCatalog(), targetTable.getSchema(), 
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
                             databaseWriter.getWriterSettings().getTextColumnExpression());
-                    count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), values);                    
+                    count = databaseWriter.getPlatform(targetTable.getName()).getSqlTemplateDirty().queryForInt(st.getSql(), addKeyArgs(null, values));                    
                 } else if (uniqueKeyUpdateAllowed(databaseWriter, targetTable, uniqueKeyColumns)) {
                     // make sure we lock the row that is in conflict to prevent a race with other data loading
                     DmlStatement st = databaseWriter.getPlatform().createDmlStatement(DmlType.UPDATE, targetTable.getCatalog(), targetTable.getSchema(), 
                             targetTable.getName(), uniqueKeyColumns, uniqueKeyColumns, nullKeyValues, 
                             databaseWriter.getWriterSettings().getTextColumnExpression());
-                    Object[] args = values;
-                    if (values != null) {
-                        for (Object arg : values) {
-                            if (arg != null) {
-                                args = ArrayUtils.addAll(args, arg);                                
-                            }
-                        }
-                    }
-                    count = databaseWriter.getTransaction().prepareAndExecute(st.getSql(), args);                    
+                    count = databaseWriter.getTransaction().prepareAndExecute(st.getSql(), addKeyArgs(values, values));                    
                 }
 
                 if (count > 0) {
@@ -325,6 +317,18 @@ public class DefaultDatabaseWriterConflictResolver extends AbstractDatabaseWrite
             }
         }
         return isWinner;
+    }
+
+    protected Object[] addKeyArgs(Object[] currentArgs, Object[] additionalArgs) {
+        Object[] args = currentArgs;
+        if (additionalArgs != null) {
+            for (Object arg : additionalArgs) {
+                if (arg != null) {
+                    args = ArrayUtils.addAll(args, arg);                                
+                }
+            }
+        }
+        return args;
     }
 
     @Override
