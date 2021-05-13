@@ -85,10 +85,10 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
             }
         }
 
-        int[] versions = Version.parseVersion(getProductVersion());        
-        if (getMajorVersion() == 5 && (getMinorVersion() == 0 || (getMinorVersion() == 1 && versions[2] < 23))) {
+        String version = getProductVersion(); 
+        if (Version.isOlderThanVersion(version, "5.1.23")) {
             this.functionTemplateKeySuffix = PRE_5_1_23;    
-        } else if (getMajorVersion() == 5 && (getMinorVersion() < 7 || (getMinorVersion() == 7 && versions[2] < 6))) {
+        } else if (Version.isOlderThanVersion(version, "5.7.6")) {
             this.functionTemplateKeySuffix = PRE_5_7_6;
         } else {
             this.functionTemplateKeySuffix = POST_5_7_6;
@@ -210,7 +210,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         String catalogPrefix = StringUtils.isBlank(catalogName) ? "" : (quote + catalogName + quote + ".");
         String sql = "drop trigger if exists " + catalogPrefix + triggerName;
 
-        if (getMajorVersion() < 5 || (getMajorVersion() == 5 && getMinorVersion() == 0 && Version.parseVersion(getProductVersion())[2] < 32)) {
+        if (Version.isOlderThanVersion(getProductVersion(), "5.0.32")) {
             sql = "drop trigger " + catalogPrefix + triggerName;
         }
 
