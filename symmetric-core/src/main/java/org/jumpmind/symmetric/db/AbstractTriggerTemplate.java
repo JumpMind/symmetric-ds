@@ -1081,6 +1081,7 @@ abstract public class AbstractTriggerTemplate {
                     break;
                 case Types.CHAR:
                 case Types.VARCHAR:
+                case Types.NCHAR:
                 case ColumnTypes.NVARCHAR:
                 case ColumnTypes.LONGNVARCHAR:
                 case Types.LONGVARCHAR:
