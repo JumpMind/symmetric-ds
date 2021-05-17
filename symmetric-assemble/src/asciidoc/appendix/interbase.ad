@@ -6,15 +6,17 @@ Use `symadmin module install interbase` to install driver files, or copy your ow
 The Interbase Dialect requires the installation of a User Defined Function (UDF) library in order to 
 provide functionality needed by the database triggers. SymmetricDS includes the required UDF library, 
 called SYM_UDF, in both source form (as a C program) and as pre-compiled libraries for both Windows and Linux. 
+
+Download the https://www.symmetricds.org/files/interbase-udf-1.1.zip[SymmetricDS UDF Library].
 The SYM_UDF library is copied into the UDF folder within the Interbase installation directory.
 
 For Linux users:
 
-*cp databases/interbase/sym_udf.so /opt/interbase/UDF*
+*cp interbase/sym_udf.so /opt/interbase/UDF*
 
 For Windows users:
 
-*copy databases\interbase\sym_udf.dll C:\CodeGear\InterBase\UDF*
+*copy interbase\sym_udf.dll C:\CodeGear\InterBase\UDF*
 
 The Interbase dialect currently has the following limitations:
 

@@ -10,13 +10,16 @@ and BLOB types, so the dialect will not allow startup if the UDF is missing.
 For Firebird 2.1 and later, the UDF is only needed for capturing BLOB types, so installation may not be necessary and the dialect does not
 check for it. 
 
-The SYM_UDF library is copied into the UDF folder within the Firebird installation directory.  For Linux users:
+Download the https://www.symmetricds.org/files/firebird-udf-1.1.zip[SymmetricDS UDF Library] if it is required for your use case.
+The SYM_UDF library is copied into the UDF folder within the Firebird installation directory.
 
-*cp databases/firebird/sym_udf.so /opt/firebird/UDF*
+For Linux users:
+
+*cp firebird/sym_udf.so /opt/firebird/UDF*
 
 For Windows users:
 
-*copy databases\firebird\sym_udf.dll C:\Program Files\Firebird\Firebird_2_0\UDF*
+*copy firebird\sym_udf.dll C:\Program Files\Firebird\Firebird_2_0\UDF*
 
 The following limitations currently exist for this dialect:
 
