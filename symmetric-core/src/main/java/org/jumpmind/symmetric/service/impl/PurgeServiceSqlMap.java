@@ -38,7 +38,7 @@ public class PurgeServiceSqlMap extends AbstractSqlMap {
         
         putSql("deleteRegistrationRequestSql", "delete from $(registration_request) where status in (?,?,?) and last_update_time < ?");
         
-        putSql("deleteMonitorEventSql", "delete from $(monitor_event) where event_time < ?");
+        putSql("deleteMonitorEventSql", "delete from $(monitor_event) where event_time < ? and is_resolved = 1");
 
         putSql("minOutgoingBatchId", "select min(batch_id) from $(outgoing_batch)");
 
