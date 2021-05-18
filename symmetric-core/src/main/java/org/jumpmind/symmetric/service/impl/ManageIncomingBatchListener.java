@@ -269,7 +269,12 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                         this.currentBatch.setSqlState(sqlState);
                         this.currentBatch.setSqlCode(se.getErrorCode());
                         this.currentBatch.setSqlMessage(se.getMessage());
-                        ISqlTemplate sqlTemplate = symmetricDialect.getTargetPlatform(context.getTable().getName()).getSqlTemplate();
+                        ISqlTemplate sqlTemplate = null;
+                        if (context.getTable() != null) {
+                            sqlTemplate = symmetricDialect.getTargetPlatform(context.getTable().getName()).getSqlTemplate();
+                        } else {
+                            sqlTemplate = symmetricDialect.getTargetPlatform().getSqlTemplate();
+                        }
                         if (sqlTemplate.isForeignKeyViolation(se)) {
                             this.currentBatch.setSqlState(ErrorConstants.FK_VIOLATION_STATE);
                             this.currentBatch.setSqlCode(ErrorConstants.FK_VIOLATION_CODE);
