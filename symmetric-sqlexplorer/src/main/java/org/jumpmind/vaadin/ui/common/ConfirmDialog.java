@@ -26,34 +26,37 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class ConfirmDialog extends Window {
+public class ConfirmDialog extends Dialog {
 
     private static final long serialVersionUID = 1L;
 
     public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener) {
-        setCaption(caption);
+        //setCaption(caption);
         setModal(true);
         setResizable(true);
         setWidth("400px");
         setHeight("300px");
-        setClosable(false);
+        setCloseOnEsc(false);
+        setCloseOnOutsideClick(false);
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setSpacing(true);
         layout.setMargin(true);
-        setContent(layout);
+        add(layout);
 
         if (isNotBlank(text)) {
             TextArea textLabel = new TextArea();
             textLabel.setSizeFull();
-            textLabel.setClassName(ValoTheme.TEXTAREA_BORDERLESS);
+            //textLabel.setClassName(ValoTheme.TEXTAREA_BORDERLESS);
             textLabel.setValue(text);
             textLabel.setReadOnly(true);
             layout.add(textLabel);
@@ -61,7 +64,7 @@ public class ConfirmDialog extends Window {
         }
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        //buttonLayout.setClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
 
@@ -71,15 +74,15 @@ public class ConfirmDialog extends Window {
 
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickShortcut(Key.ESCAPE);
-        cancelButton.addClickListener(event -> UI.getCurrent().removeWindow(ConfirmDialog.this));
+        cancelButton.addClickListener(event -> close());
         buttonLayout.add(cancelButton);
 
         Button okButton = new Button("Ok");
-        okButton.setClassName(ValoTheme.BUTTON_PRIMARY);
+        okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         okButton.addClickShortcut(Key.ENTER);
         okButton.addClickListener(event -> {
             if (confirmListener.onOk()) {
-                UI.getCurrent().removeWindow(ConfirmDialog.this);
+                close();
             }
         });
         buttonLayout.add(okButton);
@@ -92,7 +95,7 @@ public class ConfirmDialog extends Window {
 
     public static void show(String caption, String text, IConfirmListener listener) {
         ConfirmDialog dialog = new ConfirmDialog(caption, text, listener);
-        UI.getCurrent().addWindow(dialog);
+        dialog.open();
     }
 
     public static interface IConfirmListener extends Serializable {

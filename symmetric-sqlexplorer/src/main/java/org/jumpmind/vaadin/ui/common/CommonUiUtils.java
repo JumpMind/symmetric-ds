@@ -37,8 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
@@ -51,6 +49,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
@@ -73,18 +72,18 @@ public final class CommonUiUtils {
     private CommonUiUtils() {
     }
 
-    public static void styleTabSheet(TabSheet tabSheet) {
+    /*public static void styleTabSheet(TabSheet tabSheet) {
         tabSheet.setSizeFull();
         tabSheet.addClassName(ValoTheme.TABSHEET_FRAMED);
         tabSheet.addClassName(ValoTheme.TABSHEET_COMPACT_TABBAR);
         tabSheet.addClassName(ValoTheme.TABSHEET_PADDED_TABBAR);
-    }
+    }*/
 
-    public static TabSheet createTabSheet() {
+    /*public static TabSheet createTabSheet() {
         TabSheet tabSheet = new TabSheet();
         styleTabSheet(tabSheet);
         return tabSheet;
-    }
+    }*/
 
     public static Button createPrimaryButton(String name) {
         return createPrimaryButton(name, null);
@@ -95,11 +94,11 @@ public final class CommonUiUtils {
         if (listener != null) {
             button.addClickListener(listener);
         }
-        button.addClassName(ValoTheme.BUTTON_PRIMARY);
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         return button;
     }
 
-    public static AceEditor createAceEditor() {
+    /*public static AceEditor createAceEditor() {
         AceEditor editor = new AceEditor();
         editor.setSizeFull();
         ServletContext context = VaadinServlet.getCurrent().getServletContext();
@@ -115,7 +114,7 @@ public final class CommonUiUtils {
         editor.setHighlightActiveLine(true);
         editor.setShowPrintMargin(false);
         return editor;
-    }
+    }*/
 
     public static void notify(String message) {
         notify("", message, NotificationVariant.LUMO_SUCCESS);
@@ -136,11 +135,12 @@ public final class CommonUiUtils {
     public static void notify(String caption, String message, Throwable ex, NotificationVariant type) {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
-            Notification notification = new Notification(caption, contactWithLineFeed(FormatUtils.wordWrap(message, 150)),
-                    NotificationVariant.LUMO_SUCCESS);
+            //Notification notification = new Notification(caption, contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            Notification notification = new Notification();
+            notification.setText(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
             notification.setPosition(Position.MIDDLE);
             notification.setDuration(-1);
-            notification.setStyleName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE);
+            //notification.setClassName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE);
             notification.addThemeVariants(type);
             notification.open();
         }
@@ -177,7 +177,7 @@ public final class CommonUiUtils {
     public static String[] getHeaderCaptions(Grid<?> grid) {
         List<String> headers = new ArrayList<String>();
         for (Column<?> column : grid.getColumns()) {
-            headers.add(column.getCaption());
+            headers.add(column.getKey());
         }
         return headers.toArray(new String[headers.size()]);
     }

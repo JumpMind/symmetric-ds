@@ -10,13 +10,25 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.16'
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
-        classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0'
     }
+}
+
+plugins {
+	id "com.github.hierynomus.license" version "0.15.0"
+	id 'com.vaadin' version '0.14.6.0' apply false
 }
 
 apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+
+allprojects {
+    apply plugin: 'license'
+    license {
+        header rootProject.file("HEADER")
+        exclude "**/flow-build-info.json"
+    }
+}
 
 task develop {
     dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea

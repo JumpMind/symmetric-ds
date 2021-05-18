@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -156,11 +157,11 @@ public class DbExportDialog extends ResizableDialog {
 
     protected void addButtons() {
         selectAllLink = new Button("Select All");
-        selectAllLink.addClassName(ValoTheme.BUTTON_LINK);
+        selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectAllLink.addClickListener(event -> tableSelectionLayout.selectAll());
 
         selectNoneLink = new Button("Select None");
-        selectNoneLink.addClassName(ValoTheme.BUTTON_LINK);
+        selectNoneLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectNoneLink.addClickListener(event -> tableSelectionLayout.selectNone());
 
         nextButton = CommonUiUtils.createPrimaryButton("Next");
@@ -380,7 +381,7 @@ public class DbExportDialog extends ResizableDialog {
         String script;
         try {
             script = dbExport.exportTables(array);
-            queryPanel.appendSql(script);
+            //queryPanel.appendSql(script);
         } catch (IOException e) {
             String msg = "Failed to export to the sql editor";
             log.error(msg, e);

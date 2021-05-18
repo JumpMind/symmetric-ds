@@ -26,13 +26,15 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-public class PromptDialog extends Window {
+public class PromptDialog extends Dialog {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,16 +44,17 @@ public class PromptDialog extends Window {
 
     public PromptDialog(String caption, String text, String defaultValue,
             final IPromptListener promptListener) {
-        setCaption(caption);
+        //setCaption(caption);
         setModal(true);
         setResizable(false);
         setSizeUndefined();
-        setClosable(false);
+        setCloseOnEsc(false);
+        setCloseOnOutsideClick(false);
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
         layout.setMargin(true);
-        setContent(layout);
+        add(layout);
 
         if (isNotBlank(text)) {
             layout.add(new Span(text));
@@ -61,12 +64,12 @@ public class PromptDialog extends Window {
         field.setWidthFull();
         field.setValue(defaultValue);
         if (defaultValue != null) {
-            field.setSelection(0, defaultValue.length());
+            //field.setSelection(0, defaultValue.length());
         }
         layout.add(field);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        //buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
 
@@ -76,15 +79,15 @@ public class PromptDialog extends Window {
 
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickShortcut(Key.ESCAPE);
-        cancelButton.addClickListener(event -> UI.getCurrent().removeWindow(PromptDialog.this));
+        cancelButton.addClickListener(event -> close());
         buttonLayout.add(cancelButton);
 
         Button okButton = new Button("Ok");
-        okButton.setClassName(ValoTheme.BUTTON_PRIMARY);
+        okButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         okButton.addClickShortcut(Key.ENTER);
         okButton.addClickListener(event -> {
             if (promptListener.onOk(field.getValue())) {
-                UI.getCurrent().removeWindow(PromptDialog.this);
+                close();
             }
         });
         buttonLayout.add(okButton);
@@ -97,7 +100,7 @@ public class PromptDialog extends Window {
 
     public static void prompt(String caption, String message, IPromptListener listener) {
         PromptDialog prompt = new PromptDialog(caption, message, listener);
-        UI.getCurrent().addWindow(prompt);
+        prompt.open();
     }
 
     public static interface IPromptListener extends Serializable {

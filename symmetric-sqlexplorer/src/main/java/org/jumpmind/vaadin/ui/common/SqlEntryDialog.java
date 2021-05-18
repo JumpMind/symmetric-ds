@@ -27,20 +27,20 @@ public class SqlEntryDialog extends ResizableDialog {
 
     private static final long serialVersionUID = 1L;
 
-    protected AceEditor editor;
+    //protected AceEditor editor;
 
     public SqlEntryDialog(String sql) {
-        setCaption("Edit SQL");
-        editor = CommonUiUtils.createAceEditor();
-        editor.setMode(AceMode.sql);
-        editor.setValue(sql);
-        editor.setSizeFull();
-        content.add(editor, buildButtonFooter(buildCloseButton()));
-        content.expand(editor);
+        //setCaption("Edit SQL");
+        //editor = CommonUiUtils.createAceEditor();
+        //editor.setMode(AceMode.sql);
+        //editor.setValue(sql);
+        //editor.setSizeFull();
+        //content.add(editor, buildButtonFooter(buildCloseButton()));
+        //content.expand(editor);
     }
     
     public String getSQL() {
-        return editor.getValue();
+        return /*editor.getValue()*/null;
     }
 
     @Override

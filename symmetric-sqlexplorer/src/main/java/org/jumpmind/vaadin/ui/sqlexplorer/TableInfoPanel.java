@@ -53,7 +53,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     
     SqlExplorer explorer;
 
-    TabSheet tabSheet;
+    //TabSheet tabSheet;
     
     String selectedCaption;
     
@@ -68,7 +68,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         
         setSizeFull();
 
-        tabSheet = CommonUiUtils.createTabSheet();
+        /*tabSheet = CommonUiUtils.createTabSheet();
         tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
             
             private static final long serialVersionUID = 1L;
@@ -121,7 +121,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                 tabSheet.setSelectedTab(component);
                 break;
             }            
-        }
+        }*/
         
     }
     
@@ -133,7 +133,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
             final Settings settings, boolean isInit) {
         
         if (!isInit) {
-            tabSheet.removeTab(tabSheet.getTab(1));
+            //tabSheet.removeTab(tabSheet.getTab(1));
         }
         
         IDatabasePlatform platform = db.getPlatform();
@@ -145,9 +145,9 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         p.setIndeterminate(true);
         executingLayout.add(p);
         ComponentUtil.setData(executingLayout, "isInit", isInit);
-        tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcon.SPINNER, 1);
+        //tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcon.SPINNER, 1);
         if (!isInit) {
-            tabSheet.setSelectedTab(executingLayout);
+            //tabSheet.setSelectedTab(executingLayout);
         }
 
         SqlRunner runner = new SqlRunner(dml.getSql(), false, user, db, settings, explorer,
@@ -157,7 +157,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
 
                     @Override
                     public void writeSql(String sql) {
-                        explorer.openQueryWindow(db).appendSql(sql);
+                        //explorer.openQueryWindow(db).appendSql(sql);
                     }
 
                     @Override
@@ -169,7 +169,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                     public void finished(final VaadinIcon icon, final List<Component> results,
                             long executionTimeInMs, boolean transactionStarted,
                             boolean transactionEnded) {
-                        TableInfoPanel.this.getUI().access(new Runnable() {
+                        /*TableInfoPanel.this.getUI().access(new Runnable() {
 
                             @Override
                             public void run() {
@@ -183,7 +183,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                                 tabSheet.addTab(layout, "Data", null, 1);
                                 tabSheet.setSelectedTab(layout);
                             }
-                        });
+                        });*/
                     }
                 });
         runner.setShowSqlOnResults(false);
@@ -212,20 +212,20 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     
     protected void populateSource(org.jumpmind.db.model.Table table, IDb db, AceEditor oldTab) {
         try {
-            tabSheet.removeTab(tabSheet.getTab(oldTab));
+            //tabSheet.removeTab(tabSheet.getTab(oldTab));
             DbExport export = new DbExport(db.getPlatform());
             export.setNoCreateInfo(false);
             export.setNoData(true);
             export.setCatalog(table.getCatalog());
             export.setSchema(table.getSchema());
             export.setFormat(Format.SQL);
-            AceEditor editor = CommonUiUtils.createAceEditor();
+            /*AceEditor editor = CommonUiUtils.createAceEditor();
             editor.setMode(AceMode.sql);
             editor.setValue(export.exportTables(new org.jumpmind.db.model.Table[] { table }));
             ComponentUtil.setData(editor, "data", false);
             tabSheet.addTab(editor, "Source");
-            tabSheet.setSelectedTab(editor);
-        } catch (IOException e) {
+            tabSheet.setSelectedTab(editor);*/
+        } catch (/*IO*/Exception e) {
             log.warn("Failed to export the create information", e);
         }
     }

@@ -29,6 +29,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
@@ -48,7 +49,7 @@ public class ResizableDialog extends Dialog {
     }
     
     public ResizableDialog(String caption) {
-        setCaption(caption);
+        //setCaption(caption);
         setModal(true);
         setResizable(true);
         
@@ -88,7 +89,7 @@ public class ResizableDialog extends Dialog {
 
     protected Button buildCloseButton() {
         Button closeButton = new Button("Close");
-        closeButton.addClassName(ValoTheme.BUTTON_PRIMARY);
+        closeButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         closeButton.addClickListener(new CloseButtonListener());
         closeButton.focus();
         return closeButton;
@@ -103,7 +104,7 @@ public class ResizableDialog extends Dialog {
 
         footer.setWidth("100%");
         footer.setSpacing(true);
-        footer.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        //footer.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         if (toTheLeftButtons != null) {
             footer.add(toTheLeftButtons);
@@ -127,7 +128,7 @@ public class ResizableDialog extends Dialog {
 
     public void show() {
         open();
-        center();
+        //center();
     }
     
     public void showAtSize(double percentOfBrowserSize) {
@@ -140,7 +141,6 @@ public class ResizableDialog extends Dialog {
        
     }
 
-    @Override
     public void bringToFront() {
         if (getElement().getNode().isAttached()) {
            super.getElement().executeJs("$0._bringOverlayToFront()");

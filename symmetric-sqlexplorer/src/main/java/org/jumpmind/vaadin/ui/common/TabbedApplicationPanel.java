@@ -25,14 +25,14 @@ import java.util.Iterator;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.icon.Icon;
 
-public class TabbedApplicationPanel extends TabSheet {
+public class TabbedApplicationPanel /*extends TabSheet*/ {
 
     private static final long serialVersionUID = 1L;
 
-    protected Tab mainTab;
+    //protected Tab mainTab;
     
     public TabbedApplicationPanel() {
-        setSizeFull();
+        /*setSizeFull();
         addStyleName(ValoTheme.TABSHEET_FRAMED);
         addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
 
@@ -59,10 +59,10 @@ public class TabbedApplicationPanel extends TabSheet {
                     tabsheet.remove(tabContent);
                 }
             }
-        });
+        });*/
     }
 
-    public void setMainTab(String caption, Icon icon, Component component) {
+    /*public void setMainTab(String caption, Icon icon, Component component) {
         component.setSizeFull();
         this.mainTab = addTab(component, caption, icon, 0);
     }
@@ -87,6 +87,6 @@ public class TabbedApplicationPanel extends TabSheet {
 
     public void addCloseableTab(String caption, Icon icon, Component component) {
         addCloseableTab(caption, icon, component, true);
-    }
+    }*/
 
 }

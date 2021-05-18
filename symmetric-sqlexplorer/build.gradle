@@ -13,7 +13,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.vaadin' version '0.14.5.1'
+    id 'com.vaadin'
 }
 
 apply from: symAssembleDir + '/common.gradle'

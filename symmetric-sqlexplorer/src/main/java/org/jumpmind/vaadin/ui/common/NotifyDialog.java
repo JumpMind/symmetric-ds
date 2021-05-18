@@ -55,7 +55,7 @@ public class NotifyDialog extends ResizableDialog {
         text = isNotBlank(text) ? text : (ex != null ? ex.getMessage()
                 : "");
         if (type == NotificationVariant.LUMO_ERROR) {
-            setIcon(VaadinIcon.BAN);
+            //setIcon(VaadinIcon.BAN);
         }
         
         final String message = text;
@@ -77,17 +77,17 @@ public class NotifyDialog extends ResizableDialog {
                 msg = msg.replace("\t", "    ");
                 textSpan.getElement().setProperty("innerHTML", msg);
                 detailsButton.setText("Message");
-                messageArea.setMargin(new MarginInfo(false, false, false, true));
+                //messageArea.setMargin(new MarginInfo(false, false, false, true));
                 setHeight("600px");
                 setWidth("1000px");
-                setPosition(getPositionX()-300, getPositionY()-150);
+                //setPosition(getPositionX()-300, getPositionY()-150);
             } else {
                 textSpan.getElement().setProperty("innerHTML", message);
                 detailsButton.setText("Details");
                 messageArea.setMargin(true);
                 setWidth("400px");
                 setHeight("300px");
-                setPosition(getPositionX()+300, getPositionY()+150);
+                //setPosition(getPositionX()+300, getPositionY()+150);
             }
         });
 

@@ -33,6 +33,7 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -123,7 +124,6 @@ public class TableSelectionLayout extends VerticalLayout {
         schemaChooserLayout.expand(spacer);
 
         filterField = new TextField();
-        filterField.addClassName(ValoTheme.TEXTFIELD_INLINE_ICON);
         filterField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         filterField.setPlaceholder("Filter Tables");
         filterField.setValueChangeTimeout(200);
@@ -163,18 +163,18 @@ public class TableSelectionLayout extends VerticalLayout {
         catalogSelect.addValueChangeListener(event -> refreshTableOfTables());
 
         Button selectAllLink = new Button("Select All");
-        selectAllLink.addClassName(ValoTheme.BUTTON_LINK);
+        selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectAllLink.addClickListener((event) -> selectAll());
 
         Button selectNoneLink = new Button("Select None");
-        selectNoneLink.addClassName(ValoTheme.BUTTON_LINK);
+        selectNoneLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
         selectNoneLink.addClickListener((event) -> selectNone());
         
         HorizontalLayout selectAllFooter = new HorizontalLayout();
 
         selectAllFooter.setWidth("100%");
         selectAllFooter.setSpacing(true);
-        selectAllFooter.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        //selectAllFooter.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
         selectAllFooter.add(selectAllLink);
         selectAllFooter.add(selectNoneLink);

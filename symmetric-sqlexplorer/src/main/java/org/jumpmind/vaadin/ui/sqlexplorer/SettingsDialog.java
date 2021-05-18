@@ -83,11 +83,11 @@ public class SettingsDialog extends ResizableDialog {
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
         setWidth("600px");
-        add(createSettingsLayout(), 1);
+        //add(createSettingsLayout(), 1);
         add(createButtonLayout());
     }
 
-    protected AbstractLayout createSettingsLayout() {
+    /*protected AbstractLayout createSettingsLayout() {
         GridLayout layout = new GridLayout(2, 9);
         layout.setWidth("700px");
         layout.setMargin(new MarginInfo(false, true, false, true));
@@ -181,7 +181,7 @@ public class SettingsDialog extends ResizableDialog {
         
         return layout;
 
-    }
+    }*/
 
     protected HorizontalLayout createButtonLayout() {
         Button saveButton = CommonUiUtils.createPrimaryButton("Save", event -> {

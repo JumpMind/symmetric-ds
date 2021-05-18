@@ -1,3 +1,23 @@
+/**
+ * Licensed to JumpMind Inc under one or more contributor
+ * license agreements.  See the NOTICE file distributed
+ * with this work for additional information regarding
+ * copyright ownership.  JumpMind Inc licenses this file
+ * to you under the GNU General Public License, version 3.0 (GPLv3)
+ * (the "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * version 3.0 (GPLv3) along with this library; if not, see
+ * <http://www.gnu.org/licenses/>.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.Arrays;
@@ -13,6 +33,7 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
@@ -23,7 +44,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
 
     private static final long serialVersionUID = 1L;
 
-    TabSheet tabSheet;
+    //TabSheet tabSheet;
 
     String selectedCaption;
     
@@ -33,7 +54,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
 
         setSizeFull();
 
-        tabSheet = CommonUiUtils.createTabSheet();
+        /*tabSheet = CommonUiUtils.createTabSheet();
         tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
 
             private static final long serialVersionUID = 1L;
@@ -43,12 +64,12 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
                 selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
             }
         });
-        add(tabSheet);
+        add(tabSheet);*/
 
         refreshSource(trigger);
         refreshDetails(trigger, db, settings);
                             
-        Iterator<Component> i = tabSheet.iterator();
+        /*Iterator<Component> i = tabSheet.iterator();
         while (i.hasNext()) {
             Component component = i.next();
             Tab tab = tabSheet.getTab(component);
@@ -56,7 +77,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
                 tabSheet.setSelectedTab(component);
                 break;
             }            
-        }
+        }*/
     }
     
     public String getSelectedTabCaption() {
@@ -71,23 +92,22 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         String sourceText = trigger.getSource();
         if (wrapSourceText) sourceText = wrapSource(sourceText);
         
-        AceEditor editor = CommonUiUtils.createAceEditor();
-        editor.setMode(AceMode.sql);
-        editor.setValue(sourceText);
-        editor.setSizeFull();
-        source.add(editor);
-        source.expand(editor);
+        //AceEditor editor = CommonUiUtils.createAceEditor();
+        //editor.setMode(AceMode.sql);
+        //editor.setValue(sourceText);
+        //editor.setSizeFull();
+        //source.add(editor);
+        //source.expand(editor);
         
         HorizontalLayout bar = new HorizontalLayout();
         bar.setWidthFull();
-        bar.setMargin(new MarginInfo(false, true, false, true));
+        //bar.setMargin(new MarginInfo(false, true, false, true));
         
         MenuBar wrapSelect = new MenuBar();
-        wrapSelect.addClassName(ValoTheme.MENUBAR_BORDERLESS);
-        wrapSelect.addClassName(ValoTheme.MENUBAR_SMALL);
+        wrapSelect.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
         MenuItem wrapButton = wrapSelect.addItem("Wrap text", event -> {
             wrapSourceText = !wrapSourceText;
-            tabSheet.removeTab(tabSheet.getTab(1));
+            //tabSheet.removeTab(tabSheet.getTab(1));
             refreshSource(trigger);
         });
         wrapButton.addComponentAsFirst(new Icon(VaadinIcon.ALIGN_JUSTIFY));
@@ -97,8 +117,8 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         bar.setHeight("2.5rem");
         source.add(bar);
         
-        tabSheet.addTab(source, "Source");
-        tabSheet.setSelectedTab(source);
+        //tabSheet.addTab(source, "Source");
+        //tabSheet.setSelectedTab(source);
     }
     
     private String wrapSource(String source) {
@@ -274,7 +294,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
         executingLayout.add(p);
-        tabSheet.addTab(executingLayout, "Details", VaadinIcon.SPINNER, 0);
+        /*tabSheet.addTab(executingLayout, "Details", VaadinIcon.SPINNER, 0);
         tabSheet.setSelectedTab(executingLayout);
         
         TriggerTableLayout triggerTable = new TriggerTableLayout(trigger, settings, new Refresher() {
@@ -293,7 +313,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         tabSheet.addTab(layout, "Details", null, 0);
         if (select) {
             tabSheet.setSelectedTab(layout);
-        }
+        }*/
     }
     
     public class Refresher {

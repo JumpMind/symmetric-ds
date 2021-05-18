@@ -40,7 +40,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 
-public class DbTree extends Tree<DbTreeNode> {
+public class DbTree /*extends Tree<DbTreeNode>*/ {
 
     public static final String PROPERTY_SCHEMA_NAME = "schemaName";
     public static final String PROPERTY_CATALOG_NAME = "catalogName";
@@ -74,7 +74,7 @@ public class DbTree extends Tree<DbTreeNode> {
     public DbTree(IDbProvider databaseProvider, ISettingsProvider settingsProvider) {
         this.databaseProvider = databaseProvider;
         this.settingsProvider = settingsProvider;
-        setWidthFull();
+        /*setWidthFull();
         setStyleGenerator(getStyleGenerator());
         setStyleGenerator(new DbTreeStyleGenerator());
         setItemIconGenerator(node -> node.getIcon());
@@ -124,11 +124,11 @@ public class DbTree extends Tree<DbTreeNode> {
             if (event.isUserOriginated()) {
                 refresh(false);
             }
-        });
+        });*/
     }
 
     public void refresh(boolean fullRefresh) {
-        Set<DbTreeNode> selected = getSelectedItems();
+        //Set<DbTreeNode> selected = getSelectedItems();
         DbTreeNode firstNode = null;
         if (fullRefresh || rootNodes == null) {
             List<IDb> databases = databaseProvider.getDatabases();
@@ -158,7 +158,7 @@ public class DbTree extends Tree<DbTreeNode> {
         }
         
         treeDataProvider = new TreeDataProvider<DbTreeNode>(treeData);
-        setDataProvider(treeDataProvider);
+        /*setDataProvider(treeDataProvider);
         
         expand(expandedNodes);
 
@@ -173,29 +173,29 @@ public class DbTree extends Tree<DbTreeNode> {
             }
         }
 
-        focus();
+        focus();*/
 
     }
 
     public Set<DbTreeNode> getSelected(String type) {
         HashSet<DbTreeNode> nodes = new HashSet<DbTreeNode>();
-        Set<DbTreeNode> selected = getSelectedItems();
+        /*Set<DbTreeNode> selected = getSelectedItems();
         for (DbTreeNode treeNode : selected) {
             if (treeNode.getType().equals(type)) {
                 nodes.add(treeNode);
             }
-        }
+        }*/
         return nodes;
     }
 
     public Set<Table> getSelectedTables() {
         Set<Table> tables = new HashSet<Table>();
-        for (DbTreeNode treeNode : getSelectedItems()) {
+        /*for (DbTreeNode treeNode : getSelectedItems()) {
             Table table = treeNode.getTableFor();
             if (table != null) {
                 tables.add(table);
             }
-        }
+        }*/
         return tables;
     }
 
@@ -357,7 +357,7 @@ public class DbTree extends Tree<DbTreeNode> {
         }
     }
 
-    class DbTreeStyleGenerator implements StyleGenerator<DbTreeNode> {
+    /*class DbTreeStyleGenerator implements StyleGenerator<DbTreeNode> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -381,6 +381,6 @@ public class DbTree extends Tree<DbTreeNode> {
             }
             return null;
         }
-    }
+    }*/
 
 }

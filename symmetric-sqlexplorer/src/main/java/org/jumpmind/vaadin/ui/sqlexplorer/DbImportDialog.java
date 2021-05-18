@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -263,8 +264,9 @@ public class DbImportDialog extends ResizableDialog {
                 deleteFileAndResource();
             }
         });        
-        upload.setUploadButton(new Button("Import"));
-        upload.setClassName(ValoTheme.BUTTON_PRIMARY);
+        Button uploadButton = new Button("Import");
+        uploadButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        upload.setUploadButton(uploadButton);
         formLayout.add(upload);
 
         cancelButton = new Button("Cancel", event -> close());

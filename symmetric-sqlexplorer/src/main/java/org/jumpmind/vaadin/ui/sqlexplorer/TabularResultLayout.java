@@ -80,6 +80,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 
@@ -319,7 +320,7 @@ public class TabularResultLayout extends VerticalLayout {
     private void createMenuBar() {
         HorizontalLayout resultBar = new HorizontalLayout();
         resultBar.setWidthFull();
-        resultBar.setMargin(new MarginInfo(false, true, false, true));
+        //resultBar.setMargin(new MarginInfo(false, true, false, true));
 
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
@@ -335,8 +336,7 @@ public class TabularResultLayout extends VerticalLayout {
         resultBar.expand(leftBar);
 
         MenuBar rightBar = new MenuBar();
-        rightBar.addClassName(ValoTheme.MENUBAR_BORDERLESS);
-        rightBar.addClassName(ValoTheme.MENUBAR_SMALL);
+        rightBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
 
         MenuItem refreshButton = rightBar.addItem(new Icon(VaadinIcon.REFRESH), event -> listener.reExecute(sql));
         refreshButton.getElement().setAttribute("title", "Refresh");
@@ -355,8 +355,8 @@ public class TabularResultLayout extends VerticalLayout {
 
         if (isInQueryGeneralResults) {
             MenuItem keepResultsButton = rightBar.addItem(new Icon(VaadinIcon.COPY), event -> {
-                queryPanel.addResultsTab(refreshWithoutSaveButton(), StringUtils.abbreviate(sql, 20),
-                        queryPanel.getGeneralResultsTab().getIcon());
+                //queryPanel.addResultsTab(refreshWithoutSaveButton(), StringUtils.abbreviate(sql, 20),
+                //        queryPanel.getGeneralResultsTab().getIcon());
                 queryPanel.resetGeneralResultsTab();
             });
             keepResultsButton.getElement().setAttribute("title", "Save these results to a new tab");
@@ -604,7 +604,7 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                 }
                 sql = ps.toString().substring(ps.toString().indexOf("select "));
-                queryPanel.executeSql(sql, false);
+                //queryPanel.executeSql(sql, false);
             } catch (SQLException e) {
                 log.error("Failed to follow foreign key", e);
             }

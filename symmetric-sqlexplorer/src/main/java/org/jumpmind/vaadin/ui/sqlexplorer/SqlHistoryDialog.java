@@ -68,20 +68,20 @@ public class SqlHistoryDialog extends ResizableDialog {
         grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setKey("sqlStatement").setHeader("SQL");
 
         grid.addColumn(history -> String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS", history.getLastExecuteTime()))
-                .setHeader("Time").setWidth("150px").setMaximumWidth(200);
+                .setHeader("Time").setWidth("150px");//.setMaximumWidth(200);
 
         grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setHeader("Duration")
                 .setWidth("120px");
 
         grid.addColumn(history -> history.getExecuteCount()).setHeader("Count").setWidth("120px");
         
-        grid.setDescriptionGenerator(history -> history.getSqlStatement());
+        //grid.setDescriptionGenerator(history -> history.getSqlStatement());
 
         HeaderRow filteringHeader = grid.appendHeaderRow();
         HeaderCell logTextFilterCell = filteringHeader.getCell(grid.getColumnByKey("sqlStatement"));
         TextField filterField = new TextField();
         filterField.setPlaceholder("Filter");
-        filterField.addClassName(ValoTheme.TEXTFIELD_TINY);
+        filterField.getElement().setAttribute("theme", "font-size-xs");
         filterField.setWidth("100%");
 
         // Update filter When the filter input is changed
@@ -134,7 +134,7 @@ public class SqlHistoryDialog extends ResizableDialog {
             String delimiter = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_DELIMITER);
             for (SqlHistory history : histories) {
                 String sql = history.getSqlStatement();
-                queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
+                //queryPanel.appendSql(sql + (sql.trim().endsWith(delimiter) ? "" : delimiter));
             }
             close();
         }

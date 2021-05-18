@@ -88,10 +88,10 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
     }
     
     protected void populate(MenuBar menuBar) {
-        executeAtCursorButton = menuBar.addItem(new Icon(VaadinIcon.PLAY), event -> queryPanel.execute(false));
+        executeAtCursorButton = menuBar.addItem(new Icon(VaadinIcon.PLAY), event -> /*queryPanel.execute(false)*/{});
         executeAtCursorButton.getElement().setAttribute("title", "Run sql under cursor (CTRL+ENTER)");
 
-        executeScriptButton = menuBar.addItem(new Icon(VaadinIcon.FORWARD), event -> queryPanel.execute(true));
+        executeScriptButton = menuBar.addItem(new Icon(VaadinIcon.FORWARD), event -> /*queryPanel.execute(true)*/{});
         executeScriptButton.getElement().setAttribute("title", "Run as script");
 
         commitButton = menuBar.addItem(new Icon(VaadinIcon.ARROW_CIRCLE_RIGHT_O), event -> queryPanel.commit());

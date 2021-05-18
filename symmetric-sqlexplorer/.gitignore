@@ -16,3 +16,5 @@ hs_err_pid*
 /.settings/
 /.classpath
 /.project
+/node_modules/
+/webpack.generated.js

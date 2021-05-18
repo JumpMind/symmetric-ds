@@ -94,12 +94,12 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         wrapper.setSizeFull();
         textField = new TextArea();
         textField.setSizeFull();
-        textField.setWordWrap(false);
+        //textField.setWordWrap(false);
         wrapper.add(textField);
         add(wrapper, 1);
 
         buttonLayout = new HorizontalLayout();
-        buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+        //buttonLayout.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
         add(buttonLayout);
