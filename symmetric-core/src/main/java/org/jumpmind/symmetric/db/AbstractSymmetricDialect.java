@@ -294,7 +294,7 @@ abstract public class AbstractSymmetricDialect implements ISymmetricDialect {
     }
 
     protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName, String tableName) {
-        schemaName = schemaName == null ? "" : (schemaName + ".");
+        schemaName = StringUtils.isBlank(schemaName) ? "" : (schemaName + ".");
         return "drop trigger " + schemaName + triggerName;
     }
 
