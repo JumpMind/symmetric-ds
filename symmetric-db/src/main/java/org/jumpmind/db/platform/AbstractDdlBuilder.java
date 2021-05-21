@@ -1227,7 +1227,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         }
 
         if (!databaseInfo.isPrimaryKeyEmbedded()) {
-            writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumns(), ddl);
+            writeExternalPrimaryKeysCreateStmt(table, table.getPrimaryKeyColumnsInIndexOrder(), ddl);
         }
     }
 
@@ -2170,7 +2170,7 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
      *            The table
      */
     protected void writeEmbeddedPrimaryKeysStmt(Table table, StringBuilder ddl) {
-        Column[] primaryKeyColumns = table.getPrimaryKeyColumns();
+        Column[] primaryKeyColumns = table.getPrimaryKeyColumnsInIndexOrder();
 
         if ((primaryKeyColumns.length > 0) && shouldGeneratePrimaryKeys(primaryKeyColumns)) {
             printStartOfEmbeddedStatement(ddl);
