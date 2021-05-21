@@ -41,6 +41,7 @@ import org.jumpmind.db.platform.nuodb.NuoDbDdlBuilder;
 import org.jumpmind.db.platform.oracle.Oracle122DdlBuilder;
 import org.jumpmind.db.platform.oracle.OracleDdlBuilder;
 import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder;
+import org.jumpmind.db.platform.postgresql.PostgreSqlDdlBuilder95;
 import org.jumpmind.db.platform.redshift.RedshiftDdlBuilder;
 import org.jumpmind.db.platform.sqlanywhere.SqlAnywhereDdlBuilder;
 import org.jumpmind.db.platform.sqlite.SqliteDdlBuilder;
@@ -94,9 +95,10 @@ final public class DdlBuilderFactory {
             return new OracleDdlBuilder();
         } else if (DatabaseNamesConstants.ORACLE122.equalsIgnoreCase(databaseName)) {
             return new Oracle122DdlBuilder();
-        } else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)
-                || DatabaseNamesConstants.POSTGRESQL95.equalsIgnoreCase(databaseName)) {
+        } else if (DatabaseNamesConstants.POSTGRESQL.equalsIgnoreCase(databaseName)) {
             return new PostgreSqlDdlBuilder();
+        } else if (DatabaseNamesConstants.POSTGRESQL95.equalsIgnoreCase(databaseName)) {
+            return new PostgreSqlDdlBuilder95();
         } else if (DatabaseNamesConstants.SQLITE.equalsIgnoreCase(databaseName)) {
             return new SqliteDdlBuilder();
         } else if (DatabaseNamesConstants.ASE.equalsIgnoreCase(databaseName)) {
