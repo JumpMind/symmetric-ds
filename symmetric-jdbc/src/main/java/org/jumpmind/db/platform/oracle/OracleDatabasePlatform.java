@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Transaction;
+import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
@@ -108,7 +109,18 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
-        return !isLob(column.getJdbcTypeCode());
+        return !(isLob(column.getJdbcTypeCode()) || isGeometry(column));
+    }
+    
+    private boolean isGeometry(Column column) {
+        String name = column.getJdbcTypeName();
+        if (name != null && (
+                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
+                name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
