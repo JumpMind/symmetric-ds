@@ -1,4 +1,3 @@
-package org.jumpmind.db.platform.postgresql;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,25 +16,14 @@ package org.jumpmind.db.platform.postgresql;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import javax.sql.DataSource;
+package org.jumpmind.db.platform.postgresql;
 
 import org.jumpmind.db.platform.DatabaseNamesConstants;
-import org.jumpmind.db.sql.SqlTemplateSettings;
 
-public class PostgreSql95DatabasePlatform extends PostgreSqlDatabasePlatform {
+public class PostgreSqlDdlBuilder95 extends PostgreSqlDdlBuilder {
 
-    public PostgreSql95DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
-        super(dataSource, settings);
-    }
-
-    @Override
-    protected PostgreSqlDdlBuilder95 createDdlBuilder() {
-        return new PostgreSqlDdlBuilder95();
-    }
-
-    public String getName() {
-        return DatabaseNamesConstants.POSTGRESQL95;
+    public PostgreSqlDdlBuilder95() {
+        this.databaseName = DatabaseNamesConstants.POSTGRESQL95;
     }
 
 }

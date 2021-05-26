@@ -21,6 +21,7 @@
 package org.jumpmind.symmetric.ext;
 
 import org.jumpmind.db.model.Table;
+import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.writer.DatabaseWriterFilterAdapter;
@@ -28,8 +29,7 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
 import org.junit.Ignore;
 
 @Ignore
-public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements
-        IDatabaseWriterFilter {
+public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements IDatabaseWriterFilter, IBuiltInExtensionPoint {
 
     private int numberOfTimesCalled = 0;
 

@@ -339,7 +339,7 @@ public class FirebirdDdlBuilder extends AbstractDdlBuilder {
         if (column.isPrimaryKey()) {
             writeTableAlterStmt(change.getChangedTable(), ddl);
             ddl.append(" ADD ");
-            writePrimaryKeyStmt(table, table.getPrimaryKeyColumns(), ddl);
+            writePrimaryKeyStmt(table, table.getPrimaryKeyColumnsInIndexOrder(), ddl);
             printEndOfStatement(ddl);
         }
         

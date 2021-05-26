@@ -399,7 +399,7 @@ public class MsSql2000DdlBuilder extends AbstractDdlBuilder {
                 Table table = ((ColumnChange) change).getChangedTable();
 
                 if (column.isPrimaryKey() && !removedPKs.contains(table)) {
-                    Column[] pk = table.getPrimaryKeyColumns();
+                    Column[] pk = table.getPrimaryKeyColumnsInIndexOrder();
 
                     additionalChanges.add(new RemovePrimaryKeyChange(table, pk));
                     additionalChanges.add(new AddPrimaryKeyChange(table, pk));

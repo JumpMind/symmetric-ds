@@ -243,8 +243,8 @@ public class ModelComparator {
             }
         }
 
-        Column[] sourcePK = sourceTable.getPrimaryKeyColumns();
-        Column[] targetPK = targetTable.getPrimaryKeyColumns();
+        Column[] sourcePK = sourceTable.getPrimaryKeyColumnsInIndexOrder();
+        Column[] targetPK = targetTable.getPrimaryKeyColumnsInIndexOrder();
 
         if ((sourcePK.length == 0) && (targetPK.length > 0)) {
             if (log.isDebugEnabled()) {

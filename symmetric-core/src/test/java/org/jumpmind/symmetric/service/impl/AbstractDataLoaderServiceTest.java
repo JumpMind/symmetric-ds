@@ -29,6 +29,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
@@ -687,6 +690,12 @@ abstract public class AbstractDataLoaderServiceTest extends AbstractServiceTest 
                 } else if (resultObj instanceof Date) {
                     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
                     resultValue = df.format(resultObj);
+                } else if (resultObj instanceof LocalDateTime) {
+                    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.0");
+                    resultValue = ((LocalDateTime) resultObj).format(df);
+                } else if (resultObj instanceof LocalDate) {
+                    DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                    resultValue = ((LocalDate) resultObj).format(df);
                 } else if (resultObj instanceof Boolean) {
                     resultValue = ((Boolean) resultObj) ? "1" : "0";
                 } else if (resultObj instanceof Double) {
