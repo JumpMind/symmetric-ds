@@ -165,6 +165,14 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
 
     public List<NodeCommunication> list(CommunicationType communicationType) {
+        return list(communicationType, true);
+    }
+
+    public List<NodeCommunication> listAll(CommunicationType communicationType) {
+        return list(communicationType, false);
+    }
+
+    protected List<NodeCommunication> list(CommunicationType communicationType, boolean onlyNodesWithChanges) {
         initialize();
         long ts = System.currentTimeMillis();
         List<NodeCommunication> communicationRows = find(communicationType);
@@ -230,7 +238,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
         }
         
-        if (communicationType == CommunicationType.PUSH && 
+        if (communicationType == CommunicationType.PUSH && onlyNodesWithChanges && 
                 parameterService.getInt(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER) < communicationRows.size()) {
             ts = System.currentTimeMillis();
             List<String> nodeIds = getNodeIdsWithUnsentCount();
