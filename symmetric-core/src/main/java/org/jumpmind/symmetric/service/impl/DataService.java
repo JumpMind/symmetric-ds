@@ -2406,7 +2406,17 @@ public class DataService extends AbstractService implements IDataService {
             for (TriggerHistory triggerHistory : triggerHistories) {
                 List<TriggerRouter> triggerRouters = triggerRoutersByHistoryId.get(triggerHistory
                         .getTriggerHistoryId());
-                if (triggerRouters != null && triggerRouters.size() > 0) {
+                
+                boolean hasTriggerRouters = triggerRouters != null && triggerRouters.size() > 0;
+                
+                if (!hasTriggerRouters && triggerHistory.getSourceTableName().startsWith(parameterService.getTablePrefix())) {
+                    if (overrideChannelId == null) {
+                        overrideChannelId = Constants.CHANNEL_RELOAD;
+                    }
+                    hasTriggerRouters = triggerRouters.add(new TriggerRouter());
+                }
+
+                if (hasTriggerRouters) {
                     for (TriggerRouter triggerRouter : triggerRouters) {
                         eventCount++;
                         String channelId = overrideChannelId;
