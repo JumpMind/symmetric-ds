@@ -165,6 +165,14 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
 
     public List<NodeCommunication> list(CommunicationType communicationType) {
+        return list(communicationType, true);
+    }
+
+    public List<NodeCommunication> listAll(CommunicationType communicationType) {
+        return list(communicationType, false);
+    }
+
+    protected List<NodeCommunication> list(CommunicationType communicationType, boolean onlyNodesWithChanges) {
         initialize();
         long ts = System.currentTimeMillis();
         List<NodeCommunication> communicationRows = find(communicationType);
@@ -230,7 +238,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
         }
         
-        if (communicationType == CommunicationType.PUSH && 
+        if (communicationType == CommunicationType.PUSH && onlyNodesWithChanges && 
                 parameterService.getInt(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER) < communicationRows.size()) {
             ts = System.currentTimeMillis();
             List<String> nodeIds = getNodeIdsWithUnsentCount();
@@ -533,6 +541,11 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                         boolean failed = false;
                         try {
                             MDC.put("engineName", parameterService.getEngineName());
+                            String name = parameterService.getEngineName().toLowerCase() + "-" + nodeCommunication.getCommunicationType().name().toLowerCase() + 
+                                    "-" + nodeCommunication.getQueue().toLowerCase();
+                            Thread thread = Thread.currentThread();
+                            thread.setName(thread.getName().replaceFirst(".*(-\\d+)", name + "$1"));
+                            
                             executor.execute(nodeCommunication, status);
                             failed = status.failed();
                         } catch (Throwable ex) {
@@ -551,7 +564,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 } else {
                     ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType(), 
                             nodeCommunication.getQueue());
-                    ((ChannelThreadFactory) service.getThreadFactory()).setChannelThread(nodeCommunication.getQueue());
                     service.execute(r);
                 }
             }
@@ -666,24 +678,14 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private String engineName;
         private String communicationType;
-        private String channelThread;
 
         public ChannelThreadFactory(String engineName, String communicationType) {
             this.engineName = engineName;
             this.communicationType = communicationType;
         }
 
-        String getChannelThread() {
-            return channelThread != null ? this.channelThread : "default";
-        }
-
-        void setChannelThread(String channelThread) {
-            this.channelThread = channelThread;
-        }
-
         public String getThreadPrefix() {
-            return new StringBuffer(engineName.toLowerCase()).append("-").append(communicationType.toLowerCase()).append("-")
-                    .append(getChannelThread()).append("-").toString();
+            return new StringBuffer(engineName.toLowerCase()).append("-").append(communicationType.toLowerCase()).append("-default-").toString();
         }
 
         public Thread newThread(Runnable r) {
