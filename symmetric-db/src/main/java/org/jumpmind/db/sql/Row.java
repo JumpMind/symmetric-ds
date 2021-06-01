@@ -28,6 +28,8 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -258,9 +260,16 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         Object obj = this.get(columnName);
         if (obj instanceof Timestamp) {
             return (Timestamp) obj;
+        } else if (obj instanceof LocalDateTime) {
+            return Timestamp.valueOf((LocalDateTime) obj);
+        } else if (obj instanceof LocalDate) {
+            return Timestamp.valueOf(((LocalDate) obj).atStartOfDay());
         } else {
             Date date = getDateTime(columnName);
-            return new Timestamp(date.getTime());
+            if (date != null) {
+                return new Timestamp(date.getTime());
+            }
+            return null;
         }
     }
 
@@ -278,6 +287,10 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
                 // on xerial sqlite jdbc dates come back as longs
                 return new Date(Long.parseLong((String) obj));
             }
+        } else if (obj instanceof LocalDateTime) {
+            return new Date(Timestamp.valueOf((LocalDateTime) obj).getTime());
+        } else if (obj instanceof LocalDate) {
+            return new Date(Timestamp.valueOf(((LocalDate) obj).atStartOfDay()).getTime());
         } else {
             checkForColumn(columnName);
             return null;

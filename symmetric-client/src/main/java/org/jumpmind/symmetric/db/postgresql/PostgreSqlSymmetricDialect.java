@@ -185,12 +185,12 @@ public class PostgreSqlSymmetricDialect extends AbstractSymmetricDialect impleme
         Table table = platform.getTableFromCache(catalogName, schemaName, tableName, false);
         if (table != null) {
             String quoteChar = platform.getDatabaseInfo().getDelimiterToken();
-            schemaName = table.getSchema() == null ? "" : (quoteChar + table.getSchema()
+            String schemaPrefix = table.getSchema() == null ? "" : (quoteChar + table.getSchema()
                     + quoteChar + ".");
-            final String dropSql = "drop trigger IF EXISTS " + triggerName + " on " + schemaName + quoteChar
+            final String dropSql = "drop trigger IF EXISTS " + triggerName + " on " + schemaPrefix + quoteChar
                     + table.getName() + quoteChar;
             logSql(dropSql, sqlBuffer);
-            final String dropFunction = "drop function IF EXISTS " + schemaName + "f" + triggerName
+            final String dropFunction = "drop function IF EXISTS " + schemaPrefix + "f" + triggerName
                     + "() cascade";
             logSql(dropFunction, sqlBuffer);
             if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {

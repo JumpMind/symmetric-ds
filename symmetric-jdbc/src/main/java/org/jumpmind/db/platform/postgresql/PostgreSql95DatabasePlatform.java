@@ -49,6 +49,11 @@ public class PostgreSql95DatabasePlatform extends PostgreSqlDatabasePlatform {
         super(dataSource, settings);
     }
 
+    @Override
+    protected PostgreSqlDdlBuilder95 createDdlBuilder() {
+        return new PostgreSqlDdlBuilder95();
+    }
+
     public String getName() {
         return DatabaseNamesConstants.POSTGRESQL95;
     }

@@ -66,6 +66,8 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SystemPropertyUtils;
 
+import com.google.gson.Gson;
+
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
@@ -214,27 +216,30 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
             if (outputFormat.equals(KAFKA_FORMAT_JSON)) {
                 kafkaText.append("{\"").append(table.getName()).append("\": {").append("\"eventType\": \"" + data.getDataEventType() + "\",")
                         .append("\"data\": { ");
+                // Let Gson escape the json values
+                Gson gson = new Gson();
                 for (int i = 0; i < table.getColumnNames().length; i++) {
                     kafkaText.append("\"").append(table.getColumnNames()[i]).append("\": ");
 
-                    if (rowData[i] != null) {
-                        kafkaText.append("\"");
-                    }
-                    kafkaText.append(rowData[i]);
-                    if (rowData[i] != null) {
-                        kafkaText.append("\"");
-                    }
+                    kafkaText.append(gson.toJson(rowData[i]));
                     if (i + 1 < table.getColumnNames().length) {
                         kafkaText.append(",");
                     }
                 }
                 kafkaText.append(" } } }");
             } else if (outputFormat.equals(KAFKA_FORMAT_CSV)) {
-                kafkaText.append("\nTABLE").append(",").append(table.getName()).append(",").append("EVENT").append(",")
-                        .append(data.getDataEventType()).append(",");
+                // Quote every non-null field, escape quote character by doubling the quote character
+                kafkaText.append("\n\"TABLE\"").append(",\"").append(table.getName()).append("\",\"").append("EVENT")
+                    .append("\",\"").append(data.getDataEventType()).append("\",");
 
                 for (int i = 0; i < table.getColumnNames().length; i++) {
-                    kafkaText.append(table.getColumnNames()[i]).append(",").append(rowData[i]);
+                    kafkaText.append("\"")
+                        .append(StringUtils.replace(table.getColumnNames()[i],"\"","\"\""))
+                        .append("\",");
+                    if (rowData[i] != null) {
+                        kafkaText.append("\"").append(StringUtils.replace(rowData[i],"\"","\"\""))
+                            .append("\"");
+                    }
                     if (i + 1 < table.getColumnNames().length) {
                         kafkaText.append(",");
                     }
@@ -325,7 +330,7 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
         }
         return false;
     }
-
+    
     public String getTableName(String dbTableName) {
     	String name = tableNameCache.get(dbTableName);
         if (name == null) {

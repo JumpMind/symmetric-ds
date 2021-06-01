@@ -377,4 +377,11 @@ public class PostgreSqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
     }
 
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        if (column.getJdbcTypeName() != null && column.getJdbcTypeName().startsWith("json")) {
+            return false;
+        }
+        return true;
+    }
 }

@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -70,6 +69,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
+
+    private static final ColumnPkSequenceComparator columnPkSequenceComparator = new ColumnPkSequenceComparator();
 
     private String oldCatalog = null;
 
@@ -860,8 +861,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     }
                 }
             }
-            selectedColumns = selectedColumns.stream().sorted((c1, c2) -> 
-                c1.getPrimaryKeySequence() - c2.getPrimaryKeySequence()).collect(Collectors.toList());
             return selectedColumns;
         } else {
             return new ArrayList<Column>(0);
@@ -875,6 +874,12 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      */
     public Column[] getPrimaryKeyColumns() {
         List<Column> pkColumns = getPrimaryKeyColumnsAsList();
+        return pkColumns.toArray(new Column[pkColumns.size()]);
+    }
+
+    public Column[] getPrimaryKeyColumnsInIndexOrder() {
+        List<Column> pkColumns = getPrimaryKeyColumnsAsList();
+        Collections.sort(pkColumns, columnPkSequenceComparator);
         return pkColumns.toArray(new Column[pkColumns.size()]);
     }
 
@@ -1513,11 +1518,17 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         this.compressionType = compressionType;
     }
 
-    public static void main(String[] args) {
-        String result = escapeColumnNameForCsv("\\What, \"");
-        String result2 = escapeColumnNameForCsv("a_normal_column");
-        System.out.println(result);
-        System.out.println(result2);
+    static class ColumnPkSequenceComparator implements Comparator<Column> {
+        @Override
+        public int compare(Column o1, Column o2) {
+            if (o1 != null && o2 != null) {
+                return Integer.compare(o1.getPrimaryKeySequence(), o2.getPrimaryKeySequence());
+            } else if (o1 == null && o2 != null) {
+                return -1;
+            } else if (o1 != null && o2 == null) {
+                return 1;
+            }
+            return 0;
+        }
     }
-
 }
