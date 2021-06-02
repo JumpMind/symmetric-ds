@@ -63,6 +63,7 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                     || !parameterService.getString(ParameterConstants.SCHEMA_VERSION, "").equals(me.getSchemaVersion())
                     || (engine.getDeploymentType() != null && !engine.getDeploymentType().equals(me.getDeploymentType()))
                     || !Version.version().equals(me.getSymmetricVersion())
+                    || (engine.getParameterService().isRegistrationServer() && !Version.version().equals(me.getConfigVersion()))
                     || !symmetricDialect.getName().equals(me.getDatabaseType())
                     || !symmetricDialect.getVersion().equals(me.getDatabaseVersion())
                     || me.getBatchInErrorCount() != outgoingErrorCount
@@ -77,6 +78,9 @@ public class PushHeartbeatListener implements IHeartbeatListener, IBuiltInExtens
                 me.setBatchInErrorCount(outgoingErrorCount);
                 me.setBatchToSendCount(outgoingUnsentCount);
                 me.setSchemaVersion(parameterService.getString(ParameterConstants.SCHEMA_VERSION));
+                if (engine.getParameterService().isRegistrationServer()) {
+                    me.setConfigVersion(Version.version());
+                }
                 if (parameterService.is(ParameterConstants.AUTO_UPDATE_NODE_VALUES)) {
                     log.info("Updating my node configuration info according to the symmetric properties");
                     me.setExternalId(parameterService.getExternalId());
