@@ -303,6 +303,7 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
             copyProperties(properties, prefix, BasicDataSourcePropertyConstants.ALL_PROPS);
             copyProperties(properties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
             copyProperties(properties, "", ParameterConstants.ALL_KAFKA_PARAMS);
+            copyProperties(properties, "", ParameterConstants.ALL_BIG_QUERY_PARAMS);
             
             IDatabasePlatform targetPlatform = createDatabasePlatform(null, properties, null, true, true);
 
