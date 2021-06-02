@@ -76,11 +76,16 @@ abstract public class AbstractVersion {
             if (attributes != null) {
                 version = attributes.getValue("Build-Version");
             } else {
-                File gradleProperties = new File("../symmetric-assemble/gradle.properties");
-                if (gradleProperties.exists()) {
-                    TypedProperties props = new TypedProperties(gradleProperties);
-                    version = props.get("version");
-                } else {
+            	for (String fileName : new String[] { "../symmetric-assemble/gradle.properties",
+            			"../../symmetric-ds/symmetric-assemble/gradle.properties" } ) {
+                    File gradleProperties = new File(fileName);
+                    if (gradleProperties.exists()) {
+                        TypedProperties props = new TypedProperties(gradleProperties);
+                        version = props.get("version");
+                        break;
+                    }
+            	}
+            	if (version == null) {
                     version = "development";
                 }
             }
