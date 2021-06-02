@@ -20,9 +20,6 @@
  */
 package org.jumpmind.db.platform.oracle;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,19 +44,18 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.model.Transaction;
 import org.jumpmind.db.model.TypeMap;
-import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
 import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.platform.PermissionType;
-import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.ISqlTemplate;
-import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
@@ -183,53 +179,54 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected PermissionResult getLogMinePermission() {
-        String sql = "alter session set nls_date_format='YYYY-MM-DD HH24:MI:SS'";
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "Use LogMiner");
 
         try {
-            getSqlTemplate().update(sql);
+            StringBuilder missingGrants = new StringBuilder();
+            for (String name : new String[] { "EXECUTE_CATALOG_ROLE" }) {
+                if (!hasPrivilege(name)) {
+                    if (missingGrants.length() > 0) {
+                        missingGrants.append(", ");
+                    }
+                    missingGrants.append(name);
+                }
+            }
+
+            String[] systemPrivs = new String[] { "SELECT ANY DICTIONARY", "ALTER SESSION" };
+            if (sqlTemplate.getDatabaseMajorVersion() >= 12) {
+                systemPrivs = ArrayUtils.add(systemPrivs, "LOGMINING");
+            }
+            for (String name : systemPrivs) {
+                if (!hasSystemPrivilege(name)) {
+                    if (missingGrants.length() > 0) {
+                        missingGrants.append(", ");
+                    }
+                    missingGrants.append(name);
+                }
+            }
+        
+            if (missingGrants.length() > 0) {
+                log.error("Missing privileges: {}", missingGrants.toString());
+                result.setSolution("Grant " + missingGrants.toString());
+                result.setStatus(Status.FAIL);
+            } else {
+                result.setStatus(Status.PASS);
+            }
         } catch (Exception e) {
-            log.error("Error checking alter session permission", e);
-            result.setStatus(Status.FAIL);
+            log.error("Error checking privileges", e);
             result.setException(e);
-            result.setSolution("Grant ALTER SESSION");
+            result.setStatus(Status.FAIL);
             return result;
         }
+        return result;
+    }
 
-        return ((JdbcSqlTemplate) getSqlTemplate()).execute(new IConnectionCallback<PermissionResult>() {
-            @Override
-            public PermissionResult execute(Connection con) throws SQLException {
-                Statement st = con.createStatement();
-                boolean isBegin = false;
-                try {
-                    st.executeUpdate("BEGIN dbms_logmnr.start_logmnr(STARTSCN => timestamp_to_scn(sysdate), "
-                            + "ENDSCN => timestamp_to_scn(sysdate), OPTIONS => DBMS_LOGMNR.CONTINUOUS_MINE);END;");
-                    isBegin = true;
-                } catch (Exception e) {
-                    log.error("Error checking execute_catalog_role permission", e);
-                    result.setStatus(Status.FAIL);
-                    result.setException(e);
-                    result.setSolution("Grant EXECUTE_CATALOG_ROLE");
-                }
+    private boolean hasSystemPrivilege(String name) {
+        return getSqlTemplate().queryForInt("select count(*) from user_sys_privs where privilege = ?", name) > 0;
+    }
 
-                if (isBegin) {
-                    try {
-                        st.execute("select * from V$LOGMNR_CONTENTS");
-                        result.setStatus(Status.PASS);
-                    } catch (Exception e) {
-                        log.error("Error checking select_any_transaction permission", e);
-                        result.setStatus(Status.FAIL);
-                        result.setException(e);
-                        result.setSolution("Grant SELECT ANY TRANSACTION, SELECT ANY DICTIONARY");
-                    }
-                    try {
-                        st.executeUpdate("BEGIN dbms_logmnr.end_logmnr();END;");
-                    } catch (Exception e) {
-                    }
-                }
-                return result;
-            }
-        });
+    private boolean hasPrivilege(String name) {
+        return getSqlTemplate().queryForInt("select count(*) from user_role_privs where granted_role = ?", name) > 0;
     }
 
     @Override
