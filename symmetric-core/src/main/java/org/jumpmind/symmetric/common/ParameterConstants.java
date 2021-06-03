@@ -138,6 +138,7 @@ final public class ParameterConstants {
     public final static String AUTO_SYNC_CONFIGURATION = "auto.sync.configuration";
     public final static String AUTO_SYNC_CONFIGURATION_ON_INCOMING = "auto.sync.configuration.on.incoming";
     public final static String AUTO_CONFIGURE_DATABASE = "auto.config.database";
+    public final static String AUTO_CONFIGURE_DATABASE_FAST = "auto.config.database.fast";
     public final static String AUTO_SYNC_TRIGGERS = "auto.sync.triggers";
     public final static String AUTO_SYNC_TRIGGERS_AT_STARTUP = "auto.sync.triggers.at.startup";
     public final static String AUTO_SYNC_CONFIG_AT_STARTUP = "auto.sync.config.at.startup";

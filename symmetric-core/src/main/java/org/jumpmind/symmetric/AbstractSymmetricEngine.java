@@ -509,10 +509,24 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public void setupDatabase(boolean force) {
         log.info("Initializing SymmetricDS database");
-        if (parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE) || force) {
-            symmetricDialect.initTablesAndDatabaseObjects();
+        boolean isAutoConfigDatabase = parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE);
+        boolean isAutoConfigDatabaseFast = parameterService.is(ParameterConstants.AUTO_CONFIGURE_DATABASE_FAST);
+
+        if (force || isAutoConfigDatabase) {
+        	if (isAutoConfigDatabaseFast && !hasSoftwareVersionChanged()) {
+        		log.info("Version matches for tables and objects");
+        	} else {
+	        	log.info("Checking tables and objects");
+	    		symmetricDialect.initTablesAndDatabaseObjects();
+        	}
         } else {
-            log.info("SymmetricDS is not configured to auto-create the database");
+        	if (hasSoftwareVersionChanged()) {
+        		throw new SymmetricException("Upgrade of SymmetricDS runtime tables to version " + Version.version() +
+        				" is required.  Enable " + ParameterConstants.AUTO_CONFIGURE_DATABASE 
+        				+ " parameter for automatic upgrade of tables or perform manual upgrade with symadmin.");
+        	} else {
+        		log.info("SymmetricDS is not configured to auto-create the database");
+        	}
         }
         try {
             configurationService.initDefaultChannels();
@@ -529,6 +543,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         sequenceService.init();
         autoConfigRegistrationServer();
         log.info("Done initializing SymmetricDS database");
+    }
+
+    protected boolean hasSoftwareVersionChanged() {
+    	Node identity = nodeService.findIdentity();
+    	if (identity != null) {
+	        return !Version.version().equals(identity.getSymmetricVersion());
+    	}
+    	return true;
     }
 
     protected void autoConfigRegistrationServer() {
