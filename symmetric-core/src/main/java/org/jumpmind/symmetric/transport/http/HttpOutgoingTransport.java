@@ -68,6 +68,8 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
     private HttpURLConnection connection;
 
     private int httpTimeout;
+    
+    private int httpConnectTimeout;
 
     private boolean useCompression;
 
@@ -87,13 +89,14 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
 
     private Map<String, String> requestProperties;
     
-    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, boolean useCompression,
+    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, int httpConnectTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String nodeId,
             String securityToken, boolean streamOutputEnabled, int streamOutputSize,
             boolean fileUpload) {
         this.httpTransportManager = httpTransportManager;
         this.url = url;
         this.httpTimeout = httpTimeout;
+        this.httpConnectTimeout = httpConnectTimeout;
         this.useCompression = useCompression;
         this.compressionLevel = compressionLevel;
         this.compressionStrategy = compressionStrategy;
@@ -104,11 +107,11 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         this.fileUpload = fileUpload;
     }
     
-    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, boolean useCompression,
+    public HttpOutgoingTransport(HttpTransportManager httpTransportManager, URL url, int httpTimeout, int httpConnectTimeout, boolean useCompression,
             int compressionStrategy, int compressionLevel, String nodeId,
             String securityToken, boolean streamOutputEnabled, int streamOutputSize,
             boolean fileUpload, Map<String, String> requestProperties) {
-        this(httpTransportManager, url, httpTimeout, useCompression, compressionStrategy, compressionLevel, nodeId, securityToken,
+        this(httpTransportManager, url, httpTimeout, httpConnectTimeout, useCompression, compressionStrategy, compressionLevel, nodeId, securityToken,
                 streamOutputEnabled, streamOutputSize, fileUpload);
         this.requestProperties = requestProperties;
     }
@@ -201,7 +204,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
         try {
             connection = httpTransportManager.openConnection(url, nodeId, securityToken);
             connection.setUseCaches(false);
-            connection.setConnectTimeout(httpTimeout);
+            connection.setConnectTimeout(httpConnectTimeout);
             connection.setReadTimeout(httpTimeout);
             connection.setRequestMethod("HEAD");
             connection.setRequestProperty(WebConstants.CHANNEL_QUEUE, queue);
@@ -223,7 +226,7 @@ public class HttpOutgoingTransport implements IOutgoingWithResponseTransport {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
-            connection.setConnectTimeout(httpTimeout);
+            connection.setConnectTimeout(httpConnectTimeout);
             connection.setReadTimeout(httpTimeout);
             
             if (requestProperties != null) {
