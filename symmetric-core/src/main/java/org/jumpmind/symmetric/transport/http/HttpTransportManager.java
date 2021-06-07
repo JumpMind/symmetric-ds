@@ -146,7 +146,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             conn.setRequestMethod("POST");
             conn.setAllowUserInteraction(false);
             conn.setDoOutput(true);
-            conn.setConnectTimeout(getHttpTimeOutInMs());
+            conn.setConnectTimeout(getHttpConnectTimeOutInMs());
             conn.setReadTimeout(getHttpTimeOutInMs());
             try (OutputStream os = conn.getOutputStream()) {
                 writeMessage(os, data);
@@ -223,6 +223,10 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public int getHttpTimeOutInMs() {
         return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_TIMEOUT);
     }
+    
+    public int getHttpConnectTimeOutInMs() {
+        return engine.getParameterService().getInt(ParameterConstants.TRANSPORT_HTTP_CONNECT_TIMEOUT);
+    }
 
     public boolean isUseCompression(Node targetNode) {
         // if the node is local, no need to use compression
@@ -277,7 +281,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             String securityToken, Map<String, String> requestProperties, 
             String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), getHttpConnectTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
     }
@@ -285,7 +289,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getPushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), getHttpConnectTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false);
     }
@@ -293,7 +297,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     public IOutgoingWithResponseTransport getFilePushTransport(Node remote, Node local,
             String securityToken, String registrationUrl) throws IOException {
         URL url = new URL(buildURL("filesync/push", remote, local, securityToken, registrationUrl));
-        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), getHttpConnectTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), true);
     }    
@@ -321,7 +325,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
             Map<String, String> requestProperties, String registrationUrl) throws IOException
     {
         URL url = new URL(resolveURL(remote.getSyncUrl(), registrationUrl) + "/" + "bandwidth?direction=push");
-        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), isUseCompression(remote),
+        return new HttpOutgoingTransport(this, url, getHttpTimeOutInMs(), getHttpConnectTimeOutInMs(), isUseCompression(remote),
                 getCompressionStrategy(), getCompressionLevel(), local.getNodeId(),
                 securityToken, isOutputStreamEnabled(), getOutputStreamSize(), false, requestProperties);
     }
@@ -356,7 +360,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     protected HttpConnection createGetConnectionFor(URL url, String nodeId, String securityToken) throws IOException {
         HttpConnection conn = openConnection(url, nodeId, securityToken);
         conn.setRequestProperty("accept-encoding", "gzip");
-        conn.setConnectTimeout(getHttpTimeOutInMs());
+        conn.setConnectTimeout(getHttpConnectTimeOutInMs());
         conn.setReadTimeout(getHttpTimeOutInMs());
         conn.setRequestMethod("GET");
         return conn;
