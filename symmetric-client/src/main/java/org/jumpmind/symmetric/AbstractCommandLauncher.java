@@ -44,6 +44,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
+import org.jumpmind.db.util.BasicDataSourcePropertyConstants;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.security.SecurityConstants;
 import org.jumpmind.symmetric.common.ParameterConstants;
@@ -351,10 +352,24 @@ public abstract class AbstractCommandLauncher {
             if (testConnection) {
                 testConnection();
             }
-            platform = ClientSymmetricEngine.createDatabasePlatform(null, new TypedProperties(
-                    propertiesFile), null, false);
+            TypedProperties properties = new TypedProperties(propertiesFile);
+            if (properties.is(ParameterConstants.NODE_LOAD_ONLY, false)) {
+            	TypedProperties copiedProperties = new TypedProperties();
+            	String prefix = ParameterConstants.LOAD_ONLY_PROPERTY_PREFIX;
+                copyProperties(properties, copiedProperties, prefix, BasicDataSourcePropertyConstants.ALL_PROPS);
+                copyProperties(properties, copiedProperties, prefix, ParameterConstants.ALL_JDBC_PARAMS);
+                properties = copiedProperties;
+            }
+            platform = ClientSymmetricEngine.createDatabasePlatform(null, properties, null, false);
         }
         return platform;
+    }
+    
+    private void copyProperties(TypedProperties sourceProperties, TypedProperties targetProperties, 
+    		String prefix, String[] parameterNames) {
+        for (String name : parameterNames) {
+            targetProperties.put(name, sourceProperties.get(prefix + name));
+        }
     }
     
     protected TypedProperties getTypedProperties() {
