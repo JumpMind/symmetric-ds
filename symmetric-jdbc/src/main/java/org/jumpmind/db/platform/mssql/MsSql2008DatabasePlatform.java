@@ -72,8 +72,22 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
     @Override
     protected PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
-        result.setStatus(Status.PASS);
+        try {
+            if (getSqlTemplate().queryForInt("SELECT COUNT(*) FROM fn_my_permissions(NULL, 'SERVER') WHERE permission_name='ALTER'") > 0) {
+                result.setStatus(Status.PASS);
+            } else {
+                result.setStatus(Status.FAIL);
+                result.setSolution("Grant alter any database to this user."); 
+            }
+            
+        } catch (Exception e) {
+            result.setSolution("Error occurred checking user permissions");
+            result.setException(e);
+        }
         return result;
     }
+
+    
+    
 
 }
