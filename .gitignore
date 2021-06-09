@@ -1,7 +1,7 @@
 /.DS_Store
 /.project
 *.iml
-
+.clover/*
 /.idea/*
 *.ipr
 *.iws
