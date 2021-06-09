@@ -43,6 +43,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -245,10 +246,10 @@ public class KafkaWriterFilter implements IDatabaseWriterFilter {
                     }
                 }
             } else if (outputFormat.equals(KAFKA_FORMAT_XML)) {
-                kafkaText.append("<row entity=\"").append(table.getName()).append("\"").append(" dml=\"").append(data.getDataEventType())
+                kafkaText.append("<row entity=\"").append(StringEscapeUtils.escapeXml11(table.getName())).append("\"").append(" dml=\"").append(data.getDataEventType())
                         .append("\">");
                 for (int i = 0; i < table.getColumnNames().length; i++) {
-                    kafkaText.append("<data key=\"").append(table.getColumnNames()[i]).append("\">").append(rowData[i]).append("</data>");
+                    kafkaText.append("<data key=\"").append(StringEscapeUtils.escapeXml11(table.getColumnNames()[i])).append("\">").append(StringEscapeUtils.escapeXml11(rowData[i])).append("</data>");
                 }
                 kafkaText.append("</row>");
             } else if (outputFormat.equals(KAFKA_FORMAT_AVRO)) {

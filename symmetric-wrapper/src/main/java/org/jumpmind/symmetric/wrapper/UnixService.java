@@ -51,6 +51,7 @@ public class UnixService extends WrapperService {
     private static final String INITD_DIR = "/etc/init.d";
     
     private static final String SYSTEMD_INSTALL_DIR = "/lib/systemd/system";
+    private static final String SYSTEMD_ETC_DIR = "/etc/systemd/system";
     private static final String SYSTEMD_RUNTIME_DIR = "/run/systemd/system";
     
     private static final String INITD_SCRIPT_START = "start";
@@ -111,7 +112,13 @@ public class UnixService extends WrapperService {
     }
     
     private String getSystemdScriptFile() {
-    	return SYSTEMD_INSTALL_DIR + "/" + config.getName() + ".service";
+        // original implementation for systemd installed under /lib/systemd, so this is for backwards compatibility
+        String fileName = SYSTEMD_INSTALL_DIR + "/" + config.getName() + ".service";
+        if (!new File(fileName).exists()) {
+            // correct implementation for systemd installs under /etc/systemd
+            fileName = SYSTEMD_ETC_DIR + "/" + config.getName() + ".service";            
+        }
+    	return fileName;
     }
     
     private String getInitdRunFile() {
