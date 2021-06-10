@@ -415,11 +415,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         return active;
     }
 
-    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
+    public TriggerHistory getNewestTriggerHistoryForTrigger(List<TriggerHistory> activeTriggerHistories, String triggerId, String catalogName,
             String schemaName, String tableName) {
-        List<TriggerHistory> triggerHistories = sqlTemplate.query(getSql("latestTriggerHistSql"),
-                new TriggerHistoryMapper(), triggerId, tableName);
-        for (TriggerHistory triggerHistory : triggerHistories) {
+        for (TriggerHistory triggerHistory : activeTriggerHistories) {
             if ((StringUtils.isBlank(catalogName) && StringUtils.isBlank(triggerHistory
                     .getSourceCatalogName()))
                     || (StringUtils.isNotBlank(catalogName) && catalogName.equals(triggerHistory
@@ -428,11 +426,22 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         .getSourceSchemaName()))
                         || (StringUtils.isNotBlank(schemaName) && schemaName.equals(triggerHistory
                                 .getSourceSchemaName()))) {
-                    return triggerHistory;
+                    if ((StringUtils.isBlank(tableName) && StringUtils.isBlank(triggerHistory.getSourceTableName()))
+                            || (StringUtils.isNotBlank(tableName) && tableName.equals(triggerHistory
+                                    .getSourceTableName()))) {
+                        return triggerHistory;
+                    }
                 }
             }
         }
         return null;
+    }
+    
+    public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
+            String schemaName, String tableName) {
+        List<TriggerHistory> triggerHistories = sqlTemplate.query(getSql("latestTriggerHistSql"),
+                new TriggerHistoryMapper(), triggerId, tableName);
+        return getNewestTriggerHistoryForTrigger(triggerHistories, triggerId, catalogName, schemaName, tableName);
     }
     
     @SuppressWarnings("unchecked")
@@ -1624,13 +1633,26 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
         List<Trigger> triggersForCurrentNode = getTriggersForCurrentNode();
         List<TriggerHistory> activeTriggerHistories = getActiveTriggerHistories();
+        Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggersForCurrentNode, activeTriggerHistories, true);
         for (Trigger trigger : triggersForCurrentNode) {
             if (trigger.matches(table, platform.getDefaultCatalog(), platform.getDefaultSchema(), ignoreCase) &&
                     (!trigger.isSourceTableNameWildCarded() || !trigger.isSourceTableNameExpanded() 
                     		|| !containsExactMatchForSourceTableName(table, triggersForCurrentNode, ignoreCase))) {
-                log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
-                updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories);
-                log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
+                TriggerTableSupportingInfo triggerTableSupportingInfo = null;
+                for (TriggerTableSupportingInfo t : triggerTableSupportingInfoList) {
+                    if (t.getTable().getFullyQualifiedTableName().equals(table.getFullyQualifiedTableName())) {
+                        triggerTableSupportingInfo = t;
+                        break;
+                    }
+                }
+                if (triggerTableSupportingInfo != null) {
+                    log.info("Synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                    updateOrCreateDatabaseTriggers(trigger, table, null, force, true, activeTriggerHistories, triggerTableSupportingInfo);
+                    log.info("Done synchronizing triggers for {}", table.getFullyQualifiedTableName());
+                } else {
+                    log.warn("Can't find table {} for trigger {}, make sure table exists.", table.getFullyQualifiedTableName(), trigger.getTriggerId());
+                }
             }
         }
     }
@@ -1650,6 +1672,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected void updateOrCreateDatabaseTriggers(final List<Trigger> triggers, final StringBuilder sqlBuffer,
             final boolean force, final boolean verifyInDatabase, final List<TriggerHistory> activeTriggerHistories, 
             final boolean useTableCache) {
+        Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggers, activeTriggerHistories, useTableCache);
+
         int numThreads = getNumberOfThreadsToUseForSyncTriggers();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads, new SyncTriggersThreadFactory());
         List<Future<?>> futures = new ArrayList<Future<?>>();
@@ -1658,21 +1682,129 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             Runnable task = new Runnable() {
                 public void run() {
                     MDC.put("engineName", parameterService.getEngineName());
-                    updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force, verifyInDatabase, activeTriggerHistories, useTableCache);
+                    updateOrCreateDatabaseTrigger(trigger, triggers, sqlBuffer, force, verifyInDatabase, activeTriggerHistories, useTableCache, triggerToTableSupportingInfo);
                 }                
             };
             futures.add(executor.submit(task));
         }
         awaitTermination(executor, futures);
     }
-
-    protected void updateOrCreateDatabaseTrigger(Trigger trigger, List<Trigger> triggers,
-            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories, boolean useTableCache) {
-        Set<Table> tables = getTablesForTrigger(trigger, triggers, useTableCache);
-
-        if (tables != null && tables.size() > 0) {
+    
+    private Map<String, List<TriggerTableSupportingInfo>> getTriggerToTableSupportingInfo(List<Trigger> triggers, List<TriggerHistory> activeTriggerHistories, 
+            boolean useTableCache) {
+        Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = new HashMap<String, List<TriggerTableSupportingInfo>>();
+        for (final Trigger trigger : triggers) {
+            List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = new ArrayList<TriggerTableSupportingInfo>();
+            Set<Table> tables = getTablesForTrigger(trigger, triggers, useTableCache);
             for (Table table : tables) {
-                updateOrCreateDatabaseTriggers(trigger, table, sqlBuffer, force, verifyInDatabase, activeTriggerHistories);
+                Table modifiedTable = table;
+                boolean foundPk = false;
+                Column[] columns = trigger.filterExcludedAndIncludedColumns(modifiedTable.getColumns());
+                for (Column column : columns) {
+                    foundPk |= column.isPrimaryKey();
+                    if (foundPk) {
+                        break;
+                    }
+                }
+                if (!foundPk) {
+                    modifiedTable = platform.makeAllColumnsPrimaryKeys(modifiedTable);
+                }
+                TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
+                        activeTriggerHistories,
+                        trigger.getTriggerId(),
+                        trigger.isSourceCatalogNameWildCarded() ? modifiedTable.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
+                        trigger.isSourceSchemaNameWildCarded() ? modifiedTable.getSchema() : trigger.getSourceSchemaNameUnescaped(),
+                        (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? modifiedTable.getName() : trigger.getSourceTableNameUnescaped());
+        
+                int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
+                
+                String insertTriggerName = null;
+                String updateTriggerName = null;
+                String deleteTriggerName = null;
+                if (trigger.isSyncOnInsert()) {
+                    insertTriggerName = getTriggerName(DataEventType.INSERT,
+                        maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild).toUpperCase();
+                }
+                
+                if (trigger.isSyncOnUpdate()) {
+                    updateTriggerName = getTriggerName(DataEventType.UPDATE,
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild).toUpperCase();
+                }
+
+                if (trigger.isSyncOnDelete()) {
+                    deleteTriggerName = getTriggerName(DataEventType.DELETE,
+                            maxTriggerNameLength, trigger, modifiedTable, activeTriggerHistories, latestHistoryBeforeRebuild).toUpperCase();
+                }
+                TriggerTableSupportingInfo triggerTableSupportingInfo = new TriggerTableSupportingInfo(trigger.getTriggerId(), insertTriggerName, updateTriggerName, deleteTriggerName, latestHistoryBeforeRebuild, modifiedTable);
+                triggerTableSupportingInfoList.add(triggerTableSupportingInfo);
+            }
+            triggerToTableSupportingInfo.put(trigger.getTriggerId(), triggerTableSupportingInfoList);
+        }
+        return triggerToTableSupportingInfo;
+    }
+    
+    class TriggerTableSupportingInfo {
+        private String triggerId;
+        private String insertTriggerName;
+        private String updateTriggerName;
+        private String deleteTriggerName;
+        private TriggerHistory latestHistoryBeforeRebuild;
+        private Table table;
+        
+        public TriggerTableSupportingInfo(String triggerId, String insertTriggerName, String updaterTriggerName, String deleteTriggerName,
+                TriggerHistory latestHistoryBeforeRebuild, Table table)
+        {
+            this.triggerId = triggerId;
+            this.insertTriggerName = insertTriggerName;
+            this.updateTriggerName = updaterTriggerName;
+            this.deleteTriggerName = deleteTriggerName;
+            this.latestHistoryBeforeRebuild = latestHistoryBeforeRebuild;
+            this.table = table;
+        }
+        public String getInsertTriggerName() {
+            return insertTriggerName;
+        }
+        public void setInsertTriggerName(String insertTriggerName) {
+            this.insertTriggerName = insertTriggerName;
+        }
+        public String getUpdateTriggerName() {
+            return updateTriggerName;
+        }
+        public void setUpdateTriggerName(String updateTriggerName) {
+            this.updateTriggerName = updateTriggerName;
+        }
+        public String getDeleteTriggerName() {
+            return deleteTriggerName;
+        }
+        public void setDeleteTriggerName(String deleteTriggerName) {
+            this.deleteTriggerName = deleteTriggerName;
+        }
+        public TriggerHistory getLatestHistoryBeforeRebuild() {
+            return latestHistoryBeforeRebuild;
+        }
+        public void setLatestHistoryBeforeRebuild(TriggerHistory latestHistoryBeforeRebuild) {
+            this.latestHistoryBeforeRebuild = latestHistoryBeforeRebuild;
+        }
+        public Table getTable() {
+            return table;
+        }
+        public void setTable(Table table) {
+            this.table = table;
+        }
+        public String getTriggerId() {
+            return triggerId;
+        }
+        public void setTriggerId(String triggerId) {
+            this.triggerId = triggerId;
+        }
+        
+    }
+
+    protected void updateOrCreateDatabaseTrigger(Trigger trigger, List<Trigger> triggers, StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories, boolean useTableCache, Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo) {
+        List<TriggerTableSupportingInfo> triggerTableSupportingInfoList = triggerToTableSupportingInfo.get(trigger.getTriggerId());
+        if (triggerTableSupportingInfoList != null && triggerTableSupportingInfoList.size() > 0) {
+            for (TriggerTableSupportingInfo triggerTableSupportingInfo : triggerTableSupportingInfoList) {
+                updateOrCreateDatabaseTriggers(trigger, triggerTableSupportingInfo.getTable(), sqlBuffer, force, verifyInDatabase, activeTriggerHistories, triggerTableSupportingInfo);
             }
         } else {
             log.error(
@@ -1720,8 +1852,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
                         }
                     }
                 }
+                List<Trigger> triggers = new ArrayList<Trigger>();
+                triggers.add(trigger);
+                Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggers, allHistories, true);
                 updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                    force, verifyInDatabase, allHistories, false);
+                    force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo);
             } else {                
                 for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
                     dropTriggers(triggerHistory, sqlBuffer);
@@ -1738,7 +1873,9 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     protected void updateOrCreateDatabaseTriggers(Trigger trigger, Table table,
-            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories) {
+            StringBuilder sqlBuffer, boolean force, boolean verifyInDatabase, List<TriggerHistory> activeTriggerHistories,
+            TriggerTableSupportingInfo triggerTableSupportingInfo) {
+        TriggerHistory latestHistoryBeforeRebuild = triggerTableSupportingInfo.getLatestHistoryBeforeRebuild();
         TriggerHistory newestHistory = null;
         TriggerReBuildReason reason = TriggerReBuildReason.NEW_TRIGGERS;
 
@@ -1752,24 +1889,6 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         try {
-
-            boolean foundPk = false;
-            Column[] columns = trigger.filterExcludedAndIncludedColumns(table.getColumns());
-            for (Column column : columns) {
-                foundPk |= column.isPrimaryKey();
-                if (foundPk) {
-                    break;
-                }
-            }
-            if (!foundPk) {
-                table = platform.makeAllColumnsPrimaryKeys(table);
-            }
-
-            TriggerHistory latestHistoryBeforeRebuild = getNewestTriggerHistoryForTrigger(
-                    trigger.getTriggerId(),
-                    trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
-                    trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
-                    (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName() : trigger.getSourceTableNameUnescaped());
 
             boolean forceRebuildOfTriggers = false;
             if (latestHistoryBeforeRebuild == null) {
@@ -1799,15 +1918,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
                     DataEventType.INSERT, reason, latestHistoryBeforeRebuild, null,
-                    trigger.isSyncOnInsert() && supportsTriggers, table, activeTriggerHistories);
+                    trigger.isSyncOnInsert() && supportsTriggers, table, activeTriggerHistories,triggerTableSupportingInfo);
 
             newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
                     DataEventType.UPDATE, reason, latestHistoryBeforeRebuild, newestHistory,
-                    trigger.isSyncOnUpdate() && supportsTriggers, table, activeTriggerHistories);
+                    trigger.isSyncOnUpdate() && supportsTriggers, table, activeTriggerHistories,triggerTableSupportingInfo);
 
             newestHistory = rebuildTriggerIfNecessary(sqlBuffer, forceRebuildOfTriggers, trigger,
                     DataEventType.DELETE, reason, latestHistoryBeforeRebuild, newestHistory,
-                    trigger.isSyncOnDelete() && supportsTriggers, table, activeTriggerHistories);
+                    trigger.isSyncOnDelete() && supportsTriggers, table, activeTriggerHistories,triggerTableSupportingInfo);
 
             if (latestHistoryBeforeRebuild != null && newestHistory != null) {
                 inactivateTriggerHistory(latestHistoryBeforeRebuild);
@@ -1863,7 +1982,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     protected TriggerHistory rebuildTriggerIfNecessary(StringBuilder sqlBuffer,
             boolean forceRebuild, Trigger trigger, DataEventType dmlType,
             TriggerReBuildReason reason, TriggerHistory oldhist, TriggerHistory hist,
-            boolean triggerIsActive, Table table, List<TriggerHistory> activeTriggerHistories) {
+            boolean triggerIsActive, Table table, List<TriggerHistory> activeTriggerHistories,
+            TriggerTableSupportingInfo triggerTableSupportingInfo) {
 
         boolean triggerExists = false;
         boolean triggerRemoved = false;
@@ -1876,12 +1996,11 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         
         TriggerHistory newTriggerHist = new TriggerHistory(table, trigger, 
                 usingTargetDialect ? getTargetDialect().getTriggerTemplate() : getSymmetricDialect().getTriggerTemplate(), reason);
-        int maxTriggerNameLength = symmetricDialect.getMaxTriggerNameLength();
         
         if (usingTargetDialect) {
             if (hist == null && (oldhist == null || forceRebuild)) {
                 insert(newTriggerHist);
-                hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                hist = getNewestTriggerHistoryForTrigger(activeTriggerHistories, trigger.getTriggerId(),
                         trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                         trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
                         (trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded()) ? table.getName() : trigger.getSourceTableNameUnescaped());
@@ -1890,18 +2009,15 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         }
 
         if (trigger.isSyncOnInsert()) {
-            newTriggerHist.setNameForInsertTrigger(getTriggerName(DataEventType.INSERT,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+            newTriggerHist.setNameForInsertTrigger(triggerTableSupportingInfo.getInsertTriggerName());
         }
 
         if (trigger.isSyncOnUpdate()) {
-            newTriggerHist.setNameForUpdateTrigger(getTriggerName(DataEventType.UPDATE,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+            newTriggerHist.setNameForUpdateTrigger(triggerTableSupportingInfo.getUpdateTriggerName());
         }
 
         if (trigger.isSyncOnDelete()) {
-            newTriggerHist.setNameForDeleteTrigger(getTriggerName(DataEventType.DELETE,
-                    maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist).toUpperCase());
+            newTriggerHist.setNameForDeleteTrigger(triggerTableSupportingInfo.getDeleteTriggerName());
         }
 
         String oldTriggerName = null;
@@ -1910,7 +2026,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
         if (oldhist != null) {
             oldTriggerName = oldhist.getTriggerNameForDmlType(dmlType);
             if (oldTriggerName == null) {
-                oldTriggerName = getTriggerName(dmlType, maxTriggerNameLength, trigger, table, activeTriggerHistories, oldhist);
+                oldTriggerName = getTriggerName(dmlType, triggerTableSupportingInfo);
             }
             oldSourceSchema = oldhist.getSourceSchemaName();
             oldCatalogName = oldhist.getSourceCatalogName();
@@ -1947,7 +2063,8 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
                 insert(newTriggerHist);
-                hist = getNewestTriggerHistoryForTrigger(trigger.getTriggerId(),
+                activeTriggerHistories.add(newTriggerHist);
+                hist = getNewestTriggerHistoryForTrigger(activeTriggerHistories, trigger.getTriggerId(),
                         trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
                         trigger.isSourceSchemaNameWildCarded() ? table.getSchema() : trigger.getSourceSchemaNameUnescaped(),
                         trigger.isSourceTableNameWildCarded() || trigger.isSourceTableNameExpanded() ? table.getName() : trigger.getSourceTableNameUnescaped());
@@ -2062,6 +2179,24 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             }
         }
 
+        return triggerName;
+    }
+    
+    public String getTriggerName(DataEventType dml, TriggerTableSupportingInfo triggerTableSupportingInfo) {
+        String triggerName = null;
+        switch (dml) {
+            case INSERT:
+                triggerName = triggerTableSupportingInfo.getInsertTriggerName();
+                break;
+            case UPDATE:
+                triggerName = triggerTableSupportingInfo.getUpdateTriggerName();
+                break;
+            case DELETE:
+                triggerName = triggerTableSupportingInfo.getDeleteTriggerName();
+                break;
+            default:
+                break;
+        }
         return triggerName;
     }
 
