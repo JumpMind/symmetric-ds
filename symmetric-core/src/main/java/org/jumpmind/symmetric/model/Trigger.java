@@ -166,10 +166,12 @@ public class Trigger implements Serializable, Cloneable {
     public void nullOutBlankFields() {
         if (StringUtils.isBlank(sourceCatalogName)) {
             sourceCatalogName = null;
+            sourceCatalogNameUnescaped = null;
             isSourceCatalogWildCarded = false;
         }
         if (StringUtils.isBlank(sourceSchemaName)) {
             sourceSchemaName = null;
+            sourceSchemaNameUnescaped = null;
             isSourceSchemaWildCarded = false;
         }
         syncOnInsertCondition = StringUtils.defaultString(StringUtils.trimToNull(syncOnInsertCondition), DEFAULT_CONDITION);

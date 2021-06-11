@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2063,6 +2064,16 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
 
             if (hist == null && (oldhist == null || (!triggerExists && triggerIsActive) || (isDeadTrigger && forceRebuild))) {
                 insert(newTriggerHist);
+                for (Iterator<TriggerHistory> it = activeTriggerHistories.iterator(); it.hasNext(); ) {
+                    TriggerHistory triggerHistory = it.next();
+                    if (StringUtils.equals(triggerHistory.getSourceCatalogName(), newTriggerHist.getSourceCatalogName())) {
+                        if (StringUtils.equals(triggerHistory.getSourceSchemaName(), newTriggerHist.getSourceSchemaName())) {
+                            if (StringUtils.equals(triggerHistory.getSourceTableName(), newTriggerHist.getSourceTableName())) {
+                                it.remove();
+                            }
+                        }
+                    }
+                }
                 activeTriggerHistories.add(newTriggerHist);
                 hist = getNewestTriggerHistoryForTrigger(activeTriggerHistories, trigger.getTriggerId(),
                         trigger.isSourceCatalogNameWildCarded() ? table.getCatalog() : trigger.getSourceCatalogNameUnescaped(),
