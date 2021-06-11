@@ -556,8 +556,6 @@ final public class ParameterConstants {
     
     public final static String HBASE_SITE_XML_PATH = "hbase.site.xml.path";
     
-    public final static String INFORMIX_2K_PAGE_SIZE = "informix.2k.page.size";
-    
     public static Map<String, ParameterMetaData> getParameterMetaData() {
         return parameterMetaData;
     }

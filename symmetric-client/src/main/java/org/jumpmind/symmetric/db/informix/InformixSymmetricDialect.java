@@ -26,7 +26,6 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
-import org.jumpmind.symmetric.common.ParameterConstants;
 import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
@@ -37,17 +36,25 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     
     static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema).$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
+    static final String SQL_PAGE_SIZE = "select pagesize from systables where tabname = 'systables'";
+    private int pageSize = 2048;
 
     public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);       
         this.triggerTemplate = new InformixTriggerTemplate(this);
+        try {
+            pageSize = platform.getSqlTemplate().queryForInt(SQL_PAGE_SIZE);
+            log.info("Page size is {}", pageSize);
+        } catch (Exception e) {
+            log.debug("Unable to query page size", e);
+        }
     }    
 
     @Override
     public Database readSymmetricSchemaFromXml() {
         Database database = super.readSymmetricSchemaFromXml();
         String prefix = parameterService.getTablePrefix() + "_";
-        if (parameterService.is(ParameterConstants.INFORMIX_2K_PAGE_SIZE, true)) {
+        if (pageSize == 2048) {
             Table table = database.findTable(prefix + TableConstants.SYM_FILE_SNAPSHOT);
             if (table != null) {
                 Column column = table.findColumn("relative_dir");
