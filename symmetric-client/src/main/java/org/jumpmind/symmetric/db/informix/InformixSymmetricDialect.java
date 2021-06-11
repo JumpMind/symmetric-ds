@@ -20,9 +20,14 @@
  */
 package org.jumpmind.symmetric.db.informix;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -37,6 +42,31 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
         super(parameterService, platform);       
         this.triggerTemplate = new InformixTriggerTemplate(this);
     }    
+
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database database = super.readSymmetricSchemaFromXml();
+        String prefix = parameterService.getTablePrefix() + "_";
+        if (parameterService.is(ParameterConstants.INFORMIX_2K_PAGE_SIZE, true)) {
+            Table table = database.findTable(prefix + TableConstants.SYM_FILE_SNAPSHOT);
+            if (table != null) {
+                Column column = table.findColumn("relative_dir");
+                if (column != null) {
+                    column.setSize("55");
+                }
+                column = table.findColumn("file_name");
+                if (column != null) {
+                    column.setSize("55");
+                }
+            }
+            
+            table = database.findTable(prefix + TableConstants.SYM_REGISTRATION_REQUEST);
+            if (table != null) {
+                table.removeIndex(0);
+            }
+        }
+        return database;
+    }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
