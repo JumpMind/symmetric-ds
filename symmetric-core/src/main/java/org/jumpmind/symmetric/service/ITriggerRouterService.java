@@ -150,6 +150,9 @@ public interface ITriggerRouterService {
     
     public void inactivateTriggerHistory(TriggerHistory history);
 
+    public TriggerHistory getNewestTriggerHistoryForTrigger(List<TriggerHistory> activeTriggerHistories, String triggerId, String catalogName,
+            String schemaName, String tableName);
+    
     public TriggerHistory getNewestTriggerHistoryForTrigger(String triggerId, String catalogName,
             String schemaName, String tableName);
         
