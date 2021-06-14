@@ -1189,7 +1189,7 @@ public class RouterService extends AbstractService implements IRouterService {
             } else {
                 rowData = dataMetaData.getData().toParsedRowData();
             }
-            return dataMetaData.getTable().getColumnCount() == rowData.length;
+            return rowData == null || dataMetaData.getTable().getColumnCount() == rowData.length;
         }
         return true;
     }

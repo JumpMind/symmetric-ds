@@ -20,9 +20,13 @@
  */
 package org.jumpmind.symmetric.db.informix;
 
+import org.jumpmind.db.model.Column;
+import org.jumpmind.db.model.Database;
+import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.db.util.BinaryEncoding;
+import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.db.AbstractSymmetricDialect;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 import org.jumpmind.symmetric.model.Trigger;
@@ -32,11 +36,44 @@ public class InformixSymmetricDialect extends AbstractSymmetricDialect implement
     
     static final String SQL_DROP_FUNCTION = "drop function $(defaultSchema).$(functionName)";
     static final String SQL_FUNCTION_INSTALLED = "select count(*) from sysprocedures where procname = '$(functionName)' and owner = (select trim(user) from sysmaster:sysdual)" ;
+    static final String SQL_PAGE_SIZE = "select pagesize from systables where tabname = 'systables'";
+    private int pageSize = 2048;
 
     public InformixSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);       
         this.triggerTemplate = new InformixTriggerTemplate(this);
+        try {
+            pageSize = platform.getSqlTemplate().queryForInt(SQL_PAGE_SIZE);
+            log.info("Page size is {}", pageSize);
+        } catch (Exception e) {
+            log.debug("Unable to query page size", e);
+        }
     }    
+
+    @Override
+    public Database readSymmetricSchemaFromXml() {
+        Database database = super.readSymmetricSchemaFromXml();
+        String prefix = parameterService.getTablePrefix() + "_";
+        if (pageSize == 2048) {
+            Table table = database.findTable(prefix + TableConstants.SYM_FILE_SNAPSHOT);
+            if (table != null) {
+                Column column = table.findColumn("relative_dir");
+                if (column != null) {
+                    column.setSize("55");
+                }
+                column = table.findColumn("file_name");
+                if (column != null) {
+                    column.setSize("55");
+                }
+            }
+            
+            table = database.findTable(prefix + TableConstants.SYM_REGISTRATION_REQUEST);
+            if (table != null) {
+                table.removeIndex(0);
+            }
+        }
+        return database;
+    }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,

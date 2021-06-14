@@ -36,8 +36,10 @@ import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.RequestLogWriter;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -136,6 +138,8 @@ public class SymmetricWebServer {
 
     protected boolean allowSelfSignedCerts = true;
 
+    protected boolean accessLog = false;
+    
     public SymmetricWebServer() {
         this(null, DEFAULT_WEBAPP_DIR);
     }
@@ -191,6 +195,7 @@ public class SymmetricWebServer {
         disallowedMethods = serverProperties.get(ServerConstants.SERVER_DISALLOW_HTTP_METHODS, "OPTIONS");
         httpsNeedClientAuth = serverProperties.is(ServerConstants.HTTPS_NEED_CLIENT_AUTH, false);
         httpsWantClientAuth = serverProperties.is(ServerConstants.HTTPS_WANT_CLIENT_AUTH, false);
+        accessLog = serverProperties.is(ServerConstants.SERVER_ACCESS_LOG, false);
         
         if (serverProperties.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED, false)) {
             if (CookieHandler.getDefault() == null) {
@@ -273,6 +278,12 @@ public class SymmetricWebServer {
         if (httpsEnabled && !httpEnabled) { 
             webapp.getSessionHandler().getSessionCookieConfig().setSecure(true);
         }
+        
+        if (accessLog) {
+            server.setRequestLog(new CustomRequestLog(new RequestLogWriter(),
+	                        CustomRequestLog.EXTENDED_NCSA_FORMAT));
+        }
+        
         server.setHandler(webapp);
 
 

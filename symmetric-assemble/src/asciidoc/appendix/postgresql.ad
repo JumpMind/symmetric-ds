@@ -40,12 +40,18 @@ If you want SymmetricDS to install into a schema other than public you can alter
 alter user {user name} set search_path to {schema name};
 ----
 
-When multiple users are involved, the SymmetricDS user will need the following privileges:
+==== Postgres Permissions
 
-[source, SQL]
-----  
-GRANT USAGE ON SCHEMA {schema name} TO {user name};
-GRANT CREATE ON SCHEMA {schema name} TO {user name};
+If SymmetricDS is connected into a different schema than the application tables and a different user account is used to write to the the application tables the following permissions need to be granted to the application user to access the SymmetricDS schema
+
+
+[source, Sql]
+----
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {SYMMETRIC_SCHEMA} TO  {APPLICATION USER}
+GRANT ALL ON SCHEMA {SYMMETRIC_SCHEMA} TO {APPLICATION USER} 
+GRANT ALL ON ALL SEQUENCES IN SCHEMA {SYMMETRIC_SCHEMA} TO  {APPLICATION USER}
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA {SYMMETRIC_SCHEMA} TO  {APPLICATION USER}
+
 ----
 
 .supported data types
