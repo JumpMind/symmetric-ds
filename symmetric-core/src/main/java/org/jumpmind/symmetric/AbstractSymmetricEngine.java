@@ -894,15 +894,27 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         if (statisticManager != null) {
             List<ProcessInfo> infos = statisticManager.getProcessInfos();
+            List<Thread> threadsToWaitOn = new ArrayList<Thread>();
             for (ProcessInfo processInfo : infos) {
                 Thread thread = processInfo.getThread();
                 if (processInfo.getStatus() != ProcessStatus.OK && thread.isAlive()) {
-                    log.info("Trying to interrupt thread '{}' ", thread.getName());
+                    log.info("Attempting to interrupt thread '{}' ", thread.getName());
                     try {
                         thread.interrupt();
+                        threadsToWaitOn.add(thread);
                     } catch (Exception e) {
                         log.info("Caught exception while attempting to interrupt thread", e);
                     }
+                }
+            }
+            
+            for (Thread thread : threadsToWaitOn) {
+                try {
+                    log.info("Waiting for thread {} to stop", thread.getName());
+                    thread.join(5000);
+                    log.info("Thread {} stopped", thread.getName());
+                } catch(Exception e) {
+                    log.info("Caught exception while waiting for thread {} to stop", thread.getName(), e);
                 }
             }
 

@@ -206,6 +206,11 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     protected void init() {
+        String standalone = System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB);
+        if (standalone != null && standalone.equals("true")) {
+            Thread shutdownHook = new Thread(() -> destroy());
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
+        }
         try {
             LogSummaryAppenderUtils.initialize();
             
@@ -290,14 +295,16 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
 
     @Override
     public synchronized void stop() {
-        if (this.springContext instanceof AbstractApplicationContext) {
-            AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
-            try {
-                if (ctx.isActive()) {
-                    ctx.stop();
-                }
-            } catch (Exception ex) {
-            }
+        if (springContext != null) {
+	        if (this.springContext instanceof AbstractApplicationContext) {
+	            AbstractApplicationContext ctx = (AbstractApplicationContext) this.springContext;
+	            try {
+	                if (ctx.isActive()) {
+	                    ctx.stop();
+	                }
+	            } catch (Exception ex) {
+	            }
+	        }
         }
         super.stop();
     }
@@ -523,11 +530,13 @@ public class ClientSymmetricEngine extends AbstractSymmetricEngine {
     @Override
     public synchronized void destroy() {
         super.destroy();
-        if (springContext instanceof AbstractApplicationContext) {
-            try {
-            ((AbstractApplicationContext)springContext).close();
-            } catch (Exception ex) {                
-            }
+        if (springContext != null) {
+	        if (springContext instanceof AbstractApplicationContext) {
+	            try {
+	            ((AbstractApplicationContext)springContext).close();
+	            } catch (Exception ex) {                
+	            }
+	        }
         }
         springContext = null;
         if (dataSource != null && dataSource instanceof BasicDataSource) {
