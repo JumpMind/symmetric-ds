@@ -25,6 +25,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,6 +91,14 @@ abstract public class AbstractService implements IService {
         this.sqlTemplateDirty = symmetricDialect.getPlatform().getSqlTemplateDirty();
     }
     
+    private static final Comparator<BatchAck> BATCH_ID_COMPARATOR = new Comparator<BatchAck>() {
+        public int compare(BatchAck batchInfo1, BatchAck batchInfo2) {
+            Long batchId1 = batchInfo1.getBatchId();
+            Long batchId2 = batchInfo2.getBatchId();
+            return batchId1.compareTo(batchId2);
+        }
+    };
+
     protected Date maxDate(Date... dates) {
         Date date = null;
         if (dates != null) {
@@ -436,6 +446,8 @@ abstract public class AbstractService implements IService {
 
         List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString,
                 ackExtendedString);
+      
+        Collections.sort(batchAcks, BATCH_ID_COMPARATOR);
 
         long batchIdInError = Long.MAX_VALUE;
         for (BatchAck batchInfo : batchAcks) {
