@@ -49,13 +49,12 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
@@ -126,7 +125,7 @@ public class DbImportDialog extends ResizableDialog {
         importLayout = new VerticalLayout();
         importLayout.setSizeFull();
         importLayout.addClassName("v-scrollable");
-        importLayout.setMargin(true);
+        importLayout.setMargin(false);
         importLayout.setSpacing(true);
 
         importLayout.add(new Label("Please select from the following options"));
@@ -209,6 +208,7 @@ public class DbImportDialog extends ResizableDialog {
         commitField.addValueChangeListener((event) -> {
                 commitField.setValue(event.getValue());
         });
+        commitField.setValueChangeMode(ValueChangeMode.LAZY);
         commitField.setValueChangeTimeout(200);
         commitField.setValue("10000");
         formLayout.add(commitField);
@@ -264,6 +264,7 @@ public class DbImportDialog extends ResizableDialog {
                 deleteFileAndResource();
             }
         });        
+        upload.setDropAllowed(false);
         Button uploadButton = new Button("Import");
         uploadButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         upload.setUploadButton(uploadButton);

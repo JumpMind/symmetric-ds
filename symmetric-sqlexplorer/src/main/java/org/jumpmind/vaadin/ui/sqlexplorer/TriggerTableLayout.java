@@ -29,6 +29,7 @@ import org.jumpmind.vaadin.ui.sqlexplorer.TriggerInfoPanel.Refresher;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
@@ -114,6 +115,10 @@ public class TriggerTableLayout extends VerticalLayout{
         Map<String, Object> metaData = trigger.getMetaData();
         grid.addColumn(property -> property).setKey("property").setHeader("Property").setWidth("250px");
         grid.addColumn(property -> String.valueOf(metaData.get(property))).setKey("value").setHeader("Value");
+        
+        for (Column<String> column : grid.getColumns()) {
+            column.setResizable(true);
+        }
         
         grid.setItems(metaData.keySet());
         

@@ -25,6 +25,8 @@ import java.util.Iterator;
 
 import org.jumpmind.db.model.Trigger;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.TabSheet;
+import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.vaadin.aceeditor.AceEditor;
 import org.vaadin.aceeditor.AceMode;
 
@@ -44,7 +46,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
 
     private static final long serialVersionUID = 1L;
 
-    //TabSheet tabSheet;
+    TabSheet tabSheet;
 
     String selectedCaption;
     
@@ -54,30 +56,27 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
 
         setSizeFull();
 
-        /*tabSheet = CommonUiUtils.createTabSheet();
-        tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
+        tabSheet = CommonUiUtils.createTabSheet();
+        tabSheet.addSelectedTabChangeListener(event -> {
+            EnhancedTab tab = tabSheet.getSelectedTab();
+            if (tab != null) {
+                selectedCaption = tab.getName();
             }
         });
-        add(tabSheet);*/
+        add(tabSheet);
 
         refreshSource(trigger);
         refreshDetails(trigger, db, settings);
                             
-        /*Iterator<Component> i = tabSheet.iterator();
+        Iterator<Component> i = tabSheet.iterator();
         while (i.hasNext()) {
             Component component = i.next();
-            Tab tab = tabSheet.getTab(component);
-            if (tab.getCaption().equals(selectedTabCaption)) {
+            EnhancedTab tab = tabSheet.getTab(component);
+            if (tab.getName().equals(selectedTabCaption)) {
                 tabSheet.setSelectedTab(component);
                 break;
             }            
-        }*/
+        }
     }
     
     public String getSelectedTabCaption() {
@@ -107,7 +106,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         wrapSelect.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
         MenuItem wrapButton = wrapSelect.addItem("Wrap text", event -> {
             wrapSourceText = !wrapSourceText;
-            //tabSheet.removeTab(tabSheet.getTab(1));
+            tabSheet.remove(tabSheet.getTab(1));
             refreshSource(trigger);
         });
         wrapButton.addComponentAsFirst(new Icon(VaadinIcon.ALIGN_JUSTIFY));
@@ -117,8 +116,8 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         bar.setHeight("2.5rem");
         source.add(bar);
         
-        //tabSheet.addTab(source, "Source");
-        //tabSheet.setSelectedTab(source);
+        tabSheet.add(source, "Source");
+        tabSheet.setSelectedTab(source);
     }
     
     private String wrapSource(String source) {
@@ -294,26 +293,26 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         final ProgressBar p = new ProgressBar();
         p.setIndeterminate(true);
         executingLayout.add(p);
-        /*tabSheet.addTab(executingLayout, "Details", VaadinIcon.SPINNER, 0);
+        tabSheet.add(executingLayout, "Details", new Icon(VaadinIcon.SPINNER), 0);
         tabSheet.setSelectedTab(executingLayout);
         
         TriggerTableLayout triggerTable = new TriggerTableLayout(trigger, settings, new Refresher() {
             public void refresh() {
-                tabSheet.removeTab(tabSheet.getTab(0));
+                tabSheet.remove(tabSheet.getTab(0));
                 refreshDetails(trigger, db, settings);
             }
         });
         
-        boolean select = tabSheet.getSelectedTab().equals(executingLayout);
-        tabSheet.remove(executingLayout);
+        boolean select = executingLayout.equals(tabSheet.getSelectedTab().getComponent());
+        tabSheet.remove("Details");
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(true);
         layout.setSizeFull();
         layout.add(triggerTable);
-        tabSheet.addTab(layout, "Details", null, 0);
+        tabSheet.add(layout, "Details", null, 0);
         if (select) {
             tabSheet.setSelectedTab(layout);
-        }*/
+        }
     }
     
     public class Refresher {

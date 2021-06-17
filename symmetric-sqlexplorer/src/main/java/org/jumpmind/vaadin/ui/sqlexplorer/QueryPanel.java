@@ -39,6 +39,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.TabSheet;
+import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.aceeditor.AceEditor;
@@ -58,10 +60,12 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.component.tabs.Tab;
 
 public class QueryPanel extends SplitLayout implements IContentTab {
 
@@ -87,9 +91,9 @@ public class QueryPanel extends SplitLayout implements IContentTab {
 
     IButtonBar buttonBar;
 
-    //TabSheet resultsTabs;
+    TabSheet resultsTabs;
 
-    //Tab errorTab;
+    EnhancedTab errorTab;
 
     int maxNumberOfResultTabs = 10;
 
@@ -109,7 +113,7 @@ public class QueryPanel extends SplitLayout implements IContentTab {
 
     Map<Component, String> resultStatuses;
 
-    //Tab generalResultsTab;
+    EnhancedTab generalResultsTab;
 
     //private SuggestionExtension suggestionExtension;
 
@@ -132,7 +136,7 @@ public class QueryPanel extends SplitLayout implements IContentTab {
         resultsLayout.setSpacing(false);
         resultsLayout.setSizeFull();
 
-        //resultsTabs = CommonUiUtils.createTabSheet();
+        resultsTabs = CommonUiUtils.createTabSheet();
         resultStatuses = new HashMap<Component, String>();
 
         HorizontalLayout statusBar = new HorizontalLayout();
@@ -146,8 +150,8 @@ public class QueryPanel extends SplitLayout implements IContentTab {
 
         setSelectedTabChangeListener();
 
-        //resultsLayout.add(resultsTabs, statusBar);
-        //resultsLayout.expand(resultsTabs);
+        resultsLayout.add(resultsTabs, statusBar);
+        resultsLayout.expand(resultsTabs);
 
         //addToPrimary(sqlArea);
         addToSecondary(resultsLayout);
@@ -197,41 +201,36 @@ public class QueryPanel extends SplitLayout implements IContentTab {
     }
 
     protected void setSelectedTabChangeListener() {
-        /*resultsTabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                Component tab = resultsTabs.getSelectedTab();
-                String st = resultStatuses.get(tab);
-                if (st == null && tab instanceof VerticalLayout) {
-                    if (((VerticalLayout) tab).getComponentCount() > 0) {
-                        st = resultStatuses.get(((VerticalLayout) tab).getComponent(0));
-                    }
+        resultsTabs.addSelectedTabChangeListener(event -> {
+            Component tab = resultsTabs.getSelectedTab().getComponent();
+            String st = resultStatuses.get(tab);
+            if (st == null && tab instanceof VerticalLayout) {
+                if (((VerticalLayout) tab).getComponentCount() > 0) {
+                    st = resultStatuses.get(((VerticalLayout) tab).getComponentAt(0));
                 }
-                if (st == null) {
-                    st = "No Results";
-                }
-                status.setValue(st);
             }
-        });*/
+            if (st == null) {
+                st = "No Results";
+            }
+            status.setText(st);
+        });
     }
 
-    /*public Tab getGeneralResultsTab() {
+    public Tab getGeneralResultsTab() {
         return generalResultsTab;
-    }*/
+    }
 
     public void createGeneralResultsTab() {
-        /*if (generalResultsTab == null) {
+        if (generalResultsTab == null) {
             VerticalLayout generalResultsPanel = new VerticalLayout();
             generalResultsPanel.setSizeFull();
-            generalResultsTab = resultsTabs.addTab(generalResultsPanel, "Results", null, 0);
+            generalResultsTab = resultsTabs.add(generalResultsPanel, "Results", 0);
             resetGeneralResultsTab();
-        }*/
+        }
     }
 
     public void removeGeneralResultsTab() {
-        /*if (generalResultsTab != null) {
+        if (generalResultsTab != null) {
             Component content = ((VerticalLayout) generalResultsTab.getComponent()).getComponentAt(0);
             if (content instanceof TabularResultLayout) {
                 addResultsTab(((TabularResultLayout) content).refreshWithoutSaveButton(),
@@ -239,19 +238,21 @@ public class QueryPanel extends SplitLayout implements IContentTab {
             }
             resultsTabs.remove(generalResultsTab.getComponent());
             generalResultsTab = null;
-        }*/
+        }
     }
 
     public void resetGeneralResultsTab() {
-        /*if (generalResultsTab != null) {
+        if (generalResultsTab != null) {
             replaceGeneralResultsWith(emptyResults, null);
-        }*/
+        }
     }
 
     public void replaceGeneralResultsWith(Component newComponent, VaadinIcon icon) {
-        /*((VerticalLayout) generalResultsTab.getComponent()).removeAll();
+        ((VerticalLayout) generalResultsTab.getComponent()).removeAll();
         ((VerticalLayout) generalResultsTab.getComponent()).add(newComponent);
-        generalResultsTab.setIcon(icon);*/
+        if (icon != null) {
+            generalResultsTab.setIcon(new Icon(icon));
+        }
     }
 
     @Override
@@ -531,30 +532,30 @@ public class QueryPanel extends SplitLayout implements IContentTab {
         return scheduled;
     }*/
 
-    /*public void addResultsTab(Component resultComponent, String title, Resource icon) {
+    public void addResultsTab(Component resultComponent, String title, Icon icon) {
         addResultsTab(resultComponent, title, icon, resultsTabs.getComponentCount());
     }
 
-    public void addResultsTab(Component resultComponent, String title, Resource icon, int position) {
-        Tab tab = resultsTabs.addTab(resultComponent, title, icon, position);
+    public void addResultsTab(Component resultComponent, String title, Icon icon, int position) {
+        EnhancedTab tab = resultsTabs.add(resultComponent, title, icon, position);
 
-        tab.setClosable(true);
+        resultsTabs.setCloseable(true);
 
-        resultsTabs.setSelectedTab(tab.getComponent());
+        resultsTabs.setSelectedTab(title);
 
         if (errorTab != null) {
-            resultsTabs.removeTab(errorTab);
+            resultsTabs.remove(errorTab);
             errorTab = null;
         }
 
         if (maxNumberOfResultTabs > 0 && resultsTabs.getComponentCount() > maxNumberOfResultTabs) {
-            resultsTabs.removeTab(resultsTabs.getTab(resultsTabs.getComponentCount() - 1));
+            resultsTabs.remove(resultsTabs.getTab(resultsTabs.getComponentCount() - 1));
         }
 
-        if (icon == VaadinIcons.STOP) {
+        if (icon.equals(new Icon(VaadinIcon.STOP))) {
             errorTab = tab;
         }
-    }*/
+    }
 
     public void commit() {
         try {

@@ -22,7 +22,6 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -90,10 +88,6 @@ public class DbExportDialog extends ResizableDialog {
     private Button previousButton;
 
     private Button cancelButton;
-
-    private Button selectAllLink;
-
-    private Button selectNoneLink;
 
     public Button nextButton;
     
@@ -156,14 +150,6 @@ public class DbExportDialog extends ResizableDialog {
     }
 
     protected void addButtons() {
-        selectAllLink = new Button("Select All");
-        selectAllLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
-        selectAllLink.addClickListener(event -> tableSelectionLayout.selectAll());
-
-        selectNoneLink = new Button("Select None");
-        selectNoneLink.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY_INLINE);
-        selectNoneLink.addClickListener(event -> tableSelectionLayout.selectNone());
-
         nextButton = CommonUiUtils.createPrimaryButton("Next");
         nextButton.setEnabled(tableSelectionLayout.getSelectedTables().size() > 0);
         nextButton.addClickListener(event -> next());
@@ -191,7 +177,7 @@ public class DbExportDialog extends ResizableDialog {
         doneButton = new Button("Close", event -> close());
         doneButton.setVisible(false);
 
-        add(buildButtonFooter(new Button[] { selectAllLink, selectNoneLink },
+        add(buildButtonFooter(new Button[] {},
                 cancelButton, previousButton, nextButton, fileDownloader, exportEditorButton, doneButton));
 
     }
@@ -199,7 +185,7 @@ public class DbExportDialog extends ResizableDialog {
     protected void createOptionLayout() {
         optionLayout = new VerticalLayout();
         optionLayout.addClassName("v-scrollable");
-        optionLayout.setMargin(true);
+        optionLayout.setMargin(false);
         optionLayout.setSpacing(true);
         optionLayout.setSizeFull();
         optionLayout.add(new Span("Please choose from the following options"));
@@ -330,8 +316,6 @@ public class DbExportDialog extends ResizableDialog {
         nextButton.setVisible(true);
         nextButton.addClickShortcut(Key.ENTER);
         nextButton.focus();
-        selectAllLink.setVisible(true);
-        selectNoneLink.setVisible(true);
         cancelButton.setVisible(true);
     }
 
@@ -343,9 +327,6 @@ public class DbExportDialog extends ResizableDialog {
         nextShortcutRegistration.remove();
         previousButton.setVisible(true);
         setExportButtonsEnabled();
-        selectAllLink.setVisible(false);
-        selectNoneLink.setVisible(false);
-
     }
 
     protected void createDbExport() {

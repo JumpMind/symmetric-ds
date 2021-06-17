@@ -90,7 +90,7 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         this.column = table == null ? null : table.getColumnWithName(title);
 
         wrapper = new VerticalLayout();
-        wrapper.setMargin(true);
+        wrapper.setMargin(false);
         wrapper.setSizeFull();
         textField = new TextArea();
         textField.setSizeFull();

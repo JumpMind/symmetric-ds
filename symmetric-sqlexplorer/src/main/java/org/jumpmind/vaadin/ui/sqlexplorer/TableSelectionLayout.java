@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import com.vaadin.flow.data.provider.Query;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -83,7 +83,7 @@ public class TableSelectionLayout extends VerticalLayout {
             Set<org.jumpmind.db.model.Table> selectedSet, List<String> excludedTables, String excludeTablesRegex) {
         super();
         this.setSizeFull();
-        this.setMargin(true);
+        this.setMargin(false);
         this.setSpacing(true);
 
         this.selectedTablesSet = selectedSet;
@@ -126,6 +126,7 @@ public class TableSelectionLayout extends VerticalLayout {
         filterField = new TextField();
         filterField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
         filterField.setPlaceholder("Filter Tables");
+        filterField.setValueChangeMode(ValueChangeMode.LAZY);
         filterField.setValueChangeTimeout(200);
         filterField.addValueChangeListener(event -> {
             filterField.setValue(event.getValue());

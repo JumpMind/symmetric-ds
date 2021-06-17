@@ -46,23 +46,33 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
+import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.SelectionListener;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.GridMultiSelectionModel;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
-@StyleSheet("sqlexplorer.css")
+@CssImport("./sqlexplorer.css")
 public class SqlExplorer extends SplitLayout {
 
     private static final long serialVersionUID = 1L;
@@ -81,9 +91,9 @@ public class SqlExplorer extends SplitLayout {
 
     DbTree dbTree;
     
-    SelectionListener<?, DbTreeNode> listener;
+    SelectionListener<Grid<DbTreeNode>, DbTreeNode> listener;
     
-    //Registration listenerRegistration;
+    Registration listenerRegistration;
 
     SqlExplorerTabPanel contentTabs;
 
@@ -129,14 +139,14 @@ public class SqlExplorer extends SplitLayout {
 
         leftLayout.add(buildLeftMenu());
 
-        //Panel scrollable = new Panel();
-        //scrollable.setSizeFull();
+        Scroller scrollable = new Scroller();
+        scrollable.setSizeFull();
 
-        //dbTree = buildDbTree();
-        //scrollable.setContent(dbTree);
+        dbTree = buildDbTree();
+        scrollable.setContent(dbTree);
 
-        //leftLayout.add(scrollable);
-        //leftLayout.expand(scrollable);
+        leftLayout.add(scrollable);
+        leftLayout.expand(scrollable);
 
         VerticalLayout rightLayout = new VerticalLayout();
         rightLayout.setMargin(false);
@@ -156,21 +166,19 @@ public class SqlExplorer extends SplitLayout {
         rightLayout.add(rightMenuWrapper);
 
         contentTabs = new SqlExplorerTabPanel();
-        /*contentTabs.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                selectContentTab((IContentTab) contentTabs.getSelectedTab());
+        contentTabs.addSelectedTabChangeListener(event -> {
+            if (event.getSelectedTab() != null) {
+                selectContentTab((IContentTab) ((EnhancedTab) event.getSelectedTab()).getComponent());
             }
         });
         rightLayout.add(contentTabs);
-        rightLayout.expand(contentTabs);*/
+        rightLayout.expand(contentTabs);
 
         addToPrimary(leftLayout);
         addToSecondary(rightLayout);
 
         //setSplitterPosition(savedSplitPosition, Unit.PIXELS);
+        setSplitterPosition(20);
     }
 
     protected MenuBar buildLeftMenu() {
@@ -187,33 +195,34 @@ public class SqlExplorer extends SplitLayout {
 
         MenuItem refreshButton = leftMenu.addItem(new Icon(VaadinIcon.REFRESH), event -> {
             dbTree.refresh(true);
-            //Component tab = contentTabs.getSelectedTab();
-            //if (tab instanceof QueryPanel) {
-            //    if (findQueryPanelForDb(((QueryPanel) tab).db).suggester != null) {
-            //        findQueryPanelForDb(((QueryPanel) tab).db).suggester.clearCaches();
-            //     }
-            //}
+            Component tab = contentTabs.getSelectedTab();
+            if (tab instanceof QueryPanel) {
+                if (findQueryPanelForDb(((QueryPanel) tab).db).suggester != null) {
+                    findQueryPanelForDb(((QueryPanel) tab).db).suggester.clearCaches();
+                 }
+            }
         });
         refreshButton.getElement().setAttribute("title", "Refresh the database explorer");
 
         MenuItem selectionMode = leftMenu.addItem(new Icon(VaadinIcon.GRID_BIG_O), event -> {
-            /*selectionMode.removeAll();
-            if (dbTree.getSelectionModel() instanceof TreeMultiSelectionModel) {
+            MenuItem source = event.getSource();
+            source.removeAll();
+            if (dbTree.getSelectionModel() instanceof GridMultiSelectionModel) {
                 dbTree.setSelectionMode(SelectionMode.SINGLE);
-                selectionMode.add(new Icon(VaadinIcon.GRID_BIG_O));
-                selectionMode.getElement().setAttribute("title", "Switch to multi-select mode");
+                source.add(new Icon(VaadinIcon.GRID_BIG_O));
+                source.getElement().setAttribute("title", "Switch to multi-select mode");
             } else {
                 dbTree.setSelectionMode(SelectionMode.MULTI);
-                selectionMode.add(new Icon(VaadinIcon.THIN_SQUARE));
-                selectionMode.getElement().setAttribute("title", "Switch to single-select mode");
+                source.add(new Icon(VaadinIcon.THIN_SQUARE));
+                source.getElement().setAttribute("title", "Switch to single-select mode");
             }
             listenerRegistration.remove();
-            listenerRegistration = dbTree.addSelectionListener(listener);*/
+            listenerRegistration = dbTree.addSelectionListener(listener);
         });
         selectionMode.getElement().setAttribute("title", "Switch to multi-select mode");
         
-        //MenuItem openQueryTab = leftMenu.addItem(new Icon(QUERY_ICON), event -> openQueryWindow(dbTree.getSelectedItems()));
-        //openQueryTab.getElement().setAttribute("title", "Open a query tab");
+        MenuItem openQueryTab = leftMenu.addItem(new Icon(QUERY_ICON), event -> openQueryWindow(dbTree.getSelectedItems()));
+        openQueryTab.getElement().setAttribute("title", "Open a query tab");
 
         MenuItem settings = leftMenu.addItem(new Icon(VaadinIcon.COG), event -> {
             SettingsDialog dialog = new SettingsDialog(SqlExplorer.this);
@@ -236,17 +245,19 @@ public class SqlExplorer extends SplitLayout {
     }
 
     protected void selectContentTab(IContentTab tab) {
-        if (selected != null) {
-            selected.unselected();
+        if (tab != null) {
+            if (selected != null) {
+                selected.unselected();
+            }
+            contentTabs.setSelectedTab(contentTabs.getTab((Component) tab));
+            contentMenuBar.removeAll();
+            addShowButton(contentMenuBar);
+            if (tab instanceof QueryPanel) {
+                ((DefaultButtonBar) ((QueryPanel) tab).getButtonBar()).populate(contentMenuBar);
+            }
+            tab.selected();
+            selected = tab;
         }
-        //contentTabs.setSelectedTab(tab);
-        contentMenuBar.removeAll();
-        addShowButton(contentMenuBar);
-        if (tab instanceof QueryPanel) {
-            ((DefaultButtonBar) ((QueryPanel) tab).getButtonBar()).populate(contentMenuBar);
-        }
-        tab.selected();
-        selected = tab;
     }
 
     protected QueryPanel openQueryWindow(DbTreeNode node) {
@@ -258,9 +269,9 @@ public class SqlExplorer extends SplitLayout {
         DefaultButtonBar buttonBar = new DefaultButtonBar();
         QueryPanel panel = new QueryPanel(db, settingsProvider, buttonBar, user);
         buttonBar.init(db, settingsProvider, panel, additionalMenuItems);
-        //Tab tab = contentTabs.addTab(panel, getTabName(dbName));
-        //tab.setClosable(true);
-        //tab.setIcon(QUERY_ICON);
+        EnhancedTab tab = contentTabs.add(panel, getTabName(dbName));
+        tab.setCloseable(true);
+        tab.setIcon(new Icon(QUERY_ICON));
         selectContentTab(panel);
         return panel;
     }
@@ -278,7 +289,9 @@ public class SqlExplorer extends SplitLayout {
     }
 
     public void refreshQueryPanels() {
-        /*for (Component panel : contentTabs) {
+        Iterator<Component> panelIterator = contentTabs.iterator();
+        while (panelIterator.hasNext()) {
+            Component panel = panelIterator.next();
             if (panel instanceof QueryPanel) {
                 QueryPanel queryPanel = ((QueryPanel) panel);
 
@@ -288,14 +301,14 @@ public class SqlExplorer extends SplitLayout {
                     queryPanel.createGeneralResultsTab();
                 }
                 boolean autoCompleteEnabled = settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMPLETE);
-                queryPanel.setAutoCompleteEnabled(autoCompleteEnabled);
+                //queryPanel.setAutoCompleteEnabled(autoCompleteEnabled);
             }
-        }*/
+        }
     }
 
     public QueryPanel findQueryPanelForDb(IDb db) {
         QueryPanel panel = null;
-        /*if (contentTabs.getComponentCount() > 0) {
+        if (contentTabs.getComponentCount() > 0) {
             Component comp = contentTabs.getSelectedTab();
             if (comp instanceof QueryPanel) {
                 QueryPanel prospectiveQueryPanel = (QueryPanel) comp;
@@ -321,7 +334,7 @@ public class SqlExplorer extends SplitLayout {
             if (panel == null) {
                 panel = openQueryWindow(db);
             }
-        }*/
+        }
 
         return panel;
     }
@@ -335,7 +348,7 @@ public class SqlExplorer extends SplitLayout {
             Table table = treeNode.getTableFor();
             DmlStatement dmlStatement = platform.createDmlStatement(DmlType.SELECT_ALL, table, null);
             //panel.appendSql(dmlStatement.getSql());
-            //contentTabs.setSelectedTab(panel);
+            contentTabs.setSelectedTab(panel);
         }
     }
 
@@ -361,7 +374,7 @@ public class SqlExplorer extends SplitLayout {
             }
             String sql = dmlStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
             //panel.appendSql(sql);
-            //contentTabs.setSelectedTab(panel);
+            contentTabs.setSelectedTab(panel);
         }
     }
 
@@ -400,12 +413,12 @@ public class SqlExplorer extends SplitLayout {
                         db.getPlatform().dropTables(false, table);
                     } catch (Exception e) {
                         String msg = "Failed to drop " + table.getFullyQualifiedTableName() + ".  ";
-                        //CommonUiUtils.notify(msg + "See log file for more details", NotificationVariant.LUMO_CONTRAST);
+                        CommonUiUtils.notify(msg + "See log file for more details", NotificationVariant.LUMO_CONTRAST);
                         log.warn(msg, e);
                     }
                 }
                 for (IContentTab panel : infoTabs) {
-                    //contentTabs.remove(panel);
+                    contentTabs.remove(contentTabs.getTab((Component) panel));
                 }
                 infoTabs.clear();
                 dbTree.refresh(true);
@@ -415,9 +428,12 @@ public class SqlExplorer extends SplitLayout {
         });
     }
 
-    /*protected DbTree buildDbTree() {
+    protected DbTree buildDbTree() {
 
         final DbTree tree = new DbTree(databaseProvider, settingsProvider);
+        tree.addThemeVariants(GridVariant.LUMO_COMPACT);
+        tree.setHeightFull();
+        
         listener = event -> {
             MultiSelectionEvent<?, DbTreeNode> multiSelectEvent = null;
             if (event instanceof MultiSelectionEvent<?, ?>) {
@@ -439,7 +455,7 @@ public class SqlExplorer extends SplitLayout {
                 String selectedTabCaption = null;
                 for (IInfoPanel panel : infoTabs) {
                     selectedTabCaption = panel.getSelectedTabCaption();
-                    contentTabs.remove(panel);
+                    contentTabs.remove(contentTabs.getTab((Component) panel));
                 }
                 infoTabs.clear();
 
@@ -453,8 +469,8 @@ public class SqlExplorer extends SplitLayout {
                     if (treeNode != null && treeNode.getType().equals(DbTree.NODE_TYPE_DATABASE)) {
                         IDb db = dbTree.getDbForNode(treeNode);
                         DatabaseInfoPanel databaseInfoTab = new DatabaseInfoPanel(db, settingsProvider.get(), selectedTabCaption);
-                        Tab tab = contentTabs.addTab(databaseInfoTab, db.getName(), VaadinIcon.DATABASE, 0);
-                        tab.setClosable(true);
+                        EnhancedTab tab = contentTabs.add(databaseInfoTab, db.getName(), new Icon(VaadinIcon.DATABASE), 0);
+                        tab.setCloseable(true);
                         infoTabs.add(databaseInfoTab);
                     }
                     if (treeNode != null && treeNode.getType().equals(DbTree.NODE_TYPE_TABLE)) {
@@ -463,8 +479,9 @@ public class SqlExplorer extends SplitLayout {
                             IDb db = dbTree.getDbForNode(treeNode);
                             TableInfoPanel tableInfoTab = new TableInfoPanel(table, user, db, settingsProvider.get(), SqlExplorer.this,
                                     selectedTabCaption);
-                            Tab tab = contentTabs.addTab(tableInfoTab, table.getFullyQualifiedTableName(), VaadinIcon.TABLE, 0);
-                            tab.setClosable(true);
+                            EnhancedTab tab = contentTabs.add(tableInfoTab, table.getFullyQualifiedTableName(),
+                                    new Icon(VaadinIcon.TABLE), 0);
+                            tab.setCloseable(true);
                             infoTabs.add(tableInfoTab);
                             selectContentTab(tableInfoTab);
                         }
@@ -476,8 +493,8 @@ public class SqlExplorer extends SplitLayout {
                             IDb db = dbTree.getDbForNode(treeNode);
                             TriggerInfoPanel triggerInfoTab = new TriggerInfoPanel(trigger, db, settingsProvider.get(),
                                     selectedTabCaption);
-                            Tab tab = contentTabs.addTab(triggerInfoTab, trigger.getName(), VaadinIcon.CROSSHAIRS, 0);
-                            tab.setClosable(true);
+                            EnhancedTab tab = contentTabs.add(triggerInfoTab, trigger.getName(), new Icon(VaadinIcon.CROSSHAIRS), 0);
+                            tab.setCloseable(true);
                             infoTabs.add(triggerInfoTab);
                             selectContentTab(triggerInfoTab);
                         }
@@ -487,84 +504,95 @@ public class SqlExplorer extends SplitLayout {
         };
         listenerRegistration = tree.addSelectionListener(listener);
 
-        TreeContextMenu<DbTreeNode> contextMenu = new TreeContextMenu<DbTreeNode>(tree);
-        contextMenu.addTreeContextMenuListener(event -> {
-            contextMenu.removeItems();
-            Set<DbTreeNode> selectedNodes = event.getComponent().getSelectedItems();
-            switch (event.getItem().getType()) {
-                case DbTree.NODE_TYPE_TABLE:
-                    contextMenu.addItem("Query", QUERY_ICON, item -> openQueryWindow(selectedNodes));
-                    contextMenu.addItem("Select", QUERY_ICON, item -> generateSelectForSelectedTables());
-                    contextMenu.addItem("Insert", QUERY_ICON, item -> generateDmlForSelectedTables(DmlType.INSERT));
-                    contextMenu.addItem("Update", QUERY_ICON, item -> generateDmlForSelectedTables(DmlType.UPDATE));
-                    contextMenu.addItem("Delete", QUERY_ICON, item -> generateDmlForSelectedTables(DmlType.DELETE));
-                    contextMenu.addItem("Drop", VaadinIcons.ARROW_DOWN, item -> dropSelectedTables());
-                    contextMenu.addItem("Import", VaadinIcons.DOWNLOAD, item -> {
-                        if (!selectedNodes.isEmpty()) {
-                            IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
-                            new DbImportDialog(db.getPlatform(), dbTree.getSelectedTables()).showAtSize(0.6);
-                        }
-                    });
-                    contextMenu.addItem("Export", VaadinIcons.UPLOAD, item -> {
-                        if (!selectedNodes.isEmpty()) {
-                            IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
-                            String excludeTablesRegex = settingsProvider.get().getProperties()
-                                    .get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
-                            new DbExportDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db),
-                                    excludeTablesRegex).showAtSize(0.6);
-                        }
-                    });
-                    contextMenu.addItem("Fill", VaadinIcons.FILL, item -> {
-                        if (!selectedNodes.isEmpty()) {
-                            IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
-                            String excludeTablesRegex = settingsProvider.get().getProperties()
-                                    .get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
-                            new DbFillDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db),
-                                    excludeTablesRegex).showAtSize(0.6);
-                        }
-                    });
-                    contextMenu.addItem("Copy Name", VaadinIcons.COPY, item -> {
-                        for (DbTreeNode treeNode : selectedNodes) {
-                            IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
-                            DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
-                            final String quote = dbInfo.getDelimiterToken();
-                            final String catalogSeparator = dbInfo.getCatalogSeparator();
-                            final String schemaSeparator = dbInfo.getSchemaSeparator();
-
-                            Table table = treeNode.getTableFor();
-                            if (table != null) {
-                                QueryPanel panel = findQueryPanelForDb(db);
-                                panel.appendSql(table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
-                                contentTabs.setSelectedTab(panel);
+        GridContextMenu<DbTreeNode> contextMenu = new GridContextMenu<DbTreeNode>(tree);
+        contextMenu.setDynamicContentHandler(clickedNode -> {
+            contextMenu.removeAll();
+            Set<DbTreeNode> selectedNodes = dbTree.getSelectedItems();
+            if (clickedNode != null) {
+                switch (clickedNode.getType()) {
+                    case DbTree.NODE_TYPE_TABLE:
+                        contextMenu.addItem(createItem("Query", QUERY_ICON), item -> openQueryWindow(selectedNodes));
+                        contextMenu.addItem(createItem("Select", QUERY_ICON), item -> generateSelectForSelectedTables());
+                        contextMenu.addItem(createItem("Insert", QUERY_ICON), item -> generateDmlForSelectedTables(DmlType.INSERT));
+                        contextMenu.addItem(createItem("Update", QUERY_ICON), item -> generateDmlForSelectedTables(DmlType.UPDATE));
+                        contextMenu.addItem(createItem("Delete", QUERY_ICON), item -> generateDmlForSelectedTables(DmlType.DELETE));
+                        contextMenu.addItem(createItem("Drop", VaadinIcon.ARROW_DOWN), item -> dropSelectedTables());
+                        contextMenu.addItem(createItem("Import", VaadinIcon.DOWNLOAD), item -> {
+                            if (!selectedNodes.isEmpty()) {
+                                IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
+                                new DbImportDialog(db.getPlatform(), dbTree.getSelectedTables()).showAtSize(0.6);
                             }
-                        }
-                    });
-                    break;
-                case DbTree.NODE_TYPE_DATABASE:
-                case DbTree.NODE_TYPE_CATALOG:
-                case DbTree.NODE_TYPE_SCHEMA:
-                    contextMenu.addItem("Query", QUERY_ICON, item -> openQueryWindow(selectedNodes));
-                    break;
-                case DbTree.NODE_TYPE_TRIGGER:
-                    contextMenu.addItem("Export", VaadinIcons.UPLOAD, item -> {
-                        if (!selectedNodes.isEmpty()) {
-                            IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
-                            String excludeTablesRegex = settingsProvider.get().getProperties()
-                                    .get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
-                            new DbExportDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db),
-                                    excludeTablesRegex).showAtSize(0.6);
-                        }
-                    });
+                        });
+                        contextMenu.addItem(createItem("Export", VaadinIcon.UPLOAD), item -> {
+                            if (!selectedNodes.isEmpty()) {
+                                IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
+                                String excludeTablesRegex = settingsProvider.get().getProperties()
+                                        .get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                                new DbExportDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db),
+                                        excludeTablesRegex).showAtSize(0.6);
+                            }
+                        });
+                        contextMenu.addItem(createItem("Fill", VaadinIcon.FILL), item -> {
+                            if (!selectedNodes.isEmpty()) {
+                                IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
+                                String excludeTablesRegex = settingsProvider.get().getProperties()
+                                        .get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                                new DbFillDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db),
+                                        excludeTablesRegex).showAtSize(0.6);
+                            }
+                        });
+                        contextMenu.addItem(createItem("Copy Name", VaadinIcon.COPY), item -> {
+                            for (DbTreeNode treeNode : selectedNodes) {
+                                IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
+                                DatabaseInfo dbInfo = db.getPlatform().getDatabaseInfo();
+                                final String quote = dbInfo.getDelimiterToken();
+                                final String catalogSeparator = dbInfo.getCatalogSeparator();
+                                final String schemaSeparator = dbInfo.getSchemaSeparator();
+    
+                                Table table = treeNode.getTableFor();
+                                if (table != null) {
+                                    QueryPanel panel = findQueryPanelForDb(db);
+                                    //panel.appendSql(table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
+                                    contentTabs.setSelectedTab(panel);
+                                }
+                            }
+                        });
+                        break;
+                    case DbTree.NODE_TYPE_DATABASE:
+                    case DbTree.NODE_TYPE_CATALOG:
+                    case DbTree.NODE_TYPE_SCHEMA:
+                        contextMenu.addItem(createItem("Query", QUERY_ICON), item -> openQueryWindow(selectedNodes));
+                        break;
+                    case DbTree.NODE_TYPE_TRIGGER:
+                        contextMenu.addItem(createItem("Export", VaadinIcon.UPLOAD), item -> {
+                            if (!selectedNodes.isEmpty()) {
+                                IDb db = dbTree.getDbForNode(selectedNodes.iterator().next());
+                                String excludeTablesRegex = settingsProvider.get().getProperties()
+                                        .get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
+                                new DbExportDialog(db.getPlatform(), dbTree.getSelectedTables(), findQueryPanelForDb(db),
+                                        excludeTablesRegex).showAtSize(0.6);
+                            }
+                        });
+                }
+                return true;
             }
+            return false;
         });
         
         return tree;
 
-    }*/
+    }
+    
+    protected HorizontalLayout createItem(String text, VaadinIcon icon) {
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(new Icon(icon));
+        layout.add(new Span(text));
+        return layout;
+    }
 
     protected QueryPanel getQueryPanelForDb(IDb db) {
         if (db != null) {
-            /*Iterator<Component> i = contentTabs.iterator();
+            Iterator<Component> i = contentTabs.iterator();
             while (i.hasNext()) {
                 Component c = i.next();
                 if (c instanceof QueryPanel) {
@@ -573,21 +601,21 @@ public class SqlExplorer extends SplitLayout {
                         return panel;
                     }
                 }
-            }*/
+            }
         }
         return null;
     }
 
-    /*protected String getTabName(String name) {
-        int tabs = contentTabs.getComponentCount();
+    protected String getTabName(String name) {
+        int tabs = contentTabs.getTabCount();
         String tabName = tabs > 0 ? null : name;
         if (tabName == null) {
             for (int j = 0; j < 10; j++) {
                 boolean alreadyUsed = false;
                 String suffix = "";
                 for (int i = 0; i < tabs; i++) {
-                    Tab tab = contentTabs.getTab(i);
-                    String currentTabName = tab.getCaption();
+                    EnhancedTab tab = contentTabs.getTab(i);
+                    String currentTabName = tab.getName();
 
                     if (j > 0) {
                         suffix = "-" + j;
@@ -604,7 +632,7 @@ public class SqlExplorer extends SplitLayout {
             }
         }
         return tabName;
-    }*/
+    }
 
     public ISettingsProvider getSettingsProvider() {
         return settingsProvider;
@@ -619,13 +647,13 @@ public class SqlExplorer extends SplitLayout {
     }
 
     public void focus() {
-        //dbTree.focus();
+        dbTree.focus();
     }
 
     public void addResultsTab(String caption, Icon icon, IContentTab panel) {
-        //Tab tab = contentTabs.addTab(panel, caption);
-        //tab.setClosable(true);
-        //tab.setIcon(icon);
+        EnhancedTab tab = contentTabs.add((Component) panel, caption);
+        tab.setCloseable(true);
+        tab.setIcon(icon);
         selectContentTab(panel);
     }
 

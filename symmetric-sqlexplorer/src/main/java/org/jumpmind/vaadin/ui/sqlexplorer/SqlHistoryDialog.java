@@ -33,6 +33,7 @@ import org.jumpmind.vaadin.ui.common.ResizableDialog;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
@@ -74,6 +75,10 @@ public class SqlHistoryDialog extends ResizableDialog {
                 .setWidth("120px");
 
         grid.addColumn(history -> history.getExecuteCount()).setHeader("Count").setWidth("120px");
+        
+        for (Column<SqlHistory> column : grid.getColumns()) {
+            column.setResizable(true);
+        }
         
         //grid.setDescriptionGenerator(history -> history.getSqlStatement());
 

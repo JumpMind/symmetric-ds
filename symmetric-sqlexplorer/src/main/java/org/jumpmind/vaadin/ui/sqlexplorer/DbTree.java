@@ -21,6 +21,7 @@
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -36,11 +37,17 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
+import com.vaadin.flow.function.SerializableFunction;
 
-public class DbTree /*extends Tree<DbTreeNode>*/ {
+public class DbTree extends TreeGrid<DbTreeNode> {
 
     public static final String PROPERTY_SCHEMA_NAME = "schemaName";
     public static final String PROPERTY_CATALOG_NAME = "catalogName";
@@ -74,61 +81,69 @@ public class DbTree /*extends Tree<DbTreeNode>*/ {
     public DbTree(IDbProvider databaseProvider, ISettingsProvider settingsProvider) {
         this.databaseProvider = databaseProvider;
         this.settingsProvider = settingsProvider;
-        /*setWidthFull();
-        setStyleGenerator(getStyleGenerator());
-        setStyleGenerator(new DbTreeStyleGenerator());
-        setItemIconGenerator(node -> node.getIcon());
+        setWidthFull();
+        setClassNameGenerator(new DbTreeClassNameGenerator());
         
         expandedNodes = new LinkedHashSet<DbTreeNode>();
         
-        addExpandListener(event -> {
-            DbTreeNode node = event.getExpandedItem();
-            
-            expandedNodes.add(node);
-            
-            if (!node.getType().equals(NODE_TYPE_TRIGGER) && !node.hasChildren()) {
-                loadChildren(node);
+        addComponentHierarchyColumn(node -> {
+            HorizontalLayout layout = new HorizontalLayout();
+            if (node.getIcon() != null) {
+                Icon icon = new Icon(node.getIcon());
+                icon.setSize("16px");
+                layout.add(icon);
+                layout.setVerticalComponentAlignment(Alignment.CENTER, icon);
             }
-            
-            DbTreeNode firstChild = treeData.getChildren(node).get(0);
-            if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
-                treeData.removeItem(firstChild);
-                for (DbTreeNode child : node.getChildren()) {
-                    treeData.addItem(node, child);
-                    if (!child.getType().equals(NODE_TYPE_TRIGGER)) {
-                        treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
-                    }
+            layout.add(new Span(node.getName()));
+            return layout;
+        });
+        
+        addExpandListener(event -> {
+            Collection<DbTreeNode> items = event.getItems();
+            if (!items.isEmpty()) {
+                DbTreeNode node = items.iterator().next();
+                
+                expandedNodes.add(node);
+                
+                if (!node.getType().equals(NODE_TYPE_TRIGGER) && !node.hasChildren()) {
+                    loadChildren(node);
                 }
                 
-                if (event.isUserOriginated()) {
-                    refresh(false);
+                DbTreeNode firstChild = treeData.getChildren(node).get(0);
+                if (node.hasChildren() && firstChild.getType().equals(NODE_TYPE_PLACEHOLDER)) {
+                    treeData.removeItem(firstChild);
+                    for (DbTreeNode child : node.getChildren()) {
+                        treeData.addItem(node, child);
+                        if (!child.getType().equals(NODE_TYPE_TRIGGER)) {
+                            treeData.addItem(child, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, child));
+                        }
+                    }
                 }
             }
         });
         
         addCollapseListener(event -> {
-            DbTreeNode node = event.getCollapsedItem();
-            
-            expandedNodes.remove(node);
-            
-            for (DbTreeNode child : new ArrayList<DbTreeNode>(treeData.getChildren(node))) {
-                if (expandedNodes.contains(child)) {
-                    collapse(child);
+            Collection<DbTreeNode> items = event.getItems();
+            if (!items.isEmpty()) {
+                DbTreeNode node = event.getItems().iterator().next();
+                
+                expandedNodes.remove(node);
+                
+                for (DbTreeNode child : new ArrayList<DbTreeNode>(treeData.getChildren(node))) {
+                    if (expandedNodes.contains(child)) {
+                        collapse(child);
+                    }
+                    deselect(child);
+                    treeData.removeItem(child);
                 }
-                deselect(child);
-                treeData.removeItem(child);
+                
+                treeData.addItem(node, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, node));
             }
-            
-            treeData.addItem(node, new DbTreeNode(this, NODE_TYPE_PLACEHOLDER, node));
-            
-            if (event.isUserOriginated()) {
-                refresh(false);
-            }
-        });*/
+        });
     }
 
     public void refresh(boolean fullRefresh) {
-        //Set<DbTreeNode> selected = getSelectedItems();
+        Set<DbTreeNode> selected = getSelectedItems();
         DbTreeNode firstNode = null;
         if (fullRefresh || rootNodes == null) {
             List<IDb> databases = databaseProvider.getDatabases();
@@ -158,7 +173,7 @@ public class DbTree /*extends Tree<DbTreeNode>*/ {
         }
         
         treeDataProvider = new TreeDataProvider<DbTreeNode>(treeData);
-        /*setDataProvider(treeDataProvider);
+        setDataProvider(treeDataProvider);
         
         expand(expandedNodes);
 
@@ -173,29 +188,29 @@ public class DbTree /*extends Tree<DbTreeNode>*/ {
             }
         }
 
-        focus();*/
+        focus();
 
     }
 
     public Set<DbTreeNode> getSelected(String type) {
         HashSet<DbTreeNode> nodes = new HashSet<DbTreeNode>();
-        /*Set<DbTreeNode> selected = getSelectedItems();
+        Set<DbTreeNode> selected = getSelectedItems();
         for (DbTreeNode treeNode : selected) {
             if (treeNode.getType().equals(type)) {
                 nodes.add(treeNode);
             }
-        }*/
+        }
         return nodes;
     }
 
     public Set<Table> getSelectedTables() {
         Set<Table> tables = new HashSet<Table>();
-        /*for (DbTreeNode treeNode : getSelectedItems()) {
+        for (DbTreeNode treeNode : getSelectedItems()) {
             Table table = treeNode.getTableFor();
             if (table != null) {
                 tables.add(table);
             }
-        }*/
+        }
         return tables;
     }
 
@@ -357,7 +372,7 @@ public class DbTree /*extends Tree<DbTreeNode>*/ {
         }
     }
 
-    /*class DbTreeStyleGenerator implements StyleGenerator<DbTreeNode> {
+    class DbTreeClassNameGenerator implements SerializableFunction<DbTreeNode, String> {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -381,6 +396,6 @@ public class DbTree /*extends Tree<DbTreeNode>*/ {
             }
             return null;
         }
-    }*/
+    }
 
 }

@@ -54,10 +54,15 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.tabs.TabsVariant;
 
 public final class CommonUiUtils {
 
@@ -72,18 +77,16 @@ public final class CommonUiUtils {
     private CommonUiUtils() {
     }
 
-    /*public static void styleTabSheet(TabSheet tabSheet) {
+    public static void styleTabSheet(TabSheet tabSheet) {
         tabSheet.setSizeFull();
-        tabSheet.addClassName(ValoTheme.TABSHEET_FRAMED);
-        tabSheet.addClassName(ValoTheme.TABSHEET_COMPACT_TABBAR);
-        tabSheet.addClassName(ValoTheme.TABSHEET_PADDED_TABBAR);
-    }*/
+        tabSheet.addThemeVariants(TabsVariant.LUMO_SMALL);
+    }
 
-    /*public static TabSheet createTabSheet() {
+    public static TabSheet createTabSheet() {
         TabSheet tabSheet = new TabSheet();
         styleTabSheet(tabSheet);
         return tabSheet;
-    }*/
+    }
 
     public static Button createPrimaryButton(String name) {
         return createPrimaryButton(name, null);
@@ -135,9 +138,19 @@ public final class CommonUiUtils {
     public static void notify(String caption, String message, Throwable ex, NotificationVariant type) {
         Page page = UI.getCurrent().getPage();
         if (page != null) {
-            //Notification notification = new Notification(caption, contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
-            Notification notification = new Notification();
-            notification.setText(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            HorizontalLayout layout = new HorizontalLayout();
+            Notification notification = new Notification(layout);
+            
+            Span span = new Span();
+            span.getElement().setProperty("innerHTML", caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            layout.add(span);
+            layout.setVerticalComponentAlignment(Alignment.CENTER, span);
+            
+            Icon closeIcon = new Icon(VaadinIcon.CLOSE_SMALL);
+            closeIcon.addClickListener(event -> notification.close());
+            layout.add(closeIcon);
+            layout.setVerticalComponentAlignment(Alignment.START, closeIcon);
+            
             notification.setPosition(Position.MIDDLE);
             notification.setDuration(-1);
             //notification.setClassName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE);
@@ -203,7 +216,7 @@ public final class CommonUiUtils {
                     return "rowheader";
                 }
                 return null;
-            }).setFrozen(true).setVisible(showRowNumbers);
+            }).setFrozen(true).setResizable(true).setVisible(showRowNumbers);
             
             final ResultSetMetaData meta = rs.getMetaData();
             int totalColumns = meta.getColumnCount();
@@ -227,7 +240,7 @@ public final class CommonUiUtils {
                             return "italics";
                         }
                         return null;
-                    }).setVisible(false);
+                    }).setResizable(true).setVisible(false);
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {
@@ -280,7 +293,7 @@ public final class CommonUiUtils {
                 }
             }
         } else {
-            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status");
+            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status").setResizable(true);
             List<Object> innerList = new ArrayList<Object>();
             innerList.add("Metadata unavailable");
             outerList.add(innerList);

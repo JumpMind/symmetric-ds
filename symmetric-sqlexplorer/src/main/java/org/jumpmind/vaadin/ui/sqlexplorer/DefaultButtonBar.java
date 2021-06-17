@@ -24,9 +24,12 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class DefaultButtonBar implements IButtonBar, Serializable {
 
@@ -113,24 +116,40 @@ public class DefaultButtonBar implements IButtonBar, Serializable {
         optionsButton.getElement().setAttribute("title", "Options");
 
         SubMenu optionsSubMenu = optionsButton.getSubMenu();
-        importButton = optionsSubMenu.addItem("DB Import", event -> new DbImportDialog(db.getPlatform()).showAtSize(0.6));
-        importButton.addComponentAsFirst(new Icon(VaadinIcon.DOWNLOAD));
+        HorizontalLayout importLayout = new HorizontalLayout();
+        Icon importIcon = new Icon(VaadinIcon.DOWNLOAD);
+        importIcon.setSize("16px");
+        importLayout.add(importIcon, new Span("DB Import"));
+        importLayout.setVerticalComponentAlignment(Alignment.END, importIcon);
+        importButton = optionsSubMenu.addItem(importLayout, event -> new DbImportDialog(db.getPlatform()).showAtSize(0.6));
 
-        exportButton = optionsSubMenu.addItem("DB Export", event -> {
+        HorizontalLayout exportLayout = new HorizontalLayout();
+        Icon exportIcon = new Icon(VaadinIcon.UPLOAD);
+        exportIcon.setSize("16px");
+        exportLayout.add(exportIcon, new Span("DB Export"));
+        exportLayout.setVerticalComponentAlignment(Alignment.END, exportIcon);
+        exportButton = optionsSubMenu.addItem(exportLayout, event -> {
             String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
             new DbExportDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
         });
-        exportButton.addComponentAsFirst(new Icon(VaadinIcon.UPLOAD));
         
-        fillButton = optionsSubMenu.addItem("DB Fill", event -> {
+        HorizontalLayout fillLayout = new HorizontalLayout();
+        Icon fillIcon = new Icon(VaadinIcon.FILL);
+        fillIcon.setSize("16px");
+        fillLayout.add(fillIcon, new Span("DB Fill"));
+        fillLayout.setVerticalComponentAlignment(Alignment.END, fillIcon);
+        fillButton = optionsSubMenu.addItem(fillLayout, event -> {
             String excludeTablesRegex = settingsProvider.get().getProperties().get(Settings.SQL_EXPLORER_EXCLUDE_TABLES_REGEX);
             new DbFillDialog(db.getPlatform(), queryPanel, excludeTablesRegex).showAtSize(0.6);
         });
-        fillButton.addComponentAsFirst(new Icon(VaadinIcon.FILL));
 
         for (IDbMenuItem item : additionalMenuItems) {
-            MenuItem menuItem = optionsSubMenu.addItem(item.getCaption(), item.getListener());
-            menuItem.addComponentAsFirst(item.getIcon());
+            HorizontalLayout layout = new HorizontalLayout();
+            Icon icon = item.getIcon();
+            icon.setSize("16px");
+            layout.add(icon, new Span(item.getCaption()));
+            layout.setVerticalComponentAlignment(Alignment.END, icon);
+            optionsSubMenu.addItem(layout, item.getListener());
         }
     }
 }

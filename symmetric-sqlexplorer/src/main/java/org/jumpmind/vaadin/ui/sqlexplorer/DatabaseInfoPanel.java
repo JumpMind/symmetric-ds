@@ -33,12 +33,14 @@ import javax.sql.DataSource;
 
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.TabSheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 
 public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
@@ -51,7 +53,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
     
     Settings settings;
     
-    //TabSheet tabSheet;
+    TabSheet tabSheet;
     
     String selectedCaption;
     
@@ -61,16 +63,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         
         setSizeFull();
         
-        /*tabSheet = CommonUiUtils.createTabSheet();
-        tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
-            }
-        });
+        tabSheet = CommonUiUtils.createTabSheet();
+        tabSheet.addSelectedTabChangeListener(event -> selectedCaption = tabSheet.getSelectedTab().getName());
         add(tabSheet);
         
         Connection c = null;
@@ -78,8 +72,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
             DatabaseMetaData metaData = c.getMetaData();
             
-            tabSheet.addTab(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
-            tabSheet.addTab(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
+            tabSheet.add(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
+            tabSheet.add(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
             
             try{
                 ResultSet rs = null;
@@ -90,7 +84,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 }
                 Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE, false);
                 clientInfoProperties.setSizeFull();
-                tabSheet.addTab(createTabData(clientInfoProperties), "Client Info Properties");
+                tabSheet.add(createTabData(clientInfoProperties), "Client Info Properties");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Client Info Properties tab", e);
             }
@@ -98,7 +92,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             try {
                 Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(metaData.getCatalogs(), Integer.MAX_VALUE, false);
                 catalogs.setSizeFull();
-                tabSheet.addTab(createTabData(catalogs), "Catalogs");
+                tabSheet.add(createTabData(catalogs), "Catalogs");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Catalogs tab", e);
             }
@@ -111,7 +105,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                     schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas("", null), Integer.MAX_VALUE, false);
                 }
                 schemas.setSizeFull();
-                tabSheet.addTab(createTabData(schemas), "Schemas");
+                tabSheet.add(createTabData(schemas), "Schemas");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Schemas tab", e);
             }
@@ -119,7 +113,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             try {
                 Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(metaData.getTableTypes(), Integer.MAX_VALUE, false);
                 tableTypes.setSizeFull();
-                tabSheet.addTab(createTabData(tableTypes), "Table Types");
+                tabSheet.add(createTabData(tableTypes), "Table Types");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Table Types tab", e);
             }
@@ -127,37 +121,37 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             try {
                 Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(metaData.getTypeInfo(), Integer.MAX_VALUE, false);
                 dataTypes.setSizeFull();
-                tabSheet.addTab(createTabData(dataTypes), "Data Types");
+                tabSheet.add(createTabData(dataTypes), "Data Types");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Data Types tab", e);
             }
             
             try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
+                tabSheet.add(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Numeric Functions tab", e);
             }
             
             try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
+                tabSheet.add(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create String Functions tab", e);
             }
             
             try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
+                tabSheet.add(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create System Functions tab", e);
             }
             
             try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
+                tabSheet.add(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Date/Time Functions tab", e);
             }
             
             try {
-                tabSheet.addTab(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
+                tabSheet.add(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Keywords tab", e);
             }
@@ -171,11 +165,11 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         while (i.hasNext()) {
             Component component = i.next();
             Tab tab = tabSheet.getTab(component);
-            if (tab.getCaption().equals(selectedTabCaption)) {
+            if (tab.getLabel().equals(selectedTabCaption)) {
                 tabSheet.setSelectedTab(component);
                 break;
             }            
-        }*/
+        }
     }
     
     public VerticalLayout createTabData(Grid<?> grid) {
@@ -198,8 +192,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             }
         });
         
-        grid.addColumn(row -> row.get(0)).setHeader("Property").setWidth("400px");
-        grid.addColumn(row -> row.get(1)).setHeader("Value");
+        grid.addColumn(row -> row.get(0)).setHeader("Property").setWidth("400px").setResizable(true);
+        grid.addColumn(row -> row.get(1)).setHeader("Value").setResizable(true);
         
         List<List<Object>> outerList = new ArrayList<List<Object>>();
         Method[] methods = reflectionClass.getMethods();

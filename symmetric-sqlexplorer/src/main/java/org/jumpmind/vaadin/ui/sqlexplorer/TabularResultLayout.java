@@ -759,7 +759,7 @@ public class TabularResultLayout extends VerticalLayout {
                     return "rowheader";
                 }
                 return null;
-            }).setFrozen(true).setVisible(showRowNumbers);
+            }).setFrozen(true).setResizable(true).setVisible(showRowNumbers);
             valueProviderMap.put(grid.getColumnByKey("#"), row -> outerList.indexOf(row) + 1);
             
             final ResultSetMetaData meta = rs.getMetaData();
@@ -784,7 +784,7 @@ public class TabularResultLayout extends VerticalLayout {
                             return "italics";
                         }
                         return null;
-                    }).setVisible(false);
+                    }).setResizable(true).setVisible(false);
                     valueProviderMap.put(grid.getColumnByKey(columnName), row -> row.get(colNum));
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
@@ -838,7 +838,7 @@ public class TabularResultLayout extends VerticalLayout {
                 }
             }
         } else {
-            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status");
+            grid.addColumn(row -> row.get(0)).setHeader("Status").setKey("Status").setResizable(true);
             valueProviderMap.put(grid.getColumnByKey("Status"), row -> row.get(0));
             List<Object> innerList = new ArrayList<Object>();
             innerList.add("Metadata unavailable");

@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SqlRunner extends Thread {
@@ -280,7 +281,7 @@ public class SqlRunner extends Thread {
                                         if (!resultsAsText) {
                                             resultComponents.add(new TabularResultLayout(explorer, db, sql, rs, listener, user, settings, queryPanel, showSqlOnResults, isInQueryGeneralResults));
                                         } else {
-                                            //resultComponents.add(putResultsInArea(rs, maxResultsSize));
+                                            resultComponents.add(putResultsInArea(rs, maxResultsSize));
                                         }
                                     } else {
                                         int rowsRetrieved = 0;
@@ -303,7 +304,7 @@ public class SqlRunner extends Thread {
                                         } else {
                                             message = "Statement(s) executed";
                                         }
-                                        //resultComponents.add(wrapTextInComponent(message));
+                                        resultComponents.add(wrapTextInComponent(message));
                                     } else {
                                         results.append(sql);
                                         results.append("\n");
@@ -336,10 +337,10 @@ public class SqlRunner extends Thread {
             } catch (Throwable ex) {
                 if (isCanceled) {
                     String canceledMessage = "Canceled successfully.\n\n"+sqlText;
-                    //resultComponents.add(wrapTextInComponent(canceledMessage));
+                    resultComponents.add(wrapTextInComponent(canceledMessage));
                 } else {
                     icon = VaadinIcon.BAN;
-                    //resultComponents.add(wrapTextInComponent(buildErrorMessage(ex), "marked"));
+                    resultComponents.add(wrapTextInComponent(buildErrorMessage(ex), "marked"));
                 }
             } finally {
                 if (autoCommitBefore) {
@@ -358,7 +359,7 @@ public class SqlRunner extends Thread {
             }
 
             if (resultComponents.size() == 0 && StringUtils.isNotBlank(results.toString())) {
-                //resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcon.BAN ? "marked" : null));
+                resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcon.BAN ? "marked" : null));
             }
 
         } finally {
@@ -397,12 +398,12 @@ public class SqlRunner extends Thread {
         }
     }
 
-    /*protected Component wrapTextInComponent(String text) {
+    protected Scroller wrapTextInComponent(String text) {
         return wrapTextInComponent(text, null);
-    }*/
+    }
 
-    /*protected Component wrapTextInComponent(String text, String style) {
-        Panel panel = new Panel();
+    protected Scroller wrapTextInComponent(String text, String style) {
+        Scroller panel = new Scroller();
         VerticalLayout content = new VerticalLayout();        
         content.setMargin(true);
         panel.setContent(content);
@@ -413,11 +414,11 @@ public class SqlRunner extends Thread {
         }
         content.add(span);
         return panel;
-    }*/
+    }
 
-    /*protected Component putResultsInArea(ResultSet rs, int maxResultSize) throws SQLException {
+    protected Scroller putResultsInArea(ResultSet rs, int maxResultSize) throws SQLException {
         return wrapTextInComponent(resultsAsText(rs, maxResultSize));
-    }*/
+    }
 
     protected String resultsAsText(ResultSet rs, int maxResultSize) throws SQLException {
             ResultSetMetaData meta = rs.getMetaData();

@@ -31,6 +31,8 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.TabSheet;
+import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +41,9 @@ import org.vaadin.aceeditor.AceMode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
@@ -53,7 +57,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     
     SqlExplorer explorer;
 
-    //TabSheet tabSheet;
+    TabSheet tabSheet;
     
     String selectedCaption;
     
@@ -68,60 +72,56 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         
         setSizeFull();
 
-        /*tabSheet = CommonUiUtils.createTabSheet();
-        tabSheet.addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                selectedCaption = tabSheet.getTab(tabSheet.getSelectedTab()).getCaption();
+        tabSheet = CommonUiUtils.createTabSheet();
+        tabSheet.addSelectedTabChangeListener(event -> {
+            EnhancedTab selectedTab = tabSheet.getSelectedTab();
+            if (selectedTab != null) {
+                selectedCaption = selectedTab.getName();
                 
-                if (tabSheet.getSelectedTab() instanceof AbstractLayout) {
-                    AbstractLayout layout = (AbstractLayout) tabSheet.getSelectedTab();
+                /*if (!(selectedTab instanceof AceEditor)) {
+                    boolean isInit = ((boolean) ComponentUtil.getData(selectedTab, "isInit"));
                     if (selectedCaption.equals("Data") && layout.getData() != null && layout.getData().equals(true)) {
                         refreshData(table, user, db, settings, false);
                     } else if (layout.getData() != null && layout.getData() instanceof AbstractMetaDataGridCreator) {
                         populate((VerticalLayout) layout);
                     }
-                } else if (tabSheet.getSelectedTab() instanceof AceEditor &&
-                        ((AceEditor) tabSheet.getSelectedTab()).getData().equals(true)) {
+                } else if (((AceEditor) selectedTab).getData().equals(true)) {
                     populateSource(table, db, (AceEditor) tabSheet.getSelectedTab());
-                }
+                }*/
             }
         });
         add(tabSheet);
 
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) db.getPlatform().getSqlTemplate();
 
-        tabSheet.addTab(create(new ColumnMetaDataTableCreator(sqlTemplate, table, settings)),
+        tabSheet.add(create(new ColumnMetaDataTableCreator(sqlTemplate, table, settings)),
                 "Columns");
-        tabSheet.addTab(create(new PrimaryKeyMetaDataTableCreator(sqlTemplate, table, settings)),
+        tabSheet.add(create(new PrimaryKeyMetaDataTableCreator(sqlTemplate, table, settings)),
                 "Primary Keys");
-        tabSheet.addTab(create(new IndexMetaDataTableCreator(sqlTemplate, table, settings)),
+        tabSheet.add(create(new IndexMetaDataTableCreator(sqlTemplate, table, settings)),
                 "Indexes");
         if (db.getPlatform().getDatabaseInfo().isForeignKeysSupported()) {
-            tabSheet.addTab(create(new ImportedKeysMetaDataTableCreator(sqlTemplate, table,
+            tabSheet.add(create(new ImportedKeysMetaDataTableCreator(sqlTemplate, table,
                     settings)), "Imported Keys");
-            tabSheet.addTab(create(new ExportedKeysMetaDataTableCreator(sqlTemplate, table,
+            tabSheet.add(create(new ExportedKeysMetaDataTableCreator(sqlTemplate, table,
                     settings)), "Exported Keys");
         }
         
         refreshData(table, user, db, settings, true);
         
-        AceEditor editor = new AceEditor();
+        /*AceEditor editor = new AceEditor();
         ComponentUtil.setData(editor, "data", true);
-        tabSheet.addTab(editor, "Source");
+        tabSheet.add(editor, "Source");*/
         
         Iterator<Component> i = tabSheet.iterator();
         while (i.hasNext()) {
             Component component = i.next();
-            Tab tab = tabSheet.getTab(component);
-            if (tab.getCaption().equals(selectedTabCaption)) {
+            EnhancedTab tab = tabSheet.getTab(component);
+            if (tab.getName().equals(selectedTabCaption)) {
                 tabSheet.setSelectedTab(component);
                 break;
             }            
-        }*/
+        }
         
     }
     
@@ -133,7 +133,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
             final Settings settings, boolean isInit) {
         
         if (!isInit) {
-            //tabSheet.removeTab(tabSheet.getTab(1));
+            tabSheet.remove(tabSheet.getTab(1));
         }
         
         IDatabasePlatform platform = db.getPlatform();
@@ -145,9 +145,9 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         p.setIndeterminate(true);
         executingLayout.add(p);
         ComponentUtil.setData(executingLayout, "isInit", isInit);
-        //tabSheet.addTab(executingLayout, "Data", isInit ? null : VaadinIcon.SPINNER, 1);
+        tabSheet.add(executingLayout, "Data", isInit ? null : new Icon(VaadinIcon.SPINNER), 1);
         if (!isInit) {
-            //tabSheet.setSelectedTab(executingLayout);
+            tabSheet.setSelectedTab(executingLayout);
         }
 
         SqlRunner runner = new SqlRunner(dml.getSql(), false, user, db, settings, explorer,
@@ -169,21 +169,20 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                     public void finished(final VaadinIcon icon, final List<Component> results,
                             long executionTimeInMs, boolean transactionStarted,
                             boolean transactionEnded) {
-                        /*TableInfoPanel.this.getUI().access(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                tabSheet.remove(executingLayout);
+                        UI ui = TableInfoPanel.this.getUI().orElse(null);
+                        if (ui != null) {
+                            ui.access(() -> {
+                                tabSheet.remove("Data");
                                 VerticalLayout layout = new VerticalLayout();
                                 layout.setMargin(true);
                                 layout.setSizeFull();
                                 if (results.size() > 0) {
                                     layout.add(results.get(0));
                                 }
-                                tabSheet.addTab(layout, "Data", null, 1);
+                                tabSheet.add(layout, "Data", null, 1);
                                 tabSheet.setSelectedTab(layout);
-                            }
-                        });*/
+                            });
+                        }
                     }
                 });
         runner.setShowSqlOnResults(false);

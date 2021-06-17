@@ -20,73 +20,74 @@
  */
 package org.jumpmind.vaadin.ui.common;
 
-import java.util.Iterator;
-
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.tabs.TabsVariant;
 
-public class TabbedApplicationPanel /*extends TabSheet*/ {
+public class TabbedApplicationPanel extends TabSheet {
 
     private static final long serialVersionUID = 1L;
 
-    //protected Tab mainTab;
+    protected EnhancedTab mainTab;
     
     public TabbedApplicationPanel() {
-        /*setSizeFull();
-        addStyleName(ValoTheme.TABSHEET_FRAMED);
-        addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
+        super();
+        setSizeFull();
+        addThemeVariants(TabsVariant.LUMO_SMALL);
 
-        addSelectedTabChangeListener(new SelectedTabChangeListener() {
-            private static final long serialVersionUID = 1L;        
-            @Override
-            public void selectedTabChange(SelectedTabChangeEvent event) {
-                Component selected = event.getTabSheet().getSelectedTab();
+        addSelectedTabChangeListener(event -> {
+            if (tabs.getSelectedTab() != null) {
+                Component selected = ((EnhancedTab) tabs.getSelectedTab()).getComponent();
                 if (selected instanceof IUiPanel) {
                     ((IUiPanel)selected).selected();
                 }
             }
         });
-        
-        setCloseHandler(new CloseHandler() {            
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void onTabClose(TabSheet tabsheet, Component tabContent) {
-                if (tabContent instanceof IUiPanel) {
-                    if (((IUiPanel)tabContent).closing()) {
-                        tabsheet.remove(tabContent);
-                    }
-                } else {
-                    tabsheet.remove(tabContent);
-                }
-            }
-        });*/
     }
 
-    /*public void setMainTab(String caption, Icon icon, Component component) {
-        component.setSizeFull();
-        this.mainTab = addTab(component, caption, icon, 0);
+    public void setMainTab(String caption, Icon icon, Component component) {
+        if (component instanceof HasSize) {
+            ((HasSize) component).setSizeFull();
+        }
+        this.mainTab = add(component, caption, icon, 0);
     }
     
     public void addCloseableTab(String caption, Icon icon, Component component, boolean setSizeFull) {
-        Iterator<Component> i = iterator();
-        while (i.hasNext()) {
-            Component c = i.next();
-            if (getTab(c).getCaption().equals(caption)) {
-                setSelectedTab(c);
-                return;
-            }
-        } 
-        
-        if (setSizeFull) {
-            component.setSizeFull();
+        EnhancedTab tab = getTab(caption);
+        if (tab != null) {
+            tabs.setSelectedTab(tab);
+            return;
         }
-        Tab tab = addTab(component, caption, icon, mainTab == null ? 0 : 1);
-        tab.setClosable(true);
-        setSelectedTab(tab);
+        
+        if (setSizeFull && component instanceof HasSize) {
+            ((HasSize) component).setSizeFull();
+        }
+        tab = add(component, caption, icon, mainTab == null ? 0 : 1);
+        tab.setCloseable(true);
+        tabs.setSelectedTab(tab);
     }
 
     public void addCloseableTab(String caption, Icon icon, Component component) {
         addCloseableTab(caption, icon, component, true);
-    }*/
+    }
+    
+    @Override
+    protected void remove(EnhancedTab tab) {
+        Component component = tab.getComponent();
+        if (!(component instanceof IUiPanel) || ((IUiPanel) component).closing()) {
+            int tabCount = tabList.size();
+            if (tab.isSelected() && tabCount > 1) {
+                int index = tabList.indexOf(tab);
+                if (index < tabCount - 1) {
+                    tabs.setSelectedIndex(index + 1);
+                } else {
+                    tabs.setSelectedIndex(index - 1);
+                }
+            }
+            tabs.remove(tab);
+            tabList.remove(tab);
+        }
+    }
 
 }

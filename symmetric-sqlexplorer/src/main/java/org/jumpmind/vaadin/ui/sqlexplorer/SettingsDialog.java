@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -45,8 +44,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class SettingsDialog extends ResizableDialog {
 
@@ -82,15 +79,15 @@ public class SettingsDialog extends ResizableDialog {
         super("Settings");
         this.explorer = explorer;
         this.settingsProvider = explorer.getSettingsProvider();
-        setWidth("600px");
-        //add(createSettingsLayout(), 1);
+        setWidth("700px");
+        add(createSettingsLayout(), 1);
         add(createButtonLayout());
     }
 
-    /*protected AbstractLayout createSettingsLayout() {
-        GridLayout layout = new GridLayout(2, 9);
+    protected HorizontalLayout createSettingsLayout() {
+        HorizontalLayout layout = new HorizontalLayout();
         layout.setWidth("700px");
-        layout.setMargin(new MarginInfo(false, true, false, true));
+        //layout.setMargin(new MarginInfo(false, true, false, true));
         FormLayout settingsLayout = new FormLayout();
 
         Settings settings = settingsProvider.get();
@@ -175,13 +172,12 @@ public class SettingsDialog extends ResizableDialog {
         }
         settingsLayout.add(showResultsInNewTabsBox);
 
-        layout.add(settingsLayout, 0, 0, 0, 8);
-        layout.add(rowsToFetchSpan, 1, 0);
-        layout.setComponentAlignment(rowsToFetchSpan, Alignment.MIDDLE_LEFT);
+        layout.add(settingsLayout);
+        layout.add(rowsToFetchSpan);
         
         return layout;
 
-    }*/
+    }
 
     protected HorizontalLayout createButtonLayout() {
         Button saveButton = CommonUiUtils.createPrimaryButton("Save", event -> {

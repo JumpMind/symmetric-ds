@@ -26,6 +26,7 @@ allprojects {
     apply plugin: 'license'
     license {
         header rootProject.file("HEADER")
+        include "**/jumpmind/**"
         exclude "**/flow-build-info.json"
     }
 }

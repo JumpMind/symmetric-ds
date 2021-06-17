@@ -57,7 +57,7 @@ public class ResizableDialog extends Dialog {
         content.setSizeFull();
         content.setMargin(false);
         content.setSpacing(false);
-        add(content);
+        super.add(content);
         
         UI.getCurrent().addShortcutListener(() -> {
             if (!"100%".equals(getWidth())) {
