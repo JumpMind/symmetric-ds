@@ -20,6 +20,7 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.symmetric.service.IParameterService;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.CsvOptions;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
@@ -39,7 +40,7 @@ public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             throws FileNotFoundException, IOException {
         super(symmetricPlatform, targetPlatform, tablePrefix, stagingManager, filters, errorHandlers, parameterService,
                 securityService, writerSettings);
-        fieldTerminator = ",";
+        fieldTerminator = "||";
         bigquery = bq;
     }
 
@@ -49,8 +50,11 @@ public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
             File csvPath = this.stagedInputFile.getFile();
             
             TableId tableId = TableId.of(this.targetTable.getSchema(), this.targetTable.getName());
+            CsvOptions csvOptions = CsvOptions.newBuilder().setFieldDelimiter(fieldTerminator).build();
+            
             WriteChannelConfiguration writeChannelConfiguration =
-                WriteChannelConfiguration.newBuilder(tableId).setFormatOptions(FormatOptions.csv()).setAutodetect(false).setDestinationTable(tableId).build();
+                WriteChannelConfiguration.newBuilder(tableId).setFormatOptions(csvOptions).setAutodetect(false).setDestinationTable(tableId).build();
+            
             // The location must be specified; other fields can be auto-detected.
             JobId jobId = JobId.newBuilder()
                     .setLocation(bigquery.getOptions().getLocation())
