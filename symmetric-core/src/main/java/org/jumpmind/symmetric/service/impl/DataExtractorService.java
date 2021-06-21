@@ -770,6 +770,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             
                             transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(),
                                     extractInfo.getQueue(), targetNode.getNodeId(), extractInfo.getProcessType() == ProcessType.PUSH_JOB_EXTRACT ? ProcessType.PUSH_JOB_TRANSFER : ProcessType.PULL_HANDLER_TRANSFER));
+                            transferInfo.setCurrentBatchId(currentBatch.getBatchId());
+                            transferInfo.incrementBatchCount();
                             transferInfo.setTotalDataCount(currentBatch.getExtractRowCount());
 
                             currentBatch = extractBatch.getOutgoingBatch();
@@ -1406,7 +1408,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
-                processInfo.setCurrentLoadId(currentBatch.getLoadId());
                 processInfo.setTotalDataCount(currentBatch.getDataRowCount());
                 
                 if (currentBatch.getLoadId() > 0) {
@@ -1452,7 +1453,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
                     transferFromStaging(mode, BatchType.EXTRACT, currentBatch, isRetry, extractedBatch, writer, ctx,
-                            channel.getMaxKBytesPerSecond());
+                            channel.getMaxKBytesPerSecond(), processInfo);
                 } else {
                     IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT,
                             currentBatch.getNodeId(), extractedBatch);
@@ -1490,7 +1491,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void transferFromStaging(ExtractMode mode, BatchType batchType, OutgoingBatch batch, boolean isRetry, IStagedResource stagedResource,
-            BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
+            BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec, ProcessInfo processInfo) {
         final int MAX_WRITE_LENGTH = 32768;
         BufferedReader reader = stagedResource.getReader();
         try {
@@ -1519,7 +1520,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 
                 writer.flush();
+                processInfo.setCurrentDataCount(batch.getDataRowCount());
             } else {
+                long totalBytes = stagedResource.getSize();
                 long totalCharsRead = 0, totalBytesRead = 0;
                 int numCharsRead = 0, numBytesRead = 0;
                 long startTime = System.currentTimeMillis(), ts = startTime, bts = startTime;
@@ -1576,6 +1579,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         totalBytesRead += new String(buffer, 0, numCharsRead).getBytes().length;
                     }
+
+                    processInfo.setCurrentDataCount((long) ((totalBytesRead / (double) totalBytes) * batch.getDataRowCount()));
                 }
                 
                 if (batch.getSentCount() == 1) {
