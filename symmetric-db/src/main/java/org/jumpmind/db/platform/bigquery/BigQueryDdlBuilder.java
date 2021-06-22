@@ -26,7 +26,8 @@ public class BigQueryDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.BIT, "INT64");
         databaseInfo.addNativeTypeMapping(Types.BIGINT, "NUMERIC");
         databaseInfo.addNativeTypeMapping(Types.TINYINT, "NUMERIC");
-        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "NUMERIC");
+        databaseInfo.addNativeTypeMapping(Types.FLOAT, "FLOAT64");
+        databaseInfo.addNativeTypeMapping(Types.DOUBLE, "FLOAT64");
         databaseInfo.addNativeTypeMapping(Types.DECIMAL, "NUMERIC");
         
         databaseInfo.addNativeTypeMapping(Types.BINARY, "BYTES");

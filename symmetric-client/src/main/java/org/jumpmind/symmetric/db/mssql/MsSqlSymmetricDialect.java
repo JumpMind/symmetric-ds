@@ -116,7 +116,15 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + tablePrefix.toLowerCase()
                             + "_data_event', '"
                             + tablePrefix.toLowerCase()
-                            + "_monitor_event') and (i.allow_row_locks !='true' "
+                            + "_monitor_event', '"
+                            + tablePrefix.toLowerCase()
+                            + "_table_reload_status', '"
+                            + tablePrefix.toLowerCase()
+                            + "_extract_request', '"
+                            + tablePrefix.toLowerCase()
+                            + "_table_reload_request', '"
+                            + tablePrefix.toLowerCase()
+                            + "_trigger_hist') and (i.allow_row_locks !='true' "
                             + lockEscalationClause
                             + ")") > 0) {
                 log.info("Updating indexes to prevent lock escalation");
@@ -124,7 +132,11 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 String dataTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data");
                 String dataEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_data_event");
                 String outgoingBatchTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_outgoing_batch");
-                String monitorEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix) + "_monitor_event";
+                String monitorEventTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_monitor_event");
+                String tableReloadStatusTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_table_reload_status");
+                String extractRequestTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_extract_request");
+                String tableReloadRequestTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_table_reload_request");
+                String triggerHistTable = platform.alterCaseToMatchDatabaseDefaultCase(tablePrefix + "_trigger_hist");
                 
                 sqlTemplate.update("ALTER INDEX ALL ON " + dataTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
@@ -133,6 +145,14 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 sqlTemplate.update("ALTER INDEX ALL ON " + outgoingBatchTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 sqlTemplate.update("ALTER INDEX ALL ON " + monitorEventTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tableReloadStatusTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + extractRequestTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + tableReloadRequestTable
+                        + " SET (ALLOW_ROW_LOCKS = ON)");
+                sqlTemplate.update("ALTER INDEX ALL ON " + triggerHistTable
                         + " SET (ALLOW_ROW_LOCKS = ON)");
                 
                 if (parameterService.is(ParameterConstants.MSSQL_LOCK_ESCALATION_DISABLED, true)) {
@@ -144,6 +164,14 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                             + " SET (ALLOW_PAGE_LOCKS = OFF)");
                     sqlTemplate.update("ALTER INDEX ALL ON " + monitorEventTable
                             + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + tableReloadStatusTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + extractRequestTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + tableReloadRequestTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
+                    sqlTemplate.update("ALTER INDEX ALL ON " + triggerHistTable
+                            + " SET (ALLOW_PAGE_LOCKS = OFF)");
                   
                     sqlTemplate.update("ALTER TABLE " + dataTable
                             + " SET (LOCK_ESCALATION = DISABLE)");
@@ -152,6 +180,14 @@ public class MsSqlSymmetricDialect extends AbstractSymmetricDialect implements I
                     sqlTemplate.update("ALTER TABLE " + outgoingBatchTable
                             + " SET (LOCK_ESCALATION = DISABLE)");
                     sqlTemplate.update("ALTER TABLE " + monitorEventTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + tableReloadStatusTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + extractRequestTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + tableReloadRequestTable
+                            + " SET (LOCK_ESCALATION = DISABLE)");
+                    sqlTemplate.update("ALTER TABLE " + triggerHistTable
                             + " SET (LOCK_ESCALATION = DISABLE)");
                 }
                 return true;
