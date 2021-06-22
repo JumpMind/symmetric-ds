@@ -1122,7 +1122,7 @@ INodeCommunicationExecutor {
                 processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 status.updateIncomingStatus(batchesProcessed);
                 sendAck(nodeCommunication.getNode(), identity, security, batchesProcessed,
-                        transportManager);
+                        transportManager, status.getQueue());
             }
             if (!status.failed() && batchesProcessed.size() > 0) {
                 log.info("Pull files received from {}.  {} files and {} batches were processed",

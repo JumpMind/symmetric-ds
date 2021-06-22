@@ -325,7 +325,7 @@ public class DataLoaderService extends AbstractService implements IDataLoaderSer
                             log.info("Setting the sync url for ack to: {}", url);
                             remote.setSyncUrl(url);
                         }
-                        sendAck(remote, local, localSecurity, list, transportManager);
+                        sendAck(remote, local, localSecurity, list, transportManager, status.getQueue());
                     }
                 }
 
