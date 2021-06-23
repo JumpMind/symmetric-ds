@@ -53,5 +53,6 @@ public class ServerConstants {
     
     public final static String SERVER_ENGINE_URI_INTERCEPTORS = "server.engine.uri.interceptors";
 
-    public final static String SERVER_ACCESS_LOG = "server.access.log";
+    public final static String SERVER_ACCESS_LOG_ENABLED = "server.access.log.enabled";
+    public final static String SERVER_ACCESS_LOG_FILE = "server.access.log.file";
 }
