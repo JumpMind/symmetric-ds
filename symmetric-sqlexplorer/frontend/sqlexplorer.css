@@ -18,34 +18,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.jumpmind.vaadin.ui.common;
+.sqlexplorer .v-tree-node-selected::after {
+	border-radius: 0px;
+}
 
-import de.f0rce.ace.AceEditor;
-import de.f0rce.ace.enums.AceMode;
+.sqlexplorer .v-tree-node-caption-bold {
+	font-weight: bold;
+}
 
-public class SqlEntryDialog extends ResizableDialog {
+.sqlexplorer .v-tabsheet-deco {
+    visibility: hidden;
+}
 
-    private static final long serialVersionUID = 1L;
+.sqlexplorer .v-menubar-borderless .v-menubar-menuitem.v-menubar-menuitem-green {
+	color: #76aa2e;
+}
 
-    protected AceEditor editor;
+.sqlexplorer .v-menubar-borderless .v-menubar-menuitem.v-menubar-menuitem-red {
+    color: #E84855;
+}
 
-    public SqlEntryDialog(String sql) {
-        //setCaption("Edit SQL");
-        editor = CommonUiUtils.createAceEditor();
-        editor.setMode(AceMode.sql);
-        editor.setValue(sql);
-        editor.setSizeFull();
-        content.add(editor, buildButtonFooter(buildCloseButton()));
-        content.expand(editor);
-    }
-    
-    public String getSQL() {
-        return editor.getValue();
-    }
+.sqlexplorer .v-grid-cell.italics {
+    font-style: italic;
+}
 
-    @Override
-    protected boolean onClose() {
-        return super.onClose();
-    }
+.sqlexplorer .v-grid-cell.rowheader {
+    background: #DFDFDF;
+}
 
+.sqlexplorer .v-table-cell-content-rowheader {
+    background: #DFDFDF;
+    font-weight: bold;
 }

@@ -147,15 +147,15 @@ public class DbFillDialog extends ResizableDialog {
                         for (int i = 0; i < dbFill.getRecordCount(); i++) {
                             for (int j = 0; j < dbFill.getInsertWeight(); j++) {
                                 String sql = dbFill.createDynamicRandomInsertSql(table);
-                                //queryPanel.appendSql(sql);
+                                queryPanel.appendSql(sql);
                             }
                             for (int j = 0; j < dbFill.getUpdateWeight(); j++) {
                                 String sql = dbFill.createDynamicRandomUpdateSql(table);
-                                //queryPanel.appendSql(sql);
+                                queryPanel.appendSql(sql);
                             }
                             for (int j = 0; j < dbFill.getDeleteWeight(); j++) {
                                 String sql = dbFill.createDynamicRandomDeleteSql(table);
-                                //queryPanel.appendSql(sql);
+                                queryPanel.appendSql(sql);
                             }
                         }
                     }

@@ -36,8 +36,6 @@ import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.aceeditor.AceEditor;
-import org.vaadin.aceeditor.AceMode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -47,6 +45,10 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
@@ -77,17 +79,22 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
             EnhancedTab selectedTab = tabSheet.getSelectedTab();
             if (selectedTab != null) {
                 selectedCaption = selectedTab.getName();
+                Component selectedComponent = selectedTab.getComponent();
                 
-                /*if (!(selectedTab instanceof AceEditor)) {
-                    boolean isInit = ((boolean) ComponentUtil.getData(selectedTab, "isInit"));
-                    if (selectedCaption.equals("Data") && layout.getData() != null && layout.getData().equals(true)) {
-                        refreshData(table, user, db, settings, false);
-                    } else if (layout.getData() != null && layout.getData() instanceof AbstractMetaDataGridCreator) {
-                        populate((VerticalLayout) layout);
+                if (selectedComponent != null) {
+                    if (!(selectedComponent instanceof AceEditor)) {
+                        boolean isInit = ((boolean) ComponentUtil.getData(selectedComponent, "isInit"));
+                        AbstractMetaDataGridCreator creator = ((AbstractMetaDataGridCreator) ComponentUtil
+                                .getData(selectedComponent, "creator"));
+                        if (selectedCaption.equals("Data") && isInit == true) {
+                            refreshData(table, user, db, settings, false);
+                        } else if (creator != null) {
+                            populate((VerticalLayout) selectedComponent);
+                        }
+                    } else if (((boolean) ComponentUtil.getData(selectedComponent, "data")) == true) {
+                        populateSource(table, db, (AceEditor) selectedComponent);
                     }
-                } else if (((AceEditor) selectedTab).getData().equals(true)) {
-                    populateSource(table, db, (AceEditor) tabSheet.getSelectedTab());
-                }*/
+                }
             }
         });
         add(tabSheet);
@@ -109,9 +116,9 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         
         refreshData(table, user, db, settings, true);
         
-        /*AceEditor editor = new AceEditor();
+        AceEditor editor = new AceEditor();
         ComponentUtil.setData(editor, "data", true);
-        tabSheet.add(editor, "Source");*/
+        tabSheet.add(editor, "Source");
         
         Iterator<Component> i = tabSheet.iterator();
         while (i.hasNext()) {
@@ -157,7 +164,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
 
                     @Override
                     public void writeSql(String sql) {
-                        //explorer.openQueryWindow(db).appendSql(sql);
+                        explorer.openQueryWindow(db).appendSql(sql);
                     }
 
                     @Override
@@ -211,20 +218,20 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     
     protected void populateSource(org.jumpmind.db.model.Table table, IDb db, AceEditor oldTab) {
         try {
-            //tabSheet.removeTab(tabSheet.getTab(oldTab));
+            tabSheet.remove(tabSheet.getTab(oldTab).getName());
             DbExport export = new DbExport(db.getPlatform());
             export.setNoCreateInfo(false);
             export.setNoData(true);
             export.setCatalog(table.getCatalog());
             export.setSchema(table.getSchema());
             export.setFormat(Format.SQL);
-            /*AceEditor editor = CommonUiUtils.createAceEditor();
+            AceEditor editor = CommonUiUtils.createAceEditor();
             editor.setMode(AceMode.sql);
             editor.setValue(export.exportTables(new org.jumpmind.db.model.Table[] { table }));
             ComponentUtil.setData(editor, "data", false);
-            tabSheet.addTab(editor, "Source");
-            tabSheet.setSelectedTab(editor);*/
-        } catch (/*IO*/Exception e) {
+            tabSheet.add(editor, "Source");
+            tabSheet.setSelectedTab(editor);
+        } catch (IOException e) {
             log.warn("Failed to export the create information", e);
         }
     }

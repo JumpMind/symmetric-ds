@@ -27,8 +27,6 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.TabSheet;
 import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
-import org.vaadin.aceeditor.AceEditor;
-import org.vaadin.aceeditor.AceMode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -36,9 +34,12 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
+
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 
@@ -91,12 +92,12 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         String sourceText = trigger.getSource();
         if (wrapSourceText) sourceText = wrapSource(sourceText);
         
-        //AceEditor editor = CommonUiUtils.createAceEditor();
-        //editor.setMode(AceMode.sql);
-        //editor.setValue(sourceText);
-        //editor.setSizeFull();
-        //source.add(editor);
-        //source.expand(editor);
+        AceEditor editor = CommonUiUtils.createAceEditor();
+        editor.setMode(AceMode.sql);
+        editor.setValue(sourceText);
+        editor.setSizeFull();
+        source.add(editor);
+        source.expand(editor);
         
         HorizontalLayout bar = new HorizontalLayout();
         bar.setWidthFull();

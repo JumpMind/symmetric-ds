@@ -129,7 +129,10 @@ public class TabSheet extends Div {
     }
     
     public void remove(String name) {
-        remove(getTab(name));
+        EnhancedTab tab = getTab(name);
+        if (tab != null) {
+            remove(tab);
+        }
     }
     
     public void setCloseable(boolean closeable) {

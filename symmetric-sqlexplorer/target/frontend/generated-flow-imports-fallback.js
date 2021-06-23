@@ -1,5 +1,14 @@
+function addCssBlock(block) {
+ const tpl = document.createElement('template');
+ tpl.innerHTML = block;
+ document.head.appendChild(tpl.content);
+}
+import $css_0 from 'Frontend/sqlexplorer.css';
+addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);
+
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-list/iron-list.js';
+import '@vaadin/flow-frontend/@f0rce/lit-ace/lit-ace.js';
 import '@vaadin/flow-frontend/comboBoxConnector-es6.js';
 import '@vaadin/flow-frontend/contextMenuConnector-es6.js';
 import '@vaadin/flow-frontend/datepickerConnector.js';

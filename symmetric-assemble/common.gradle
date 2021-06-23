@@ -308,7 +308,6 @@ subprojects { subproject ->
             (group('org.jumpmind.symmetric')) : license('JumpMind License'),
             (group('com.jumpmind.symmetric')) : license('JumpMind License'),
             'com.byteowls:vaadin-chartjs:1.2.0' : mit,
-            'org.vaadin.addons:aceeditor:0.8.15' : bsd,
             'org.vaadin.addons:fontawesomelabel:1.4.0' : apacheTwo    
         ]
     

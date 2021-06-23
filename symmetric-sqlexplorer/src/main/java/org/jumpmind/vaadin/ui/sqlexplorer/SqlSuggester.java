@@ -30,8 +30,6 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDdlReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.aceeditor.Suggester;
-import org.vaadin.aceeditor.Suggestion;
 
 public class SqlSuggester /*implements Suggester*/ {
     
@@ -140,7 +138,7 @@ public class SqlSuggester /*implements Suggester*/ {
         return text.substring(index-lookBack, endIndex);
     }
     
-    private List<Suggestion> getAliasSuggestions() {
+    /*private List<Suggestion> getAliasSuggestions() {
         List<Suggestion> suggestions = new ArrayList<Suggestion>();
         for (String alias : aliases.keySet()) {
             if (alias.toLowerCase().startsWith(currentWord.toLowerCase())) {
@@ -150,7 +148,7 @@ public class SqlSuggester /*implements Suggester*/ {
         }
         Collections.sort(suggestions, new SuggestionComparitor());
         return suggestions;
-    }
+    }*/
     
     private Map<String, String> getAliases() {
         Map<String, String> aliases = new HashMap<String, String>();
@@ -315,7 +313,7 @@ public class SqlSuggester /*implements Suggester*/ {
     }
     
     /* Returns list of suggestions for the catalog.schema.table.column format */
-    private List<Suggestion> getHierarchySuggestions() {
+    /*private List<Suggestion> getHierarchySuggestions() {
         List<Suggestion> suggestions = new ArrayList<Suggestion>();
         
         String prevWord = getPrevWord(cursor), prevWord2 = null, prevWord3 = null;
@@ -354,7 +352,7 @@ public class SqlSuggester /*implements Suggester*/ {
         }
         Collections.sort(suggestions, new SuggestionComparitor());
         return suggestions;
-    }
+    }*/
     
     private List<String> getCatalogNamesFromCache() {
         List<String> catalogs = catalogNameCache;
@@ -368,7 +366,7 @@ public class SqlSuggester /*implements Suggester*/ {
         catalogNameCache = new ArrayList<String>();
     }
     
-    private List<Suggestion> getSchemaNameSuggestions(String catalog) {
+    /*private List<Suggestion> getSchemaNameSuggestions(String catalog) {
         List<Suggestion> suggestions = new ArrayList<Suggestion>();
         List<String> schemaNames = getSchemaNamesFromCache(catalog);
         for (String schemaName : schemaNames) {
@@ -379,7 +377,7 @@ public class SqlSuggester /*implements Suggester*/ {
         }
         Collections.sort(suggestions, new SuggestionComparitor());
         return suggestions;
-    }
+    }*/
     
     private List<String> getSchemaNamesFromCache(String catalog) {
         List<String> schemaNames = schemaNameCache.get(catalog);
@@ -394,7 +392,7 @@ public class SqlSuggester /*implements Suggester*/ {
         schemaNameCache = new HashMap<String, List<String>>();
     }
     
-    private List<Suggestion> getTableNameSuggestions(String catalog, String schema) {
+    /*private List<Suggestion> getTableNameSuggestions(String catalog, String schema) {
         List<Suggestion> suggestions = new ArrayList<Suggestion>();
         List<String> tableNames = getTableNamesFromCache(catalog, schema);
         for (String tableName : tableNames) {
@@ -405,7 +403,7 @@ public class SqlSuggester /*implements Suggester*/ {
         }
         Collections.sort(suggestions, new SuggestionComparitor());
         return suggestions;
-    }
+    }*/
     
     private List<String> getTableNamesFromCache(String catalog, String schema) {
         String key = getFullName(catalog, schema, null);
@@ -421,7 +419,7 @@ public class SqlSuggester /*implements Suggester*/ {
         tableNameCache = new HashMap<String, List<String>>();
     }
     
-    private List<Suggestion> getColumnNameSuggestions(String catalog, String schema, String tableName) {
+    /*private List<Suggestion> getColumnNameSuggestions(String catalog, String schema, String tableName) {
         List<Suggestion> suggestions = new ArrayList<Suggestion>();
         if (aliases.get(tableName) != null) {
             String[] parsedName = parseFullName(aliases.get(tableName));
@@ -440,7 +438,7 @@ public class SqlSuggester /*implements Suggester*/ {
         }
         Collections.sort(suggestions, new SuggestionComparitor());
         return suggestions;
-    }
+    }*/
     
     private List<String> getColumnNamesFromCache(String catalog, String schema, String tableName) {
         String key = getFullName(catalog, schema, tableName);
@@ -479,7 +477,7 @@ public class SqlSuggester /*implements Suggester*/ {
                 + (tableName==null ? "" : tableName);
     }
     
-    private List<Suggestion> removeRepeats(List<Suggestion> longList) {
+    /*private List<Suggestion> removeRepeats(List<Suggestion> longList) {
         List<Suggestion> shortList = new ArrayList<Suggestion>();
         for (Suggestion suggestion : longList) {
             if (!shortList.contains(suggestion)) {
@@ -489,12 +487,12 @@ public class SqlSuggester /*implements Suggester*/ {
         return shortList;
     }
     
-    /*@Override
+    @Override
     public String applySuggestion(Suggestion sugg, String text, int cursor) {
         return text.substring(0, cursor-((SqlSuggestion)sugg).getReplaceCharCount())
                 + sugg.getSuggestionText()
                 + text.substring(cursor);
-    }*/
+    }
     
     private static class SqlSuggestion extends Suggestion {
         
@@ -530,6 +528,6 @@ public class SqlSuggester /*implements Suggester*/ {
             return comparedSuggestions==0 ? o1.getDescriptionText().toLowerCase()
                     .compareTo(o2.getDescriptionText().toLowerCase()) : comparedSuggestions;
         }
-    }
+    }*/
     
 }

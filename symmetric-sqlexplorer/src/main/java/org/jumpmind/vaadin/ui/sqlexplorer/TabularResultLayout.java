@@ -71,6 +71,10 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.KeyModifier;
+import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
@@ -202,7 +206,7 @@ public class TabularResultLayout extends VerticalLayout {
             }
             
             Editor<List<Object>> editor = grid.getEditor();
-            Binder<List<Object>> binder = editor.getBinder();
+            Binder<List<Object>> binder = new Binder<List<Object>>();
             
             int i = 0;
             for (Grid.Column<List<Object>> col : grid.getColumns()) {
@@ -216,6 +220,8 @@ public class TabularResultLayout extends VerticalLayout {
                     i++;
                 }
             }
+            
+            editor.setBinder(binder);
             
             if (resultTable != null) {
                 @SuppressWarnings("unchecked")
@@ -298,6 +304,21 @@ public class TabularResultLayout extends VerticalLayout {
                 
                 grid.addItemDoubleClickListener(event -> editor.editItem(event.getItem()));
             }
+            
+            Shortcuts.addShortcutListener(grid, () -> {
+                Component parent = grid.getParent().orElse(null);
+                if (parent != null && parent instanceof TabularResultLayout) {
+                    TabularResultLayout layout = (TabularResultLayout) parent;
+                    queryPanel.reExecute(layout.getSql());
+                }
+            }, Key.ENTER, KeyModifier.CONTROL).listenOn(grid);
+            
+            Shortcuts.addShortcutListener(grid, () -> {
+                TabularResultLayout layout = (TabularResultLayout) grid.getParent().orElse(null);
+                if (layout != null) {
+                    queryPanel.reExecute(layout.getSql());
+                }
+            }, Key.ENTER, KeyModifier.CONTROL, KeyModifier.SHIFT).listenOn(grid);
             
             this.add(grid);
             this.expand(grid);
@@ -760,6 +781,10 @@ public class TabularResultLayout extends VerticalLayout {
                 }
                 return null;
             }).setFrozen(true).setResizable(true).setVisible(showRowNumbers);
+            
+            if (valueProviderMap == null) {
+                valueProviderMap = new HashMap<Grid.Column<List<Object>>, ValueProvider<List<Object>, Object>>();
+            }
             valueProviderMap.put(grid.getColumnByKey("#"), row -> outerList.indexOf(row) + 1);
             
             final ResultSetMetaData meta = rs.getMetaData();
@@ -784,7 +809,7 @@ public class TabularResultLayout extends VerticalLayout {
                             return "italics";
                         }
                         return null;
-                    }).setResizable(true).setVisible(false);
+                    }).setResizable(true);//.setHidable(true);
                     valueProviderMap.put(grid.getColumnByKey(columnName), row -> row.get(colNum));
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);

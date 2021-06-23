@@ -43,7 +43,6 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.aceeditor.AceEditor;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -63,6 +62,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.tabs.TabsVariant;
+
+import de.f0rce.ace.AceEditor;
 
 public final class CommonUiUtils {
 
@@ -101,10 +102,10 @@ public final class CommonUiUtils {
         return button;
     }
 
-    /*public static AceEditor createAceEditor() {
+    public static AceEditor createAceEditor() {
         AceEditor editor = new AceEditor();
         editor.setSizeFull();
-        ServletContext context = VaadinServlet.getCurrent().getServletContext();
+        /*ServletContext context = VaadinServlet.getCurrent().getServletContext();
         if (context.getRealPath("/VAADIN/ace") != null) {
             String acePath = context.getContextPath() + "/VAADIN/ace";
             editor.setThemePath(acePath);
@@ -113,11 +114,12 @@ public final class CommonUiUtils {
         } else {
             log.warn("Could not find a local version of the ace editor.  " + "You might want to consider installing the ace web artifacts at "
                     + context.getRealPath(""));
-        }
-        editor.setHighlightActiveLine(true);
+        }*/
+        editor.setHighlightActiveLine(false);
+        editor.setHighlightSelectedWord(false);
         editor.setShowPrintMargin(false);
         return editor;
-    }*/
+    }
 
     public static void notify(String message) {
         notify("", message, NotificationVariant.LUMO_SUCCESS);
@@ -240,7 +242,7 @@ public final class CommonUiUtils {
                             return "italics";
                         }
                         return null;
-                    }).setResizable(true).setVisible(false);
+                    }).setResizable(true);//.setHidable(true);
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {

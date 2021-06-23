@@ -347,7 +347,7 @@ public class SqlExplorer extends SplitLayout {
             IDatabasePlatform platform = db.getPlatform();
             Table table = treeNode.getTableFor();
             DmlStatement dmlStatement = platform.createDmlStatement(DmlType.SELECT_ALL, table, null);
-            //panel.appendSql(dmlStatement.getSql());
+            panel.appendSql(dmlStatement.getSql());
             contentTabs.setSelectedTab(panel);
         }
     }
@@ -373,7 +373,7 @@ public class SqlExplorer extends SplitLayout {
 
             }
             String sql = dmlStatement.buildDynamicSql(BinaryEncoding.HEX, row, false, true);
-            //panel.appendSql(sql);
+            panel.appendSql(sql);
             contentTabs.setSelectedTab(panel);
         }
     }
@@ -552,7 +552,7 @@ public class SqlExplorer extends SplitLayout {
                                 Table table = treeNode.getTableFor();
                                 if (table != null) {
                                     QueryPanel panel = findQueryPanelForDb(db);
-                                    //panel.appendSql(table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
+                                    panel.appendSql(table.getQualifiedTableName(quote, catalogSeparator, schemaSeparator));
                                     contentTabs.setSelectedTab(panel);
                                 }
                             }
@@ -658,7 +658,7 @@ public class SqlExplorer extends SplitLayout {
     }
 
     public void putResultsInQueryTab(String value, IDb db) {
-        //openQueryWindow(db).appendSql(value);
+        openQueryWindow(db).appendSql(value);
     }
 
 }
