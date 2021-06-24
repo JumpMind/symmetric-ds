@@ -600,7 +600,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected OutgoingBatches loadPendingBatches(ProcessInfo extractInfo, Node targetNode, String queue, IOutgoingTransport transport) {
         
-        BufferedWriter writer = transport.getWriter();         
+        BufferedWriter writer = transport.getWriter();
+        extractInfo.setStatus(ProcessStatus.QUERYING);
         
         Callable<OutgoingBatches> getOutgoingBatches = () -> {                            
             OutgoingBatches batches = null;
@@ -2104,6 +2105,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                      */
                     OutgoingBatch firstBatch = batches.get(0);
                     processInfo.setCurrentLoadId(firstBatch.getLoadId());
+                    processInfo.setStatus(ProcessStatus.QUERYING);
 
                     if (isRestarted) {
                         restartExtractRequest(batches, request, childRequests);
