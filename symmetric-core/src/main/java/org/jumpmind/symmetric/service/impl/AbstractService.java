@@ -392,8 +392,11 @@ abstract public class AbstractService implements IService {
 
         for (int i = 0; i < numberOfStatusSendRetries && statusCode != WebConstants.SC_OK; i++) {
             try {
-                Map<String, String> requestProperties = new HashMap<String, String>();
-                requestProperties.put(WebConstants.CHANNEL_QUEUE, queue);
+                Map<String, String> requestProperties = null;
+                if (StringUtils.isNotBlank(queue)) {
+                    requestProperties = new HashMap<String, String>();
+                    requestProperties.put(WebConstants.CHANNEL_QUEUE, queue);
+                }
                 statusCode = transportManager.sendAcknowledgement(remote, list, local,
                         localSecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
                 exception = null;
