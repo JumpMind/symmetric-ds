@@ -46,7 +46,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
 
     private static final long serialVersionUID = 1L;
 
-    protected Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger log = LoggerFactory.getLogger(Row.class);
 
     public Row(int numberOfColumns) {
         super(numberOfColumns);
