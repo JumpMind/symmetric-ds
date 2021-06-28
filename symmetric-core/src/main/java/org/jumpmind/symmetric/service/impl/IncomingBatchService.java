@@ -218,11 +218,11 @@ public class IncomingBatchService extends AbstractService implements IIncomingBa
     public int countIncomingBatchesWithLimit(List<FilterCriterion> filter) {
         String where = filter != null ? buildBatchWhereFromFilter(filter) : null;
         Map<String, Object> params = filter != null ? buildBatchParams(filter) : new HashMap<String, Object>();
-        String sql = getSql("selectIncomingBatchPrefixSql", where, " order by create_time desc");
+        String sql = getSql("selectCountBatchesPrefixSql", where);
         
-        List<IncomingBatch> batchList = sqlTemplateDirty.query(sql, Integer.MAX_VALUE, new IncomingBatchMapper(), params);
+        int count = sqlTemplateDirty.queryForInt(sql, params);
         int maxBatches = parameterService.getInt("batch.screen.max.to.select");
-        return maxBatches > 0 ? Math.min(batchList.size(), maxBatches) : batchList.size();
+        return maxBatches > 0 ? Math.min(count, maxBatches) : count;
     }
 
     protected boolean containsOnlyErrorStatus(List<IncomingBatch.Status> statuses) {
