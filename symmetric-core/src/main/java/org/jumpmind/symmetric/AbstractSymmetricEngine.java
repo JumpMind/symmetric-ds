@@ -675,6 +675,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
 
     public synchronized boolean start(boolean startJobs) {
         isInitialized = false;
+        lastException = null;
         if (!starting && !started) {
             try {
                 starting = true;
@@ -692,7 +693,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                                 new Object[] { node.getNodeGroupId(), node.getNodeId(),
                                         node.getExternalId() });
 
-                        isInitialized = true;
                         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS_AT_STARTUP,
                                 true)) {
                             triggerRouterService.syncTriggers();
@@ -716,7 +716,6 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                     } else {
                         log.info("Starting unregistered node [group={}, externalId={}]",
                                 parameterService.getNodeGroupId(), parameterService.getExternalId());
-                        isInitialized = true;
                     }
 
                     if (jobManager != null) {
@@ -731,9 +730,9 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
                         this.updateService.init();
                     }
 
-                    if(isFirstStart){
+                    if (isFirstStart) {
                         isFirstStart = false;
-                    }else{
+                    } else {
                         this.clearCaches();
                     }
                     
@@ -923,7 +922,7 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         
         started = false;
         starting = false;
-        
+        isInitialized = false;
     }
 
     public synchronized void destroy() {

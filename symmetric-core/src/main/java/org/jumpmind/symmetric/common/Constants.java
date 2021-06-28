@@ -72,7 +72,9 @@ final public class Constants {
     public static final String SERVER_SPRING_XML = "classpath:/symmetric-server.xml";
     
     public static final String PLEASE_SET_ME = "please set me";
-    
+
+    public static final String DEPLOYMENT_TYPE_SERVER = "server";
+
     public static final String DEPLOYMENT_TYPE_PROFESSIONAL = "professional";
     
     public static final String DEPLOYMENT_TYPE_CCLIENT = "cclient";

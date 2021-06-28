@@ -26,10 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -75,19 +73,23 @@ import org.springframework.context.ApplicationContext;
 
 public class SymmetricEngineHolder {
 
-    final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private static Map<String, ServerSymmetricEngine> staticEngines = Collections.synchronizedMap(new HashMap<String, ServerSymmetricEngine>());
 
-    private static Set<EngineStarter> staticEnginesStarting = Collections.synchronizedSet(new HashSet<SymmetricEngineHolder.EngineStarter>());
+    private static Set<SymmetricEngineStarter> staticEnginesStarting = Collections.synchronizedSet(new HashSet<SymmetricEngineStarter>());
+    
+    private static Set<String> staticEnginesStartingNames = Collections.synchronizedSortedSet(new TreeSet<String>());
+
+    private static Map<String, FailedEngineInfo> staticEnginesFailed = Collections.synchronizedMap(new HashMap<String, FailedEngineInfo>());
 
     private Map<String, ServerSymmetricEngine> engines = Collections.synchronizedMap(new HashMap<String, ServerSymmetricEngine>());
 
-    private Set<EngineStarter> enginesStarting = Collections.synchronizedSortedSet(new TreeSet<SymmetricEngineHolder.EngineStarter>());
-
+    private Set<SymmetricEngineStarter> enginesStarting = Collections.synchronizedSet(new HashSet<SymmetricEngineStarter>());
+    
     private Set<String> enginesStartingNames = Collections.synchronizedSortedSet(new TreeSet<String>());
 
-    private Map<String, List<String>> enginesFailed = Collections.synchronizedMap(new HashMap<String, List<String>>());
+    private Map<String, FailedEngineInfo> enginesFailed = Collections.synchronizedMap(new HashMap<String, FailedEngineInfo>());
     
     private boolean staticEnginesMode = false;
 
@@ -101,88 +103,9 @@ public class SymmetricEngineHolder {
 
     private String singleServerPropertiesFile;
 
-    private static Date createTime = new Date();
-
-    private String deploymentType = "server";
+    private String deploymentType = Constants.DEPLOYMENT_TYPE_SERVER;
 
     private boolean holderHasBeenStarted = false;
-
-    public Map<String, ServerSymmetricEngine> getEngines() {
-        return engines;
-    }
-
-    public void setDeploymentType(String deploymentType) {
-        this.deploymentType = deploymentType;
-    }
-
-    public void setMultiServerMode(boolean multiServerMode) {
-        this.multiServerMode = multiServerMode;
-    }
-
-    public boolean isMultiServerMode() {
-        return multiServerMode;
-    }
-
-    public void setAutoCreate(boolean autoCreate) {
-        this.autoCreate = autoCreate;
-    }
-
-    public boolean isAutoCreate() {
-        return autoCreate;
-    }
-
-    public void setStaticEnginesMode(boolean staticEnginesMode) {
-        this.staticEnginesMode = staticEnginesMode;
-    }
-
-    public boolean isStaticEnginesMode() {
-        return staticEnginesMode;
-    }
-
-    public void setSingleServerPropertiesFile(String singleServerPropertiesFile) {
-        this.singleServerPropertiesFile = singleServerPropertiesFile;
-    }
-
-    public String getSingleServerPropertiesFile() {
-        return singleServerPropertiesFile;
-    }
-
-    public boolean areEnginesConfigured() {
-        return enginesStarting.size() > 0 || engines.size() > 0;
-    }
-
-    public int getNumerOfEnginesStarting() {
-        return enginesStarting.size();
-    }
-    
-    public Set<String> getEnginesStartingNames() {
-        return enginesStartingNames;
-    }
-
-    public Map<String, List<String>> getFailedEngines() {
-        return enginesFailed;
-    }
-
-    public boolean areEnginesInError() {
-        return enginesFailed.size() > 0;
-    }
-
-    public void setAutoStart(boolean autoStart) {
-        this.autoStart = autoStart;
-    }
-
-    public boolean isAutoStart() {
-        return autoStart;
-    }
-
-    public synchronized void stop() {
-        Set<String> engineNames = engines.keySet();
-        for (String engineName : engineNames) {
-            engines.get(engineName).destroy();
-        }
-        engines.clear();
-        enginesFailed.clear();
-    }
 
     public void start() {
         try {
@@ -192,6 +115,8 @@ public class SymmetricEngineHolder {
                 log.info("In static engine mode");
                 engines = staticEngines;
                 enginesStarting = staticEnginesStarting;
+                enginesStartingNames = staticEnginesStartingNames;
+                enginesFailed = staticEnginesFailed;
             }
 
             if (autoCreate) {
@@ -209,8 +134,7 @@ public class SymmetricEngineHolder {
                     if (files == null) {
                         String firstAttempt = enginesDir.getAbsolutePath();
                         enginesDir = new File(".");
-                        log.warn(
-                                "Unable to retrieve engine properties files from {}.  Trying current working directory {}",
+                        log.warn("Unable to retrieve engine properties files from {}.  Trying current working directory {}",
                                 firstAttempt, enginesDir.getAbsolutePath());
 
                         if (enginesDir != null) {
@@ -224,7 +148,7 @@ public class SymmetricEngineHolder {
                         for (int i = 0; i < files.length; i++) {
                             File file = files[i];
                             if (file.getName().endsWith(".properties")) {
-                                enginesStarting.add(new EngineStarter(file.getAbsolutePath()));
+                            	enginesStarting.add(new SymmetricEngineStarter(file.getAbsolutePath(), this));
                                 found = true;
                             }
                         }
@@ -243,103 +167,29 @@ public class SymmetricEngineHolder {
                             singleServerPropertiesFile = singleServerPropertiesURL.getFile();
                         }
                     }
-                    enginesStarting.add(new EngineStarter(singleServerPropertiesFile));
+                    enginesStarting.add(new SymmetricEngineStarter(singleServerPropertiesFile, this));
                 }
                 
-                ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5")), new CustomizableThreadFactory("symmetric-engine-startup"));
+                int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
+                ExecutorService executor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-startup"));
 
-                for (EngineStarter starter : enginesStarting) {
+                for (SymmetricEngineStarter starter : enginesStarting) {
                     executor.execute(starter);
                 }
-                
+
                 executor.shutdown();
-
             }
-
         } finally {
             holderHasBeenStarted = true;
         }
-
     }
 
-    public void uninstallEngine(ISymmetricEngine engine) {
-        Node node = engine.getNodeService().getCachedIdentity();
-        String engineName = engine.getEngineName();
-        File file = SymmetricAdmin.findPropertiesFileForEngineWithName(engineName);
-        engine.uninstall();
-        engine.destroy();
-        if (file != null) {
-            file.delete();
+    public synchronized void stop() {
+        for (ServerSymmetricEngine engine : engines.values()) {
+        	engine.destroy();
         }
-        getEngines().remove(engineName);
-
-        for (ISymmetricEngine existingEngine : this.getEngines().values()) {
-            existingEngine.removeAndCleanupNode(node.getNodeId());
-        }        
-    }
-
-    public void setSpringContext(ApplicationContext applicationContext) {
-        this.springContext = applicationContext;
-    }
-
-    public int getEngineCount() {
-        return (engines != null ? engines.size() : 0);
-    }
-
-    protected ISymmetricEngine create(String propertiesFile) {
-        ServerSymmetricEngine engine = null;
-        File file = new File(propertiesFile);
-        String engineName = FilenameUtils.removeExtension(file.getName());
-        try {
-            Properties engineProperties = getEngineProperties(file);
-            TypedProperties properties = new TypedProperties(engineProperties);
-            engineName = getEngineName(properties);
-            validateRequiredProperties(properties);
-            
-            engine = new ServerSymmetricEngine(file, springContext, this);
-            engine.setDeploymentType(deploymentType);
-            
-            String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
-            String logBased = properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false");
-            String deploymentSubType = null;
-            if (loadOnly != null && loadOnly.equals("true")) {
-                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
-            }
-            if (logBased != null && logBased.equals("true")) {
-                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
-            }
-            engine.setDeploymentSubType(deploymentSubType);
-            
-            synchronized (this) {
-                if (!engines.containsKey(engine.getEngineName())) {
-                    engines.put(engine.getEngineName(), engine);
-                } else {
-                    log.error(
-                            "An engine with the name of {} was not started because an engine of the same name has already been started.  Please set the engine.name property in the properties file to a unique name.",
-                            engine.getEngineName());
-                    List<String> values = new ArrayList<String>();
-                    values.add(engine.getEngineName());
-                    values.add("An engine with the name of " + engine.getEngineName() + " was not started because an engine of the same name "
-                            + "has already been started. Please set the engine.name property in the properties file to a unique name.");
-                    enginesFailed.put(file.getName(), values);
-                }
-            }
-            return engine;
-        } catch (Exception e) {
-            log.error("", e);
-            List<String> values = new ArrayList<String>();
-            values.add((engine == null ? engineName : engine.getEngineName()));
-            values.add(e.getMessage());
-            enginesFailed.put(file.getName(), values);
-            return null;
-        }
-    }
-    
-    protected Properties getEngineProperties(File propertiesFile) throws Exception {
-        Properties properties = new Properties();
-        InputStream fileInputStream = new FileInputStream(propertiesFile.getAbsolutePath());
-        properties.load(fileInputStream);
-        return properties;
+        engines.clear();
+        enginesFailed.clear();
     }
 
     public ISymmetricEngine install(Properties passedInProperties) throws Exception {
@@ -394,23 +244,17 @@ public class SymmetricEngineHolder {
 
         ISymmetricEngine engine = null;
         try {
-
             String registrationUrl = properties.getProperty(ParameterConstants.REGISTRATION_URL);
             if (StringUtils.isNotBlank(registrationUrl)) {
                 Collection<ServerSymmetricEngine> all = getEngines().values();
                 for (ISymmetricEngine currentEngine : all) {
-                    if (currentEngine.getParameterService().getSyncUrl()
-                            .equals(registrationUrl)) {
-                        String serverNodeGroupId = currentEngine.getParameterService()
-                                .getNodeGroupId();
-                        String clientNodeGroupId = properties
-                                .getProperty(ParameterConstants.NODE_GROUP_ID);
+                    if (currentEngine.getParameterService().getSyncUrl().equals(registrationUrl)) {
+                        String serverNodeGroupId = currentEngine.getParameterService().getNodeGroupId();
+                        String clientNodeGroupId = properties.getProperty(ParameterConstants.NODE_GROUP_ID);
                         String externalId = properties.getProperty(ParameterConstants.EXTERNAL_ID);
 
-                        IConfigurationService configurationService = currentEngine
-                                .getConfigurationService();
-                        ITriggerRouterService triggerRouterService = currentEngine.
-                                getTriggerRouterService();
+                        IConfigurationService configurationService = currentEngine.getConfigurationService();
+                        ITriggerRouterService triggerRouterService = currentEngine.getTriggerRouterService();
                         List<NodeGroup> groups = configurationService.getNodeGroups();
                         boolean foundGroup = false;
                         for (NodeGroup nodeGroup : groups) {
@@ -424,8 +268,7 @@ public class SymmetricEngineHolder {
                         }
 
                         boolean foundLink = false;
-                        List<NodeGroupLink> links = configurationService
-                                .getNodeGroupLinksFor(serverNodeGroupId, false);
+                        List<NodeGroupLink> links = configurationService.getNodeGroupLinksFor(serverNodeGroupId, false);
                         for (NodeGroupLink nodeGroupLink : links) {
                             if (nodeGroupLink.getTargetNodeGroupId().equals(clientNodeGroupId)) {
                                 foundLink = true;
@@ -433,16 +276,12 @@ public class SymmetricEngineHolder {
                         }
 
                         if (!foundLink) {
-                            configurationService.saveNodeGroupLink(new NodeGroupLink(
-                                    serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
+                            configurationService.saveNodeGroupLink(new NodeGroupLink(serverNodeGroupId, clientNodeGroupId, NodeGroupLinkAction.W));
                             triggerRouterService.syncTriggers();
                         }
 
-                        IRegistrationService registrationService = currentEngine
-                                .getRegistrationService();
-                        if (!registrationService.isAutoRegistration()
-                                && !registrationService.isRegistrationOpen(clientNodeGroupId,
-                                        externalId)) {
+                        IRegistrationService registrationService = currentEngine.getRegistrationService();
+                        if (!registrationService.isAutoRegistration() && !registrationService.isRegistrationOpen(clientNodeGroupId, externalId)) {
                             Node node = new Node(properties);
                             registrationService.openRegistration(node);
                         }
@@ -469,28 +308,82 @@ public class SymmetricEngineHolder {
             FileUtils.deleteQuietly(symmetricProperties);
             throw ex;
         }
-
     }
 
-    public boolean areEnginesStarting() {
-        return !holderHasBeenStarted || enginesStarting.size() > 0;
-    }
+    public void uninstallEngine(ISymmetricEngine engine) {
+        Node node = engine.getNodeService().getCachedIdentity();
+        String engineName = engine.getEngineName();
+        File file = SymmetricAdmin.findPropertiesFileForEngineWithName(engineName);
+        engine.uninstall();
+        engine.destroy();
+        if (file != null) {
+            file.delete();
+        }
+        getEngines().remove(engineName);
 
-    public boolean hasAnyEngineInitialized() {
-        if (enginesStarting.size() < engines.size()) {
-            return true;
-        }
-        for (EngineStarter starter : enginesStarting) {
-            ISymmetricEngine engine = starter.getEngine();
-            if (engine != null && engine.isInitialized()) {
-                return true;
-            }
-        }
-        return false;
+        for (ISymmetricEngine existingEngine : this.getEngines().values()) {
+            existingEngine.removeAndCleanupNode(node.getNodeId());
+        }        
     }
     
+    public ISymmetricEngine create(String propertiesFile) {
+        ServerSymmetricEngine engine = null;
+        File file = new File(propertiesFile);
+        String engineName = FilenameUtils.removeExtension(file.getName());
+        try {
+        	TypedProperties properties = new TypedProperties();
+            try (InputStream is = new FileInputStream(file.getAbsolutePath())) {
+            	properties.load(is);	
+            }
+
+            engineName = getEngineName(properties);
+            enginesStartingNames.add(engineName);
+            validateRequiredProperties(properties);
+            
+            engine = new ServerSymmetricEngine(file, springContext, this);
+            engine.setDeploymentType(deploymentType);
+            
+            String loadOnly = properties.getProperty(ParameterConstants.NODE_LOAD_ONLY);
+            String logBased = properties.getProperty(ParameterConstants.START_LOG_MINER_JOB, "false");
+            String deploymentSubType = null;
+            if (loadOnly != null && loadOnly.equals("true")) {
+                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
+            }
+            if (logBased != null && logBased.equals("true")) {
+                deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
+            }
+            engine.setDeploymentSubType(deploymentSubType);
+            
+            synchronized (this) {
+                if (!engines.containsKey(engine.getEngineName())) {
+                    engines.put(engine.getEngineName(), engine);
+                } else {
+                    String message = "An engine with the name of " + engine.getEngineName() +
+                    		" was not started because an engine of the same name has already been started.  " +
+                    		"Please set the engine.name property in the properties file to a unique name.";
+                    log.error(message);
+                    enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, message));
+                    enginesStartingNames.remove(engineName);
+                    engine = null;
+                }
+            }
+        } catch (Exception e) {
+        	String message = "Failed to initialize engine"; 
+            log.error(message, e);
+    		StringBuilder sb = new StringBuilder(message);
+    		Throwable t = e;
+    		do {
+    			sb.append(", [").append(t.getClass().getSimpleName()).append(": ").append(t.getMessage()).append("]");
+    			t = t.getCause();
+    		} while (t != null);
+            enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, sb.toString()));
+            enginesStartingNames.remove(engineName);
+            engine = null;
+        }
+        return engine;
+    }
+
     protected void validateEngineFiles(File[] files) {
-        
         Map<String, String> dbToPropertyFiles = new LinkedHashMap<String, String>();
          
         for (File file : files) {
@@ -542,8 +435,7 @@ public class SymmetricEngineHolder {
             engineName = engineName.replaceAll(" ", "_");
             String engineExt = "";
             int engineNumber = 0;
-            while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt
-                    + ".properties").exists()) {
+            while (new File(AbstractCommandLauncher.getEnginesDir(), engineName + engineExt + ".properties").exists()) {
                 engineNumber++;
                 engineExt = "-" + engineNumber;
             }
@@ -576,23 +468,17 @@ public class SymmetricEngineHolder {
             log.debug("Defaulting node {} sync.url to {}", externalId, defaultValue);            
             properties.setProperty(ParameterConstants.SYNC_URL, defaultValue);
         }
-        if (StringUtils.isBlank(properties
-                .getProperty(BasicDataSourcePropertyConstants.DB_POOL_DRIVER))) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
+        if (StringUtils.isBlank(properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_DRIVER))) {
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_DRIVER);
         }
-        if (StringUtils.isBlank(properties
-                .getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL))) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_URL);
+        if (StringUtils.isBlank(properties.getProperty(BasicDataSourcePropertyConstants.DB_POOL_URL))) {
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_URL);
         }
         if (!properties.containsKey(BasicDataSourcePropertyConstants.DB_POOL_USER)) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_USER);
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_USER);
         }
         if (!properties.containsKey(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)) {
-            throw new IllegalStateException("Missing property "
-                    + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
+            throw new IllegalStateException("Missing property " + BasicDataSourcePropertyConstants.DB_POOL_PASSWORD);
         }
         if (!properties.containsKey(ParameterConstants.REGISTRATION_URL)) {
             properties.setProperty(ParameterConstants.REGISTRATION_URL, "");
@@ -600,51 +486,108 @@ public class SymmetricEngineHolder {
         return engineName;
     }
 
-    public static Date getCreateTime() {
-        return createTime;
+    public boolean hasAnyEngineInitialized() {
+        for (ServerSymmetricEngine engine : engines.values()) {
+            if (engine.isInitialized()) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    static int threadNumber = 0;
+    public boolean areEnginesStarting() {
+        return !holderHasBeenStarted || enginesStarting.size() > 0;
+    }
 
-    class EngineStarter implements Runnable, Comparable<EngineStarter> {
+    public boolean areEnginesConfigured() {
+        return enginesStarting.size() > 0 || engines.size() > 0 || enginesFailed.size() > 0;
+    }
 
-        String propertiesFile;
-        ISymmetricEngine engine;
+    public boolean areEnginesInError() {
+        return enginesFailed.size() > 0;
+    }
 
-        public EngineStarter(String propertiesFile) {
-            this.propertiesFile = propertiesFile;
-        }
+    public int getNumerOfEnginesStarting() {
+        return enginesStarting.size();
+    }
 
-        @Override
-        public void run() {
-            engine = create(propertiesFile);
-            if (engine != null) {
-                enginesStartingNames.add(engine.getEngineName());
-            }
-            if (engine != null && autoStart &&
-                    engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
-                boolean started = engine.start();
-                if (!started) {
-                    File file = new File(propertiesFile);
-                    List<String> values = new ArrayList<String>();
-                    values.add(engine.getEngineName());
-                    values.add(engine.getLastException());
-                    enginesFailed.put(file.getName(), values);
-                }
-            }
-            enginesStarting.remove(this);
-            if (engine != null) {
-                enginesStartingNames.remove(engine.getEngineName());
-            }
-        }
-        
-        public ISymmetricEngine getEngine() {
-            return engine;
-        }
-        
-        @Override
-        public int compareTo(EngineStarter o) {
-            return propertiesFile.compareTo(o.propertiesFile);
-        }
+    public Map<String, ServerSymmetricEngine> getEngines() {
+        return engines;
+    }
+
+    public int getEngineCount() {
+        return engines.size() + enginesFailed.size();
+    }
+
+    public Set<SymmetricEngineStarter> getEnginesStarting() {
+        return enginesStarting;
+    }
+
+    public Set<String> getEnginesStartingNames() {
+        return enginesStartingNames;
+    }
+
+    public Map<String, FailedEngineInfo> getEnginesFailed() {
+        return enginesFailed;
+    }
+
+    public Set<String> getEnginesFailedNames() {
+        return enginesFailed.keySet();
+    }
+
+    public void setSpringContext(ApplicationContext applicationContext) {
+        this.springContext = applicationContext;
+    }
+
+    public ApplicationContext getSpringContext() {
+    	return springContext;
+    }
+
+    public void setDeploymentType(String deploymentType) {
+        this.deploymentType = deploymentType;
+    }
+
+    public String getDeploymentType() {
+    	return deploymentType;
+    }
+
+    public void setMultiServerMode(boolean multiServerMode) {
+        this.multiServerMode = multiServerMode;
+    }
+
+    public boolean isMultiServerMode() {
+        return multiServerMode;
+    }
+
+    public void setAutoCreate(boolean autoCreate) {
+        this.autoCreate = autoCreate;
+    }
+
+    public boolean isAutoCreate() {
+        return autoCreate;
+    }
+
+    public void setStaticEnginesMode(boolean staticEnginesMode) {
+        this.staticEnginesMode = staticEnginesMode;
+    }
+
+    public boolean isStaticEnginesMode() {
+        return staticEnginesMode;
+    }
+
+    public void setSingleServerPropertiesFile(String singleServerPropertiesFile) {
+        this.singleServerPropertiesFile = singleServerPropertiesFile;
+    }
+
+    public String getSingleServerPropertiesFile() {
+        return singleServerPropertiesFile;
+    }
+    
+    public void setAutoStart(boolean autoStart) {
+        this.autoStart = autoStart;
+    }
+
+    public boolean isAutoStart() {
+        return autoStart;
     }
 }
