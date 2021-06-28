@@ -39,13 +39,11 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
 import org.jumpmind.symmetric.model.ProcessType;
 import org.jumpmind.symmetric.model.RemoteNodeStatuses;
-import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.service.IExtensionService;
 import org.jumpmind.symmetric.service.IFileSyncService;
 import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
-import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public class FileSyncExtractorService extends DataExtractorService {
     
@@ -54,7 +52,6 @@ public class FileSyncExtractorService extends DataExtractorService {
     private IStagingManager stagingManager;
     private IConfigurationService configurationService;
     private INodeCommunicationService nodeCommunicationService;
-    private ITriggerRouterService triggerRouterService;
     private IExtensionService extensionService;
     
     public FileSyncExtractorService(ISymmetricEngine engine) {
@@ -64,7 +61,6 @@ public class FileSyncExtractorService extends DataExtractorService {
         this.stagingManager = engine.getStagingManager();
         this.configurationService = engine.getConfigurationService();
         this.nodeCommunicationService = engine.getNodeCommunicationService();
-        this.triggerRouterService = engine.getTriggerRouterService();
         this.extensionService = engine.getExtensionService();
     }
     
@@ -76,13 +72,7 @@ public class FileSyncExtractorService extends DataExtractorService {
     
     @Override
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
-        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId());
-        if (trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
-                TableConstants.SYM_FILE_SNAPSHOT))) {
-            return true;
-        } else {            
-            return false;
-        }
+        return request.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
     }
     
     @Override

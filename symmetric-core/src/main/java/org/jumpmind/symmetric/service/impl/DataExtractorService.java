@@ -2032,13 +2032,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
-        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId(), false);
-        if (trigger == null || !trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
-                TableConstants.SYM_FILE_SNAPSHOT))) {
-            return true;
-        } else {            
-            return false;
-        }
+        return !request.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
     }    
 
     /**
@@ -2059,9 +2053,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             allChildRequests = getExtractChildRequestsForNode(nodeCommunication, requests);
         }
 
-        // refresh trigger cache
-        triggerRouterService.getTriggerById(null, true);
-
         /*
          * Process extract requests until it has taken longer than 30 seconds, and then
          * allow the process to return so progress status can be seen.
@@ -2071,7 +2062,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ExtractRequest request = requests.get(i);
             if (!canProcessExtractRequest(request, nodeCommunication.getCommunicationType())){
                 continue;
-            }                
+            }
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId(), true);
             log.info("Starting request {} to extract table {} into batches {} through {} for node {}.",
