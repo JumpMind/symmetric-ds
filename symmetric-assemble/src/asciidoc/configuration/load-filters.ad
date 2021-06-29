@@ -15,7 +15,7 @@ endif::pro[]
 
 Filter Id:: The unique identifier for the load filter
 Group Link:: The group link for with the load filter will be applied.
-Type:: The type of load filter. Today only Bean Shell and Java are supported ('BSH', 'Java', 'SQL').
+Type:: The type of load filter. Today only Bean Shell, Java, and SQL are supported ('BSH', 'Java', 'SQL').
 Target Table:: The table on the target which the load filter will execute when changes occur on it.  
 
 NOTE: Use the wildcard * to specify all tables configured through the group link.   Partial table names in conjunction with a wildcard 

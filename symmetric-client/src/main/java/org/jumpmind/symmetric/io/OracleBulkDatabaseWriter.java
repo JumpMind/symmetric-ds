@@ -48,10 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class OracleBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-
-//    protected final static String FIELD_TERMINATOR = "|}";
-//
-//    protected final static String LINE_TERMINATOR = "|>";
     
     private IDatabasePlatform targetPlatform;
 

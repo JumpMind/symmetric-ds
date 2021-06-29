@@ -33,6 +33,8 @@ import org.jumpmind.symmetric.model.Node;
 public interface ITransportManager {
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, String registrationUrl) throws IOException;
+    
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local, String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException;
 
     public void writeAcknowledgement(OutputStream out, Node remote, List<IncomingBatch> list, Node local, String securityToken) throws IOException;
 

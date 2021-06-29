@@ -35,6 +35,56 @@ public class TableReloadStatus {
     protected String lastUpdatedBy;
     protected Date lastUpdateTime = new Date();
     
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + loadId;
+        result = prime * result + ((sourceNodeId == null) ? 0 : sourceNodeId.hashCode());
+        result = prime * result + ((startTime == null) ? 0 : startTime.hashCode());
+        result = prime * result + ((targetNodeId == null) ? 0 : targetNodeId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        TableReloadStatus other = (TableReloadStatus) obj;
+        if (loadId != other.loadId) {
+            return false;
+        }
+        if (sourceNodeId == null) {
+            if (other.sourceNodeId != null) {
+                return false;
+            }
+        } else if (!sourceNodeId.equals(other.sourceNodeId)) {
+            return false;
+        }
+        if (startTime == null) {
+            if (other.startTime != null) {
+                return false;
+            }
+        } else if (!startTime.equals(other.startTime)) {
+            return false;
+        }
+        if (targetNodeId == null) {
+            if (other.targetNodeId != null) {
+                return false;
+            }
+        } else if (!targetNodeId.equals(other.targetNodeId)) {
+            return false;
+        }
+        return true;
+    }
+
     public int getLoadId() {
         return loadId;
     }

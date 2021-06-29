@@ -381,7 +381,7 @@ abstract public class AbstractService implements IService {
      * Try a configured number of times to get the ACK through.
      */
     protected void sendAck(Node remote, Node local, NodeSecurity localSecurity,
-            List<IncomingBatch> list, ITransportManager transportManager) throws IOException {
+            List<IncomingBatch> list, ITransportManager transportManager, String queue) throws IOException {
         assertNotNull(remote, "Node remote cannot be null. Maybe there is a missing sym_node row.");
         assertNotNull(local, "Node local cannot be null. Maybe there is a missing sym_node row.");
         assertNotNull(localSecurity, "NodeSecurity localSecurity cannot be null. Maybe there is a missing sym_node_security row.");
@@ -392,8 +392,13 @@ abstract public class AbstractService implements IService {
 
         for (int i = 0; i < numberOfStatusSendRetries && statusCode != WebConstants.SC_OK; i++) {
             try {
+                Map<String, String> requestProperties = null;
+                if (StringUtils.isNotBlank(queue)) {
+                    requestProperties = new HashMap<String, String>();
+                    requestProperties.put(WebConstants.CHANNEL_QUEUE, queue);
+                }
                 statusCode = transportManager.sendAcknowledgement(remote, list, local,
-                        localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
+                        localSecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
                 exception = null;
             } catch (Exception e) {
                 exception = e;

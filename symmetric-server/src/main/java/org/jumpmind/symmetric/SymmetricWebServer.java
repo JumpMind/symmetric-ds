@@ -31,6 +31,7 @@ import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.http2.HTTP2Cipher;
@@ -138,7 +139,9 @@ public class SymmetricWebServer {
 
     protected boolean allowSelfSignedCerts = true;
 
-    protected boolean accessLog = false;
+    protected boolean accessLogEnabled = false;
+
+    protected String accessLogFile;
     
     public SymmetricWebServer() {
         this(null, DEFAULT_WEBAPP_DIR);
@@ -195,7 +198,8 @@ public class SymmetricWebServer {
         disallowedMethods = serverProperties.get(ServerConstants.SERVER_DISALLOW_HTTP_METHODS, "OPTIONS");
         httpsNeedClientAuth = serverProperties.is(ServerConstants.HTTPS_NEED_CLIENT_AUTH, false);
         httpsWantClientAuth = serverProperties.is(ServerConstants.HTTPS_WANT_CLIENT_AUTH, false);
-        accessLog = serverProperties.is(ServerConstants.SERVER_ACCESS_LOG, false);
+        accessLogEnabled = serverProperties.is(ServerConstants.SERVER_ACCESS_LOG_ENABLED, false);
+        accessLogFile = serverProperties.get(ServerConstants.SERVER_ACCESS_LOG_FILE);
         
         if (serverProperties.is(ServerConstants.SERVER_HTTP_COOKIES_ENABLED, false)) {
             if (CookieHandler.getDefault() == null) {
@@ -279,9 +283,12 @@ public class SymmetricWebServer {
             webapp.getSessionHandler().getSessionCookieConfig().setSecure(true);
         }
         
-        if (accessLog) {
-            server.setRequestLog(new CustomRequestLog(new RequestLogWriter(),
-	                        CustomRequestLog.EXTENDED_NCSA_FORMAT));
+        if (accessLogEnabled) {
+            RequestLogWriter writer = new RequestLogWriter();
+            if (StringUtils.isNotBlank(accessLogFile)) {
+                writer = new RequestLogWriter(accessLogFile);
+            }
+            server.setRequestLog(new CustomRequestLog(writer, CustomRequestLog.EXTENDED_NCSA_FORMAT));
         }
         
         server.setHandler(webapp);

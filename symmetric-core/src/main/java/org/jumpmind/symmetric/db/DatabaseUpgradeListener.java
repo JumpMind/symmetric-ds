@@ -55,7 +55,6 @@ import org.jumpmind.symmetric.common.TableConstants;
 import org.jumpmind.symmetric.ext.IDatabaseUpgradeListener;
 import org.jumpmind.symmetric.ext.ISymmetricEngineAware;
 import org.jumpmind.symmetric.model.TriggerHistory;
-import org.jumpmind.symmetric.model.TriggerRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +93,7 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
             }
         }
 
-        if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel) && shouldFixDataEvent311()) {
+        if (isUpgradeFromPre311(tablePrefix, currentModel, desiredModel) && shouldFixDataEvent311(tablePrefix)) {
             fixDataEvent311(tablePrefix);
         }
         
@@ -256,14 +255,16 @@ public class DatabaseUpgradeListener implements IDatabaseUpgradeListener, ISymme
         }
     }
 
-    protected boolean shouldFixDataEvent311() {
-        List<TriggerRouter> triggerRouters = engine.getTriggerRouterService().getAllTriggerRoutersForCurrentNode(
-                engine.getParameterService().getNodeGroupId());
-        HashSet<String> set = new HashSet<String>();
+    protected boolean shouldFixDataEvent311(String tablePrefix) {
         boolean shouldFix = engine.getParameterService().is("upgrade.force.fix.data.event");
         if (!shouldFix && !engine.getParameterService().is("upgrade.skip.fix.data.event")) {
-            for (TriggerRouter triggerRouter : triggerRouters) {
-                String key = triggerRouter.getTriggerId() + "-" + triggerRouter.getRouter().getNodeGroupLink().getTargetNodeGroupId();
+            HashSet<String> set = new HashSet<String>();
+            String sql = "select t.trigger_id, r.target_node_group_id from " + tablePrefix + "_trigger t inner join " + tablePrefix +
+                "_trigger_router tr on tr.trigger_id = t.trigger_id inner join " + tablePrefix + 
+                "_router r on r.router_id = tr.router_id where r.source_node_group_id = ?";
+            List<Row> rows = engine.getSqlTemplate().query(sql, new Object[] { engine.getParameterService().getNodeGroupId() });
+            for (Row row : rows) {
+                String key = row.getString("trigger_id") + "-" + row.getString("target_node_group_id");
                 if (set.contains(key)) {
                     shouldFix = true;
                     break;
