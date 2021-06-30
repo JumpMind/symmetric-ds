@@ -30,7 +30,7 @@ public class SqlEntryDialog extends ResizableDialog {
     protected AceEditor editor;
 
     public SqlEntryDialog(String sql) {
-        //setCaption("Edit SQL");
+        super("Edit SQL");
         editor = CommonUiUtils.createAceEditor();
         editor.setMode(AceMode.sql);
         editor.setValue(sql);

@@ -49,12 +49,18 @@ public class ResizableDialog extends Dialog {
     }
     
     public ResizableDialog(String caption) {
-        //setCaption(caption);
         setModal(true);
         setResizable(true);
         
+        if (caption != null) {
+            Span header = new Span();
+            header.getElement().setProperty("innerHTML", caption + "<hr>");
+            super.add(header);
+        }
+        
         content = new VerticalLayout();
-        content.setSizeFull();
+        content.setWidthFull();
+        content.setHeight("94%");
         content.setMargin(false);
         content.setSpacing(false);
         super.add(content);

@@ -31,7 +31,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class PromptDialog extends Dialog {
@@ -44,12 +43,17 @@ public class PromptDialog extends Dialog {
 
     public PromptDialog(String caption, String text, String defaultValue,
             final IPromptListener promptListener) {
-        //setCaption(caption);
         setModal(true);
         setResizable(false);
         setSizeUndefined();
         setCloseOnEsc(false);
         setCloseOnOutsideClick(false);
+        
+        if (caption != null) {
+            Span header = new Span();
+            header.getElement().setProperty("innerHTML", caption + "<hr>");
+            add(header);
+        }
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSpacing(true);
@@ -65,6 +69,7 @@ public class PromptDialog extends Dialog {
         field.setValue(defaultValue);
         if (defaultValue != null) {
             //field.setSelection(0, defaultValue.length());
+            field.focus();
         }
         layout.add(field);
 

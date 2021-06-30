@@ -31,7 +31,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class ConfirmDialog extends Dialog {
@@ -39,18 +38,24 @@ public class ConfirmDialog extends Dialog {
     private static final long serialVersionUID = 1L;
 
     public ConfirmDialog(String caption, String text, final IConfirmListener confirmListener) {
-        //setCaption(caption);
         setModal(true);
         setResizable(true);
         setWidth("400px");
         setHeight("300px");
         setCloseOnEsc(false);
         setCloseOnOutsideClick(false);
+        
+        if (caption != null) {
+            Span header = new Span();
+            header.getElement().setProperty("innerHTML", caption + "<hr>");
+            add(header);
+        }
 
         VerticalLayout layout = new VerticalLayout();
-        layout.setSizeFull();
+        layout.setWidthFull();
+        layout.setHeight("90%");
         layout.setSpacing(true);
-        layout.setMargin(true);
+        layout.setMargin(false);
         add(layout);
 
         if (isNotBlank(text)) {
