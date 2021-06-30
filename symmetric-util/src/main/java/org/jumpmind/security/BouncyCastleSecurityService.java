@@ -41,12 +41,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPrivateKeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -196,6 +199,11 @@ public class BouncyCastleSecurityService extends SecurityService {
                     } else if (line.contains("BEGIN PRIVATE KEY")) {
                         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(readPemBytes(reader));
                         key = KeyFactory.getInstance("RSA").generatePrivate(spec);
+                    } else if (line.contains("BEGIN RSA PRIVATE KEY")) {
+                        RSAPrivateKey rsaPrivKey = RSAPrivateKey.getInstance((ASN1Sequence) ASN1Sequence.fromByteArray(readPemBytes(reader)));
+                        RSAPrivateKeySpec rsaPrivKeySpec = new RSAPrivateKeySpec(rsaPrivKey.getModulus(), rsaPrivKey.getPrivateExponent());
+                        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                        key = keyFactory.generatePrivate(rsaPrivKeySpec);
                     }
                 }
                 chain = certs.toArray(new X509Certificate[certs.size()]);
