@@ -22,7 +22,7 @@
 @echo off
 
 pushd "%~dp0.."
-for /f "delims=" %%i in ('echo %CD%') do set SYM_HOME=%%i
+set SYM_HOME=%CD%
 popd
 
 set SYM_OPTIONS=-Dfile.encoding=utf-8 ^
