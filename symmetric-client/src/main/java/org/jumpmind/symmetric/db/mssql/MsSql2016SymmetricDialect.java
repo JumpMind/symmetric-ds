@@ -81,7 +81,7 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
     protected boolean supportsSessionContext() {
         if (supportsSessionContext == null) {
             try {
-                getPlatform().getSqlTemplate().update("EXEC sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', NULL");
+                getPlatform().getSqlTemplate().update("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', NULL");
                 log.info("This database DOES support setting session context to disable triggers during a symmetricds data load");
                 supportsSessionContext = true;
             } catch (Exception ex) {
@@ -96,11 +96,11 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (supportsSessionContext()) {
-        	transaction.prepareAndExecute("EXEC sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1';");
+        	transaction.prepareAndExecute("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1';");
             if (nodeId == null) {
                 nodeId = "";
             }
-            transaction.prepareAndExecute("EXEC sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', '" + nodeId + "';");
+            transaction.prepareAndExecute("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', '" + nodeId + "';");
         } else {
             super.disableSyncTriggers(transaction, nodeId);
         }
@@ -109,8 +109,8 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
     @Override
     public void enableSyncTriggers(ISqlTransaction transaction) {
         if (supportsSessionContext()) {
-            transaction.prepareAndExecute("EXEC sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', NULL;");
-            transaction.prepareAndExecute("EXEC sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', NULL;");
+            transaction.prepareAndExecute("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', NULL;");
+            transaction.prepareAndExecute("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "', NULL;");
         } else {
             super.enableSyncTriggers(transaction);
         }
