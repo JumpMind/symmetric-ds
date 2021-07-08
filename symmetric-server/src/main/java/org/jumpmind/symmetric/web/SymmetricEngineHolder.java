@@ -90,7 +90,9 @@ public class SymmetricEngineHolder {
     private Set<String> enginesStartingNames = Collections.synchronizedSortedSet(new TreeSet<String>());
 
     private Map<String, FailedEngineInfo> enginesFailed = Collections.synchronizedMap(new HashMap<String, FailedEngineInfo>());
-    
+
+    private ExecutorService restartExecutor;
+
     private boolean staticEnginesMode = false;
 
     private boolean multiServerMode = false;
@@ -182,6 +184,19 @@ public class SymmetricEngineHolder {
         } finally {
             holderHasBeenStarted = true;
         }
+    }
+
+    public synchronized void restart(String engineName) {
+    	FailedEngineInfo info = enginesFailed.get(engineName);
+    	if (info != null) {
+    		enginesFailed.remove(engineName);
+    		if (restartExecutor == null) {
+    			int poolSize = Integer.parseInt(System.getProperty(SystemConstants.SYSPROP_CONCURRENT_ENGINES_STARTING_COUNT, "5"));
+    			restartExecutor = Executors.newFixedThreadPool(poolSize, new CustomizableThreadFactory("symmetric-engine-restart"));
+    		}
+            SymmetricEngineStarter starter = new SymmetricEngineStarter(info.getPropertyFileName(), this);
+            restartExecutor.execute(starter);
+    	}
     }
 
     public synchronized void stop() {
