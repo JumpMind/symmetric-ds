@@ -101,7 +101,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         
         HorizontalLayout bar = new HorizontalLayout();
         bar.setWidthFull();
-        //bar.setMargin(new MarginInfo(false, true, false, true));
+        bar.getStyle().set("margin", "0 16px");
         
         MenuBar wrapSelect = new MenuBar();
         wrapSelect.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);

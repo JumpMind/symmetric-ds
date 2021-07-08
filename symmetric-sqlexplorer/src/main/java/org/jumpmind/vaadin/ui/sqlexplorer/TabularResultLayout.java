@@ -341,7 +341,7 @@ public class TabularResultLayout extends VerticalLayout {
     private void createMenuBar() {
         HorizontalLayout resultBar = new HorizontalLayout();
         resultBar.setWidthFull();
-        //resultBar.setMargin(new MarginInfo(false, true, false, true));
+        resultBar.getStyle().set("margin", "0 16px");
 
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);

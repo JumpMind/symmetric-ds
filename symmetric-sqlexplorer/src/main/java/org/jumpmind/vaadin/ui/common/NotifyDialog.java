@@ -77,7 +77,7 @@ public class NotifyDialog extends ResizableDialog {
                 msg = msg.replace("\t", "    ");
                 textSpan.getElement().setProperty("innerHTML", msg);
                 detailsButton.setText("Message");
-                //messageArea.setMargin(new MarginInfo(false, false, false, true));
+                messageArea.getStyle().set("margin", "0 0 0 16px");
                 setHeight("600px");
                 setWidth("1000px");
                 //setPosition(getPositionX()-300, getPositionY()-150);

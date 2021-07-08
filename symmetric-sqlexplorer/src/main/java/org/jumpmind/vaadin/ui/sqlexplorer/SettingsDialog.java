@@ -87,7 +87,7 @@ public class SettingsDialog extends ResizableDialog {
     protected HorizontalLayout createSettingsLayout() {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidth("700px");
-        //layout.setMargin(new MarginInfo(false, true, false, true));
+        layout.getStyle().set("margin", "0 16px");
         FormLayout settingsLayout = new FormLayout();
 
         Settings settings = settingsProvider.get();
