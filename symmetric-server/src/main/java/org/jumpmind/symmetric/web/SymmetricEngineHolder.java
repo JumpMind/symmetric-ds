@@ -368,15 +368,8 @@ public class SymmetricEngineHolder {
                 }
             }
         } catch (Exception e) {
-        	String message = "Failed to initialize engine"; 
-            log.error(message, e);
-    		StringBuilder sb = new StringBuilder(message);
-    		Throwable t = e;
-    		do {
-    			sb.append(", [").append(t.getClass().getSimpleName()).append(": ").append(t.getMessage()).append("]");
-    			t = t.getCause();
-    		} while (t != null);
-            enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, sb.toString()));
+            log.error("Failed to initialize engine", e);
+            enginesFailed.put(engineName, new FailedEngineInfo(engineName, propertiesFile, e));
             enginesStartingNames.remove(engineName);
             engine = null;
         }

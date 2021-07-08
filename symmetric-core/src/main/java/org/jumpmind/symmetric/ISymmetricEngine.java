@@ -331,7 +331,9 @@ public interface ISymmetricEngine {
     
     public String getNodeId();
 
-    public String getLastException();
+    public Throwable getLastException();
+    
+    public String getLastExceptionMessage();
     
     public String getEngineDescription(String mesage);
     

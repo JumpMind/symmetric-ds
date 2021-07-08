@@ -1260,10 +1260,14 @@ abstract public class AbstractSymmetricEngine implements ISymmetricEngine {
         return groupletService;
     }
     
-    public String getLastException() {
+    public Throwable getLastException() {
+        return lastException;
+    }
+
+    public String getLastExceptionMessage() {
         return lastException == null ? null : lastException.getMessage();
     }
-    
+
     private void removeMeFromMap(Map<String, ISymmetricEngine> map) {
         Set<String> keys = new HashSet<String>(map.keySet());
         for (String key : keys) {
