@@ -134,7 +134,6 @@ public class ResizableDialog extends Dialog {
 
     public void show() {
         open();
-        //center();
     }
     
     public void showAtSize(double percentOfBrowserSize) {

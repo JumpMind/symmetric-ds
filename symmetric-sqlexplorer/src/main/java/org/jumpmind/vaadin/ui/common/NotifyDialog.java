@@ -80,14 +80,12 @@ public class NotifyDialog extends ResizableDialog {
                 messageArea.getStyle().set("margin", "0 0 0 16px");
                 setHeight("600px");
                 setWidth("1000px");
-                //setPosition(getPositionX()-300, getPositionY()-150);
             } else {
                 textSpan.getElement().setProperty("innerHTML", message);
                 detailsButton.setText("Details");
                 messageArea.setMargin(true);
                 setWidth("400px");
                 setHeight("300px");
-                //setPosition(getPositionX()+300, getPositionY()+150);
             }
         });
 
