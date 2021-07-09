@@ -1824,6 +1824,10 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
     }
 
     public void syncTrigger(Trigger trigger, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
+        syncTriggers(Collections.singletonList(trigger), listener, force, verifyInDatabase);
+    }
+    
+    public void syncTriggers(List<Trigger> triggers, ITriggerCreationListener listener, boolean force, boolean verifyInDatabase) {
         StringBuilder sqlBuffer = new StringBuilder();
         clearCache();
         List<Trigger> triggersForCurrentNode = null;
@@ -1831,36 +1835,54 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             triggersForCurrentNode = getTriggersForCurrentNode();
         } else {
             triggersForCurrentNode = new ArrayList<Trigger>();
-            triggersForCurrentNode.add(trigger);
+            triggersForCurrentNode.addAll(triggers);
         }
         try {
             if (listener != null) {
                 extensionService.addExtensionPoint(listener);
             }
-            
-            triggersToSync = triggersForCurrentNode.size();
+
+            log.info("Synchronizing {} triggers", triggers.size());
+            triggersToSync = triggers.size();
             triggersSynced = 0;
             for (ITriggerCreationListener l : extensionService.getExtensionPointList(ITriggerCreationListener.class)) {
                 l.syncTriggersStarted();
             }
 
             List<TriggerHistory> allHistories = getActiveTriggerHistories();
-            if (triggersForCurrentNode.contains(trigger)) {
-                if (!trigger.isSourceTableNameWildCarded() && !trigger.isSourceTableNameExpanded()) {
-                    for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
-                        if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
+            Map<String, List<TriggerHistory>> activeHistoryByTriggerId = new HashMap<String, List<TriggerHistory>>();
+            for (TriggerHistory hist : allHistories) {
+                List<TriggerHistory> list = activeHistoryByTriggerId.get(hist.getTriggerId());
+                if (list == null) {
+                    list = new ArrayList<TriggerHistory>();
+                    activeHistoryByTriggerId.put(hist.getTriggerId(), list);
+                }
+                list.add(hist);
+            }
+            
+            for (Trigger trigger : triggers) {
+                if (triggersForCurrentNode.contains(trigger)) {
+                    if (!trigger.isSourceTableNameWildCarded() && !trigger.isSourceTableNameExpanded()) {
+                        List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
+                        if (activeHistories != null) {
+                            for (TriggerHistory triggerHistory : activeHistories) {
+                                if (!triggerHistory.getFullyQualifiedSourceTableName().equals(trigger.getFullyQualifiedSourceTableName())) {
+                                    dropTriggers(triggerHistory, sqlBuffer);
+                                }
+                            }
+                        }
+                    }
+                    Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(
+                            Collections.singletonList(trigger), allHistories, true);
+                    updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
+                        force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo);
+                } else {
+                    List<TriggerHistory> activeHistories = activeHistoryByTriggerId.get(trigger.getTriggerId());
+                    if (activeHistories != null) {
+                        for (TriggerHistory triggerHistory : activeHistories) {
                             dropTriggers(triggerHistory, sqlBuffer);
                         }
                     }
-                }
-                List<Trigger> triggers = new ArrayList<Trigger>();
-                triggers.add(trigger);
-                Map<String, List<TriggerTableSupportingInfo>> triggerToTableSupportingInfo = getTriggerToTableSupportingInfo(triggers, allHistories, true);
-                updateOrCreateDatabaseTrigger(trigger, triggersForCurrentNode, sqlBuffer,
-                    force, verifyInDatabase, allHistories, false, triggerToTableSupportingInfo);
-            } else {                
-                for (TriggerHistory triggerHistory : getActiveTriggerHistories(trigger)) {
-                    dropTriggers(triggerHistory, sqlBuffer);
                 }
             }
         } finally {
@@ -1870,6 +1892,7 @@ public class TriggerRouterService extends AbstractService implements ITriggerRou
             if (listener != null) {
                 extensionService.removeExtensionPoint(listener);
             }
+            log.info("Done synchronizing {} triggers", triggers.size());
         }
     }
 

@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.load;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,11 @@ import org.jumpmind.symmetric.job.IJobManager;
 import org.jumpmind.symmetric.model.IncomingBatch;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeSecurity;
+import org.jumpmind.symmetric.model.Trigger;
+import org.jumpmind.symmetric.model.TriggerRouter;
 import org.jumpmind.symmetric.service.INodeService;
 import org.jumpmind.symmetric.service.IParameterService;
+import org.jumpmind.symmetric.service.ITriggerRouterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -203,8 +207,9 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
     }
     
     private void recordSyncNeeded(DataContext context, Table table, CsvData data) {
-        if (isSyncTriggersNeeded(context, table)) {
-            context.put(CTX_KEY_RESYNC_NEEDED, true);
+        if (engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED) || 
+                context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION) {
+            queueSyncTriggers(context, table, data);
         }
         
         if (data.getDataEventType() == DataEventType.CREATE) {   
@@ -242,6 +247,72 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
             }
         }
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private void queueSyncTriggers(DataContext context, Table table, CsvData data) {
+        if ((matchesTable(table, TableConstants.SYM_TRIGGER) || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER))) {
+            Object needResync = context.get(CTX_KEY_RESYNC_NEEDED);
+            if (needResync == null || needResync instanceof Set) {
+                if (needResync == null) {
+                    needResync = new HashSet<Object>();
+                    context.put(CTX_KEY_RESYNC_NEEDED, needResync);
+                }
+
+                Map<String, String> columnValues = null;
+                if (data.getDataEventType() == DataEventType.DELETE) {
+                    columnValues = data.toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+                } else {
+                    columnValues = data.toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
+                }
+                String triggerId = columnValues.get("TRIGGER_ID");
+                if (matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)) {
+                    String routerId = columnValues.get("ROUTER_ID");
+                    TriggerRouter triggerRouter = new TriggerRouter();
+                    triggerRouter.setTriggerId(triggerId);
+                    triggerRouter.setRouterId(routerId);
+                    ((Set<Object>) needResync).add(triggerRouter);
+                } else {
+                    Trigger trigger = new Trigger();
+                    trigger.setTriggerId(triggerId);
+                    ((Set<Object>) needResync).add(trigger);
+                }
+            }
+        } else if (matchesTable(table, TableConstants.SYM_ROUTER) || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK) 
+                || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET) || matchesTable(table, TableConstants.SYM_GROUPLET_LINK)) {
+            context.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
+        }        
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Trigger> convertNeedsSynced(Object needsSynced) {
+        if (needsSynced instanceof Set) {
+            Set<Trigger> triggers = new HashSet<Trigger>();
+            ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
+            triggerRouterService.clearCache();
+            
+            for (Object object : (Set<Object>) needsSynced) {
+                Trigger trigger = null;
+                if (object instanceof Trigger) {
+                    trigger = (Trigger) object;
+                    trigger = triggerRouterService.getTriggerById(trigger.getTriggerId(), false);
+                } else if (object instanceof TriggerRouter) {
+                    TriggerRouter tr = (TriggerRouter) object;
+                    tr = triggerRouterService.findTriggerRouterById(tr.getTriggerId(), tr.getRouterId(), false);
+                    if (tr != null) {
+                        trigger = tr.getTrigger();
+                    }
+                }
+                
+                if (trigger != null) {
+                    triggers.add(trigger);
+                } else {
+                    return null;
+                }
+            }
+            return new ArrayList<Trigger>(triggers);
+        }
+        return null;
     }
 
     private void recordJobManagerRestartNeeded(DataContext context, Table table, CsvData data) {
@@ -302,17 +373,6 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
         if (isFileSyncEnabled(table, data)) {
             context.put(CTX_KEY_FILE_SYNC_ENABLED, true);
         }
-    }
-
-    private boolean isSyncTriggersNeeded(DataContext context, Table table) {
-        boolean autoSync = engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_LOADED) || 
-                context.getBatch().getBatchId() == Constants.VIRTUAL_BATCH_FOR_REGISTRATION;
-        return autoSync && (matchesTable(table, TableConstants.SYM_TRIGGER)
-                || matchesTable(table, TableConstants.SYM_ROUTER)
-                || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER)
-                || matchesTable(table, TableConstants.SYM_TRIGGER_ROUTER_GROUPLET)
-                || matchesTable(table, TableConstants.SYM_GROUPLET_LINK)
-                || matchesTable(table, TableConstants.SYM_NODE_GROUP_LINK));
     }
     
     private boolean isGroupletFlushNeeded(Table table) {
@@ -401,13 +461,18 @@ public class ConfigurationChangedDatabaseWriterFilter extends DatabaseWriterFilt
          * No need to sync triggers until the entire sync process has finished just in case there
          * are multiple batches that contain configuration changes
          */
-        if (context.get(CTX_KEY_RESYNC_NEEDED) != null
-                && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
+        Object needsSynced = context.get(CTX_KEY_RESYNC_NEEDED);
+        if (needsSynced != null && parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("About to syncTriggers because new configuration came through the data loader");
-            engine.getClusterService().refreshLockEntries();  // Needed in case cluster.lock.enabled changed during config change.
-            engine.getTriggerRouterService().syncTriggers();
+            List<Trigger> triggers = convertNeedsSynced(needsSynced);
+            if (triggers != null && triggers.size() > 0) {
+                engine.getTriggerRouterService().syncTriggers(triggers, null, false, true);
+            } else {
+                engine.getClusterService().refreshLockEntries();  // Needed in case cluster.lock.enabled changed during config change.
+                engine.getTriggerRouterService().syncTriggers();
+                engine.getRegistrationService().setAllowClientRegistration(true);
+            }
             context.remove(CTX_KEY_RESYNC_NEEDED);
-            engine.getRegistrationService().setAllowClientRegistration(true);
         }
         
         if (context.get(CTX_KEY_RESYNC_TABLE_NEEDED) != null
