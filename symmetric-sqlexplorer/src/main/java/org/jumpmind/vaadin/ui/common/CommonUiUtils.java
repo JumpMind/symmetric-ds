@@ -197,8 +197,8 @@ public final class CommonUiUtils {
         return headers.toArray(new String[headers.size()]);
     }
     
-    public static Grid<List<Object>> putResultsInGrid(final ResultSet rs, int maxResultSize, final boolean showRowNumbers,
-            String... excludeValues) throws SQLException {
+    public static Grid<List<Object>> putResultsInGrid(ColumnVisibilityToggler columnVisibilityToggler, final ResultSet rs,
+            int maxResultSize, final boolean showRowNumbers, String... excludeValues) throws SQLException {
         final Grid<List<Object>> grid = new Grid<List<Object>>();
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.setColumnReorderingAllowed(true);
@@ -237,12 +237,13 @@ public final class CommonUiUtils {
                     columnNames.add(columnName);
                     
                     Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
-                    grid.addColumn(row -> row.get(colNum)).setKey(columnName).setHeader(columnName).setClassNameGenerator(row -> {
-                        if (row.get(colNum) == null) {
-                            return "italics";
-                        }
-                        return null;
-                    }).setResizable(true);//.setHidable(true);
+                    columnVisibilityToggler.addColumn(grid.addColumn(row -> row.get(colNum)).setKey(columnName)
+                            .setHeader(columnName).setClassNameGenerator(row -> {
+                                if (row.get(colNum) == null) {
+                                    return "italics";
+                                }
+                                return null;
+                            }).setResizable(true), columnName);
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
                 } else {

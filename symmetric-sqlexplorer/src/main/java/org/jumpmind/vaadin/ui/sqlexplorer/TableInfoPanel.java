@@ -30,6 +30,7 @@ import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.symmetric.io.data.DbExport;
 import org.jumpmind.symmetric.io.data.DbExport.Format;
+import org.jumpmind.vaadin.ui.common.ColumnVisibilityToggler;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.TabSheet;
 import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
@@ -75,6 +76,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         setSizeFull();
 
         tabSheet = CommonUiUtils.createTabSheet();
+        tabSheet.setAutoselect(false);
         tabSheet.addSelectedTabChangeListener(event -> {
             EnhancedTab selectedTab = tabSheet.getSelectedTab();
             if (selectedTab != null) {
@@ -83,7 +85,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
                 
                 if (selectedComponent != null) {
                     if (!(selectedComponent instanceof AceEditor)) {
-                        boolean isInit = ((boolean) ComponentUtil.getData(selectedComponent, "isInit"));
+                        boolean isInit = Boolean.TRUE.equals(ComponentUtil.getData(selectedComponent, "isInit"));
                         AbstractMetaDataGridCreator creator = ((AbstractMetaDataGridCreator) ComponentUtil
                                 .getData(selectedComponent, "creator"));
                         if (selectedCaption.equals("Data") && isInit == true) {
@@ -139,7 +141,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     protected void refreshData(final org.jumpmind.db.model.Table table, final String user, final IDb db,
             final Settings settings, boolean isInit) {
         
-        if (!isInit) {
+        if (!isInit && tabSheet.getTabCount() >= 2) {
             tabSheet.remove(tabSheet.getTab(1));
         }
         
@@ -210,7 +212,10 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     
     protected void populate(VerticalLayout layout) {
         AbstractMetaDataGridCreator creator = (AbstractMetaDataGridCreator) ComponentUtil.getData(layout, "creator");
-        Grid<List<Object>> grid = creator.create();
+        ColumnVisibilityToggler columnVisibilityToggler = new ColumnVisibilityToggler();
+        Grid<List<Object>> grid = creator.create(columnVisibilityToggler);
+        layout.add(columnVisibilityToggler);
+        layout.setHorizontalComponentAlignment(Alignment.END, columnVisibilityToggler);
         layout.add(grid);
         layout.expand(grid);
         ComponentUtil.setData(layout, "creator", null);
@@ -218,7 +223,9 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
     
     protected void populateSource(org.jumpmind.db.model.Table table, IDb db, AceEditor oldTab) {
         try {
-            tabSheet.remove(tabSheet.getTab(oldTab).getName());
+            if (tabSheet.getTab(oldTab) != null) {
+                tabSheet.remove(tabSheet.getTab(oldTab).getName());
+            }
             DbExport export = new DbExport(db.getPlatform());
             export.setNoCreateInfo(false);
             export.setNoData(true);

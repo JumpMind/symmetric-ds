@@ -31,6 +31,7 @@ import java.util.List;
 import org.jumpmind.db.sql.IConnectionCallback;
 import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.properties.TypedProperties;
+import org.jumpmind.vaadin.ui.common.ColumnVisibilityToggler;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ abstract public class AbstractMetaDataGridCreator {
         this.settings = settings;
     }
 
-    public Grid<List<Object>> create() {
+    public Grid<List<Object>> create(ColumnVisibilityToggler columnVisibilityToggler) {
         return sqlTemplate.execute(new IConnectionCallback<Grid<List<Object>>>() {
 
             public Grid<List<Object>> execute(Connection con) throws SQLException {
@@ -70,7 +71,7 @@ abstract public class AbstractMetaDataGridCreator {
                 try {
                     DatabaseMetaData metadata = con.getMetaData();
                     rs = getMetaDataResultSet(metadata);
-                    g = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE,
+                    g = CommonUiUtils.putResultsInGrid(columnVisibilityToggler, rs, Integer.MAX_VALUE,
                             properties.is(SQL_EXPLORER_SHOW_ROW_NUMBERS), getColumnsToExclude());
                     g.setSizeFull();
                     return g;

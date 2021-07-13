@@ -218,6 +218,10 @@ public class TabSheet extends Div {
         return tabList.stream().map(EnhancedTab::getComponent).iterator();
     }
     
+    public void setAutoselect(boolean autoselect) {
+        tabs.setAutoselect(autoselect);
+    }
+    
     protected void remove(EnhancedTab tab) {
         int tabCount = tabList.size();
         if (tab.isSelected() && tabCount > 1) {

@@ -32,6 +32,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.jumpmind.db.sql.JdbcSqlTemplate;
+import org.jumpmind.vaadin.ui.common.ColumnVisibilityToggler;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.TabSheet;
 import org.slf4j.Logger;
@@ -72,8 +73,8 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             c = ((DataSource) db.getPlatform().getDataSource()).getConnection();
             DatabaseMetaData metaData = c.getMetaData();
             
-            tabSheet.add(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData)), "Meta Data");
-            tabSheet.add(createTabData(createGridWithReflection(Connection.class, c)), "Connection");
+            tabSheet.add(createTabData(createGridWithReflection(DatabaseMetaData.class, metaData), null), "Meta Data");
+            tabSheet.add(createTabData(createGridWithReflection(Connection.class, c), null), "Connection");
             
             try{
                 ResultSet rs = null;
@@ -82,76 +83,92 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
                 } catch(SQLException e) {
                     log.debug("Could not create Client Info Properties tab", e.getMessage());
                 }
-                Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(rs, Integer.MAX_VALUE, false);
+                ColumnVisibilityToggler clientInfoPropertiesToggler = new ColumnVisibilityToggler();
+                Grid<List<Object>> clientInfoProperties = CommonUiUtils.putResultsInGrid(clientInfoPropertiesToggler,
+                        rs, Integer.MAX_VALUE, false);
                 clientInfoProperties.setSizeFull();
-                tabSheet.add(createTabData(clientInfoProperties), "Client Info Properties");
+                tabSheet.add(createTabData(clientInfoProperties, clientInfoPropertiesToggler), "Client Info Properties");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Client Info Properties tab", e);
             }
             
             try {
-                Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(metaData.getCatalogs(), Integer.MAX_VALUE, false);
+                ColumnVisibilityToggler catalogsToggler = new ColumnVisibilityToggler();
+                Grid<List<Object>> catalogs = CommonUiUtils.putResultsInGrid(catalogsToggler, metaData.getCatalogs(),
+                        Integer.MAX_VALUE, false);
                 catalogs.setSizeFull();
-                tabSheet.add(createTabData(catalogs), "Catalogs");
+                tabSheet.add(createTabData(catalogs, catalogsToggler), "Catalogs");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Catalogs tab", e);
             }
             
             try {
                 Grid<List<Object>> schemas;
+                ColumnVisibilityToggler schemasToggler = new ColumnVisibilityToggler();
                 try {
-                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas(), Integer.MAX_VALUE, false);
+                    schemas = CommonUiUtils.putResultsInGrid(schemasToggler, metaData.getSchemas(), Integer.MAX_VALUE, false);
                 } catch (SQLException e) {
-                    schemas = CommonUiUtils.putResultsInGrid(metaData.getSchemas("", null), Integer.MAX_VALUE, false);
+                    schemas = CommonUiUtils.putResultsInGrid(schemasToggler, metaData.getSchemas("", null), Integer.MAX_VALUE, false);
                 }
                 schemas.setSizeFull();
-                tabSheet.add(createTabData(schemas), "Schemas");
+                tabSheet.add(createTabData(schemas, schemasToggler), "Schemas");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Schemas tab", e);
             }
             
             try {
-                Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(metaData.getTableTypes(), Integer.MAX_VALUE, false);
+                ColumnVisibilityToggler tableTypesToggler = new ColumnVisibilityToggler();
+                Grid<List<Object>> tableTypes = CommonUiUtils.putResultsInGrid(tableTypesToggler,
+                        metaData.getTableTypes(), Integer.MAX_VALUE, false);
                 tableTypes.setSizeFull();
-                tabSheet.add(createTabData(tableTypes), "Table Types");
+                tabSheet.add(createTabData(tableTypes, tableTypesToggler), "Table Types");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Table Types tab", e);
             }
             
             try {
-                Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(metaData.getTypeInfo(), Integer.MAX_VALUE, false);
+                ColumnVisibilityToggler dataTypesToggler = new ColumnVisibilityToggler();
+                Grid<List<Object>> dataTypes = CommonUiUtils.putResultsInGrid(dataTypesToggler, metaData.getTypeInfo(),
+                        Integer.MAX_VALUE, false);
                 dataTypes.setSizeFull();
-                tabSheet.add(createTabData(dataTypes), "Data Types");
+                tabSheet.add(createTabData(dataTypes, dataTypesToggler), "Data Types");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Data Types tab", e);
             }
             
             try {
-                tabSheet.add(createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions")), "Numeric Functions");
+                tabSheet.add(
+                        createTabData(createGridFromString(metaData.getNumericFunctions(), "Numeric Functions"), null),
+                        "Numeric Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Numeric Functions tab", e);
             }
             
             try {
-                tabSheet.add(createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions")), "String Functions");
+                tabSheet.add(
+                        createTabData(createGridFromString(metaData.getStringFunctions(), "String Functions"), null),
+                        "String Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create String Functions tab", e);
             }
             
             try {
-                tabSheet.add(createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions")), "System Functions");
+                tabSheet.add(
+                        createTabData(createGridFromString(metaData.getSystemFunctions(), "System Functions"), null),
+                        "System Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create System Functions tab", e);
             }
             
             try {
-                tabSheet.add(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions")), "Date/Time Functions");
+                tabSheet.add(createTabData(createGridFromString(metaData.getTimeDateFunctions(), "Date/Time Functions"),
+                        null), "Date/Time Functions");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Date/Time Functions tab", e);
             }
             
             try {
-                tabSheet.add(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords")), "Keywords");
+                tabSheet.add(createTabData(createGridFromString(metaData.getSQLKeywords(), "Keywords"), null), "Keywords");
             } catch (AbstractMethodError e) {
                 log.debug("Could not create Keywords tab", e);
             }
@@ -172,12 +189,19 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
         }
     }
     
-    public VerticalLayout createTabData(Grid<?> grid) {
+    public VerticalLayout createTabData(Grid<?> grid, ColumnVisibilityToggler columnVisibilityToggler) {
         VerticalLayout layout = new VerticalLayout();
         layout.setMargin(false);
         layout.setSizeFull();
+        
+        if (columnVisibilityToggler != null && !columnVisibilityToggler.isEmpty()) {
+            layout.add(columnVisibilityToggler);
+            layout.setHorizontalComponentAlignment(Alignment.END, columnVisibilityToggler);
+        }
+        
         layout.add(grid);
         layout.expand(grid);
+        
         return layout;
     }
     

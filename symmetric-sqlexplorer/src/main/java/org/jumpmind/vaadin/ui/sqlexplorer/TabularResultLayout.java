@@ -54,6 +54,7 @@ import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.util.FormatUtils;
+import org.jumpmind.vaadin.ui.common.ColumnVisibilityToggler;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.CsvExport;
 import org.jumpmind.vaadin.ui.common.GridDataProvider;
@@ -141,6 +142,8 @@ public class TabularResultLayout extends VerticalLayout {
     MenuItem followToMenu;
 
     MenuItem toggleKeepResultsButton;
+    
+    ColumnVisibilityToggler columnVisibilityToggler;
 
     Span resultSpan;
 
@@ -389,6 +392,10 @@ public class TabularResultLayout extends VerticalLayout {
 
         resultBar.add(rightBar);
         resultBar.setVerticalComponentAlignment(Alignment.CENTER, rightBar);
+        
+        columnVisibilityToggler = new ColumnVisibilityToggler();
+        resultBar.add(columnVisibilityToggler);
+        resultBar.setVerticalComponentAlignment(Alignment.END, columnVisibilityToggler);
 
         this.addComponentAsFirst(resultBar);
     }
@@ -804,12 +811,13 @@ public class TabularResultLayout extends VerticalLayout {
                     columnNames.add(columnName);
                     
                     Integer colNum = new Integer(columnCounter[0] - 1 - skipColumnIndexes.size());
-                    grid.addColumn(row -> row.get(colNum)).setKey(columnName).setHeader(columnName).setClassNameGenerator(row -> {
-                        if (row.get(colNum) == null) {
-                            return "italics";
-                        }
-                        return null;
-                    }).setResizable(true);//.setHidable(true);
+                    columnVisibilityToggler.addColumn(grid.addColumn(row -> row.get(colNum)).setKey(columnName)
+                            .setHeader(columnName).setClassNameGenerator(row -> {
+                                if (row.get(colNum) == null) {
+                                    return "italics";
+                                }
+                                return null;
+                            }).setResizable(true), columnName);
                     valueProviderMap.put(grid.getColumnByKey(columnName), row -> row.get(colNum));
                     
                     types[columnCounter[0] - 1] = meta.getColumnType(columnCounter[0]);
