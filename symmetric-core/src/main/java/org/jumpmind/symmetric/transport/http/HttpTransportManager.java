@@ -101,7 +101,7 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         url = add(url, WebConstants.NODE_GROUP_ID, engine.getParameterService().getNodeGroupId(), "&");
 
         log.info("Contact server to do node copy using a url of: " + url);
-        return sendMessage(new URL(url), local.getNodeId(), securityToken, data.toString());
+        return sendMessage(new URL(url), local.getNodeId(), securityToken, null, data.toString());
     }
     
     @Override
@@ -116,15 +116,20 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
         }
         
         log.debug("Sending status with URL: " + url);
-        return sendMessage(new URL(url), local.getNodeId(), securityToken, "");        
+        return sendMessage(new URL(url), local.getNodeId(), securityToken, null, "");        
     }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
             String securityToken, String registrationUrl) throws IOException {
+        return sendAcknowledgement(remote, list, local, securityToken, null, registrationUrl);
+    }
+    
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
+            String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException {
         if (list != null && list.size() > 0) {
             String data = getAcknowledgementData(remote.requires13Compatiblity(), local.getNodeId(), list);
             log.debug("Sending ack: {}", data);
-            return sendMessage("ack", remote, local, data, securityToken, registrationUrl);
+            return sendMessage("ack", remote, local, data, securityToken, requestProperties, registrationUrl);
         }
         return HttpConnection.HTTP_OK;
     }
@@ -137,12 +142,17 @@ public class HttpTransportManager extends AbstractTransportManager implements IT
     }
 
     protected int sendMessage(String action, Node remote, Node local, String data,
-            String securityToken, String registrationUrl) throws IOException {
-        return sendMessage(new URL(buildURL(action, remote, local, securityToken, registrationUrl)), local.getNodeId(), securityToken, data);
+            String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException {
+        return sendMessage(new URL(buildURL(action, remote, local, securityToken, registrationUrl)), local.getNodeId(), securityToken, requestProperties, data);
     }
 
-    protected int sendMessage(URL url, String nodeId, String securityToken, String data) throws IOException {
+    protected int sendMessage(URL url, String nodeId, String securityToken, Map<String,String> requestProperties, String data) throws IOException {
         try (HttpConnection conn = openConnection(url, nodeId, securityToken)) {
+            if (requestProperties != null) {
+                for (String key : requestProperties.keySet()) {
+                    conn.addRequestProperty(key, requestProperties.get(key));
+                }
+            }
             conn.setRequestMethod("POST");
             conn.setAllowUserInteraction(false);
             conn.setDoOutput(true);

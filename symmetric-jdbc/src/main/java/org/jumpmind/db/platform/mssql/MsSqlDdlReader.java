@@ -395,7 +395,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                     + "inner join sys.schemas as SC "
                         + "on TAB.schema_id = SC.schema_id "
                     + "where TAB.name=? and SC.name=? ";
-        return sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
+        return sqlTemplate.queryWithHandler(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
                 trigger.setName(row.getString("name"));
@@ -417,7 +417,7 @@ public class MsSqlDdlReader extends AbstractJdbcDdlReader {
                 trigger.setMetaData(row);
                 return trigger;
             }
-        }, tableName, schema);
+        }, new ChangeCatalogConnectionHandler(catalog), tableName, schema);
     }
     
     protected IConnectionHandler getConnectionHandler(String catalog) {

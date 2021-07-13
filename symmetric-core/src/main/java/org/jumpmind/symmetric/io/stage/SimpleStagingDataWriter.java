@@ -23,6 +23,7 @@ package org.jumpmind.symmetric.io.stage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,7 +128,11 @@ public class SimpleStagingDataWriter {
                 } else if (line.startsWith(CsvConstants.BATCH)) {
                     batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                             getArgLine(nodeLine), targetNodeId, false);
+                    processInfo.setCurrentBatchId(batch.getBatchId());
+                    processInfo.setCurrentBatchStartTime(new Date());
                     processInfo.incrementBatchCount();
+                    processInfo.setCurrentDataCount(0);
+                    processInfo.setTotalDataCount(0);
                     String location = batch.getStagedLocation();
                     if (resource != null) {
                         resource.close();
@@ -167,7 +172,11 @@ public class SimpleStagingDataWriter {
                 } else if (line.startsWith(CsvConstants.RETRY)) {
                     batch = new Batch(batchType, Long.parseLong(getArgLine(line)), getArgLine(channelLine), getBinaryEncoding(binaryLine),
                             getArgLine(nodeLine), targetNodeId, false);
+                    processInfo.setCurrentBatchId(batch.getBatchId());
+                    processInfo.setCurrentBatchStartTime(new Date());
                     processInfo.incrementBatchCount();
+                    processInfo.setCurrentDataCount(0);
+                    processInfo.setTotalDataCount(0);
                     String location = batch.getStagedLocation();
                     if (resource != null) {
                         resource.close();
@@ -206,6 +215,7 @@ public class SimpleStagingDataWriter {
                     batchStatsLine = line;
                     batchStats = new Statistics();
                     putStats(batchStats, batchStatsColumnsLine, batchStatsLine);
+                    processInfo.setTotalDataCount(batchStats.get("DATA_ROW_COUNT"));
                 } else if (writer == null) {
                     invalidLineCount++;
                 } else {

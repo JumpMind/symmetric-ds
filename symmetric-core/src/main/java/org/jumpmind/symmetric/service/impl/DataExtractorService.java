@@ -578,7 +578,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
 
     protected OutgoingBatches loadPendingBatches(ProcessInfo extractInfo, Node targetNode, String queue, IOutgoingTransport transport) {
         
-        BufferedWriter writer = transport.getWriter();         
+        BufferedWriter writer = transport.getWriter();
+        extractInfo.setStatus(ProcessStatus.QUERYING);
         
         Callable<OutgoingBatches> getOutgoingBatches = () -> {                            
             OutgoingBatches batches = null;
@@ -748,6 +749,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             
                             transferInfo = statisticManager.newProcessInfo(new ProcessInfoKey(nodeService.findIdentityNodeId(),
                                     extractInfo.getQueue(), targetNode.getNodeId(), extractInfo.getProcessType() == ProcessType.PUSH_JOB_EXTRACT ? ProcessType.PUSH_JOB_TRANSFER : ProcessType.PULL_HANDLER_TRANSFER));
+                            transferInfo.setCurrentBatchId(currentBatch.getBatchId());
+                            transferInfo.incrementBatchCount();
                             transferInfo.setTotalDataCount(currentBatch.getExtractRowCount());
 
                             currentBatch = extractBatch.getOutgoingBatch();
@@ -1382,7 +1385,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             long ts = System.currentTimeMillis();
             IStagedResource extractedBatch = getStagedResource(currentBatch);
             if (extractedBatch != null) {
-                processInfo.setCurrentLoadId(currentBatch.getLoadId());
                 processInfo.setTotalDataCount(currentBatch.getDataRowCount());
                 
                 if (currentBatch.getLoadId() > 0) {
@@ -1428,7 +1430,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     Channel channel = configurationService.getChannel(currentBatch.getChannelId());
                     DataContext ctx = new DataContext();
                     transferFromStaging(mode, BatchType.EXTRACT, currentBatch, isRetry, extractedBatch, writer, ctx,
-                            channel.getMaxKBytesPerSecond());
+                            channel.getMaxKBytesPerSecond(), processInfo);
                 } else {
                     IDataReader dataReader = new ProtocolDataReader(BatchType.EXTRACT,
                             currentBatch.getNodeId(), extractedBatch);
@@ -1466,7 +1468,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
 
     protected void transferFromStaging(ExtractMode mode, BatchType batchType, OutgoingBatch batch, boolean isRetry, IStagedResource stagedResource,
-            BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec) {
+            BufferedWriter writer, DataContext context, BigDecimal maxKBytesPerSec, ProcessInfo processInfo) {
         final int MAX_WRITE_LENGTH = 32768;
         BufferedReader reader = stagedResource.getReader();
         try {
@@ -1495,7 +1497,9 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                 }
                 
                 writer.flush();
+                processInfo.setCurrentDataCount(batch.getDataRowCount());
             } else {
+                long totalBytes = stagedResource.getSize();
                 long totalCharsRead = 0, totalBytesRead = 0;
                 int numCharsRead = 0, numBytesRead = 0;
                 long startTime = System.currentTimeMillis(), ts = startTime, bts = startTime;
@@ -1552,6 +1556,8 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                     } else {
                         totalBytesRead += new String(buffer, 0, numCharsRead).getBytes().length;
                     }
+
+                    processInfo.setCurrentDataCount((long) ((totalBytesRead / (double) totalBytes) * batch.getDataRowCount()));
                 }
                 
                 if (batch.getSentCount() == 1) {
@@ -1932,13 +1938,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
     }
     
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
-        Trigger trigger = this.triggerRouterService.getTriggerById(request.getTriggerId(), false);
-        if (trigger == null || !trigger.getSourceTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix,
-                TableConstants.SYM_FILE_SNAPSHOT))) {
-            return true;
-        } else {            
-            return false;
-        }
+        return !request.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
     }    
 
     /**
@@ -1959,9 +1959,6 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             allChildRequests = getExtractChildRequestsForNode(nodeCommunication, requests);
         }
 
-        // refresh trigger cache
-        triggerRouterService.getTriggerById(null, true);
-
         /*
          * Process extract requests until it has taken longer than 30 seconds, and then
          * allow the process to return so progress status can be seen.
@@ -1971,7 +1968,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
             ExtractRequest request = requests.get(i);
             if (!canProcessExtractRequest(request, nodeCommunication.getCommunicationType())){
                 continue;
-            }                
+            }
             Node identity = nodeService.findIdentity();
             Node targetNode = nodeService.findNode(nodeCommunication.getNodeId(), true);
             log.info("Starting request {} to extract table {} into batches {} through {} for node {}.",
@@ -2005,6 +2002,7 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                      */
                     OutgoingBatch firstBatch = batches.get(0);
                     processInfo.setCurrentLoadId(firstBatch.getLoadId());
+                    processInfo.setStatus(ProcessStatus.QUERYING);
 
                     if (isRestarted) {
                         restartExtractRequest(batches, request, childRequests);

@@ -65,6 +65,11 @@ public class MockTransportManager implements ITransportManager {
     }
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list,
+            Node local, String securityToken, Map<String, String> requestProperties, String registrationUrl) throws IOException {
+        return WebConstants.SC_OK;
+    }
+
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list,
                 Node local, String securityToken, String registrationUrl) throws IOException {
         return WebConstants.SC_OK;
     }

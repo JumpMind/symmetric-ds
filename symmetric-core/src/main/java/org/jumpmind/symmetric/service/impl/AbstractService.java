@@ -25,6 +25,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.sql.ISqlTemplate;
@@ -88,6 +91,14 @@ abstract public class AbstractService implements IService {
         this.sqlTemplateDirty = symmetricDialect.getPlatform().getSqlTemplateDirty();
     }
     
+    private static final Comparator<BatchAck> BATCH_ID_COMPARATOR = new Comparator<BatchAck>() {
+        public int compare(BatchAck batchInfo1, BatchAck batchInfo2) {
+            Long batchId1 = batchInfo1.getBatchId();
+            Long batchId2 = batchInfo2.getBatchId();
+            return batchId1.compareTo(batchId2);
+        }
+    };
+
     protected Date maxDate(Date... dates) {
         Date date = null;
         if (dates != null) {
@@ -352,7 +363,7 @@ abstract public class AbstractService implements IService {
      * Try a configured number of times to get the ACK through.
      */
     protected void sendAck(Node remote, Node local, NodeSecurity localSecurity,
-            List<IncomingBatch> list, ITransportManager transportManager) throws IOException {
+            List<IncomingBatch> list, ITransportManager transportManager, String queue) throws IOException {
         assertNotNull(remote, "Node remote cannot be null. Maybe there is a missing sym_node row.");
         assertNotNull(local, "Node local cannot be null. Maybe there is a missing sym_node row.");
         assertNotNull(localSecurity, "NodeSecurity localSecurity cannot be null. Maybe there is a missing sym_node_security row.");
@@ -363,8 +374,13 @@ abstract public class AbstractService implements IService {
 
         for (int i = 0; i < numberOfStatusSendRetries && statusCode != WebConstants.SC_OK; i++) {
             try {
+                Map<String, String> requestProperties = null;
+                if (StringUtils.isNotBlank(queue)) {
+                    requestProperties = new HashMap<String, String>();
+                    requestProperties.put(WebConstants.CHANNEL_QUEUE, queue);
+                }
                 statusCode = transportManager.sendAcknowledgement(remote, list, local,
-                        localSecurity.getNodePassword(), parameterService.getRegistrationUrl());
+                        localSecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
                 exception = null;
             } catch (Exception e) {
                 exception = e;
@@ -417,6 +433,8 @@ abstract public class AbstractService implements IService {
 
         List<BatchAck> batchAcks = transportManager.readAcknowledgement(ackString,
                 ackExtendedString);
+      
+        Collections.sort(batchAcks, BATCH_ID_COMPARATOR);
 
         long batchIdInError = Long.MAX_VALUE;
         for (BatchAck batchInfo : batchAcks) {

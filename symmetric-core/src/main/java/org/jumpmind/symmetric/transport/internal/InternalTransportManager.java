@@ -197,6 +197,11 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
             String securityToken, String registrationUrl) throws IOException {
+        return sendAcknowledgement(remote, list, local, securityToken, null, registrationUrl);
+    }
+    
+    public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
+            String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException {
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());

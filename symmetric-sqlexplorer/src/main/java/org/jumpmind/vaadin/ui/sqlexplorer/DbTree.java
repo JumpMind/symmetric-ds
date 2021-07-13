@@ -264,7 +264,7 @@ public class DbTree extends Tree<DbTreeNode> {
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
-            CommonUiUtils.notify(ex);
+            CommonUiUtils.notify(ex.getMessage(), ex);
         }
     }
 

@@ -147,7 +147,12 @@ public class JdbcSqlTemplate extends AbstractSqlTemplate implements ISqlTemplate
             int[] types) {
         return queryForCursor(sql, mapper, null, args, types, false);
     }
-    
+
+    public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, IConnectionHandler connectionHandler, Object[] args,
+            int[] types) {
+        return queryForCursor(sql, mapper, connectionHandler, args, types, false);
+    }
+
     @Override
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
         return queryForCursor(sql, mapper, null, null, null, returnLobObjects);

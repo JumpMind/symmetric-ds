@@ -45,7 +45,7 @@ public class ChangeCatalogConnectionHandler implements IConnectionHandler {
                 previousCatalog = connection.getCatalog();
                 connection.setCatalog(changeCatalog);
             } catch (SQLException e) {
-                log.warn("Unable to switch to catalog '{}' because {}", changeCatalog, e.getMessage());
+            	log.debug("Unable to switch to catalog '{}': ", changeCatalog, e.getMessage());
                 if (changeCatalog != null) {
                     try {
                         connection.setCatalog(previousCatalog);

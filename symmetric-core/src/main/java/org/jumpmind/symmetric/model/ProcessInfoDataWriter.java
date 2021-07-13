@@ -26,6 +26,7 @@ import static org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.LOADING;
 import static org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK;
 import static org.jumpmind.symmetric.model.ProcessType.PULL_HANDLER_EXTRACT;
 import static org.jumpmind.symmetric.model.ProcessType.PUSH_JOB_EXTRACT;
+import static org.jumpmind.symmetric.model.ProcessType.INITIAL_LOAD_EXTRACT_JOB;
 
 import org.jumpmind.db.model.Table;
 import org.jumpmind.symmetric.io.data.Batch;
@@ -51,7 +52,7 @@ public class ProcessInfoDataWriter extends NestedDataWriter {
     public void start(Batch batch) {
         if (batch != null) {
             ProcessType type = processInfo.getProcessType();
-            if (type == PULL_HANDLER_EXTRACT || type == PUSH_JOB_EXTRACT) {
+            if (type == PULL_HANDLER_EXTRACT || type == PUSH_JOB_EXTRACT || type == INITIAL_LOAD_EXTRACT_JOB) {
                 processInfo.setStatus(EXTRACTING);
             } else {
                 processInfo.setStatus(LOADING);

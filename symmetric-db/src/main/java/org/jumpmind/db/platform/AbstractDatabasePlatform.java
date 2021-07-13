@@ -418,7 +418,8 @@ public abstract class AbstractDatabasePlatform implements IDatabasePlatform {
                 } catch (Exception ex) {
                     String valueTrimmed = FormatUtils.abbreviateForLogging(value);
                     throw new RuntimeException("Could not convert a value of " + valueTrimmed + " for column " + column.getName()
-                            + " of type " + column.getMappedType(), ex);
+                        + " of mapped type " + column.getMappedType() + " jdbc type "
+                        + column.getJdbcTypeName() + " (" + column.getJdbcTypeCode() + ")", ex);
                 }
             }
 
