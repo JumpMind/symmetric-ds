@@ -79,8 +79,6 @@ public class SqlHistoryDialog extends ResizableDialog {
         for (Column<SqlHistory> column : grid.getColumns()) {
             column.setResizable(true);
         }
-        
-        //grid.setDescriptionGenerator(history -> history.getSqlStatement());
 
         HeaderRow filteringHeader = grid.appendHeaderRow();
         HeaderCell logTextFilterCell = filteringHeader.getCell(grid.getColumnByKey("sqlStatement"));
