@@ -136,7 +136,7 @@ public class Db2DatabasePlatform extends AbstractJdbcDatabasePlatform {
             int minorVersion = sqlTemplate.getDatabaseMinorVersion();
             if ((this instanceof Db2As400DatabasePlatform && (majorVersion >= 8 || (majorVersion == 7 && minorVersion >= 1)))
                     || (majorVersion >= 12 || (majorVersion == 11 && minorVersion >= 1))) {
-                return sql + " limit " + limit + " offset " + offset + ";";
+                return sql + " limit " + limit + " offset " + offset;
             }
 
             int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
