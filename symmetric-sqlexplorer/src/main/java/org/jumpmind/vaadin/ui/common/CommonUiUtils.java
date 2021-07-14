@@ -32,10 +32,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -52,6 +55,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
+import com.vaadin.flow.component.grid.editor.Editor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -413,5 +418,36 @@ public final class CommonUiUtils {
         separator.setHeightFull();
         separator.setWidth(null);
         return separator;
+    }
+    
+    public static void configureEditor(Grid<?> grid) {
+        @SuppressWarnings("unchecked")
+        Editor<Object> editor = (Editor<Object>) grid.getEditor();
+        Collection<Button> editButtons = Collections.newSetFromMap(new WeakHashMap<>());
+        
+        editor.setBuffered(true);
+
+        Column<?> editorColumn = grid.addComponentColumn(item -> {
+            Button edit = new Button("Edit");
+            edit.addClassName("edit");
+            edit.addClickListener(event -> editor.editItem(item));
+            edit.setEnabled(!editor.isOpen());
+            editButtons.add(edit);
+            return edit;
+        }).setWidth("175px").setFlexGrow(0);
+
+        editor.addOpenListener(event -> editButtons.stream().forEach(button -> button.setEnabled(!editor.isOpen())));
+        editor.addCloseListener(event -> editButtons.stream().forEach(button -> button.setEnabled(!editor.isOpen())));
+
+        Button save = new Button("Save", event -> editor.save());
+
+        Button cancel = new Button("Cancel", event -> editor.cancel());
+        cancel.getStyle().set("margin-left", "8px");
+
+        grid.getElement().addEventListener("keyup", event -> editor.cancel())
+                .setFilter("event.key === 'Escape' || event.key === 'Esc'");
+
+        Div buttons = new Div(save, cancel);
+        editorColumn.setEditorComponent(buttons);
     }
 }

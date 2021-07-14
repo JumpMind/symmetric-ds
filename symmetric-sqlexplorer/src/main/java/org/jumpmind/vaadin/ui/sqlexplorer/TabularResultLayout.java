@@ -305,7 +305,7 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                 });
                 
-                grid.addItemDoubleClickListener(event -> editor.editItem(event.getItem()));
+                CommonUiUtils.configureEditor(grid);
             }
             
             Shortcuts.addShortcutListener(grid, () -> {
