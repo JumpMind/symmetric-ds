@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -153,15 +154,15 @@ public final class CommonUiUtils {
             layout.add(span);
             layout.setVerticalComponentAlignment(Alignment.CENTER, span);
             
-            Icon closeIcon = new Icon(VaadinIcon.CLOSE_SMALL);
+            Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
+            closeIcon.setSize("8ex");
             closeIcon.addClickListener(event -> notification.close());
+            closeIcon.addClickShortcut(Key.ESCAPE);
             layout.add(closeIcon);
             layout.setVerticalComponentAlignment(Alignment.START, closeIcon);
             
             notification.setPosition(Position.MIDDLE);
             notification.setDuration(-1);
-            //notification.setClassName(notification.getStyleName() + " " + ValoTheme.NOTIFICATION_CLOSABLE);
-            notification.addThemeVariants(type);
             notification.open();
         }
     }
