@@ -79,7 +79,7 @@ public class OracleDatabasePlatform extends AbstractJdbcDatabasePlatform {
 
     @Override
     protected OracleJdbcSqlTemplate createSqlTemplate() {
-        return new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler(), getDatabaseInfo());
+        return new OracleJdbcSqlTemplate(dataSource, settings, new OracleLobHandler(settings.getJdbcLobHandling()), getDatabaseInfo());
     }
 
     @Override

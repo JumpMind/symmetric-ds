@@ -21,6 +21,8 @@
 package org.jumpmind.db.sql;
 
 public class SqlTemplateSettings {
+    
+    public enum JdbcLobHandling {PLAIN, CREATETEMPORARYLOB, STREAMLOB};
 
     protected int fetchSize = 1000;
     protected int queryTimeout;
@@ -34,6 +36,7 @@ public class SqlTemplateSettings {
     protected LogSqlBuilder logSqlBuilder;
     protected boolean allowUpdatesWithResults = false;
     protected boolean allowTriggerCreateOrReplace;
+    protected JdbcLobHandling jdbcLobHandling;
     
     public SqlTemplateSettings() {     
     }      
@@ -132,6 +135,14 @@ public class SqlTemplateSettings {
 
     public void setAllowTriggerCreateOrReplace(boolean allowTriggerCreateOrReplace) {
         this.allowTriggerCreateOrReplace = allowTriggerCreateOrReplace;
+    }
+
+    public JdbcLobHandling getJdbcLobHandling() {
+        return jdbcLobHandling;
+    }
+
+    public void setJdbcLobHandling(JdbcLobHandling jdbcLobHandling) {
+        this.jdbcLobHandling = jdbcLobHandling;
     }
 
 }
