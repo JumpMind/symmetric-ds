@@ -86,6 +86,7 @@ public class SqlHistoryDialog extends ResizableDialog {
         filterField.setPlaceholder("Filter");
         filterField.getElement().setAttribute("theme", "font-size-xs");
         filterField.setWidth("100%");
+        filterField.addThemeName("small");
 
         // Update filter When the filter input is changed
         filterField.addValueChangeListener(event -> filter(event.getValue()));
