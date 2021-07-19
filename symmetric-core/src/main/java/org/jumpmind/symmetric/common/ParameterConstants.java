@@ -264,6 +264,7 @@ final public class ParameterConstants {
     public final static String DBDIALECT_ORACLE_BULK_LINE_TERMINATOR = "oracle.bulk.load.line.terminator";
     public final static String DBDIALECT_ORACLE_LOAD_QUERY_HINT_PARALLEL_COUNT = "oracle.load.query.hint.parallel.count";
     public final static String DBDIALECT_ORACLE_USE_NTYPES_FOR_SYNC = "oracle.use.ntypes.for.sync";
+    public final static String DBDIALECT_ORACLE_JDBC_LOB_HANDLING = "oracle.jdbc.lob.handling";
     
     public final static String DBDIALECT_TIBERO_USE_TRANSACTION_VIEW = "tibero.use.transaction.view";
     public final static String DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC = "tibero.template.precision";
