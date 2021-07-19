@@ -20,19 +20,50 @@
  */
 package org.jumpmind.symmetric.model;
 
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.COMMON_FLAG;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_DELETE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_INSERT_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.DATA_UPDATE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_DELETE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_INSERT_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_MILLIS;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.EXTRACT_UPDATE_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.FAILED_DATA_ID;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.LOAD_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.LOAD_FLAG;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.LOAD_ID;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.OTHER_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.RELOAD_ROW_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.ROUTER_MILLIS;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.SENT_COUNT;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.TRANSFORM_EXTRACT_MILLIS;
+import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.TRANSFORM_LOAD_MILLIS;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.FALLBACKINSERTCOUNT;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.FALLBACKUPDATECOUNT;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.FILTERMILLIS;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.LOADMILLIS;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.ROWCOUNT;
+import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.TRANSFORMMILLIS;
+
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.reader.DataReaderStatistics;
 import org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants;
 import org.jumpmind.util.Statistics;
-import static org.jumpmind.symmetric.io.data.reader.DataReaderStatistics.*;
-import static org.jumpmind.symmetric.io.data.writer.DataWriterStatisticConstants.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IncomingBatch extends AbstractBatch {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger log = LoggerFactory.getLogger(IncomingBatch.class);
 
     private long failedRowNumber;
 
@@ -75,6 +106,12 @@ public class IncomingBatch extends AbstractBatch {
             setLoadInsertRowCount(writerStatistics.get(DataWriterStatisticConstants.INSERTCOUNT));
             setLoadUpdateRowCount(writerStatistics.get(DataWriterStatisticConstants.UPDATECOUNT));
             setLoadDeleteRowCount(writerStatistics.get(DataWriterStatisticConstants.DELETECOUNT));
+            setTableLoadedCount(writerStatistics.getTableStats());
+            for (Map.Entry<String, Map<String, Long>> entry : writerStatistics.getTableStats().entrySet()) {
+            	for (Map.Entry<String, Long> dmlEntry : entry.getValue().entrySet()) {
+            		log.info("Loaded table:" + entry.getKey() + ", " + dmlEntry.getKey() + ", " + dmlEntry.getValue() + " rows");
+            	}
+            }
         }
     }
 

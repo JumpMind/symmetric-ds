@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.OutgoingBatch;
 import org.jumpmind.symmetric.model.ProcessInfo;
@@ -204,5 +205,11 @@ public class MockStatisticManager implements IStatisticManager {
         // TODO Auto-generated method stub
         
     }
+
+	@Override
+	public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
+		// TODO Auto-generated method stub
+		
+	}
     
 }

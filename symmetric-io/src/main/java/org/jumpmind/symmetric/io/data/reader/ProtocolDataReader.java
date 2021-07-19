@@ -39,6 +39,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Column;
 import org.jumpmind.db.model.Table;
+import org.jumpmind.db.sql.DmlStatement.DmlType;
 import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.exception.IoException;
 import org.jumpmind.symmetric.csv.CsvReader;
@@ -172,7 +173,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                 }
 
                 if (tokens[0].equals(CsvConstants.INSERT)) {
-                    CsvData data = new CsvData();
+                	CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.INSERT);
                     data.putParsedData(CsvData.ROW_DATA, CollectionUtils.copyOfRange(tokens, 1, tokens.length));
@@ -188,7 +189,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     parsedOldData = CollectionUtils.copyOfRange(tokens, 1, tokens.length);
 
                 } else if (tokens[0].equals(CsvConstants.UPDATE)) {
-                    CsvData data = new CsvData();
+                	CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.UPDATE);
                     int columnCount = context.getLastParsedTable().getColumnCount();
@@ -212,7 +213,7 @@ public class ProtocolDataReader extends AbstractDataReader implements IDataReade
                     tokens = null;
                     return data;
                 } else if (tokens[0].equals(CsvConstants.DELETE)) {
-                    CsvData data = new CsvData();
+                	CsvData data = new CsvData();
                     data.setNoBinaryOldData(noBinaryOldData);
                     data.setDataEventType(DataEventType.DELETE);
                     data.putParsedData(CsvData.PK_DATA, CollectionUtils.copyOfRange(tokens, 1, tokens.length));

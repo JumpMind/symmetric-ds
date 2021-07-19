@@ -37,6 +37,7 @@ import java.util.concurrent.Semaphore;
 
 import org.jumpmind.symmetric.common.Constants;
 import org.jumpmind.symmetric.common.ParameterConstants;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.DataGap;
 import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.model.NodeChannel;
@@ -86,6 +87,8 @@ public class StatisticManager implements IStatisticManager {
     protected Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     protected Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
+
+    protected Semaphore tableStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
 
     protected Map<ProcessInfoKey, ProcessInfo> processInfos = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
 
@@ -673,4 +676,7 @@ public class StatisticManager implements IStatisticManager {
         return hostStats;
     }
 
+	@Override
+	public void incrementTableRows(Map<String, Map<String, Long>> tableCounts, boolean loaded) {
+	}
 }

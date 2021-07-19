@@ -158,6 +158,7 @@ class ManageIncomingBatchListener implements IDataProcessorListener {
                 this.currentBatch.getLoadRowCount());
         statisticManager.incrementDataBytesLoaded(this.currentBatch.getChannelId(),
                 this.currentBatch.getByteCount());
+        statisticManager.incrementTableRows(this.currentBatch.getTableLoadedCount(), true);
         Status oldStatus = this.currentBatch.getStatus();
 
         try {

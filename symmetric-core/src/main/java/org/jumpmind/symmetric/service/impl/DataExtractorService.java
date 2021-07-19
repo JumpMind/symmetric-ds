@@ -1,5 +1,5 @@
 /**
- * Licensed to JumpMind Inc under one or more contributor
+  * Licensed to JumpMind Inc under one or more contributor
  * license agreements.  See the NOTICE file distributed
  * with this work for additional information regarding
  * copyright ownership.  JumpMind Inc licenses this file
@@ -1117,12 +1117,16 @@ public class DataExtractorService extends AbstractService implements IDataExtrac
                             currentBatch.setDataInsertRowCount(stats.get(DataWriterStatisticConstants.INSERTCOUNT));
                             currentBatch.setDataUpdateRowCount(stats.get(DataWriterStatisticConstants.UPDATECOUNT));
                             currentBatch.setDataDeleteRowCount(stats.get(DataWriterStatisticConstants.DELETECOUNT));
+                            
+                            currentBatch.setTableExtractedCount(stats.getTableStats());
+                            
                             currentBatch.setTransformExtractMillis(transformTimeInMs);
                             extractTimeInMs = extractTimeInMs - transformTimeInMs;
                             byteCount = stats.get(DataWriterStatisticConstants.BYTECOUNT);
                             statisticManager.incrementDataBytesExtracted(currentBatch.getChannelId(), byteCount);
                             statisticManager.incrementDataExtracted(currentBatch.getChannelId(),
                                     stats.get(DataWriterStatisticConstants.ROWCOUNT));
+                            statisticManager.incrementTableRows(currentBatch.getTableExtractedCount(), false);
                             currentBatch.setByteCount(byteCount);
                             
                             if (!useStagingDataWriter) {

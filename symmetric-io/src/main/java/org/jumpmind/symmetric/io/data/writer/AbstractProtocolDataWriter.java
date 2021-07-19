@@ -34,6 +34,7 @@ import org.jumpmind.symmetric.io.data.CsvConstants;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
@@ -175,6 +176,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     printTime(data);
                     println(CsvConstants.INSERT, data.getCsvData(CsvData.ROW_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
+                    statistics.get(batch).incrementTableStats(this.table.getNameLowerCase(), DataEventType.INSERT.getCode(), 1);
+                    
                     break;
 
                 case UPDATE:
@@ -188,6 +191,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     println(CsvConstants.UPDATE, data.getCsvData(CsvData.ROW_DATA),
                             data.getCsvData(CsvData.PK_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
+                    statistics.get(batch).incrementTableStats(this.table.getNameLowerCase(), DataEventType.UPDATE.getCode(), 1);
+                    
                     break;
 
                 case DELETE:
@@ -200,6 +205,8 @@ abstract public class AbstractProtocolDataWriter implements IDataWriter {
                     }
                     println(CsvConstants.DELETE, data.getCsvData(CsvData.PK_DATA));
                     statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT);
+                    statistics.get(batch).incrementTableStats(this.table.getNameLowerCase(), DataEventType.DELETE.getCode(), 1);
+                    
                     break;
 
                 case CREATE:

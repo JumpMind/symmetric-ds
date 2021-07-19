@@ -55,6 +55,7 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 import org.jumpmind.symmetric.io.data.CsvUtils;
 import org.jumpmind.symmetric.io.data.DataContext;
+import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectConflict;
 import org.jumpmind.symmetric.io.data.writer.Conflict.DetectExpressionKey;
 import org.jumpmind.util.CollectionUtils;
@@ -256,7 +257,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         this.currentDmlStatement.getLookupKeyData(getLookupDataMap(data, conflict)));
                 long count = execute(data, values);
                 statistics.get(batch).increment(DataWriterStatisticConstants.INSERTCOUNT, count);
-                statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.INSERTCOUNT), count);
+                statistics.get(batch).incrementTableStats(targetTable.getName(), DataEventType.INSERT.getCode(), count);
                 if (count > 0) {
                     return LoadStatus.SUCCESS;
                 } else {
@@ -407,7 +408,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 lookupDataMap = lookupDataMap == null ? getLookupDataMap(data, conflict) : lookupDataMap;
                 long count = execute(data, this.currentDmlStatement.getLookupKeyData(lookupDataMap));
                 statistics.get(batch).increment(DataWriterStatisticConstants.DELETECOUNT, count);
-                statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.DELETECOUNT), count);
+                statistics.get(batch).incrementTableStats(targetTable.getName(), DataEventType.DELETE.getCode(), count);
+                
                 if (count > 0) {
                     return LoadStatus.SUCCESS;
                 } else {
@@ -589,7 +591,8 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                 try {
                     long count = execute(data, values);
                     statistics.get(batch).increment(DataWriterStatisticConstants.UPDATECOUNT, count);
-                    statistics.get(batch).increment(String.format("%s %s", targetTable.getName(), DataWriterStatisticConstants.UPDATECOUNT), count);
+                    statistics.get(batch).incrementTableStats(targetTable.getName(), DataEventType.UPDATE.getCode(), count);
+                    
                     if (count > 0) {
                         return LoadStatus.SUCCESS;
                     } else {
