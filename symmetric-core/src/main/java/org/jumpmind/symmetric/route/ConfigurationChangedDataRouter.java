@@ -20,6 +20,7 @@
  */
 package org.jumpmind.symmetric.route;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -479,7 +480,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 }
                 
                 Trigger trigger = null;
-                Date lastUpdateTime = null;
                 String triggerId = columnValues.get("TRIGGER_ID");
                 if (tableMatches(dataMetaData, TableConstants.SYM_TRIGGER_ROUTER)) {
                     String routerId = columnValues.get("ROUTER_ID");
@@ -487,31 +487,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                             routerId, refreshCache);
                     if (tr != null) {
                         trigger = tr.getTrigger();
-                        lastUpdateTime = tr.getLastUpdateTime();
                     }
                 } else {
                     trigger = triggerRouterService.getTriggerById(triggerId, refreshCache);
-                    if (trigger != null) {
-                        lastUpdateTime = trigger.getLastUpdateTime();
-                    }
                 }
                 if (trigger != null) {
-                    List<TriggerHistory> histories = triggerRouterService
-                            .getActiveTriggerHistories(trigger);
-                    boolean sync = false;
-                    if (histories != null && histories.size() > 0) {
-                        for (TriggerHistory triggerHistory : histories) {
-                            if (triggerHistory.getCreateTime().before(lastUpdateTime)) {
-                                sync = true;
-                            }
-                        }
-                    } else {
-                        sync = true;
-                    }
-
-                    if (sync) {
-                        ((Set<Trigger>) needResync).add(trigger);
-                    }
+                    ((Set<Trigger>) needResync).add(trigger);
+                } else {
+                    routingContext.put(CTX_KEY_RESYNC_NEEDED, Boolean.TRUE);
                 }
             }
         } else if (tableMatches(dataMetaData, TableConstants.SYM_ROUTER)
@@ -523,7 +506,6 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                 routingContext.put(CTX_KEY_FILE_SYNC_TRIGGERS_NEEDED, Boolean.TRUE);
             }
         }
-
     }
 
     protected Node findIdentity() {
@@ -641,18 +623,14 @@ public class ConfigurationChangedDataRouter extends AbstractDataRouter implement
                     && engine.getParameterService().is(ParameterConstants.AUTO_SYNC_TRIGGERS)
                     && engine.getParameterService().is(
                             ParameterConstants.AUTO_SYNC_TRIGGERS_AFTER_CONFIG_CHANGED)) {
-                if (Boolean.TRUE.equals(needsSynced)) {
-                    log.info("About to syncTriggers because new configuration came through the data router");
+
+                log.info("About to syncTriggers because new configuration came through the data router");
+                @SuppressWarnings("unchecked")
+                Set<Trigger> triggers = needsSynced instanceof Set ? (Set<Trigger>) needsSynced : null;
+                if (triggers != null && triggers.size() > 0) {
+                    engine.getTriggerRouterService().syncTriggers(new ArrayList<Trigger>(triggers), null, false, true);
+                } else {                    
                     engine.getTriggerRouterService().syncTriggers();
-                } else if (needsSynced instanceof Set) {
-                    @SuppressWarnings("unchecked")
-                    Set<Trigger> triggers = (Set<Trigger>) needsSynced;
-                    for (Trigger trigger : triggers) {
-                        log.info("About to sync the "
-                                + trigger.getTriggerId()
-                                + " trigger because a change was detected by the config data router");
-                        engine.getTriggerRouterService().syncTrigger(trigger, null, false);
-                    }
                 }
             }
 

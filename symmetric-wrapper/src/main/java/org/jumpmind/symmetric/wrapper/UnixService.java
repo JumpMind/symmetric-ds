@@ -229,7 +229,18 @@ public class UnixService extends WrapperService {
         File procFile = new File("/proc/" + pid + "/cmdline");
         if (procFile.canRead()) {
             try {
-                List<String> args = readProcFile(procFile);
+                List<String> args = null;
+                int cnt = 0;
+                while (cnt < 10) {
+                    args = readProcFile(procFile);
+                    if (args.size() > 0) {
+                        break;
+                    }
+                    cnt++;
+                    try {
+                        Thread.sleep(1000);
+                    } catch(InterruptedException e) {}
+                }
                 for (String arg : args) {
                     if (arg.contains(config.getJavaCommand())) {
                         return true;

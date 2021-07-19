@@ -110,7 +110,7 @@ abstract public class AbstractSqlTemplate implements ISqlTemplate {
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper,
         IConnectionHandler connectionHandler, Object[] args,
         int[] types) {
-        return queryForCursor(sql, mapper, args, types);
+        return queryForCursor(sql, mapper, connectionHandler, args, types);
     }
 
     public <T> ISqlReadCursor<T> queryForCursor(String sql, ISqlRowMapper<T> mapper, boolean returnLobObjects) {
