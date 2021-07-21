@@ -69,7 +69,7 @@ public class SqlHistoryDialog extends ResizableDialog {
         grid.addColumn(history -> StringUtils.abbreviate(history.getSqlStatement(), 50)).setKey("sqlStatement").setHeader("SQL");
 
         grid.addColumn(history -> String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS", history.getLastExecuteTime()))
-                .setHeader("Time").setWidth("150px");//.setMaximumWidth(200);
+                .setHeader("Time").setWidth("150px");
 
         grid.addColumn(history -> CommonUiUtils.formatDuration(history.getLastExecuteDuration())).setHeader("Duration")
                 .setWidth("120px");
