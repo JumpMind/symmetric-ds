@@ -131,18 +131,21 @@ public class DbFillDialog extends ResizableDialog {
         previousButton = new Button("Previous", event -> previous());
         previousButton.setVisible(false);
 
-        fillButton = CommonUiUtils.createPrimaryButton("Fill...", event -> {
-            createDbFill();
-            if (dbFill.getPrint() == false) {
-                confirm();
-            } else {
+		fillButton = CommonUiUtils.createPrimaryButton("Fill...", event -> {
+			createDbFill();
+			if (dbFill.getPrint() == false) {
+				confirm();
+			} else {
 				List<String> tables = getSelectedTables();
 				for (String tableName : tables) {
 					Table table = databasePlatform.getTableFromCache(
-							tableSelectionLayout.catalogSelect.getValue() != null ? tableSelectionLayout.catalogSelect
-									.getValue().toString() : null,
-							tableSelectionLayout.schemaSelect.getValue() != null ? tableSelectionLayout.schemaSelect
-									.getValue().toString() : null, tableName, false);
+							tableSelectionLayout.catalogSelect.getValue() != null
+									? tableSelectionLayout.catalogSelect.getValue().toString()
+									: null,
+							tableSelectionLayout.schemaSelect.getValue() != null
+									? tableSelectionLayout.schemaSelect.getValue().toString()
+									: null,
+							tableName, false);
 					if (table != null) {
 						for (int i = 0; i < dbFill.getRecordCount(); i++) {
 							for (int j = 0; j < dbFill.getInsertWeight(); j++) {
@@ -160,9 +163,9 @@ public class DbFillDialog extends ResizableDialog {
 						}
 					}
 				}
-                close();
-            }
-        });
+				close();
+			}
+		});
         fillButton.setVisible(false);
 
         add(buildButtonFooter(cancelButton, previousButton, nextButton, fillButton));
