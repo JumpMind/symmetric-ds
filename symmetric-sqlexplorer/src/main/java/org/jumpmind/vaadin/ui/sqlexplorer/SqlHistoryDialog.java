@@ -37,8 +37,9 @@ import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.grid.HeaderRow.HeaderCell;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 public class SqlHistoryDialog extends ResizableDialog {
 
@@ -83,6 +84,7 @@ public class SqlHistoryDialog extends ResizableDialog {
         HeaderRow filteringHeader = grid.appendHeaderRow();
         HeaderCell logTextFilterCell = filteringHeader.getCell(grid.getColumnByKey("sqlStatement"));
         TextField filterField = new TextField();
+        filterField.setValueChangeMode(ValueChangeMode.EAGER);
         filterField.setPlaceholder("Filter");
         filterField.getElement().setAttribute("theme", "font-size-xs");
         filterField.setWidth("100%");
