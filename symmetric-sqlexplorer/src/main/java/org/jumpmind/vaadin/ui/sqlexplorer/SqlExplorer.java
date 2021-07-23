@@ -20,8 +20,8 @@
  */
 package org.jumpmind.vaadin.ui.sqlexplorer;
 
-import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS;
 import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_AUTO_COMPLETE;
+import static org.jumpmind.vaadin.ui.sqlexplorer.Settings.SQL_EXPLORER_SHOW_RESULTS_IN_NEW_TABS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,13 +50,6 @@ import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.Scroller;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
-import com.vaadin.flow.data.selection.MultiSelectionEvent;
-import com.vaadin.flow.data.selection.SelectionListener;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -71,6 +64,13 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.data.selection.MultiSelectionEvent;
+import com.vaadin.flow.data.selection.SelectionListener;
+import com.vaadin.flow.shared.Registration;
 
 @CssImport("./sqlexplorer.css")
 public class SqlExplorer extends SplitLayout {
@@ -134,6 +134,7 @@ public class SqlExplorer extends SplitLayout {
         VerticalLayout leftLayout = new VerticalLayout();
         leftLayout.setMargin(false);
         leftLayout.setSpacing(false);
+        leftLayout.setPadding(false);
         leftLayout.setSizeFull();
         //leftLayout.addClassName(ValoTheme.MENU_ROOT);
 
@@ -151,10 +152,13 @@ public class SqlExplorer extends SplitLayout {
         VerticalLayout rightLayout = new VerticalLayout();
         rightLayout.setMargin(false);
         rightLayout.setSpacing(false);
+        rightLayout.setPadding(false);
         rightLayout.setSizeFull();
 
         VerticalLayout rightMenuWrapper = new VerticalLayout();
         rightMenuWrapper.setMargin(false);
+        rightMenuWrapper.setSpacing(false);
+        rightMenuWrapper.setPadding(false);
         rightMenuWrapper.setWidthFull();
         //rightMenuWrapper.addClassName(ValoTheme.MENU_ROOT);
         contentMenuBar = new MenuBar();
