@@ -132,6 +132,7 @@ public class SqlExplorer extends SplitLayout {
         addClassName("sqlexplorer");
 
         VerticalLayout leftLayout = new VerticalLayout();
+        leftLayout.setClassName("sqlexplorer-left");
         leftLayout.setMargin(false);
         leftLayout.setSpacing(false);
         leftLayout.setPadding(false);
@@ -150,6 +151,7 @@ public class SqlExplorer extends SplitLayout {
         leftLayout.expand(scrollable);
 
         VerticalLayout rightLayout = new VerticalLayout();
+        rightLayout.setClassName("sqlexplorer-right");
         rightLayout.setMargin(false);
         rightLayout.setSpacing(false);
         rightLayout.setPadding(false);
