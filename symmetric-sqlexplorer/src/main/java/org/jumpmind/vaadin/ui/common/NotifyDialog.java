@@ -26,7 +26,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.UI;
@@ -60,10 +59,9 @@ public class NotifyDialog extends ResizableDialog {
         
         final String message = text;
         
-        final Span textSpan = new Span();
-        textSpan.getElement().setProperty("innerHTML", message);
-        messageArea.add(textSpan);
-        messageArea.expand(textSpan);
+        final Label textLabel = new Label(message);
+        messageArea.add(textLabel);
+        messageArea.expand(textLabel);
         
         content.add(messageArea);
         content.expand(messageArea);
@@ -75,13 +73,13 @@ public class NotifyDialog extends ResizableDialog {
             if (detailsMode) {
                 String msg = "<pre>" + ExceptionUtils.getStackTrace(ex).trim() + "</pre>";
                 msg = msg.replace("\t", "    ");
-                textSpan.getElement().setProperty("innerHTML", msg);
+                textLabel.setText(msg);
                 detailsButton.setText("Message");
                 messageArea.getStyle().set("margin", "0 0 0 16px");
                 setHeight("600px");
                 setWidth("1000px");
             } else {
-                textSpan.getElement().setProperty("innerHTML", message);
+                textLabel.setText(message);
                 detailsButton.setText("Details");
                 messageArea.setMargin(true);
                 setWidth("400px");

@@ -149,10 +149,9 @@ public final class CommonUiUtils {
             HorizontalLayout layout = new HorizontalLayout();
             Notification notification = new Notification(layout);
             
-            Span span = new Span();
-            span.getElement().setProperty("innerHTML", caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
-            layout.add(span);
-            layout.setVerticalComponentAlignment(Alignment.CENTER, span);
+            Label label = new Label(caption + "\n" + contactWithLineFeed(FormatUtils.wordWrap(message, 150)));
+            layout.add(label);
+            layout.setVerticalComponentAlignment(Alignment.CENTER, label);
             
             Icon closeIcon = new Icon(VaadinIcon.CLOSE_CIRCLE_O);
             closeIcon.setSize("8ex");

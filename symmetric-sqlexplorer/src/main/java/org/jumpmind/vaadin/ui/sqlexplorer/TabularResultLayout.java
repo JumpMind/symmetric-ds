@@ -59,6 +59,7 @@ import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.CsvExport;
 import org.jumpmind.vaadin.ui.common.GridDataProvider;
 import org.jumpmind.vaadin.ui.common.IDataProvider;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.NotifyDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.SqlRunner.ISqlRunnerListener;
 import org.slf4j.Logger;
@@ -145,7 +146,7 @@ public class TabularResultLayout extends VerticalLayout {
     
     ColumnVisibilityToggler columnVisibilityToggler;
 
-    Span resultSpan;
+    Label resultLabel;
 
     public TabularResultLayout(IDb db, String sql, ResultSet rs, ISqlRunnerListener listener, Settings settings, boolean showSql)
             throws SQLException {
@@ -329,10 +330,9 @@ public class TabularResultLayout extends VerticalLayout {
             long count = (grid.getDataProvider().fetch(new Query<>()).count());
             int maxResultsSize = settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS);
             if (count >= maxResultsSize) {
-                resultSpan.getElement().setProperty("innerHTML",
-                        "Limited to <span style='color: red'>" + maxResultsSize + "</span> rows;");
+                resultLabel.setText("Limited to <span style='color: red'>" + maxResultsSize + "</span> rows;");
             } else {
-                resultSpan.getElement().setProperty("innerHTML", count + " rows returned;");
+                resultLabel.setText(count + " rows returned;");
             }
         } catch (SQLException ex) {
             log.error(ex.getMessage(), ex);
@@ -348,8 +348,8 @@ public class TabularResultLayout extends VerticalLayout {
 
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
-        resultSpan = new Span("");
-        leftBar.add(resultSpan);
+        resultLabel = new Label("");
+        leftBar.add(resultLabel);
 
         final Span sqlSpan = new Span("");
         sqlSpan.setWidth("800px");

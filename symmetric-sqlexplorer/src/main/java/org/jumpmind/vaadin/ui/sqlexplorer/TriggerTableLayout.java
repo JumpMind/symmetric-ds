@@ -23,6 +23,7 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 import java.util.Map;
 
 import org.jumpmind.db.model.Trigger;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.ReadOnlyTextAreaDialog;
 import org.jumpmind.vaadin.ui.sqlexplorer.TriggerInfoPanel.Refresher;
 
@@ -32,7 +33,6 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -66,9 +66,7 @@ public class TriggerTableLayout extends VerticalLayout{
 
         HorizontalLayout leftBar = new HorizontalLayout();
         leftBar.setSpacing(true);
-        final Span span = new Span();
-        span.getElement().setProperty("innerHTML", trigger.getFullyQualifiedName());
-        leftBar.add(span);
+        leftBar.add(new Label(trigger.getFullyQualifiedName()));
         
         bar.add(leftBar);
         bar.setVerticalComponentAlignment(Alignment.CENTER, leftBar);

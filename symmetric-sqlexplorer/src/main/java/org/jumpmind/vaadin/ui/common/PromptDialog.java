@@ -50,9 +50,7 @@ public class PromptDialog extends Dialog {
         setCloseOnOutsideClick(false);
         
         if (caption != null) {
-            Span header = new Span();
-            header.getElement().setProperty("innerHTML", caption + "<hr>");
-            add(header);
+            add(new Label(caption + "<hr>"));
         }
 
         VerticalLayout layout = new VerticalLayout();

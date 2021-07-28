@@ -46,11 +46,11 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.SqlScriptReader;
 import org.jumpmind.properties.TypedProperties;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -407,12 +407,11 @@ public class SqlRunner extends Thread {
         VerticalLayout content = new VerticalLayout();        
         content.setMargin(true);
         panel.setContent(content);
-        Span span = new Span();
-        span.getElement().setProperty("innerHTML", "<pre>" + text.toString() + "</pre>");
+        Label label = new Label("<pre>" + text.toString() + "</pre>");
         if (StringUtils.isNotBlank(style)) {
-            span.setClassName(style);
+            label.setClassName(style);
         }
-        content.add(span);
+        content.add(label);
         return panel;
     }
 

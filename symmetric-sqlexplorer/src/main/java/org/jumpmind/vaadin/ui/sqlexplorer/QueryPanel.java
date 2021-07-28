@@ -39,6 +39,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.TabSheet;
 import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
@@ -389,11 +390,10 @@ public class QueryPanel extends SplitLayout implements IContentTab {
             final HorizontalLayout executingLayout = new HorizontalLayout();
             executingLayout.setMargin(true);
             executingLayout.setSizeFull();
-            final Span span = new Span();
-            span.getElement().setProperty("innerHTML", "Executing:\n\n" + StringUtils.abbreviate(sqlText, 250));
-            span.setEnabled(false);
-            executingLayout.add(span);
-            executingLayout.setVerticalComponentAlignment(Alignment.START, span);
+            final Label label = new Label("Executing:\n\n" + StringUtils.abbreviate(sqlText, 250));
+            label.setEnabled(false);
+            executingLayout.add(label);
+            executingLayout.setVerticalComponentAlignment(Alignment.START, label);
 
             final String sql = sqlText;
             final EnhancedTab executingTab;
@@ -491,7 +491,7 @@ public class QueryPanel extends SplitLayout implements IContentTab {
             final Button cancel = new Button("Cancel");
             cancel.addClickListener(event -> {
                 log.info("Canceling sql: " + sql);
-                span.setText("Canceling" + span.getText().substring(9));
+                label.setText("Canceling" + label.getText().substring(9));
                 executingLayout.remove(cancel);
                 canceled = true;
                 new Thread(new Runnable() {

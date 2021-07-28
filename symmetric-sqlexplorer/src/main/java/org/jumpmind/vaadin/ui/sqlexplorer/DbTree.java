@@ -34,11 +34,10 @@ import org.jumpmind.db.model.Trigger;
 import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -87,15 +86,11 @@ public class DbTree extends TreeGrid<DbTreeNode> {
         expandedNodes = new LinkedHashSet<DbTreeNode>();
         
         addComponentHierarchyColumn(node -> {
-            HorizontalLayout layout = new HorizontalLayout();
+            Label label = new Label(node.getName());
             if (node.getIcon() != null) {
-                Icon icon = new Icon(node.getIcon());
-                icon.setSize("16px");
-                layout.add(icon);
-                layout.setVerticalComponentAlignment(Alignment.CENTER, icon);
+                label.setLeftIcon(node.getIcon());
             }
-            layout.add(new Span(node.getName()));
-            return layout;
+            return label;
         });
         
         addExpandListener(event -> {

@@ -46,6 +46,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
+import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,13 +59,11 @@ import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
@@ -589,11 +588,8 @@ public class SqlExplorer extends SplitLayout {
 
     }
     
-    protected HorizontalLayout createItem(String text, VaadinIcon icon) {
-        HorizontalLayout layout = new HorizontalLayout();
-        layout.add(new Icon(icon));
-        layout.add(new Span(text));
-        return layout;
+    protected Label createItem(String text, VaadinIcon icon) {
+        return new Label(icon, text);
     }
 
     protected QueryPanel getQueryPanelForDb(IDb db) {
