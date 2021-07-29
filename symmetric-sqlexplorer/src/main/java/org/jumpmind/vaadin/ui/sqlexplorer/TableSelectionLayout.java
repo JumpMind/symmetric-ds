@@ -119,9 +119,7 @@ public class TableSelectionLayout extends VerticalLayout {
             schemaSelect.setValue(databasePlatform.getDefaultSchema());
         }
 
-        Span spacer = new Span();
-        schemaChooserLayout.add(spacer);
-        schemaChooserLayout.expand(spacer);
+        schemaChooserLayout.addAndExpand(new Span());
 
         filterField = new TextField();
         filterField.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
@@ -156,8 +154,7 @@ public class TableSelectionLayout extends VerticalLayout {
         
         listOfTablesGrid.addColumn(table -> table);
         
-        this.add(listOfTablesGrid);
-        this.expand(listOfTablesGrid);
+        this.addAndExpand(listOfTablesGrid);
 
         schemaSelect.addValueChangeListener(event -> refreshTableOfTables());
 
@@ -177,8 +174,7 @@ public class TableSelectionLayout extends VerticalLayout {
         selectAllFooter.setSpacing(true);
         //selectAllFooter.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 
-        selectAllFooter.add(selectAllLink);
-        selectAllFooter.add(selectNoneLink);
+        selectAllFooter.add(selectAllLink, selectNoneLink);
         
         this.add(selectAllFooter);
         

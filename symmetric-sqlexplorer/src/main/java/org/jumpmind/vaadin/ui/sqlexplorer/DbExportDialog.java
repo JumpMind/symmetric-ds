@@ -192,8 +192,7 @@ public class DbExportDialog extends ResizableDialog {
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.add(formLayout);
-        optionLayout.expand(formLayout);
+        optionLayout.addAndExpand(formLayout);
 
         formatSelect = new ComboBox<DbExportFormat>("Format", Arrays.asList(DbExportFormat.values()));
         formatSelect.setValue(DbExportFormat.SQL);

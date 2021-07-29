@@ -76,9 +76,7 @@ public class PromptDialog extends Dialog {
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
 
-        Span spacer = new Span(" ");
-        buttonLayout.add(spacer);
-        buttonLayout.expand(spacer);
+        buttonLayout.addAndExpand(new Span());
 
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickShortcut(Key.ESCAPE);

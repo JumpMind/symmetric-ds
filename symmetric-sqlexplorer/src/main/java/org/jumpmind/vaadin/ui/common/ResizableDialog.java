@@ -117,8 +117,7 @@ public class ResizableDialog extends Dialog {
         Span footerText = new Span("");
         footerText.setSizeUndefined();
 
-        footer.add(footerText);
-        footer.expand(footerText);
+        footer.addAndExpand(footerText);
 
         if (toTheRightButtons != null) {
             footer.add(toTheRightButtons);

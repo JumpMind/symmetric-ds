@@ -199,8 +199,7 @@ public class DatabaseInfoPanel extends VerticalLayout implements IInfoPanel {
             layout.setHorizontalComponentAlignment(Alignment.END, columnVisibilityToggler);
         }
         
-        layout.add(grid);
-        layout.expand(grid);
+        layout.addAndExpand(grid);
         
         return layout;
     }

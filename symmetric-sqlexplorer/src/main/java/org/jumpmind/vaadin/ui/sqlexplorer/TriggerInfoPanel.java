@@ -96,8 +96,7 @@ public class TriggerInfoPanel extends VerticalLayout implements IInfoPanel {
         editor.setMode(AceMode.sql);
         editor.setValue(sourceText);
         editor.setSizeFull();
-        source.add(editor);
-        source.expand(editor);
+        source.addAndExpand(editor);
         
         HorizontalLayout bar = new HorizontalLayout();
         bar.setWidthFull();

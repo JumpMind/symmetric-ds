@@ -60,11 +60,9 @@ public class NotifyDialog extends ResizableDialog {
         final String message = text;
         
         final Label textLabel = new Label(message);
-        messageArea.add(textLabel);
-        messageArea.expand(textLabel);
+        messageArea.addAndExpand(textLabel);
         
-        content.add(messageArea);
-        content.expand(messageArea);
+        content.addAndExpand(messageArea);
 
         final Button detailsButton = new Button("Details");
         detailsButton.setVisible(ex != null);

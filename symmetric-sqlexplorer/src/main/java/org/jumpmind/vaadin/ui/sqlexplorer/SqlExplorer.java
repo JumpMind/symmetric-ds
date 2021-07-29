@@ -146,8 +146,7 @@ public class SqlExplorer extends SplitLayout {
         dbTree = buildDbTree();
         scrollable.setContent(dbTree);
 
-        leftLayout.add(scrollable);
-        leftLayout.expand(scrollable);
+        leftLayout.addAndExpand(scrollable);
 
         VerticalLayout rightLayout = new VerticalLayout();
         rightLayout.setClassName("sqlexplorer-right");
@@ -176,8 +175,7 @@ public class SqlExplorer extends SplitLayout {
                 selectContentTab((IContentTab) ((EnhancedTab) event.getSelectedTab()).getComponent());
             }
         });
-        rightLayout.add(contentTabs);
-        rightLayout.expand(contentTabs);
+        rightLayout.addAndExpand(contentTabs);
 
         addToPrimary(leftLayout);
         addToSecondary(rightLayout);

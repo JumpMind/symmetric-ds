@@ -118,9 +118,7 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
             buildDownloadButton(title);
         }
 
-        Span spacer = new Span();
-        buttonLayout.add(spacer);
-        buttonLayout.expand(spacer);
+        buttonLayout.addAndExpand(new Span());
 
         Button closeButton = buildCloseButton();
         buttonLayout.add(closeButton);
@@ -196,8 +194,7 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
                 sizeText = Math.round(fileSize / 1024.0) + " GB";
             }
             Span sizeSpan = new Span(sizeText);
-            buttonLayout.add(sizeSpan);
-            buttonLayout.expand(sizeSpan);
+            buttonLayout.addAndExpand(sizeSpan);
             buttonLayout.setVerticalComponentAlignment(Alignment.END, sizeSpan);
         }
     }

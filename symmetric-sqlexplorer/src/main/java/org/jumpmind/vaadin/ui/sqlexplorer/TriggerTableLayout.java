@@ -68,9 +68,8 @@ public class TriggerTableLayout extends VerticalLayout{
         leftBar.setSpacing(true);
         leftBar.add(new Label(trigger.getFullyQualifiedName()));
         
-        bar.add(leftBar);
+        bar.addAndExpand(leftBar);
         bar.setVerticalComponentAlignment(Alignment.CENTER, leftBar);
-        bar.expand(leftBar);
         
         MenuBar rightBar = new MenuBar();
         rightBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);
@@ -101,8 +100,7 @@ public class TriggerTableLayout extends VerticalLayout{
             }
         });
 
-        this.add(grid);
-        this.expand(grid);
+        this.addAndExpand(grid);
     }
     
     private Grid<String> fillGrid() {

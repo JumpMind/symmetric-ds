@@ -324,8 +324,7 @@ public class TabularResultLayout extends VerticalLayout {
                 }
             }, Key.ENTER, KeyModifier.CONTROL, KeyModifier.SHIFT).listenOn(grid);
             
-            this.add(grid);
-            this.expand(grid);
+            this.addAndExpand(grid);
 
             long count = (grid.getDataProvider().fetch(new Query<>()).count());
             int maxResultsSize = settings.getProperties().getInt(SQL_EXPLORER_MAX_RESULTS);
@@ -355,9 +354,8 @@ public class TabularResultLayout extends VerticalLayout {
         sqlSpan.setWidth("800px");
         leftBar.add(sqlSpan);
 
-        resultBar.add(leftBar);
+        resultBar.addAndExpand(leftBar);
         resultBar.setVerticalComponentAlignment(Alignment.CENTER, leftBar);
-        resultBar.expand(leftBar);
 
         MenuBar rightBar = new MenuBar();
         rightBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_SMALL);

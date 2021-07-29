@@ -62,8 +62,7 @@ public class ConfirmDialog extends Dialog {
             //textLabel.setClassName(ValoTheme.TEXTAREA_BORDERLESS);
             textLabel.setValue(text);
             textLabel.setReadOnly(true);
-            layout.add(textLabel);
-            layout.expand(textLabel);
+            layout.addAndExpand(textLabel);
         }
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -71,9 +70,7 @@ public class ConfirmDialog extends Dialog {
         buttonLayout.setSpacing(true);
         buttonLayout.setWidthFull();
 
-        Span spacer = new Span(" ");
-        buttonLayout.add(spacer);
-        buttonLayout.expand(spacer);
+        buttonLayout.addAndExpand(new Span());
 
         Button cancelButton = new Button("Cancel");
         cancelButton.addClickShortcut(Key.ESCAPE);

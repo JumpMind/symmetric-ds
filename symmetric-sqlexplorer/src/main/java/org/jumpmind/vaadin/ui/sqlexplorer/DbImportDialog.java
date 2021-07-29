@@ -132,8 +132,7 @@ public class DbImportDialog extends ResizableDialog {
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        importLayout.add(formLayout);
-        importLayout.expand(formLayout);
+        importLayout.addAndExpand(formLayout);
 
         formatSelect = new ComboBox<>("Format");
         formatSelect.setItems( DbImportFormat.values());

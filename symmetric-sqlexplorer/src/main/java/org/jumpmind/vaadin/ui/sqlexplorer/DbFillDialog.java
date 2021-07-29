@@ -179,8 +179,7 @@ public class DbFillDialog extends ResizableDialog {
 
         FormLayout formLayout = new FormLayout();
         formLayout.setSizeFull();
-        optionLayout.add(formLayout);
-        optionLayout.expand(formLayout);
+        optionLayout.addAndExpand(formLayout);
 
         countField = new TextField("Count (# of rows to fill)");
         countField.setValue("1");
