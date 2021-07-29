@@ -86,9 +86,9 @@ public class QueryPanel extends SplitLayout implements IContentTab {
 
     List<ShortcutRegistration> shortcutRegistrations;
 
-    boolean executeAtCursorButtonValue = false;
+    boolean requestedExecutionAtCursor = false;
 
-    boolean executeScriptButtonValue = false;
+    boolean requestedScriptExecution = false;
 
     boolean commitButtonValue = false;
 
@@ -184,15 +184,28 @@ public class QueryPanel extends SplitLayout implements IContentTab {
     protected AceEditor buildSqlEditor() {
         editor = CommonUiUtils.createAceEditor();
         editor.setMode(AceMode.sql);
+        
         editor.addValueChangeListener(event -> {
-            if (!editor.getValue().equals("")) {
-                executeAtCursorButtonValue = true;
-                executeScriptButtonValue = true;
-            } else {
-                executeAtCursorButtonValue = false;
-                executeScriptButtonValue = false;
-            }
             setButtonsEnabled();
+        });
+        
+        editor.addSyncCompletedListener(event -> {
+            if (!editor.getValue().equals("")) {
+                if (requestedExecutionAtCursor) {
+                    if (execute(false) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
+                        setButtonsEnabled();
+                    }
+                    requestedExecutionAtCursor = false;
+                } else if (requestedScriptExecution) {
+                    if (execute(true) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
+                        setButtonsEnabled();
+                    }
+                    requestedScriptExecution = false;
+                }
+            } else {
+                requestedExecutionAtCursor = false;
+                requestedScriptExecution = false;
+            }
         });
 
         /*boolean autoSuggestEnabled = settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMPLETE);
@@ -216,17 +229,19 @@ public class QueryPanel extends SplitLayout implements IContentTab {
 
     protected void setSelectedTabChangeListener() {
         resultsTabs.addSelectedTabChangeListener(event -> {
-            Component tab = resultsTabs.getSelectedTab().getComponent();
-            String st = resultStatuses.get(tab);
-            if (st == null && tab instanceof VerticalLayout) {
-                if (((VerticalLayout) tab).getComponentCount() > 0) {
-                    st = resultStatuses.get(((VerticalLayout) tab).getComponentAt(0));
+            if (resultsTabs.getSelectedTab() != null) {
+                Component tab = resultsTabs.getSelectedTab().getComponent();
+                String st = resultStatuses.get(tab);
+                if (st == null && tab instanceof VerticalLayout) {
+                    if (((VerticalLayout) tab).getComponentCount() > 0) {
+                        st = resultStatuses.get(((VerticalLayout) tab).getComponentAt(0));
+                    }
                 }
+                if (st == null) {
+                    st = "No Results";
+                }
+                status.setText(st);
             }
-            if (st == null) {
-                st = "No Results";
-            }
-            status.setText(st);
         });
     }
 
@@ -278,6 +293,7 @@ public class QueryPanel extends SplitLayout implements IContentTab {
         shortcutRegistrations.add(createExecuteSqlScriptShortcutListener());
 
         setButtonsEnabled();
+        editor.focus();
     }
 
     @Override
@@ -292,30 +308,28 @@ public class QueryPanel extends SplitLayout implements IContentTab {
     }
 
     protected void setButtonsEnabled() {
-        buttonBar.setExecuteScriptButtonEnabled(executeScriptButtonValue);
-        buttonBar.setExecuteAtCursorButtonEnabled(executeAtCursorButtonValue);
         buttonBar.setCommitButtonEnabled(commitButtonValue);
         buttonBar.setRollbackButtonEnabled(rollbackButtonValue);
     }
 
     protected ShortcutRegistration createExecuteSqlShortcutListener() {
-        return Shortcuts.addShortcutListener(editor, () -> {
-            if (executeAtCursorButtonValue) {
-                if (execute(false) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)) {
-                    setButtonsEnabled();
-                }
-            }
-        }, Key.ENTER, KeyModifier.CONTROL).listenOn(editor);
+        return Shortcuts.addShortcutListener(editor, () -> requestExecutionAtCursor(), Key.ENTER, KeyModifier.CONTROL)
+                .listenOn(editor);
     }
     
     protected ShortcutRegistration createExecuteSqlScriptShortcutListener() {
-        return Shortcuts.addShortcutListener(editor, () -> {
-            if (executeScriptButtonValue){
-                if (execute(true) && !settingsProvider.get().getProperties().is(SQL_EXPLORER_AUTO_COMMIT)){
-                    setButtonsEnabled();
-                }
-            }
-        }, Key.ENTER, KeyModifier.CONTROL, KeyModifier.SHIFT).listenOn(editor);
+        return Shortcuts.addShortcutListener(editor, () -> requestScriptExecution(), Key.ENTER, KeyModifier.CONTROL,
+                KeyModifier.SHIFT).listenOn(editor);
+    }
+    
+    public void requestExecutionAtCursor() {
+        requestedExecutionAtCursor = true;
+        editor.sync();
+    }
+    
+    public void requestScriptExecution() {
+        requestedScriptExecution = true;
+        editor.sync();
     }
 
     protected void addToSqlHistory(String sqlStatement, Date executeTime, long executeDuration, String userId) {
@@ -544,8 +558,6 @@ public class QueryPanel extends SplitLayout implements IContentTab {
         } finally {
             commitButtonValue = false;
             rollbackButtonValue = false;
-            executeAtCursorButtonValue = true;
-            executeScriptButtonValue = true;
             setButtonsEnabled();
             connection = null;
         }
@@ -554,8 +566,6 @@ public class QueryPanel extends SplitLayout implements IContentTab {
     public void transactionEnded() {
         commitButtonValue = false;
         rollbackButtonValue = false;
-        executeAtCursorButtonValue = true;
-        executeScriptButtonValue = true;
         setButtonsEnabled();
         connection = null;
     }
@@ -568,8 +578,6 @@ public class QueryPanel extends SplitLayout implements IContentTab {
         } finally {
             commitButtonValue = false;
             rollbackButtonValue = false;
-            executeAtCursorButtonValue = true;
-            executeScriptButtonValue = true;
             setButtonsEnabled();
             connection = null;
         }

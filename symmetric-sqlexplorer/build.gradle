@@ -48,7 +48,7 @@ dependencies {
     
     compile "org.springframework:spring-webmvc:$springVersion"
     
-    compile "de.f0rce:ace:1.2.1"
+    compile "de.f0rce:ace:1.3.0"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
     
     testCompile "com.h2database:h2:$h2Version"
