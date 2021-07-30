@@ -245,7 +245,7 @@ public class QueryPanel extends SplitLayout implements IContentTab {
         });
     }
 
-    public Tab getGeneralResultsTab() {
+    public EnhancedTab getGeneralResultsTab() {
         return generalResultsTab;
     }
 

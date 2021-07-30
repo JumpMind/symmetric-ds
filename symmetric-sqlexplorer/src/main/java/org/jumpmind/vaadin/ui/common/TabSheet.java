@@ -85,12 +85,14 @@ public class TabSheet extends Div {
     public EnhancedTab add(Component component, String name) {
         EnhancedTab newTab = new EnhancedTab(name, component);
         tabs.add(newTab);
+        tabList.add(newTab);
         return newTab;
     }
     
     public EnhancedTab add(Component component, String name, Icon icon) {
         EnhancedTab newTab = new EnhancedTab(name, icon, component);
         tabs.add(newTab);
+        tabList.add(newTab);
         return newTab;
     }
     

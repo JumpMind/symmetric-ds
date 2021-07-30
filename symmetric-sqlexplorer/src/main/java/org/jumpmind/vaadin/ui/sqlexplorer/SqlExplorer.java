@@ -59,11 +59,13 @@ import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridMultiSelectionModel;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
@@ -155,7 +157,7 @@ public class SqlExplorer extends SplitLayout {
         rightLayout.setPadding(false);
         rightLayout.setSizeFull();
 
-        VerticalLayout rightMenuWrapper = new VerticalLayout();
+        HorizontalLayout rightMenuWrapper = new HorizontalLayout();
         rightMenuWrapper.setMargin(false);
         rightMenuWrapper.setSpacing(false);
         rightMenuWrapper.setPadding(false);
@@ -165,8 +167,12 @@ public class SqlExplorer extends SplitLayout {
         contentMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
         contentMenuBar.setWidthFull();
         addShowButton(contentMenuBar);
+        
+        Span spacer = new Span();
+        spacer.setWidth("0");
+        spacer.setHeight("40px");
 
-        rightMenuWrapper.add(contentMenuBar);
+        rightMenuWrapper.add(contentMenuBar, spacer);
         rightLayout.add(rightMenuWrapper);
 
         contentTabs = new SqlExplorerTabPanel();
@@ -252,7 +258,7 @@ public class SqlExplorer extends SplitLayout {
             if (selected != null) {
                 selected.unselected();
             }
-            contentTabs.setSelectedTab(contentTabs.getTab((Component) tab));
+            contentTabs.setSelectedTab((Component) tab);
             contentMenuBar.removeAll();
             addShowButton(contentMenuBar);
             if (tab instanceof QueryPanel) {
@@ -444,17 +450,6 @@ public class SqlExplorer extends SplitLayout {
             }
             Set<DbTreeNode> nodes = dbTree.getSelectedItems();
             if (nodes != null && (multiSelectEvent == null || !multiSelectEvent.getAddedSelection().isEmpty())) {
-                for (DbTreeNode treeNode : nodes) {
-                    IDb db = dbTree.getDbForNode(treeNode);
-                    QueryPanel panel = getQueryPanelForDb(db);
-                    if (panel == null && db != null) {
-                        openQueryWindow(db);
-                    }
-                    if (db != null && treeNode.getParent() == null) {
-                        selectContentTab(getQueryPanelForDb(db));
-                    }
-                }
-
                 String selectedTabCaption = null;
                 for (IInfoPanel panel : infoTabs) {
                     selectedTabCaption = panel.getSelectedTabCaption();
@@ -501,6 +496,17 @@ public class SqlExplorer extends SplitLayout {
                             infoTabs.add(triggerInfoTab);
                             selectContentTab(triggerInfoTab);
                         }
+                    }
+                }
+                
+                for (DbTreeNode treeNode : nodes) {
+                    IDb db = dbTree.getDbForNode(treeNode);
+                    QueryPanel panel = getQueryPanelForDb(db);
+                    if (panel == null && db != null) {
+                        openQueryWindow(db);
+                    }
+                    if (db != null && treeNode.getParent() == null) {
+                        selectContentTab(getQueryPanelForDb(db));
                     }
                 }
             }

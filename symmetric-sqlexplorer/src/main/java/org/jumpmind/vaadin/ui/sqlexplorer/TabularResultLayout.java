@@ -377,8 +377,8 @@ public class TabularResultLayout extends VerticalLayout {
 
         if (isInQueryGeneralResults) {
             MenuItem keepResultsButton = rightBar.addItem(new Icon(VaadinIcon.COPY), event -> {
-                //queryPanel.addResultsTab(refreshWithoutSaveButton(), StringUtils.abbreviate(sql, 20),
-                //        queryPanel.getGeneralResultsTab().getIcon());
+                queryPanel.addResultsTab(refreshWithoutSaveButton(), StringUtils.abbreviate(sql, 20),
+                        queryPanel.getGeneralResultsTab().getIcon());
                 queryPanel.resetGeneralResultsTab();
             });
             keepResultsButton.getElement().setAttribute("title", "Save these results to a new tab");
@@ -630,7 +630,7 @@ public class TabularResultLayout extends VerticalLayout {
                     }
                 }
                 sql = ps.toString().substring(ps.toString().indexOf("select "));
-                //queryPanel.executeSql(sql, false);
+                queryPanel.executeSql(sql, false);
             } catch (SQLException e) {
                 log.error("Failed to follow foreign key", e);
             }
