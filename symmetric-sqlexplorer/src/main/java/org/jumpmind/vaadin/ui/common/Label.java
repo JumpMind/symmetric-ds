@@ -21,6 +21,7 @@
 package org.jumpmind.vaadin.ui.common;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -29,97 +30,88 @@ public class Label extends Span {
     
     private static final long serialVersionUID = 1L;
     
-    private String text;
+    private Html text;
     
-    private Component leftIcon;
-    
-    private Component rightIcon;
+    private Component icon;
 
     public Label() {
         super();
     }
     
     public Label(String text) {
-        setText(text);
+        this.text = new Html("<div>"+text+"</div>");
+        getElement().getStyle().set("display-items", "center");
+        add(this.text);
     }
     
     public Label(VaadinIcon icon, String text) {
-        setText(text);
-        setLeftIcon(icon);
+        this(new Icon(icon), text);
+        
     }
     
     public Label(String text, VaadinIcon icon) {
-        setText(text);
-        setRightIcon(icon);
+        this(text, new Icon(icon));
     }
     
     public Label(Icon icon, String text) {
-        setText(text);
-        setLeftIcon(icon);
+        this(text);
+        this.icon = icon;
+        this.icon.getElement().getStyle().set("float", "right");
+        configureIcon(this.icon);
     }
     
     public Label(String text, Icon icon) {
-        setText(text);
-        setRightIcon(icon);
+        this(text);
+        this.icon = icon;
+        this.icon.getElement().getStyle().set("float", "left");
+        configureIcon(this.icon);
     }
     
     public Label(Component component) {
         setText(component.getElement().getOuterHTML());
     }
     
-    public void setLeftIcon(VaadinIcon icon) {
-        leftIcon = new Icon(icon);
-        configureIcon(leftIcon);
-        updateLabel();
-    }
-    
-    public void setRightIcon(VaadinIcon icon) {
-        rightIcon = new Icon(icon);
-        configureIcon(rightIcon);
-        updateLabel();
-    }
-    
-    public void setLeftIcon(Component icon) {
-        leftIcon = icon;
-        configureIcon(leftIcon);
-        updateLabel();
-    }
-    
-    public void setRightIcon(Component icon) {
-        rightIcon = icon;
-        configureIcon(rightIcon);
-        updateLabel();
-    }
-    
-    @Override
     public String getText() {
         return getElement().getProperty("innerHTML");
     }
     
-    @Override
     public void setText(String text) {
-        this.text = text;
-        updateLabel();
+        if (this.text != null) {
+            remove(this.text);
+        }
+        this.text = new Html("<div>"+text+"</div>");
+        add(this.text);
+    }
+
+    public void setRightIcon(VaadinIcon icon) {
+        setRightIcon(new Icon(icon));
     }
     
-    @Override
-    public void removeAll() {
-        super.removeAll();
-        text = null;
-        leftIcon = null;
-        rightIcon = null;
+    public void setLeftIcon(VaadinIcon icon) {
+        setLeftIcon(new Icon(icon));
     }
     
-    private void updateLabel() {
-        getElement().setProperty("innerHTML", (leftIcon != null ? leftIcon.getElement().getOuterHTML() + " " : "")
-                + (text != null ? text : "") + (rightIcon != null ? " " + rightIcon.getElement().getOuterHTML() : ""));
+    public void setLeftIcon(Component icon) {
+        if (this.icon != null) {
+            remove(this.icon);
+        }
+        icon.getElement().getStyle().set("align-self", "flex-start");
+        this.icon = icon;
+        configureIcon(this.icon);
+    }
+
+    public void setRightIcon(Component icon) {
+        if (this.icon != null) {
+            remove(this.icon);
+        }
+        icon.getElement().getStyle().set("align-self", "flex-end");
+        this.icon = icon;
+        configureIcon(this.icon);
     }
     
     private void configureIcon(Component icon) {
         icon.getElement().getStyle().set("margin-top", "-4px");
-        if (icon != null && icon instanceof Icon) {
-            ((Icon) icon).setSize("1em");
-        }
+        add(icon);
     }
 
 }
