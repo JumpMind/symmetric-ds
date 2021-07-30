@@ -61,7 +61,7 @@ public class DbTreeNode implements Serializable {
     }
     
     public DbTreeNode(DbTree dbTree, String type, DbTreeNode parent) {
-        this.name = "<empty>";
+        this.name = "&lt;empty&gt;";
         this.type = type;
         this.parent = parent;
         this.dbTree = dbTree;
