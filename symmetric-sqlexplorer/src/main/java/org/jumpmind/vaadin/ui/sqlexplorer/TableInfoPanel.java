@@ -132,6 +132,9 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
             }            
         }
         
+        if (tabSheet.getSelectedTab() == null) {
+            tabSheet.setSelectedTab("Columns");
+        }
     }
     
     public String getSelectedTabCaption() {
@@ -142,7 +145,7 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
             final Settings settings, boolean isInit) {
         
         if (!isInit && tabSheet.getTabCount() >= 2) {
-            tabSheet.remove(tabSheet.getTab(1));
+            tabSheet.remove(tabSheet.getTab(1).getName());
         }
         
         IDatabasePlatform platform = db.getPlatform();
