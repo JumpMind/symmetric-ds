@@ -40,7 +40,7 @@ public class Label extends Span {
     
     public Label(String text) {
         this.text = new Html("<div>"+text+"</div>");
-        getElement().getStyle().set("display-items", "center");
+        getElement().getStyle().set("display", "flex");
         add(this.text);
     }
     
@@ -110,7 +110,6 @@ public class Label extends Span {
     }
     
     private void configureIcon(Component icon) {
-        icon.getElement().getStyle().set("margin-top", "-4px");
         add(icon);
     }
 
