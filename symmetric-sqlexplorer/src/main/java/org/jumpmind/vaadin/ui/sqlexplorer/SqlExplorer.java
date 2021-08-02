@@ -46,6 +46,7 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.vaadin.ui.common.CommonUiUtils;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog;
 import org.jumpmind.vaadin.ui.common.ConfirmDialog.IConfirmListener;
+import org.jumpmind.vaadin.ui.common.CustomSplitLayout;
 import org.jumpmind.vaadin.ui.common.Label;
 import org.jumpmind.vaadin.ui.common.TabSheet.EnhancedTab;
 import org.slf4j.Logger;
@@ -68,13 +69,12 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.shared.Registration;
 
 @CssImport("./sqlexplorer.css")
-public class SqlExplorer extends SplitLayout {
+public class SqlExplorer extends CustomSplitLayout {
 
     private static final long serialVersionUID = 1L;
 
@@ -82,7 +82,7 @@ public class SqlExplorer extends SplitLayout {
 
     final static VaadinIcon QUERY_ICON = VaadinIcon.FILE_O;
 
-    final static float DEFAULT_SPLIT_POS = 225;
+    final static double DEFAULT_SPLIT_POS = 20;
 
     IDbProvider databaseProvider;
 
@@ -102,7 +102,7 @@ public class SqlExplorer extends SplitLayout {
 
     IContentTab selected;
 
-    float savedSplitPosition = DEFAULT_SPLIT_POS;
+    double savedSplitPosition = DEFAULT_SPLIT_POS;
 
     String user;
 
@@ -118,11 +118,11 @@ public class SqlExplorer extends SplitLayout {
         this(configDir, databaseProvider, new DefaultSettingsProvider(configDir, user), user, DEFAULT_SPLIT_POS, additionalMenuItems);
     }
 
-    public SqlExplorer(String configDir, IDbProvider databaseProvider, String user, float leftSplitPos) {
+    public SqlExplorer(String configDir, IDbProvider databaseProvider, String user, double leftSplitPos) {
         this(configDir, databaseProvider, new DefaultSettingsProvider(configDir, user), user, leftSplitPos);
     }
 
-    public SqlExplorer(String configDir, IDbProvider databaseProvider, ISettingsProvider settingsProvider, String user, float leftSplitSize,
+    public SqlExplorer(String configDir, IDbProvider databaseProvider, ISettingsProvider settingsProvider, String user, double leftSplitSize,
             IDbMenuItem... additionalMenuItems) {
         this.databaseProvider = databaseProvider;
         this.settingsProvider = settingsProvider;
@@ -187,7 +187,7 @@ public class SqlExplorer extends SplitLayout {
         addToSecondary(rightLayout);
 
         //setSplitterPosition(savedSplitPosition, Unit.PIXELS);
-        setSplitterPosition(20);
+        setSplitterPosition(savedSplitPosition);
     }
 
     protected MenuBar buildLeftMenu() {
@@ -195,7 +195,7 @@ public class SqlExplorer extends SplitLayout {
         leftMenu.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
         leftMenu.setWidthFull();
         MenuItem hideButton = leftMenu.addItem(new Icon(VaadinIcon.MENU), event -> {
-            //savedSplitPosition = getSplitPosition() > 10 ? getSplitPosition() : DEFAULT_SPLIT_POS;
+            savedSplitPosition = this.getSplitterPosition() > 10 ? this.getSplitterPosition(): DEFAULT_SPLIT_POS;
             setSplitterPosition(0);
             setPrimaryStyle("max-width", "0%");
             showButton.setVisible(true);
@@ -245,7 +245,7 @@ public class SqlExplorer extends SplitLayout {
     protected void addShowButton(MenuBar contentMenuBar) {
         boolean visible = showButton != null ? showButton.isVisible() : false;
         showButton = contentMenuBar.addItem(new Icon(VaadinIcon.MENU), event -> {
-            //setSplitterPosition(savedSplitPosition, Unit.PIXELS);
+            setSplitterPosition(savedSplitPosition);
             setPrimaryStyle("max-width", "100%");
             showButton.setVisible(false);
         });

@@ -23,6 +23,7 @@ package org.jumpmind.vaadin.ui.common;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -70,10 +71,15 @@ public class TabSheet extends Div {
         
         tabs.addSelectedChangeListener(event -> {
             if (event.getSelectedTab() != null) {
-                content.removeAll();
+                content.getChildren().forEach(element -> element.setVisible(false));
                 Component component = ((EnhancedTab) event.getSelectedTab()).getComponent();
                 if (component != null) {
-                    content.add(component);
+                    List<Component> l = content.getChildren().filter(e -> e.equals(component)).collect(Collectors.toList());
+                    if (l != null && l.size() > 0) {
+                        l.get(0).setVisible(true);
+                    } else {
+                        content.add(component);
+                    }
                 }
             }
         });
