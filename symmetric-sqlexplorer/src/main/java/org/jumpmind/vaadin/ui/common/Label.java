@@ -41,6 +41,7 @@ public class Label extends Span {
     public Label(String text) {
         this.text = new Html("<div>"+text+"</div>");
         getElement().getStyle().set("display", "flex");
+        getElement().getStyle().set("margin", "auto");
         add(this.text);
     }
     
