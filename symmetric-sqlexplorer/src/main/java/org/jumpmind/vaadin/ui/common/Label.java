@@ -27,82 +27,82 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class Label extends Span {
-    
-    private static final long serialVersionUID = 1L;
-    
-    private Html text;
-    
-    private Component icon;
 
-    public Label() {
-        super();
-    }
-    
-    public Label(String text) {
-        this.text = new Html("<div>"+text+"</div>");
-        getElement().getStyle().set("display", "flex");
-        getElement().getStyle().set("margin", "auto");
-        add(this.text);
-    }
-    
-    public Label(VaadinIcon icon, String text) {
-        this(new Icon(icon), text);
-        
-    }
-    
-    public Label(String text, VaadinIcon icon) {
-        this(text, new Icon(icon));
-    }
-    
-    public Label(Icon icon, String text) {
-        this(text);
+	private static final long serialVersionUID = 1L;
+
+	private Html html;
+
+	private Component icon;
+
+	public Label() {
+		super();
+	}
+
+	public Label(String text) {
+		html = new Html("<div>" + text + "</div>");
+		getElement().getStyle().set("display", "flex");
+		getElement().getStyle().set("margin", "auto");
+		add(html);
+	}
+
+	public Label(VaadinIcon icon, String text) {
+		this(new Icon(icon), text);
+
+	}
+
+	public Label(String text, VaadinIcon icon) {
+		this(text, new Icon(icon));
+	}
+
+	public Label(Icon icon, String text) {
+		this(text);
 		setRightIcon(icon);
-    }
-    
-    public Label(String text, Icon icon) {
-        this(text);
+	}
+
+	public Label(String text, Icon icon) {
+		this(text);
 		setLeftIcon(icon);
-    }
-    
-    public Label(Component component) {
-        setText(component.getElement().getOuterHTML());
-    }
-    
-    public String getText() {
-        return getElement().getProperty("innerHTML");
-    }
-    
-    public void setText(String text) {
-        if (this.text != null) {
-            remove(this.text);
-        }
-        this.text = new Html("<div>"+text+"</div>");
-        add(this.text);
-    }
+	}
 
-    public void setRightIcon(VaadinIcon icon) {
-        setRightIcon(new Icon(icon));
-    }
-    
-    public void setLeftIcon(VaadinIcon icon) {
-        setLeftIcon(new Icon(icon));
-    }
-    
-    public void setLeftIcon(Component icon) {
-        if (this.icon != null) {
-            remove(this.icon);
-        }
-        icon.getElement().getStyle().set("align-self", "flex-start");
-        this.icon = icon;
-		add(icon);
-    }
+	public Label(Component component) {
+		setText(component.getElement().getOuterHTML());
+	}
 
-    public void setRightIcon(Component icon) {
-        if (this.icon != null) {
-            remove(this.icon);
-        }
-        icon.getElement().getStyle().set("align-self", "flex-end");
-        this.icon = icon;
+	public String getText() {
+		return getElement().getProperty("innerHTML");
+	}
+
+	public void setText(String text) {
+		if (html != null) {
+			remove(html);
+		}
+		html = new Html("<div>" + text + "</div>");
+		add(html);
+	}
+
+	public void setRightIcon(VaadinIcon icon) {
+		setRightIcon(new Icon(icon));
+	}
+
+	public void setLeftIcon(VaadinIcon icon) {
+		setLeftIcon(new Icon(icon));
+	}
+
+	public void setLeftIcon(Component icon) {
+		if (this.icon != null) {
+			remove(this.icon);
+		}
+		icon.getElement().getStyle().set("align-self", "flex-start");
+		this.icon = icon;
 		add(icon);
-    }
+	}
+
+	public void setRightIcon(Component icon) {
+		if (this.icon != null) {
+			remove(this.icon);
+		}
+		icon.getElement().getStyle().set("align-self", "flex-end");
+		this.icon = icon;
+		add(icon);
+	}
 }
