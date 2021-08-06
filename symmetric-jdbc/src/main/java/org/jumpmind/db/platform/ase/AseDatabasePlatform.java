@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jumpmind.db.model.Column;
 import org.jumpmind.db.platform.AbstractJdbcDatabasePlatform;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 import org.jumpmind.db.platform.PermissionResult;
@@ -102,7 +103,12 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;
     }
-    
+
+    @Override
+    public boolean canColumnBeUsedInWhereClause(Column column) {
+        return !isLob(column.getJdbcTypeCode());
+    }
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
