@@ -39,7 +39,7 @@ public class Label extends Span {
     }
 
     public Label(String text) {
-        html = new Html("<div>" + text + "</div>");
+        html = new Html("<div style='width: 100%'>" + text + "</div>");
         getElement().getStyle().set("display", "flex");
         getElement().getStyle().set("margin", "auto");
         add(html);
@@ -75,7 +75,7 @@ public class Label extends Span {
         if (html != null) {
             remove(html);
         }
-        html = new Html("<div>" + text + "</div>");
+        html = new Html("<div style='width: 100%'>" + text + "</div>");
         add(html);
     }
 
