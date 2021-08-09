@@ -47,7 +47,6 @@ public class Label extends Span {
 
     public Label(VaadinIcon icon, String text) {
         this(new Icon(icon), text);
-
     }
 
     public Label(String text, VaadinIcon icon) {
@@ -56,12 +55,12 @@ public class Label extends Span {
 
     public Label(Icon icon, String text) {
         this(text);
-        setRightIcon(icon);
+        setLeftIcon(icon);
     }
 
     public Label(String text, Icon icon) {
         this(text);
-        setLeftIcon(icon);
+        setRightIcon(icon);
     }
 
     public Label(Component component) {
@@ -93,8 +92,9 @@ public class Label extends Span {
             remove(this.icon);
         }
         icon.getElement().getStyle().set("align-self", "flex-start");
+        icon.getElement().getStyle().set("min-width", "24px");
         this.icon = icon;
-        add(icon);
+        addComponentAsFirst(icon);
     }
 
     public void setRightIcon(Component icon) {
@@ -102,6 +102,7 @@ public class Label extends Span {
             remove(this.icon);
         }
         icon.getElement().getStyle().set("align-self", "flex-end");
+        icon.getElement().getStyle().set("min-width", "24px");
         this.icon = icon;
         add(icon);
     }
