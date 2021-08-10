@@ -51,7 +51,6 @@ public class ConfirmDialog extends Dialog {
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
-        layout.setHeight("90%");
         layout.setSpacing(true);
         layout.setMargin(false);
         add(layout);
@@ -64,11 +63,11 @@ public class ConfirmDialog extends Dialog {
             textLabel.setReadOnly(true);
             layout.addAndExpand(textLabel);
         }
+        layout.setHeight("90%");
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         //buttonLayout.setClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         buttonLayout.setSpacing(true);
-        buttonLayout.setWidthFull();
 
         buttonLayout.addAndExpand(new Span());
 

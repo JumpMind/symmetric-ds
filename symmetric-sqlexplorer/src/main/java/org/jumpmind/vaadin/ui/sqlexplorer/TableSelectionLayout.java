@@ -100,7 +100,6 @@ public class TableSelectionLayout extends VerticalLayout {
         this.add(new Span(titleKey));
 
         HorizontalLayout schemaChooserLayout = new HorizontalLayout();
-        schemaChooserLayout.setWidthFull();
         schemaChooserLayout.setSpacing(true);
         this.add(schemaChooserLayout);
 

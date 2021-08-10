@@ -61,7 +61,6 @@ public class TriggerTableLayout extends VerticalLayout{
         this.setSpacing(false);
         
         HorizontalLayout bar = new HorizontalLayout();
-        bar.setWidthFull();
         bar.getStyle().set("margin", "0 16px");
 
         HorizontalLayout leftBar = new HorizontalLayout();

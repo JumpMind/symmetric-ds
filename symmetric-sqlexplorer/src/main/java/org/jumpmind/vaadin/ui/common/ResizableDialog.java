@@ -58,7 +58,7 @@ public class ResizableDialog extends Dialog {
         
         content = new VerticalLayout();
         content.setWidthFull();
-        content.setHeight("94%");
+        content.setHeight("92%");
         content.setMargin(false);
         content.setSpacing(false);
         super.add(content);
@@ -106,7 +106,6 @@ public class ResizableDialog extends Dialog {
     protected HorizontalLayout buildButtonFooter(Component[] toTheLeftButtons, Component... toTheRightButtons) {
         HorizontalLayout footer = new HorizontalLayout();
 
-        footer.setWidth("100%");
         footer.setSpacing(true);
         //footer.addClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
 

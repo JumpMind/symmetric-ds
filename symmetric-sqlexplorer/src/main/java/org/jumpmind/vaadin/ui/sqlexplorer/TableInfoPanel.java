@@ -219,7 +219,8 @@ public class TableInfoPanel extends VerticalLayout implements IInfoPanel {
         Grid<List<Object>> grid = creator.create(columnVisibilityToggler);
         layout.add(columnVisibilityToggler);
         layout.setHorizontalComponentAlignment(Alignment.END, columnVisibilityToggler);
-        layout.addAndExpand(grid);
+        layout.add(grid);
+        layout.expand(grid);
         ComponentUtil.setData(layout, "creator", null);
     }
     
