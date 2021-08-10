@@ -687,7 +687,7 @@ public class DefaultDatabaseWriter extends AbstractDatabaseWriter {
                         if (log.isDebugEnabled()) {
                             log.debug("About to run: {}", sql);
                         }
-                        count += newTransaction.execute(sql);
+                        count += newTransaction.prepareAndExecute(sql);
                         if (log.isDebugEnabled()) {
                             log.debug("{} rows updated when running: {}", count, sql);
                         }
