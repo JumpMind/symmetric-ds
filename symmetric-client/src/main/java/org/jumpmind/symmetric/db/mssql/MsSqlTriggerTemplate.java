@@ -369,8 +369,7 @@ getCreateTriggerString() + " $(triggerName) on database\n" +
 "  values ('$(prefixName)_node', '" + DataEventType.SQL.getCode() + "', @histId,\n" +
 " '\"delimiter " + delimiter + ";' + CHAR(13) + char(10) + replace(replace(@data.value('(/EVENT_INSTANCE/TSQLCommand/CommandText)[1]', 'nvarchar(max)'),'\\','\\\\'),'\"','\\\"') + '\",ddl',\n" +
 "  'config', dbo.$(prefixName)_node_disabled(), current_timestamp)\n" +
-"end\n" +   
-"---- go");
+"end\n" + "---- go");
         
         sqlTemplates.put("initialLoadSqlTemplate" ,
 "select $(columns) from $(schemaName)$(tableName) t where $(whereClause) " );
