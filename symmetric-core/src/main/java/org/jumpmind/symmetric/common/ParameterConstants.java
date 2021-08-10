@@ -313,6 +313,7 @@ final public class ParameterConstants {
     public final static String TRIGGER_UPDATE_CAPTURE_CHANGED_DATA_ONLY = "trigger.update.capture.changed.data.only.enabled";
     public final static String TRIGGER_CREATE_BEFORE_INITIAL_LOAD = "trigger.create.before.initial.load.enabled";
     public final static String TRIGGER_CAPTURE_DDL_CHANGES = "trigger.capture.ddl.changes";
+    public final static String TRIGGER_CAPTURE_DDL_DELIMITER = "trigger.capture.ddl.delimiter";
 
     public final static String DB_METADATA_IGNORE_CASE = "db.metadata.ignore.case";
     public final static String DB_NATIVE_EXTRACTOR = "db.native.extractor";
