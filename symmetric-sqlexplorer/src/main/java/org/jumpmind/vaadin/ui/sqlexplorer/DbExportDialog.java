@@ -51,6 +51,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 public class DbExportDialog extends ResizableDialog {
@@ -108,6 +109,8 @@ public class DbExportDialog extends ResizableDialog {
     private TableSelectionLayout tableSelectionLayout;
 
     private VerticalLayout optionLayout;
+    
+    private HorizontalLayout buttonFooter;
 
     private Anchor fileDownloader;
 
@@ -159,15 +162,6 @@ public class DbExportDialog extends ResizableDialog {
         previousButton = new Button("Previous", event -> previous());
         previousButton.setVisible(false);
 
-        exportFileButton = CommonUiUtils.createPrimaryButton("Export", event -> {
-            exportFileShortcutRegistration.remove();
-            fileDownloader.setHref(createResource());
-            doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
-            doneButton.focus();
-        });
-        buildFileDownloader();
-        fileDownloader.setVisible(false);
-
         exportEditorButton = CommonUiUtils.createPrimaryButton("Export", event -> {
             exportToEditor();
             close();
@@ -176,9 +170,18 @@ public class DbExportDialog extends ResizableDialog {
         
         doneButton = new Button("Close", event -> close());
         doneButton.setVisible(false);
+        
+        exportFileButton = CommonUiUtils.createPrimaryButton("Export", event -> {
+            exportFileShortcutRegistration.remove();
+            doneShortcutRegistration = doneButton.addClickShortcut(Key.ENTER);
+            doneButton.focus();
+        });
+        buildFileDownloader();
+        fileDownloader.setVisible(false);
 
-        add(buildButtonFooter(new Button[] {},
-                cancelButton, previousButton, nextButton, fileDownloader, exportEditorButton, doneButton));
+        buttonFooter = buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader,
+                exportEditorButton, doneButton);
+        add(buttonFooter);
 
     }
 
@@ -224,6 +227,7 @@ public class DbExportDialog extends ResizableDialog {
                     indices.setEnabled(false);
                     quotedIdentifiers.setEnabled(false);
             }
+            buildFileDownloader();
         });
         formatSelect.setValue(DbExportFormat.SQL);
         formLayout.add(formatSelect);
@@ -372,10 +376,15 @@ public class DbExportDialog extends ResizableDialog {
     protected void buildFileDownloader() {
         if (fileDownloader != null) {
             fileDownloader.remove();
+            content.remove(buttonFooter);
         }
         fileDownloader = new Anchor(createResource(), null);
         fileDownloader.getElement().setAttribute("download", true);
         fileDownloader.add(exportFileButton);
+        
+        buttonFooter = buildButtonFooter(new Button[] {}, cancelButton, previousButton, nextButton, fileDownloader,
+                exportEditorButton, doneButton);
+        add(buttonFooter);
     }
 
     private StreamResource createResource() {

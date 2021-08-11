@@ -81,6 +81,30 @@ public class CsvExport {
         convertToCsv();
         sendCsvToUser();
     }
+    
+    public ExportFileDownloader getFileDownloader() {
+        convertToCsv();
+        FileOutputStream outStream = null;
+        File file = null;
+        try {
+            String prefix = fileName.substring(0, fileName.length() - 4);
+            file = File.createTempFile(prefix, ".csv");
+            outStream = new FileOutputStream(file);
+            outStream.write(cellData.toString().getBytes());
+
+            return new ExportFileDownloader(fileName, csvMimeContentType, file);
+        } catch (Exception e) {
+            log.error("", e);
+            return null;
+        } finally {
+            try {
+                file.deleteOnExit();
+                outStream.close();
+            } catch (IOException e) {
+                log.error("Problem closing File Stream", e);
+            }
+        }
+    }
 
     public void convertToCsv() {
         addTitle();
