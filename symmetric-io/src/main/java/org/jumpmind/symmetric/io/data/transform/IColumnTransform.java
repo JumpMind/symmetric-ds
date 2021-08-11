@@ -26,6 +26,8 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.extension.IExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 
+import bsh.TargetError;
+
 /**
  * An extension point that can be implemented to provide custom transformation
  * logic. Column transforms are stateless and so should not keep references to
@@ -35,7 +37,7 @@ public interface IColumnTransform<T> extends IExtensionPoint {
 
     public T transform(IDatabasePlatform platform, DataContext context, TransformColumn column,
             TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-            throws IgnoreColumnException, IgnoreRowException;
+            throws IgnoreColumnException, IgnoreRowException, TargetError;
 
     public boolean isExtractColumnTransform();
 

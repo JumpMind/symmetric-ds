@@ -50,6 +50,8 @@ import org.jumpmind.util.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bsh.TargetError;
+
 public class TransformWriter extends NestedDataWriter {
 
     protected static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
@@ -448,6 +450,13 @@ public class TransformWriter extends NestedDataWriter {
                 }
                 returnValue = transform.transform(platform, context, transformColumn, data,
                         sourceValues, value, oldValue);
+            } catch (TargetError trg) {
+            	Throwable ex = trg.getTarget();
+            	if (ex instanceof IgnoreColumnException) {
+            		throw (IgnoreColumnException) ex;
+            	} else if (ex instanceof IgnoreRowException) {
+            		throw (IgnoreRowException) ex;
+            	}
             } catch (RuntimeException ex) {
                 log.warn("Column transform failed {}.{} ({}) for source values of {}", new Object[] { transformColumn.getTransformId(), transformColumn.getTargetColumnName(), transformColumn.getIncludeOn().name(), sourceValues.toString() });
                 throw ex;
