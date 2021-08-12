@@ -42,24 +42,16 @@ import org.slf4j.LoggerFactory;
  * Protect handlers by checking that the request is allowed.
  */
 public class AuthenticationInterceptor implements IInterceptor {
-    
     private Logger log = LoggerFactory.getLogger(getClass());
-
     private INodeService nodeService;
-    
     private ISecurityService securityService;
-    
     private Map<String, AuthenticationSession> sessions = new ConcurrentHashMap<String, AuthenticationSession>();
-
     private boolean useSessionAuth;
-    
     private int sessionExpireMillis;
-    
     private int maxSessions;
-    
     private long maxSessionsLastTime;
-    
-    public AuthenticationInterceptor(INodeService nodeService, ISecurityService securityService, 
+
+    public AuthenticationInterceptor(INodeService nodeService, ISecurityService securityService,
             boolean useSessionAuth, int sessionExpireSeconds, int maxSessions) {
         this.nodeService = nodeService;
         this.securityService = securityService;
@@ -69,27 +61,22 @@ public class AuthenticationInterceptor implements IInterceptor {
     }
 
     public boolean before(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-
         String nodeId = null;
         String securityToken = null;
         AuthenticationStatus status = null;
         AuthenticationSession session = null;
-
         if (log.isDebugEnabled()) {
             X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
             if (certs != null && certs.length > 0) {
                 log.debug("Client cert: " + certs[0].getSubjectX500Principal().getName());
             }
         }
-
         if (useSessionAuth && (session = getSession(req, false)) != null) {
             nodeId = (String) session.getAttribute(WebConstants.NODE_ID);
             securityToken = (String) session.getAttribute(WebConstants.SECURITY_TOKEN);
-
             if (!StringUtils.isEmpty(securityToken) && !StringUtils.isEmpty(nodeId)) {
                 status = nodeService.getAuthenticationStatus(nodeId, securityToken);
             }
-            
             if (status == null || status == AuthenticationStatus.FORBIDDEN || (status == AuthenticationStatus.ACCEPTED
                     && sessionExpireMillis > 0 && System.currentTimeMillis() - session.getCreationTime() > sessionExpireMillis)) {
                 log.debug("Node '{}' needs to renew authentication", nodeId);
@@ -103,14 +90,11 @@ public class AuthenticationInterceptor implements IInterceptor {
                 securityToken = req.getParameter(WebConstants.SECURITY_TOKEN);
             }
             nodeId = req.getParameter(WebConstants.NODE_ID);
-    
             if (StringUtils.isEmpty(securityToken) || StringUtils.isEmpty(nodeId)) {
                 ServletUtils.sendError(resp, WebConstants.SC_FORBIDDEN);
                 return false;
             }
-    
             status = nodeService.getAuthenticationStatus(nodeId, securityToken);
-            
             if (useSessionAuth && status == AuthenticationStatus.ACCEPTED) {
                 session = getSession(req, true);
                 session.setAttribute(WebConstants.NODE_ID, nodeId);
@@ -118,7 +102,6 @@ public class AuthenticationInterceptor implements IInterceptor {
                 resp.setHeader(WebConstants.HEADER_SET_SESSION_ID, session.getId());
             }
         }
-        
         if (status == AuthenticationStatus.ACCEPTED) {
             log.debug("Node '{}' successfully authenticated", nodeId);
             nodeService.resetNodeFailedLogins(nodeId);
@@ -142,7 +125,7 @@ public class AuthenticationInterceptor implements IInterceptor {
             return false;
         }
     }
- 
+
     protected AuthenticationSession getSession(HttpServletRequest req, boolean create) {
         String sessionId = req.getHeader(WebConstants.HEADER_SESSION_ID);
         AuthenticationSession session = null;
@@ -159,7 +142,7 @@ public class AuthenticationInterceptor implements IInterceptor {
         }
         return session;
     }
-    
+
     protected void removeOldSessions() {
         long now = System.currentTimeMillis();
         int removedSessions = 0;
@@ -185,5 +168,4 @@ public class AuthenticationInterceptor implements IInterceptor {
 
     public void after(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
     }
-
 }

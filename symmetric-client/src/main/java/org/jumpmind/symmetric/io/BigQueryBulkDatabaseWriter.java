@@ -20,7 +20,6 @@
  */
 package org.jumpmind.symmetric.io;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,11 +46,9 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 
-
 public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
-
     BigQuery bigquery;
-    
+
     public BigQueryBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             String tablePrefix, IStagingManager stagingManager, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers, IParameterService parameterService,
@@ -66,29 +63,26 @@ public class BigQueryBulkDatabaseWriter extends CloudBulkDatabaseWriter {
     public void loadToCloudDatabase() throws SQLException {
         try {
             File csvPath = this.stagedInputFile.getFile();
-            
             TableId tableId = TableId.of(this.targetTable.getSchema(), this.targetTable.getName());
-            WriteChannelConfiguration writeChannelConfiguration =
-                WriteChannelConfiguration.newBuilder(tableId).setFormatOptions(FormatOptions.csv()).setAutodetect(false).setDestinationTable(tableId).build();
+            WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration.newBuilder(tableId).setFormatOptions(FormatOptions.csv())
+                    .setAutodetect(false).setDestinationTable(tableId).build();
             // The location must be specified; other fields can be auto-detected.
             JobId jobId = JobId.newBuilder()
                     .setLocation(bigquery.getOptions().getLocation())
                     .setProject(bigquery.getOptions().getProjectId()).build();
-            
             TableDataWriteChannel writer = bigquery.writer(jobId, writeChannelConfiguration);
             // Write data to writer
             OutputStream stream = Channels.newOutputStream(writer);
             FileUtils.copyFile(csvPath, stream);
             stream.close();
-            
             // Get load job
             Job job = writer.getJob();
             job = job.waitFor();
         } catch (Exception ex) {
             throw getPlatform().getSqlTemplate().translate(ex);
-        } 
+        }
     }
-    
+
     @Override
     protected Table lookupTableAtTarget(Table sourceTable) {
         return sourceTable;

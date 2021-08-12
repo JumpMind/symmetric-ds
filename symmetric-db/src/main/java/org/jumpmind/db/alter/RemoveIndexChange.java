@@ -46,19 +46,19 @@ import org.jumpmind.db.model.Table;
 /**
  * Represents the removal of an index from a table.
  */
-public class RemoveIndexChange extends TableChangeImplBase
-{
+public class RemoveIndexChange extends TableChangeImplBase {
     /** The index to be removed. */
     private IIndex _index;
 
     /**
      * Creates a new change object.
      * 
-     * @param table The table to remove the index from
-     * @param index The index
+     * @param table
+     *            The table to remove the index from
+     * @param index
+     *            The index
      */
-    public RemoveIndexChange(Table table, IIndex index)
-    {
+    public RemoveIndexChange(Table table, IIndex index) {
         super(table);
         _index = index;
     }
@@ -68,19 +68,16 @@ public class RemoveIndexChange extends TableChangeImplBase
      *
      * @return The index
      */
-    public IIndex getIndex()
-    {
+    public IIndex getIndex() {
         return _index;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         Table table = database.findTable(getChangedTable().getName(), caseSensitive);
         IIndex index = table.findIndex(_index.getName(), caseSensitive);
-
         table.removeIndex(index);
     }
 }

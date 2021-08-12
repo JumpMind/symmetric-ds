@@ -25,7 +25,6 @@ import java.lang.reflect.Constructor;
 import org.jumpmind.properties.TypedProperties;
 
 public abstract class WrapperInterceptor {
-    
     public static WrapperInterceptor createInterceptor(Object wrapped, TypedProperties systemPlusEngineProperties) {
         String property = wrapped.getClass().getName() + ".interceptor";
         if (systemPlusEngineProperties == null) {
@@ -33,28 +32,28 @@ public abstract class WrapperInterceptor {
             systemPlusEngineProperties.putAll(System.getProperties());
         }
         String className = systemPlusEngineProperties.get(property);
-        if (className != null && className.length() > 0) {            
+        if (className != null && className.length() > 0) {
             try {
                 Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-                Constructor<?> constructor = clazz.getConstructor(Object.class, TypedProperties.class); 
+                Constructor<?> constructor = clazz.getConstructor(Object.class, TypedProperties.class);
                 return (WrapperInterceptor) constructor.newInstance(wrapped, systemPlusEngineProperties);
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to load and instantiate interceptor class [" + className + "]", ex);
-            } 
+            }
         }
         if (wrapped instanceof PreparedStatementWrapper || wrapped instanceof StatementWrapper) {
             return new StatementInterceptor(wrapped, systemPlusEngineProperties);
-        } else {            
+        } else {
             return new DummyInterceptor(wrapped);
         }
     }
-    
+
     private Object wrapped;
-    
+
     public WrapperInterceptor(Object wrapped) {
         this.wrapped = wrapped;
     }
-    
+
     public abstract InterceptResult preExecute(String methodName, Object... parameters);
 
     public abstract InterceptResult postExecute(String methodName, Object result, long startTime, long endTime, Object... parameters);
@@ -62,5 +61,4 @@ public abstract class WrapperInterceptor {
     public Object getWrapped() {
         return wrapped;
     }
-
 }

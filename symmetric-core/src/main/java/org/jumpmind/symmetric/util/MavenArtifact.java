@@ -26,15 +26,10 @@ import java.util.List;
 import org.jumpmind.symmetric.Version;
 
 public class MavenArtifact {
-
     public static final String REGEX_LIST = "\\s*,\\s*";
-    
     public static final String REGEX_COMPONENTS = "\\s*:\\s*";
-    
     private String groupId;
-    
     private String artifactId;
-    
     private String version;
 
     public MavenArtifact(String groupId, String artifactId, String version) {
@@ -140,5 +135,4 @@ public class MavenArtifact {
     public void setVersion(String version) {
         this.version = version;
     }
-    
 }

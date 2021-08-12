@@ -40,28 +40,21 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
-
     String fileName;
-
     BatchBufferedWriter writer;
-    
     OutputStream out;
-
     boolean open = true;
-    
     Node remoteNode;
-    
     String outgoingDir;
-    
     private List<OutgoingBatch> processedBatches;
-    
+
     public FileOutgoingTransport(Node remoteNode, Node localNode, String outgoingDir) {
         this.outgoingDir = outgoingDir;
-        this.fileName = outgoingDir + File.separator + localNode.getNodeGroupId() + "-" + localNode.getNodeId() + "_to_" + 
+        this.fileName = outgoingDir + File.separator + localNode.getNodeGroupId() + "-" + localNode.getNodeId() + "_to_" +
                 remoteNode.getNodeGroupId() + "-" + remoteNode.getNodeId() + "_" + System.currentTimeMillis();
         this.remoteNode = remoteNode;
     }
-    
+
     public String getOutgoingDir() {
         return outgoingDir;
     }
@@ -75,7 +68,7 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
         }
         return writer;
     }
-    
+
     @Override
     public BufferedWriter getWriter() {
         return writer;
@@ -101,7 +94,6 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
         } else if (writer != null) {
             batchIds = writer.getBatchIds();
         }
-        
         StringBuilder resp = new StringBuilder();
         for (Long batchId : batchIds) {
             resp.append(WebConstants.ACK_BATCH_NAME).append(batchId).append("=").append(WebConstants.ACK_BATCH_OK).append("&");
@@ -113,15 +105,17 @@ public class FileOutgoingTransport implements IOutgoingWithResponseTransport {
     @Override
     public void close() {
         try {
-            if(writer != null) {
+            if (writer != null) {
                 writer.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         try {
-            if(out != null) {
+            if (out != null) {
                 out.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         open = false;
     }
 

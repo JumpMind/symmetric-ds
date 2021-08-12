@@ -39,29 +39,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StagingPerf {
-
     protected final static String STAGE_PATH = "test";
-    
     protected final static String STAT_LOCK_ACQUIRE = "Acquire Lock";
-    
     protected final static String STAT_BATCH_CREATE = "Create Batch File";
-    
     protected final static String STAT_BATCH_WRITE = "Write Batch File";
-    
     protected final static String STAT_BATCH_RENAME = "Rename Batch File";
-    
     protected final static String STAT_BATCH_FIND = "Find Batch File";
-    
     protected final static String STAT_BATCH_READ = "Read Batch File";
-
     protected Logger log = LoggerFactory.getLogger(getClass());
-
     protected IStagingManager stagingMgr;
-        
     protected StagingPerfListener listener;
-    
     protected String serverInfo;
-    
+
     public StagingPerf(IStagingManager stagingMgr, StagingPerfListener listener) {
         this.stagingMgr = stagingMgr;
         this.listener = listener;
@@ -74,7 +63,6 @@ public class StagingPerf {
         long lastCallbackTime = startTime;
         long totalSeconds = 0;
         log.info("Starting staging test, duration of {} seconds", seconds);
-        
         try {
             SecureRandom random = new SecureRandom();
             long startBatchId = random.nextInt(999999) + 1;
@@ -83,7 +71,6 @@ public class StagingPerf {
                 Batch batch = new Batch(BatchType.EXTRACT, 0, "default", BinaryEncoding.HEX, "master", "1", true);
                 batch.setBatchId(1);
                 testBatch(batch, results);
-
                 if (Thread.interrupted()) {
                     log.warn("Test ending because thread interrupted");
                     break;
@@ -103,7 +90,6 @@ public class StagingPerf {
         } catch (Exception e) {
             log.error("Failed to run test", e);
         }
-
         List<StagingPerfResult> resultsAsList = getResultsAsList(results);
         logResults(totalSeconds, resultsAsList);
         return resultsAsList;
@@ -125,12 +111,10 @@ public class StagingPerf {
         } else {
             throw new RuntimeException("Failed to create lock file");
         }
-
         ts = System.currentTimeMillis();
         IStagedResource resource = stagingMgr.create(STAGE_PATH, batch.getStagedLocation(), batch.getBatchId());
         if (resource != null) {
             increment(results, STAT_BATCH_CREATE, System.currentTimeMillis() - ts);
-        
             ts = System.currentTimeMillis();
             try (BufferedWriter writer = resource.getWriter(0l)) {
                 for (int i = 0; i < 100; i++) {
@@ -142,19 +126,16 @@ public class StagingPerf {
                 resource.close();
                 increment(results, STAT_BATCH_WRITE, System.currentTimeMillis() - ts);
             }
-            
             ts = System.currentTimeMillis();
             resource.setState(State.DONE);
             increment(results, STAT_BATCH_RENAME, System.currentTimeMillis() - ts);
         } else {
             throw new RuntimeException("Failed to create staging file");
         }
-
         ts = System.currentTimeMillis();
         resource = stagingMgr.find(STAGE_PATH, batch.getStagedLocation(), batch.getBatchId());
         if (resource != null) {
             increment(results, STAT_BATCH_FIND, System.currentTimeMillis() - ts);
-            
             ts = System.currentTimeMillis();
             try (BufferedReader reader = resource.getReader()) {
                 while (reader.readLine() != null) {
@@ -164,7 +145,7 @@ public class StagingPerf {
             } finally {
                 resource.close();
                 increment(results, STAT_BATCH_READ, System.currentTimeMillis() - ts);
-            }            
+            }
             resource.delete();
         } else {
             throw new RuntimeException("Failed to find staging file");
@@ -202,8 +183,8 @@ public class StagingPerf {
         updateRating(STAT_BATCH_READ, results, list, 10, 400);
         return list;
     }
-    
-    protected void updateRating(String statName, Map<String, StagingPerfResult> results, List<StagingPerfResult> list, 
+
+    protected void updateRating(String statName, Map<String, StagingPerfResult> results, List<StagingPerfResult> list,
             long lowCount, long highCount) {
         StagingPerfResult result = results.get(statName);
         if (result != null) {
@@ -219,5 +200,4 @@ public class StagingPerf {
             list.add(result);
         }
     }
-
 }

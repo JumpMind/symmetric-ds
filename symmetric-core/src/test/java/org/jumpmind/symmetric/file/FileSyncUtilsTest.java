@@ -24,7 +24,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class FileSyncUtilsTest {
-
     @Test
     public void testGetRelativePathsUnix() {
         assertEquals("stuff/xyz.dat", FileSyncUtils.getRelativePath("/var/data/stuff/xyz.dat", "/var/data/", "/"));
@@ -36,7 +35,6 @@ public class FileSyncUtilsTest {
     public void testGetRelativePathFileToFile() {
         String target = "C:\\Windows\\Boot\\Fonts\\chs_boot.ttf";
         String base = "C:\\Windows\\Speech\\Common\\sapisvr.exe";
-
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
         assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
     }
@@ -45,7 +43,6 @@ public class FileSyncUtilsTest {
     public void testGetRelativePathDirectoryToFile() {
         String target = "C:\\Windows\\Boot\\Fonts\\chs_boot.ttf";
         String base = "C:\\Windows\\Speech\\Common\\";
-
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
         assertEquals("..\\..\\Boot\\Fonts\\chs_boot.ttf", relPath);
     }
@@ -54,17 +51,15 @@ public class FileSyncUtilsTest {
     public void testGetRelativePathFileToDirectory() {
         String target = "C:\\Windows\\Boot\\Fonts";
         String base = "C:\\Windows\\Speech\\Common\\foo.txt";
-
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
         assertEquals("..\\..\\Boot\\Fonts", relPath);
     }
-    
+
     @Test
     public void testGetRelativePathDirectoryToDirectory() {
         String target = "C:\\Windows\\Boot\\";
         String base = "C:\\Windows\\Speech\\Common\\";
         String expected = "..\\..\\Boot";
-
         String relPath = FileSyncUtils.getRelativePath(target, base, "\\");
         assertEquals(expected, relPath);
     }
@@ -73,11 +68,9 @@ public class FileSyncUtilsTest {
     public void testGetRelativePathDifferentDriveLetters() {
         String target = "D:\\sources\\recovery\\RecEnv.exe";
         String base = "C:\\Java\\workspace\\AcceptanceTests\\Standard test data\\geo\\";
-
         try {
             FileSyncUtils.getRelativePath(target, base, "\\");
             fail();
-
         } catch (PathResolutionException ex) {
             // expected exception
         }

@@ -34,17 +34,12 @@ import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoDatabase;
 
 public class SimpleMongoClientManager implements IMongoClientManager {
-
     protected IParameterService parameterService;
-
     protected String name = "mongodb";
-
     /*
-     * This is static because the MongoClient is thread safe and wraps a pool of
-     * connections
+     * This is static because the MongoClient is thread safe and wraps a pool of connections
      */
     protected final static Map<String, MongoClient> clients = new HashMap<String, MongoClient>();
-
     protected MongoDatabase currentDB;
 
     public SimpleMongoClientManager(IParameterService parameterService, String name) {
@@ -66,7 +61,7 @@ public class SimpleMongoClientManager implements IMongoClientManager {
             String username = null;
             char[] password = null;
             if (parameterService != null) {
-                dbUrl  = parameterService.getString(name + MongoConstants.URL, dbUrl);
+                dbUrl = parameterService.getString(name + MongoConstants.URL, dbUrl);
                 username = parameterService.getString(this.name + MongoConstants.USERNAME, username);
                 String passwordString = parameterService.getString(this.name + MongoConstants.PASSWORD, null);
                 if (passwordString != null) {
@@ -74,10 +69,10 @@ public class SimpleMongoClientManager implements IMongoClientManager {
                 }
             }
             if (databaseName != null) {
-	            MongoCredential credential = MongoCredential.createCredential(username, databaseName, password);
-	            client = new MongoClient(Arrays.asList(new ServerAddress(host, port)),
-	                    credential, new MongoClientOptions.Builder().build());
-	            clients.put(name, client);
+                MongoCredential credential = MongoCredential.createCredential(username, databaseName, password);
+                client = new MongoClient(Arrays.asList(new ServerAddress(host, port)),
+                        credential, new MongoClientOptions.Builder().build());
+                clients.put(name, client);
             }
         }
         return client;
@@ -99,5 +94,4 @@ public class SimpleMongoClientManager implements IMongoClientManager {
     public String getName() {
         return name;
     }
-
 }

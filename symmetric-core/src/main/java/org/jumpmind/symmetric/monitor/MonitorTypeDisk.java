@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.model.Monitor;
 import org.jumpmind.symmetric.model.MonitorEvent;
 
 public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
-   
     protected File tempDirectory;
 
     @Override
@@ -53,5 +52,4 @@ public class MonitorTypeDisk implements IMonitorType, ISymmetricEngineAware, IBu
     public void setSymmetricEngine(ISymmetricEngine engine) {
         tempDirectory = new File(engine.getParameterService().getTempDirectory());
     }
-
 }

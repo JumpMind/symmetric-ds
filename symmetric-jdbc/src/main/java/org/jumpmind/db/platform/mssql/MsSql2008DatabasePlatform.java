@@ -35,7 +35,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for the Microsoft SQL Server 2008 database.
  */
 public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
-
     /*
      * Creates a new platform instance.
      */
@@ -43,22 +42,22 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
         super(dataSource, settings);
         supportsTruncate = true;
     }
-    
+
     @Override
     protected IDdlBuilder createDdlBuilder() {
         return new MsSql2008DdlBuilder();
     }
-    
+
     @Override
     public String getName() {
         return DatabaseNamesConstants.MSSQL2008;
-    } 
-    
+    }
+
     @Override
     public long getEstimatedRowCount(Table table) {
         String catalog = StringUtils.isNotBlank(table.getCatalog()) ? table.getCatalog() : "";
-        if(catalog.length() > 0) {
-            if(getDdlBuilder().isDelimitedIdentifierModeOn()) {
+        if (catalog.length() > 0) {
+            if (getDdlBuilder().isDelimitedIdentifierModeOn()) {
                 catalog = getDdlBuilder().getDatabaseInfo().getDelimiterToken() + catalog + getDdlBuilder().getDatabaseInfo().getDelimiterToken();
             }
             catalog = catalog + ".";
@@ -68,7 +67,7 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
                 "where t.name = ? and schema_name(t.schema_id) = ?",
                 table.getName(), table.getSchema());
     }
-    
+
     @Override
     protected PermissionResult getLogMinePermission() {
         final PermissionResult result = new PermissionResult(PermissionType.LOG_MINE, "");
@@ -77,17 +76,12 @@ public class MsSql2008DatabasePlatform extends MsSql2005DatabasePlatform {
                 result.setStatus(Status.PASS);
             } else {
                 result.setStatus(Status.FAIL);
-                result.setSolution("Grant alter any database to this user."); 
+                result.setSolution("Grant alter any database to this user.");
             }
-            
         } catch (Exception e) {
             result.setSolution("Error occurred checking user permissions");
             result.setException(e);
         }
         return result;
     }
-
-    
-    
-
 }

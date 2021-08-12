@@ -33,23 +33,19 @@ import java.util.Map;
 import org.jumpmind.symmetric.wrapper.jna.WinsvcEx;
 
 public class WrapperConfig {
-
     protected String configFile;
-    
     protected Map<String, ArrayList<String>> prop;
-    
     protected File workingDirectory;
-
     protected String jarFile;
-    
+
     public WrapperConfig(String applHomeDir, String configFile, String jarFile) throws IOException {
         prop = getProperties(configFile);
         this.configFile = new File(configFile).getAbsolutePath();
         this.jarFile = new File(jarFile).getAbsolutePath();
         workingDirectory = new File(applHomeDir);
-    }   
+    }
 
-    public String getWrapperJarPath()  {
+    public String getWrapperJarPath() {
         return jarFile;
     }
 
@@ -115,7 +111,7 @@ public class WrapperConfig {
     public String getFailureActionCommand() {
         return getProperty(prop, "wrapper.ntservice.failure.action.command", "");
     }
-    
+
     public int getFailureResetPeriod() {
         return Integer.parseInt(getProperty(prop, "wrapper.ntservice.failure.reset.period", "300"));
     }
@@ -129,7 +125,7 @@ public class WrapperConfig {
         for (String type : types) {
             String delay = "0";
             if (i < delays.size()) {
-                delay = delays.get(i); 
+                delay = delays.get(i);
             }
             actions.add(new FailureAction(type, delay));
             i++;
@@ -140,19 +136,19 @@ public class WrapperConfig {
     public List<String> getDependencies() {
         return prop.get("wrapper.ntservice.dependency");
     }
-    
+
     public String getJavaCommand() {
         return getProperty(prop, "wrapper.java.command", "java");
     }
-    
+
     public List<String> getOptions() {
         return prop.get("wrapper.java.additional");
     }
-    
+
     public String getRunAsUser() {
         return getProperty(prop, "wrapper.run.as.user", "");
     }
-    
+
     public List<String> getApplicationParameters() {
         return getListProperty(prop, "wrapper.app.parameter");
     }
@@ -160,40 +156,32 @@ public class WrapperConfig {
     public ArrayList<String> getCommand(boolean isConsole) {
         ArrayList<String> cmdList = new ArrayList<String>();
         cmdList.add(getJavaCommand());
-
         String initMem = getProperty(prop, "wrapper.java.initmemory", "256");
-        if (! initMem.toUpperCase().endsWith("M")) {
+        if (!initMem.toUpperCase().endsWith("M")) {
             initMem += "M";
-        }        
+        }
         cmdList.add("-Xms" + initMem);
-
         String maxMem = getProperty(prop, "wrapper.java.maxmemory", "256");
-        if (! maxMem.toUpperCase().endsWith("M")) {
+        if (!maxMem.toUpperCase().endsWith("M")) {
             maxMem += "M";
-        }        
+        }
         cmdList.add("-Xmx" + maxMem);
-        
         cmdList.add("-cp");
         cmdList.add(getClassPath());
-
         List<String> javaAdditional = getListProperty(prop, "wrapper.java.additional");
         cmdList.addAll(javaAdditional);
-        
-        List<String> appParams =  getListProperty(prop, "wrapper.app.parameter");
+        List<String> appParams = getListProperty(prop, "wrapper.app.parameter");
         appParams.remove("--no-log-console");
         cmdList.addAll(appParams);
-        
         if (!isConsole) {
             cmdList.add("--no-log-console");
         }
-
         return cmdList;
     }
 
     public String getClassPath() {
         String version = System.getProperty("java.version");
         boolean expandWildcard = version != null && version.startsWith("1.5");
-
         List<String> cp = getListProperty(prop, "wrapper.java.classpath");
         StringBuilder sb = new StringBuilder(cp.size());
         for (int i = 0; i < cp.size(); i++) {
@@ -238,7 +226,8 @@ public class WrapperConfig {
     /**
      * Read wrapper properties from symmetric-server.properties file
      * 
-     * @param filename String containing name location of symmetric-server.properties file
+     * @param filename
+     *            String containing name location of symmetric-server.properties file
      * @return Map keyed by property name with value of an ArrayList containing all values
      * @throws IOException
      */
@@ -246,7 +235,6 @@ public class WrapperConfig {
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line = null;
-
         while ((line = reader.readLine()) != null) {
             if (!line.matches("^\\s*#.*") && !line.matches("\\s*")) {
                 int index = line.indexOf("=");
@@ -266,10 +254,9 @@ public class WrapperConfig {
             }
         }
         reader.close();
-        
         return map;
     }
-    
+
     private String getProperty(Map<String, ArrayList<String>> prop, String name, String defaultValue) {
         ArrayList<String> values = prop.get(name);
         String value = null;
@@ -280,7 +267,7 @@ public class WrapperConfig {
         }
         return value;
     }
-    
+
     private List<String> getListProperty(Map<String, ArrayList<String>> prop, String name) {
         ArrayList<String> value = prop.get(name);
         if (value == null) {
@@ -288,11 +275,11 @@ public class WrapperConfig {
         }
         return value;
     }
-    
+
     static public class FailureAction {
         int type;
         int delay;
-        
+
         public FailureAction(String type, String delay) {
             if (type != null) {
                 if (type.equalsIgnoreCase("restart")) {
@@ -307,11 +294,11 @@ public class WrapperConfig {
             }
             this.delay = Integer.parseInt(delay);
         }
-        
+
         public int getType() {
             return type;
         }
-        
+
         public int getDelay() {
             return delay;
         }

@@ -34,14 +34,11 @@ import org.jumpmind.util.LinkedCaseInsensitiveMap;
  * Holder for references to both parsed and unparsed CSV data.
  */
 public class CsvData {
-
     public static final int MAX_DATA_SIZE_TO_PRINT_TO_LOG = 1024 * 1000;
-
     public static final String OLD_DATA = "oldData";
     public static final String ROW_DATA = "rowData";
     public static final String PK_DATA = "pkData";
     public static final String RESOLVE_DATA = "resolveData";
-
     public static final String ATTRIBUTE_TABLE_NAME = "tableName";
     public static final String ATTRIBUTE_CHANNEL_ID = "channelId";
     public static final String ATTRIBUTE_TABLE_ID = "tableId";
@@ -51,17 +48,11 @@ public class CsvData {
     public static final String ATTRIBUTE_NODE_LIST = "nodeList";
     public static final String ATTRIBUTE_DATA_ID = "dataId";
     public static final String ATTRIBUTE_CREATE_TIME = "createTime";
-    
     private Map<String, String[]> parsedCsvData = null;
-
     private Map<String, String> csvData = null;
-
     private Map<String, Object> attributes;
-    
     private boolean noBinaryOldData = false;
-
     protected DataEventType dataEventType;
-
     protected boolean[] changedDataIndicators;
 
     public CsvData(DataEventType dataEventType) {
@@ -114,17 +105,17 @@ public class CsvData {
     public <T> T getAttribute(String attributeName) {
         return attributes == null ? null : (T) attributes.get(attributeName);
     }
-    
+
     public void removeCsvData(String key) {
         if (csvData != null) {
             csvData.remove(key);
         }
     }
-    
+
     public void removeParsedData(String key) {
         if (parsedCsvData != null) {
             parsedCsvData.remove(key);
-        }        
+        }
     }
 
     public void removeAllData(String key) {
@@ -146,12 +137,11 @@ public class CsvData {
         if (csvData != null) {
             data = csvData.get(key);
         }
-
         if (data == null && parsedCsvData != null) {
             String[] parsedData = parsedCsvData.get(key);
             if (parsedData != null) {
                 data = CsvUtils.escapeCsvData(parsedData);
-                // swap out data for parsed data so we don't 
+                // swap out data for parsed data so we don't
                 // don't double the amount of memory being used
                 putCsvData(key, data);
             }
@@ -177,7 +167,6 @@ public class CsvData {
                     changes[i] = true;
                 }
             }
-
             changedDataIndicators = changes;
         }
         return changedDataIndicators;
@@ -191,7 +180,7 @@ public class CsvData {
         changedDataIndicators = null;
         parsedCsvData.put(key, data);
     }
-    
+
     public String[] getParsedData(String key) {
         String[] values = null;
         if (parsedCsvData != null && parsedCsvData.containsKey(key)) {
@@ -209,11 +198,10 @@ public class CsvData {
     public Map<String, String> toKeyColumnValuePairs(Table table) {
         Map<String, String> data = toColumnNameValuePairs(table.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
         if (data.size() == 0) {
-            data = toColumnNameValuePairs(table.getColumnNames(), CsvData.OLD_DATA);             
+            data = toColumnNameValuePairs(table.getColumnNames(), CsvData.OLD_DATA);
             if (data.size() == 0) {
                 data = toColumnNameValuePairs(table.getColumnNames(), CsvData.ROW_DATA);
             }
-            
             Column[] columns = table.getColumns();
             for (Column column : columns) {
                 if (!column.isPrimaryKey()) {
@@ -224,7 +212,7 @@ public class CsvData {
         return data;
     }
 
-    public String[] getPkData(Table table) {        
+    public String[] getPkData(Table table) {
         Map<String, String> data = toKeyColumnValuePairs(table);
         return data.values().toArray(new String[data.size()]);
     }
@@ -246,29 +234,28 @@ public class CsvData {
         return dataEventType != null && dataEventType != DataEventType.CREATE
                 && dataEventType != DataEventType.BSH;
     }
-    
+
     public boolean isNoBinaryOldData() {
         return noBinaryOldData;
     }
-    
+
     public void setNoBinaryOldData(boolean noBinaryOldData) {
         this.noBinaryOldData = noBinaryOldData;
     }
-    
+
     public CsvData copyWithoutOldData() {
         CsvData data = new CsvData(getDataEventType(), getParsedData(CsvData.ROW_DATA));
         data.attributes = attributes;
         return data;
     }
-    
-    public void writeCsvDataDetails (StringBuilder message) {
+
+    public void writeCsvDataDetails(StringBuilder message) {
         String rowData = getCsvData(CsvData.PK_DATA);
         if (StringUtils.isNotBlank(rowData)) {
             message.append("Failed pk data was: ");
             message.append(rowData);
             message.append("\n");
         }
-
         rowData = getCsvData(CsvData.ROW_DATA);
         if (StringUtils.isNotBlank(rowData)) {
             if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
@@ -283,7 +270,6 @@ public class CsvData {
                 message.append(" bytes).  It will not be printed to the log file");
             }
         }
-
         rowData = getCsvData(CsvData.OLD_DATA);
         if (StringUtils.isNotBlank(rowData)) {
             if (rowData.length() < MAX_DATA_SIZE_TO_PRINT_TO_LOG) {
@@ -299,7 +285,7 @@ public class CsvData {
             }
         }
     }
-    
+
     public long getSizeInBytes() {
         long size = 0;
         if (csvData != null) {

@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport.http;
 
 import java.io.BufferedReader;
@@ -49,25 +48,15 @@ import org.jumpmind.symmetric.transport.TransportUtils;
 import org.jumpmind.symmetric.web.WebConstants;
 
 public class HttpIncomingTransport implements IIncomingTransport {
-    
     private HttpTransportManager httpTransportManager;
-
     private HttpConnection connection;
-
     private BufferedReader reader;
-    
     private InputStream is;
-
     private IParameterService parameterService;
-    
     private int httpTimeout;
-    
     private String redirectionUrl;
-    
     private String nodeId;
-    
     private String securityToken;
-
     private Map<String, String> requestProperties;
 
     public HttpIncomingTransport(HttpTransportManager httpTransportManager, HttpConnection connection, IParameterService parameterService) {
@@ -110,7 +99,6 @@ public class HttpIncomingTransport implements IIncomingTransport {
             }
             reader = null;
         }
-
         if (is != null) {
             try {
                 is.close();
@@ -124,49 +112,47 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public boolean isOpen() {
         return reader != null;
     }
-    
+
     @Override
     public String getRedirectionUrl() {
         return redirectionUrl;
     }
-    
+
     @Override
     public InputStream openStream() throws IOException {
-        
         applyRequestProperties();
         boolean manualRedirects = parameterService.is(ParameterConstants.TRANSPORT_HTTP_MANUAL_REDIRECTS_ENABLED, true);
         if (manualRedirects) {
             connection = openConnectionCheckRedirects();
         }
-        
         int code = connection.getResponseCode();
         switch (code) {
-        case WebConstants.REGISTRATION_NOT_OPEN:
-            throw new RegistrationNotOpenException();
-        case WebConstants.REGISTRATION_REQUIRED:
-            throw new RegistrationRequiredException();
-        case WebConstants.REGISTRATION_PENDING:
-            throw new RegistrationPendingException();
-        case WebConstants.SYNC_DISABLED:
-            throw new SyncDisabledException();
-        case WebConstants.SC_SERVICE_BUSY:
-            throw new ConnectionRejectedException();
-        case WebConstants.SC_SERVICE_UNAVAILABLE:
-            throw new ServiceUnavailableException();
-        case WebConstants.SC_FORBIDDEN:
-            httpTransportManager.clearSession(connection);
-            throw new AuthenticationException();
-        case WebConstants.SC_AUTH_EXPIRED:
-            httpTransportManager.clearSession(connection);
-            throw new AuthenticationException(true);
-        case WebConstants.SC_NO_CONTENT:
-            throw new NoContentException();
-        case WebConstants.SC_OK:
-            httpTransportManager.updateSession(connection);
-            is = HttpTransportManager.getInputStreamFrom(connection);
-            return is;
-        default:
-            throw new HttpException(code, "Received an unexpected response code of " + code + " from the server");
+            case WebConstants.REGISTRATION_NOT_OPEN:
+                throw new RegistrationNotOpenException();
+            case WebConstants.REGISTRATION_REQUIRED:
+                throw new RegistrationRequiredException();
+            case WebConstants.REGISTRATION_PENDING:
+                throw new RegistrationPendingException();
+            case WebConstants.SYNC_DISABLED:
+                throw new SyncDisabledException();
+            case WebConstants.SC_SERVICE_BUSY:
+                throw new ConnectionRejectedException();
+            case WebConstants.SC_SERVICE_UNAVAILABLE:
+                throw new ServiceUnavailableException();
+            case WebConstants.SC_FORBIDDEN:
+                httpTransportManager.clearSession(connection);
+                throw new AuthenticationException();
+            case WebConstants.SC_AUTH_EXPIRED:
+                httpTransportManager.clearSession(connection);
+                throw new AuthenticationException(true);
+            case WebConstants.SC_NO_CONTENT:
+                throw new NoContentException();
+            case WebConstants.SC_OK:
+                httpTransportManager.updateSession(connection);
+                is = HttpTransportManager.getInputStreamFrom(connection);
+                return is;
+            default:
+                throw new HttpException(code, "Received an unexpected response code of " + code + " from the server");
         }
     }
 
@@ -176,63 +162,57 @@ public class HttpIncomingTransport implements IIncomingTransport {
         reader = TransportUtils.toReader(stream);
         return reader;
     }
-    
+
     @Override
     public Map<String, String> getHeaders() {
         Map<String, String> headers = new LinkedHashMap<String, String>();
         for (String name : connection.getHeaderFields().keySet()) {
             if (name != null) {
-                headers.put(name, connection.getHeaderField(name));                 
+                headers.put(name, connection.getHeaderField(name));
             }
         }
-        
         return headers;
     }
-        
+
     /**
-     * This method support redirection from an http connection to an https connection.
-     * See {@link http://java.sun.com/j2se/1.4.2/docs/guide/deployment/deployment-guide/upgrade-guide/article-17.html}
-     * for more information.
+     * This method support redirection from an http connection to an https connection. See
+     * {@link http://java.sun.com/j2se/1.4.2/docs/guide/deployment/deployment-guide/upgrade-guide/article-17.html} for more information.
      * 
      * @param connection
      * @return
      * @throws IOException
      */
-    private HttpConnection openConnectionCheckRedirects() throws IOException
-    {      
-       boolean redir;
-       int redirects = 0;
-       do {
-          connection.setInstanceFollowRedirects(false);         
-          redir = false;
-             int stat = connection.getResponseCode();
-             if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpConnection.HTTP_NOT_MODIFIED) {
+    private HttpConnection openConnectionCheckRedirects() throws IOException {
+        boolean redir;
+        int redirects = 0;
+        do {
+            connection.setInstanceFollowRedirects(false);
+            redir = false;
+            int stat = connection.getResponseCode();
+            if (stat >= 300 && stat <= 307 && stat != 306 && stat != HttpConnection.HTTP_NOT_MODIFIED) {
                 URL base = connection.getURL();
                 redirectionUrl = connection.getHeaderField("Location");
-
                 URL target = null;
                 if (redirectionUrl != null) {
-                   target = new URL(base, redirectionUrl);
+                    target = new URL(base, redirectionUrl);
                 }
                 connection.disconnect();
                 // Redirection should be allowed only for HTTP and HTTPS
                 // and should be limited to 5 redirections at most.
                 if (target == null || !(target.getProtocol().equals("http")
-                   || target.getProtocol().equals("https"))
-                   || redirects >= 5) {
-                   throw new SecurityException("illegal URL redirect");
+                        || target.getProtocol().equals("https"))
+                        || redirects >= 5) {
+                    throw new SecurityException("illegal URL redirect");
                 }
                 redir = true;
                 connection = httpTransportManager.openConnection(target, nodeId, securityToken);
                 connection.setConnectTimeout(httpTimeout);
                 connection.setReadTimeout(httpTimeout);
                 applyRequestProperties();
-
                 redirects++;
-             }
-       } while (redir);
-       
-       return connection;
+            }
+        } while (redir);
+        return connection;
     }
 
     protected void applyRequestProperties() throws IOException {
@@ -249,7 +229,6 @@ public class HttpIncomingTransport implements IIncomingTransport {
                     sb.append(URLEncoder.encode(requestProperty.getValue(), StandardCharsets.UTF_8.name()));
                 }
             }
-
             try (OutputStream os = connection.getOutputStream()) {
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
                 pw.println(sb.toString());
@@ -261,7 +240,7 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public HttpConnection getConnection() {
         return connection;
     }
-    
+
     public Map<String, String> getRequestProperties() {
         return requestProperties;
     }
@@ -269,5 +248,4 @@ public class HttpIncomingTransport implements IIncomingTransport {
     public void setRequestProperties(Map<String, String> requestProperties) {
         this.requestProperties = requestProperties;
     }
-
 }

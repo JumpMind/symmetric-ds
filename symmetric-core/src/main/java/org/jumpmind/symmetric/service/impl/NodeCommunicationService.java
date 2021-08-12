@@ -64,19 +64,12 @@ import org.jumpmind.util.RandomTimeSlot;
 import org.slf4j.MDC;
 
 public class NodeCommunicationService extends AbstractService implements INodeCommunicationService {
-
     private Map<CommunicationType, ThreadPoolExecutor> executors = new HashMap<NodeCommunication.CommunicationType, ThreadPoolExecutor>();
-
     private INodeService nodeService;
-
     private IClusterService clusterService;
-
     private IConfigurationService configurationService;
-
     private boolean initialized = false;
-
     private Map<CommunicationType, Set<String>> currentlyExecuting;
-
     private Map<CommunicationType, Map<String, NodeCommunication>> lockCache;
 
     public NodeCommunicationService(IClusterService clusterService, INodeService nodeService, IParameterService parameterService,
@@ -87,7 +80,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         this.clusterService = clusterService;
         this.nodeService = nodeService;
         this.configurationService = configurationService;
-
         this.currentlyExecuting = new HashMap<NodeCommunication.CommunicationType, Set<String>>();
         CommunicationType[] types = CommunicationType.values();
         for (CommunicationType communicationType : types) {
@@ -117,7 +109,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             }
         }
     }
-    
+
     @Override
     public synchronized void persistToTableForSnapshot() {
         sqlTemplate.update(getSql("deleteSql"));
@@ -152,8 +144,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     protected List<NodeCommunication> find(CommunicationType communicationType) {
         if (clusterService.isClusteringEnabled()) {
-            String SQL_KEY = 
-                    CommunicationType.isPullType(communicationType) ? "selectNodeCommunicationPullSql" : "selectNodeCommunicationSql";
+            String SQL_KEY = CommunicationType.isPullType(communicationType) ? "selectNodeCommunicationPullSql" : "selectNodeCommunicationSql";
             return new ArrayList<NodeCommunication>(sqlTemplate.query(getSql(SQL_KEY),
                     new NodeCommunicationMapper(), communicationType.name()));
         } else {
@@ -176,7 +167,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         initialize();
         long ts = System.currentTimeMillis();
         List<NodeCommunication> communicationRows = find(communicationType);
-        log.debug("Found {} node communication locks to push to in {}ms", communicationRows.size(), System.currentTimeMillis()-ts);
+        log.debug("Found {} node communication locks to push to in {}ms", communicationRows.size(), System.currentTimeMillis() - ts);
         List<Node> nodesToCommunicateWith = null;
         switch (communicationType) {
             case PULL:
@@ -187,7 +178,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             case PUSH:
                 ts = System.currentTimeMillis();
                 nodesToCommunicateWith = removeOfflineNodes(nodeService.findNodesToPushTo());
-                log.debug("Found {} nodes to push to in {}ms", nodesToCommunicateWith.size(), System.currentTimeMillis()-ts);
+                log.debug("Found {} nodes to push to in {}ms", nodesToCommunicateWith.size(), System.currentTimeMillis() - ts);
                 break;
             case OFFLN_PUSH:
             case OFF_FSPUSH:
@@ -201,17 +192,14 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 nodesToCommunicateWith = new ArrayList<Node>(0);
                 break;
         }
-        
         Map<String, NodeCommunication> communicationRowsMap = new HashMap<String, NodeCommunication>(communicationRows.size());
         for (NodeCommunication nodeCommunication : communicationRows) {
             communicationRowsMap.put(nodeCommunication.getIdentifier(), nodeCommunication);
         }
-        
         List<NodeCommunication> nodesToCommunicateWithList = filterForChannelThreading(nodesToCommunicateWith);
         Map<String, NodeCommunication> nodesToCommunicateWithListMap = new HashMap<String, NodeCommunication>(nodesToCommunicateWithList.size());
         for (NodeCommunication nodeToCommunicateWith : nodesToCommunicateWithList) {
             NodeCommunication comm = communicationRowsMap.get(nodeToCommunicateWith.getIdentifier());
-
             if (comm == null) {
                 comm = new NodeCommunication();
                 comm.setNodeId(nodeToCommunicateWith.getNodeId());
@@ -220,25 +208,20 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 save(comm, false);
                 communicationRows.add(comm);
             }
-
             comm.setNode(nodeToCommunicateWith.getNode());
-            
             nodesToCommunicateWithListMap.put(nodeToCommunicateWith.getNodeId(), nodeToCommunicateWith);
         }
-        
         Iterator<NodeCommunication> it = communicationRows.iterator();
         while (it.hasNext()) {
             NodeCommunication nodeCommunication = it.next();
-
-            NodeCommunication nodeToCommunicateWith = nodesToCommunicateWithListMap.get(nodeCommunication.getNodeId()); 
+            NodeCommunication nodeToCommunicateWith = nodesToCommunicateWithListMap.get(nodeCommunication.getNodeId());
             Node node = nodeToCommunicateWith != null ? nodeToCommunicateWith.getNode() : null;
-            if (node == null || (! isQueueValid(nodeCommunication))) {
+            if (node == null || (!isQueueValid(nodeCommunication))) {
                 delete(nodeCommunication);
                 it.remove();
             }
         }
-        
-        if (communicationType == CommunicationType.PUSH && onlyNodesWithChanges && 
+        if (communicationType == CommunicationType.PUSH && onlyNodesWithChanges &&
                 parameterService.getInt(ParameterConstants.PUSH_THREAD_COUNT_PER_SERVER) < communicationRows.size()) {
             ts = System.currentTimeMillis();
             List<String> nodeIds = getNodeIdsWithUnsentCount();
@@ -248,25 +231,23 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                     filteredNodes.add(nodeCommunication);
                 }
             }
-            log.debug("Filtered down to {} nodes to push to in {}ms", filteredNodes.size(), System.currentTimeMillis()-ts);
+            log.debug("Filtered down to {} nodes to push to in {}ms", filteredNodes.size(), System.currentTimeMillis() - ts);
             communicationRows = filteredNodes;
         }
-
         if (communicationType == CommunicationType.PULL || communicationType == CommunicationType.FILE_PULL) {
             communicationRows = removeNodesWithNoBatchesToSend(communicationRows);
         }
-
         return communicationRows;
     }
-    
+
     private boolean isQueueValid(NodeCommunication nodeCommunication) {
         boolean ret = false;
         String queue = nodeCommunication.getQueue();
         Map<String, Channel> channels = configurationService.getChannels(false);
-        for(String key : channels.keySet()) {
+        for (String key : channels.keySet()) {
             Channel channel = channels.get(key);
             if (channel != null) {
-                if (StringUtils.equalsIgnoreCase(queue,  channel.getQueue())) {
+                if (StringUtils.equalsIgnoreCase(queue, channel.getQueue())) {
                     ret = true;
                     break;
                 }
@@ -274,7 +255,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
         return ret;
     }
-    
+
     protected List<String> getNodeIdsWithUnsentCount() {
         return sqlTemplate.query(getSql("selectNodeIdsWithUnsentBatchsSql"),
                 new StringMapper(), OutgoingBatch.Status.ER.name(), OutgoingBatch.Status.NE.name(), OutgoingBatch.Status.QY.name(),
@@ -283,7 +264,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     protected List<NodeCommunication> filterForChannelThreading(List<Node> nodesToCommunicateWith) {
         List<NodeCommunication> nodeCommunications = new ArrayList<NodeCommunication>();
-
         Collection<Channel> channels = configurationService.getChannels(false).values();
         for (Node node : nodesToCommunicateWith) {
             if (node.isVersionGreaterThanOrEqualTo(3, 8, 0)) {
@@ -329,8 +309,8 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     protected List<Node> getNodesToCommunicateWithOffline(CommunicationType communicationType) {
         List<Node> nodesToCommunicateWith = null;
-        if (parameterService.is(ParameterConstants.NODE_OFFLINE) || 
-                (communicationType.equals(CommunicationType.PULL) && parameterService.is(ParameterConstants.NODE_OFFLINE_INCOMING_ACCEPT_ALL))) {            
+        if (parameterService.is(ParameterConstants.NODE_OFFLINE) ||
+                (communicationType.equals(CommunicationType.PULL) && parameterService.is(ParameterConstants.NODE_OFFLINE_INCOMING_ACCEPT_ALL))) {
             if (communicationType.equals(CommunicationType.PUSH)) {
                 nodesToCommunicateWith = nodeService.findTargetNodesFor(NodeGroupLinkAction.W);
                 nodesToCommunicateWith.addAll(nodeService.findNodesToPushTo());
@@ -402,21 +382,18 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             locks.put(nodeCommunication.getIdentifier(), nodeCommunication);
         }
     }
-    
+
     protected List<NodeCommunication> removeNodesWithNoBatchesToSend(List<NodeCommunication> nodeCommunications) {
         if (!this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED)) {
             return nodeCommunications;
         }
-
         List<NodeCommunication> filteredNodes = new ArrayList<NodeCommunication>(nodeCommunications);
-
         for (NodeCommunication nodeCommunication : nodeCommunications) {
-            long elapsedLock = System.currentTimeMillis()-nodeCommunication.getLastLockMillis();
+            long elapsedLock = System.currentTimeMillis() - nodeCommunication.getLastLockMillis();
             if (nodeCommunication.getBatchToSendCount() == 0 && elapsedLock < this.parameterService.getLong(ParameterConstants.HYBRID_PUSH_PULL_TIMEOUT)) {
                 filteredNodes.remove(nodeCommunication);
             }
         }
-        
         return filteredNodes;
     }
 
@@ -426,7 +403,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
 
     protected ThreadPoolExecutor getExecutor(final CommunicationType communicationType, final String threadChannelId) {
         ThreadPoolExecutor service = executors.get(communicationType);
-
         String threadCountParameter = "";
         switch (communicationType) {
             case PULL:
@@ -451,19 +427,17 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 break;
             case FILE_XTRCT:
             case EXTRACT:
-                threadCountParameter = ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER;                
+                threadCountParameter = ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER;
                 break;
             default:
                 break;
         }
         int threadCount = parameterService.getInt(threadCountParameter, 1);
-
         if (service != null && service.getCorePoolSize() != threadCount) {
             log.info("{} has changed from {} to {}.  Restarting thread pool", new Object[] { threadCountParameter, service.getCorePoolSize(), threadCount });
             stop();
             service = null;
         }
-
         if (service == null) {
             synchronized (this) {
                 service = executors.get(communicationType);
@@ -520,7 +494,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             default:
                 break;
         }
-        return DateUtils.addMilliseconds(new Date(), 
+        return DateUtils.addMilliseconds(new Date(),
                 -parameterService.getInt(parameter, 7200000));
     }
 
@@ -541,11 +515,10 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                         boolean failed = false;
                         try {
                             MDC.put("engineName", parameterService.getEngineName());
-                            String name = parameterService.getEngineName().toLowerCase() + "-" + nodeCommunication.getCommunicationType().name().toLowerCase() + 
+                            String name = parameterService.getEngineName().toLowerCase() + "-" + nodeCommunication.getCommunicationType().name().toLowerCase() +
                                     "-" + nodeCommunication.getQueue().toLowerCase();
                             Thread thread = Thread.currentThread();
                             thread.setName(thread.getName().replaceFirst(".*(-\\d+)", name + "$1"));
-                            
                             executor.execute(nodeCommunication, status);
                             failed = status.failed();
                         } catch (Throwable ex) {
@@ -562,7 +535,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 if (parameterService.is(ParameterConstants.SYNCHRONIZE_ALL_JOBS)) {
                     r.run();
                 } else {
-                    ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType(), 
+                    ThreadPoolExecutor service = getExecutor(nodeCommunication.getCommunicationType(),
                             nodeCommunication.getQueue());
                     service.execute(r);
                 }
@@ -580,7 +553,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     protected boolean lock(NodeCommunication nodeCommunication, Date lockTime) {
         Date lockTimeout = getLockTimeoutDate(nodeCommunication.getCommunicationType());
         if (clusterService.isClusteringEnabled()) {
-            return sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), lockTime, lockTime, 
+            return sqlTemplate.update(getSql("aquireLockSql"), clusterService.getServerId(), lockTime, lockTime,
                     nodeCommunication.getNodeId(), nodeCommunication.getQueue(),
                     nodeCommunication.getCommunicationType().name(), lockTimeout) == 1;
         } else {
@@ -618,7 +591,7 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 }
                 unlocked = true;
                 if (attempts > 1) {
-                    log.info("Successfully unlocked {} node communication record for {} and channel {} after {} attempts", 
+                    log.info("Successfully unlocked {} node communication record for {} and channel {} after {} attempts",
                             nodeCommunication.getCommunicationType().name(),
                             nodeCommunication.getNodeId(), nodeCommunication.getQueue(), attempts);
                 }
@@ -632,9 +605,10 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 log.warn("Sleeping for {} ms before attempting to unlock the node communication record again", sleepTime);
                 AppUtils.sleep(sleepTime);
                 attempts++;
-            };
+            }
+            ;
         } while (!unlocked);
-    }    
+    }
 
     public void stop() {
         Collection<CommunicationType> services = new HashSet<NodeCommunication.CommunicationType>(
@@ -647,7 +621,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 executors.remove(communicationType);
             }
         }
-
     }
 
     static class NodeCommunicationMapper implements ISqlRowMapper<NodeCommunication> {
@@ -674,7 +647,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
     }
 
     static class ChannelThreadFactory implements ThreadFactory {
-
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private String engineName;
         private String communicationType;
@@ -701,10 +673,9 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
         }
     }
 
-    protected void sortNodeCommunications(List<NodeCommunication> list, final CommunicationType communicationType) {            
+    protected void sortNodeCommunications(List<NodeCommunication> list, final CommunicationType communicationType) {
         final Date FAR_PAST_DATE = new Date(0);
         final Date FAR_FUTURE_DATE = new Date(Long.MAX_VALUE);
-
         Collections.sort(list, new Comparator<NodeCommunication>() {
             public int compare(NodeCommunication o1, NodeCommunication o2) {
                 // 1. Node priority
@@ -712,7 +683,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 if (compareTo != 0) {
                     return compareTo;
                 }
-
                 // 2. If it's a pull, look at batch_to_send_count.
                 if (CommunicationType.isPullType(communicationType)) {
                     compareTo = Long.compare(o1.getBatchToSendCount(), o2.getBatchToSendCount());
@@ -720,38 +690,32 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                         return compareTo;
                     }
                 }
-
-                // 3. last_lock_time.                
+                // 3. last_lock_time.
                 Date o1LockTime = o1.getLastLockTime() != null ? o1.getLastLockTime() : FAR_PAST_DATE;
                 Date o2LockTime = o2.getLastLockTime() != null ? o2.getLastLockTime() : FAR_FUTURE_DATE;
-
                 compareTo = o1LockTime.compareTo(o2LockTime);
                 if (compareTo != 0) {
                     return compareTo;
                 }
-
                 return compareTo;
             }
         });
-
     }
-    
+
     @Override
     public void updateBatchToSendCounts(String nodeId, Map<String, Integer> batchesCountToQueues) {
         List<NodeCommunication> nodeCommunications = this.find(CommunicationType.PULL);
         List<NodeCommunication> updatedNodeCommunications = new ArrayList<NodeCommunication>();
-
         for (String queue : batchesCountToQueues.keySet()) {
-            NodeCommunication match = null; 
+            NodeCommunication match = null;
             for (int i = 0; i < nodeCommunications.size(); i++) {
                 NodeCommunication nodeCommunication = nodeCommunications.get(i);
                 if (nodeCommunication.getNodeId().equals(nodeId)
                         && nodeCommunication.getQueue().equals(queue)) {
                     match = nodeCommunication;
                     break;
-                }       
+                }
             }
-            
             if (match == null) {
                 NodeCommunication newNodeCommunication = new NodeCommunication();
                 newNodeCommunication.setCommunicationType(CommunicationType.PULL);
@@ -764,16 +728,14 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 updatedNodeCommunications.add(match);
             }
         }
-        
         for (NodeCommunication nodeCommunication : updatedNodeCommunications) {
             save(nodeCommunication, false);
         }
     }
-    
+
     @Override
     public Map<String, Integer> parseQueueToBatchCounts(String channelToBatchCountsString) {
         Map<String, Integer> channelsToBatchCount = new HashMap<String, Integer>();
-        
         // åchannelName:4,anotherChannelName:6
         String[] channelToBatchCounts = channelToBatchCountsString.split(",");
         for (String channelToBatchCount : channelToBatchCounts) {
@@ -783,18 +745,15 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
             int batchCount = Integer.parseInt(queueToBatchCountSplit[1].trim());
             channelsToBatchCount.put(queueName, batchCount);
         }
-        
         // Convert channels to queues
         Map<String, Channel> channels = configurationService.getChannels(false);
         Map<String, Integer> queuesToBatchCount = new HashMap<String, Integer>();
-        
         for (String channelId : channelsToBatchCount.keySet()) {
             Channel channel = channels.get(channelId);
             if (channel == null) {
                 log.warn("Unknown channel: '" + channelId + "'");
                 continue;
             }
-            
             String queue = channel.getQueue();
             if (!queuesToBatchCount.containsKey(queue)) {
                 queuesToBatchCount.put(queue, channelsToBatchCount.get(channelId));
@@ -802,8 +761,6 @@ public class NodeCommunicationService extends AbstractService implements INodeCo
                 queuesToBatchCount.put(queue, queuesToBatchCount.get(queue) + channelsToBatchCount.get(channelId));
             }
         }
-        
         return queuesToBatchCount;
     }
-
 }

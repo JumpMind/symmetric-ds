@@ -49,27 +49,18 @@ import bsh.EvalError;
 import bsh.Interpreter;
 
 /**
- * This service registers {@link IExtensionPoint}s defined both by SymmetricDS
- * and others found in the {@link ApplicationContext}.
- * It also reads the sym_extension table for {@link IExtensionPoint}s defined there.
+ * This service registers {@link IExtensionPoint}s defined both by SymmetricDS and others found in the {@link ApplicationContext}. It also reads the
+ * sym_extension table for {@link IExtensionPoint}s defined there.
  * <P>
- * SymmetricDS reads in any Spring XML file found in the classpath of the
- * application that matches the following pattern:
- * /META-INF/services/symmetric-*-ext.xml
+ * SymmetricDS reads in any Spring XML file found in the classpath of the application that matches the following pattern: /META-INF/services/symmetric-*-ext.xml
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class ExtensionService extends AbstractService implements IExtensionService {
-
     private final static Logger log = LoggerFactory.getLogger(ExtensionService.class);
-
     protected ISymmetricEngine engine;
-    
     protected SimpleClassCompiler simpleClassCompiler;
-   
     protected Map<Class, Map<String, IExtensionPoint>> staticExtensionsByClassByName = new HashMap<Class, Map<String, IExtensionPoint>>();
-    
     protected Map<Class, Map<String, IExtensionPoint>> extensionsByClassByName;
-    
     protected List<ExtensionPointMetaData> extensionMetaData;
 
     public ExtensionService(ISymmetricEngine engine) {
@@ -82,7 +73,6 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     public synchronized void refresh() {
         extensionsByClassByName = new HashMap<Class, Map<String, IExtensionPoint>>();
         extensionMetaData = new ArrayList<ExtensionPointMetaData>();
-
         for (Class extensionClass : staticExtensionsByClassByName.keySet()) {
             Map<String, IExtensionPoint> byNameMap = staticExtensionsByClassByName.get(extensionClass);
             for (String name : byNameMap.keySet()) {
@@ -91,12 +81,10 @@ public class ExtensionService extends AbstractService implements IExtensionServi
                 addExtensionPointMetaData(ext, name, extensionClass, true);
             }
         }
-
         String prefix = parameterService.getString(ParameterConstants.RUNTIME_CONFIG_TABLE_PREFIX);
         if (platform.getTableFromCache(TableConstants.getTableName(prefix, TableConstants.SYM_EXTENSION), false) != null) {
             List<Extension> extensionList = sqlTemplate.query(getSql("selectEnabled"), new ExtensionRowMapper(), parameterService.getNodeGroupId());
             log.info("Found {} extension points from the database that will be registered", extensionList.size());
-    
             for (Extension extension : extensionList) {
                 registerExtension(extension);
             }
@@ -137,14 +125,14 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             }
         }
     }
-    
+
     protected boolean registerExtension(String name, IExtensionPoint ext) {
-        if (! (ext instanceof IExtensionPoint)) {
+        if (!(ext instanceof IExtensionPoint)) {
             log.error("Missing IExtensionPoint interface for extension " + name);
         }
         return registerExtension(name, ext, true);
     }
-    
+
     protected boolean registerExtension(String name, IExtensionPoint ext, boolean shouldLog) {
         boolean installed = false;
         if (initializeExtension(ext)) {
@@ -158,15 +146,14 @@ public class ExtensionService extends AbstractService implements IExtensionServi
                 addExtensionPointMetaData(ext, name, extensionClass, true);
                 getExtensionsByNameMap(extensionClass).put(name, ext);
             }
-    
             if (!installed) {
                 addExtensionPointMetaData(ext, name, null, false);
             }
         }
         return installed;
     }
-    
-    protected void unRegisterExtension(String name, IExtensionPoint ext) {       
+
+    protected void unRegisterExtension(String name, IExtensionPoint ext) {
         for (Class extensionClass : getExtensionClassList(ext)) {
             getExtensionsByNameMap(extensionClass).remove(name);
         }
@@ -178,13 +165,12 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             }
         }
     }
-    
+
     protected boolean initializeExtension(IExtensionPoint ext) {
         boolean shouldInstall = false;
         if (ext instanceof ISymmetricEngineAware) {
             ((ISymmetricEngineAware) ext).setSymmetricEngine(engine);
         }
-
         if (ext instanceof INodeGroupExtensionPoint) {
             String nodeGroupId = parameterService.getNodeGroupId();
             INodeGroupExtensionPoint nodeExt = (INodeGroupExtensionPoint) ext;
@@ -208,7 +194,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
         List<Class> classList = new ArrayList<Class>();
         List<Class<?>> interfaces = ClassUtils.getAllInterfaces(ext.getClass());
         for (Class clazz : interfaces) {
-            if (IExtensionPoint.class.isAssignableFrom(clazz) && ! clazz.equals(IExtensionPoint.class)) {
+            if (IExtensionPoint.class.isAssignableFrom(clazz) && !clazz.equals(IExtensionPoint.class)) {
                 classList.add(clazz);
             }
         }
@@ -225,11 +211,11 @@ public class ExtensionService extends AbstractService implements IExtensionServi
             extensionMetaData.add(new ExtensionPointMetaData(extensionPoint, name, extensionClass, installed));
         }
     }
-    
+
     public synchronized <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass) {
         List<T> availableExtensions = getExtensionPointList(extensionClass);
         for (T extension : availableExtensions) {
-            if(!(extension instanceof IBuiltInExtensionPoint)){
+            if (!(extension instanceof IBuiltInExtensionPoint)) {
                 return extension;
             }
         }
@@ -312,7 +298,7 @@ public class ExtensionService extends AbstractService implements IExtensionServi
     public Object getCompiledClass(String javaCode) throws Exception {
         return simpleClassCompiler.getCompiledClass(javaCode);
     }
-    
+
     static class ExtensionRowMapper implements ISqlRowMapper<Extension> {
         @Override
         public Extension mapRow(Row row) {

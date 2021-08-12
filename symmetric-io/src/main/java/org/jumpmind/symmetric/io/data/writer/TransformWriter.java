@@ -51,9 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TransformWriter extends NestedDataWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
-
+    private static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
     protected TransformPoint transformPoint;
     protected IDatabasePlatform platform;
     protected Map<String, List<TransformTable>> transformsBySourceTable;
@@ -62,9 +60,9 @@ public class TransformWriter extends NestedDataWriter {
     protected Batch batch;
     protected Map<String, IColumnTransform<?>> columnTransforms;
     protected Table lastTransformedTable;
-    
+
     public TransformWriter(IDatabasePlatform platform, TransformPoint transformPoint,
-            IDataWriter targetWriter, Map<String, IColumnTransform<?>> columnTransforms, 
+            IDataWriter targetWriter, Map<String, IColumnTransform<?>> columnTransforms,
             TransformTable... transforms) {
         super(targetWriter);
         this.columnTransforms = columnTransforms;
@@ -72,7 +70,7 @@ public class TransformWriter extends NestedDataWriter {
         this.transformPoint = transformPoint == null ? TransformPoint.LOAD : transformPoint;
         this.transformsBySourceTable = toMap(transforms);
     }
-    
+
     protected final Map<String, List<TransformTable>> toMap(TransformTable[] transforms) {
         Map<String, List<TransformTable>> transformsByTable = new HashMap<String, List<TransformTable>>();
         if (transforms != null) {
@@ -100,7 +98,7 @@ public class TransformWriter extends NestedDataWriter {
     @Override
     public boolean start(Table table) {
         List<TransformTable> activeTransformsTemp = transformsBySourceTable.get(table.getFullyQualifiedTableNameLowerCase());
-        if (activeTransformsTemp != null && activeTransformsTemp.size() > 0) { 
+        if (activeTransformsTemp != null && activeTransformsTemp.size() > 0) {
             this.sourceTable = table;
             activeTransforms = new ArrayList<TransformTable>(activeTransformsTemp.size());
             for (TransformTable transformation : activeTransformsTemp) {
@@ -129,52 +127,41 @@ public class TransformWriter extends NestedDataWriter {
                 // use the last table we used
                 start(context.getLastParsedTable());
             }
-
             Map<String, String> sourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                     CsvData.ROW_DATA);
-            
             Map<String, String> oldSourceValues = null;
             if (data.contains(CsvData.OLD_DATA)) {
                 oldSourceValues = data.toColumnNameValuePairs(this.sourceTable.getColumnNames(),
                         CsvData.OLD_DATA);
             }
-            
             Map<String, String> sourceKeyValues = null;
             if (data.contains(CsvData.PK_DATA)) {
                 sourceKeyValues = data.toKeyColumnValuePairs(this.sourceTable);
             }
-
             if (eventType == DataEventType.DELETE) {
                 sourceValues = oldSourceValues;
-
                 if (sourceValues == null || sourceValues.size() == 0) {
                     sourceValues = sourceKeyValues;
                 }
             }
-
             if (log.isDebugEnabled()) {
                 log.debug(
                         "{} transformation(s) started because of {} on {}.  The original row data was: {}",
                         new Object[] { activeTransforms.size(), eventType.toString(),
                                 this.sourceTable.getFullyQualifiedTableName(), sourceValues });
             }
-
             List<TransformTable> transformTables = activeTransforms;
-
             if (eventType == DataEventType.DELETE) {
                 transformTables = new ArrayList<TransformTable>(activeTransforms);
                 Collections.reverse(transformTables);
             }
-
             for (TransformTable transformation : transformTables) {
                 DataEventType localEventType = eventType;
                 if (localEventType == DataEventType.INSERT && transformation.isUpdateFirst()) {
                     localEventType = DataEventType.UPDATE;
                 }
-                
-                List<TransformedData> dataThatHasBeenTransformed = 
-                        transform(localEventType, context, transformation, sourceKeyValues, oldSourceValues, sourceValues);
-                
+                List<TransformedData> dataThatHasBeenTransformed = transform(localEventType, context, transformation, sourceKeyValues, oldSourceValues,
+                        sourceValues);
                 for (TransformedData transformedData : dataThatHasBeenTransformed) {
                     Table transformedTable = transformedData.buildTargetTable();
                     CsvData csvData = transformedData.buildTargetCsvData();
@@ -204,7 +191,6 @@ public class TransformWriter extends NestedDataWriter {
                 super.end(sourceTable);
             }
         }
-
     }
 
     protected List<TransformedData> transform(DataEventType eventType, DataContext context,
@@ -257,7 +243,6 @@ public class TransformWriter extends NestedDataWriter {
             }
             ts = System.currentTimeMillis();
         }
-
     }
 
     protected boolean perform(DataContext context, TransformedData data,
@@ -265,9 +250,6 @@ public class TransformWriter extends NestedDataWriter {
             Map<String, String> oldSourceValues) throws IgnoreRowException {
         boolean persistData = false;
         try {
-
-
-
             DataEventType eventType = data.getSourceDmlType();
             for (TransformColumn transformColumn : transformation.getTransformColumns()) {
                 if (!transformColumn.isPk()) {
@@ -314,7 +296,6 @@ public class TransformWriter extends NestedDataWriter {
                     }
                 }
             }
-
             TargetDmlAction targetAction = data.getTargetAction();
             if (targetAction != null && data.getColumnNames().length > 0 && targetAction != TargetDmlAction.NONE) {
                 persistData = true;
@@ -323,9 +304,7 @@ public class TransformWriter extends NestedDataWriter {
                     log.debug("The {} transformation is not configured to delete row.  Not sending the delete through.",
                             transformation.getTransformId());
                 }
-
             }
-
         } catch (IgnoreRowException ex) {
             // ignore this row
             if (log.isDebugEnabled()) {
@@ -351,7 +330,6 @@ public class TransformWriter extends NestedDataWriter {
                     sourceKeyValues, oldSourceValues, sourceValues);
             datas.add(data);
             DataEventType eventType = data.getSourceDmlType();
-            
             switch (data.getTargetDmlType()) {
                 case INSERT:
                     data.setTargetAction(TargetDmlAction.INS_ROW);
@@ -380,8 +358,7 @@ public class TransformWriter extends NestedDataWriter {
                 case NONE:
                 default:
                     break;
-            }            
-            
+            }
             for (TransformColumn transformColumn : columns) {
                 IncludeOnType includeOn = transformColumn.getIncludeOn();
                 if (includeOn == IncludeOnType.ALL
@@ -414,19 +391,17 @@ public class TransformWriter extends NestedDataWriter {
                             data.put(transformColumn, ((NewAndOldValue) columnValue).getNewValue(),
                                     oldSourceValues != null ? ((NewAndOldValue) columnValue).getOldValue() : null, true);
                         } else {
-                            data.put(transformColumn, (String) columnValue, oldSourceValues != null ? (String) columnValue : null, true);                            
+                            data.put(transformColumn, (String) columnValue, oldSourceValues != null ? (String) columnValue : null, true);
                         }
                     } catch (IgnoreColumnException e) {
                         // Do nothing. We are suppose to ignore the column.
                     }
-
                     if (newDatas != null) {
                         datas.addAll(newDatas);
                         newDatas = null;
                     }
                 }
             }
-
             return datas;
         }
     }
@@ -449,7 +424,8 @@ public class TransformWriter extends NestedDataWriter {
                 returnValue = transform.transform(platform, context, transformColumn, data,
                         sourceValues, value, oldValue);
             } catch (RuntimeException ex) {
-                log.warn("Column transform failed {}.{} ({}) for source values of {}", new Object[] { transformColumn.getTransformId(), transformColumn.getTargetColumnName(), transformColumn.getIncludeOn().name(), sourceValues.toString() });
+                log.warn("Column transform failed {}.{} ({}) for source values of {}", new Object[] { transformColumn.getTransformId(), transformColumn
+                        .getTargetColumnName(), transformColumn.getIncludeOn().name(), sourceValues.toString() });
                 throw ex;
             }
         } else {
@@ -468,7 +444,5 @@ public class TransformWriter extends NestedDataWriter {
         } else {
             super.end(table);
         }
-
     }
-
 }

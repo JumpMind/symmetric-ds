@@ -27,9 +27,7 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.model.Notification;
 
 public interface INotificationType extends IExtensionPoint {
-
     public void notify(Notification notification, List<MonitorEvent> monitorEvents);
-    
-    public String getName();
 
+    public String getName();
 }

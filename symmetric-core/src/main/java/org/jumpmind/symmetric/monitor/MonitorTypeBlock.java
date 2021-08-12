@@ -38,7 +38,7 @@ import com.google.gson.Gson;
 
 public class MonitorTypeBlock extends AbstractMonitorType implements IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
+
     @Override
     public MonitorEvent check(Monitor monitor) {
         MonitorEvent event = new MonitorEvent();
@@ -75,7 +75,7 @@ public class MonitorTypeBlock extends AbstractMonitorType implements IBuiltInExt
         }
         return event;
     }
-    
+
     public static boolean filterTransactions(Transaction transaction, Map<String, Transaction> transactionMap,
             List<Transaction> filteredTransactions, String dbUser, boolean isBlockingUser, boolean isBlocking) {
         Transaction blockingTransaction = transactionMap.get(transaction.getBlockingId());
@@ -99,7 +99,7 @@ public class MonitorTypeBlock extends AbstractMonitorType implements IBuiltInExt
         }
         return false;
     }
-    
+
     protected String serializeDetails(List<Transaction> transactions) {
         String result = null;
         try {
@@ -114,10 +114,9 @@ public class MonitorTypeBlock extends AbstractMonitorType implements IBuiltInExt
     public String getName() {
         return "block";
     }
-    
+
     @Override
     public boolean requiresClusterLock() {
         return false;
     }
-
 }

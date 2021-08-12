@@ -31,54 +31,31 @@ import org.jumpmind.db.platform.IAlterDatabaseInterceptor;
 import org.jumpmind.symmetric.io.data.Batch;
 
 public class DatabaseWriterSettings {
-
     protected long maxRowsBeforeCommit = 10000;
-
     // Milliseconds to sleep between commits.
     protected long commitSleepInterval = 5;
-
     protected boolean treatDateTimeFieldsAsVarchar = false;
-
     protected boolean usePrimaryKeysFromSource = true;
-
     protected Conflict defaultConflictSetting;
-
     protected boolean createTableFailOnError = true;
-
     protected boolean alterTable = true;
-
     protected boolean createTableDropFirst = false;
-    
     protected boolean applyChangesOnly = true;
-
     protected boolean createTableAlterCaseToMatchDatabaseDefault = false;
-
     protected boolean ignoreMissingTables = true;
-
     protected boolean saveCurrentValueOnError = false;
-    
     protected boolean fitToColumn = false;
-    
     protected boolean logConflictResolution = false;
-    
     protected boolean loadOnlyNode = false;
-    
     protected String textColumnExpression;
-
     protected Map<String, Conflict> conflictSettingsByChannel;
-
     protected Map<String, Conflict> conflictSettingsByTable;
-
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
-
-    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;        
-
+    protected List<IDatabaseWriterErrorHandler> databaseWriterErrorHandlers;
     protected List<ResolvedData> resolvedData;
-
     protected IAlterDatabaseInterceptor[] alterDatabaseInterceptors;
-    
     protected Set<String> conflictLosingParentRows;
-    
+
     public void setAlterDatabaseInterceptors(IAlterDatabaseInterceptor[] alterDatabaseInterceptors) {
         this.alterDatabaseInterceptors = alterDatabaseInterceptors;
     }
@@ -202,7 +179,7 @@ public class DatabaseWriterSettings {
         return databaseWriterErrorHandlers;
     }
 
-    public ResolvedData getResolvedData (long rowNumber) {
+    public ResolvedData getResolvedData(long rowNumber) {
         if (resolvedData != null) {
             for (ResolvedData data : resolvedData) {
                 if (data.getRowNumber() == rowNumber) {
@@ -233,32 +210,25 @@ public class DatabaseWriterSettings {
         String fullyQualifiedName = table.getFullyQualifiedTableNameLowerCase();
         if (conflictSettingsByTable != null) {
             Conflict found = conflictSettingsByTable.get(fullyQualifiedName);
-
             if (found == null) {
                 found = conflictSettingsByTable.get(table.getName().toLowerCase());
             }
-
             if (found != null
                     && (StringUtils.isBlank(found.getTargetChannelId()) || found
                             .getTargetChannelId().equals(batch.getChannelId()))) {
                 settings = found;
             }
         }
-
         if (settings == null && conflictSettingsByChannel != null) {
             settings = conflictSettingsByChannel.get(batch.getChannelId());
         }
-
         if (settings == null) {
             settings = defaultConflictSetting;
         }
-
         if (settings == null) {
             settings = new Conflict();
         }
-
         return settings;
-
     }
 
     public long getCommitSleepInterval() {
@@ -276,19 +246,19 @@ public class DatabaseWriterSettings {
     public void setSaveCurrentValueOnError(boolean saveCurrentValueOnError) {
         this.saveCurrentValueOnError = saveCurrentValueOnError;
     }
-    
+
     public void setFitToColumn(boolean fitToColumn) {
         this.fitToColumn = fitToColumn;
     }
-    
+
     public boolean isFitToColumn() {
         return fitToColumn;
     }
-    
+
     public void setLogConflictResolution(boolean logConflictResolution) {
         this.logConflictResolution = logConflictResolution;
     }
-    
+
     public boolean isLogConflictResolution() {
         return logConflictResolution;
     }
@@ -296,15 +266,15 @@ public class DatabaseWriterSettings {
     public void setTextColumnExpression(String textColumnExpression) {
         this.textColumnExpression = textColumnExpression;
     }
-    
+
     public String getTextColumnExpression() {
         return textColumnExpression;
     }
-    
+
     public void setApplyChangesOnly(boolean applyChangesOnly) {
         this.applyChangesOnly = applyChangesOnly;
     }
-    
+
     public boolean isApplyChangesOnly() {
         return applyChangesOnly;
     }

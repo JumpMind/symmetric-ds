@@ -21,13 +21,9 @@
 package org.jumpmind.symmetric.io.stage;
 
 public class StagingPerfResult {
-    
     private String name;
-    
     private long count;
-    
     private long millis;
-    
     private float rating;
 
     public StagingPerfResult(String name, long count, long millis, float rating) {
@@ -102,14 +98,14 @@ public class StagingPerfResult {
     public void setMillis(long millis) {
         this.millis = millis;
     }
-    
+
     public long getOperationsPerSecond() {
         if (millis > 0) {
             return (long) (count / (millis / 1000f));
         }
         return count;
     }
-    
+
     public float getRating() {
         return rating;
     }
@@ -117,5 +113,4 @@ public class StagingPerfResult {
     public void setRating(float rating) {
         this.rating = rating;
     }
-
 }

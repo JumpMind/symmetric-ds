@@ -35,7 +35,7 @@ import org.jumpmind.db.util.TableRow;
 
 public class KafkaDdlReader implements IDdlReader {
     protected KafkaPlatform platform;
-    
+
     public KafkaDdlReader(KafkaPlatform platform) {
         this.platform = platform;
     }
@@ -89,15 +89,14 @@ public class KafkaDdlReader implements IDdlReader {
     public Collection<ForeignKey> getExportedKeys(Table table) {
         return null;
     }
-    
+
     @Override
     public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
-    
+
     @Override
     public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
-
 }

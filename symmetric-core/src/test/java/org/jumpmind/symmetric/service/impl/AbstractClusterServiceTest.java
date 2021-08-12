@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
-
     @Before
     public void setupForTest() {
         getClusterService().init();
@@ -46,16 +45,12 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
     @Test
     public void testLockShare() {
         lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
-
         // Should allow multiple shared locks and increase shared count
         lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 2);
-
         // Should prevent an exclusive lock
         Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE));
-
         // Releasing shared lock should decrease shared count
         unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
-
         // Releasing final shared lock
         unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
     }
@@ -78,13 +73,10 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
     @Test
     public void testLockExclusive() {
         lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
-
         // Should prevent a second exclusive lock
         Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE));
-
         // Should prevent a shared lock
         Assert.assertFalse(getClusterService().lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED));
-
         unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE, 0);
         getClusterService().unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_EXCLUSIVE);
     }
@@ -124,19 +116,19 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
         lock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 1);
         unlock(ClusterConstants.FILE_SYNC_SHARED, ClusterConstants.TYPE_SHARED, 0);
     }
-    
+
     @Test
     public void testGenerateInstanceId() {
         ClusterService clusterService = (ClusterService) getClusterService();
-        {            
+        {
             String instanceId = clusterService.generateInstanceId("looooooooooooooooooooooooooooooooooooooooooooong hostname.");
             assertTrue((instanceId.length() <= 60), "");
         }
-        {            
+        {
             String instanceId = clusterService.generateInstanceId("short hostname");
             assertTrue((instanceId.length() <= 60), "");
         }
-        {            
+        {
             String instanceId = clusterService.generateInstanceId(null);
             assertTrue((instanceId.length() <= 60), "");
         }
@@ -151,7 +143,7 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
         getClusterService().unlock(action, lockType);
         checkUnlock(action, lockType, expectedSharedCount, expectedSharedCount > 0);
     }
-    
+
     private Lock checkLock(String action, String lockType, int expectedSharedCount, boolean expectedSharedEnable) {
         Lock lock = getClusterService().findLocks().get(action);
         Assert.assertEquals(lockType, lock.getLockType());
@@ -159,7 +151,7 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
         Assert.assertNotNull(lock.getLockTime());
         Assert.assertEquals(expectedSharedCount, lock.getSharedCount());
         if (expectedSharedCount > 0) {
-            Assert.assertEquals(expectedSharedEnable, lock.isSharedEnable());    
+            Assert.assertEquals(expectedSharedEnable, lock.isSharedEnable());
         }
         return lock;
     }
@@ -176,5 +168,4 @@ public abstract class AbstractClusterServiceTest extends AbstractServiceTest {
         }
         Assert.assertEquals(expectedSharedCount, lock.getSharedCount());
     }
-
 }

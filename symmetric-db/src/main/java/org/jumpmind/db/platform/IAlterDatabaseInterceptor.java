@@ -27,8 +27,6 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.extension.IExtensionPoint;
 
 public interface IAlterDatabaseInterceptor extends IExtensionPoint {
-
     public List<IModelChange> intercept(List<IModelChange> detectedChanges, Database currentModel,
             Database desiredModel);
-
 }

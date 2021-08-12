@@ -50,15 +50,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractServiceTest {
-
     static protected ISymmetricEngine engine;
-
     private final static Logger logger = LoggerFactory.getLogger(AbstractServiceTest.class);
-    
+
     @BeforeClass
     public static void setup() throws Exception {
         if (engine == null) {
-            //Level old = setLoggingLevelForTest(Level.DEBUG);
+            // Level old = setLoggingLevelForTest(Level.DEBUG);
             SqlUtils.setCaptureOwner(true);
             try {
                 Class<?> clazz = Class.forName("org.jumpmind.symmetric.test.TestSetupUtil");
@@ -76,7 +74,7 @@ public abstract class AbstractServiceTest {
                 logger.error("", ex);
                 Assert.fail(ex.getMessage());
             }
-            //setLoggingLevelForTest(old);
+            // setLoggingLevelForTest(old);
         }
     }
 
@@ -151,7 +149,7 @@ public abstract class AbstractServiceTest {
     protected IClusterService getClusterService() {
         return getSymmetricEngine().getClusterService();
     }
-    
+
     protected ISqlTemplate getSqlTemplate() {
         return getSymmetricEngine().getSymmetricDialect().getPlatform().getSqlTemplate();
     }
@@ -224,12 +222,12 @@ public abstract class AbstractServiceTest {
     protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text) {
         assertNumberOfLinesThatStartWith(expected, startsWith, text, false, false);
     }
-    
+
     public static String formatTableName(String tableName, IDatabasePlatform platform) {
-        if(platform instanceof NuoDbDatabasePlatform){
-            return String.format("%s%s%s", platform.getDefaultSchema(), ".", tableName);               
+        if (platform instanceof NuoDbDatabasePlatform) {
+            return String.format("%s%s%s", platform.getDefaultSchema(), ".", tableName);
         }
-        return tableName;        
+        return tableName;
     }
 
     protected void assertNumberOfLinesThatStartWith(int expected, String startsWith, String text,
@@ -243,7 +241,6 @@ public abstract class AbstractServiceTest {
                 actual++;
             }
         }
-
         if (atLeast) {
             Assert.assertTrue(String.format(
                     "There was less than the expected (%d) number of occurrences of: %s", expected,
@@ -270,14 +267,13 @@ public abstract class AbstractServiceTest {
         getSqlTemplate().update("update sym_outgoing_batch set status='OK' where status != 'OK'");
         long startId = getSqlTemplate().queryForLong("select max(start_id) from sym_data_gap");
         getSqlTemplate()
-                .update("delete from sym_data_gap where start_id != ?", startId);        
+                .update("delete from sym_data_gap where start_id != ?", startId);
         checkForOpenResources();
     }
-    
+
     protected void checkForOpenResources() {
         SqlUtils.logOpenResources();
         Assert.assertEquals("There should be no open cursors", 0, SqlUtils.getOpenSqlReadCursors().size());
         Assert.assertEquals("There should be no open transactions", 0, SqlUtils.getOpenTransactions().size());
-    }    
-
+    }
 }

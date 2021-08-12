@@ -37,19 +37,15 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
-
     public static final String JDBC_DRIVER = "com.informix.jdbc.IfxDriver";
-
     public static final String JDBC_SUBPROTOCOL = "informix-sqli";
-
     private Map<String, String> sqlScriptReplacementTokens;
 
     public InformixDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-                sqlScriptReplacementTokens = new HashMap<String, String>();
+            sqlScriptReplacementTokens = new HashMap<String, String>();
         }
         sqlScriptReplacementTokens.put("current_timestamp", "current");
     }
@@ -74,9 +70,10 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     }
 
     public String getDefaultCatalog() {
-//        if (StringUtils.isBlank(defaultCatalog)) {
-//            defaultCatalog = getSqlTemplate().queryForObject("select trim(sqc_currdb) from sysmaster:syssqlcurall where sqc_sessionid = dbinfo('sessionid')", String.class);
-//        }
+        // if (StringUtils.isBlank(defaultCatalog)) {
+        // defaultCatalog = getSqlTemplate().queryForObject("select trim(sqc_currdb) from sysmaster:syssqlcurall where sqc_sessionid = dbinfo('sessionid')",
+        // String.class);
+        // }
         return defaultCatalog;
     }
 
@@ -89,7 +86,7 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
 
     @Override
     public Map<String, String> getSqlScriptReplacementTokens() {
-            return sqlScriptReplacementTokens;
+        return sqlScriptReplacementTokens;
     }
 
     @Override
@@ -101,12 +98,9 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER DELETE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " FOR EACH ROW(DELETE FROM " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " WHERE TEST_ID IS NULL)";
-
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -114,15 +108,14 @@ public class InformixDatabasePlatform extends AbstractJdbcDatabasePlatform imple
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-
         return result;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (StringUtils.containsIgnoreCase(sql, "select")) {

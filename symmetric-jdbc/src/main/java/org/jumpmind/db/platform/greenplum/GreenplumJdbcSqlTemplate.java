@@ -34,7 +34,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class GreenplumJdbcSqlTemplate extends PostgreSqlJdbcSqlTemplate {
-
     public GreenplumJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -63,7 +62,6 @@ public class GreenplumJdbcSqlTemplate extends PostgreSqlJdbcSqlTemplate {
                 close(rs);
                 close(st);
             }
-
             String replaceSql = sql.replaceFirst("\\(null,", "(" + key + ",");
             ps = conn.prepareStatement(replaceSql);
             ps.setQueryTimeout(settings.getQueryTimeout());
@@ -74,5 +72,4 @@ public class GreenplumJdbcSqlTemplate extends PostgreSqlJdbcSqlTemplate {
         }
         return key;
     }
-
 }

@@ -32,15 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataMemoryCursor implements ISqlReadCursor<Data> {
-
-	private final static Logger log = LoggerFactory.getLogger(DataMemoryCursor.class);
-    
+    private final static Logger log = LoggerFactory.getLogger(DataMemoryCursor.class);
     public final static Comparator<Data> SORT_BY_TIME = new DataByTimeComparator();
-    
     public final static Comparator<Data> SORT_BY_ID = new DataByIdComparator();
-    
     protected Iterator<Data> iter;
-    
+
     public DataMemoryCursor(ISqlReadCursor<Data> cursor, ChannelRouterContext context, Comparator<Data> comparator) {
         ArrayList<Data> datas = new ArrayList<Data>();
         Data data = null;
@@ -63,7 +59,7 @@ public class DataMemoryCursor implements ISqlReadCursor<Data> {
         }
         this.iter = datas.iterator();
     }
-    
+
     @Override
     public Data next() {
         if (this.iter.hasNext()) {
@@ -83,12 +79,11 @@ public class DataMemoryCursor implements ISqlReadCursor<Data> {
             return o1.getCreateTime().compareTo(o2.getCreateTime());
         }
     }
-    
+
     static protected class DataByIdComparator implements Comparator<Data> {
         @Override
         public int compare(Data o1, Data o2) {
             return o1.getDataId() > o2.getDataId() ? 1 : -1;
         }
     }
-
 }

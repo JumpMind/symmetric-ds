@@ -31,9 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWriterConflictResolver {
-
-	private static final Logger log = LoggerFactory.getLogger(DefaultTransformWriterConflictResolver.class);
-
+    private static final Logger log = LoggerFactory.getLogger(DefaultTransformWriterConflictResolver.class);
     protected TransformWriter transformWriter;
 
     public DefaultTransformWriterConflictResolver(TransformWriter transformWriter) {
@@ -52,9 +50,7 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                 boolean matchedTransform = false;
                 for (TransformedData newlyTransformedData : newlyTransformedDatas) {
                     /*
-                     * If there is only one transform, then process it.
-                     * Otherwise, we need to attempt to match the key values to
-                     * choose the correct transform.
+                     * If there is only one transform, then process it. Otherwise, we need to attempt to match the key values to choose the correct transform.
                      */
                     if (newlyTransformedDatas.size() == 1
                             || newlyTransformedData
@@ -72,14 +68,11 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                         } else if (table.hasAutoIncrementColumn()) {
                             writer.allowInsertIntoAutoIncrementColumns(true, table);
                         }
-
                         writer.start(table);
                         super.performFallbackToInsert(writer, newData, conflict, retransform);
                         writer.end(table);
                     }
-
                 }
-
                 if (!matchedTransform) {
                     log.warn("The attempt to retransform resulted in more than one transform.  We tried to choose one "
                             + "by matching on the ordered key values, but could not find a match.  Please check that the "
@@ -88,7 +81,6 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
                             + ArrayUtils.toString(transformedData.getKeyValues()));
                 }
             }
-
         } else {
             super.performFallbackToInsert(writer, data, conflict, retransform);
         }
@@ -114,5 +106,4 @@ public class DefaultTransformWriterConflictResolver extends DefaultDatabaseWrite
             super.performFallbackToUpdate(writer, data, conflict, retransform);
         }
     }
-
 }

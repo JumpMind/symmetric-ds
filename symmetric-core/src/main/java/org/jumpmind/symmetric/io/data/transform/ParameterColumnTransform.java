@@ -29,11 +29,9 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class ParameterColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public static final String NAME = "parameter";
-    
     IParameterService parameterService;
-    
+
     public ParameterColumnTransform(IParameterService parameterService) {
         this.parameterService = parameterService;
     }
@@ -59,12 +57,10 @@ public class ParameterColumnTransform implements ISingleNewAndOldValueColumnTran
         if (paramName != null) {
             value = parameterService.getString(paramName);
         }
-        
         if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);
         }
     }
-
 }

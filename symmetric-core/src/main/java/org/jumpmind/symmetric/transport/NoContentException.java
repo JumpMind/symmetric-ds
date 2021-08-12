@@ -23,7 +23,5 @@ package org.jumpmind.symmetric.transport;
 import org.jumpmind.exception.IoException;
 
 public class NoContentException extends IoException {
-
     private static final long serialVersionUID = 1L;
-
 }

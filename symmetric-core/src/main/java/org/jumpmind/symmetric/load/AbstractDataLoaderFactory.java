@@ -29,7 +29,6 @@ public abstract class AbstractDataLoaderFactory {
 
     public DatabaseWriterSettings buildParameterDatabaseWritterSettings() {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
-        
         settings.setCreateTableAlterCaseToMatchDatabaseDefault(
                 parameterService.is(ParameterConstants.DATA_LOADER_CREATE_TABLE_ALTER_TO_MATCH_DB_CASE, true));
         settings.setMaxRowsBeforeCommit(

@@ -59,9 +59,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileSyncZipDataWriter implements IDataWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(FileSyncZipDataWriter.class);
-
+    private static final Logger log = LoggerFactory.getLogger(FileSyncZipDataWriter.class);
     protected long byteCount;
     protected long maxBytesToSync;
     protected IFileSyncService fileSyncService;
@@ -75,7 +73,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
     protected INodeService nodeService;
     protected IExtensionService extensionService;
     protected IConfigurationService configurationService;
-    
+
     public FileSyncZipDataWriter(long maxBytesToSync, IFileSyncService fileSyncService,
             INodeService nodeService, IStagedResource stagedResource, IExtensionService extensionService, IConfigurationService configurationService) {
         this.maxBytesToSync = maxBytesToSync;
@@ -112,23 +110,19 @@ public class FileSyncZipDataWriter implements IDataWriter {
 
     public void write(CsvData data) {
         DataEventType eventType = data.getDataEventType();
-        
         if (eventType == DataEventType.INSERT || eventType == DataEventType.UPDATE) {
             if (filterInitialLoad(data)) {
                 return;
             }
-            
-             if (eventType == DataEventType.INSERT) {
+            if (eventType == DataEventType.INSERT) {
                 statistics.get(this.batch).increment(DataWriterStatisticConstants.INSERTCOUNT);
-            }
-            else {
+            } else {
                 statistics.get(this.batch).increment(DataWriterStatisticConstants.UPDATECOUNT);
             }
             Map<String, String> columnData = data.toColumnNameValuePairs(
                     snapshotTable.getColumnNames(), CsvData.ROW_DATA);
             Map<String, String> oldColumnData = data.toColumnNameValuePairs(
                     snapshotTable.getColumnNames(), CsvData.OLD_DATA);
-     
             FileSnapshot snapshot = new FileSnapshot();
             snapshot.setTriggerId(columnData.get("TRIGGER_ID"));
             snapshot.setRouterId(columnData.get("ROUTER_ID"));
@@ -178,16 +172,13 @@ public class FileSyncZipDataWriter implements IDataWriter {
     }
 
     public void end(Batch batch, boolean inError) {
-
         try {
             if (!inError) {
                 if (zos == null) {
                     zos = new ZipOutputStream(stagedResource.getOutputStream());
                 }
-                
                 FileSyncZipScript script = createFileSyncZipScript(batch.getTargetNodeId());
                 script.buildScriptStart(batch);
-
                 Map<String, LastEventType> entriesByLastEventType = new HashMap<String, LastEventType>();
                 Map<String, String> entriesByLastRouterId = new HashMap<String, String>();
                 for (FileSnapshot snapshot : snapshotEvents) {
@@ -195,15 +186,12 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             snapshot.getTriggerId(), snapshot.getRouterId(), false);
                     if (triggerRouter != null) {
                         LastEventType eventType = snapshot.getLastEventType();
-
                         FileTrigger fileTrigger = triggerRouter.getFileTrigger();
-
-                        String targetBaseDir = ((triggerRouter.getTargetBaseDir()==null)?null:triggerRouter.getTargetBaseDir().replace('\\', '/'));
+                        String targetBaseDir = ((triggerRouter.getTargetBaseDir() == null) ? null : triggerRouter.getTargetBaseDir().replace('\\', '/'));
                         if (StringUtils.isBlank(targetBaseDir)) {
-                            targetBaseDir = ((fileTrigger.getBaseDir()==null)?null:fileTrigger.getBaseDir().replace('\\', '/'));
+                            targetBaseDir = ((fileTrigger.getBaseDir() == null) ? null : fileTrigger.getBaseDir().replace('\\', '/'));
                         }
                         targetBaseDir = StringEscapeUtils.escapeJava(targetBaseDir);
-
                         StringBuilder entryName = new StringBuilder(Long.toString(batch
                                 .getBatchId()));
                         entryName.append("/");
@@ -211,15 +199,11 @@ public class FileSyncZipDataWriter implements IDataWriter {
                             entryName.append(snapshot.getRelativeDir()).append("/");
                         }
                         entryName.append(snapshot.getFileName());
-
                         File file = fileTrigger.createSourceFile(snapshot);
                         if (file.isDirectory()) {
                             entryName.append("/");
                         }
-
-                        String targetFile = "targetBaseDir + \"/\" + targetRelativeDir + \"/\" + targetFileName"; 
-                                               
-
+                        String targetFile = "targetBaseDir + \"/\" + targetRelativeDir + \"/\" + targetFileName";
                         LastEventType previousEventForEntry = entriesByLastEventType.get(entryName.toString());
                         boolean addFileToZip = true;
                         if (previousEventForEntry != null) {
@@ -228,11 +212,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 addFileToZip = false;
                             }
                         }
-                        
-                        
                         String lastRouterId = entriesByLastRouterId.get(entryName.toString());
                         boolean addFileToScript = !snapshot.getRouterId().equals(lastRouterId);
-
                         if (addFileToZip) {
                             if (eventType != LastEventType.DELETE) {
                                 if (file.exists()) {
@@ -242,7 +223,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                     entry.setTime(file.lastModified());
                                     zos.putNextEntry(entry);
                                     if (file.isFile()) {
-                                        try(FileInputStream fis = new FileInputStream(file)) {
+                                        try (FileInputStream fis = new FileInputStream(file)) {
                                             IOUtils.copy(fis, zos);
                                         }
                                     }
@@ -256,36 +237,29 @@ public class FileSyncZipDataWriter implements IDataWriter {
                                 }
                             }
                         }
-                        
                         if (addFileToScript) {
-                            script.buildScriptFileSnapshot(batch, snapshot, triggerRouter, fileTrigger, 
+                            script.buildScriptFileSnapshot(batch, snapshot, triggerRouter, fileTrigger,
                                     file, targetBaseDir, targetFile);
                         }
-
                     } else {
                         log.error(
                                 "Could not locate the file trigger ({}) router ({}) to process a snapshot event.  The event will be ignored",
                                 snapshot.getTriggerId(), snapshot.getRouterId());
                     }
                 }
-                
                 script.buildScriptEnd(batch);
                 ZipEntry entry = new ZipEntry(batch.getBatchId() + "/" + script.getScriptFileName(batch));
                 zos.putNextEntry(entry);
                 IOUtils.write(script.getScript().toString(), zos, Charset.defaultCharset());
                 zos.closeEntry();
-                
                 entry = new ZipEntry(batch.getBatchId() + "/batch-info.txt");
                 zos.putNextEntry(entry);
                 IOUtils.write(batch.getChannelId(), zos, Charset.defaultCharset());
                 zos.closeEntry();
-
-
             }
         } catch (IOException e) {
             throw new IoException(e);
         }
-
     }
 
     public void finish() {
@@ -294,7 +268,8 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 zos.finish();
                 try {
                     zos.close();
-                } catch(IOException e) { }
+                } catch (IOException e) {
+                }
             }
         } catch (IOException e) {
             throw new IoException(e);
@@ -317,7 +292,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
             return new BeanShellFileSyncZipScript(extensionService);
         }
     }
-    
+
     protected boolean isCClient(String nodeId) {
         boolean cclient = false;
         Node node = nodeService.findNode(nodeId, true);
@@ -326,7 +301,7 @@ public class FileSyncZipDataWriter implements IDataWriter {
         }
         return cclient;
     }
-    
+
     protected boolean filterInitialLoad(CsvData data) {
         Channel channel = configurationService.getChannel(batch.getChannelId());
         if (channel.isReloadFlag()) {
@@ -336,11 +311,10 @@ public class FileSyncZipDataWriter implements IDataWriter {
                     snapshotTable.getColumnNames(), CsvData.ROW_DATA);
             String triggerId = columnData.get("TRIGGER_ID");
             String routerId = columnData.get("ROUTER_ID");
-            
             for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
                 if (fileTriggerRouter.getTriggerId().equals(triggerId)
                         && fileTriggerRouter.getRouterId().equals(routerId)) {
-                    if (! fileTriggerRouter.isEnabled() || !fileTriggerRouter.isInitialLoadEnabled()) {
+                    if (!fileTriggerRouter.isEnabled() || !fileTriggerRouter.isInitialLoadEnabled()) {
                         return true;
                     } else {
                         return false;
@@ -348,8 +322,6 @@ public class FileSyncZipDataWriter implements IDataWriter {
                 }
             }
         }
-        
         return false;
-    }    
-    
+    }
 }

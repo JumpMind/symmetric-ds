@@ -31,12 +31,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @ComponentScan(basePackages = "org.jumpmind.symmetric.web.rest")
 @EnableWebMvc
 public class RestConfig {
-    
     @Bean
     public MultipartResolver multipartResolver() {
         CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
         multipartResolver.setMaxUploadSize(50000000);
         return multipartResolver;
     }
-
 }

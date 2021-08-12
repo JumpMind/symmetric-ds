@@ -36,7 +36,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for the Microsoft SQL Server 2005 database.
  */
 public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
-
     /*
      * Creates a new platform instance.
      */
@@ -44,17 +43,17 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
         super(dataSource, settings);
         supportsTruncate = false;
     }
-    
+
     @Override
     protected IDdlBuilder createDdlBuilder() {
         return new MsSql2005DdlBuilder();
     }
-    
+
     @Override
     public String getName() {
         return DatabaseNamesConstants.MSSQL2005;
     }
-    
+
     @Override
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
@@ -63,25 +62,25 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
         }
         return defaultSchema;
     }
-    
+
     @Override
     public List<Transaction> getTransactions() {
-        String sql = "select" + 
-                "  r.session_id," + 
-                "  s.login_name," + 
-                "  c.client_net_address," + 
-                "  s.host_name," + 
-                "  r.status," + 
-                "  r.reads," + 
-                "  r.writes," + 
-                "  r.blocking_session_id," + 
-                "  r.start_time," + 
-                "  sql.text " + 
-                "from sys.dm_exec_requests as r " + 
-                "left join sys.dm_exec_connections as c" + 
-                "  on r.connection_id = c.connection_id " + 
-                "join sys.dm_exec_sessions as s" + 
-                "  on r.session_id = s.session_id " + 
+        String sql = "select" +
+                "  r.session_id," +
+                "  s.login_name," +
+                "  c.client_net_address," +
+                "  s.host_name," +
+                "  r.status," +
+                "  r.reads," +
+                "  r.writes," +
+                "  r.blocking_session_id," +
+                "  r.start_time," +
+                "  sql.text " +
+                "from sys.dm_exec_requests as r " +
+                "left join sys.dm_exec_connections as c" +
+                "  on r.connection_id = c.connection_id " +
+                "join sys.dm_exec_sessions as s" +
+                "  on r.session_id = s.session_id " +
                 "cross apply sys.dm_exec_sql_text(r.sql_handle) as sql;";
         List<Transaction> transactions = new ArrayList<Transaction>();
         for (Row row : getSqlTemplate().query(sql)) {
@@ -96,38 +95,35 @@ public class MsSql2005DatabasePlatform extends MsSql2000DatabasePlatform {
         }
         return transactions;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {
             sql = sql.substring(0, sql.length() - 1);
         }
-        
         if (sqlTemplate.getDatabaseMajorVersion() >= 11) {
             return sql + " offset " + offset + " rows fetch next " + limit + " rows only;";
         }
-        
         int orderIndex = StringUtils.lastIndexOfIgnoreCase(sql, "order by");
         String order = sql.substring(orderIndex);
         String innerSql = sql.substring(0, orderIndex - 1);
         innerSql = StringUtils.replaceIgnoreCase(innerSql, " from", ", ROW_NUMBER() over (" + order + ") as RowNum from");
         return "select * from (" + innerSql + ") A " +
-               "where RowNum between " + (offset + 1) + " and " + (offset + limit);
+                "where RowNum between " + (offset + 1) + " and " + (offset + limit);
     }
 
     @Override
     public boolean supportsSliceTables() {
         return true;
     }
-    
+
     @Override
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
     }
-
 }

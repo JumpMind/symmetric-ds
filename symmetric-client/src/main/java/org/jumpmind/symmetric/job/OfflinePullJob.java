@@ -30,11 +30,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that pulls data from remote nodes and then loads it.
  */
 public class OfflinePullJob extends AbstractJob {
-    
     public OfflinePullJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.OFFLINE_PULL, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
@@ -42,11 +41,10 @@ public class OfflinePullJob extends AbstractJob {
                 .schedule(EVERY_MINUTE)
                 .enabled(false)
                 .description("Loads in offline batch files");
-    }  
-     
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getOfflinePullService().pullData(force);
     }
-
 }

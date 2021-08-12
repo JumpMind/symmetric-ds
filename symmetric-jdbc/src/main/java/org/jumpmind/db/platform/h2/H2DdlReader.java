@@ -69,7 +69,6 @@ import org.jumpmind.db.sql.SqlException;
  * >https://issues.apache.org/jira/browse/DDLUTILS-185</a>
  */
 public class H2DdlReader extends AbstractJdbcDdlReader {
-
     public H2DdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -90,9 +89,8 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         }
         if (values.get("COLUMN_DEFAULT") != null) {
             column.setDefaultValue(values.get("COLUMN_DEFAULT").toString());
-        }        
-        
-        if (values.get("NUMERIC_SCALE") != null && values.get("DECIMAL_DIGITS") != null && ((Integer)values.get("DECIMAL_DIGITS")) == 0 ) {
+        }
+        if (values.get("NUMERIC_SCALE") != null && values.get("DECIMAL_DIGITS") != null && ((Integer) values.get("DECIMAL_DIGITS")) == 0) {
             int scale = (Integer) values.get("NUMERIC_SCALE");
             column.setScale(scale);
             column.findPlatformColumn(platform.getName()).setDecimalDigits(
@@ -102,7 +100,6 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
                 && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
-
         String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
         if (autoIncrement != null
                 && "YES".equalsIgnoreCase(autoIncrement.trim())) {
@@ -148,17 +145,14 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
         String name = index.getName();
         return name != null && name.startsWith("PRIMARY_KEY_");
     }
-    
+
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
                 + "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
@@ -181,8 +175,6 @@ public class H2DdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema, catalog);
-
         return triggers;
     }
-
 }

@@ -46,11 +46,10 @@ import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGr
  * A dialect is the interface that insulates SymmetricDS from database implementation specifics.
  */
 public interface ISymmetricDialect {
-
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml,
             Trigger trigger, TriggerHistory hist, Channel channel,
             String tablePrefix, Table table, ISqlTransaction transaction);
-    
+
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml,
             Trigger trigger, TriggerHistory hist, Channel channel,
             String tablePrefix, Table table);
@@ -58,17 +57,16 @@ public interface ISymmetricDialect {
     public void createDdlTrigger(String tablePrefix, StringBuilder sqlBuffer, String triggerName);
 
     /*
-     * Get the name of this symmetric instance. This can be set in
-     * symmetric.properties using the engine.name property.
+     * Get the name of this symmetric instance. This can be set in symmetric.properties using the engine.name property.
      */
     public String getEngineName();
 
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName, ISqlTransaction transaction);
-    
+
     public void removeTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName,
             String tableName);
-    
+
     public void removeDdlTrigger(StringBuilder sqlBuffer, String catalogName, String schemaName, String triggerName);
 
     public boolean doesTriggerExist(String catalogName, String schema, String tableName, String triggerName);
@@ -82,15 +80,15 @@ public interface ISymmetricDialect {
     public void dropTablesAndDatabaseObjects();
 
     public boolean createOrAlterTablesIfNecessary(String... tables);
-    
+
     public void dropRequiredDatabaseObjects();
-    
-    public void createRequiredDatabaseObjects();    
+
+    public void createRequiredDatabaseObjects();
 
     public IDatabasePlatform getPlatform();
-    
+
     public IDatabasePlatform getTargetPlatform();
-    
+
     public IDatabasePlatform getTargetPlatform(String tableName);
 
     public String getName();
@@ -107,52 +105,51 @@ public interface ISymmetricDialect {
 
     public String getTransactionTriggerExpression(String defaultCatalog, String defaultSchema, Trigger trigger);
 
-    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table  table, TriggerHistory triggerHistory, Channel channel, String overrideSelectSql);
-    
+    public String createInitialLoadSqlFor(Node node, TriggerRouter trigger, Table table, TriggerHistory triggerHistory, Channel channel,
+            String overrideSelectSql);
+
     public boolean[] getColumnPositionUsingTemplate(Table originalTable, TriggerHistory triggerHistory);
 
     public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory);
-    
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms);    
 
-    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms, String deleteSql);    
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms);
 
-    public List<String> createPurgeSqlForMultipleTables(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms, String deleteSql);    
+    public String createPurgeSqlFor(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory, List<TransformTableNodeGroupLink> transforms,
+            String deleteSql);
+
+    public List<String> createPurgeSqlForMultipleTables(Node node, TriggerRouter triggerRouter, TriggerHistory triggerHistory,
+            List<TransformTableNodeGroupLink> transforms, String deleteSql);
 
     public String createCsvDataSql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
     public String createCsvPrimaryKeySql(Trigger trigger, TriggerHistory triggerHistory, Channel channel, String whereClause);
 
     /*
-     * Get the maximum size the name of a trigger can be for the database
-     * platform. If the generated symmetric trigger name is greater than the max
-     * trigger name, symmetric will truncate the name, then log a warning
-     * suggesting that you might want to provide your own name.
+     * Get the maximum size the name of a trigger can be for the database platform. If the generated symmetric trigger name is greater than the max trigger
+     * name, symmetric will truncate the name, then log a warning suggesting that you might want to provide your own name.
      */
     public int getMaxTriggerNameLength();
 
     public boolean supportsTransactionId();
 
     /*
-     * Use this call to check to see if the implemented database dialect supports
-     * a way to check on pending database transactions.
+     * Use this call to check to see if the implemented database dialect supports a way to check on pending database transactions.
      */
     public boolean supportsTransactionViews();
-    
+
     /*
      * Indicates if this dialect supports subselects in delete statements.
      */
     public boolean supportsSubselectsInDelete();
-    
+
     /*
      * Indicates if this dialect supports subselects in update statements.
      */
     public boolean supportsSubselectsInUpdate();
 
     /*
-     * Implement this if the database has some type of cleanup functionality
-     * that needs to be run when dropping database objects. An example is
-     * Oracle's 'purge recyclebin'
+     * Implement this if the database has some type of cleanup functionality that needs to be run when dropping database objects. An example is Oracle's 'purge
+     * recyclebin'
      */
     public void cleanDatabase();
 
@@ -174,9 +171,7 @@ public interface ISymmetricDialect {
     public boolean isClobSyncSupported();
 
     /*
-     * An indicator as to whether the ability to override the default
-     * transaction id provided by the dialect can be overridden in the trigger
-     * configuration.
+     * An indicator as to whether the ability to override the default transaction id provided by the dialect can be overridden in the trigger configuration.
      */
     public boolean isTransactionIdOverrideSupported();
 
@@ -205,7 +200,7 @@ public interface ISymmetricDialect {
     public long getDatabaseTime();
 
     public boolean areDatabaseTransactionsPendingSince(long time);
-    
+
     public Date getEarliestTransactionStartTime();
 
     /*
@@ -226,14 +221,15 @@ public interface ISymmetricDialect {
     public String massageDataExtractionSql(String sql, boolean isContainsBigLob);
 
     public String massageForLob(String sql, boolean isContainsBigLob);
-    
+
     public boolean isInitialLoadTwoPassLob(Table table);
-    
+
     public String getInitialLoadTwoPassLobSql(String sql, Table table, boolean isFirstPass);
 
     /*
-     * Indicates that the dialect relies on SQL that is to be inserted into the database for use
-     * by embedded Java triggers.  H2 is an example dialect that needs this feature.
+     * Indicates that the dialect relies on SQL that is to be inserted into the database for use by embedded Java triggers. H2 is an example dialect that needs
+     * this feature.
+     * 
      * @return
      */
     public boolean escapesTemplatesForDatabaseInserts();
@@ -251,7 +247,7 @@ public interface ISymmetricDialect {
     public String getSequenceName(SequenceIdentifier identifier);
 
     public String getSequenceKeyName(SequenceIdentifier identifier);
-    
+
     public long getCurrentSequenceValue(SequenceIdentifier identifier);
 
     public String getTablePrefix();
@@ -265,17 +261,16 @@ public interface ISymmetricDialect {
     public int getSqlTypeForIds();
 
     public AbstractTriggerTemplate getTriggerTemplate();
-    
+
     public IParameterService getParameterService();
-    
+
     public void setExtensionService(IExtensionService extensionService);
-    
+
     public PermissionType[] getSymTablePermissions();
 
     public ISymmetricDialect getTargetDialect();
-    
+
     public ISymmetricDialect getTargetDialect(String tableName);
-    
+
     public void setTargetDialect(ISymmetricDialect targetDialect);
-    
 }

@@ -66,7 +66,6 @@ import org.jumpmind.db.sql.SqlException;
  * Reads a database model from a HsqlDb database.
  */
 public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
-
     public HsqlDb2DdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -77,11 +76,9 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
-
         if (TypeMap.isTextType(column.getMappedTypeCode()) && (column.getDefaultValue() != null)) {
             column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
         }
-
         String autoIncrement = (String) values.get("IS_AUTOINCREMENT");
         if (autoIncrement != null) {
             column.setAutoIncrement("YES".equalsIgnoreCase(autoIncrement.trim()));
@@ -93,7 +90,6 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
         String name = index.getName();
-
         return (name != null) && name.startsWith("SYS_IDX_");
     }
 
@@ -101,7 +97,6 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         String name = index.getName();
-
         return (name != null) && (name.startsWith("SYS_PK_") || name.startsWith("SYS_IDX_"));
     }
 
@@ -120,17 +115,14 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
-    
+
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS "
                 + "WHERE TABLE_NAME=? and TRIGGER_SCHEMA=? and TRIGGER_CATALOG=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
@@ -153,8 +145,6 @@ public class HsqlDb2DdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema, catalog);
-
         return triggers;
     }
-
 }

@@ -35,15 +35,10 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.jumpmind.util.FormatUtils;
 
 public class StagingDataWriter extends AbstractProtocolDataWriter {
-
     private IStagingManager stagingManager;
-    
     private String category;
-    
     private Map<Batch, IStagedResource> stagedResources = new ConcurrentHashMap<Batch, IStagedResource>();
-    
     private long memoryThresholdInBytes;
-    
     private boolean acquireReference = false;
 
     public StagingDataWriter(long memoryThresholdInBytes, boolean acquireReference, String sourceNodeId, String category, IStagingManager stagingManager,
@@ -102,7 +97,7 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
         resource.close();
         flushNodeId = true;
         processedTables.clear();
-        table = null;        
+        table = null;
     }
 
     @Override
@@ -122,5 +117,4 @@ public class StagingDataWriter extends AbstractProtocolDataWriter {
             throw new IoException(ex);
         }
     }
-
 }

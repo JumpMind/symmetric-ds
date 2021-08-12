@@ -38,7 +38,6 @@ O * Licensed to JumpMind Inc under one or more contributor
  * specific language governing permissions and limitations
  * under the License. 
  */
-
 package org.jumpmind.symmetric.io.data;
 
 import java.io.ByteArrayInputStream;
@@ -70,48 +69,33 @@ import org.jumpmind.symmetric.io.data.writer.IDatabaseWriterFilter;
  * Import data from file to database tables.
  */
 public class DbImport {
-
     public enum Format {
         SQL, CSV, XML, SYM_XML, CSV_DQUOTE
     };
 
     private Format format = Format.SQL;
-
     private String catalog;
-
     private String schema;
-
     private long commitRate = 10000;
-    
     private int interval = 5;
-
     private boolean useVariableDates = false;
-
     /**
      * Force the import to continue, regardless of errors that might occur.
      */
     private boolean forceImport = false;
-
     /**
      * If a row already exists, then replace it using an update statement.
      */
     private boolean replaceRows = false;
-
     /**
      * Ignore rows that already exist.
      */
     private boolean ignoreCollisions = false;
-
     private boolean alterCaseToMatchDatabaseDefaultCase = false;
-
     private boolean alterTables = false;
-
     private boolean dropIfExists = false;
-    
     private boolean ignoreMissingTables = true;
-
     protected IDatabasePlatform symmetricPlatform;
-    
     protected List<IDatabaseWriterFilter> databaseWriterFilters;
 
     public DbImport() {
@@ -129,7 +113,7 @@ public class DbImport {
             importTables(in, tableName);
             in.close();
         } catch (IOException e) {
-            throw new IoException("Failed to read '" + importData + 
+            throw new IoException("Failed to read '" + importData +
                     "' for table '" + tableName + "'", e);
         }
     }
@@ -142,7 +126,6 @@ public class DbImport {
         } catch (IOException e) {
             throw new IoException("Failed to read '" + importData + "'", e);
         }
-
     }
 
     public void importTables(InputStream in) {
@@ -153,13 +136,13 @@ public class DbImport {
         if (format == Format.SQL) {
             importTablesFromSql(in);
         } else if (format == Format.CSV) {
-            if (StringUtils.isNotBlank(tableName)) {                
+            if (StringUtils.isNotBlank(tableName)) {
                 importTablesFromCsv(in, tableName);
             } else {
                 throw new RuntimeException("Table name argument is required when importing CSV.");
             }
         } else if (format == Format.CSV_DQUOTE) {
-            if (StringUtils.isNotBlank(tableName)) {                
+            if (StringUtils.isNotBlank(tableName)) {
                 importTablesFromCsvDquote(in, tableName);
             } else {
                 throw new RuntimeException("Table name argument is required when importing CSV.");
@@ -186,7 +169,7 @@ public class DbImport {
 
     protected DatabaseWriterSettings buildDatabaseWriterSettings() {
         DatabaseWriterSettings settings = new DatabaseWriterSettings();
-        settings.setMaxRowsBeforeCommit(commitRate); 
+        settings.setMaxRowsBeforeCommit(commitRate);
         settings.setCommitSleepInterval(interval);
         settings.setDefaultConflictSetting(buildConflictSettings());
         settings.setUsePrimaryKeysFromSource(false);
@@ -203,12 +186,11 @@ public class DbImport {
     }
 
     protected void importTablesFromCsv(InputStream in, String tableName) {
-            DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
+        DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         Table table = writer.getPlatform(tableName).readTableFromDatabase(catalog, schema, tableName);
         if (table == null) {
             throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");
         }
-
         CsvTableDataReader reader = new CsvTableDataReader(BinaryEncoding.HEX, table.getCatalog(),
                 table.getSchema(), table.getName(), in);
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
@@ -221,20 +203,19 @@ public class DbImport {
         if (table == null) {
             throw new RuntimeException("Unable to find table '" + tableName + "' in the database.");
         }
-    
         CsvDquoteDataReader reader = new CsvDquoteDataReader(BinaryEncoding.HEX, table.getCatalog(),
                 table.getSchema(), table.getName(), in);
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
-    
-    protected void importTablesFromXml(InputStream in) {        
+
+    protected void importTablesFromXml(InputStream in) {
         XmlDataReader reader = new XmlDataReader(in);
         DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
         DataProcessor dataProcessor = new DataProcessor(reader, writer, "import");
         dataProcessor.process();
     }
-    
+
     protected void importTablesFromSymXml(InputStream in) {
         SymXmlDataReader reader = new SymXmlDataReader(in);
         DefaultDatabaseWriter writer = new DefaultDatabaseWriter(symmetricPlatform, buildDatabaseWriterSettings());
@@ -272,11 +253,11 @@ public class DbImport {
     public void setSchema(String schema) {
         this.schema = schema;
     }
-    
+
     public void setIgnoreMissingTables(boolean ignoreMissingTables) {
         this.ignoreMissingTables = ignoreMissingTables;
     }
-    
+
     public boolean isIgnoreMissingTables() {
         return ignoreMissingTables;
     }
@@ -344,7 +325,7 @@ public class DbImport {
     public boolean isDropIfExists() {
         return dropIfExists;
     }
-    
+
     public void addDatabaseWriterFilter(IDatabaseWriterFilter filter) {
         databaseWriterFilters.add(filter);
     }
@@ -360,5 +341,4 @@ public class DbImport {
     public void setInterval(int interval) {
         this.interval = interval;
     }
-
 }

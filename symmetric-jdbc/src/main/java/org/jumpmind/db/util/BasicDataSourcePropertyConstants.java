@@ -21,11 +21,9 @@
 package org.jumpmind.db.util;
 
 /**
- * Constants that represent parameters that can be retrieved or saved via the
- * {@link IParameterService}
+ * Constants that represent parameters that can be retrieved or saved via the {@link IParameterService}
  */
 final public class BasicDataSourcePropertyConstants {
-
     public static final String ALL = "ALL";
 
     private BasicDataSourcePropertyConstants() {
@@ -38,7 +36,7 @@ final public class BasicDataSourcePropertyConstants {
     public final static String DB_POOL_INITIAL_SIZE = "db.pool.initial.size";
     public final static String DB_POOL_MAX_ACTIVE = "db.pool.max.active";
     public final static String DB_POOL_MAX_IDLE = "db.pool.max.idle";
-    public final static String DB_POOL_MIN_IDLE = "db.pool.min.idle";    
+    public final static String DB_POOL_MIN_IDLE = "db.pool.min.idle";
     public final static String DB_POOL_MAX_WAIT = "db.pool.max.wait.millis";
     public final static String DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "db.pool.min.evictable.idle.millis";
     public final static String DB_POOL_VALIDATION_QUERY = "db.validation.query";
@@ -47,10 +45,8 @@ final public class BasicDataSourcePropertyConstants {
     public final static String DB_POOL_TEST_WHILE_IDLE = "db.test.while.idle";
     public final static String DB_POOL_INIT_SQL = "db.init.sql";
     public final static String DB_POOL_CONNECTION_PROPERTIES = "db.connection.properties";
-
     public final static String[] ALL_PROPS = new String[] { DB_POOL_URL, DB_POOL_DRIVER, DB_POOL_USER, DB_POOL_PASSWORD, DB_POOL_INITIAL_SIZE,
             DB_POOL_MAX_ACTIVE, DB_POOL_MAX_IDLE, DB_POOL_MIN_IDLE, DB_POOL_MAX_WAIT, DB_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS,
             DB_POOL_VALIDATION_QUERY, DB_POOL_TEST_ON_BORROW, DB_POOL_TEST_ON_RETURN, DB_POOL_TEST_WHILE_IDLE, DB_POOL_INIT_SQL,
             DB_POOL_CONNECTION_PROPERTIES };
-    
 }

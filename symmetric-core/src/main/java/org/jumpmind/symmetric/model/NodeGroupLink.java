@@ -18,45 +18,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
 import java.util.Date;
 
 public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
-
     private static final long serialVersionUID = 1L;
-
     private String sourceNodeGroupId;
-
     private String targetNodeGroupId;
-
     private NodeGroupLinkAction dataEventAction = NodeGroupLinkAction.W;
-    
     private boolean syncConfigEnabled = true;
-    
     private boolean isReversible;
-        
     private Date createTime;
-    
     private Date lastUpdateTime;
-    
-    private String lastUpdateBy;    
+    private String lastUpdateBy;
 
-    public NodeGroupLink() {   
+    public NodeGroupLink() {
     }
-    
+
     public NodeGroupLink(String sourceNodeGroupId, String targetNodeGroupId) {
         this.sourceNodeGroupId = sourceNodeGroupId;
         this.targetNodeGroupId = targetNodeGroupId;
     }
-    
+
     public NodeGroupLink(String sourceNodeGroupId, String targetNodeGroupId, NodeGroupLinkAction action) {
         this(sourceNodeGroupId, targetNodeGroupId);
         this.dataEventAction = action;
     }
-    
+
     public NodeGroupLinkAction getDataEventAction() {
         return dataEventAction;
     }
@@ -64,11 +54,11 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
     public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
         this.dataEventAction = dataEventAction;
     }
-    
+
     public void setSyncConfigEnabled(boolean syncConfigEnabled) {
         this.syncConfigEnabled = syncConfigEnabled;
     }
-     
+
     public boolean isSyncConfigEnabled() {
         return syncConfigEnabled;
     }
@@ -88,7 +78,7 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
     public void setTargetNodeGroupId(String targetNodeGroupId) {
         this.targetNodeGroupId = targetNodeGroupId;
     }
-        
+
     public boolean isReversible() {
         return isReversible;
     }
@@ -100,32 +90,32 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
     public Date getCreateTime() {
         return createTime;
     }
-    
+
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
-    
+
     public void setLastUpdateBy(String lastUpdateBy) {
         this.lastUpdateBy = lastUpdateBy;
     }
-    
+
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
 
     @Override
-    public String toString() {     
+    public String toString() {
         return sourceNodeGroupId + " " + dataEventAction + " " + targetNodeGroupId;
     }
-    
+
     @Override
     public int compareTo(NodeGroupLink o) {
         return toString().compareTo(o.toString());
@@ -161,6 +151,4 @@ public class NodeGroupLink implements Serializable, Comparable<NodeGroupLink> {
             return false;
         return true;
     }
-    
-    
 }

@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 import static org.apache.commons.lang3.StringUtils.isNumeric;
@@ -37,69 +36,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class represents a node who has registered for sync updates. 
+ * This class represents a node who has registered for sync updates.
  */
 public class Node implements Serializable, Comparable<Node> {
-    
     private static final long serialVersionUID = 1L;
-    
     private static final Logger log = LoggerFactory.getLogger(Node.class);
-
     private int MAX_VERSION_SIZE = 50;
-
     private String nodeId;
-
     private String nodeGroupId;
-
     private String externalId;
-
     private String syncUrl;
-
     /**
-     * Record the version of the schema. This is recorded and managed by the
-     * sync software.
+     * Record the version of the schema. This is recorded and managed by the sync software.
      */
     private String schemaVersion;
-    
     private String configVersion;
-
     /**
      * Record the type of database the node hosts.
      */
     private String databaseType;
-
     private String databaseName;
-    
     private String symmetricVersion = Version.version();
-
     /**
      * Get the version of the database the node hosts.
      */
     private String databaseVersion;
-
     private boolean syncEnabled = true;
-
     private String createdAtNodeId;
-    
     private int batchToSendCount;
-    
     private int batchInErrorCount;
-    
     private String deploymentType;
-    
     private String deploymentSubType;
-    
     private int[] symmetricVersionParts;
-    
+
     public Node() {
     }
-    
+
     public Node(String nodeId, String nodeGroupId) {
         this.nodeId = nodeId;
         this.externalId = nodeId;
         this.nodeGroupId = nodeGroupId;
-    }    
-    
+    }
+
     public Node(Properties properties) {
         setNodeGroupId(properties.getProperty(ParameterConstants.NODE_GROUP_ID));
         setExternalId(properties.getProperty(ParameterConstants.EXTERNAL_ID));
@@ -110,9 +88,9 @@ public class Node implements Serializable, Comparable<Node> {
         String deploymentSubType = null;
         if (loadOnly != null && loadOnly.equals("true")) {
             deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOAD_ONLY;
-        } 
+        }
         if (logBased != null && logBased.equals("true")) {
-        	deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
+            deploymentSubType = Constants.DEPLOYMENT_SUB_TYPE_LOG_BASED;
         }
         this.deploymentSubType = deploymentSubType;
     }
@@ -137,7 +115,7 @@ public class Node implements Serializable, Comparable<Node> {
     public boolean equals(Object n) {
         return n != null && n instanceof Node && nodeId != null && nodeId.equals(((Node) n).getNodeId());
     }
-    
+
     @Override
     public int hashCode() {
         return nodeId != null ? nodeId.hashCode() : super.hashCode();
@@ -191,7 +169,7 @@ public class Node implements Serializable, Comparable<Node> {
     public void setDatabaseType(String databaseType) {
         this.databaseType = databaseType;
     }
-    
+
     public String getDatabaseName() {
         return databaseName;
     }
@@ -227,17 +205,17 @@ public class Node implements Serializable, Comparable<Node> {
     public String getSymmetricVersion() {
         return symmetricVersion;
     }
-    
+
     public int[] getSymmetricVersionParts() {
         if (symmetricVersionParts == null) {
             if (StringUtils.isEmpty(symmetricVersion) || symmetricVersion.equals("development")) {
-                symmetricVersionParts = null;     
-            } else {                
+                symmetricVersionParts = null;
+            } else {
                 symmetricVersionParts = Version.parseVersion(symmetricVersion);
             }
         }
         return symmetricVersionParts;
-    }    
+    }
 
     public void setSymmetricVersion(String symmetricVersion) {
         this.symmetricVersion = symmetricVersion;
@@ -259,29 +237,28 @@ public class Node implements Serializable, Comparable<Node> {
     public void setBatchInErrorCount(int batchesInErrorCount) {
         this.batchInErrorCount = batchesInErrorCount;
     }
-    
+
     public int getBatchInErrorCount() {
         return batchInErrorCount;
     }
-    
+
     public void setBatchToSendCount(int batchesToSendCount) {
         this.batchToSendCount = batchesToSendCount;
     }
-    
+
     public int getBatchToSendCount() {
         return batchToSendCount;
     }
-    
+
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
     }
-    
+
     public String getDeploymentType() {
         return deploymentType;
     }
-    
+
     public String getDeploymentSubType() {
-    	
         return deploymentSubType;
     }
 
@@ -331,7 +308,7 @@ public class Node implements Serializable, Comparable<Node> {
         }
         return false;
     }
-    
+
     @Override
     public int compareTo(Node other) {
         String otherNodeId = other.getNodeId();
@@ -345,6 +322,4 @@ public class Node implements Serializable, Comparable<Node> {
             return 0;
         }
     }
-
-    
 }

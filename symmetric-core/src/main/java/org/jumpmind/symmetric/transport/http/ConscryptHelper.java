@@ -26,7 +26,6 @@ import java.security.Security;
 import org.conscrypt.Conscrypt;
 
 public class ConscryptHelper {
-
     protected final static String PROVIDER_NAME = "Conscrypt";
 
     public void checkProviderInstalled() {
@@ -36,9 +35,8 @@ public class ConscryptHelper {
             Provider[] providers = Security.getProviders();
             if (providers.length > 0 && !providers[0].getName().equals(PROVIDER_NAME)) {
                 Security.removeProvider(PROVIDER_NAME);
-                Security.insertProviderAt(Conscrypt.newProvider(), 1);    
+                Security.insertProviderAt(Conscrypt.newProvider(), 1);
             }
         }
     }
-
 }

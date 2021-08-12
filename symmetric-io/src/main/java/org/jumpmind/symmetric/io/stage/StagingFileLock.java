@@ -29,13 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StagingFileLock {
-    
-	private static final Logger log = LoggerFactory.getLogger(StagingFileLock.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(StagingFileLock.class);
     boolean acquired = false;
-    private File lockFile;    
+    private File lockFile;
     private String lockFailureMessage;
-    
+
     public long getLockAge() {
         if (lockFile != null) {
             FileTime lastModifiedTime;
@@ -43,7 +41,7 @@ public class StagingFileLock {
                 lastModifiedTime = Files.getLastModifiedTime(lockFile.toPath());
                 return System.currentTimeMillis() - lastModifiedTime.toMillis();
             } catch (IOException ex) {
-                if (log.isDebugEnabled()) {                    
+                if (log.isDebugEnabled()) {
                     log.debug("Failed to get last modified time for file " + lockFile, ex);
                 }
                 return 0;
@@ -52,31 +50,34 @@ public class StagingFileLock {
             return 0;
         }
     }
-    
+
     public boolean isAcquired() {
         return acquired;
     }
+
     public void setAcquired(boolean acquired) {
         this.acquired = acquired;
     }
+
     public File getLockFile() {
         return lockFile;
     }
+
     public void setLockFile(File lockFile) {
         this.lockFile = lockFile;
     }
+
     public String getLockFailureMessage() {
         return lockFailureMessage;
     }
+
     public void setLockFailureMessage(String lockFailureMessage) {
         this.lockFailureMessage = lockFailureMessage;
     }
 
     public void releaseLock() {
         int retries = 5;
-        
         boolean ok = false;
-        
         do {
             ok = lockFile.delete();
             if (!ok) {
@@ -87,7 +88,6 @@ public class StagingFileLock {
                 }
             }
         } while (!ok && retries-- > 0);
-        
         if (ok) {
             log.debug("Lock {} released successfully.", lockFile);
         } else {
@@ -95,7 +95,7 @@ public class StagingFileLock {
             log.warn("Failed to release lock {} exists={}", lockFile, exists);
         }
     }
-    
+
     public void breakLock() {
         if (lockFile.delete()) {
             log.info("Lock {} broken successfully.", lockFile);
@@ -103,7 +103,7 @@ public class StagingFileLock {
             log.warn("Failed to break lock {}", lockFile);
         }
     }
-    
+
     @Override
     public String toString() {
         return String.format("%s [%s]", super.toString(), lockFile);

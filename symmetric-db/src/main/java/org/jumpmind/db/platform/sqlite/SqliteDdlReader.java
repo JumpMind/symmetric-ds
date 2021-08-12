@@ -52,11 +52,9 @@ import org.jumpmind.db.util.BinaryEncoding;
 import org.jumpmind.db.util.TableRow;
 
 public class SqliteDdlReader implements IDdlReader {
-
     final static ColumnMapper COLUMN_MAPPER = new ColumnMapper();
     final static IndexMapper INDEX_MAPPER = new IndexMapper();
     final static IndexColumnMapper INDEX_COLUMN_MAPPER = new IndexColumnMapper();
-
     protected IDatabasePlatform platform;
 
     public SqliteDdlReader(IDatabasePlatform platform) {
@@ -92,7 +90,6 @@ public class SqliteDdlReader implements IDdlReader {
                 }
             }
         }
-
     }
 
     public Table readTable(String catalog, String schema, String tableName, String sql) {
@@ -103,34 +100,27 @@ public class SqliteDdlReader implements IDdlReader {
         String quote = platform.getDatabaseInfo().getDelimiterToken();
         return quote + name + quote;
     }
-    
+
     public Table readTable(String catalog, String schema, String tableName) {
         Table table = null;
-
         List<Column> columns = platform.getSqlTemplate().query("pragma table_info(" + quote(tableName) + ")", COLUMN_MAPPER);
-
         checkForAutoIncrementColumn(columns, tableName);
-
         if (columns != null && columns.size() > 0) {
             table = new Table(tableName);
             for (Column column : columns) {
                 table.addColumn(column);
             }
-
             List<IIndex> indexes = platform.getSqlTemplate().query("pragma index_list(" + quote(tableName) + ")", INDEX_MAPPER);
             for (IIndex index : indexes) {
-
                 List<IndexColumn> indexColumns = platform.getSqlTemplate().query("pragma index_info(" + index.getName() + ")",
                         INDEX_COLUMN_MAPPER);
                 for (IndexColumn indexColumn : indexColumns) {
                     /* Ignore auto index columns */
-
                     if (!indexColumn.getName().startsWith("sqlite_autoindex_")) {
                         index.addColumn(indexColumn);
                         indexColumn.setColumn(table.getColumnWithName(indexColumn.getName()));
                     }
                 }
-
                 if (index.isUnique() && index.getName().toLowerCase().contains("autoindex") && !index.hasAllPrimaryKeys()) {
                     for (IndexColumn indexColumn : indexColumns) {
                         table.getColumnWithName(indexColumn.getName()).setUnique(true);
@@ -139,7 +129,6 @@ public class SqliteDdlReader implements IDdlReader {
                     table.addIndex(index);
                 }
             }
-
             Map<Integer, ForeignKey> keys = new HashMap<Integer, ForeignKey>();
             List<Row> rows = platform.getSqlTemplate().query("pragma foreign_key_list(" + quote(tableName) + ")", new RowMapper());
             for (Row row : rows) {
@@ -154,7 +143,6 @@ public class SqliteDdlReader implements IDdlReader {
                 fk.addReference(new Reference(new Column(row.getString("from")), new Column(row.getString("to"))));
             }
         }
-
         return table;
     }
 
@@ -221,7 +209,6 @@ public class SqliteDdlReader implements IDdlReader {
             }
             return colType;
         }
-
     }
 
     static class IndexMapper extends AbstractSqlRowMapper<IIndex> {
@@ -258,9 +245,7 @@ public class SqliteDdlReader implements IDdlReader {
     }
 
     public List<Trigger> getTriggers(final String catalog, final String schema, final String tableName) throws SqlException {
-
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         String sql = "SELECT " + "name AS trigger_name, " + "tbl_name AS table_name, " + "rootpage, " + "sql, " + "type AS object_type "
                 + "FROM sqlite_master " + "WHERE table_name=? AND object_type='trigger';";
         triggers = platform.getSqlTemplate().query(sql, new ISqlRowMapper<Trigger>() {
@@ -275,7 +260,6 @@ public class SqliteDdlReader implements IDdlReader {
                 return trigger;
             }
         }, tableName.toLowerCase());
-
         return triggers;
     }
 
@@ -283,15 +267,14 @@ public class SqliteDdlReader implements IDdlReader {
     public Collection<ForeignKey> getExportedKeys(Table table) {
         return null;
     }
-    
+
     @Override
     public List<TableRow> getExportedForeignTableRows(ISqlTransaction transaction, List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
-    
+
     @Override
     public List<TableRow> getImportedForeignTableRows(List<TableRow> tableRows, Set<TableRow> visited, BinaryEncoding encoding) {
         return null;
     }
-
 }

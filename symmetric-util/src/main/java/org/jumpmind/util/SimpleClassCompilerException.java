@@ -26,26 +26,23 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 public class SimpleClassCompilerException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-    
     List<Diagnostic<? extends JavaFileObject>> diagnostics;
 
     public SimpleClassCompilerException(String message) {
         super(message);
     }
-    
+
     public SimpleClassCompilerException(List<Diagnostic<? extends JavaFileObject>> diagnostics) {
         this.diagnostics = diagnostics;
     }
-    
+
     public SimpleClassCompilerException(String message, List<Diagnostic<? extends JavaFileObject>> diagnostics) {
         super(message);
         this.diagnostics = diagnostics;
     }
-    
+
     public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
         return diagnostics;
     }
-    
 }

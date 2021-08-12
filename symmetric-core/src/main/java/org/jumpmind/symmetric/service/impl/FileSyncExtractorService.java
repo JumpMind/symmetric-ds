@@ -47,14 +47,13 @@ import org.jumpmind.symmetric.service.INodeCommunicationService;
 import org.jumpmind.symmetric.service.INodeService;
 
 public class FileSyncExtractorService extends DataExtractorService {
-    
     private IFileSyncService fileSyncService;
     private INodeService nodeService;
     private IStagingManager stagingManager;
     private IConfigurationService configurationService;
     private INodeCommunicationService nodeCommunicationService;
     private IExtensionService extensionService;
-    
+
     public FileSyncExtractorService(ISymmetricEngine engine) {
         super(engine);
         this.fileSyncService = engine.getFileSyncService();
@@ -64,39 +63,38 @@ public class FileSyncExtractorService extends DataExtractorService {
         this.nodeCommunicationService = engine.getNodeCommunicationService();
         this.extensionService = engine.getExtensionService();
     }
-    
+
     @Override
     protected boolean isApplicable(NodeCommunication nodeCommunication) {
-        return parameterService.is(ParameterConstants.FILE_SYNC_ENABLE) 
+        return parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)
                 && nodeCommunication.getCommunicationType() == CommunicationType.FILE_XTRCT;
     }
-    
+
     @Override
     protected boolean canProcessExtractRequest(ExtractRequest request, CommunicationType communicationType) {
         return request.getTableName().equalsIgnoreCase(TableConstants.getTableName(tablePrefix, TableConstants.SYM_FILE_SNAPSHOT));
     }
-    
+
     @Override
     protected IDataWriter wrapWithTransformWriter(Node sourceNode, Node targetNode, ProcessInfo processInfo, IDataWriter dataWriter,
             boolean useStagingDataWriter) {
         return dataWriter;
     }
-    
+
     @Override
     protected IStagedResource getStagedResource(OutgoingBatch currentBatch) {
         return stagingManager.find(fileSyncService.getStagingPathComponents(currentBatch));
     }
-    
+
     @Override
     protected OutgoingBatch extractOutgoingBatch(ProcessInfo processInfo, Node targetNode, IDataWriter dataWriter, OutgoingBatch currentBatch,
             boolean useStagingDataWriter, boolean updateBatchStatistics, ExtractMode mode, IDataProcessorListener listener) {
         if (!parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
             return null;
         }
-        
         Channel channel = configurationService.getChannel(currentBatch.getChannelId());
         if (channel.isFileSyncFlag()) {
-            return super.extractOutgoingBatch(processInfo, targetNode, dataWriter, currentBatch, useStagingDataWriter, updateBatchStatistics, mode, null);            
+            return super.extractOutgoingBatch(processInfo, targetNode, dataWriter, currentBatch, useStagingDataWriter, updateBatchStatistics, mode, null);
         } else {
             log.debug("Skipping non-file sync channel {}", channel);
             return null;
@@ -104,36 +102,34 @@ public class FileSyncExtractorService extends DataExtractorService {
     }
 
     @Override
-    protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, List<ExtractRequest> childRequests, final Node sourceNode, final Node targetNode, 
+    protected MultiBatchStagingWriter buildMultiBatchStagingWriter(ExtractRequest request, List<ExtractRequest> childRequests, final Node sourceNode,
+            final Node targetNode,
             List<OutgoingBatch> batches, ProcessInfo processInfo, Channel channel, boolean isRestarted) {
         MultiBatchStagingWriter multiBatchStagingWriter = new MultiBatchStagingWriter(engine, request, childRequests, sourceNode.getNodeId(),
                 batches, channel.getMaxBatchSize(), processInfo, isRestarted) {
             @Override
-            protected IDataWriter buildWriter() {                
+            protected IDataWriter buildWriter() {
                 IStagedResource stagedResource = stagingManager.create(
-                            fileSyncService.getStagingPathComponents(outgoingBatch));
-                
+                        fileSyncService.getStagingPathComponents(outgoingBatch));
                 log.info("Extracting file sync batch {} to resource '{}'", outgoingBatch.getNodeBatchId(), stagedResource);
-                
                 long maxBytesToSync = parameterService
-                        .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        
-                    
+                        .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
                 FileSyncZipDataWriter fileSyncWriter = new FileSyncZipDataWriter(maxBytesToSync, fileSyncService,
                         nodeService, stagedResource, extensionService, configurationService) {
-                            @Override
-                            public void close() {
-                                super.finish();
-                            }
+                    @Override
+                    public void close() {
+                        super.finish();
+                    }
                 };
                 return fileSyncWriter;
             }
         };
         return multiBatchStagingWriter;
     }
-    
+
     @Override
     protected void queue(String nodeId, String queue, RemoteNodeStatuses statuses) {
-        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {            
+        if (parameterService.is(ParameterConstants.FILE_SYNC_ENABLE)) {
             final NodeCommunication.CommunicationType TYPE = NodeCommunication.CommunicationType.FILE_XTRCT;
             int availableThreads = nodeCommunicationService.getAvailableThreads(TYPE);
             NodeCommunication lock = nodeCommunicationService.find(nodeId, queue, TYPE);
@@ -142,7 +138,7 @@ public class FileSyncExtractorService extends DataExtractorService {
             }
         }
     }
-    
+
     @Override
     protected ProcessType getProcessType() {
         return ProcessType.FILE_SYNC_INITIAL_LOAD_EXTRACT_JOB;

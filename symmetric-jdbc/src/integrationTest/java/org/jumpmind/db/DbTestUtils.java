@@ -33,13 +33,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class DbTestUtils {
-
     Logger logger = LoggerFactory.getLogger(getClass());
-
     public final static String DB_TEST_PROPERTIES = "/db-test.properties";
     public static final String ROOT = "root";
     public static final String CLIENT = "client";
-    
+
     public static EnvironmentSpecificProperties getEnvironmentSpecificProperties(String name) {
         return new EnvironmentSpecificProperties(
                 DatabasePlatformTest.class.getResource(DB_TEST_PROPERTIES), String.format(
@@ -55,5 +53,4 @@ abstract public class DbTestUtils {
                 BasicDataSourceFactory.create(properties, SecurityServiceFactory.create()),
                 new SqlTemplateSettings(), true, false);
     }
-
 }

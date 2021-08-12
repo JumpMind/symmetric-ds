@@ -24,13 +24,10 @@ import org.jumpmind.symmetric.ISymmetricEngine;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
 public class SymmetricEngineStarter implements Runnable {
-
-	private SymmetricEngineHolder holder;
-
-	private String propertiesFile;
-    
+    private SymmetricEngineHolder holder;
+    private String propertiesFile;
     private ISymmetricEngine engine;
-    
+
     public SymmetricEngineStarter(String propertiesFile, SymmetricEngineHolder holder) {
         this.propertiesFile = propertiesFile;
         this.holder = holder;
@@ -40,24 +37,24 @@ public class SymmetricEngineStarter implements Runnable {
     public void run() {
         engine = holder.create(propertiesFile);
         if (engine != null) {
-        	String name = engine.getEngineName();
-        	if (holder.isAutoStart() && engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
-	            if (!engine.start()) {
-	            	holder.getEnginesFailed().put(name, new FailedEngineInfo(name, propertiesFile, engine.getLastException()));
-	            }
-        	}
+            String name = engine.getEngineName();
+            if (holder.isAutoStart() && engine.getParameterService().is(ParameterConstants.AUTO_START_ENGINE)) {
+                if (!engine.start()) {
+                    holder.getEnginesFailed().put(name, new FailedEngineInfo(name, propertiesFile, engine.getLastException()));
+                }
+            }
             holder.getEnginesStartingNames().remove(name);
         }
         holder.getEnginesStarting().remove(this);
     }
 
     public SymmetricEngineHolder getHolder() {
-		return holder;
-	}
+        return holder;
+    }
 
-	public String getPropertiesFile() {
-		return propertiesFile;
-	}
+    public String getPropertiesFile() {
+        return propertiesFile;
+    }
 
     public ISymmetricEngine getEngine() {
         return engine;

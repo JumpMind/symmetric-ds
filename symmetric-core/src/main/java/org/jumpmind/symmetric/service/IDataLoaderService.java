@@ -35,11 +35,9 @@ import org.jumpmind.symmetric.service.impl.DataLoaderService.ConflictNodeGroupLi
 import org.jumpmind.symmetric.transport.IIncomingTransport;
 
 /**
- * This service provides an API to load data into a SymmetricDS node's database
- * from a transport
+ * This service provides an API to load data into a SymmetricDS node's database from a transport
  */
 public interface IDataLoaderService {
-    
     public boolean refreshFromDatabase();
 
     public RemoteNodeStatus loadDataFromPull(Node remote, String channelId) throws IOException;
@@ -55,31 +53,30 @@ public interface IDataLoaderService {
     public void loadDataFromConfig(Node remote, RemoteNodeStatus status, boolean force) throws IOException;
 
     public List<String> getAvailableDataLoaderFactories();
-        
+
     public List<IncomingBatch> loadDataBatch(String batchData);
-    
+
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks(NodeGroupLink link, boolean refreshCache);
-    
+
     public List<ConflictNodeGroupLink> getConflictSettingsNodeGroupLinks();
-    
+
     public void delete(ConflictNodeGroupLink settings);
-    
+
     public void deleteAllConflicts();
-    
+
     public void save(ConflictNodeGroupLink settings);
-    
+
     public void clearCache();
 
     public List<IncomingError> getIncomingErrors(long batchId, String nodeId);
 
     public IncomingError getIncomingError(long batchId, String nodeId, long rowNumber);
-    
-    public IncomingError getCurrentIncomingError(long batchId, String nodeId);
-    
-    public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError);
-    
-    public void insertIncomingError(IncomingError incomingError);
-    
-    public void updateIncomingError(IncomingError incomingError);
 
+    public IncomingError getCurrentIncomingError(long batchId, String nodeId);
+
+    public void insertIncomingError(ISqlTransaction transaction, IncomingError incomingError);
+
+    public void insertIncomingError(IncomingError incomingError);
+
+    public void updateIncomingError(IncomingError incomingError);
 }

@@ -39,9 +39,7 @@ import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements IBuiltInExtensionPoint {
-
     protected String typeName = "mongodb";
-
     protected IDBObjectMapper objectMapper;
 
     public MongoDataLoaderFactory() {
@@ -55,22 +53,21 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements 
 
     @Override
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
         try {
             if (objectMapper == null) {
-                objectMapper = (IDBObjectMapper)Class.forName("org.jumpmind.symmetric.io.SimpleDBObjectMapper").getDeclaredConstructor().newInstance();
+                objectMapper = (IDBObjectMapper) Class.forName("org.jumpmind.symmetric.io.SimpleDBObjectMapper").getDeclaredConstructor().newInstance();
             }
             Method method = objectMapper.getClass().getMethod("setDefaultDatabaseName", String.class);
             if (method != null) {
                 method.invoke(objectMapper, parameterService
-                    .getString("mongodb.default.databasename", "default"));
+                        .getString("mongodb.default.databasename", "default"));
             }
         } catch (Exception e) {
             log.debug("Failed to call setDefaultDatabaseName on mapper", e);
         }
-        
         try {
             Class<?> clientManagerClass = Class
                     .forName("org.jumpmind.symmetric.io.SimpleMongoClientManager");
@@ -78,7 +75,7 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements 
                     .getConstructor(new Class<?>[] { IParameterService.class, String.class });
             Class<?> dbWriterClass = Class.forName("org.jumpmind.symmetric.io.MongoDatabaseWriter");
             Constructor<?> dbWriterConstructor = dbWriterClass.getConstructor(new Class<?>[] {
-                    IDBObjectMapper.class, IMongoClientManager.class, 
+                    IDBObjectMapper.class, IMongoClientManager.class,
                     IDatabaseWriterConflictResolver.class, DatabaseWriterSettings.class });
             Object clientManager = clientManagerConstrutor.newInstance(parameterService, typeName);
             return (IDataWriter) dbWriterConstructor.newInstance(
@@ -87,11 +84,10 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements 
                     new DefaultTransformWriterConflictResolver(transformWriter),
                     buildDatabaseWriterSettings(filters, errorHandlers, conflictSettings,
                             resolvedData));
-
         } catch (Exception e) {
             log.warn("Failed to create the mongo database writer.  Check to see if all of the required jars have been added");
             if (e instanceof RuntimeException) {
-                throw (RuntimeException)e;
+                throw (RuntimeException) e;
             } else {
                 throw new RuntimeException(e);
             }
@@ -105,5 +101,4 @@ public class MongoDataLoaderFactory extends DefaultDataLoaderFactory implements 
     public void setObjectMapper(IDBObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
-
 }

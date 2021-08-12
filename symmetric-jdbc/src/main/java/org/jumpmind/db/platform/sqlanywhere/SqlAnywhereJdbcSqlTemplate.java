@@ -28,7 +28,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class SqlAnywhereJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
-
     public SqlAnywhereJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
             SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -37,10 +36,8 @@ public class SqlAnywhereJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
     public boolean supportsGetGeneratedKeys() {
         return false;
     }
-    
+
     protected String getSelectLastInsertIdSql(String sequenceName) {
         return "select @@identity";
     }
-
 }
-

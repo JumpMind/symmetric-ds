@@ -26,7 +26,6 @@ import org.jumpmind.symmetric.io.data.Batch;
 import org.jumpmind.symmetric.io.data.CsvData;
 
 public class JdbcDatabaseWriter extends DynamicDefaultDatabaseWriter {
-
     String tablePrefix;
 
     public JdbcDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
@@ -62,10 +61,8 @@ public class JdbcDatabaseWriter extends DynamicDefaultDatabaseWriter {
         if (this.targetTable == null && hasFilterThatHandlesMissingTable(table)) {
             this.targetTable = table;
         }
-
         /*
-         * The first data that requires a target table should fail because the table
-         * will not be found
+         * The first data that requires a target table should fail because the table will not be found
          */
         return true;
     }

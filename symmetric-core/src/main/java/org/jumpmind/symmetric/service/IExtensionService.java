@@ -28,29 +28,27 @@ import org.jumpmind.symmetric.ext.ExtensionPointMetaData;
 import org.jumpmind.symmetric.model.Extension;
 
 public interface IExtensionService {
-    
     public void refresh();
-    
+
     public List<ExtensionPointMetaData> getExtensionPointMetaData();
-        
+
     public <T extends IExtensionPoint> T getExtensionPoint(Class<T> extensionClass);
-    
+
     public <T extends IExtensionPoint> List<T> getExtensionPointList(Class<T> extensionClass);
 
     public <T extends IExtensionPoint> Map<String, T> getExtensionPointMap(Class<T> extensionClass);
-    
+
     public void addExtensionPoint(IExtensionPoint extension);
 
     public void addExtensionPoint(String name, IExtensionPoint extension);
-    
-    public void removeExtensionPoint(IExtensionPoint extension);
-    
-    public List<Extension> getExtensions();
-    
-    public void saveExtension(Extension extension);
-    
-    public void deleteExtension(String extensionId);
-    
-    public Object getCompiledClass(String javaCode) throws Exception;
 
+    public void removeExtensionPoint(IExtensionPoint extension);
+
+    public List<Extension> getExtensions();
+
+    public void saveExtension(Extension extension);
+
+    public void deleteExtension(String extensionId);
+
+    public Object getCompiledClass(String javaCode) throws Exception;
 }

@@ -51,19 +51,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractIntegrationTest {
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractIntegrationTest.class);
-
     private static ClientSymmetricEngine client;
-
     private static SymmetricWebServer server;
-
     private static String serverDatabase;
-
     private static String clientDatabase;
-
     protected static TestTablesService serverTestService;
-
     protected static TestTablesService clientTestService;
 
     protected synchronized ISymmetricEngine getClient() {
@@ -72,7 +65,6 @@ public abstract class AbstractIntegrationTest {
                     TestSetupUtil.getResource(DbTestUtils.DB_TEST_PROPERTIES),
                     TestSetupUtil.getResource("/symmetric-test.properties") }, "test.client",
                     new String[] { "client" });
-
             clientDatabase = properties.getProperty("test.client");
             client = new ClientSymmetricEngine(properties);
             client.getStagingManager().clean(0);
@@ -98,45 +90,36 @@ public abstract class AbstractIntegrationTest {
                 properties.setProperty(ParameterConstants.AUTO_CONFIGURE_REG_SVR_SQL_SCRIPT,
                         "/test-integration-root-setup.sql");
                 serverDatabase = properties.getProperty("test.root");
-
                 File rootDir = new File("target/root");
                 FileUtils.deleteDirectory(rootDir);
                 rootDir.mkdirs();
                 File rootdbs = new File("target/rootdbs");
                 FileUtils.deleteDirectory(rootdbs);
                 rootdbs.mkdirs();
-
                 File clientdbs = new File("target/clientdbs");
                 FileUtils.deleteDirectory(clientdbs);
                 clientdbs.mkdirs();
-
                 File engineDir = new File(rootDir, "engines");
                 engineDir.mkdirs();
                 File rootPropertiesFile = new File(engineDir, "root.properties");
                 FileOutputStream fos = new FileOutputStream(rootPropertiesFile);
                 properties.store(fos, "unit tests");
                 fos.close();
-
                 ISymmetricEngine engine = TestSetupUtil.prepareRoot();
                 engine.destroy();
-
                 System.setProperty(SystemConstants.SYSPROP_ENGINES_DIR, engineDir.getAbsolutePath());
                 System.setProperty(SystemConstants.SYSPROP_WEB_DIR, "src/main/deploy/web");
                 SymmetricWebServer server = new SymmetricWebServer();
                 server.setJoin(false);
                 server.start(Integer.parseInt(AppUtils.getPortNumber()));
-
                 server.waitForEnginesToComeOnline(3600000);
-
                 serverTestService = new TestTablesService(server.getEngine());
-
                 AbstractIntegrationTest.server = server;
             }
         } catch (Exception e) {
             logger.error("", e);
             fail(e.getMessage());
         }
-
         return server != null ? server : null;
     }
 
@@ -174,7 +157,6 @@ public abstract class AbstractIntegrationTest {
             ITriggerRouterService service = getServer().getTriggerRouterService();
             assertEquals(0, service.getFailedTriggers().size());
         }
-
         if (client) {
             ITriggerRouterService service = getClient().getTriggerRouterService();
             assertEquals(0, service.getFailedTriggers().size());
@@ -208,7 +190,7 @@ public abstract class AbstractIntegrationTest {
         return DatabaseNamesConstants.INTERBASE.equals(getClient().getSymmetricDialect()
                 .getPlatform().getName());
     }
-    
+
     protected int getIncomingBatchCountForClient() {
         return getClient().getSqlTemplate().queryForInt("select count(*) from sym_incoming_batch");
     }
@@ -231,5 +213,4 @@ public abstract class AbstractIntegrationTest {
                 TestConstants.TEST_ROOT_NODE.getNodeId(), false);
         assertEquals("There should be no outgoing batches", 0, batches.getBatches().size());
     }
-
 }

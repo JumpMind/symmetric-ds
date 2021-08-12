@@ -34,9 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SimpleRouterContext extends Context {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected NodeChannel channel;
     protected boolean encountedTransactionBoundary = false;
     protected Map<String, Long> stats = new HashMap<String, Long>();
@@ -104,7 +102,6 @@ public class SimpleRouterContext extends Context {
             for (String key : keys) {
                 statsPrintout.append(", " + key + "=" + stats.get(key));
             }
-
             if (infoLevel) {
                 log.info("Routed channel {}", statsPrintout);
             } else {
@@ -123,5 +120,4 @@ public class SimpleRouterContext extends Context {
             incrementStat(value, key);
         }
     }
-    
 }

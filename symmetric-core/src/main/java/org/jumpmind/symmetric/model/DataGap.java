@@ -25,9 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 public class DataGap implements Serializable, Comparable<DataGap> {
-    
     private static final long serialVersionUID = 1L;
-
     private long startId;
     private long endId;
     private Date createTime;
@@ -37,7 +35,7 @@ public class DataGap implements Serializable, Comparable<DataGap> {
         this.endId = endId;
         this.createTime = new Date();
     }
-    
+
     public DataGap(long startId, long endId, Date createTime) {
         this.startId = startId;
         this.endId = endId;
@@ -48,19 +46,19 @@ public class DataGap implements Serializable, Comparable<DataGap> {
     public String toString() {
         return "{ startId: " + startId + ", endId: " + endId + ", createTime: \"" + createTime + "\" }";
     }
-    
+
     public long getEndId() {
         return endId;
     }
-    
+
     public long getStartId() {
         return startId;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
- 
+
     public boolean contains(DataGap gap) {
         return startId <= gap.startId && endId >= gap.endId;
     }
@@ -80,7 +78,7 @@ public class DataGap implements Serializable, Comparable<DataGap> {
     }
 
     public long gapSize() {
-        return endId-startId;
+        return endId - startId;
     }
 
     @Override
@@ -117,5 +115,4 @@ public class DataGap implements Serializable, Comparable<DataGap> {
         }
         return 0;
     }
-    
 }

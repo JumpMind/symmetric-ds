@@ -38,21 +38,15 @@ import bsh.Interpreter;
 import bsh.TargetError;
 
 /**
- * This data router is invoked when the router_type is 'bsh'. The
- * router_expression is always a bean shell expression. See <a
- * href='http://www.beanshell.org'>the bean shell site</a> for information about
- * the capabilities of the bean shell scripting language.
+ * This data router is invoked when the router_type is 'bsh'. The router_expression is always a bean shell expression. See
+ * <a href='http://www.beanshell.org'>the bean shell site</a> for information about the capabilities of the bean shell scripting language.
  * <P/>
- * Bound to the interpreter are the names of both the current and old column
- * values. They can be used in the expression. They should always be referenced
- * using upper case. Also bound to the interpreter is a {@link Collection} of
- * targetNodes. The script is expected to add the the list of target nodes a
- * list of the node_ids that should be routed to.
+ * Bound to the interpreter are the names of both the current and old column values. They can be used in the expression. They should always be referenced using
+ * upper case. Also bound to the interpreter is a {@link Collection} of targetNodes. The script is expected to add the the list of target nodes a list of the
+ * node_ids that should be routed to.
  */
 public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensionPoint {
-
     protected ISymmetricEngine engine;
-
     final String INTERPRETER_KEY = String.format("%d.BshInterpreter", hashCode());
 
     public BshDataRouter(ISymmetricEngine engine) {
@@ -75,16 +69,16 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
             Object returnValue = interpreter.eval(dataMetaData.getRouter().getRouterExpression());
             context.incrementStat(System.currentTimeMillis() - ts, "bsh.eval.ms");
             return eval(returnValue, nodes, targetNodes);
-        } catch (EvalError e) {            
+        } catch (EvalError e) {
             if (e instanceof TargetError) {
-                Throwable t = ((TargetError)e).getTarget();    
+                Throwable t = ((TargetError) e).getTarget();
                 if (t instanceof RuntimeException) {
                     throw (RuntimeException) t;
                 } else {
-                    throw new RuntimeException("Routing script failed at line " + ((TargetError)e).getErrorLineNumber(), t);
+                    throw new RuntimeException("Routing script failed at line " + ((TargetError) e).getErrorLineNumber(), t);
                 }
             } else {
-                throw new RuntimeException("Failed to evaluate bsh router script.  Bound variables were: "  + boundVariableNames, e);
+                throw new RuntimeException("Failed to evaluate bsh router script.  Bound variables were: " + boundVariableNames, e);
             }
         }
     }
@@ -140,9 +134,9 @@ public class BshDataRouter extends AbstractDataRouter implements IBuiltInExtensi
             }
         }
     }
-    
+
     protected void bind(Interpreter interpreter, Set<String> boundVariableNames, String name, Object value) throws EvalError {
         interpreter.set(name, value);
-        boundVariableNames.add(name);        
-    }   
+        boundVariableNames.add(name);
+    }
 }

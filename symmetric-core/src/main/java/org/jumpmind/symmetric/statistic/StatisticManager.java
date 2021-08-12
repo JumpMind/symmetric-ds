@@ -56,43 +56,25 @@ import org.slf4j.LoggerFactory;
  * @see IStatisticManager
  */
 public class StatisticManager implements IStatisticManager {
-
     protected Logger log = LoggerFactory.getLogger(getClass());
-
     private static final String UNKNOWN = "Unknown";
-
     private static final int NUMBER_OF_PERMITS = 1000;
-
     private Map<String, ChannelStats> channelStats = new ConcurrentHashMap<String, ChannelStats>();
-
     private List<JobStats> jobStats = new ArrayList<JobStats>();
-
     private HostStats hostStats;
-
     private ConcurrentHashMap<Long, RouterStats> routerStatsByBatch = new ConcurrentHashMap<Long, RouterStats>();
-
     protected INodeService nodeService;
-
     protected IStatisticService statisticService;
-
     protected IParameterService parameterService;
-
     protected IConfigurationService configurationService;
-
     protected IClusterService clusterService;
-
     protected Semaphore channelStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-
     protected Semaphore hostStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-
     protected Semaphore jobStatsLock = new Semaphore(NUMBER_OF_PERMITS, true);
-
     protected Map<ProcessInfoKey, ProcessInfo> processInfos = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
-
     protected Map<ProcessInfoKey, ProcessInfo> processInfosThatHaveDoneWork = new ConcurrentHashMap<ProcessInfoKey, ProcessInfo>();
-
     private Map<Date, Map<String, ChannelStats>> baseChannelStatsInMemory = new LinkedHashMap<Date, Map<String, ChannelStats>>();
-    
+
     public StatisticManager(IParameterService parameterService, INodeService nodeService,
             IConfigurationService configurationService, IStatisticService statisticsService,
             IClusterService clusterService) {
@@ -107,19 +89,16 @@ public class StatisticManager implements IStatisticManager {
     protected void init() {
     }
 
-
-
     public ProcessInfo newProcessInfo(ProcessInfoKey key) {
         ProcessInfo process = new ProcessInfo(key);
         ProcessInfo old = processInfos.get(key);
-        if (old != null) {            
+        if (old != null) {
             if (old.getStatus() != ProcessStatus.OK && old.getStatus() != ProcessStatus.ERROR) {
                 log.warn(
                         "Starting a new process even though the previous '{}' process had not finished",
                         old.getProcessType());
                 log.info("Details from the previous process: {}", old);
             }
-
             if (old.getCurrentDataCount() > 0 || old.getTotalDataCount() > 0) {
                 processInfosThatHaveDoneWork.put(key, old);
             }
@@ -314,7 +293,7 @@ public class StatisticManager implements IStatisticManager {
             channelStatsLock.release();
         }
     }
-    
+
     public void incrementDataLoadedOutgoing(String channelId, long count) {
         channelStatsLock.acquireUninterruptibly();
         try {
@@ -487,18 +466,16 @@ public class StatisticManager implements IStatisticManager {
     }
 
     protected void saveAdditionalStats(Date endTime, ChannelStats stats) {
-            if (baseChannelStatsInMemory.get(endTime) == null) {
-                baseChannelStatsInMemory.put(endTime, new HashMap<String, ChannelStats>());
+        if (baseChannelStatsInMemory.get(endTime) == null) {
+            baseChannelStatsInMemory.put(endTime, new HashMap<String, ChannelStats>());
         }
         baseChannelStatsInMemory.get(endTime).put(stats.getChannelId(), stats);
     }
-    
-    public void flush() {
 
+    public void flush() {
         boolean recordStatistics = parameterService.is(ParameterConstants.STATISTIC_RECORD_ENABLE,
                 false);
-        long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD,-1);
-        
+        long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD, -1);
         if (channelStats != null) {
             channelStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -515,19 +492,15 @@ public class StatisticManager implements IStatisticManager {
                         saveAdditionalStats(endTime, stats);
                         statisticService.save(stats);
                     }
-                    
                 }
                 resetChannelStats(true);
             } finally {
                 channelStatsLock.release(NUMBER_OF_PERMITS);
             }
         }
-
         int rowsLoaded = 0;
         int rowsSent = 0;
-        
         for (Map.Entry<Date, Map<String, ChannelStats>> entry : baseChannelStatsInMemory.entrySet()) {
-            
             for (Map.Entry<String, ChannelStats> channelEntry : entry.getValue().entrySet()) {
                 if (!channelEntry.getKey().equals("config") && !channelEntry.getKey().equals("heartbeat")) {
                     rowsLoaded += channelEntry.getValue().getDataLoaded();
@@ -542,7 +515,6 @@ public class StatisticManager implements IStatisticManager {
                 log.debug("===================================");
             }
         }
-        
         if (hostStats != null) {
             hostStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
             try {
@@ -561,7 +533,6 @@ public class StatisticManager implements IStatisticManager {
                 hostStatsLock.release(NUMBER_OF_PERMITS);
             }
         }
-        
         if (jobStats != null) {
             List<JobStats> toFlush = null;
             jobStatsLock.acquireUninterruptibly(NUMBER_OF_PERMITS);
@@ -571,7 +542,6 @@ public class StatisticManager implements IStatisticManager {
             } finally {
                 jobStatsLock.release(NUMBER_OF_PERMITS);
             }
-
             if (toFlush != null && recordStatistics) {
                 Node node = nodeService.getCachedIdentity();
                 if (node != null) {
@@ -588,19 +558,16 @@ public class StatisticManager implements IStatisticManager {
             }
         }
     }
-    
-    public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
 
+    public TreeMap<Date, Map<String, ChannelStats>> getNodeStatsForPeriod(Date start, Date end, String nodeId, int periodSizeInMinutes) {
         Map<String, ChannelStats> currentStats = getWorkingChannelStats();
         NodeStatsByPeriodMap savedStatsPeriodMap = (NodeStatsByPeriodMap) statisticService.getNodeStatsForPeriod(start, end, nodeId,
                 periodSizeInMinutes);
-
         for (String key : currentStats.keySet()) {
             ChannelStats stat = currentStats.get(key);
             Date date = stat.getStartTime();
             savedStatsPeriodMap.add(date, stat);
         }
-        
         return savedStatsPeriodMap;
     }
 
@@ -631,7 +598,6 @@ public class StatisticManager implements IStatisticManager {
         if (force) {
             channelStats = null;
         }
-
         if (channelStats == null) {
             List<NodeChannel> channels = configurationService.getNodeChannels(false);
             channelStats = new HashMap<String, ChannelStats>(channels.size());
@@ -654,7 +620,6 @@ public class StatisticManager implements IStatisticManager {
                 stats = new ChannelStats(UNKNOWN, clusterService.getServerId(), new Date(), null,
                         channelId);
             }
-
         }
         return stats;
     }
@@ -668,9 +633,7 @@ public class StatisticManager implements IStatisticManager {
             } else {
                 hostStats = new HostStats(UNKNOWN, clusterService.getServerId(), new Date(), null);
             }
-
         }
         return hostStats;
     }
-
 }

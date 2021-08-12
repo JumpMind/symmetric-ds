@@ -27,11 +27,10 @@ import java.lang.annotation.Target;
 
 import org.springframework.stereotype.Component;
 
-@Target({java.lang.annotation.ElementType.TYPE})
+@Target({ java.lang.annotation.ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
-public @interface UiComponent
-{
-  String value() default "";
+public @interface UiComponent {
+    String value() default "";
 }

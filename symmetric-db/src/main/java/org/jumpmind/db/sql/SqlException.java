@@ -23,7 +23,6 @@ package org.jumpmind.db.sql;
 import java.sql.SQLException;
 
 public class SqlException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
     public SqlException() {
@@ -40,12 +39,12 @@ public class SqlException extends RuntimeException {
 
     public SqlException(Throwable cause) {
         super(cause);
-    }    
-    
+    }
+
     public int getErrorCode() {
         Throwable rootCause = getRootCause();
         if (rootCause instanceof SQLException) {
-            return ((SQLException)rootCause).getErrorCode();
+            return ((SQLException) rootCause).getErrorCode();
         } else {
             return -1;
         }
@@ -58,15 +57,13 @@ public class SqlException extends RuntimeException {
             rootCause = cause;
             cause = cause.getCause();
         }
-        
         if (rootCause == null) {
             rootCause = this;
         }
         return rootCause;
     }
-    
+
     public String getRootMessage() {
         return getRootCause().getMessage();
     }
-
 }

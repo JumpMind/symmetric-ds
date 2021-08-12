@@ -33,18 +33,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractUriHandler implements IUriHandler {
-    
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
     private String uriPattern;
-    
     private List<IInterceptor> interceptors;
-    
     protected IParameterService parameterService;
-    
     private boolean enabled = true;
-    
-    public AbstractUriHandler(String uriPattern, IParameterService parameterService, 
+
+    public AbstractUriHandler(String uriPattern, IParameterService parameterService,
             IInterceptor... interceptors) {
         this.uriPattern = uriPattern;
         this.interceptors = new ArrayList<IInterceptor>(interceptors.length);
@@ -57,7 +52,7 @@ abstract public class AbstractUriHandler implements IUriHandler {
     public void setUriPattern(String uriPattern) {
         this.uriPattern = uriPattern;
     }
-    
+
     public String getUriPattern() {
         return uriPattern;
     }
@@ -65,11 +60,11 @@ abstract public class AbstractUriHandler implements IUriHandler {
     public void setInterceptors(List<IInterceptor> interceptors) {
         this.interceptors = interceptors;
     }
-    
+
     public List<IInterceptor> getInterceptors() {
         return interceptors;
     }
-    
+
     protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream, String encoding, ChannelMap map) throws IOException {
         return new InternalOutgoingTransport(outputStream, map, encoding);
     }
@@ -77,11 +72,11 @@ abstract public class AbstractUriHandler implements IUriHandler {
     protected IOutgoingTransport createOutgoingTransport(OutputStream outputStream, String encoding) throws IOException {
         return new InternalOutgoingTransport(outputStream, new ChannelMap(), encoding);
     }
-    
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     public boolean isEnabled() {
         return enabled;
     }

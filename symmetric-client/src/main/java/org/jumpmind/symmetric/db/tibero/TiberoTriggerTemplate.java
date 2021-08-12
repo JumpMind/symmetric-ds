@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class TiberoTriggerTemplate extends AbstractTriggerTemplate {
-
     public TiberoTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         // @formatter:off

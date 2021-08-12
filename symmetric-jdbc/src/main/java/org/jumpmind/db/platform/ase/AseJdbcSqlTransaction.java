@@ -25,7 +25,6 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.JdbcSqlTransaction;
 
 public class AseJdbcSqlTransaction extends JdbcSqlTransaction {
-
     public AseJdbcSqlTransaction(JdbcSqlTemplate sqltemplate) {
         super(sqltemplate);
     }
@@ -42,5 +41,4 @@ public class AseJdbcSqlTransaction extends JdbcSqlTransaction {
             }
         }
     }
-
 }

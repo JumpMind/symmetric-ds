@@ -28,30 +28,26 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class DeletedColumnListColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public final static String NAME = "deletedColumns";
 
     public String getName() {
         return NAME;
     }
-        
+
     public boolean isExtractColumnTransform() {
         return true;
     }
-    
+
     public boolean isLoadColumnTransform() {
         return true;
     }
 
     public NewAndOldValue transform(IDatabasePlatform platform, DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue)
-                    throws IgnoreColumnException, IgnoreRowException {
-        
+            throws IgnoreColumnException, IgnoreRowException {
         StringBuilder deleteList = new StringBuilder();
-
         if (data.getSourceDmlType() == DataEventType.UPDATE) {
             Map<String, String> oldValues = data.getOldSourceValues();
-            
             for (String name : sourceValues.keySet()) {
                 if (sourceValues.get(name) == null && oldValues.get(name) != null) {
                     if (deleteList.length() > 0) {
@@ -61,8 +57,6 @@ public class DeletedColumnListColumnTransform implements ISingleNewAndOldValueCo
                 }
             }
         }
-
         return new NewAndOldValue(deleteList.toString(), null);
     }
-
 }

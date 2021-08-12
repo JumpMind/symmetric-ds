@@ -38,10 +38,9 @@ import org.jumpmind.symmetric.transport.http.HttpTransportManager;
  * Handler that delegates to the {@link IRegistrationService}
  */
 public class RegistrationUriHandler extends AbstractUriHandler {
-    
-    private IRegistrationService registrationService;        
-    
-    public RegistrationUriHandler( IParameterService parameterService,
+    private IRegistrationService registrationService;
+
+    public RegistrationUriHandler(IParameterService parameterService,
             IRegistrationService registrationService, IInterceptor... interceptors) {
         super("/registration/*", parameterService, interceptors);
         this.registrationService = registrationService;
@@ -80,7 +79,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         node.setDatabaseName(ServletUtils.getParameter(req, WebConstants.DATABASE_NAME));
         return node;
     }
-    
+
     protected String getHostName(HttpServletRequest req) {
         String hostName = ServletUtils.getParameter(req, WebConstants.HOST_NAME);
         if (StringUtils.isBlank(hostName)) {
@@ -88,7 +87,7 @@ public class RegistrationUriHandler extends AbstractUriHandler {
         }
         return hostName;
     }
-    
+
     protected String getIpAddress(HttpServletRequest req) {
         String ipAdddress = ServletUtils.getParameter(req, WebConstants.IP_ADDRESS);
         if (StringUtils.isBlank(ipAdddress)) {
@@ -101,5 +100,4 @@ public class RegistrationUriHandler extends AbstractUriHandler {
             String userId, String password) throws IOException {
         return registrationService.registerNode(node, remoteHost, remoteAddress, outputStream, userId, password, true);
     }
-    
 }

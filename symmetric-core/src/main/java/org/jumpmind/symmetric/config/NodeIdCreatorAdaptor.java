@@ -25,9 +25,7 @@ import org.jumpmind.symmetric.service.INodeService;
 
 @SuppressWarnings("deprecation")
 public class NodeIdCreatorAdaptor implements INodeIdCreator {
-
     private INodeService nodeService;
-    
     private INodeIdGenerator nodeIdGenerator;
 
     public NodeIdCreatorAdaptor(INodeIdGenerator generator, INodeService nodeService) {
@@ -46,5 +44,4 @@ public class NodeIdCreatorAdaptor implements INodeIdCreator {
     public String generatePassword(Node node) {
         return nodeIdGenerator.generatePassword(nodeService, node);
     }
-
 }

@@ -28,17 +28,14 @@ import java.util.Date;
  * A composite parent for {@link Channel} and {@link NodeChannelControl}
  */
 public class NodeChannel implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private Channel channel;
-    
     private NodeChannelControl nodeChannelControl;
 
     public NodeChannel() {
-        this (new Channel());
+        this(new Channel());
     }
-    
+
     public NodeChannel(Channel channel) {
         this.channel = channel;
         nodeChannelControl = new NodeChannelControl();
@@ -55,11 +52,11 @@ public class NodeChannel implements Serializable {
     public String getChannelId() {
         return channel.getChannelId();
     }
-    
+
     public void setDataEventActionShortName(String dataEventAction) {
         setDataEventAction(NodeGroupLinkAction.fromShortName(dataEventAction));
     }
-    
+
     public String getDataEventActionShortName() {
         return channel.getDataEventAction() == null ? "" : channel.getDataEventAction().getShortName();
     }
@@ -67,7 +64,7 @@ public class NodeChannel implements Serializable {
     public void setDataEventAction(NodeGroupLinkAction dataEventAction) {
         channel.setDataEventAction(dataEventAction);
     }
-    
+
     public NodeGroupLinkAction getDataEventAction() {
         return channel.getDataEventAction();
     }
@@ -176,15 +173,15 @@ public class NodeChannel implements Serializable {
         channel.setChannelId(id);
         nodeChannelControl.setChannelId(id);
     }
-    
+
     public void setLastUpdateTime(Date date) {
         channel.setLastUpdateTime(date);
     }
-    
+
     public void setCreateTime(Date date) {
         channel.setCreateTime(date);
     }
-    
+
     public void setLastUpdateBy(String lastUpdateBy) {
         channel.setLastUpdateBy(lastUpdateBy);
     }
@@ -216,51 +213,51 @@ public class NodeChannel implements Serializable {
     public boolean isContainsBigLob() {
         return this.channel.isContainsBigLob();
     }
-    
+
     public void setDataLoaderType(String type) {
         channel.setDataLoaderType(type);
     }
-    
+
     public String getDataLoaderType() {
         return channel.getDataLoaderType();
     }
-    
+
     public void setReloadFlag(boolean value) {
         this.channel.setReloadFlag(value);
     }
-    
+
     public boolean isReloadFlag() {
         return this.channel.isReloadFlag();
     }
-    
+
     public void setFileSyncFlag(boolean value) {
         this.channel.setFileSyncFlag(value);
     }
-    
+
     public boolean isFileSyncFlag() {
         return this.channel.isFileSyncFlag();
     }
-    
+
     public Date getCreateTime() {
         return this.channel.getCreateTime();
     }
-    
+
     public String getLastUpdateBy() {
         return this.channel.getLastUpdateBy();
     }
-    
+
     public Date getLastUpdateTime() {
         return this.channel.getLastUpdateTime();
     }
-    
+
     public void setQueue(String queue) {
         this.channel.setQueue(queue);
     }
-    
+
     public String getQueue() {
         return this.channel.getQueue();
     }
-    
+
     public BigDecimal getMaxKBytesPerSecond() {
         return this.channel.getMaxKBytesPerSecond();
     }
@@ -268,10 +265,9 @@ public class NodeChannel implements Serializable {
     public void setMaxKBytesPerSecond(BigDecimal maxKBytesPerSecond) {
         this.channel.setMaxKBytesPerSecond(maxKBytesPerSecond);
     }
-    
+
     @Override
     public String toString() {
-        return "Channel: '" + getChannelId() + "' Node: '" + getNodeId() + "' " +  super.toString();
+        return "Channel: '" + getChannelId() + "' Node: '" + getNodeId() + "' " + super.toString();
     }
-
 }

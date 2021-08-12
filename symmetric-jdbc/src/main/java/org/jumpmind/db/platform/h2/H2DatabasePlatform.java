@@ -55,10 +55,8 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for the H2 database.
  */
 public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements IDatabasePlatform {
-
     /* The standard H2 driver. */
     public static final String JDBC_DRIVER = "org.h2.Driver";
-
     /* The sub protocol used by the H2 driver. */
     public static final String JDBC_SUBPROTOCOL = "h2";
 
@@ -68,17 +66,17 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
     public H2DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
     }
-    
+
     @Override
     protected H2DdlBuilder createDdlBuilder() {
-        return  new H2DdlBuilder();
+        return new H2DdlBuilder();
     }
 
     @Override
     protected H2DdlReader createDdlReader() {
         return new H2DdlReader(this);
-    }        
-    
+    }
+
     @Override
     protected H2JdbcSqlTemplate createSqlTemplate() {
         return new H2JdbcSqlTemplate(dataSource, settings, null, getDatabaseInfo());
@@ -87,14 +85,14 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
     public String getName() {
         return DatabaseNamesConstants.H2;
     }
-    
+
     public String getDefaultSchema() {
         if (StringUtils.isBlank(defaultSchema)) {
             defaultSchema = (String) getSqlTemplate().queryForObject("select SCHEMA()", String.class);
         }
         return defaultSchema;
     }
-    
+
     public String getDefaultCatalog() {
         if (StringUtils.isBlank(defaultCatalog)) {
             defaultCatalog = (String) getSqlTemplate().queryForObject("select DATABASE()", String.class);
@@ -103,36 +101,32 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
     }
 
     @Override
-       public PermissionResult getCreateSymTriggerPermission() {
-           String delimiter = getDatabaseInfo().getDelimiterToken();
+    public PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-           String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
-                   + "FOR EACH ROW CALL " + delimiter + "org.jumpmind.db.platform.h2.H2TestTrigger" + delimiter;
-       
-           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-           
-           try {
-               getSqlTemplate().update(triggerSql);
-               result.setStatus(Status.PASS);
-           } catch (SqlException e) {
-               result.setException(e);
-               result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-           }
-           
-           return result;
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + "FOR EACH ROW CALL " + delimiter + "org.jumpmind.db.platform.h2.H2TestTrigger" + delimiter;
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+        return result;
     }
-    
+
     @Override
     public boolean supportsMultiThreadedTransactions() {
         return false;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {
@@ -140,5 +134,4 @@ public class H2DatabasePlatform extends AbstractJdbcDatabasePlatform implements 
         }
         return sql + " limit " + limit + " offset " + offset + ";";
     }
-    
 }

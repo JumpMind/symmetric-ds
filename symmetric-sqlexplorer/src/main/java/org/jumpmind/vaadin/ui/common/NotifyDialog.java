@@ -36,9 +36,7 @@ import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.UI;
 
 public class NotifyDialog extends ResizableWindow {
-
     private static final long serialVersionUID = 1L;
-
     boolean detailsMode = false;
 
     public NotifyDialog(String text, Throwable ex) {
@@ -49,32 +47,26 @@ public class NotifyDialog extends ResizableWindow {
         super(caption);
         setWidth(400, Unit.PIXELS);
         setHeight(300, Unit.PIXELS);
-
         final HorizontalLayout messageArea = new HorizontalLayout();
         messageArea.addStyleName("v-scrollable");
         messageArea.setMargin(true);
         messageArea.setSpacing(true);
         messageArea.setSizeFull();
-        
-        text = isNotBlank(text) ? text : (ex != null ? ex.getMessage()
-                : "");
+        text = isNotBlank(text) ? text
+                : (ex != null ? ex.getMessage()
+                        : "");
         if (type == Type.ERROR_MESSAGE) {
             setIcon(VaadinIcons.BAN);
         }
-        
         final String message = text;
-        
         final Label textLabel = new Label(message, ContentMode.HTML);
         messageArea.addComponent(textLabel);
         messageArea.setExpandRatio(textLabel, 1);
-        
         content.addComponent(messageArea);
         content.setExpandRatio(messageArea, 1);
-
         final Button detailsButton = new Button("Details");
         detailsButton.setVisible(ex != null);
         detailsButton.addClickListener(new ClickListener() {
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -88,24 +80,21 @@ public class NotifyDialog extends ResizableWindow {
                     messageArea.setMargin(new MarginInfo(false, false, false, true));
                     setHeight(600, Unit.PIXELS);
                     setWidth(1000, Unit.PIXELS);
-                    setPosition(getPositionX()-300, getPositionY()-150);
+                    setPosition(getPositionX() - 300, getPositionY() - 150);
                 } else {
                     textLabel.setValue(message);
                     detailsButton.setCaption("Details");
                     messageArea.setMargin(true);
                     setWidth(400, Unit.PIXELS);
                     setHeight(300, Unit.PIXELS);
-                    setPosition(getPositionX()+300, getPositionY()+150);
+                    setPosition(getPositionX() + 300, getPositionY() + 150);
                 }
             }
         });
-
         content.addComponent(buildButtonFooter(detailsButton, buildCloseButton()));
-
     }
 
     public static void show(String caption, String text, Throwable throwable, Type type) {
         UI.getCurrent().addWindow(new NotifyDialog(caption, text, throwable, type));
     }
-
 }

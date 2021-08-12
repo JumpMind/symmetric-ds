@@ -30,9 +30,7 @@ import org.junit.Ignore;
 
 @Ignore
 public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements IDatabaseWriterFilter, IBuiltInExtensionPoint {
-
     private int numberOfTimesCalled = 0;
-
     private static int numberOfTimesCreated;
 
     public TestDataWriterFilter() {
@@ -53,5 +51,4 @@ public class TestDataWriterFilter extends DatabaseWriterFilterAdapter implements
     public int getNumberOfTimesCalled() {
         return numberOfTimesCalled;
     }
-
 }

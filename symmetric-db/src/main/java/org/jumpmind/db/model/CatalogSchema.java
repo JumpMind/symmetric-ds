@@ -21,16 +21,14 @@
 package org.jumpmind.db.model;
 
 public class CatalogSchema {
-
     private String catalog;
-
     private String schema;
 
     public CatalogSchema(String catalog, String schema) {
         this.catalog = catalog;
         this.schema = schema;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 31;

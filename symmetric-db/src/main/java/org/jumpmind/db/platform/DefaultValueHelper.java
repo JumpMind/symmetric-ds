@@ -48,14 +48,11 @@ import org.jumpmind.db.model.TypeMap;
 import org.jumpmind.util.FormatUtils;
 
 /**
- * Helper class for dealing with default values, e.g. converting them to other
- * types.
+ * Helper class for dealing with default values, e.g. converting them to other types.
  */
 public class DefaultValueHelper {
-
     /**
-     * Converts the given default value from the specified original to the
-     * target jdbc type.
+     * Converts the given default value from the specified original to the target jdbc type.
      * 
      * @param defaultValue
      *            The default value
@@ -67,7 +64,6 @@ public class DefaultValueHelper {
      */
     public String convert(String defaultValue, int originalTypeCode, int targetTypeCode) {
         String result = defaultValue;
-
         if (defaultValue != null) {
             switch (originalTypeCode) {
                 case Types.BIT:
@@ -77,7 +73,6 @@ public class DefaultValueHelper {
                     if (targetTypeCode == Types.TIMESTAMP) {
                         try {
                             Date date = Date.valueOf(result);
-
                             return new Timestamp(date.getTime()).toString();
                         } catch (IllegalArgumentException ex) {
                         }
@@ -87,7 +82,6 @@ public class DefaultValueHelper {
                     if (targetTypeCode == Types.TIMESTAMP) {
                         try {
                             Time time = Time.valueOf(result);
-
                             return new Timestamp(time.getTime()).toString();
                         } catch (IllegalArgumentException ex) {
                         }
@@ -116,7 +110,6 @@ public class DefaultValueHelper {
     private Object convertBoolean(String defaultValue, int targetTypeCode) {
         boolean value = FormatUtils.toBoolean(defaultValue);
         Object result = null;
-
         if ((targetTypeCode == Types.BIT)
                 || (PlatformUtils.supportsJava14JdbcTypes() && (targetTypeCode == PlatformUtils
                         .determineBooleanTypeCode()))) {

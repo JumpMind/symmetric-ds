@@ -26,106 +26,86 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jumpmind.symmetric.Version;
 
-@XmlRootElement(name="nodestatus")
+@XmlRootElement(name = "nodestatus")
 public class NodeStatus {
-    
-    boolean started;        
-
+    boolean started;
     /**
      * Is the node is registered with another node.
      */
     boolean registered;
-
     /**
      * Is the node a registration server.
      */
     boolean registrationServer;
-
     /**
      * Is the node initially loaded.
      */
     boolean initialLoaded;
-
     /**
      * Is the node reverse initial loaded.
      */
     boolean reverseInitialLoaded;
-
     /**
      * The node's ID.
      */
     private String nodeId;
-
     /**
      * The node's group ID.
      */
     private String nodeGroupId;
-
     /**
      * The node's external ID.
      */
     private String externalId;
-
     /**
      * The URL other nodes use to communicate with this node.
      */
     private String syncUrl;
-
     /**
      * The registrationUrl for this node (who this node is pointing to for registration)
      */
-    private String registrationUrl;    
-    
+    private String registrationUrl;
     /**
      * The type of database the node connects to. (e.g., 'PostgreSQL')
      */
     private String databaseType;
-
     /**
      * The version of the database the node connects to. (e.g., '9.2')
      */
     private String databaseVersion;
-
     /**
      * Is the node enabled for synchronization.
      */
     private boolean syncEnabled = true;
-
     /**
      * The node ID where this node was created.
      */
     private String createdAtNodeId;
-
     /**
      * The number of batches waiting to be sent.
      */
     private int batchToSendCount;
-
     /**
      * The number of batches in the error state.
      */
     private int batchInErrorCount;
-
     /**
      * The node's SymmetricDS installation type. (e.g., 'professional')
      */
     private String deploymentType;
-    
     /**
      * The version of SymmetricDS installed on the node. (e.g., '3.2.0-SNAPSHOT')
      */
     private String symmetricVersion = Version.version();
-
     /**
      * The last heartbeat for the given node.
      */
     private Date lastHeartbeat;
-    
     /**
      * The hearbeat interval for the given node.
      */
     private int heartbeatInterval;
-    
+
     public boolean isStarted() {
         return started;
     }
@@ -141,7 +121,7 @@ public class NodeStatus {
     public void setLastHeartbeat(Date lastHeartbeat) {
         this.lastHeartbeat = lastHeartbeat;
     }
-    
+
     public int getHeartbeatInterval() {
         return heartbeatInterval;
     }
@@ -162,13 +142,14 @@ public class NodeStatus {
     }
 
     /**
-     * @param registered boolean indicating if the node is registered with another node.
+     * @param registered
+     *            boolean indicating if the node is registered with another node.
      */
     public void setRegistered(boolean registered) {
         this.registered = registered;
     }
 
-    /** 
+    /**
      * @return boolean indicating if the node is a registration server.
      */
     public boolean getRegistrationServer() {
@@ -176,7 +157,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param registrationServer boolean indicating if the node is a registration server.
+     * @param registrationServer
+     *            boolean indicating if the node is a registration server.
      */
     public void setRegistrationServer(boolean registrationServer) {
         this.registrationServer = registrationServer;
@@ -190,7 +172,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param isInitialLoaded boolean indicating if the node is initial loaded.
+     * @param isInitialLoaded
+     *            boolean indicating if the node is initial loaded.
      */
     public void setIsInitialLoaded(boolean isInitialLoaded) {
         this.initialLoaded = isInitialLoaded;
@@ -204,7 +187,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param nodeId The node's ID.
+     * @param nodeId
+     *            The node's ID.
      */
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
@@ -218,7 +202,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param nodeGroupId The node's group id.
+     * @param nodeGroupId
+     *            The node's group id.
      */
     public void setNodeGroupId(String nodeGroupId) {
         this.nodeGroupId = nodeGroupId;
@@ -232,7 +217,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param externalId The node's external id.
+     * @param externalId
+     *            The node's external id.
      */
     public void setExternalId(String externalId) {
         this.externalId = externalId;
@@ -246,7 +232,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param syncUrl The sync URL other nodes would use to communicate with this node.
+     * @param syncUrl
+     *            The sync URL other nodes would use to communicate with this node.
      */
     public void setSyncUrl(String syncUrl) {
         this.syncUrl = syncUrl;
@@ -260,7 +247,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param databaseType The database type the node connects to.
+     * @param databaseType
+     *            The database type the node connects to.
      */
     public void setDatabaseType(String databaseType) {
         this.databaseType = databaseType;
@@ -274,7 +262,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param symmetricVersion The version of SymmetricDS running on the node.
+     * @param symmetricVersion
+     *            The version of SymmetricDS running on the node.
      */
     public void setSymmetricVersion(String symmetricVersion) {
         this.symmetricVersion = symmetricVersion;
@@ -288,7 +277,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param databaseVersion The version of the database the node is connected to.
+     * @param databaseVersion
+     *            The version of the database the node is connected to.
      */
     public void setDatabaseVersion(String databaseVersion) {
         this.databaseVersion = databaseVersion;
@@ -302,7 +292,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param syncEnabled boolean indicating if synchronization is enabled on the node.
+     * @param syncEnabled
+     *            boolean indicating if synchronization is enabled on the node.
      */
     public void setSyncEnabled(boolean syncEnabled) {
         this.syncEnabled = syncEnabled;
@@ -316,7 +307,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param createdAtNodeId Node ID of the node that created this node.
+     * @param createdAtNodeId
+     *            Node ID of the node that created this node.
      */
     public void setCreatedAtNodeId(String createdAtNodeId) {
         this.createdAtNodeId = createdAtNodeId;
@@ -330,7 +322,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param batchToSendCount Number of batches waiting to be sent.
+     * @param batchToSendCount
+     *            Number of batches waiting to be sent.
      */
     public void setBatchToSendCount(int batchToSendCount) {
         this.batchToSendCount = batchToSendCount;
@@ -344,7 +337,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param batchInErrorCount Number of batches in the error state.
+     * @param batchInErrorCount
+     *            Number of batches in the error state.
      */
     public void setBatchInErrorCount(int batchInErrorCount) {
         this.batchInErrorCount = batchInErrorCount;
@@ -358,7 +352,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param deploymentType The node's SymmetricDS installation type. (e.g., 'professional')
+     * @param deploymentType
+     *            The node's SymmetricDS installation type. (e.g., 'professional')
      */
     public void setDeploymentType(String deploymentType) {
         this.deploymentType = deploymentType;
@@ -372,7 +367,8 @@ public class NodeStatus {
     }
 
     /**
-     * @param reverseInitialLoaded boolean indicating reverse initial load has completed.
+     * @param reverseInitialLoaded
+     *            boolean indicating reverse initial load has completed.
      */
     public void setReverseInitialLoaded(boolean reverseInitialLoaded) {
         this.reverseInitialLoaded = reverseInitialLoaded;
@@ -386,10 +382,10 @@ public class NodeStatus {
     }
 
     /**
-     * @param registrationUrl The node's registration URL
+     * @param registrationUrl
+     *            The node's registration URL
      */
     public void setRegistrationUrl(String registrationUrl) {
         this.registrationUrl = registrationUrl;
     }
-
 }

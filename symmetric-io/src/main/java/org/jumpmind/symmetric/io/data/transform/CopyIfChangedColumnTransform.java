@@ -28,9 +28,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class CopyIfChangedColumnTransform extends CopyColumnTransform {
-
     public final static String NAME = "copyIfChanged";
-
     public final static String EXPRESSION_IGNORE_COLUMN = "IgnoreColumn";
 
     public String getName() {
@@ -40,7 +38,6 @@ public class CopyIfChangedColumnTransform extends CopyColumnTransform {
     public NewAndOldValue transform(IDatabasePlatform platform, DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-
         if (DataEventType.DELETE != context.getData().getDataEventType()
                 && (StringUtils.trimToEmpty(newValue).equals(StringUtils.trimToEmpty(oldValue)))) {
             if (EXPRESSION_IGNORE_COLUMN.equalsIgnoreCase(column.getTransformExpression())) {
@@ -52,5 +49,4 @@ public class CopyIfChangedColumnTransform extends CopyColumnTransform {
             return new NewAndOldValue(newValue, oldValue);
         }
     }
-
 }

@@ -39,12 +39,9 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 public class LogSummaryAppender extends AbstractAppender {
-
     protected Map<String, Map<String, LogSummary>> errorsByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
-
     protected Map<String, Map<String, LogSummary>> warningByEngineByMessage = new ConcurrentHashMap<String, Map<String, LogSummary>>();
-    
-    protected Log4j2Helper helper = new Log4j2Helper(); 
+    protected Log4j2Helper helper = new Log4j2Helper();
 
     public LogSummaryAppender(String name, Filter filter) {
         super(name, filter, null, false, null);
@@ -58,7 +55,6 @@ public class LogSummaryAppender extends AbstractAppender {
         } else if (event.getLevel() == Level.WARN) {
             summaries = warningByEngineByMessage;
         }
-
         if (summaries != null) {
             String engineName = (String) event.getContextData().getValue("engineName");
             if (isNotBlank(engineName)) {
@@ -67,7 +63,6 @@ public class LogSummaryAppender extends AbstractAppender {
                     byMessage = new ConcurrentHashMap<String, LogSummary>();
                     summaries.put(engineName, byMessage);
                 }
-
                 String message = null;
                 if (event.getMessage() != null && !event.getMessage().toString().equals("") &&
                         !event.getMessage().toString().equals("null")) {
@@ -109,7 +104,6 @@ public class LogSummaryAppender extends AbstractAppender {
         } else if (level == Level.WARN) {
             summaries = warningByEngineByMessage;
         }
-
         List<LogSummary> list = new ArrayList<LogSummary>();
         if (summaries != null && summaries.get(engineName) != null) {
             list.addAll(summaries.get(engineName).values());
@@ -122,17 +116,17 @@ public class LogSummaryAppender extends AbstractAppender {
         }
         return list;
     }
-    
+
     public void clearAll(String engineName) {
         errorsByEngineByMessage.remove(engineName);
         warningByEngineByMessage.remove(engineName);
     }
-    
+
     public void purgeOlderThan(long time) {
         purgeOlderThan(time, errorsByEngineByMessage);
         purgeOlderThan(time, warningByEngineByMessage);
     }
-    
+
     protected void purgeOlderThan(long time,
             Map<String, Map<String, LogSummary>> logSummaryByEngineByMessage) {
         Collection<Map<String, LogSummary>> all = logSummaryByEngineByMessage.values();
@@ -148,5 +142,4 @@ public class LogSummaryAppender extends AbstractAppender {
             }
         }
     }
-
 }

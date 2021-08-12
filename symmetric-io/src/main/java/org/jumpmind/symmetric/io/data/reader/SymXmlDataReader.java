@@ -42,7 +42,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 public class SymXmlDataReader extends AbstractDataReader implements IDataReader {
-
     protected Reader reader;
     protected DataContext context;
     protected Batch batch;
@@ -88,10 +87,8 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                             columnName = null;
                         }
                         break;
-
                     case XmlPullParser.START_TAG:
                         String name = parser.getName();
-
                         if ("row".equalsIgnoreCase(name)) {
                             table = new Table();
                             data = new CsvData();
@@ -133,7 +130,6 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                                     nullValue = true;
                                 }
                             }
-                            
                             if (nullValue) {
                                 rowData.put(columnName, null);
                                 columnName = null;
@@ -152,7 +148,6 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                             return batch;
                         }
                         break;
-
                     case XmlPullParser.END_TAG:
                         name = parser.getName();
                         if ("row".equalsIgnoreCase(name)) {
@@ -173,12 +168,10 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                         } else if ("data".equalsIgnoreCase(name)) {
                             columnName = null;
                         }
-
                         break;
                 }
                 eventType = parser.next();
             }
-
             return null;
         } catch (IOException ex) {
             throw new IoException(ex);
@@ -216,7 +209,6 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
                 this.table = null;
             }
         }
-
         if (this.table == null) {
             batch.setComplete(true);
         }
@@ -241,10 +233,11 @@ public class SymXmlDataReader extends AbstractDataReader implements IDataReader 
 
     public void close() {
         try {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
     }
 
     public Map<Batch, Statistics> getStatistics() {

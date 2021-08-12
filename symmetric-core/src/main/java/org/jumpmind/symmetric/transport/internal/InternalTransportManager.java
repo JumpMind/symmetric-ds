@@ -54,9 +54,7 @@ import org.slf4j.LoggerFactory;
  * Coordinates interaction between two symmetric engines in the same JVM.
  */
 public class InternalTransportManager extends AbstractTransportManager implements ITransportManager {
-
     private static final Logger log = LoggerFactory.getLogger(InternalTransportManager.class);
-
     protected ISymmetricEngine symmetricEngine;
 
     public InternalTransportManager(ISymmetricEngine engine) {
@@ -69,7 +67,6 @@ public class InternalTransportManager extends AbstractTransportManager implement
             throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
-
         runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
@@ -94,10 +91,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
-
         final ChannelMap suspendIgnoreChannels = symmetricEngine.getConfigurationService()
                 .getSuspendIgnoreChannelLists(remote.getNodeId());
-
         runAtClient(remote.getSyncUrl(), null, respOs, new IClientRunnable() {
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
@@ -120,23 +115,21 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     public IIncomingTransport getPingTransport(Node remote, Node local, String registrationUrl) throws IOException {
-       return null;
+        return null;
     }
 
     public IOutgoingWithResponseTransport getPushTransport(final Node targetNode, final Node sourceNode,
             String securityToken, String registrationUrl) throws IOException {
         return getPushTransport(targetNode, sourceNode, securityToken, null, registrationUrl);
     }
-    
+
     @Override
     public IOutgoingWithResponseTransport getPushTransport(final Node remote, final Node local, String securityToken,
             Map<String, String> requestProperties, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
-
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
-
         runAtClient(remote.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
@@ -151,10 +144,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
             String securityToken, String registrationUrl) throws IOException {
         final PipedOutputStream pushOs = new PipedOutputStream();
         final PipedInputStream pushIs = new PipedInputStream(pushOs);
-
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
-
         runAtClient(targetNode.getSyncUrl(), pushIs, respOs, new IClientRunnable() {
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os) {
                 // This should be basically what the push servlet does ...
@@ -162,7 +153,7 @@ public class InternalTransportManager extends AbstractTransportManager implement
             }
         });
         return new InternalOutgoingWithResponseTransport(pushOs, respIs);
-    }    
+    }
 
     public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl) throws IOException {
         return getRegisterTransport(client, registrationUrl, null);
@@ -170,10 +161,8 @@ public class InternalTransportManager extends AbstractTransportManager implement
 
     public IIncomingTransport getRegisterTransport(final Node client, String registrationUrl, Map<String, String> requestProperties)
             throws IOException {
-
         final PipedOutputStream respOs = new PipedOutputStream();
         final PipedInputStream respIs = new PipedInputStream(respOs);
-
         runAtClient(registrationUrl, null, respOs, new IClientRunnable() {
             public void run(ISymmetricEngine engine, InputStream is, OutputStream os)
                     throws Exception {
@@ -184,12 +173,12 @@ public class InternalTransportManager extends AbstractTransportManager implement
         });
         return new InternalIncomingTransport(respIs);
     }
-    
+
     @Override
     public int sendCopyRequest(Node local) throws IOException {
         return -1;
     }
-    
+
     @Override
     public int sendStatusRequest(Node local, Map<String, String> statuses) throws IOException {
         return -1;
@@ -199,9 +188,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
             String securityToken, String registrationUrl) throws IOException {
         return sendAcknowledgement(remote, list, local, securityToken, null, registrationUrl);
     }
-    
+
     public int sendAcknowledgement(Node remote, List<IncomingBatch> list, Node local,
-            String securityToken, Map<String,String> requestProperties, String registrationUrl) throws IOException {
+            String securityToken, Map<String, String> requestProperties, String registrationUrl) throws IOException {
         try {
             if (list != null && list.size() > 0) {
                 ISymmetricEngine remoteEngine = getTargetEngine(remote.getSyncUrl());
@@ -237,15 +226,17 @@ public class InternalTransportManager extends AbstractTransportManager implement
                     log.error("", e);
                 } finally {
                     try {
-                        if(is != null) {
+                        if (is != null) {
                             is.close();
                         }
-                    } catch(IOException e) { }
+                    } catch (IOException e) {
+                    }
                     try {
-                        if(os != null) {
+                        if (os != null) {
                             os.close();
                         }
-                    } catch(IOException e) { }
+                    } catch (IOException e) {
+                    }
                 }
             }
         }.start();
@@ -272,9 +263,9 @@ public class InternalTransportManager extends AbstractTransportManager implement
     }
 
     @Override
-    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties, String registrationUrl)
+    public IOutgoingWithResponseTransport getBandwidthPushTransport(Node remote, Node local, String securityToken, Map<String, String> requestProperties,
+            String registrationUrl)
             throws IOException {
         return null;
     }
-
 }

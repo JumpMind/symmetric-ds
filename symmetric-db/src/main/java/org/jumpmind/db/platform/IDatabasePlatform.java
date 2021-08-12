@@ -59,7 +59,6 @@ import org.jumpmind.db.util.BinaryEncoding;
  * alter database tables.
  */
 public interface IDatabasePlatform {
-
     /**
      * @see DatabaseNamesConstants
      * @return a constant that represents this database type from {@link DatabaseNamesConstants}
@@ -79,8 +78,7 @@ public interface IDatabasePlatform {
     public IDdlBuilder getDdlBuilder();
 
     /**
-     * Returns the ddl reader (which reads a database model from a live
-     * database) for this platform.
+     * Returns the ddl reader (which reads a database model from a live database) for this platform.
      *
      * @return The model reader
      */
@@ -92,6 +90,7 @@ public interface IDatabasePlatform {
 
     /**
      * The amount of time table metadata will be cached when using {@link IDatabasePlatform#getT
+     * 
      * @param clearCacheModelTimeoutInMs
      */
     public void setClearCacheModelTimeoutInMs(long clearCacheModelTimeoutInMs);
@@ -103,15 +102,14 @@ public interface IDatabasePlatform {
     public String getDefaultCatalog();
 
     /**
-     * Reads the database model from the live database to which the given
-     * connection is pointing.
+     * Reads the database model from the live database to which the given connection is pointing.
      */
     public Database readDatabase(String catalog, String schema, String[] tableTypes);
 
     public Database readFromDatabase(Table... tables);
-    
+
     public Table readTableFromDatabase(String catalogName, String schemaName, String tablename);
-    
+
     public void resetCachedTableModel();
 
     public Table getTableFromCache(String tableName, boolean forceReread);
@@ -134,17 +132,17 @@ public interface IDatabasePlatform {
     public void alterTables(boolean continueOnError, IAlterDatabaseInterceptor[] interceptors, Table... desiredTables);
 
     public void dropDatabase(Database database, boolean continueOnError);
-    
-    public void dropTables(boolean continueOnError, Table...tables);
+
+    public void dropTables(boolean continueOnError, Table... tables);
 
     public DmlStatement createDmlStatement(DmlType dmlType, Table table, String textColumnExpression);
 
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
             String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression);
-    
+
     public DmlStatement createDmlStatement(DmlType dmlType, String catalogName, String schemaName,
-            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression, 
-            boolean namedParameters);    
+            String tableName, Column[] keys, Column[] columns, boolean[] nullKeyValues, String textColumnExpression,
+            boolean namedParameters);
 
     public Object[] getObjectValues(BinaryEncoding encoding, String[] values,
             Column[] orderedMetaData);
@@ -159,15 +157,15 @@ public interface IDatabasePlatform {
             Column[] orderedMetaData, boolean useVariableDates, boolean fitToColumn);
 
     public String[] getStringValues(BinaryEncoding encoding, Column[] metaData, Row row, boolean useVariableDates, boolean indexByPosition);
-    
+
     public String getCsvStringValue(BinaryEncoding encoding, Column[] metaData, Row row, boolean[] needEscaped);
 
     public Database readDatabaseFromXml(String filePath, boolean alterCaseToMatchDatabaseDefaultCase);
 
     public Database readDatabaseFromXml(InputStream in, boolean alterCaseToMatchDatabaseDefaultCase);
 
-    public String[] alterCaseToMatchDatabaseDefaultCase(String[] values); 
-    
+    public String[] alterCaseToMatchDatabaseDefaultCase(String[] values);
+
     public String alterCaseToMatchDatabaseDefaultCase(String values);
 
     public void alterCaseToMatchDatabaseDefaultCase(Table table);
@@ -175,7 +173,7 @@ public interface IDatabasePlatform {
     public void alterCaseToMatchDatabaseDefaultCase(Table... tables);
 
     public void alterCaseToMatchDatabaseDefaultCase(Database database);
-    
+
     public void prefixDatabase(String prefix, Database targetTables);
 
     public boolean isLob(int type);
@@ -203,37 +201,36 @@ public interface IDatabasePlatform {
     public boolean isMetadataIgnoreCase();
 
     public java.util.Date parseDate(int type, String value, boolean useVariableDates);
-    
+
     public Map<String, String> parseQualifiedTableName(String tableName);
 
     public Table makeAllColumnsPrimaryKeys(Table table);
-    
+
     public boolean canColumnBeUsedInWhereClause(Column column);
-    
+
     public void makePlatformSpecific(Database database);
-    
-    public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes); 
-    
+
+    public List<PermissionResult> checkSymTablePermissions(PermissionType... permissionTypes);
+
     public boolean isUseMultiThreadSyncTriggers();
-    
+
     public boolean supportsTransactions();
-    
+
     public boolean supportsMultiThreadedTransactions();
-    
+
     public long getEstimatedRowCount(Table table);
 
     public String getTruncateSql(Table table);
 
     public String getDeleteSql(Table table);
-    
+
     public List<Transaction> getTransactions();
-    
+
     public boolean supportsLimitOffset();
-    
+
     public String massageForLimitOffset(String sql, int limit, int offset);
 
     public boolean supportsSliceTables();
-    
-    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices);
 
+    public String getSliceTableSql(String columnName, int sliceNum, int totalSlices);
 }

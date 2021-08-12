@@ -24,48 +24,32 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class NodeCommunication implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public enum CommunicationType {
         PULL, PUSH, FILE_PUSH, FILE_PULL, OFFLN_PULL, OFFLN_PUSH, EXTRACT, FILE_XTRCT, OFF_FSPULL, OFF_FSPUSH;
-        
+
         public static boolean isPullType(CommunicationType communicationType) {
-            return communicationType == PULL || communicationType == CommunicationType.FILE_PULL 
+            return communicationType == PULL || communicationType == CommunicationType.FILE_PULL
                     || communicationType == OFFLN_PULL || communicationType == CommunicationType.OFF_FSPULL;
         }
     };
-    
+
     private transient Node node;
-
     private String nodeId;
-
     private String queue = "default";
-    
     private CommunicationType communicationType;
-
     private Date lockTime;
-
     private Date lastLockTime = new Date();
-
     private long lastLockMillis;
-
     private String lockingServerId;
-
     private long successCount;
-
     private long failCount;
-
     private long totalSuccessCount;
-
     private long totalFailCount;
-
     private long totalSuccessMillis;
-
     private long totalFailMillis;
-    
     private long batchToSendCount;
-    
     private int nodePriority;
 
     public String getNodeId() {
@@ -75,7 +59,7 @@ public class NodeCommunication implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-    
+
     public String getQueue() {
         return queue;
     }
@@ -171,7 +155,7 @@ public class NodeCommunication implements Serializable {
     public Date getLastLockTime() {
         return lastLockTime;
     }
-    
+
     public long getBatchToSendCount() {
         return batchToSendCount;
     }
@@ -186,36 +170,36 @@ public class NodeCommunication implements Serializable {
 
     public void setNodePriority(int nodePriority) {
         this.nodePriority = nodePriority;
-    }    
-    
+    }
+
     public void setNode(Node node) {
         this.node = node;
     }
-    
+
     public Node getNode() {
         return node;
     }
-    
+
     public boolean isLocked() {
         return lockTime != null;
     }
-    
+
     public long getAverageSuccessPeriod() {
         if (totalSuccessCount > 0 && totalSuccessMillis > 0) {
-            return totalSuccessMillis/totalSuccessCount;
+            return totalSuccessMillis / totalSuccessCount;
         } else {
             return 0l;
         }
     }
-    
+
     public long getAverageFailurePeriod() {
         if (totalFailCount > 0 && totalFailMillis > 0) {
-            return totalFailMillis/totalFailCount;
+            return totalFailMillis / totalFailCount;
         } else {
             return 0l;
         }
-    }   
-    
+    }
+
     public String getIdentifier() {
         return getNodeId() + "-" + getQueue();
     }
@@ -224,5 +208,4 @@ public class NodeCommunication implements Serializable {
     public String toString() {
         return "NodeCommunication [nodeId=" + nodeId + ", queue=" + queue + ", communicationType=" + communicationType + "]";
     }
-
 }

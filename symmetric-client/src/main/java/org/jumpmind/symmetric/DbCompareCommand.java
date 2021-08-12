@@ -41,7 +41,6 @@ import org.jumpmind.symmetric.io.DbCompareReport.TableReport;
 import org.jumpmind.symmetric.util.SymmetricUtils;
 
 public class DbCompareCommand extends AbstractCommandLauncher {
-
     private Properties configProperties;
 
     public DbCompareCommand() {
@@ -60,93 +59,78 @@ public class DbCompareCommand extends AbstractCommandLauncher {
 
     @Override
     protected boolean executeWithOptions(CommandLine line) throws Exception {
-        
         DbCompareConfig config = new DbCompareConfig();
-
         String source = line.getOptionValue('s');
         if (source == null) {
             source = getOptionValue(OPTION_SOURCE, "source", line, config);
         }
         if (StringUtils.isEmpty(source)) {
-            throw new ParseException("-source properties file is required.");   
+            throw new ParseException("-source properties file is required.");
         }
-
         File sourceProperies = new File(source);
         if (!sourceProperies.exists()) {
-            throw new SymmetricException("Source properties file '" + sourceProperies + "' does not exist."); 
+            throw new SymmetricException("Source properties file '" + sourceProperies + "' does not exist.");
         }
-
         String target = line.getOptionValue('t');
         if (target == null) {
             target = getOptionValue(OPTION_TARGET, "target", line, config);
         }
         if (StringUtils.isEmpty(target)) {
-            throw new ParseException("-target properties file is required.");   
-        }        
-
+            throw new ParseException("-target properties file is required.");
+        }
         File targetProperties = new File(target);
         if (!targetProperties.exists()) {
-            throw new SymmetricException("Target properties file '" + targetProperties + "' does not exist."); 
+            throw new SymmetricException("Target properties file '" + targetProperties + "' does not exist.");
         }
-
         config.setOutputSql(getOptionValue(OPTION_OUTPUT_SQL, "outputSql", line, config));
         config.setUseSymmetricConfig(Boolean.valueOf(getOptionValue(OPTION_USE_SYM_CONFIG, "useSymmetricConfig", line, config)));
         String excludedTableNames = getOptionValue(OPTION_EXCLUDE, "excludedTableNames", line, config);
-        if (excludedTableNames != null) {            
+        if (excludedTableNames != null) {
             config.setExcludedTableNames(Arrays.asList(excludedTableNames.split(",")));
         }
         String targetTables = getOptionValue(OPTION_TARGET_TABLES, "targetTableNames", line, config);
-        if (targetTables != null) {            
+        if (targetTables != null) {
             config.setTargetTableNames(Arrays.asList(targetTables.split(",")));
         }
-
         config.setWhereClauses(parseWhereClauses(line));
         config.setTablesToExcludedColumns(parseExcludedColumns(line));
-
         String sourceTables = getOptionValue(OPTION_SOURCE_TABLES, "sourceTableNames", line, config);
         if (sourceTables == null && !CollectionUtils.isEmpty(line.getArgList())) {
             config.setSourceTableNames(line.getArgList());
-        } else if (sourceTables != null) {            
+        } else if (sourceTables != null) {
             config.setSourceTableNames(Arrays.asList(sourceTables.split(",")));
         }
-
         String numericScaleArg = getOptionValue(OPTION_NUMERIC_SCALE, "numericScale", line, config);
-        if (!StringUtils.isEmpty(numericScaleArg)) {            
+        if (!StringUtils.isEmpty(numericScaleArg)) {
             try {
                 config.setNumericScale(Integer.parseInt(numericScaleArg.trim()));
             } catch (NumberFormatException ex) {
                 throw new RuntimeException("Failed to parse arg [" + numericScaleArg + "] ", ex);
             }
         }
-        
         String dateTimeFormatArg = getOptionValue(OPTION_DATE_TIME_FORMAT, "dateTimeFormat", line, config);
         if (!StringUtils.isEmpty(dateTimeFormatArg)) {
             config.setDateTimeFormat(dateTimeFormatArg);
         }
-        
         String continueAfterError = getOptionValue(OPTION_CONTINUE_AFTER_ERROR, "continueAfterError", line, config);
         if (!StringUtils.isEmpty(continueAfterError)) {
             config.setContinueAfterError(Boolean.parseBoolean(continueAfterError));
         }
-
         ISymmetricEngine sourceEngine = new ClientSymmetricEngine(sourceProperies);
         ISymmetricEngine targetEngine = new ClientSymmetricEngine(targetProperties);
-
         DbCompare dbCompare = new DbCompare(sourceEngine, targetEngine, config);
         DbCompareReport report = dbCompare.compare();
-        
-        for(TableReport tableReport : report.getTableReports()) {
-            if(tableReport.getErrorRows() > 0) {
-                if(tableReport.getThrowable() instanceof RuntimeException) {
+        for (TableReport tableReport : report.getTableReports()) {
+            if (tableReport.getErrorRows() > 0) {
+                if (tableReport.getThrowable() instanceof RuntimeException) {
                     throw (RuntimeException) tableReport.getThrowable();
                 }
                 throw new RuntimeException(tableReport.getThrowable());
             }
         }
-
         return false;
     }
-    
+
     protected String getOptionValue(String optionName, String internalName, CommandLine line, DbCompareConfig config) {
         String optionValue = line.hasOption(optionName) ? line.getOptionValue(optionName) : null;
         if (optionValue == null) {
@@ -175,25 +159,15 @@ public class DbCompareCommand extends AbstractCommandLauncher {
     }
 
     private static final String OPTION_SOURCE = "source";
-
     private static final String OPTION_TARGET = "target";
-
     private static final String OPTION_EXCLUDE = "exclude";
-
     private static final String OPTION_SOURCE_TABLES = "source-tables";
-    
     private static final String OPTION_TARGET_TABLES = "target-tables";
-
     private static final String OPTION_USE_SYM_CONFIG = "use-sym-config";
-
     private static final String OPTION_OUTPUT_SQL = "output-sql";
-
     private static final String OPTION_NUMERIC_SCALE = "numeric-scale";
-    
     private static final String OPTION_DATE_TIME_FORMAT = "date-time-format";
-
     private static final String OPTION_CONFIG_PROPERTIES = "config";
-    
     private static final String OPTION_CONTINUE_AFTER_ERROR = "continue-after-error";
 
     @Override
@@ -229,7 +203,6 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                 }
             }
         }
-
         return whereClauses;
     }
 
@@ -240,7 +213,7 @@ public class DbCompareCommand extends AbstractCommandLauncher {
             for (Object key : props.keySet()) {
                 String arg = key.toString();
                 if (arg.endsWith(DbCompareConfig.EXCLUDED_COLUMN)) {
-                    List<String> excludedColumns =  tablesToExcludedColumns.get(key);
+                    List<String> excludedColumns = tablesToExcludedColumns.get(key);
                     if (excludedColumns == null) {
                         excludedColumns = new ArrayList<String>();
                         tablesToExcludedColumns.put(key.toString(), excludedColumns);
@@ -249,15 +222,13 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                 }
             }
         }
-
         return tablesToExcludedColumns;
-
     }
 
     protected Properties getConfigProperties(CommandLine line) {
         if (configProperties != null) {
             return configProperties;
-        } else {            
+        } else {
             String configPropertiesFile = line.getOptionValue(OPTION_CONFIG_PROPERTIES);
             if (!StringUtils.isEmpty(configPropertiesFile)) {
                 Properties props = new Properties();
@@ -268,12 +239,11 @@ public class DbCompareCommand extends AbstractCommandLauncher {
                     return configProperties;
                 } catch (Exception ex) {
                     String qualifiedFileName = new File(configPropertiesFile).getAbsolutePath();
-                    throw new SymmetricException("Could not load config properties file '" + configPropertiesFile + 
+                    throw new SymmetricException("Could not load config properties file '" + configPropertiesFile +
                             "' at '" + qualifiedFileName + "' ", ex);
-                }    
+                }
             }
         }
-
         return null;
     }
 
@@ -283,12 +253,9 @@ public class DbCompareCommand extends AbstractCommandLauncher {
         }
         if (str.startsWith("--")) {
             return str.substring(2, str.length());
-        }
-        else if (str.startsWith("-")) {
+        } else if (str.startsWith("-")) {
             return str.substring(1, str.length());
         }
-
         return str;
-    }    
-
+    }
 }

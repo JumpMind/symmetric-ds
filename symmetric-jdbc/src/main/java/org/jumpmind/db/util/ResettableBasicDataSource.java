@@ -27,12 +27,10 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
- * A subclass of {@link BasicDataSource} which allows for a data source to be
- * closed (all underlying connections are closed) and then allows new
- * connections to be created.
+ * A subclass of {@link BasicDataSource} which allows for a data source to be closed (all underlying connections are closed) and then allows new connections to
+ * be created.
  */
 public class ResettableBasicDataSource extends BasicDataSource {
-
     protected boolean closed;
 
     public ResettableBasicDataSource() {

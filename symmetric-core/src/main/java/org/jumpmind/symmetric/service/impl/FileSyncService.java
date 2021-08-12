@@ -104,10 +104,8 @@ import bsh.Interpreter;
 import bsh.TargetError;
 
 public class FileSyncService extends AbstractOfflineDetectorService implements IFileSyncService,
-INodeCommunicationExecutor {
-
+        INodeCommunicationExecutor {
     private ISymmetricEngine engine;
-    
     private List<FileTriggerRouter> fileTriggerRoutersCache = new ArrayList<FileTriggerRouter>();
     private long fileTriggerRoutersCacheTime;
     private Object cacheLock = new Object();
@@ -124,11 +122,10 @@ INodeCommunicationExecutor {
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxRouterLastUpdateTime"), Date.class);
         Date date3 = sqlTemplate.queryForObject(getSql("selectMaxFileTriggerRouterLastUpdateTime"), Date.class);
         Date date = maxDate(date1, date2, date3);
-        
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
-                   log.info("Newer trigger router settings were detected");
+                    log.info("Newer trigger router settings were detected");
                 }
                 lastUpdateTime = date;
                 clearCache();
@@ -154,7 +151,6 @@ INodeCommunicationExecutor {
                         ProcessInfo processInfo = engine.getStatisticManager().newProcessInfo(
                                 new ProcessInfoKey(local.getNodeId(), null, ProcessType.FILE_SYNC_TRACKER));
                         boolean useCrc = engine.getParameterService().is(ParameterConstants.FILE_SYNC_USE_CRC);
-
                         if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_FAST_SCAN)) {
                             trackChangesFastScan(processInfo, useCrc);
                         } else {
@@ -179,7 +175,7 @@ INodeCommunicationExecutor {
             }
         } else {
             log.debug("Did not run the track file sync changes process because it was cluster locked");
-        }        
+        }
     }
 
     protected void trackChanges(ProcessInfo processInfo, boolean useCrc) {
@@ -189,17 +185,16 @@ INodeCommunicationExecutor {
             ctxDate = null;
         }
         Date currentDate = new Date();
-        
         List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
         for (FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
             if (fileTriggerRouter.isEnabled()) {
                 try {
                     FileTrigger fileTrigger = fileTriggerRouter.getFileTrigger();
                     boolean ignoreFiles = shouldIgnoreInitialFiles(fileTriggerRouter, fileTrigger, ctxDate);
-                    FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter), 
+                    FileTriggerTracker tracker = new FileTriggerTracker(fileTriggerRouter, getDirectorySnapshot(fileTriggerRouter),
                             processInfo, useCrc, engine);
                     DirectorySnapshot dirSnapshot = tracker.trackChanges();
-                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot,ignoreFiles);
+                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot, ignoreFiles);
                     engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
                 } catch (Exception ex) {
                     log.error("Failed to track changes for file trigger router: "
@@ -214,16 +209,14 @@ INodeCommunicationExecutor {
         long ctxTime = engine.getContextService().getLong(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME);
         Date ctxDate = new Date(ctxTime);
         // Remove milliseconds - not all operating systems support milliseconds in the file modification time
-        ctxDate.setTime((ctxDate.getTime()/1000)*1000);
+        ctxDate.setTime((ctxDate.getTime() / 1000) * 1000);
         if (ctxTime == 0) {
             ctxDate = null;
         }
         Date currentDate = new Date();
         // Remove milliseconds - not all operating systems support milliseconds in the file modification time
-        currentDate.setTime((currentDate.getTime()/1000)*1000);
-
+        currentDate.setTime((currentDate.getTime() / 1000) * 1000);
         int maxRowsBeforeCommit = engine.getParameterService().getInt(ParameterConstants.DATA_LOADER_MAX_ROWS_BEFORE_COMMIT);
-
         try {
             List<FileTriggerRouter> fileTriggerRouters = getFileTriggerRoutersForCurrentNode(false);
             for (final FileTriggerRouter fileTriggerRouter : fileTriggerRouters) {
@@ -234,24 +227,24 @@ INodeCommunicationExecutor {
                             fileTriggerRouter.getFileTrigger().createIOFileFilter());
                     FileTriggerFileModifiedListener listener = new FileTriggerFileModifiedListener(fileTriggerRouter, ctxDate,
                             currentDate, processInfo, useCrc, new FileModifiedCallback(maxRowsBeforeCommit) {
-                        public void commit(DirectorySnapshot dirSnapshot) {
-                            saveDirectorySnapshot(fileTriggerRouter, dirSnapshot, ignoreFiles);
-                        }
+                                public void commit(DirectorySnapshot dirSnapshot) {
+                                    saveDirectorySnapshot(fileTriggerRouter, dirSnapshot, ignoreFiles);
+                                }
 
-                        public DirectorySnapshot getLastDirectorySnapshot(String relativeDir) {
-                            return getDirectorySnapshot(fileTriggerRouter, relativeDir);
-                        }
-                    }, engine);
+                                public DirectorySnapshot getLastDirectorySnapshot(String relativeDir) {
+                                    return getDirectorySnapshot(fileTriggerRouter, relativeDir);
+                                }
+                            }, engine);
                     observer.addListener(listener);
                     observer.checkAndNotify();
                     engine.getContextService().save(ContextConstants.FILE_SYNC_FAST_SCAN_TRACK_TIME, String.valueOf(currentDate.getTime()));
                 }
             }
         } catch (Exception ex) {
-            log.error("Failed to track changes", ex);            
+            log.error("Failed to track changes", ex);
         }
     }
-    
+
     protected boolean shouldIgnoreInitialFiles(FileTriggerRouter router, FileTrigger trigger, Date contextDate) {
         if (!router.isInitialLoadEnabled()) {
             if (contextDate == null || router.getLastUpdateTime().after(contextDate) || trigger.getLastUpdateTime().after(contextDate)) {
@@ -280,7 +273,7 @@ INodeCommunicationExecutor {
             log.debug("Captured change " + fileSnapshot);
             totalBytes += fileSnapshot.getFileSize();
         }
-        save(dirSnapshot,shouldIgnore);
+        save(dirSnapshot, shouldIgnore);
         return totalBytes;
     }
 
@@ -307,9 +300,8 @@ INodeCommunicationExecutor {
         String myNodeGroupId = parameterService.getNodeGroupId();
         List<FileTriggerRouter> allValues = getFileTriggerRouters(refreshCache);
         List<FileTriggerRouter> currentValues = new ArrayList<FileTriggerRouter>();
-        
-        for(FileTriggerRouter ftr : allValues) {
-            if(ftr.getRouter().getNodeGroupLink().getSourceNodeGroupId().equals(myNodeGroupId) && ftr.isEnabled()) {
+        for (FileTriggerRouter ftr : allValues) {
+            if (ftr.getRouter().getNodeGroupLink().getSourceNodeGroupId().equals(myNodeGroupId) && ftr.isEnabled()) {
                 currentValues.add(ftr);
             }
         }
@@ -320,8 +312,7 @@ INodeCommunicationExecutor {
         long fileTriggerRouterCacheTimeoutInMs = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_TRIGGER_ROUTER_IN_MS);
         List<FileTriggerRouter> currentValues = fileTriggerRoutersCache;
-        
-        if(currentValues == null || refreshCache || 
+        if (currentValues == null || refreshCache ||
                 System.currentTimeMillis() - this.fileTriggerRoutersCacheTime > fileTriggerRouterCacheTimeoutInMs) {
             synchronized (cacheLock) {
                 List<FileTriggerRouter> newValues = sqlTemplate.query(getSql("selectFileTriggerRoutersSql"),
@@ -331,22 +322,19 @@ INodeCommunicationExecutor {
                 fileTriggerRoutersCacheTime = System.currentTimeMillis();
             }
         }
-        
         return currentValues;
     }
 
     public FileTriggerRouter getFileTriggerRouter(String triggerId, String routerId, boolean refreshCache) {
         List<FileTriggerRouter> allValues = getFileTriggerRouters(refreshCache);
-        
-        for(FileTriggerRouter ftr: allValues) {
-            if(ftr.getRouterId().equals(routerId) && ftr.getTriggerId().equals(triggerId)) {
+        for (FileTriggerRouter ftr : allValues) {
+            if (ftr.getRouterId().equals(routerId) && ftr.getTriggerId().equals(triggerId)) {
                 return ftr;
             }
         }
         return null;
     }
-    
-    
+
     public void clearCache() {
         synchronized (cacheLock) {
             this.fileTriggerRoutersCacheTime = 0;
@@ -360,39 +348,38 @@ INodeCommunicationExecutor {
                 new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecurse() ? 1 : 0,
                         fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
                         fileTrigger.isSyncOnCreate() ? 1 : 0,
-                                fileTrigger.isSyncOnModified() ? 1 : 0,
-                                        fileTrigger.isSyncOnDelete() ? 1 : 0,
-                                                fileTrigger.isSyncOnCtlFile() ? 1 : 0,
-                                                        fileTrigger.isDeleteAfterSync() ? 1 : 0, fileTrigger.getBeforeCopyScript(),
-                                                                fileTrigger.getAfterCopyScript(), fileTrigger.getLastUpdateBy(),
-                                                                fileTrigger.getLastUpdateTime(), fileTrigger.getChannelId(),
-                                                                fileTrigger.getReloadChannelId(), fileTrigger.getTriggerId() }, new int[] {
-                                                                        Types.VARCHAR, Types.SMALLINT, 
-                                                                        Types.VARCHAR, Types.VARCHAR,
-                                                                        Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, 
-                                                                        Types.SMALLINT, Types.VARCHAR,
-                                                                        Types.VARCHAR, Types.VARCHAR,  
-                                                                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
+                        fileTrigger.isSyncOnModified() ? 1 : 0,
+                        fileTrigger.isSyncOnDelete() ? 1 : 0,
+                        fileTrigger.isSyncOnCtlFile() ? 1 : 0,
+                        fileTrigger.isDeleteAfterSync() ? 1 : 0, fileTrigger.getBeforeCopyScript(),
+                        fileTrigger.getAfterCopyScript(), fileTrigger.getLastUpdateBy(),
+                        fileTrigger.getLastUpdateTime(), fileTrigger.getChannelId(),
+                        fileTrigger.getReloadChannelId(), fileTrigger.getTriggerId() }, new int[] {
+                                Types.VARCHAR, Types.SMALLINT,
+                                Types.VARCHAR, Types.VARCHAR,
+                                Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT,
+                                Types.SMALLINT, Types.VARCHAR,
+                                Types.VARCHAR, Types.VARCHAR,
+                                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR })) {
             fileTrigger.setCreateTime(fileTrigger.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertFileTriggerSql"),
                     new Object[] { fileTrigger.getBaseDir(), fileTrigger.isRecurse() ? 1 : 0,
                             fileTrigger.getIncludesFiles(), fileTrigger.getExcludesFiles(),
                             fileTrigger.isSyncOnCreate() ? 1 : 0,
-                                    fileTrigger.isSyncOnModified() ? 1 : 0,
-                                            fileTrigger.isSyncOnDelete() ? 1 : 0,
-                                                    fileTrigger.isSyncOnCtlFile() ? 1 : 0,
-                                                            fileTrigger.isDeleteAfterSync() ? 1 : 0,
-                                                                    fileTrigger.getBeforeCopyScript(), fileTrigger.getAfterCopyScript(),
-                                                                    fileTrigger.getLastUpdateBy(), fileTrigger.getLastUpdateTime(),
-                                                                    fileTrigger.getTriggerId(), fileTrigger.getCreateTime(),
-                                                                    fileTrigger.getChannelId(), fileTrigger.getReloadChannelId() },
+                            fileTrigger.isSyncOnModified() ? 1 : 0,
+                            fileTrigger.isSyncOnDelete() ? 1 : 0,
+                            fileTrigger.isSyncOnCtlFile() ? 1 : 0,
+                            fileTrigger.isDeleteAfterSync() ? 1 : 0,
+                            fileTrigger.getBeforeCopyScript(), fileTrigger.getAfterCopyScript(),
+                            fileTrigger.getLastUpdateBy(), fileTrigger.getLastUpdateTime(),
+                            fileTrigger.getTriggerId(), fileTrigger.getCreateTime(),
+                            fileTrigger.getChannelId(), fileTrigger.getReloadChannelId() },
                     new int[] { Types.VARCHAR, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
                             Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.SMALLINT, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
                             Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
-
     }
 
     public void saveFileTriggerRouter(FileTriggerRouter fileTriggerRouter) {
@@ -401,27 +388,27 @@ INodeCommunicationExecutor {
                 getSql("updateFileTriggerRouterSql"),
                 new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                         fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
-                                fileTriggerRouter.getTargetBaseDir(),
-                                fileTriggerRouter.getConflictStrategyString(),
-                                fileTriggerRouter.getLastUpdateBy(), fileTriggerRouter.getLastUpdateTime(),
-                                fileTriggerRouter.getFileTrigger().getTriggerId(),
-                                fileTriggerRouter.getRouter().getRouterId() }, new int[] { Types.SMALLINT,
-                                        Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
-                                        Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
+                        fileTriggerRouter.getTargetBaseDir(),
+                        fileTriggerRouter.getConflictStrategyString(),
+                        fileTriggerRouter.getLastUpdateBy(), fileTriggerRouter.getLastUpdateTime(),
+                        fileTriggerRouter.getFileTrigger().getTriggerId(),
+                        fileTriggerRouter.getRouter().getRouterId() }, new int[] { Types.SMALLINT,
+                                Types.SMALLINT, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                                Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR })) {
             fileTriggerRouter.setCreateTime(fileTriggerRouter.getLastUpdateTime());
             sqlTemplate.update(
                     getSql("insertFileTriggerRouterSql"),
                     new Object[] { fileTriggerRouter.isEnabled() ? 1 : 0,
                             fileTriggerRouter.isInitialLoadEnabled() ? 1 : 0,
-                                    fileTriggerRouter.getTargetBaseDir(),
-                                    fileTriggerRouter.getConflictStrategyString(),
-                                    fileTriggerRouter.getCreateTime(), fileTriggerRouter.getLastUpdateBy(),
-                                    fileTriggerRouter.getLastUpdateTime(),
-                                    fileTriggerRouter.getFileTrigger().getTriggerId(),
-                                    fileTriggerRouter.getRouter().getRouterId() }, new int[] {
-                                            Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
-                                            Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                                            Types.VARCHAR });
+                            fileTriggerRouter.getTargetBaseDir(),
+                            fileTriggerRouter.getConflictStrategyString(),
+                            fileTriggerRouter.getCreateTime(), fileTriggerRouter.getLastUpdateBy(),
+                            fileTriggerRouter.getLastUpdateTime(),
+                            fileTriggerRouter.getFileTrigger().getTriggerId(),
+                            fileTriggerRouter.getRouter().getRouterId() }, new int[] {
+                                    Types.SMALLINT, Types.SMALLINT, Types.VARCHAR, Types.VARCHAR,
+                                    Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                                    Types.VARCHAR });
         }
         clearCache();
     }
@@ -449,15 +436,15 @@ INodeCommunicationExecutor {
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter) {
         return new DirectorySnapshot(fileTriggerRouter, sqlTemplate.query(
                 getSql("selectFileSnapshotSql"), new FileSnapshotMapper(), fileTriggerRouter
-                .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter()
-                .getRouterId()));
+                        .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter()
+                                .getRouterId()));
     }
 
     public DirectorySnapshot getDirectorySnapshot(FileTriggerRouter fileTriggerRouter, String relativeDir) {
         return new DirectorySnapshot(fileTriggerRouter, sqlTemplate.query(
                 getSql("selectFileSnapshotSql", "relativeDirWhere"), new FileSnapshotMapper(), fileTriggerRouter
-                .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter()
-                .getRouterId(), relativeDir));
+                        .getFileTrigger().getTriggerId(), fileTriggerRouter.getRouter()
+                                .getRouterId(), relativeDir));
     }
 
     public void save(List<FileSnapshot> changes, boolean shouldIgnore) {
@@ -471,7 +458,6 @@ INodeCommunicationExecutor {
                 for (FileSnapshot fileSnapshot : changes) {
                     save(sqlTransaction, fileSnapshot);
                 }
-
                 sqlTransaction.commit();
             } catch (Error ex) {
                 if (sqlTransaction != null) {
@@ -499,7 +485,7 @@ INodeCommunicationExecutor {
                 new Object[] { snapshot.getLastEventType().getCode(), snapshot.getCrc32Checksum(),
                         snapshot.getFileSize(), snapshot.getFileModifiedTime(),
                         snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(), snapshot.getChannelId(),
-                        snapshot.getReloadChannelId(), 
+                        snapshot.getReloadChannelId(),
                         snapshot.getTriggerId(), snapshot.getRouterId(), snapshot.getRelativeDir(),
                         snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.NUMERIC,
                                 Types.NUMERIC, Types.NUMERIC, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -511,7 +497,7 @@ INodeCommunicationExecutor {
                             snapshot.getCrc32Checksum(), snapshot.getFileSize(),
                             snapshot.getFileModifiedTime(), snapshot.getCreateTime(),
                             snapshot.getLastUpdateTime(), snapshot.getLastUpdateBy(), snapshot.getChannelId(),
-                            snapshot.getReloadChannelId(), 
+                            snapshot.getReloadChannelId(),
                             snapshot.getTriggerId(), snapshot.getRouterId(),
                             snapshot.getRelativeDir(), snapshot.getFileName() }, new int[] {
                                     Types.VARCHAR, Types.NUMERIC, Types.NUMERIC, Types.NUMERIC,
@@ -525,21 +511,19 @@ INodeCommunicationExecutor {
                     snapshot.getFileName() }, new int[] { Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR });
         }
-
     }
 
     synchronized public RemoteNodeStatuses pullFilesFromNodes(boolean force) {
-        CommunicationType communicationType = engine.getParameterService().is(ParameterConstants.NODE_OFFLINE) ? 
-                CommunicationType.OFF_FSPULL : CommunicationType.FILE_PULL;
-        
+        CommunicationType communicationType = engine.getParameterService().is(ParameterConstants.NODE_OFFLINE) ? CommunicationType.OFF_FSPULL
+                : CommunicationType.FILE_PULL;
         return queueJob(force,
                 parameterService.getLong(ParameterConstants.FILE_PULL_MINIMUM_PERIOD_MS, -1),
                 ClusterConstants.FILE_SYNC_PULL, communicationType);
     }
 
     synchronized public RemoteNodeStatuses pushFilesToNodes(boolean force) {
-        CommunicationType communicationType = engine.getParameterService().is(ParameterConstants.NODE_OFFLINE) ? 
-                CommunicationType.OFF_FSPUSH : CommunicationType.FILE_PUSH;
+        CommunicationType communicationType = engine.getParameterService().is(ParameterConstants.NODE_OFFLINE) ? CommunicationType.OFF_FSPUSH
+                : CommunicationType.FILE_PUSH;
         return queueJob(force,
                 parameterService.getLong(ParameterConstants.FILE_PUSH_MINIMUM_PERIOD_MS, -1),
                 ClusterConstants.FILE_SYNC_PUSH, communicationType);
@@ -549,92 +533,73 @@ INodeCommunicationExecutor {
     public Object[] getStagingPathComponents(OutgoingBatch fileSyncBatch) {
         StringBuilder zipName = new StringBuilder(32);
         zipName.append("filesync_").append(fileSyncBatch.getNodeBatchId()).append(".zip");
-        return new String[] {Constants.STAGING_CATEGORY_OUTGOING, fileSyncBatch.getNodeId(), zipName.toString()};
+        return new String[] { Constants.STAGING_CATEGORY_OUTGOING, fileSyncBatch.getNodeId(), zipName.toString() };
     }
 
     public List<OutgoingBatch> sendFiles(ProcessInfo processInfo, Node targetNode,
             IOutgoingTransport outgoingTransport) {
-
         List<OutgoingBatch> batchesToProcess = getBatchesToProcess(targetNode);
-
         if (batchesToProcess.isEmpty()) {
             return batchesToProcess;
         }
-
         IStagingManager stagingManager = engine.getStagingManager();
-        long maxBytesToSync = parameterService 
-                .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);        
-
+        long maxBytesToSync = parameterService
+                .getLong(ParameterConstants.TRANSPORT_MAX_BYTES_TO_SYNC);
         List<OutgoingBatch> processedBatches = new ArrayList<OutgoingBatch>();
-
         OutgoingBatch currentBatch = null;
-        
         IStagedResource stagedResource = null;
         IStagedResource previouslyStagedResource = null;
-        
         FileSyncZipDataWriter dataWriter = null;
         try {
             long syncedBytes = 0;
             try {
                 for (int i = 0; i < batchesToProcess.size(); i++) {
                     currentBatch = batchesToProcess.get(i);
-                    
                     previouslyStagedResource = getStagedResource(currentBatch);
-                    
                     if (isWaitForExtractionRequired(currentBatch, previouslyStagedResource)
                             || isFlushBatchesRequired(currentBatch, processedBatches, previouslyStagedResource)) {
-                        // if we've already processed and staged some batches, send them now.  The 
+                        // if we've already processed and staged some batches, send them now. The
                         // previously staged batch will have to wait for the next push/pull.
                         break;
                     }
-                    
                     if (previouslyStagedResource != null) {
                         log.debug("Using existing extraction for file sync batch {}", currentBatch.getNodeBatchId());
                         stagedResource = previouslyStagedResource;
-                    } else  {
-                        if (dataWriter == null) {                        
+                    } else {
+                        if (dataWriter == null) {
                             stagedResource = stagingManager.create(
                                     Constants.STAGING_CATEGORY_OUTGOING, processInfo.getSourceNodeId(),
-                                    targetNode.getNodeId(), "filesync.zip");                            
+                                    targetNode.getNodeId(), "filesync.zip");
                             dataWriter = new FileSyncZipDataWriter(maxBytesToSync, this,
                                     engine.getNodeService(), stagedResource, engine.getExtensionService(), engine.getConfigurationService());
                         }
                         log.debug("Extracting batch {} for filesync.", currentBatch.getNodeBatchId());
-
                         ((DataExtractorService) engine.getDataExtractorService()).extractOutgoingBatch(
                                 processInfo, targetNode, dataWriter, currentBatch, false, true,
                                 DataExtractorService.ExtractMode.FOR_SYM_CLIENT, null);
-                    }              
+                    }
                     processedBatches.add(currentBatch);
-                                        
                     syncedBytes += stagedResource.getSize();
-
                     processInfo.incrementBatchCount();
-                    processInfo.setCurrentBatchId(currentBatch.getBatchId()); 
-                    
+                    processInfo.setCurrentBatchId(currentBatch.getBatchId());
                     log.debug("Processed file sync batch {}. syncedBytes={}, maxBytesToSync={}", currentBatch, syncedBytes, maxBytesToSync);
-
                     /*
-                     * check to see if max bytes to sync has been reached and
-                     * stop processing batches
+                     * check to see if max bytes to sync has been reached and stop processing batches
                      */
                     if (previouslyStagedResource != null || dataWriter.readyToSend()) {
                         break;
                     }
                 }
-            } finally {  
+            } finally {
                 if (dataWriter != null) {
                     dataWriter.finish();
                 }
             }
-
             processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
-
             for (OutgoingBatch outgoingBatch : processedBatches) {
                 outgoingBatch.setStatus(Status.SE);
             }
             engine.getOutgoingBatchService().updateOutgoingBatches(processedBatches);
-
             try {
                 if (stagedResource != null && stagedResource.exists()) {
                     InputStream is = stagedResource.getInputStream();
@@ -646,26 +611,22 @@ INodeCommunicationExecutor {
                         throw new IoException(e);
                     }
                 } else {
-                    log.error("Missing staged ZIP file for target node {}: {}", targetNode, 
+                    log.error("Missing staged ZIP file for target node {}: {}", targetNode,
                             stagedResource == null ? "<null>" : stagedResource);
                 }
-
                 for (int i = 0; i < batchesToProcess.size(); i++) {
                     batchesToProcess.get(i).setStatus(Status.LD);
                 }
                 engine.getOutgoingBatchService().updateOutgoingBatches(batchesToProcess);
-
             } finally {
                 if (stagedResource != null) {
-                    stagedResource.close();                    
+                    stagedResource.close();
                 }
             }
-
         } catch (RuntimeException e) {
             if (stagedResource == previouslyStagedResource) { // on error, don't let the load extract be deleted.
                 stagedResource = null;
             }
-            
             if (currentBatch != null) {
                 engine.getStatisticManager().incrementDataExtractedErrors(
                         currentBatch.getChannelId(), 1);
@@ -676,7 +637,6 @@ INodeCommunicationExecutor {
                 }
                 currentBatch.setErrorFlag(true);
                 engine.getOutgoingBatchService().updateOutgoingBatch(currentBatch);
-
                 if (isStreamClosedByClient(e)) {
                     log.warn(
                             "Failed to extract file sync batch {}.  The stream was closed by the client.  The error was: {}",
@@ -687,14 +647,12 @@ INodeCommunicationExecutor {
             } else {
                 log.error("Could not log the outgoing batch status because the batch was null", e);
             }
-
             throw e;
         } finally {
             if (stagedResource != null) {
                 stagedResource.delete();
             }
         }
-
         return processedBatches;
     }
 
@@ -702,30 +660,27 @@ INodeCommunicationExecutor {
         // if we staged some on the fly and now come across a previously staged batch, need to flush the ones in flight.
         boolean isFlushBatchesRequred = previouslyStagedResource != null && !processedBatches.isEmpty();
         if (isFlushBatchesRequred) {
-            log.info("Batch will be sent on the next sync. {} Need to flush newly staged file sync batches now.", currentBatch.getNodeBatchId());            
+            log.info("Batch will be sent on the next sync. {} Need to flush newly staged file sync batches now.", currentBatch.getNodeBatchId());
         }
-        return isFlushBatchesRequred;    
+        return isFlushBatchesRequred;
     }
 
     private boolean isWaitForExtractionRequired(OutgoingBatch currentBatch, IStagedResource previouslyStagedResource) {
-        Channel channel = this.engine.getConfigurationService().getChannel(currentBatch.getChannelId()); 
-        
-        if (previouslyStagedResource == null 
-                && channel.isReloadFlag() 
+        Channel channel = this.engine.getConfigurationService().getChannel(currentBatch.getChannelId());
+        if (previouslyStagedResource == null
+                && channel.isReloadFlag()
                 && parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB)) {
-            
-            if (currentBatch.getStatus() == OutgoingBatch.Status.RQ) {                
+            if (currentBatch.getStatus() == OutgoingBatch.Status.RQ) {
                 // if this is a reload that isn't extracted yet, we need to defer to the extract job.
                 log.info("Batch needs to be extracted by the extract job {}", currentBatch.getNodeBatchId());
             } else {
                 // it's possible there was an error and staging was cleared, so we need to re-request extraction here.
-                log.info("Batch has status of '{}' but is not extracted. Requesting re-extract for batch: {}", 
+                log.info("Batch has status of '{}' but is not extracted. Requesting re-extract for batch: {}",
                         currentBatch.getStatus(), currentBatch.getNodeBatchId());
                 engine.getDataExtractorService().resetExtractRequest(currentBatch);
             }
-            
             return true;
-        } else {            
+        } else {
             return false;
         }
     }
@@ -753,7 +708,6 @@ INodeCommunicationExecutor {
             if (data.getDataEventType() == DataEventType.INSERT || data.getDataEventType() == DataEventType.UPDATE) {
                 Map<String, String> columnData = data.toColumnNameValuePairs(
                         snapshotTable.getColumnNames(), CsvData.ROW_DATA);
-
                 FileSnapshot fileSnapshot = new FileSnapshot();
                 fileSnapshot.setTriggerId(columnData.get("TRIGGER_ID"));
                 fileSnapshot.setRouterId(columnData.get("ROUTER_ID"));
@@ -763,12 +717,10 @@ INodeCommunicationExecutor {
                 fileSnapshot.setRelativeDir(columnData.get("RELATIVE_DIR"));
                 fileSnapshot.setLastEventType(LastEventType.fromCode(columnData
                         .get("LAST_EVENT_TYPE")));
-
                 FileTriggerRouter triggerRouter = this.getFileTriggerRouter(
                         fileSnapshot.getTriggerId(), fileSnapshot.getRouterId(), false);
                 if (triggerRouter != null) {
                     FileTrigger fileTrigger = triggerRouter.getFileTrigger();
-
                     if (fileTrigger.isDeleteAfterSync()) {
                         File file = fileTrigger.createSourceFile(fileSnapshot);
                         if (!file.isDirectory()) {
@@ -777,8 +729,7 @@ INodeCommunicationExecutor {
                                 filesToDelete.add(this.getControleFile(file));
                             }
                         }
-                    }
-                    else if (parameterService.is(ParameterConstants.FILE_SYNC_DELETE_CTL_FILE_AFTER_SYNC, false)) {
+                    } else if (parameterService.is(ParameterConstants.FILE_SYNC_DELETE_CTL_FILE_AFTER_SYNC, false)) {
                         File file = fileTrigger.createSourceFile(fileSnapshot);
                         if (!file.isDirectory()) {
                             if (fileTrigger.isSyncOnCtlFile()) {
@@ -790,10 +741,8 @@ INodeCommunicationExecutor {
             }
             data = cursor.next();
         }
-
         cursor.close();
         cursor = null;
-
         if (filesToDelete != null && filesToDelete.size() > 0) {
             for (File file : filesToDelete) {
                 if (file != null && file.exists()) {
@@ -872,19 +821,17 @@ INodeCommunicationExecutor {
         IOutgoingWithResponseTransport transport = null;
         ITransportManager transportManager = null;
         try {
-            
             if (!engine.getParameterService().is(ParameterConstants.NODE_OFFLINE)) {
                 transportManager = engine.getTransportManager();
                 transport = transportManager.getFilePushTransport(
                         nodeCommunication.getNode(), identity, security.getNodePassword(),
                         parameterService.getRegistrationUrl());
             } else {
-                transportManager = ((AbstractSymmetricEngine)engine).getOfflineTransportManager();
+                transportManager = ((AbstractSymmetricEngine) engine).getOfflineTransportManager();
                 transport = transportManager.getFilePushTransport(
                         nodeCommunication.getNode(), identity, security.getNodePassword(),
-                        parameterService.getRegistrationUrl());                
+                        parameterService.getRegistrationUrl());
             }
-            
             List<OutgoingBatch> batches = sendFiles(processInfo, nodeCommunication.getNode(),
                     transport);
             if (batches.size() > 0) {
@@ -900,11 +847,11 @@ INodeCommunicationExecutor {
             if (!status.failed() && batches.size() > 0) {
                 log.info("Pushed files to {}. {} files and {} batches were processed",
                         new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
-                                status.getBatchesProcessed()});
+                                status.getBatchesProcessed() });
             } else if (status.failed()) {
                 log.info("There was a failure while pushing files to {}. {} files and {} batches were processed",
                         new Object[] { nodeCommunication.getNodeId(), status.getDataProcessed(),
-                                status.getBatchesProcessed()});                        
+                                status.getBatchesProcessed() });
             }
         } catch (Exception e) {
             fireOffline(e, nodeCommunication.getNode(), status);
@@ -928,20 +875,17 @@ INodeCommunicationExecutor {
                 sourceNodeId));
         FileUtils.deleteDirectory(unzipDir);
         unzipDir.mkdirs();
-
         try {
             AppUtils.unzip(is, unzipDir);
         } catch (IoException ex) {
             if (ex.toString().contains("EOFException")) { // This happens on Android, when there is an empty zip.
-                //log.debug("Caught exception while unzipping.", ex);
+                // log.debug("Caught exception while unzipping.", ex);
             } else {
                 throw ex;
             }
         }
-
         Set<Long> batchIds = new TreeSet<Long>();
         String[] files = unzipDir.list(DirectoryFileFilter.INSTANCE);
-
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 try {
@@ -953,19 +897,14 @@ INodeCommunicationExecutor {
                 }
             }
         }
-
         List<IncomingBatch> batchesProcessed = new ArrayList<IncomingBatch>();
-
         IIncomingBatchService incomingBatchService = engine.getIncomingBatchService();
-
         processInfo.setStatus(ProcessInfo.ProcessStatus.LOADING);
         for (Long batchId : batchIds) {
             processInfo.setCurrentBatchId(batchId);
             processInfo.incrementBatchCount();
             File batchDir = new File(unzipDir, Long.toString(batchId));
-
             IncomingBatch incomingBatch = new IncomingBatch();
-
             File batchInfo = new File(batchDir, "batch-info.txt");
             if (batchInfo.exists()) {
                 List<String> info = FileUtils.readLines(batchInfo, Charset.defaultCharset());
@@ -977,7 +916,6 @@ INodeCommunicationExecutor {
             } else {
                 incomingBatch.setChannelId(Constants.CHANNEL_FILESYNC);
             }
-
             incomingBatch.setBatchId(batchId);
             incomingBatch.setStatus(IncomingBatch.Status.LD);
             incomingBatch.setNodeId(sourceNodeId);
@@ -991,7 +929,6 @@ INodeCommunicationExecutor {
                     boolean isLocked = false;
                     try {
                         setInterpreterVariables(engine, sourceNodeId, batchDir, interpreter);
-
                         long waitMillis = getParameterService().getLong(
                                 ParameterConstants.FILE_SYNC_LOCK_WAIT_MS);
                         log.debug("The {} node is attempting to get shared lock for to update incoming status", sourceNodeId);
@@ -1002,17 +939,17 @@ INodeCommunicationExecutor {
                             log.debug("The {} node got a shared file sync lock", sourceNodeId);
                             @SuppressWarnings("unchecked")
                             Map<String, String> filesToEventType = (Map<String, String>) interpreter
-                            .eval(script);
+                                    .eval(script);
                             if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_PREVENT_PING_BACK)) {
                                 updateFileIncoming(sourceNodeId, filesToEventType);
                             }
                             incomingBatch
-                            .setLoadRowCount(filesToEventType != null ? filesToEventType
-                                    .size() : 0);
+                                    .setLoadRowCount(filesToEventType != null ? filesToEventType
+                                            .size() : 0);
                         } else {
                             throw new RuntimeException(
                                     "Could not obtain file sync shared lock within " + waitMillis
-                                    + " millis");
+                                            + " millis");
                         }
                         incomingBatch.setStatus(IncomingBatch.Status.OK);
                         if (incomingBatchService.isRecordOkBatchesEnabled()) {
@@ -1027,9 +964,7 @@ INodeCommunicationExecutor {
                                 ex = target;
                             }
                         }
-                        
                         String nodeIdBatchId = sourceNodeId + "-" + batchId;
-
                         if (ex instanceof EvalError) {
                             log.error("Failed to evalulate the script as part of file sync batch " + nodeIdBatchId + "\n" + script + "\n", ex);
                         } else if (ex instanceof FileConflictException) {
@@ -1038,7 +973,6 @@ INodeCommunicationExecutor {
                         } else {
                             log.error("Failed to process file sync for  batch " + nodeIdBatchId, ex);
                         }
-
                         incomingBatch.setErrorFlag(true);
                         incomingBatch.setStatus(IncomingBatch.Status.ER);
                         incomingBatch.setSqlMessage(ex.getMessage());
@@ -1061,9 +995,7 @@ INodeCommunicationExecutor {
                     log.error("Could not find the sync.bsh script for batch {}", batchId);
                 }
             }
-
         }
-
         return batchesProcessed;
     }
 
@@ -1100,22 +1032,19 @@ INodeCommunicationExecutor {
         try {
             processInfo.setStatus(ProcessInfo.ProcessStatus.TRANSFERRING);
             ITransportManager transportManager;
-            
             if (!engine.getParameterService().is(ParameterConstants.NODE_OFFLINE)) {
                 transportManager = engine.getTransportManager();
                 transport = transportManager.getFilePullTransport(
                         nodeCommunication.getNode(), identity, security.getNodePassword(), null,
                         parameterService.getRegistrationUrl());
             } else {
-                transportManager = ((AbstractSymmetricEngine)engine).getOfflineTransportManager();
+                transportManager = ((AbstractSymmetricEngine) engine).getOfflineTransportManager();
                 transport = transportManager.getFilePullTransport(
                         nodeCommunication.getNode(), identity, security.getNodePassword(), null,
-                        parameterService.getRegistrationUrl());                
+                        parameterService.getRegistrationUrl());
             }
-
             List<IncomingBatch> batchesProcessed = processZip(transport.openStream(),
                     nodeCommunication.getNodeId(), processInfo);
-
             if (batchesProcessed.size() > 0) {
                 processInfo.setStatus(ProcessInfo.ProcessStatus.ACKING);
                 status.updateIncomingStatus(batchesProcessed);
@@ -1141,7 +1070,7 @@ INodeCommunicationExecutor {
                 if (processInfo.getStatus() != ProcessInfo.ProcessStatus.ERROR) {
                     processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 }
-                if (transport instanceof FileIncomingTransport) {                    
+                if (transport instanceof FileIncomingTransport) {
                     ((FileIncomingTransport) transport).complete(!status.failed());
                 }
             }
@@ -1154,7 +1083,6 @@ INodeCommunicationExecutor {
         Node identity = engine.getNodeService().findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             if (force || !engine.getClusterService().isInfiniteLocked(clusterLock)) {
-
                 INodeCommunicationService nodeCommunicationService = engine
                         .getNodeCommunicationService();
                 List<NodeCommunication> nodes = nodeCommunicationService.list(type);
@@ -1178,7 +1106,7 @@ INodeCommunicationExecutor {
                         log.warn(
                                 "File sync cannot communicate with node '{}' in the group '{}'.  The sync url is blank",
                                 nodeCommunication.getNode().getNodeId(), nodeCommunication
-                                .getNode().getNodeGroupId());
+                                        .getNode().getNodeGroupId());
                     }
                 }
             } else {
@@ -1186,7 +1114,6 @@ INodeCommunicationExecutor {
                         .toLowerCase());
             }
         }
-
         return statuses;
     }
 
@@ -1200,7 +1127,7 @@ INodeCommunicationExecutor {
         File ctlFile = new File(file.getAbsolutePath() + FileTrigger.FILE_CTL_EXTENSION);
         if (engine.getParameterService().is(ParameterConstants.FILE_SYNC_USE_CTL_AS_FILE_EXT, false)) {
             int extPosition = file.getAbsolutePath().lastIndexOf('.');
-            ctlFile = new File(file.getAbsolutePath().substring(0,extPosition) + ".ctl");
+            ctlFile = new File(file.getAbsolutePath().substring(0, extPosition) + ".ctl");
         }
         return ctlFile;
     }
@@ -1237,12 +1164,11 @@ INodeCommunicationExecutor {
             fileTriggerRouter.setFileTrigger(fileTrigger);
             try {
                 fileTriggerRouter.setConflictStrategy(FileConflictStrategy.valueOf(rs.getString(
-                    "conflict_strategy").toUpperCase()));
-            }
-            catch (Exception e) {
+                        "conflict_strategy").toUpperCase()));
+            } catch (Exception e) {
             }
             fileTriggerRouter.setConflictStrategyString(rs.getString(
-                            "conflict_strategy").toUpperCase());
+                    "conflict_strategy").toUpperCase());
             fileTriggerRouter.setCreateTime(rs.getDateTime("create_time"));
             fileTriggerRouter.setLastUpdateBy(rs.getString("last_update_by"));
             fileTriggerRouter.setLastUpdateTime(rs.getDateTime("last_update_time"));
@@ -1267,8 +1193,9 @@ INodeCommunicationExecutor {
             fileSnapshot.setLastUpdateTime(rs.getDateTime("last_update_time"));
             fileSnapshot.setFileModifiedTime(rs.getLong("file_modified_time"));
             fileSnapshot.setFileName(rs.getString("file_name"));
-            fileSnapshot.setRelativeDir(rs.getString("relative_dir") == null ? null : rs.getString(
-                    "relative_dir").replace('\\', '/'));
+            fileSnapshot.setRelativeDir(rs.getString("relative_dir") == null ? null
+                    : rs.getString(
+                            "relative_dir").replace('\\', '/'));
             fileSnapshot.setFileSize(rs.getLong("file_size"));
             fileSnapshot.setLastEventType(LastEventType.fromCode(rs.getString("last_event_type")));
             fileSnapshot.setTriggerId(rs.getString("trigger_id"));

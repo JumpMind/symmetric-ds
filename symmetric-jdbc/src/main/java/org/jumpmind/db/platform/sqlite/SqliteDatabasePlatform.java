@@ -40,16 +40,14 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform implements
         IDatabasePlatform {
-
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
-
     private Map<String, String> sqlScriptReplacementTokens;
 
     public SqliteDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-                sqlScriptReplacementTokens = new HashMap<String, String>();
+            sqlScriptReplacementTokens = new HashMap<String, String>();
         }
         sqlScriptReplacementTokens.put("current_timestamp",
                 "strftime('%Y-%m-%d %H:%M:%f','now','localtime')");
@@ -129,38 +127,34 @@ public class SqliteDatabasePlatform extends AbstractJdbcDatabasePlatform impleme
             return super.parseInteger(value);
         }
     }
-    
+
     @Override
-       protected PermissionResult getCreateSymTriggerPermission() {
-           String delimiter = getDatabaseInfo().getDelimiterToken();
+    protected PermissionResult getCreateSymTriggerPermission() {
+        String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-           String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter 
-                   + "FOR EACH ROW BEGIN SELECT 1; END";
-           
-           PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-           
-           try {
-               getSqlTemplate().update(triggerSql);
-               result.setStatus(Status.PASS);
-           } catch (SqlException e) {
-               result.setException(e);
-               result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
-           }
-           
-           return result;
+        String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
+                + "FOR EACH ROW BEGIN SELECT 1; END";
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
+        try {
+            getSqlTemplate().update(triggerSql);
+            result.setStatus(Status.PASS);
+        } catch (SqlException e) {
+            result.setException(e);
+            result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
+        }
+        return result;
     }
-    
+
     @Override
     public boolean supportsMultiThreadedTransactions() {
         return false;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {

@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 public class GroupletLink {
-
     protected String externalId;
     protected Date createTime;
     protected Date lastUpdateTime;
@@ -60,5 +59,4 @@ public class GroupletLink {
     public void setLastUpdateBy(String lastUpdateBy) {
         this.lastUpdateBy = lastUpdateBy;
     }
-
 }

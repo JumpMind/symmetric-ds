@@ -31,14 +31,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that is responsible for updating this node's heart beat time.
  */
 public class HeartbeatJob extends AbstractJob {
-
     public HeartbeatJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.HEARTBEAT, engine, taskScheduler);
         if (engine.getParameterService().is(ParameterConstants.DBDIALECT_ORACLE_SEQUENCE_NOORDER)) {
             engine.getExtensionService().addExtensionPoint(new OracleNoOrderHeartbeat(engine));
         }
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
@@ -46,7 +45,7 @@ public class HeartbeatJob extends AbstractJob {
                 .requiresRegisteration(false)
                 .schedule(EVERY_FIFTEEN_MINUTES);
     }
-    
+
     @Override
     public void doJob(boolean force) throws Exception {
         if (engine.getClusterService().lock(getName())) {
@@ -57,5 +56,4 @@ public class HeartbeatJob extends AbstractJob {
             }
         }
     }
-
 }

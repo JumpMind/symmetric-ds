@@ -40,9 +40,7 @@ import org.slf4j.LoggerFactory;
  * A common superclass for data routers
  */
 public abstract class AbstractDataRouter implements IDataRouter {
-
     private static final String OLD_ = "OLD_";
-
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     public void contextCommitted(SimpleRouterContext context) {
@@ -72,7 +70,6 @@ public abstract class AbstractDataRouter implements IDataRouter {
                 data = new LinkedCaseInsensitiveMap<String>(1);
                 break;
         }
-
         if (data != null) {
             if (data.size() == 0) {
                 data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
@@ -149,11 +146,9 @@ public abstract class AbstractDataRouter implements IDataRouter {
             default:
                 break;
         }
-
         if (data != null && data.size() == 0) {
             data.putAll(getPkDataAsString(dataMetaData, symmetricDialect));
         }
-
         if (StringUtils.isNotBlank(dataMetaData.getData().getExternalData())) {
             if (data == null) {
                 data = new LinkedCaseInsensitiveMap<Object>(1);

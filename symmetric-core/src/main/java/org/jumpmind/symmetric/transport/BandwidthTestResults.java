@@ -42,10 +42,8 @@ package org.jumpmind.symmetric.transport;
  *
  * 
  */
-
 /**
- * A very simple bandwidth meter. It calculates the mean of different
- * consecutive bandwidth measurements.
+ * A very simple bandwidth meter. It calculates the mean of different consecutive bandwidth measurements.
  */
 public class BandwidthTestResults {
     long start;
@@ -79,7 +77,7 @@ public class BandwidthTestResults {
             kbps = 0;
         } else {
             // convert to bits, then convert to kilobits, then divide by seconds
-            kbps = ((8.0d * total) / 1024.0d) / (elapsed / 1000.0d) ;
+            kbps = ((8.0d * total) / 1024.0d) / (elapsed / 1000.0d);
         }
     }
 
@@ -89,12 +87,12 @@ public class BandwidthTestResults {
      * @return Bandwidth in Kbps.
      */
     public double getKbps() {
-//        if (total == 0 || elapsed == 0) {
-//            return 0;
-//        } else {
-//            // convert to bits, then convert to kilobits, then divide by seconds
-//            return ((8.0d * total) / 1024.0d) / (elapsed / 1000.0d) ;
-//        }
+        // if (total == 0 || elapsed == 0) {
+        // return 0;
+        // } else {
+        // // convert to bits, then convert to kilobits, then divide by seconds
+        // return ((8.0d * total) / 1024.0d) / (elapsed / 1000.0d) ;
+        // }
         return kbps;
     }
 
@@ -106,7 +104,7 @@ public class BandwidthTestResults {
     public long getElapsed() {
         return elapsed;
     }
-    
+
     /**
      * Returns the number of bytes sent between start() and stop().
      * 
@@ -115,5 +113,4 @@ public class BandwidthTestResults {
     public long getTotal() {
         return total;
     }
-    
 }

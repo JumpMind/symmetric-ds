@@ -48,8 +48,7 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public class ColumnDataTypeChange extends TableChangeImplBase implements ColumnChange
-{
+public class ColumnDataTypeChange extends TableChangeImplBase implements ColumnChange {
     /** The column. */
     private Column _column;
     /** The JDBC type code of the new type. */
@@ -58,14 +57,16 @@ public class ColumnDataTypeChange extends TableChangeImplBase implements ColumnC
     /**
      * Creates a new change object.
      * 
-     * @param table       The table of the column
-     * @param column      The column
-     * @param newTypeCode The JDBC type code of the new type
+     * @param table
+     *            The table of the column
+     * @param column
+     *            The column
+     * @param newTypeCode
+     *            The JDBC type code of the new type
      */
-    public ColumnDataTypeChange(Table table, Column column, int newTypeCode)
-    {
+    public ColumnDataTypeChange(Table table, Column column, int newTypeCode) {
         super(table);
-        _column      = column;
+        _column = column;
         _newTypeCode = newTypeCode;
     }
 
@@ -74,8 +75,7 @@ public class ColumnDataTypeChange extends TableChangeImplBase implements ColumnC
      *
      * @return The column
      */
-    public Column getChangedColumn()
-    {
+    public Column getChangedColumn() {
         return _column;
     }
 
@@ -84,19 +84,16 @@ public class ColumnDataTypeChange extends TableChangeImplBase implements ColumnC
      *
      * @return The type code
      */
-    public int getNewTypeCode()
-    {
+    public int getNewTypeCode() {
         return _newTypeCode;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
-        Table  table  = database.findTable(getChangedTable().getName(), caseSensitive);
+    public void apply(Database database, boolean caseSensitive) {
+        Table table = database.findTable(getChangedTable().getName(), caseSensitive);
         Column column = table.findColumn(_column.getName(), caseSensitive);
-
         column.setMappedTypeCode(_newTypeCode);
     }
 }

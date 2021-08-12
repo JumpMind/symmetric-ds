@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.transport;
 import org.jumpmind.exception.IoException;
 
 public class OfflineException extends IoException {
-
     private static final long serialVersionUID = 1L;
 
     public OfflineException() {
@@ -37,5 +36,4 @@ public class OfflineException extends IoException {
     public OfflineException(String msg, Object... args) {
         super(msg, args);
     }
-
 }

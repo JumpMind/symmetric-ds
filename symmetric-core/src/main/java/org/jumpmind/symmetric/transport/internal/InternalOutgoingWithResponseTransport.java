@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport.internal;
 
 import java.io.BufferedReader;
@@ -34,13 +33,9 @@ import org.jumpmind.symmetric.transport.IOutgoingWithResponseTransport;
 import org.jumpmind.symmetric.transport.TransportUtils;
 
 public class InternalOutgoingWithResponseTransport implements IOutgoingWithResponseTransport {
-
     BufferedWriter writer = null;
-
     BufferedReader reader = null;
-
     OutputStream os = null;
-
     boolean open = true;
 
     InternalOutgoingWithResponseTransport(OutputStream os, InputStream respIs) {
@@ -55,29 +50,33 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
 
     public BufferedReader readResponse() throws IOException {
         try {
-            if(writer != null) {
+            if (writer != null) {
                 writer.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         return reader;
     }
 
     public void close() {
         try {
-            if(os != null) {
+            if (os != null) {
                 os.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         try {
-            if(writer != null) {
+            if (writer != null) {
                 writer.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         try {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         open = false;
     }
 
@@ -88,11 +87,11 @@ public class InternalOutgoingWithResponseTransport implements IOutgoingWithRespo
     public BufferedWriter openWriter() {
         return writer;
     }
-    
+
     @Override
     public BufferedWriter getWriter() {
         return writer;
-    }    
+    }
 
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return configurationService.getSuspendIgnoreChannelLists();

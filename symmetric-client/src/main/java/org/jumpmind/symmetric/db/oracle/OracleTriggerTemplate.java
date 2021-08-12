@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.db.AbstractTriggerTemplate;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class OracleTriggerTemplate extends AbstractTriggerTemplate {
-
     public OracleTriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
         // @formatter:off

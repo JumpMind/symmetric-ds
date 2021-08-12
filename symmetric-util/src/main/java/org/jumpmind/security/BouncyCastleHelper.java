@@ -34,7 +34,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
  * Allow lazy loading of Bouncy Castle by putting all static methods here
  */
 public class BouncyCastleHelper {
-
     public void checkProviderInstalled() {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
             Security.addProvider(new BouncyCastleProvider());
@@ -48,5 +47,4 @@ public class BouncyCastleHelper {
     public AsymmetricKeyParameter createKey(PrivateKey key) throws IOException {
         return PrivateKeyFactory.createKey(key.getEncoded());
     }
-
 }

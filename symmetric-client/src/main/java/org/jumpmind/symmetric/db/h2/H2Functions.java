@@ -26,5 +26,4 @@ import org.jumpmind.symmetric.db.EmbeddedDbFunctions;
  * 
  */
 public class H2Functions extends EmbeddedDbFunctions {
-
 }

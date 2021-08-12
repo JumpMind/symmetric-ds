@@ -41,17 +41,11 @@ import org.jumpmind.symmetric.io.data.Batch.BatchType;
  * Convert a source table's rows to {@link CsvData}
  */
 public class TableExtractDataReaderSource implements IExtractDataReaderSource {
-
     protected IDatabasePlatform platform;
-
     protected String whereClause;
-
     protected Batch batch;
-
     protected Table table;
-
     protected ISqlReadCursor<CsvData> cursor;
-
     protected boolean streamLobs;
 
     public TableExtractDataReaderSource(IDatabasePlatform platform, String catalogName,
@@ -65,7 +59,6 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         this.whereClause = whereClause;
         this.streamLobs = streamLobs;
         this.batch = new Batch(BatchType.EXTRACT, -1, "default", BinaryEncoding.BASE64, sourceNodeId, targetNodeId, false);
-
     }
 
     public Batch getBatch() {
@@ -75,7 +68,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
     public Table getTargetTable() {
         return this.table;
     }
-   
+
     public Table getSourceTable() {
         return this.table;
     }
@@ -85,7 +78,6 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
         if (cursor == null) {
             startNewCursor();
         }
-
         if (cursor != null) {
             data = cursor.next();
             if (data == null) {
@@ -97,7 +89,7 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
 
     protected void startNewCursor() {
         DatabaseInfo dbInfo = platform.getDatabaseInfo();
-        String sql = String.format("select * from %s %s", table.getQualifiedTableName(dbInfo.getDelimiterToken(), 
+        String sql = String.format("select * from %s %s", table.getQualifiedTableName(dbInfo.getDelimiterToken(),
                 dbInfo.getCatalogSeparator(), dbInfo.getSchemaSeparator()),
                 StringUtils.isNotBlank(whereClause) ? " where " + whereClause : "");
         this.cursor = platform.getSqlTemplate().queryForCursor(sql, new ISqlRowMapper<CsvData>() {
@@ -109,10 +101,10 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
 
     protected String[] toStringData(Row row, Column[] columns) {
         String[] stringValues = new String[columns.length];
-        for (int i = 0; i < columns.length; i++) {            
+        for (int i = 0; i < columns.length; i++) {
             Object value = row.get(columns[i].getName());
             if (value instanceof byte[]) {
-                stringValues[i] = new String(Base64.encodeBase64((byte[])value), Charset.defaultCharset());
+                stringValues[i] = new String(Base64.encodeBase64((byte[]) value), Charset.defaultCharset());
             } else if (value != null) {
                 stringValues[i] = value.toString();
             }
@@ -134,5 +126,4 @@ public class TableExtractDataReaderSource implements IExtractDataReaderSource {
             this.cursor = null;
         }
     }
-
 }

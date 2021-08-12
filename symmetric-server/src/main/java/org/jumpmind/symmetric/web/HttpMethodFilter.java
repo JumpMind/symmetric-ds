@@ -36,13 +36,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 
 public class HttpMethodFilter implements Filter {
-    
     private Set<String> allowedMethods = new HashSet<String>();
     private Set<String> disallowedMethods = new HashSet<String>();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        String allowMethodsConfig = filterConfig.getInitParameter("server.allow.http.methods"); 
+        String allowMethodsConfig = filterConfig.getInitParameter("server.allow.http.methods");
         loadMethods(allowMethodsConfig, allowedMethods);
         String disallowMethodsConfig = filterConfig.getInitParameter("server.disallow.http.methods");
         loadMethods(disallowMethodsConfig, disallowedMethods);
@@ -53,18 +52,17 @@ public class HttpMethodFilter implements Filter {
             FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String method = httpRequest.getMethod().toUpperCase();
-        
-        if (disallowedMethods.contains(method))  {
+        if (disallowedMethods.contains(method)) {
             forbid(method, request, response);
         } else if (!allowedMethods.isEmpty() && !allowedMethods.contains(method)) {
             forbid(method, request, response);
-        } else {            
+        } else {
             filterChain.doFilter(request, response);
         }
     }
 
     protected void forbid(String method, ServletRequest request, ServletResponse response) throws IOException {
-        HttpServletResponse httpResponse = (HttpServletResponse)response;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
         httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Method " + method + " is not allowed.");
     }
 
@@ -73,15 +71,14 @@ public class HttpMethodFilter implements Filter {
             String[] methodsSplit = configuredValue.split(",");
             for (String method : methodsSplit) {
                 if (!StringUtils.isEmpty(method)) {
-                    methods.add(method.toUpperCase());                    
+                    methods.add(method.toUpperCase());
                 }
             }
-        }        
+        }
     }
 
     @Override
     public void destroy() {
         // Empty.
     }
-
 }

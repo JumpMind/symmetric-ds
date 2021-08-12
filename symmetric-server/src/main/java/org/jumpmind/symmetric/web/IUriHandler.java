@@ -30,13 +30,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileUploadException;
 
 public interface IUriHandler {
-    
     public void handle(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException, FileUploadException;
-    
-    public String getUriPattern();
-    
-    public List<IInterceptor> getInterceptors();
-    
-    public boolean isEnabled();
 
+    public String getUriPattern();
+
+    public List<IInterceptor> getInterceptors();
+
+    public boolean isEnabled();
 }

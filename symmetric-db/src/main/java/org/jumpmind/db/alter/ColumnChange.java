@@ -46,8 +46,7 @@ import org.jumpmind.db.model.Column;
  * 
  * @version $Revision: $
  */
-public interface ColumnChange extends TableChange
-{
+public interface ColumnChange extends TableChange {
     /**
      * Returns the affected column from the original model.
      * 

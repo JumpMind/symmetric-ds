@@ -23,10 +23,8 @@ package org.jumpmind.symmetric.io.data.writer;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class KafkaWriter extends DynamicDefaultDatabaseWriter {
-
     public KafkaWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform, String prefix,
             IDatabaseWriterConflictResolver conflictResolver, DatabaseWriterSettings settings) {
         super(symmetricPlatform, targetPlatform, prefix, conflictResolver, settings);
     }
-
 }

@@ -31,30 +31,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
- * An abstract convenience class meant to be implemented by classes that need to
- * publish text messages
+ * An abstract convenience class meant to be implemented by classes that need to publish text messages
  */
 abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWriterFilterAdapter
         implements IPublisherFilter, INodeGroupExtensionPoint, BeanNameAware {
-
     private final Logger log = LoggerFactory.getLogger(getClass());
-
     private final String MSG_CACHE = "msg_CACHE" + hashCode();
-
     protected IPublisher publisher;
-
     private boolean loadDataInTargetDatabase = true;
-
     protected String tableName;
-
     private String[] nodeGroupIdsToApplyTo;
-
     private int messagesSinceLastLogOutput = 0;
-
     private long minTimeInMsBetweenLogOutput = 30000;
-
     private long lastTimeInMsOutputLogged = System.currentTimeMillis();
-
     private String beanName;
 
     protected abstract String addTextHeader(
@@ -158,5 +147,4 @@ abstract public class AbstractTextPublisherDataLoaderFilter extends DatabaseWrit
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-
 }

@@ -30,16 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
-	private static final Logger log = LoggerFactory.getLogger(SoftwareUpgradeListener.class);
-
+    private static final Logger log = LoggerFactory.getLogger(SoftwareUpgradeListener.class);
     ISymmetricEngine engine;
-    
+
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
-    
+
     @Override
     public void upgrade(String databaseVersion, String softwareVersion) {
         if (databaseVersion.equals("3.8.0")) {
@@ -55,5 +53,4 @@ public class SoftwareUpgradeListener implements ISoftwareUpgradeListener, ISymme
             throw new RuntimeException(e);
         }
     }
-
 }

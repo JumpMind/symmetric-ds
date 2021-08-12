@@ -28,12 +28,10 @@ import org.jumpmind.symmetric.model.OutgoingBatch;
  * Only put individual transactions in a batch.
  */
 public class TransactionalBatchAlgorithm implements IBatchAlgorithm, IBuiltInExtensionPoint {
-
     public static final String NAME = "transactional";
-    
+
     public boolean isBatchComplete(OutgoingBatch batch, DataMetaData dataMetaData,
             SimpleRouterContext routingContext) {
         return routingContext.isEncountedTransactionBoundary();
     }
-
 }

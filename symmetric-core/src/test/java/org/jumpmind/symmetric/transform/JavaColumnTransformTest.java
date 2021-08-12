@@ -48,16 +48,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JavaColumnTransformTest {
-
     IExtensionService extensionService;
     IDatabasePlatform platform;
     DataContext context;
 
     @Before
-    public void setUp() throws Exception {        
+    public void setUp() throws Exception {
         ISqlTransaction sqlTransaction = mock(ISqlTransaction.class);
         platform = mock(IDatabasePlatform.class);
-        
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
         IParameterService parameterService = mock(IParameterService.class);
         IDatabasePlatform platform = mock(IDatabasePlatform.class);
@@ -65,9 +63,7 @@ public class JavaColumnTransformTest {
         when(dialect.getPlatform()).thenReturn(platform);
         when(engine.getParameterService()).thenReturn(parameterService);
         when(engine.getSymmetricDialect()).thenReturn(dialect);
-
         extensionService = new ExtensionService(engine);
-        
         context = mock(DataContext.class);
         when(context.findTransaction()).thenReturn(sqlTransaction);
     }
@@ -75,7 +71,6 @@ public class JavaColumnTransformTest {
     @Test
     public void testSimple() throws Exception {
         String javaCode = "return \"transValue\";";
-
         TransformColumn column = new TransformColumn("sColumn", "tColumn", false, "java", javaCode);
         TransformTable table = new TransformTable("sTable", "tTable", TransformPoint.LOAD, column);
         Map<String, String> sourceKeyValues = new HashMap<String, String>();
@@ -84,7 +79,6 @@ public class JavaColumnTransformTest {
         Map<String, String> oldSourceValues = new HashMap<String, String>();
         oldSourceValues.put("sColumn", "anOldValue");
         TransformedData data = new TransformedData(table, DataEventType.INSERT, sourceKeyValues, oldSourceValues, sourceValues);
-
         JavaColumnTransform transform = new JavaColumnTransform(extensionService);
         String out = transform.transform(platform, context, column, data, sourceValues, "aNewValue", "anOldValue");
         assertEquals("transValue", out);
@@ -101,7 +95,6 @@ public class JavaColumnTransformTest {
                 + "        }"
                 + "}, namedParams);"
                 + "return \"transValue\";";
-
         TransformColumn column = new TransformColumn("sColumn", "tColumn", false, "java", javaCode);
         TransformTable table = new TransformTable("sTable", "tTable", TransformPoint.LOAD, column);
         Map<String, String> sourceKeyValues = new HashMap<String, String>();
@@ -110,10 +103,8 @@ public class JavaColumnTransformTest {
         Map<String, String> oldSourceValues = new HashMap<String, String>();
         oldSourceValues.put("sColumn", "anOldValue");
         TransformedData data = new TransformedData(table, DataEventType.INSERT, sourceKeyValues, oldSourceValues, sourceValues);
-
         JavaColumnTransform transform = new JavaColumnTransform(extensionService);
         String out = transform.transform(platform, context, column, data, sourceValues, "aNewValue", "anOldValue");
         assertEquals("transValue", out);
     }
-
 }

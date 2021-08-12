@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport;
 
 import java.io.IOException;
@@ -45,9 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract public class AbstractTransportManager {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected IExtensionService extensionService;
 
     public AbstractTransportManager() {
@@ -58,18 +55,15 @@ abstract public class AbstractTransportManager {
     }
 
     /**
-     * Build the url for remote node communication. Use the remote sync_url
-     * first, if it is null or blank, then use the registration url instead.
+     * Build the url for remote node communication. Use the remote sync_url first, if it is null or blank, then use the registration url instead.
      */
     public String resolveURL(String syncUrl, String registrationUrl) {
         if (StringUtils.isBlank(syncUrl) || syncUrl.startsWith(Constants.PROTOCOL_NONE)) {
             log.debug("Using the registration URL to contact the remote node because the syncURL for the node is blank");
             return registrationUrl;
         }
-
         try {
             URI uri = new URI(syncUrl);
-
             for (ISyncUrlExtension handler : extensionService.getExtensionPointList(ISyncUrlExtension.class)) {
                 syncUrl = handler.resolveUrl(uri);
                 uri = new URI(syncUrl);
@@ -110,11 +104,9 @@ abstract public class AbstractTransportManager {
                 append(builder, WebConstants.ACK_IGNORE_ROW_COUNT + batchId, batch.getIgnoreRowCount());
                 append(builder, WebConstants.ACK_MISSING_DELETE_COUNT + batchId, batch.getMissingDeleteCount());
                 append(builder, WebConstants.ACK_SKIP_COUNT + batchId, batch.getSkipCount());
-
                 if (batch.getIgnoreCount() > 0) {
                     append(builder, WebConstants.ACK_IGNORE_COUNT + batchId, batch.getIgnoreCount());
                 }
-
                 if (batch.getStatus() == Status.ER) {
                     String sqlState = batch.getSqlState();
                     if (sqlState != null && sqlState.length() > 10) {
@@ -190,7 +182,7 @@ abstract public class AbstractTransportManager {
         batchInfo.setLoadMillis(getParamAsNum(parameters, WebConstants.ACK_DATABASE_MILLIS + batchId));
         batchInfo.setByteCount(getParamAsNum(parameters, WebConstants.ACK_BYTE_COUNT + batchId));
         batchInfo.setLoadRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_ROW_COUNT + batchId));
-        batchInfo.setTransformLoadMillis(getParamAsNum(parameters,  WebConstants.TRANSFORM_TIME + batchId));
+        batchInfo.setTransformLoadMillis(getParamAsNum(parameters, WebConstants.TRANSFORM_TIME + batchId));
         batchInfo.setLoadInsertRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_INSERT_ROW_COUNT + batchId));
         batchInfo.setLoadUpdateRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_UPDATE_ROW_COUNT + batchId));
         batchInfo.setLoadDeleteRowCount(getParamAsNum(parameters, WebConstants.ACK_LOAD_DELETE_ROW_COUNT + batchId));
@@ -199,10 +191,9 @@ abstract public class AbstractTransportManager {
         batchInfo.setIgnoreRowCount(getParamAsNum(parameters, WebConstants.ACK_IGNORE_ROW_COUNT + batchId));
         batchInfo.setMissingDeleteCount(getParamAsNum(parameters, WebConstants.ACK_MISSING_DELETE_COUNT + batchId));
         batchInfo.setSkipCount(getParamAsNum(parameters, WebConstants.ACK_SKIP_COUNT + batchId));
-        
         batchInfo.setIgnored(getParamAsBoolean(parameters, WebConstants.ACK_IGNORE_COUNT + batchId));
         String status = getParam(parameters, WebConstants.ACK_BATCH_NAME + batchId, "").trim();
-        batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK) || status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));        
+        batchInfo.setOk(status.equalsIgnoreCase(WebConstants.ACK_BATCH_OK) || status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
         batchInfo.setResend(status.equalsIgnoreCase(WebConstants.ACK_BATCH_RESEND));
         batchInfo.setStartTime(getParamAsNum(parameters, WebConstants.ACK_START_TIME + batchId));
         if (!batchInfo.isOk()) {
@@ -249,5 +240,4 @@ abstract public class AbstractTransportManager {
         }
         return (String) value;
     }
-
 }

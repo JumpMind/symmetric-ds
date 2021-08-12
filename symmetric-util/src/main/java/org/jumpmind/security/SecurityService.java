@@ -55,21 +55,13 @@ import org.slf4j.LoggerFactory;
  * @see ISecurityService
  */
 public class SecurityService implements ISecurityService {
-
     protected Logger log = LoggerFactory.getLogger(SecurityService.class);
-
     protected static volatile SecretKey secretKey;
-
     protected static String keyStoreFileName;
-    
     protected static URL keyStoreURL;
-
     protected static volatile boolean hasInitKeyStore;
-    
     protected static String trustStoreFileName;
-    
     protected static URL trustStoreURL;
-
     static {
         keyStoreFileName = StringUtils.trimToNull(System.getProperty(SecurityConstants.SYSPROP_KEYSTORE));
         if (keyStoreFileName == null) {
@@ -91,7 +83,7 @@ public class SecurityService implements ISecurityService {
 
     public synchronized void init() {
     }
-    
+
     @Override
     public KeyStore getTrustStore() {
         try {
@@ -103,7 +95,7 @@ public class SecurityService implements ISecurityService {
             } else if (trustStoreURL != null) {
                 try (InputStream is = trustStoreURL.openStream()) {
                     ks.load(is, getTrustStorePassword().toCharArray());
-                }                
+                }
             }
             return ks;
         } catch (RuntimeException e) {
@@ -139,7 +131,7 @@ public class SecurityService implements ISecurityService {
             throw new RuntimeException(e);
         }
     }
-    
+
     @Override
     public KeyManagerFactory getKeyManagerFactory() {
         KeyManagerFactory keyManagerFactory;
@@ -151,7 +143,6 @@ public class SecurityService implements ISecurityService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
         return keyManagerFactory;
     }
 
@@ -176,7 +167,7 @@ public class SecurityService implements ISecurityService {
     }
 
     @Override
-    public TrustedCertificateEntry createTrustedCert(byte[] content, String fileType, String alias, String password) {        
+    public TrustedCertificateEntry createTrustedCert(byte[] content, String fileType, String alias, String password) {
         return null;
     }
 
@@ -188,7 +179,7 @@ public class SecurityService implements ISecurityService {
     public void installSslCert(KeyStore.PrivateKeyEntry entry) {
         throw new NotImplementedException();
     }
-    
+
     @Override
     public KeyStore.PrivateKeyEntry createDefaultSslCert(String host) {
         throw new NotImplementedException();
@@ -196,14 +187,14 @@ public class SecurityService implements ISecurityService {
 
     @Override
     public KeyStore.PrivateKeyEntry createSslCert(byte[] content, String fileType, String alias, String password) {
-        throw new NotImplementedException();        
+        throw new NotImplementedException();
     }
 
     @Override
     public X509Certificate getCurrentSslCert() {
         throw new NotImplementedException();
     }
-    
+
     @Override
     public String exportCurrentSslCert(boolean includePrivateKey) {
         throw new NotImplementedException();
@@ -223,7 +214,7 @@ public class SecurityService implements ISecurityService {
                     ks.load(null, getKeyStorePassword().toCharArray());
                     try (FileOutputStream os = new FileOutputStream(keyStoreFileName)) {
                         ks.store(os, getKeyStorePassword().toCharArray());
-                    }   
+                    }
                     hasInitKeyStore = true;
                 }
             }
@@ -272,7 +263,7 @@ public class SecurityService implements ISecurityService {
         }
         return value;
     }
-    
+
     private String rot13(String text) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
@@ -292,7 +283,7 @@ public class SecurityService implements ISecurityService {
         Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
         initializeCipher(cipher, mode);
         if (log.isDebugEnabled()) {
-            log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(), 
+            log.debug("Using {} algorithm {}-bit provided by {}.", cipher.getAlgorithm(),
                     secretKey.getEncoded().length * 8, cipher.getProvider().getName());
         }
         return cipher;
@@ -300,7 +291,6 @@ public class SecurityService implements ISecurityService {
 
     protected void initializeCipher(Cipher cipher, int mode) throws Exception {
         AlgorithmParameterSpec paramSpec = Cipher.getMaxAllowedParameterSpec(cipher.getAlgorithm());
-
         if (paramSpec instanceof PBEParameterSpec || cipher.getAlgorithm().startsWith("PBE")) {
             paramSpec = new PBEParameterSpec(SecurityConstants.SALT, SecurityConstants.ITERATION_COUNT);
             cipher.init(mode, secretKey, paramSpec);
@@ -322,10 +312,10 @@ public class SecurityService implements ISecurityService {
 
     protected String getKeyManagerFactoryAlgorithm() {
         String algorithm = System.getProperty(SecurityConstants.SYSPROP_KEY_MANAGER_FACTORY_ALGORITHM);
-        if(algorithm == null) {
+        if (algorithm == null) {
             algorithm = KeyManagerFactory.getDefaultAlgorithm();
         }
-        if(algorithm == null) {
+        if (algorithm == null) {
             algorithm = "SunX509";
         }
         return algorithm;
@@ -358,15 +348,12 @@ public class SecurityService implements ISecurityService {
         if (len <= 0) {
             throw new IllegalArgumentException("length must be positive");
         }
-
         SecureRandom random = new SecureRandom();
         int maxInt = SecurityConstants.PASSWORD_CHARS.length();
         char[] password = new char[len];
- 
         for (int i = 0; i < len; i++) {
             password[i] = SecurityConstants.PASSWORD_CHARS.charAt(random.nextInt(maxInt));
         }
-
         return new String(password);
     }
 
@@ -375,7 +362,7 @@ public class SecurityService implements ISecurityService {
             try {
                 if (SecurityConstants.CIPHERS[i].startsWith("DESede")) {
                     SecretKeyFactory kf = SecretKeyFactory.getInstance(SecurityConstants.KEYSPECS[i]);
-                    secretKey = kf.generateSecret(new DESedeKeySpec(getBytes(SecurityConstants.BYTESIZES[i])));                    
+                    secretKey = kf.generateSecret(new DESedeKeySpec(getBytes(SecurityConstants.BYTESIZES[i])));
                 } else {
                     secretKey = new SecretKeySpec(getBytes(SecurityConstants.BYTESIZES[i]), SecurityConstants.KEYSPECS[i]);
                 }
@@ -387,7 +374,7 @@ public class SecurityService implements ISecurityService {
                 log.debug("Cannot use {} {}-bit because: {}", SecurityConstants.CIPHERS[i],
                         SecurityConstants.BYTESIZES[i] * 8, e.getMessage());
             }
-        } 
+        }
         return secretKey;
     }
 
@@ -402,9 +389,9 @@ public class SecurityService implements ISecurityService {
                 bytes[i] = password[i];
             }
         }
-        return bytes;        
+        return bytes;
     }
- 
+
     @Override
     public void saveTrustStore(KeyStore ks) throws Exception {
         if (trustStoreFileName != null) {
@@ -423,5 +410,4 @@ public class SecurityService implements ISecurityService {
             }
         }
     }
-
 }

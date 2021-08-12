@@ -33,33 +33,21 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.io.data.transform.TransformColumn.IncludeOnType;
 
 public class TransformedData implements Cloneable {
-
     protected boolean generatedIdentityNeeded = false;
-    
     protected TargetDmlAction targetAction = null;
-
     protected DataEventType targetDmlType;
-
     protected DataEventType sourceDmlType;
-
     protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> targetNewValueByIncludeOnType;
-
     protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> targetNewKeysByIncludeOnType;
-    
     protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> targetOldValuesByIncludeOnType;
-
     protected TransformTable transformation;
-
     protected Map<String, String> sourceKeyValues;
-
     protected Map<String, String> oldSourceValues;
-
     protected Map<String, String> sourceValues;
 
     public TransformedData(TransformTable transformation, DataEventType sourceDmlType,
-                           Map<String, String> sourceKeyValues, Map<String, String> oldSourceValues,
-                           Map<String, String> sourceValues) {
-
+            Map<String, String> sourceKeyValues, Map<String, String> oldSourceValues,
+            Map<String, String> sourceValues) {
         this.transformation = transformation;
         this.targetDmlType = sourceDmlType;
         this.sourceDmlType = sourceDmlType;
@@ -69,37 +57,30 @@ public class TransformedData implements Cloneable {
     }
 
     public String getFullyQualifiedTableName() {
-
         return transformation.getFullyQualifiedTargetTableName();
     }
 
     public DataEventType getTargetDmlType() {
-
         return targetDmlType;
     }
 
     public void setTargetDmlType(DataEventType dmlType) {
-
         this.targetDmlType = dmlType;
     }
 
     public String getTableName() {
-
         return transformation.getTargetTableName();
     }
 
     public String getCatalogName() {
-
         return transformation.getTargetCatalogName();
     }
 
     public String getSchemaName() {
-
         return transformation.getTargetSchemaName();
     }
 
     public void put(TransformColumn column, String columnValue, String oldValue, boolean recordAsKey) {
-
         if (recordAsKey) {
             if (targetNewKeysByIncludeOnType == null) {
                 targetNewKeysByIncludeOnType = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(
@@ -112,36 +93,28 @@ public class TransformedData implements Cloneable {
             }
             keyValues.put(column.getTargetColumnName(), oldValue != null ? oldValue : columnValue);
         }
-        
         if (targetNewValueByIncludeOnType == null) {
             targetNewValueByIncludeOnType = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
         }
-        
         LinkedHashMap<String, String> columnValues = targetNewValueByIncludeOnType.get(column.getIncludeOn());
         if (columnValues == null) {
             columnValues = new LinkedHashMap<String, String>();
             targetNewValueByIncludeOnType.put(column.getIncludeOn(), columnValues);
         }
-        
         columnValues.put(column.getTargetColumnName(), columnValue);
-        
         if (targetOldValuesByIncludeOnType == null) {
             targetOldValuesByIncludeOnType = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(2);
         }
-        
         LinkedHashMap<String, String> oldColumnValues = targetOldValuesByIncludeOnType.get(column.getIncludeOn());
         if (oldColumnValues == null) {
             oldColumnValues = new LinkedHashMap<String, String>();
             targetOldValuesByIncludeOnType.put(column.getIncludeOn(), oldColumnValues);
         }
-        
         oldColumnValues.put(column.getTargetColumnName(), oldValue);
     }
 
-    
     protected Map<String, String> retrieve(
             Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> source) {
-
         Map<String, String> list = new LinkedHashMap<String, String>(source == null ? 0
                 : source.size());
         if (source != null) {
@@ -149,14 +122,12 @@ public class TransformedData implements Cloneable {
             if (values != null) {
                 list.putAll(values);
             }
-
             IncludeOnType type = IncludeOnType.DELETE;
             if (targetDmlType == DataEventType.UPDATE && sourceDmlType != DataEventType.DELETE) {
                 type = IncludeOnType.UPDATE;
             } else if (targetDmlType == DataEventType.INSERT) {
                 type = IncludeOnType.INSERT;
             }
-
             values = source.get(type);
             if (values != null) {
                 list.putAll(values);
@@ -164,7 +135,7 @@ public class TransformedData implements Cloneable {
         }
         return list;
     }
-    
+
     protected List<String> retrieve(
             Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> source,
             boolean getColumnNames) {
@@ -175,7 +146,6 @@ public class TransformedData implements Cloneable {
             return new ArrayList<String>(values.values());
         }
     }
-   
 
     public Map<String, String> getTargetKeyValues() {
         return retrieve(targetNewKeysByIncludeOnType);
@@ -185,38 +155,31 @@ public class TransformedData implements Cloneable {
         return retrieve(targetNewValueByIncludeOnType);
     }
 
-    
     public String[] getKeyNames() {
-
         List<String> list = retrieve(targetNewKeysByIncludeOnType, true);
         return list.toArray(new String[list.size()]);
     }
 
     public String[] getKeyValues() {
-
         List<String> list = retrieve(targetNewKeysByIncludeOnType, false);
         return list.toArray(new String[list.size()]);
     }
 
     public String[] getColumnNames() {
-
         List<String> list = retrieve(targetNewValueByIncludeOnType, true);
         return list.toArray(new String[list.size()]);
     }
 
     public String[] getColumnValues() {
-
         List<String> list = retrieve(targetNewValueByIncludeOnType, false);
         return list.toArray(new String[list.size()]);
     }
 
     public DataEventType getSourceDmlType() {
-
         return sourceDmlType;
     }
 
     public TransformedData copy() {
-
         try {
             TransformedData clone = (TransformedData) this.clone();
             clone.targetNewValueByIncludeOnType = copy(targetNewValueByIncludeOnType);
@@ -229,23 +192,19 @@ public class TransformedData implements Cloneable {
     }
 
     public TransformTable getTransformation() {
-
         return transformation;
     }
 
     public void setGeneratedIdentityNeeded(boolean generatedIdentityNeeded) {
-
         this.generatedIdentityNeeded = generatedIdentityNeeded;
     }
 
     public boolean isGeneratedIdentityNeeded() {
-
         return generatedIdentityNeeded;
     }
 
     protected Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> copy(
             Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> toCopy) {
-
         Map<TransformColumn.IncludeOnType, LinkedHashMap<String, String>> newMap = new HashMap<TransformColumn.IncludeOnType, LinkedHashMap<String, String>>(
                 toCopy.size());
         for (TransformColumn.IncludeOnType key : toCopy.keySet()) {
@@ -256,30 +215,26 @@ public class TransformedData implements Cloneable {
     }
 
     public Map<String, String> getSourceKeyValues() {
-
         return sourceKeyValues;
     }
 
     public Map<String, String> getOldSourceValues() {
-
         return oldSourceValues;
     }
 
     public Map<String, String> getSourceValues() {
-
         return sourceValues;
     }
-    
+
     public void setTargetAction(TargetDmlAction targetAction) {
         this.targetAction = targetAction;
     }
-    
+
     public TargetDmlAction getTargetAction() {
         return targetAction;
     }
 
     public boolean hasSameKeyValues(String[] otherKeyValues) {
-
         String[] keyValues = getKeyValues();
         if (otherKeyValues != null) {
             if (keyValues != null) {
@@ -288,9 +243,9 @@ public class TransformedData implements Cloneable {
                 }
                 for (int i = 0; i < otherKeyValues.length; i++) {
                     if (!(keyValues[i] == null && otherKeyValues[i] == null) &&
-                         ((keyValues[i] == null && otherKeyValues[i] != null) ||
-                          (otherKeyValues[i] == null && keyValues[i] != null) ||                            
-                          (!keyValues[i].equals(otherKeyValues[i])))) {
+                            ((keyValues[i] == null && otherKeyValues[i] != null) ||
+                                    (otherKeyValues[i] == null && keyValues[i] != null) ||
+                                    (!keyValues[i].equals(otherKeyValues[i])))) {
                         return false;
                     }
                 }
@@ -304,7 +259,6 @@ public class TransformedData implements Cloneable {
     }
 
     public Table buildTargetTable() {
-
         Table table = null;
         String[] columnNames = getColumnNames();
         String[] keyNames = getKeyNames();
@@ -327,7 +281,6 @@ public class TransformedData implements Cloneable {
     }
 
     public CsvData buildTargetCsvData() {
-
         CsvData data = new CsvData(this.targetDmlType);
         if (transformation != null) {
             data.putAttribute(CsvData.ATTRIBUTE_TABLE_NAME, transformation.getSourceTableName());
@@ -335,7 +288,6 @@ public class TransformedData implements Cloneable {
         if (targetDmlType != DataEventType.DELETE) {
             data.putParsedData(CsvData.ROW_DATA, getColumnValues());
         }
-        
         if (targetDmlType == DataEventType.UPDATE || targetDmlType == DataEventType.DELETE) {
             data.putParsedData(CsvData.OLD_DATA, getOldColumnValues());
             data.putParsedData(CsvData.PK_DATA, getKeyValues());
@@ -356,5 +308,4 @@ public class TransformedData implements Cloneable {
             return null;
         }
     }
-
 }

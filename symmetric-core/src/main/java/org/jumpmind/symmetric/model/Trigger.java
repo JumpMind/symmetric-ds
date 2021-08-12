@@ -39,103 +39,55 @@ import org.slf4j.LoggerFactory;
  * Defines the trigger via which a table will be synchronized.
  */
 public class Trigger implements Serializable, Cloneable {
-
     private static final long serialVersionUID = 1L;
-
     private static final Logger log = LoggerFactory.getLogger(Trigger.class);
-
     private static final String DEFAULT_CONDITION = "1=1";
-
     private String triggerId;
-
     private String sourceTableName;
-
     private String sourceTableNameLowerCase;
-
     private String sourceSchemaName;
-
     private String sourceCatalogName;
-        
     private boolean isSourceTableNameWildCarded;
-    
     private boolean isSourceSchemaWildCarded;
-    
     private boolean isSourceCatalogWildCarded;
-    
     private boolean isSourceTableNameExpanded;
-
     private String sourceTableNameUnescaped;
-    
     private String sourceSchemaNameUnescaped;
-
     private String sourceCatalogNameUnescaped;
-
     private String channelId = Constants.CHANNEL_DEFAULT;
-    
     private String reloadChannelId = Constants.CHANNEL_RELOAD;
-
     private boolean syncOnUpdate = true;
-
     private boolean syncOnInsert = true;
-
     private boolean syncOnDelete = true;
-
     private boolean syncOnIncomingBatch = false;
-
     private boolean useStreamLobs = false;
-
     private boolean useCaptureLobs = false;
-
     private boolean useCaptureOldData = true;
-
     private boolean useHandleKeyUpdates = true;
-
     private boolean streamRow = false;
-    
     private String nameForInsertTrigger;
-
     private String nameForUpdateTrigger;
-
     private String nameForDeleteTrigger;
-
     private String syncOnUpdateCondition = DEFAULT_CONDITION;
-
     private String syncOnInsertCondition = DEFAULT_CONDITION;
-
     private String syncOnDeleteCondition = DEFAULT_CONDITION;
-    
     private String channelExpression = null;
-
     private String customBeforeUpdateText;
-
     private String customBeforeInsertText;
-
     private String customBeforeDeleteText;
-
     private String customOnUpdateText;
-
     private String customOnInsertText;
-
     private String customOnDeleteText;
-
     private String excludedColumnNames = null;
-
     private String includedColumnNames = null;
-
     private String syncKeyNames = null;
-
     /**
-     * This is a SQL expression that creates a unique id which the sync process
-     * can use to 'group' events together and commit together.
+     * This is a SQL expression that creates a unique id which the sync process can use to 'group' events together and commit together.
      */
     private String txIdExpression = null;
-
     private String externalSelect = null;
-
     private Date createTime;
-
     private Date lastUpdateTime;
-
     private String lastUpdateBy;
 
     public Trigger() {
@@ -146,7 +98,7 @@ public class Trigger implements Serializable, Cloneable {
         setSourceTableName(tableName);
         this.channelId = channelId;
     }
-    
+
     public Trigger(String tableName, String channelId, boolean syncOnIncomingBatch) {
         this(tableName, channelId);
         this.syncOnIncomingBatch = syncOnIncomingBatch;
@@ -189,7 +141,7 @@ public class Trigger implements Serializable, Cloneable {
         customOnUpdateText = StringUtils.trimToNull(customOnUpdateText);
         customOnDeleteText = StringUtils.trimToNull(customOnDeleteText);
     }
-    
+
     public Column[] filterExcludedAndIncludedColumns(Column[] src) {
         return filterIncludedColumns(filterExcludedColumns(src));
     }
@@ -209,7 +161,7 @@ public class Trigger implements Serializable, Cloneable {
             return new Column[0];
         }
     }
-    
+
     public Column[] filterIncludedColumns(Column[] src) {
         if (src != null) {
             List<String> includedColumnNames = getIncludedColumnNamesAsList();
@@ -241,7 +193,6 @@ public class Trigger implements Serializable, Cloneable {
                     log.error("The sync key column '{}' was specified for the '{}' trigger but was not found in the table", syncKey, triggerId);
                 }
             }
-
             if (columns.size() > 0) {
                 return columns.toArray(new Column[columns.size()]);
             } else {
@@ -253,21 +204,16 @@ public class Trigger implements Serializable, Cloneable {
     }
 
     /**
-     * When dealing with columns, always use this method to order the columns so
-     * that the primary keys are first.
+     * When dealing with columns, always use this method to order the columns so that the primary keys are first.
      */
     public Column[] orderColumnsForTable(Table table) {
         if (table != null) {
-
             Column[] pks = getSyncKeysColumnsForTable(table);
             Column[] cols = table.getColumns();
-
             List<Column> orderedColumns = new ArrayList<Column>(cols.length);
-
             for (int i = 0; i < pks.length; i++) {
                 orderedColumns.add(pks[i]);
             }
-
             for (int i = 0; i < cols.length; i++) {
                 boolean syncKey = false;
                 for (int j = 0; j < pks.length; j++) {
@@ -300,7 +246,7 @@ public class Trigger implements Serializable, Cloneable {
             return Collections.EMPTY_LIST;
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private List<String> getIncludedColumnNamesAsList() {
         if (StringUtils.isNotBlank(includedColumnNames)) {
@@ -343,31 +289,31 @@ public class Trigger implements Serializable, Cloneable {
     public boolean isSourceWildCarded() {
         return isSourceTableNameWildCarded() || isSourceCatalogNameWildCarded() || isSourceSchemaNameWildCarded();
     }
-    
+
     public boolean isSourceTableNameWildCarded() {
         return isSourceTableNameWildCarded;
     }
-    
+
     public boolean isSourceTableNameExpanded() {
-		return isSourceTableNameExpanded;
-	}
+        return isSourceTableNameExpanded;
+    }
 
-	public void setSourceTableNameExpanded(boolean isSourceTableNameExpanded) {
-		this.isSourceTableNameExpanded = isSourceTableNameExpanded;
-	}
+    public void setSourceTableNameExpanded(boolean isSourceTableNameExpanded) {
+        this.isSourceTableNameExpanded = isSourceTableNameExpanded;
+    }
 
-	public boolean isSourceCatalogNameWildCarded() {
+    public boolean isSourceCatalogNameWildCarded() {
         return isSourceCatalogWildCarded;
     }
 
     public boolean isSourceSchemaNameWildCarded() {
         return isSourceSchemaWildCarded;
     }
-    
+
     public String getChannelExpression() {
         return channelExpression;
     }
-    
+
     public void setChannelExpression(String channelExpression) {
         this.channelExpression = channelExpression;
     }
@@ -420,11 +366,11 @@ public class Trigger implements Serializable, Cloneable {
     public void setChannelId(String channelId) {
         this.channelId = channelId;
     }
-    
+
     public String getReloadChannelId() {
         return reloadChannelId;
     }
-    
+
     public void setReloadChannelId(String reloadChannelId) {
         this.reloadChannelId = reloadChannelId;
     }
@@ -564,7 +510,7 @@ public class Trigger implements Serializable, Cloneable {
     public void setExcludedColumnNames(String excludedColumnNames) {
         this.excludedColumnNames = excludedColumnNames;
     }
-    
+
     public String getIncludedColumnNames() {
         return includedColumnNames;
     }
@@ -687,19 +633,15 @@ public class Trigger implements Serializable, Cloneable {
         if (null != sourceTableName) {
             hashedValue += sourceTableName.hashCode();
         }
-
         if (null != channelId) {
             hashedValue += channelId.hashCode();
         }
-
         if (null != sourceSchemaName) {
             hashedValue += sourceSchemaName.hashCode();
         }
-
         if (null != sourceCatalogName) {
             hashedValue += sourceCatalogName.hashCode();
         }
-
         hashedValue += syncOnUpdate ? "syncOnUpdate".hashCode() : 0;
         hashedValue += syncOnInsert ? "syncOnInsert".hashCode() : 0;
         hashedValue += syncOnDelete ? "syncOnDelete".hashCode() : 0;
@@ -708,83 +650,65 @@ public class Trigger implements Serializable, Cloneable {
         hashedValue += useCaptureLobs ? "useCaptureLobs".hashCode() : 0;
         hashedValue += useCaptureOldData ? "useCaptureOldData".hashCode() : 0;
         hashedValue += useHandleKeyUpdates ? "useHandleKeyUpdates".hashCode() : 0;
-
-
         if (null != nameForInsertTrigger) {
             hashedValue += nameForInsertTrigger.hashCode();
         }
-
         if (null != nameForUpdateTrigger) {
             hashedValue += nameForUpdateTrigger.hashCode();
         }
-
         if (null != nameForDeleteTrigger) {
             hashedValue += nameForDeleteTrigger.hashCode();
         }
-
         if (null != syncOnUpdateCondition) {
             hashedValue += syncOnUpdateCondition.hashCode();
         }
-
         if (null != syncOnInsertCondition) {
             hashedValue += syncOnInsertCondition.hashCode();
         }
-
         if (null != syncOnDeleteCondition) {
             hashedValue += syncOnDeleteCondition.hashCode();
         }
-
         if (null != customBeforeUpdateText) {
             hashedValue += customBeforeUpdateText.hashCode();
         }
-
         if (null != customBeforeInsertText) {
             hashedValue += customBeforeInsertText.hashCode();
         }
-
         if (null != customBeforeDeleteText) {
             hashedValue += customBeforeDeleteText.hashCode();
         }
-
         if (null != customOnUpdateText) {
             hashedValue += customOnUpdateText.hashCode();
         }
-
         if (null != customOnInsertText) {
             hashedValue += customOnInsertText.hashCode();
         }
-
         if (null != customOnDeleteText) {
             hashedValue += customOnDeleteText.hashCode();
         }
-
         if (null != excludedColumnNames) {
             hashedValue += excludedColumnNames.hashCode();
         }
-
         if (null != externalSelect) {
             hashedValue += externalSelect.hashCode();
         }
-
         if (null != txIdExpression) {
             hashedValue += txIdExpression.hashCode();
         }
-
         if (null != syncKeyNames) {
             hashedValue += syncKeyNames.hashCode();
         }
-
         return hashedValue;
     }
-    
+
     public boolean matchesCatalogName(String catalogName, boolean ignoreCase) {
         return matches(sourceCatalogName, catalogName, ignoreCase);
     }
-    
+
     public boolean matchesSchemaName(String schemaName, boolean ignoreCase) {
         return matches(sourceSchemaName, schemaName, ignoreCase);
     }
-        
+
     protected boolean matches(String match, String target, boolean ignoreCase) {
         boolean matches = false;
         String[] wildcardTokens = match.split(",");
@@ -797,7 +721,7 @@ public class Trigger implements Serializable, Cloneable {
                     break;
                 }
             }
-        }        
+        }
         return matches;
     }
 
@@ -808,17 +732,15 @@ public class Trigger implements Serializable, Cloneable {
             catalogMatch = matches(sourceCatalogName, table.getCatalog(), ignoreCase);
         } else {
             catalogMatch = (StringUtils.equals(sourceCatalogNameUnescaped, table.getCatalog()) ||
-                    (StringUtils.isBlank(sourceCatalogName) && StringUtils.equals(defaultCatalog, table.getCatalog())));            
+                    (StringUtils.isBlank(sourceCatalogName) && StringUtils.equals(defaultCatalog, table.getCatalog())));
         }
-
         boolean schemaMatch = false;
         if (isSourceSchemaWildCarded) {
             schemaMatch = matches(sourceSchemaName, table.getSchema(), ignoreCase);
         } else {
             schemaMatch = (StringUtils.equals(sourceSchemaNameUnescaped, table.getSchema()) ||
-                    (StringUtils.isBlank(sourceSchemaName) && StringUtils.equals(defaultSchema, table.getSchema())));            
+                    (StringUtils.isBlank(sourceSchemaName) && StringUtils.equals(defaultSchema, table.getSchema())));
         }
-
         boolean tableMatch = false;
         if (isSourceTableNameWildCarded) {
             tableMatch = matches(sourceTableName, table.getName(), ignoreCase);
@@ -826,7 +748,6 @@ public class Trigger implements Serializable, Cloneable {
             tableMatch = ignoreCase ? table.getName().equalsIgnoreCase(sourceTableNameUnescaped)
                     : table.getName().equals(sourceTableNameUnescaped);
         }
-
         return catalogMatch && schemaMatch && tableMatch;
     }
 

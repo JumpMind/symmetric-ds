@@ -34,30 +34,27 @@ import org.jumpmind.db.platform.DatabaseMetaDataWrapper;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class VoltDbDdlReader extends AbstractJdbcDdlReader {
-    
     public final static String VOLT_DB_SYSTEM_INDEX_PREFIX = "VOLTDB_AUTOGEN_IDX_";
-    
+
     public VoltDbDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
         setDefaultTablePattern(null);
     }
-    
+
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         return true;
     }
-    
+
     @Override
     protected void removeSystemIndices(Connection connection, DatabaseMetaDataWrapper metaData,
             Table table) throws SQLException {
         super.removeSystemIndices(connection, metaData, table);
-        
         for (int indexIdx = 0; indexIdx < table.getIndexCount();) {
             IIndex index = table.getIndex(indexIdx);
-
             if (index.getName() != null && index.getName().startsWith(VOLT_DB_SYSTEM_INDEX_PREFIX)) {
                 table.removeIndex(indexIdx);
             } else {
@@ -65,7 +62,7 @@ public class VoltDbDdlReader extends AbstractJdbcDdlReader {
             }
         }
     }
-    
+
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
@@ -81,7 +78,7 @@ public class VoltDbDdlReader extends AbstractJdbcDdlReader {
     protected void disableAutoIncrement(Table table) {
         for (Column column : table.getColumns()) {
             column.setAutoIncrement(false);
-        } 
+        }
     }
 
     @Override

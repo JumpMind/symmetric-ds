@@ -60,29 +60,20 @@ import org.jumpmind.symmetric.web.WebConstants;
  * @see IPushService
  */
 public class PushService extends AbstractOfflineDetectorService implements IPushService, INodeCommunicationExecutor {
-
     private IDataExtractorService dataExtractorService;
-
     private IAcknowledgeService acknowledgeService;
-
     private ITransportManager transportManager;
-
     private INodeService nodeService;
-
     private IClusterService clusterService;
-
     private INodeCommunicationService nodeCommunicationService;
-    
     private IStatisticManager statisticManager;
-    
     private IConfigurationService configurationService;
-
     private Map<String, Date> startTimesOfNodesBeingPushedTo = new HashMap<String, Date>();
 
     public PushService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
             IDataExtractorService dataExtractorService, IAcknowledgeService acknowledgeService,
             ITransportManager transportManager, INodeService nodeService,
-            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager, 
+            IClusterService clusterService, INodeCommunicationService nodeCommunicationService, IStatisticManager statisticManager,
             IConfigurationService configrationService, IExtensionService extensionService) {
         super(parameterService, symmetricDialect, extensionService);
         this.dataExtractorService = dataExtractorService;
@@ -101,7 +92,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
 
     synchronized public RemoteNodeStatuses pushData(boolean force) {
         RemoteNodeStatuses statuses = new RemoteNodeStatuses(configurationService.getChannels(false));
-        
         Node identity = nodeService.findIdentity();
         if (identity != null && identity.isSyncEnabled()) {
             long minimumPeriodMs = parameterService.getLong(ParameterConstants.PUSH_MINIMUM_PERIOD_MS, -1);
@@ -115,8 +105,8 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                         for (NodeCommunication nodeCommunication : nodes) {
                             boolean meetsMinimumTime = true;
                             if (minimumPeriodMs > 0 && nodeCommunication.getLastLockTime() != null &&
-                               (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
-                               meetsMinimumTime = false; 
+                                    (System.currentTimeMillis() - nodeCommunication.getLastLockTime().getTime()) < minimumPeriodMs) {
+                                meetsMinimumTime = false;
                             }
                             boolean m2mLoadInProgress = false;
                             if (isMasterToMaster && nodeService.isDataLoadStarted(nodeCommunication.getNodeId())) {
@@ -153,7 +143,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
     public void execute(NodeCommunication nodeCommunication, RemoteNodeStatus status) {
         Node node = nodeCommunication.getNode();
         boolean immediatePushIfDataFound = parameterService.is(ParameterConstants.PUSH_IMMEDIATE_IF_DATA_FOUND, false);
-
         if (StringUtils.isNotBlank(node.getSyncUrl()) || !parameterService.isRegistrationServer()) {
             try {
                 startTimesOfNodesBeingPushedTo.put(nodeCommunication.getIdentifier(), new Date());
@@ -195,7 +184,6 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
         } else {
             log.warn("Cannot push to node '{}' in the group '{}'.  The sync url is blank", node.getNodeId(), node.getNodeGroupId());
         }
-
     }
 
     private void pushToNode(Node remote, RemoteNodeStatus status) {
@@ -206,23 +194,19 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
                 .getNodeId(), status.getQueue(), remote.getNodeId(), ProcessType.PUSH_JOB_EXTRACT));
         Map<String, String> requestProperties = new HashMap<String, String>();
         requestProperties.put(WebConstants.CHANNEL_QUEUE, status.getQueue());
-        
         try {
             transport = transportManager.getPushTransport(remote, identity,
                     identitySecurity.getNodePassword(), requestProperties, parameterService.getRegistrationUrl());
-
             List<OutgoingBatch> extractedBatches = dataExtractorService.extract(processInfo, remote, status.getQueue(), transport);
             if (extractedBatches.size() > 0) {
                 log.info("Push data sent to {}", remote);
-                
                 List<BatchAck> batchAcks = readAcks(extractedBatches, transport, transportManager, acknowledgeService, dataExtractorService);
                 status.updateOutgoingStatus(extractedBatches, batchAcks);
                 statisticManager.addJobStats(remote.getNodeId(), 1, "Push",
                         processInfo.getStartTime().getTime(), processInfo.getLastStatusChangeTime().getTime(), status.getDataProcessed());
             }
-            
             if (processInfo.getStatus() != ProcessStatus.ERROR) {
-                processInfo.setStatus(ProcessStatus.OK);            
+                processInfo.setStatus(ProcessStatus.OK);
             }
             fireOnline(remote, status);
         } catch (Exception ex) {
@@ -241,5 +225,4 @@ public class PushService extends AbstractOfflineDetectorService implements IPush
             }
         }
     }
-
 }

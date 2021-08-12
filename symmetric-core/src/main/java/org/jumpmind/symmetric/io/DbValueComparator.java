@@ -39,9 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DbValueComparator {
-    
     final Logger log = LoggerFactory.getLogger(getClass());
-
     private ISymmetricEngine sourceEngine;
     private ISymmetricEngine targetEngine;
     private boolean stringIgnoreWhiteSpace = true;
@@ -55,18 +53,16 @@ public class DbValueComparator {
         this.targetEngine = targetEngine;
         initDateFormats();
     }
-    
+
     protected void initDateFormats() {
         dateFormats.add(new SimpleDateFormat("MM-dd-yyyy HH:mm:ss:S"));
         dateFormats.add(new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.S"));
     }
 
     public int compareValues(Column sourceColumn, Column targetColumn, String sourceValue, String targetValue) {
-
         if (sourceValue == null && targetValue == null) {
             return 0;
         }
-
         if (sourceColumn.isOfTextType()) {
             return compareText(sourceColumn, targetColumn, sourceValue, targetValue);
         } else if (sourceColumn.isOfNumericType()) {
@@ -91,7 +87,6 @@ public class DbValueComparator {
             source = source != null ? source.trim() : null;
             target = target != null ? target.trim() : null;
         }
-
         if (source != null && target != null) {
             return source.compareTo(target);
         } else {
@@ -109,22 +104,18 @@ public class DbValueComparator {
         if (StringUtils.isBlank(sourceValue) && !StringUtils.isBlank(targetValue)) {
             return -1;
         }
-        
         BigDecimal source = null;
         BigDecimal target = null;
-        
-        try {            
+        try {
             source = NumberUtils.createBigDecimal(sourceValue);
         } catch (NumberFormatException ex) {
             log.debug("Failed to parse [" + sourceValue + "]", ex);
         }
-        
-        try {            
+        try {
             target = NumberUtils.createBigDecimal(targetValue);
         } catch (NumberFormatException ex) {
             log.debug("Failed to parse [" + targetValue + "]", ex);
         }
-        
         if (source != null && target != null) {
             if (numericScale >= 0) {
                 source = source.setScale(numericScale, RoundingMode.HALF_UP);
@@ -132,7 +123,6 @@ public class DbValueComparator {
             }
             return source.compareTo(target);
         }
-                    
         return sourceValue.compareTo(targetValue);
     }
 
@@ -140,10 +130,8 @@ public class DbValueComparator {
         if (sourceValue == null || targetValue == null) {
             return compareDefault(sourceColumn, targetColumn, sourceValue, targetValue);
         }
-        
         Date sourceDate = parseDate(sourceEngine, sourceColumn, sourceValue);
         Date targetDate = parseDate(targetEngine, targetColumn, targetValue);
-        
         if (sourceColumn.getJdbcTypeCode() != Types.DATE
                 && targetColumn.getJdbcTypeCode() != Types.DATE) {
             if (dateTimeFormat != null) {
@@ -157,10 +145,9 @@ public class DbValueComparator {
         }
         return compareDefault(sourceColumn, targetColumn, sourceDate, targetDate);
     }
-    
+
     public String formatDateTime(Date date) {
         SimpleDateFormat formatter = new SimpleDateFormat(dateTimeFormat);
-        
         String formattedDate = formatter.format(date);
         return formattedDate;
     }
@@ -176,11 +163,10 @@ public class DbValueComparator {
         if (sourceValue == null && targetValue != null) {
             return -1;
         }
-
         if (sourceValue instanceof Comparable<?>) {
-            return ((Comparable<Object>)sourceValue).compareTo(targetValue);            
+            return ((Comparable<Object>) sourceValue).compareTo(targetValue);
         } else if (sourceValue instanceof String) {
-            return ((String)sourceValue).compareTo((String)targetValue);
+            return ((String) sourceValue).compareTo((String) targetValue);
         } else {
             if (sourceValue != null && sourceValue.equals(targetValue)) {
                 return 0;
@@ -192,12 +178,12 @@ public class DbValueComparator {
 
     protected Date parseDate(ISymmetricEngine engine, Column column, String value) {
         Date date = null;
-        try {            
+        try {
             // Just because the source was a date doesn't mean the target column is actually a date type.
             date = engine.getDatabasePlatform().parseDate(column.getJdbcTypeCode(), value, false);
         } catch (Exception e) {
             for (SimpleDateFormat format : dateFormats) {
-                try {                
+                try {
                     date = format.parse(value);
                     if (date != null) {
                         break;
@@ -216,14 +202,13 @@ public class DbValueComparator {
 
     public void setNumericScale(int numericScale) {
         this.numericScale = numericScale;
-    }    
-    
+    }
+
     public String getDateTimeFormat() {
         return dateTimeFormat;
     }
-    
+
     public void setDateTimeFormat(String format) {
         this.dateTimeFormat = format;
     }
-
 }

@@ -30,7 +30,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.http.HttpTransportOptions;
 
 public class BigQueryPlatformFactory {
-
     public BigQueryPlatformFactory() {
     }
 
@@ -38,15 +37,12 @@ public class BigQueryPlatformFactory {
         try {
             HttpTransportOptions transportOptions = BigQueryOptions.getDefaultHttpTransportOptions();
             transportOptions = transportOptions.toBuilder().setConnectTimeout(60000).setReadTimeout(60000).build();
-
             BigQuery bigquery = BigQueryOptions.newBuilder().setProjectId(projectId).setLocation(location)
                     .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(filePath)))
                     .setTransportOptions(transportOptions).build().getService();
-            
             return new BigQueryPlatform(settings, bigquery);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
 }

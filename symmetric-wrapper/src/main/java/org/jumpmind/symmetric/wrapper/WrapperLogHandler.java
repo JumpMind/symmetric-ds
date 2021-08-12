@@ -32,14 +32,13 @@ import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
 
 public class WrapperLogHandler extends StreamHandler {
-
     protected String filename;
     protected long maxByteCount;
     protected int maxLogCount;
     protected BufferedWriter writer;
     protected long byteCount;
     protected ScheduledExecutorService executor;
-    
+
     public WrapperLogHandler(String filename, long maxByteCount, int maxLogCount) throws IOException {
         this.filename = filename;
         this.maxByteCount = maxByteCount;
@@ -53,21 +52,18 @@ public class WrapperLogHandler extends StreamHandler {
         if (writer != null) {
             writer.close();
         }
-
         File file = new File(filename);
         byteCount = 0;
         if (file.exists()) {
             byteCount = file.length();
         }
-
         if (byteCount >= maxByteCount) {
             new File(filename + "." + maxLogCount).delete();
             for (int i = maxLogCount - 1; i > 0; i--) {
-                new File(filename + "." + i).renameTo(new File(filename + "." + (i+1)));    
+                new File(filename + "." + i).renameTo(new File(filename + "." + (i + 1)));
             }
             new File(filename).renameTo(new File(filename + ".1"));
         }
-
         writer = new BufferedWriter(new FileWriter(file, true), 2048);
     }
 
@@ -126,5 +122,4 @@ public class WrapperLogHandler extends StreamHandler {
             flush();
         }
     }
-
 }

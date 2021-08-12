@@ -44,11 +44,9 @@ import org.jumpmind.db.model.Database;
 import org.jumpmind.db.model.Table;
 
 /**
- * Represents the change of the required constraint of a column. Since it is a
- * boolean value, this means the required constraint will simply be toggled.
+ * Represents the change of the required constraint of a column. Since it is a boolean value, this means the required constraint will simply be toggled.
  */
 public class ColumnRequiredChange extends TableChangeImplBase implements ColumnChange {
-    
     /** The column. */
     private Column column;
 

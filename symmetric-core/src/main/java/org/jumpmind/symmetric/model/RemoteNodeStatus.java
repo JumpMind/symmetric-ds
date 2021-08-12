@@ -30,11 +30,9 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Indicates the status of an attempt to transport data from or to a remove
- * node.
+ * Indicates the status of an attempt to transport data from or to a remove node.
  */
 public class RemoteNodeStatus implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public static enum Status {
@@ -42,7 +40,6 @@ public class RemoteNodeStatus implements Serializable {
     };
 
     private final Object monitor = new Object();
-
     private String nodeId;
     private String queue;
     private Status status;
@@ -53,14 +50,14 @@ public class RemoteNodeStatus implements Serializable {
     private Map<String, Channel> channels;
     private Map<String, Integer> tableCounts = new LinkedHashMap<String, Integer>();
     private Set<String> tableSummary = new LinkedHashSet<String>();
- 
+
     public RemoteNodeStatus(String nodeId, String channelId, Map<String, Channel> channels) {
         this.status = Status.NO_DATA;
         this.nodeId = nodeId;
         this.channels = channels;
         this.queue = channelId;
     }
-    
+
     public boolean failed() {
         return status != Status.NO_DATA && status != Status.DATA_PROCESSED;
     }
@@ -72,7 +69,7 @@ public class RemoteNodeStatus implements Serializable {
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
     }
-    
+
     public String getQueue() {
         return queue;
     }
@@ -96,7 +93,7 @@ public class RemoteNodeStatus implements Serializable {
     public long getBatchesProcessed() {
         return batchesProcessed;
     }
-    
+
     public long getReloadBatchesProcessed() {
         return reloadBatchesProcessed;
     }
@@ -114,7 +111,6 @@ public class RemoteNodeStatus implements Serializable {
                 }
             }
         }
-
         if (status != Status.DATA_ERROR && dataProcessed > 0) {
             status = Status.DATA_PROCESSED;
         }
@@ -130,7 +126,6 @@ public class RemoteNodeStatus implements Serializable {
                 }
             }
         }
-        
         int numberOfBatches = 0;
         if (outgoingBatches != null) {
             numberOfBatches = outgoingBatches.size();
@@ -144,17 +139,14 @@ public class RemoteNodeStatus implements Serializable {
                 if (channel != null && channel.isReloadFlag()) {
                     reloadBatchesProcessed++;
                 }
-                
                 if (batch.getStatus() == OutgoingBatch.Status.ER) {
                     status = Status.DATA_ERROR;
                 }
             }
         }
-        
         if (numberOfAcks != numberOfBatches) {
             status = Status.DATA_ERROR;
         }
-
         if (status != Status.DATA_ERROR && dataProcessed > 0) {
             status = Status.DATA_PROCESSED;
         }
@@ -167,31 +159,30 @@ public class RemoteNodeStatus implements Serializable {
     }
 
     public void setComplete(boolean complete) {
-
         synchronized (monitor) {
             this.complete = complete;
             monitor.notifyAll();
         }
     }
-    
+
     public boolean isComplete() {
         return complete;
     }
 
     public boolean waitCompleted(long milliseconds) throws InterruptedException {
         synchronized (monitor) {
-            if (complete){
+            if (complete) {
                 return true;
             }
             monitor.wait(milliseconds);
             return complete;
         }
     }
-    
+
     public Map<String, Integer> getTableCounts() {
         return tableCounts;
     }
-    
+
     public String getTableSummary() {
         final int MAX_SUMMARY_LENGTH = 512;
         if (tableCounts != null && !tableCounts.isEmpty()) {
@@ -199,11 +190,9 @@ public class RemoteNodeStatus implements Serializable {
             for (String table : tableCounts.keySet()) {
                 buff.append(table).append(", ");
             }
-            
             if (buff.length() > 2) {
                 buff.setLength(buff.length() - 2);
             }
-            
             return StringUtils.abbreviate(buff.toString(), MAX_SUMMARY_LENGTH);
         } else if (!tableSummary.isEmpty()) {
             StringBuilder buff = new StringBuilder();
@@ -213,38 +202,35 @@ public class RemoteNodeStatus implements Serializable {
             if (buff.length() > 2) {
                 buff.setLength(buff.length() - 2);
             }
-            
             return StringUtils.abbreviate(buff.toString(), MAX_SUMMARY_LENGTH);
         } else {
             return "";
         }
     }
-    
+
     protected void incrementTableCounts(AbstractBatch batch) {
-        if (!batch.getTableCounts().isEmpty() ) {            
+        if (!batch.getTableCounts().isEmpty()) {
             for (String table : batch.getTableCounts().keySet()) {
-                
                 Integer value = tableCounts.get(table);
                 if (value == null) {
                     tableCounts.put(table, Integer.valueOf(1));
                 } else {
-                    tableCounts.replace(table, value.intValue()+batch.getTableCounts().get(table));
+                    tableCounts.replace(table, value.intValue() + batch.getTableCounts().get(table));
                 }
             }
         } else if (!StringUtils.isEmpty(batch.getSummary())) {
             String[] tables = batch.getSummary().split(",");
             for (String table : tables) {
                 String tableTrimmed = table.trim();
-                if (!tableSummary.contains(tableTrimmed)) {                    
+                if (!tableSummary.contains(tableTrimmed)) {
                     tableSummary.add(tableTrimmed);
                 }
             }
         }
     }
-    
+
     public void resetTableSummary() {
         tableCounts.clear();
         tableSummary.clear();
     }
-
 }

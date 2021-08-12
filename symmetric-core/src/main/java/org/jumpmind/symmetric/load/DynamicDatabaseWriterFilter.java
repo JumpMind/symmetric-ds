@@ -44,16 +44,12 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilter,
         IDatabaseWriterErrorHandler, IBuiltInExtensionPoint {
-
     private final String BATCH_COMPLETE_SCRIPTS_KEY = String.format("%d.BatchCompleteScripts", hashCode());
     private final String BATCH_COMMIT_SCRIPTS_KEY = String.format("%d.BatchCommitScripts", hashCode());
     private final String BATCH_ROLLBACK_SCRIPTS_KEY = String.format("%d.BatchRollbackScripts", hashCode());
     private final String FAIL_ON_ERROR_KEY = String.format("%d.FailOnError", hashCode());
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected ISymmetricEngine engine = null;
-
     protected Map<String, List<LoadFilter>> loadFilters = null;
 
     public enum WriteMethod {
@@ -62,14 +58,12 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
 
     public DynamicDatabaseWriterFilter(ISymmetricEngine engine,
             Map<String, List<LoadFilter>> loadFilters) {
-
         this.engine = engine;
         this.loadFilters = loadFilters;
     }
 
-    public static List<DynamicDatabaseWriterFilter> getDatabaseWriterFilters(ISymmetricEngine engine, 
+    public static List<DynamicDatabaseWriterFilter> getDatabaseWriterFilters(ISymmetricEngine engine,
             Map<LoadFilterType, Map<String, List<LoadFilter>>> loadFilters) {
-
         List<DynamicDatabaseWriterFilter> databaseWriterFilters = new ArrayList<DynamicDatabaseWriterFilter>();
         if (loadFilters != null) {
             for (Map.Entry<LoadFilterType, Map<String, List<LoadFilter>>> entry : loadFilters.entrySet()) {
@@ -111,39 +105,30 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
     public void batchRolledback(DataContext context) {
         executeScripts(context, BATCH_ROLLBACK_SCRIPTS_KEY);
     }
-    
+
     protected boolean processLoadFilters(DataContext context, Table table, CsvData data,
             Exception error, WriteMethod writeMethod) {
         boolean writeRow = true;
-
         if (table != null) {
             List<LoadFilter> foundFilters = null;
             if (!table.getName().toLowerCase().startsWith(engine.getTablePrefix() + "_")) {
-                foundFilters = lookupFilters(foundFilters, 
+                foundFilters = lookupFilters(foundFilters,
                         table.getCatalog(), table.getSchema(), FormatUtils.WILDCARD);
-                
-                foundFilters = lookupFilters(foundFilters, 
+                foundFilters = lookupFilters(foundFilters,
                         table.getCatalog(), FormatUtils.WILDCARD, FormatUtils.WILDCARD);
-                
-                foundFilters = lookupFilters(foundFilters, 
+                foundFilters = lookupFilters(foundFilters,
                         FormatUtils.WILDCARD, table.getSchema(), FormatUtils.WILDCARD);
-                
                 foundFilters = lookupFilters(foundFilters,
                         FormatUtils.WILDCARD, FormatUtils.WILDCARD, FormatUtils.WILDCARD);
             }
-
             foundFilters = lookupFilters(foundFilters,
                     FormatUtils.WILDCARD, FormatUtils.WILDCARD, table.getName());
-            
-            foundFilters = lookupFilters(foundFilters, 
+            foundFilters = lookupFilters(foundFilters,
                     FormatUtils.WILDCARD, table.getSchema(), table.getName());
-
-            foundFilters = lookupFilters(foundFilters, 
+            foundFilters = lookupFilters(foundFilters,
                     table.getCatalog(), FormatUtils.WILDCARD, table.getName());
-
-            foundFilters = lookupFilters(foundFilters, 
+            foundFilters = lookupFilters(foundFilters,
                     table.getCatalog(), table.getSchema(), table.getName());
-
             if (foundFilters != null) {
                 for (LoadFilter filter : foundFilters) {
                     addBatchScriptsToContext(context, filter);
@@ -152,10 +137,9 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
                         foundFilters);
             }
         }
-
         return writeRow;
     }
-    
+
     private List<LoadFilter> lookupFilters(List<LoadFilter> foundFilters, String catalogName, String schemaName, String tableName) {
         String fullyQualifiedTableName = Table.getFullyQualifiedTableName(catalogName, schemaName, tableName);
         if (isIgnoreCase()) {
@@ -207,7 +191,7 @@ public abstract class DynamicDatabaseWriterFilter implements IDatabaseWriterFilt
     protected boolean isIgnoreCase() {
         return engine.getParameterService().is(ParameterConstants.DB_METADATA_IGNORE_CASE);
     }
-    
+
     public boolean handlesMissingTable(DataContext context, Table table) {
         if (engine != null && engine.getParameterService() != null
                 && engine.getParameterService().is(ParameterConstants.BSH_LOAD_FILTER_HANDLES_MISSING_TABLES)) {

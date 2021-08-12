@@ -46,17 +46,14 @@ import org.slf4j.LoggerFactory;
  * Compiles against log4j classes, so only instantiate this class if log4j is present
  */
 public class Log4j2Helper {
-
     private static final Logger log = LoggerFactory.getLogger(Log4j2Helper.class);
 
     public void initialize(boolean isDebug) throws MalformedURLException {
         URL log4jUrl = new URL(System.getProperty("log4j2.configurationFile", "file:" + AppUtils.getSymHome() + "/conf/log4j2-blank.xml"));
         File log4jFile = new File(new File(log4jUrl.getFile()).getParent(), "log4j2.xml");
-
         if (isDebug) {
             log4jFile = new File(log4jFile.getParent(), "log4j2-debug.xml");
         }
-
         if (log4jFile.exists()) {
             Configurator.initialize("SYM", log4jFile.getAbsolutePath());
         }
@@ -91,16 +88,15 @@ public class Log4j2Helper {
         if (appender instanceof SymRollingFileAppender) {
             SymRollingFileAppender fa = (SymRollingFileAppender) appender;
             String fileName = fa.getFileName();
-            
             if (overrideLogFileName != null) {
                 fileName = fileName.replace("symmetric.log", overrideLogFileName);
                 LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
                 Configuration config = ctx.getConfiguration();
                 RollingFileAppender rolling = RollingFileAppender.newBuilder().setConfiguration(config).setName("ROLLING")
-                    .withFileName(fileName)
-                    .withFilePattern(fa.getFilePattern().replace("symmetric.log", overrideLogFileName))
-                    .setLayout(fa.getLayout()).withPolicy(fa.getTriggeringPolicy())
-                    .withStrategy(fa.getManager().getRolloverStrategy()).build();
+                        .withFileName(fileName)
+                        .withFilePattern(fa.getFilePattern().replace("symmetric.log", overrideLogFileName))
+                        .setLayout(fa.getLayout()).withPolicy(fa.getTriggeringPolicy())
+                        .withStrategy(fa.getManager().getRolloverStrategy()).build();
                 removeAppender("ROLLING");
                 addAppender(rolling);
             }
@@ -143,7 +139,7 @@ public class Log4j2Helper {
         if (fileLayouts != null && fileLayouts.size() > 0) {
             return fileLayouts.keySet().iterator().next().getParentFile();
         }
-        return null;        
+        return null;
     }
 
     public File getLogFile() {
@@ -153,7 +149,7 @@ public class Log4j2Helper {
         }
         return null;
     }
-    
+
     public boolean isDefaultLogLayoutPattern() {
         Map<File, Layout<?>> fileLayouts = getLogFileLayout();
         if (fileLayouts != null && fileLayouts.size() > 0) {
@@ -168,7 +164,7 @@ public class Log4j2Helper {
         }
         return false;
     }
-    
+
     public Map<File, Layout<?>> getLogFileLayout() {
         LoggerContext lc = (LoggerContext) LogManager.getContext(false);
         Map<String, Appender> appenderMap = lc.getRootLogger().getAppenders();
@@ -204,7 +200,7 @@ public class Log4j2Helper {
     public org.slf4j.event.Level getLevel(String loggerName) {
         return convertFromLevel(LogManager.getLogger(loggerName).getLevel());
     }
-    
+
     public org.slf4j.event.Level getRootLevel() {
         return convertFromLevel(LogManager.getRootLogger().getLevel());
     }
@@ -223,7 +219,7 @@ public class Log4j2Helper {
             converted = org.slf4j.event.Level.ERROR;
         } else if (level == Level.FATAL) {
             converted = org.slf4j.event.Level.ERROR;
-        } 
+        }
         return converted;
     }
 
@@ -239,8 +235,7 @@ public class Log4j2Helper {
             converted = Level.WARN;
         } else if (level == org.slf4j.event.Level.ERROR) {
             converted = Level.ERROR;
-        } 
+        }
         return converted;
     }
-
 }

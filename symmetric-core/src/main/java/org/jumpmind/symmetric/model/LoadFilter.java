@@ -24,48 +24,31 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class LoadFilter implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
-    public enum LoadFilterType { BSH, JAVA, SQL };
+    public enum LoadFilterType {
+        BSH, JAVA, SQL
+    };
 
     private String loadFilterId;
-    
-    private LoadFilterType loadFilterType = LoadFilterType.BSH;    
-
+    private LoadFilterType loadFilterType = LoadFilterType.BSH;
     private String targetCatalogName;
-    
     private String targetSchemaName;
-    
     private String targetTableName;
-    
     private boolean filterOnUpdate = true;
-    
     private boolean filterOnInsert = true;
-    
     private boolean filterOnDelete = true;
-    
     private String beforeWriteScript;
-    
     private String afterWriteScript;
-    
     private String batchCompleteScript;
-    
     private String batchCommitScript;
-    
     private String batchRollbackScript;
-    
     private String handleErrorScript;
-    
     private Date createTime = new Date();
-    
     private String lastUpdateBy = "symmetricds";
-    
     private Date lastUpdateTime = new Date();
-    
     private int loadFilterOrder;
-    
-    private boolean failOnError=true;
+    private boolean failOnError = true;
 
     public int getLoadFilterOrder() {
         return loadFilterOrder;
@@ -199,7 +182,7 @@ public class LoadFilter implements Serializable {
         return lastUpdateTime;
     }
 
-    public void setLastUpdateTime(Date lastUpdateTime) {  
+    public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
 
@@ -210,15 +193,15 @@ public class LoadFilter implements Serializable {
     public void setLoadFilterType(LoadFilterType loadFilterType) {
         this.loadFilterType = loadFilterType;
     }
-    
+
     public void setHandleErrorScript(String handleErrorScript) {
         this.handleErrorScript = handleErrorScript;
     }
-    
+
     public String getHandleErrorScript() {
         return handleErrorScript;
     }
-    
+
     public String getEvents() {
         StringBuilder events = new StringBuilder();
         buildStringBasedList(getBeforeWriteScript(), events, "Before Write");
@@ -227,7 +210,6 @@ public class LoadFilter implements Serializable {
         buildStringBasedList(getBatchCommitScript(), events, "Batch Commit");
         buildStringBasedList(getBatchRollbackScript(), events, "Batch Rollback");
         buildStringBasedList(getHandleErrorScript(), events, "Handle Error");
-        
         return events.toString();
     }
 
@@ -239,7 +221,7 @@ public class LoadFilter implements Serializable {
             target.append(value);
         }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof LoadFilter && loadFilterId != null) {
@@ -253,7 +235,7 @@ public class LoadFilter implements Serializable {
     public int hashCode() {
         return loadFilterId != null ? loadFilterId.hashCode() : super.hashCode();
     }
-    
+
     @Override
     public String toString() {
         if (loadFilterId != null) {
@@ -262,5 +244,4 @@ public class LoadFilter implements Serializable {
             return super.toString();
         }
     }
-        
 }

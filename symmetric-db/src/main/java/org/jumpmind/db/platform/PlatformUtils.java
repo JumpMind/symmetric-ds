@@ -25,10 +25,8 @@ import java.sql.Types;
 import org.jumpmind.db.model.TypeMap;
 
 abstract public class PlatformUtils {
-
     /**
-     * Determines whether the system supports the Java 1.4 JDBC Types, DATALINK
-     * and BOOLEAN.
+     * Determines whether the system supports the Java 1.4 JDBC Types, DATALINK and BOOLEAN.
      * 
      * @return <code>true</code> if BOOLEAN and DATALINK are available
      */
@@ -70,6 +68,4 @@ abstract public class PlatformUtils {
             throw new UnsupportedOperationException("The jdbc type DATALINK is not supported", ex);
         }
     }
-
-    
 }

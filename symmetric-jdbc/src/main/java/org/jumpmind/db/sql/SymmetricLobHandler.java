@@ -27,13 +27,12 @@ import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SymmetricLobHandler {
-
     protected LobHandler lobHandler;
 
     public SymmetricLobHandler() {
         this(new DefaultLobHandler());
     }
-    
+
     public SymmetricLobHandler(LobHandler lobHandler) {
         super();
         this.lobHandler = lobHandler;
@@ -56,5 +55,4 @@ public class SymmetricLobHandler {
     public boolean needsAutoCommitFalseForBlob(int jdbcTypeCode, String jdbcTypeName) {
         return false;
     }
-
 }

@@ -57,30 +57,23 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for Sybase.
  */
 public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard Sybase jdbc driver. */
     public static final String JDBC_DRIVER = "com.sybase.jdbc4.jdbc.SybDriver";
-
     /* The old Sybase jdbc driver. */
     public static final String JDBC_DRIVER_OLD = "com.sybase.jdbc4.jdbc.SybDriver";
-
     /* The subprotocol used by the standard Sybase driver. */
     public static final String JDBC_SUBPROTOCOL = "sybase:Tds";
-
     /* The maximum size that text and binary columns can have. */
     public static final long MAX_TEXT_SIZE = 2147483647;
-
     private Map<String, String> sqlScriptReplacementTokens;
 
     public AseDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
-
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-                sqlScriptReplacementTokens = new HashMap<String, String>();
+            sqlScriptReplacementTokens = new HashMap<String, String>();
         }
         sqlScriptReplacementTokens.put("current_timestamp", "getdate()");
-        
         this.useMultiThreadSyncTriggers = false;
     }
 
@@ -122,16 +115,13 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public Map<String, String> getSqlScriptReplacementTokens() {
         return sqlScriptReplacementTokens;
     }
-    
+
     @Override
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-        String triggerSql = "create trigger TEST_TRIGGER on " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " for insert as begin select 1 end"; 
-        
+        String triggerSql = "create trigger TEST_TRIGGER on " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " for insert as begin select 1 end";
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-        
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -139,7 +129,6 @@ public class AseDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-        
         return result;
     }
 }

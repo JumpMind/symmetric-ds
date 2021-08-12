@@ -34,7 +34,6 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
-
     public Db2As400DatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, settings);
         supportsTruncate = false;
@@ -57,14 +56,14 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
             } catch (Exception e) {
                 try {
                     defaultSchema = (String) getSqlTemplate().queryForObject("select CURRENT SCHEMA from QSYS2.QSQPTABL", String.class);
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     defaultSchema = "";
                 }
             }
         }
         return defaultSchema;
     }
-    
+
     @Override
     public String getDefaultCatalog() {
         // This must return null for AS400, an empty string will return no match on readTable meta data.
@@ -74,14 +73,11 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
     @Override
     protected PermissionResult getCreateSymTablePermission(Database database) {
         Table table = getPermissionTableDefinition();
-
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, "creating table " + table.getName() + "...");
         getDropSymTablePermission();
-
         try {
             database.addTable(table);
             createDatabase(database, false, false);
-
             ISqlTransaction tran = null;
             try {
                 tran = sqlTemplate.startSqlTransaction();
@@ -100,13 +96,11 @@ public class Db2As400DatabasePlatform extends Db2DatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE permission");
         }
-
         return result;
     }
-    
+
     @Override
     public String getName() {
         return DatabaseNamesConstants.DB2AS400;
     }
-
 }

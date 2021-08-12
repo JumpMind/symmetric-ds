@@ -21,11 +21,9 @@
 package org.jumpmind.symmetric;
 
 /**
- * This is a {@link RuntimeException} that supports using the SymmetricDS
- * {@link Message} infrastructure
+ * This is a {@link RuntimeException} that supports using the SymmetricDS {@link Message} infrastructure
  */
 public class SymmetricException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
     public SymmetricException() {
@@ -47,7 +45,7 @@ public class SymmetricException extends RuntimeException {
     public SymmetricException(String message, Throwable cause, Object... args) {
         super(String.format(message, args), cause);
     }
-    
+
     public Throwable getRootCause() {
         Throwable rootCause = null;
         Throwable cause = getCause();
@@ -57,6 +55,4 @@ public class SymmetricException extends RuntimeException {
         }
         return rootCause;
     }
-
-
 }

@@ -37,13 +37,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class XmlPublisherFilterTest {
-
     private static final String TABLE_TEST = "TEST_XML_PUBLISHER";
-
     private static final String TEST_SIMPLE_TRANSFORM_RESULTS = "<batch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"12\" binary=\"BASE64\" nodeid=\"54321\" batchid=\"1111\" time=\"test\"><row entity=\"TEST_XML_PUBLISHER\" dml=\"I\"><data key=\"ID1\">1</data><data key=\"ID2\">2</data><data key=\"DATA1\">test embedding an &amp;</data><data key=\"DATA2\">3</data><data key=\"DATA3\" xsi:nil=\"true\" /></row></batch>";
-
     private DataContext context;
-
     private Table table;
 
     public XmlPublisherFilterTest() {
@@ -70,10 +66,8 @@ public class XmlPublisherFilterTest {
         columns.add("ID1");
         columns.add("ID2");
         filter.setGroupByColumnNames(columns);
-        
         Output output = new Output();
         filter.setPublisher(output);
-
         String[][] datas = { { "1", "1", "The Angry Brown", "3", "2008-10-24 00:00:00.0" },
                 { "1", "2", "test embedding an &", "3", null } };
         for (String[] strings : datas) {
@@ -81,7 +75,6 @@ public class XmlPublisherFilterTest {
             filter.beforeWrite(context, table, data);
             filter.batchComplete(context);
         }
-
         assertEquals(TEST_SIMPLE_TRANSFORM_RESULTS, output.toString().trim());
     }
 

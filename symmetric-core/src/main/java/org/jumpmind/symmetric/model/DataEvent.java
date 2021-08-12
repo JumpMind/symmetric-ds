@@ -23,11 +23,8 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 
 public class DataEvent implements Serializable {
-    
     private static final long serialVersionUID = 1L;
-
     private long dataId;
-   
     private long batchId;
 
     public DataEvent() {
@@ -37,7 +34,7 @@ public class DataEvent implements Serializable {
         this.dataId = dataId;
         this.batchId = batchId;
     }
-    
+
     public long getBatchId() {
         return batchId;
     }

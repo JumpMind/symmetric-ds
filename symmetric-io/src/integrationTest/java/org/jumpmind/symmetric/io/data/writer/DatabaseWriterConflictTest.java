@@ -38,31 +38,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DatabaseWriterConflictTest extends AbstractWriterTest {
-
     private final static String TEST_TABLE = "test_dataloader_parent";
-
     private final static String[] TEST_KEYS = { "id" };
-
     private final static String[] TEST_COLUMNS = { "id", "name", "pid" };
-
     private final static String TEST_TABLE_CHILD = "test_dataloader_child";
-
     private final static String[] TEST_KEYS_CHILD = { "id" };
-
     private final static String[] TEST_COLUMNS_CHILD = { "id", "pid" };
-
     private final static String TEST_TABLE_GRANDCHILD = "test_dataloader_grandchild";
-
     private final static String[] TEST_KEYS_GRANDCHILD = { "id" };
-
     private final static String[] TEST_COLUMNS_GRANDCHILD = { "id", "pid" };
-    
-    private enum WhichTable { PARENT, CHILD, GRANDCHILD };
-    
+
+    private enum WhichTable {
+        PARENT, CHILD, GRANDCHILD
+    };
+
     private WhichTable whichTable;
-    
     private static boolean shouldTest;
-    
+
     @BeforeClass
     public static void setup() throws Exception {
         platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
@@ -191,14 +183,14 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
     @Test
     public void testUpdatePkViolationDeleteFkViolationBlockingSelf() throws Exception {
         String firstId = insert(getNextId(), "update2-pk1", null);
-        String secondId = insert(getNextId(), "update2-pk2", firstId);        
+        String secondId = insert(getNextId(), "update2-pk2", firstId);
         update(secondId, firstId, "update2-pk2", null);
     }
 
     @Test
     public void testUpdateUkViolationDeleteFkViolationBlockingSelf() throws Exception {
         String firstId = insert(getNextId(), "update3-pk1", null);
-        String secondId = insert(getNextId(), "update3-pk2", firstId);        
+        String secondId = insert(getNextId(), "update3-pk2", firstId);
         update(secondId, secondId, "update3-pk1", null);
     }
 
@@ -261,7 +253,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         delete(firstId, firstId, "deleteparent", null);
     }
 
-    private String insert(String ...values) {
+    private String insert(String... values) {
         if (shouldTest) {
             try {
                 writeData(new CsvData(DataEventType.INSERT, values), values);
@@ -270,7 +262,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
                 if (platform.getDatabaseInfo().isRequiresSavePointsInTransaction()) {
                     // we did our corrections, but the original batch needs to be retried
                     writeData(new CsvData(DataEventType.INSERT, values), values);
-                    return values[0];                    
+                    return values[0];
                 } else {
                     throw e;
                 }
@@ -279,7 +271,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         return null;
     }
 
-    private void update(String id, String ...values) {
+    private void update(String id, String... values) {
         if (shouldTest) {
             try {
                 writeData(new CsvData(DataEventType.UPDATE, new String[] { id }, values), values);
@@ -294,7 +286,7 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
         }
     }
 
-    private void delete(String id, String ...values) {
+    private void delete(String id, String... values) {
         if (shouldTest) {
             try {
                 writeData(new CsvData(DataEventType.DELETE, new String[] { id }, values), null);
@@ -319,23 +311,31 @@ public class DatabaseWriterConflictTest extends AbstractWriterTest {
 
     @Override
     protected String getTestTable() {
-        if (whichTable == WhichTable.CHILD) return TEST_TABLE_CHILD;
-        else if (whichTable == WhichTable.GRANDCHILD) return TEST_TABLE_GRANDCHILD; 
-        else return TEST_TABLE;
-    }
-    
-    @Override
-    protected String[] getTestKeys() {
-        if (whichTable == WhichTable.CHILD) return TEST_KEYS_CHILD;
-        else if (whichTable == WhichTable.GRANDCHILD) return TEST_KEYS_GRANDCHILD; 
-        else return TEST_KEYS;
-    }
-    
-    @Override
-    protected String[] getTestColumns() {
-        if (whichTable == WhichTable.CHILD) return TEST_COLUMNS_CHILD;
-        else if (whichTable == WhichTable.GRANDCHILD) return TEST_COLUMNS_GRANDCHILD; 
-        else return TEST_COLUMNS;
+        if (whichTable == WhichTable.CHILD)
+            return TEST_TABLE_CHILD;
+        else if (whichTable == WhichTable.GRANDCHILD)
+            return TEST_TABLE_GRANDCHILD;
+        else
+            return TEST_TABLE;
     }
 
+    @Override
+    protected String[] getTestKeys() {
+        if (whichTable == WhichTable.CHILD)
+            return TEST_KEYS_CHILD;
+        else if (whichTable == WhichTable.GRANDCHILD)
+            return TEST_KEYS_GRANDCHILD;
+        else
+            return TEST_KEYS;
+    }
+
+    @Override
+    protected String[] getTestColumns() {
+        if (whichTable == WhichTable.CHILD)
+            return TEST_COLUMNS_CHILD;
+        else if (whichTable == WhichTable.GRANDCHILD)
+            return TEST_COLUMNS_GRANDCHILD;
+        else
+            return TEST_COLUMNS;
+    }
 }

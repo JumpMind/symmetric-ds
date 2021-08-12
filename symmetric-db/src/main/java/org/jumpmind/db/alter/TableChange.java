@@ -46,8 +46,7 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public interface TableChange extends IModelChange
-{
+public interface TableChange extends IModelChange {
     /**
      * Returns the affected table from the original model.
      * 

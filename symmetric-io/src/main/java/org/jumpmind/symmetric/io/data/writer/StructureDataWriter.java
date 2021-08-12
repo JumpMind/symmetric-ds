@@ -42,11 +42,8 @@ import org.jumpmind.symmetric.io.data.IDataWriter;
 import org.jumpmind.util.Statistics;
 
 public class StructureDataWriter implements IDataWriter {
-
     protected IDatabasePlatform platform;
-
     protected Table currentTable;
-
     protected Map<Batch, Statistics> statistics = new HashMap<Batch, Statistics>();
 
     public enum PayloadType {
@@ -54,23 +51,15 @@ public class StructureDataWriter implements IDataWriter {
     };
 
     /*
-     * map is comprised of a batch and a list of payload data that goes with the
-     * batch
+     * map is comprised of a batch and a list of payload data that goes with the batch
      */
     protected Map<Long, List<String>> payloadMap = new HashMap<Long, List<String>>();
-
     protected PayloadType payloadType = PayloadType.SQL;
-
     protected long currentBatch;
-
     protected String targetDatabaseName;
-
     protected boolean useQuotedIdentifiers;
-
     protected boolean useJdbcTimestampFormat;
-
     protected boolean useUpsertStatements;
-
     protected BinaryEncoding binaryEncoding;
 
     public StructureDataWriter(IDatabasePlatform platform, String targetDatabaseName,
@@ -104,8 +93,7 @@ public class StructureDataWriter implements IDataWriter {
 
     public boolean start(Table table) {
         /*
-         * in the case when the target schema or catalog is set then we need to
-         * use the previous schema or catalog to look up the table locally.
+         * in the case when the target schema or catalog is set then we need to use the previous schema or catalog to look up the table locally.
          */
         this.currentTable = platform.getTableFromCache(table.getOldCatalog(), table.getOldSchema(),
                 table.getName(), false);
@@ -113,9 +101,8 @@ public class StructureDataWriter implements IDataWriter {
             this.currentTable = currentTable.copyAndFilterColumns(table.getColumnNames(),
                     table.getPrimaryKeyColumnNames(), true);
             /*
-             * restore the schema and catalog from the passed in table because
-             * they might have not been originally set, but were set when
-             * looking up the table locally
+             * restore the schema and catalog from the passed in table because they might have not been originally set, but were set when looking up the table
+             * locally
              */
             this.currentTable.setSchema(table.getSchema());
             this.currentTable.setCatalog(table.getCatalog());
@@ -151,7 +138,6 @@ public class StructureDataWriter implements IDataWriter {
             default:
                 break;
         }
-
         if (sql != null) {
             this.payloadMap.get(this.currentBatch).add(sql);
         }
@@ -191,5 +177,4 @@ public class StructureDataWriter implements IDataWriter {
     public void setPayloadMap(Map<Long, List<String>> payloadMap) {
         this.payloadMap = payloadMap;
     }
-
 }

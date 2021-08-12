@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 public class DelayRoutingException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
     public DelayRoutingException() {
@@ -39,5 +38,4 @@ public class DelayRoutingException extends RuntimeException {
     public DelayRoutingException(Throwable cause) {
         super(cause);
     }
-
 }

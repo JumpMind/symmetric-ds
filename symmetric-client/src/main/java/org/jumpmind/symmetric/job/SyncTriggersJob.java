@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.job;
 
 import static org.jumpmind.symmetric.job.JobDefaults.EVERY_NIGHT_AT_MIDNIGHT;
@@ -31,21 +30,19 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that checks to see if triggers need to be regenerated.
  */
 public class SyncTriggersJob extends AbstractJob {
-
     public SyncTriggersJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.SYNC_TRIGGERS, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_NIGHT_AT_MIDNIGHT)
                 .description("Sync trigger config with physical database triggers");
-    } 
-    
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getTriggerRouterService().syncTriggers();
     }
-   
 }

@@ -28,18 +28,16 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class ConstantColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public static final String NAME = "const";
 
     public String getName() {
         return NAME;
     }
-    
-    
+
     public boolean isExtractColumnTransform() {
         return true;
     }
-    
+
     public boolean isLoadColumnTransform() {
         return true;
     }
@@ -48,13 +46,10 @@ public class ConstantColumnTransform implements ISingleNewAndOldValueColumnTrans
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-
         if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, column.getTransformExpression());
         } else {
             return new NewAndOldValue(column.getTransformExpression(), null);
         }
-
     }
-
 }

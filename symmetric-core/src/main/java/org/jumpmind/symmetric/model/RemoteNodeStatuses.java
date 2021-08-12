@@ -26,11 +26,9 @@ import java.util.Map;
 import org.jumpmind.exception.InterruptedException;
 
 public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
-
     private static final long serialVersionUID = 1L;
-    
     Map<String, Channel> channels;
-    
+
     public RemoteNodeStatuses(Map<String, Channel> channels) {
         this.channels = channels;
     }
@@ -75,7 +73,7 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
         }
         return status;
     }
-    
+
     public RemoteNodeStatus add(String nodeId) {
         RemoteNodeStatus status = null;
         if (nodeId != null) {
@@ -96,10 +94,9 @@ public class RemoteNodeStatuses extends ArrayList<RemoteNodeStatus> {
     public void waitForComplete(long timeout) {
         long deadline = System.currentTimeMillis() + timeout;
         for (RemoteNodeStatus status : this) {
-            long timeLeft = deadline-System.currentTimeMillis();
-            
+            long timeLeft = deadline - System.currentTimeMillis();
             try {
-                if(timeLeft <= 0 || !status.waitCompleted(timeLeft)){
+                if (timeLeft <= 0 || !status.waitCompleted(timeLeft)) {
                     throw new InterruptedException(String.format(
                             "Timed out after %sms", timeout));
                 }

@@ -23,38 +23,29 @@ package org.jumpmind.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import  org.slf4j.event.Level;
+import org.slf4j.event.Level;
 
 import com.google.gson.annotations.Expose;
 
 public class LogSummary implements Comparable<LogSummary> {
-
     @Expose
     private Level level;
-
     @Expose
     private String mostRecentThreadName;
-
     private Throwable throwable;
-
     @Expose
     private long firstOccurranceTime;
-
     @Expose
     private long mostRecentTime;
-
     @Expose
     private int count;
-
     @Expose
     private String message;
-
     @Expose
     private String stackTrace;
-    
     @Expose
     private Integer levelInt;
-    
+
     public void setLevel(Level level) {
         this.level = level;
     }
@@ -71,7 +62,7 @@ public class LogSummary implements Comparable<LogSummary> {
         }
         return this.stackTrace;
     }
-    
+
     public void setStackTrace(String st) {
         this.stackTrace = st;
     }
@@ -131,7 +122,7 @@ public class LogSummary implements Comparable<LogSummary> {
     public Throwable getThrowable() {
         return throwable;
     }
-    
+
     @Override
     public int compareTo(LogSummary other) {
         if (mostRecentTime == other.mostRecentTime) {
@@ -140,5 +131,4 @@ public class LogSummary implements Comparable<LogSummary> {
             return mostRecentTime > other.mostRecentTime ? 1 : -1;
         }
     }
-    
 }

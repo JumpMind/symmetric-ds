@@ -21,15 +21,10 @@
 package org.jumpmind.symmetric.wrapper;
 
 public class WrapperException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
-
     private int errorCode;
-    
     private int nativeErrorCode;
-    
     private String message;
-    
     private Throwable cause;
 
     public WrapperException(int errorCode, int nativeErrorCode, String message) {
@@ -37,7 +32,7 @@ public class WrapperException extends RuntimeException {
         this.nativeErrorCode = nativeErrorCode;
         this.message = message;
     }
-    
+
     public WrapperException(int errorCode, int nativeErrorCode, String message, Throwable cause) {
         this.cause = cause;
     }

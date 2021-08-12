@@ -37,7 +37,6 @@ import org.junit.Ignore;
 
 @Ignore
 public class TestTablesService extends AbstractService {
-    
     public TestTablesService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         setSqlMap(new TestTablesServiceSqlMap(platform, createSqlReplacementTokens()));
@@ -45,22 +44,21 @@ public class TestTablesService extends AbstractService {
 
     // TODO support insert of blob test for postgres and informix
     public boolean insertIntoTestUseStreamLob(int id, String tableName, String lobValue) {
-        
         if (symmetricDialect.isBlobSyncSupported()) {
-                ISqlTransaction transaction = null;
-                try {
-                    transaction = sqlTemplate.startSqlTransaction();
-                    boolean updated = transaction.prepareAndExecute(String.format(
-                            "insert into %s (test_id, test_blob) values(?, ?)", tableName),
-                            new Object[] { id, lobValue.getBytes() }, new int[] { Types.INTEGER,
-                                    Types.BLOB }) > 0;
-                    transaction.commit();
-                    return updated;
-                } finally {
-                    if (transaction != null) {
-                        transaction.close();
-                    }
+            ISqlTransaction transaction = null;
+            try {
+                transaction = sqlTemplate.startSqlTransaction();
+                boolean updated = transaction.prepareAndExecute(String.format(
+                        "insert into %s (test_id, test_blob) values(?, ?)", tableName),
+                        new Object[] { id, lobValue.getBytes() }, new int[] { Types.INTEGER,
+                                Types.BLOB }) > 0;
+                transaction.commit();
+                return updated;
+            } finally {
+                if (transaction != null) {
+                    transaction.close();
                 }
+            }
         } else {
             return false;
         }
@@ -69,7 +67,6 @@ public class TestTablesService extends AbstractService {
     // TODO support insert of blob test for postgres and informix
     public boolean updateTestUseStreamLob(int id, String tableName, String lobValue) {
         if (symmetricDialect.isBlobSyncSupported()) {
-    
             if (!DatabaseNamesConstants.INFORMIX.equals(platform.getName())) {
                 ISqlTransaction transaction = null;
                 try {
@@ -98,9 +95,8 @@ public class TestTablesService extends AbstractService {
             int rowCount = sqlTemplate.queryForInt("select count(*) from "
                     + tableName + " where test_id=?", id);
             Assert.assertEquals("The " + id + " row for table " + tableName + " did not exist", 1, rowCount);
-            
             Map<String, Object> values = sqlTemplate.queryForMap("select test_blob from "
-                    + tableName + " where test_id=?", id);            
+                    + tableName + " where test_id=?", id);
             Assert.assertEquals(
                     "The blob column for test_use_stream_lob was not loaded into the client database",
                     expected, values != null && values.get("TEST_BLOB") != null ? new String(
@@ -113,22 +109,18 @@ public class TestTablesService extends AbstractService {
                 order.getStatus(), order.getDeliverDate());
         List<OrderDetail> details = order.getOrderDetails();
         for (OrderDetail orderDetail : details) {
-                sqlTemplate.update(
+            sqlTemplate.update(
                     getSql("insertOrderDetailSql"),
                     new Object[] { orderDetail.getOrderId(), orderDetail.getLineNumber(),
                             orderDetail.getItemType(), orderDetail.getItemId(),
-                            orderDetail.getQuantity(), 
-                            (DatabaseNamesConstants.SQLITE.equals(platform.getName())?
-                            orderDetail.getPrice().doubleValue():
-                                orderDetail.getPrice())
-                            }, new int[] {
+                            orderDetail.getQuantity(),
+                            (DatabaseNamesConstants.SQLITE.equals(platform.getName()) ? orderDetail.getPrice().doubleValue() : orderDetail.getPrice())
+                    }, new int[] {
                             Types.VARCHAR, Types.NUMERIC, Types.CHAR, Types.VARCHAR, Types.NUMERIC,
                             Types.NUMERIC });
         }
     }
 
-    
-    
     public Order getOrder(String id) {
         return sqlTemplate.queryForObject(getSql("selectOrderSql"), new ISqlRowMapper<Order>() {
             public Order mapRow(Row rs) {
@@ -163,9 +155,9 @@ public class TestTablesService extends AbstractService {
                     public Customer mapRow(Row rs) {
                         return new Customer(rs.getInt("customer_id"), rs.getString("name"), rs
                                 .getBoolean("is_active"), rs.getString("address"), rs
-                                .getString("city"), rs.getString("state"), rs.getInt("zip"), rs
-                                .getDateTime("entry_timestamp"), rs.getDateTime("entry_time"), rs
-                                .getString("notes"), rs.getBytes("icon"));
+                                        .getString("city"), rs.getString("state"), rs.getInt("zip"), rs
+                                                .getDateTime("entry_timestamp"), rs.getDateTime("entry_time"), rs
+                                                        .getString("notes"), rs.getBytes("icon"));
                     }
                 }, id);
     }
@@ -200,7 +192,6 @@ public class TestTablesService extends AbstractService {
         String quote = dbInfo.getDelimiterToken();
         String catalogSeparator = dbInfo.getCatalogSeparator();
         String schemaSeparator = dbInfo.getSchemaSeparator();
-
         ISqlTransaction transaction = sqlTemplate.startSqlTransaction();
         try {
             transaction.allowInsertIntoAutoIncrementColumns(true, testTriggerTable, quote, catalogSeparator, schemaSeparator);
@@ -215,5 +206,4 @@ public class TestTablesService extends AbstractService {
     public int countTestTriggersTable() {
         return sqlTemplate.queryForInt("select count(*) from test_triggers_table");
     }
-
 }

@@ -44,49 +44,40 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DdlException;
 
 /**
- * Represents the addition of a table to a model. Note that this change does not include foreign keys
- * originating from the new table.
+ * Represents the addition of a table to a model. Note that this change does not include foreign keys originating from the new table.
  */
-public class AddTableChange implements IModelChange
-{
+public class AddTableChange implements IModelChange {
     /** The new table. */
     private Table _newTable;
 
     /**
      * Creates a new change object.
      * 
-     * @param newTable The new table
+     * @param newTable
+     *            The new table
      */
-    public AddTableChange(Table newTable)
-    {
+    public AddTableChange(Table newTable) {
         _newTable = newTable;
     }
 
     /**
-     * Returns the new table. Note that only the columns and table-level constraints are to be used.
-     * Any model-level constraints (e.g. foreign keys) shall be ignored as there are different change
-     * objects for them.
+     * Returns the new table. Note that only the columns and table-level constraints are to be used. Any model-level constraints (e.g. foreign keys) shall be
+     * ignored as there are different change objects for them.
      * 
      * @return The new table
      */
-    public Table getNewTable()
-    {
+    public Table getNewTable() {
         return _newTable;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
-        try
-        {
-            database.addTable((Table)_newTable.clone());
-        }
-        catch (CloneNotSupportedException ex)
-        {
+    public void apply(Database database, boolean caseSensitive) {
+        try {
+            database.addTable((Table) _newTable.clone());
+        } catch (CloneNotSupportedException ex) {
             throw new DdlException(ex);
         }
     }
-
 }

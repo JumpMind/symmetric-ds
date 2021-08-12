@@ -25,36 +25,30 @@ import org.jumpmind.db.sql.ISqlTransaction;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
-    
-	static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
-
+    static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
-    
     static final String SESSION_CONTEXT_FUNCTION_INSTALLED = "select count(case when object_definition(object_id('$(functionName)')) like '%SESSION_CONTEXT%' then 1 else null end)";
-    
-    static final String triggersDisabledFunctionSql =  "create function dbo.$(functionName)() returns smallint   " + 
-            "\n  begin        " + 
-            "\n    declare @disabled varchar(50);      " + 
-            "\n    set @disabled = CONVERT(varchar(50), SESSION_CONTEXT(N'" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'));    " + 
-            "\n    if @disabled is null      " + 
-            "\n      return 0;       " + 
-            "\n    return 1;         " + 
+    static final String triggersDisabledFunctionSql = "create function dbo.$(functionName)() returns smallint   " +
+            "\n  begin        " +
+            "\n    declare @disabled varchar(50);      " +
+            "\n    set @disabled = CONVERT(varchar(50), SESSION_CONTEXT(N'" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "'));    " +
+            "\n    if @disabled is null      " +
+            "\n      return 0;       " +
+            "\n    return 1;         " +
             "\n  end                 ";
-    
-    static final String nodeDisabledFunctionSql = "create function dbo.$(functionName)() returns varchar(50)    " + 
-            "\n  begin                            " + 
-            "\n    declare @node varchar(50);     " + 
+    static final String nodeDisabledFunctionSql = "create function dbo.$(functionName)() returns varchar(50)    " +
+            "\n  begin                            " +
+            "\n    declare @node varchar(50);     " +
             "\n    set @node = CONVERT(varchar(50), SESSION_CONTEXT(N'" + SYNC_TRIGGERS_DISABLED_NODE_VARIABLE + "'));   " +
-            "\n    return @node;  " + 
+            "\n    return @node;  " +
             "\n  end              ";
-    
     protected Boolean supportsSessionContext = null;
 
     public MsSql2016SymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new MsSql2016TriggerTemplate(this);
     }
-    
+
     @Override
     protected void createTriggersDisabledFunction() {
         if (supportsSessionContext()) {
@@ -71,7 +65,7 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
             super.createTriggersDisabledFunction();
         }
     }
-    
+
     @Override
     protected void createNodeDisabledFunction() {
         if (supportsSessionContext()) {
@@ -88,7 +82,7 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
             super.createNodeDisabledFunction();
         }
     }
-    
+
     @Override
     protected boolean supportsDisableTriggers() {
         if (supportsSessionContext()) {
@@ -97,7 +91,7 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
             return super.supportsDisableTriggers();
         }
     }
-    
+
     protected boolean supportsSessionContext() {
         if (supportsSessionContext == null) {
             try {
@@ -109,14 +103,13 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
                 supportsSessionContext = false;
             }
         }
-
         return supportsSessionContext == null ? false : supportsSessionContext;
     }
-    
+
     @Override
     public void disableSyncTriggers(ISqlTransaction transaction, String nodeId) {
         if (supportsSessionContext()) {
-        	transaction.prepareAndExecute("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1';");
+            transaction.prepareAndExecute("sp_set_session_context '" + SYNC_TRIGGERS_DISABLED_USER_VARIABLE + "', '1';");
             if (nodeId == null) {
                 nodeId = "";
             }
@@ -135,7 +128,4 @@ public class MsSql2016SymmetricDialect extends MsSql2008SymmetricDialect {
             super.enableSyncTriggers(transaction);
         }
     }
-    
-    
-
 }

@@ -34,14 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class NotificationTypeLog implements INotificationType, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     private final Logger log = LoggerFactory.getLogger(getClass());
-    
     protected ISymmetricEngine engine;
-    
+
     public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
         Map<String, Node> nodes = engine.getNodeService().findAllNodesAsMap();
-
         for (MonitorEvent monitorEvent : monitorEvents) {
             Node node = nodes.get(monitorEvent.getNodeId());
             String nodeString = node != null ? node.toString() : monitorEvent.getNodeId();
@@ -49,9 +46,8 @@ public class NotificationTypeLog implements INotificationType, ISymmetricEngineA
             if (monitorEvent.isResolved()) {
                 message += " is resolved";
             } else {
-                message += " reached threshold of " + monitorEvent.getThreshold() + " with a value of "+ monitorEvent.getValue();
+                message += " reached threshold of " + monitorEvent.getThreshold() + " with a value of " + monitorEvent.getValue();
             }
-
             if (monitorEvent.getSeverityLevel() >= Monitor.SEVERE) {
                 log.error(message);
             } else if (monitorEvent.getSeverityLevel() >= Monitor.WARNING) {
@@ -71,5 +67,4 @@ public class NotificationTypeLog implements INotificationType, ISymmetricEngineA
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
-
 }

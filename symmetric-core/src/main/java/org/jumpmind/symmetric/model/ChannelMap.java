@@ -33,21 +33,15 @@ import org.apache.commons.lang3.StringUtils;
  * 
  */
 public class ChannelMap {
-
     public static final String CHANNELS_SUSPEND = "Suspended-Channels";
-
     public static final String CHANNELS_IGNORE = "Ignored-Channels";
-
     private String channelQueue;
-    
     private Map<String, Set<String>> map;
 
     public ChannelMap() {
         map = new HashMap<String, Set<String>>();
-
         Set<String> suspendChannels = new TreeSet<String>();
         map.put(CHANNELS_SUSPEND, suspendChannels);
-
         Set<String> ignoreChannels = new TreeSet<String>();
         map.put(CHANNELS_IGNORE, ignoreChannels);
     }
@@ -99,6 +93,4 @@ public class ChannelMap {
     public void setChannelQueue(String threadChannel) {
         this.channelQueue = threadChannel;
     }
-
-    
 }

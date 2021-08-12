@@ -39,41 +39,36 @@ import org.slf4j.MDC;
  * db.url=jdbc:symds:h2:file:demo-corp;LOCK_TIMEOUT=60000;AUTO_SERVER=TRUE
  * 
  * In the your engine.properties file, you can configure interceptors:
- * org.jumpmind.driver.PreparedStatementWrapper.interceptor=org.jumpmind.driver.StatementDelayInterceptor
- * OR
+ * org.jumpmind.driver.PreparedStatementWrapper.interceptor=org.jumpmind.driver.StatementDelayInterceptor OR
  * org.jumpmind.driver.PreparedStatementWrapper.interceptor=org.jumpmind.driver.RandomErrorInterceptor
  */
 public class Driver implements java.sql.Driver {
-    
     private static final String DRIVER_PREFIX = "jdbc:symds:";
     private static final Map<String, TypedProperties> allEngineProperties = new HashMap<String, TypedProperties>();
-    
+
     public static void register(TypedProperties properties) {
         try {
-            if (properties != null) {                
-                String engineName = properties.get("engine.name");  // ParameterConstants.ENGINE_NAME
+            if (properties != null) {
+                String engineName = properties.get("engine.name"); // ParameterConstants.ENGINE_NAME
                 allEngineProperties.put(engineName, properties);
             }
             DriverManager.registerDriver(new Driver());
         } catch (Exception ex) {
             throw new RuntimeException("Failed to register SymmetricDS driver", ex);
-        } 
+        }
     }
 
     static {
         register(null);
-    }    
+    }
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
         if (url == null || !url.toLowerCase().startsWith(DRIVER_PREFIX)) {
             return null;
         }
-        
         String realUrl = getRealUrl(url);
-        
         Connection connection = DriverManager.getConnection(realUrl, info);
-
         String engineName = MDC.get("engineName");
         TypedProperties engineProperties = null;
         if (engineName != null) {
@@ -81,7 +76,6 @@ public class Driver implements java.sql.Driver {
         } else {
             System.out.println("Unknown engine...");
         }
-        
         ConnectionWrapper connectionWrapper = new ConnectionWrapper(connection);
         connectionWrapper.setEngineProperties(engineProperties);
         return connectionWrapper;
@@ -97,7 +91,6 @@ public class Driver implements java.sql.Driver {
         if (url == null) {
             return false;
         }
-
         return url.toLowerCase().startsWith(DRIVER_PREFIX);
     }
 
@@ -125,5 +118,4 @@ public class Driver implements java.sql.Driver {
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return null;
     }
-
 }

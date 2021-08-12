@@ -45,42 +45,31 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.junit.Test;
 
 public class ConfigurationChangedDataRouterTest {
-
     private static List<NodeGroupLink> THREE_TIER_LINKS;
-
     private static NetworkedNode THREE_TIER_NETWORKED_ROOT;
-    
     private static List<NodeGroupLink> MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS;
-
     private static NetworkedNode MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT;
-
     static {
         THREE_TIER_LINKS = new ArrayList<NodeGroupLink>();
         THREE_TIER_LINKS.add(new NodeGroupLink("corp", "region"));
         THREE_TIER_LINKS.add(new NodeGroupLink("region", "corp"));
         THREE_TIER_LINKS.add(new NodeGroupLink("region", "laptop"));
         THREE_TIER_LINKS.add(new NodeGroupLink("laptop", "region"));
-
         THREE_TIER_NETWORKED_ROOT = new NetworkedNode(new Node("corp", "corp"));
-
         Node rgn1 = new Node("rgn1", "region");
         rgn1.setCreatedAtNodeId("corp");
         THREE_TIER_NETWORKED_ROOT.addChild(new NetworkedNode(rgn1));
-
         Node rgn2 = new Node("rgn2", "region");
         rgn2.setCreatedAtNodeId("corp");
         THREE_TIER_NETWORKED_ROOT.addChild(new NetworkedNode(rgn2));
-
         Node laptop1 = new Node("laptop1", "laptop");
         laptop1.setCreatedAtNodeId("rgn1");
         THREE_TIER_NETWORKED_ROOT.findNetworkedNode(laptop1.getCreatedAtNodeId()).addChild(
                 new NetworkedNode(laptop1));
-
         Node laptop2 = new Node("laptop2", "laptop");
         laptop2.setCreatedAtNodeId("rgn2");
         THREE_TIER_NETWORKED_ROOT.findNetworkedNode(laptop2.getCreatedAtNodeId()).addChild(
                 new NetworkedNode(laptop2));
-        
         MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS = new ArrayList<NodeGroupLink>();
         MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS.add(new NodeGroupLink("regsvr", "s1"));
         MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS.add(new NodeGroupLink("regsvr", "s2"));
@@ -90,24 +79,17 @@ public class ConfigurationChangedDataRouterTest {
         MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS.add(new NodeGroupLink("dw", "regsvr"));
         MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS.add(new NodeGroupLink("s1", "dw"));
         MULTIPLE_GROUPS_PLUS_REG_SVR_LINKS.add(new NodeGroupLink("s2", "dw"));
-        
         MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT = new NetworkedNode(new Node("regsvr", "regsvr"));
-        
         Node node = null;
-        
         node = new Node("s1", "s1");
         node.setCreatedAtNodeId("regsvr");
         MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.addChild(new NetworkedNode(node));
-        
         node = new Node("s2", "s2");
         node.setCreatedAtNodeId("regsvr");
         MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.addChild(new NetworkedNode(node));
-
         node = new Node("dw", "dw");
         node.setCreatedAtNodeId("regsvr");
         MULTIPLE_GROUPS_PLUS_REG_SVR_NETWORKED_ROOT.addChild(new NetworkedNode(node));
-
-        
     }
 
     @Test
@@ -122,8 +104,7 @@ public class ConfigurationChangedDataRouterTest {
         assertEquals(1, nodeIds.size());
         assertEquals("rgn1", nodeIds.iterator().next());
     }
-    
-    
+
     @Test
     public void testRouteLaptop1FromRgn1() {
         IDataRouter router = buildTestableRouter(
@@ -135,55 +116,49 @@ public class ConfigurationChangedDataRouterTest {
         assertNotNull(nodeIds);
         assertEquals(1, nodeIds.size());
         assertEquals("laptop1", nodeIds.iterator().next());
-    }       
-    
+    }
+
     @Test
     public void testRouteRgn2FromCorp() {
         IDataRouter router = buildTestableRouter(
                 THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
                 THREE_TIER_NETWORKED_ROOT);
-        
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
-        
         Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn2"), nodes, false, false, null);
         assertNotNull(nodeIds);
         assertEquals(1, nodeIds.size());
         assertEquals("rgn2", nodeIds.iterator().next());
-    }  
-    
+    }
+
     @Test
     public void testConfigurationExtract() {
         IDataRouter router = buildTestableRouter(
                 THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
                 THREE_TIER_NETWORKED_ROOT);
-        
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode());
-        
         Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "corp"), nodes, true, false, null);
         assertNotNull(nodeIds);
         assertEquals(1, nodeIds.size());
-        assertEquals("corp", nodeIds.iterator().next());  
+        assertEquals("corp", nodeIds.iterator().next());
     }
-    
+
     @Test
     public void testRouteRgn1FromCorp() {
         IDataRouter router = buildTestableRouter(
                 THREE_TIER_NETWORKED_ROOT.findNetworkedNode("corp").getNode(), THREE_TIER_LINKS,
                 THREE_TIER_NETWORKED_ROOT);
-        
         Set<Node> nodes = new HashSet<Node>();
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn1").getNode());
         nodes.add(THREE_TIER_NETWORKED_ROOT.findNetworkedNode("rgn2").getNode());
-        
         Collection<String> nodeIds = router.routeToNodes(new SimpleRouterContext(), buildDataMetaData("SYM_NODE", "rgn1"), nodes, false, false, null);
         assertNotNull(nodeIds);
         assertEquals(1, nodeIds.size());
         assertEquals("rgn1", nodeIds.iterator().next());
-    }       
-    
+    }
+
     @Test
     public void testRouteLaptop1FromCorp() {
         IDataRouter router = buildTestableRouter(
@@ -197,7 +172,7 @@ public class ConfigurationChangedDataRouterTest {
         assertEquals(1, nodeIds.size());
         assertEquals("rgn1", nodeIds.iterator().next());
     }
-    
+
     @Test
     public void testRouteS1ToDWFromRegsvr() {
         IDataRouter router = buildTestableRouter(
@@ -213,7 +188,7 @@ public class ConfigurationChangedDataRouterTest {
         assertTrue(nodeIds.contains("s1"));
         assertTrue(nodeIds.contains("dw"));
     }
-    
+
     @Test
     public void testRouteDWToS1andS2FromRegsvr() {
         IDataRouter router = buildTestableRouter(
@@ -230,7 +205,7 @@ public class ConfigurationChangedDataRouterTest {
         assertTrue(nodeIds.contains("s2"));
         assertTrue(nodeIds.contains("dw"));
     }
-    
+
     @Test
     public void testRouteS1toRegsvrFromS1() {
         IDataRouter router = buildTestableRouter(
@@ -245,7 +220,7 @@ public class ConfigurationChangedDataRouterTest {
         assertEquals(1, nodeIds.size());
         assertTrue(nodeIds.contains("regsvr"));
     }
-    
+
     protected DataMetaData buildDataMetaData(String tableName, String nodeId) {
         Data data = new Data();
         data.setTableName(tableName);
@@ -263,7 +238,6 @@ public class ConfigurationChangedDataRouterTest {
         ISymmetricEngine engine = mock(ISymmetricEngine.class);
         when(engine.getConfigurationService()).thenReturn(configService);
         when(engine.getTablePrefix()).thenReturn("sym");
-        
         ConfigurationChangedDataRouter router = new ConfigurationChangedDataRouter(engine) {
             @Override
             protected Node findIdentity() {

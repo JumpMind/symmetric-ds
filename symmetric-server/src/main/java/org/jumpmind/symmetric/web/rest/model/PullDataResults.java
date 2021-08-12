@@ -23,18 +23,14 @@ package org.jumpmind.symmetric.web.rest.model;
 import java.util.List;
 
 public class PullDataResults {
-
     /**
-     * The time in milliseconds when this payload was passed to the REST framework to be
-     * marshalled and transferred.
+     * The time in milliseconds when this payload was passed to the REST framework to be marshalled and transferred.
      */
     private long transferStartTimeMillis = System.currentTimeMillis();
-
     /**
      * The number of batches that were returned in this pull request
      */
     private int nbrBatches;
-
     /**
      * The actual list of {@link Batch}
      */
@@ -83,5 +79,4 @@ public class PullDataResults {
     public long getTransferStartTimeMillis() {
         return transferStartTimeMillis;
     }
-
 }

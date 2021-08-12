@@ -45,9 +45,7 @@ import org.junit.Test;
 
 @SuppressWarnings("deprecation")
 public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest {
-
     protected static IStagingManager stagingManager;
-    
     protected static final String uncPath = null;
 
     @BeforeClass
@@ -56,7 +54,7 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
                 .equals("net.sourceforge.jtds.jdbc.Driver")) {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("target/tmp",false);
+            stagingManager = new StagingManager("target/tmp", false);
         }
     }
 
@@ -66,24 +64,23 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
     }
 
     protected boolean shouldTestRun(IDatabasePlatform platform) {
-        return platform != null && (
-                platform instanceof MsSql2000DatabasePlatform || 
-                platform instanceof MsSql2005DatabasePlatform || 
+        return platform != null && (platform instanceof MsSql2000DatabasePlatform ||
+                platform instanceof MsSql2005DatabasePlatform ||
                 platform instanceof MsSql2008DatabasePlatform ||
                 platform instanceof MsSql2016DatabasePlatform);
     }
 
-    protected AbstractDatabaseWriter create(){
+    protected AbstractDatabaseWriter create() {
         return new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 1000, false, uncPath, null, null, null);
     }
-    
+
     protected long writeData(List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
                 1000, false, uncPath, null, null, null), new TableCsvData(table, data));
     }
-    
+
     protected long writeData(BinaryEncoding encoding, List<CsvData> data) {
         Table table = platform.getTableFromCache(getTestTable(), false);
         return writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
@@ -104,12 +101,11 @@ public class MsSqlBulkDatabaseWriterTest extends AbstractBulkDatabaseWriterTest 
             table.removeColumn(firstColumn);
             table.addColumn(firstColumn);
             writeData(new MsSqlBulkDatabaseWriter(platform, platform, "sym_", stagingManager,
-                    1000, false, uncPath, null, null, null), 
+                    1000, false, uncPath, null, null, null),
                     new TableCsvData(table, data));
             values = (String[]) ArrayUtils.remove(values, values.length - 1);
             values = (String[]) ArrayUtils.add(values, 0, id);
             assertTestTableEquals(id, massageExpectectedResultsForDialect(values));
         }
     }
-
 }

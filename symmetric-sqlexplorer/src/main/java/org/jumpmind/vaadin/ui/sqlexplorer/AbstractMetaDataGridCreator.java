@@ -38,17 +38,11 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.ui.Grid;
 
 abstract public class AbstractMetaDataGridCreator {
-
     final Logger log = LoggerFactory.getLogger(getClass());
-    
     JdbcSqlTemplate sqlTemplate;
-
     org.jumpmind.db.model.Table table;
-
     String folder;
-
     Settings settings;
-
     protected final String[] TABLE_NAME_METADATA_COLUMNS = new String[] { "TABLE_NAME",
             "TABLE_CATALOG", "TABLE_SCHEMA", "PKTABLE_NAME", "PKTABLE_CATALOG", "PKTABLE_SCHEMA",
             "TABLE_CAT", "TABLE_SCHEM" };
@@ -62,7 +56,6 @@ abstract public class AbstractMetaDataGridCreator {
 
     public Grid<List<Object>> create() {
         return sqlTemplate.execute(new IConnectionCallback<Grid<List<Object>>>() {
-
             public Grid<List<Object>> execute(Connection con) throws SQLException {
                 TypedProperties properties = settings.getProperties();
                 ResultSet rs = null;
@@ -75,7 +68,8 @@ abstract public class AbstractMetaDataGridCreator {
                     g.setSizeFull();
                     return g;
                 } catch (Exception ex) {
-                    log.info("Failed to retrieve meta data.  It might be that this driver doesn't support it.  Turn on debug logging to see the resulting stacktrace");
+                    log.info(
+                            "Failed to retrieve meta data.  It might be that this driver doesn't support it.  Turn on debug logging to see the resulting stacktrace");
                     log.debug("", ex);
                     return new Grid<List<Object>>();
                 } finally {
@@ -91,5 +85,4 @@ abstract public class AbstractMetaDataGridCreator {
 
     abstract protected ResultSet getMetaDataResultSet(DatabaseMetaData metadata)
             throws SQLException;
-
 }

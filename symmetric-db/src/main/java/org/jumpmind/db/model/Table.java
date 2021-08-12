@@ -64,54 +64,34 @@ import org.slf4j.LoggerFactory;
  * Represents a table in the database model.
  */
 public class Table implements Serializable, Cloneable, Comparable<Table> {
-
     private final static Logger log = LoggerFactory.getLogger(Table.class);
-    
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
-
     private static final ColumnPkSequenceComparator columnPkSequenceComparator = new ColumnPkSequenceComparator();
-
     private String oldCatalog = null;
-
     private String oldSchema = null;
-
     /** The catalog of this table as read from the database. */
     private String catalog = null;
-
     /** The table's schema. */
     private String schema = null;
-
     /** The name. */
     private String name = null;
-
     /** A description of the table. */
     private String description = null;
-
     /** The table's type as read from the database. */
     private String type = null;
-    
     private boolean isAccessControlled;
-
     /** The columns in this table. */
     private ArrayList<Column> columns = new ArrayList<Column>();
-
     /** The foreign keys associated to this table. */
     private ArrayList<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
-
     /** The indices applied to this table. */
     private ArrayList<IIndex> indices = new ArrayList<IIndex>();
-
     private String primaryKeyConstraintName;
-    
     private String fullyQualifiedTableName;
-    
     private String fullyQualifiedTableNameLowerCase;
-    
     private String tableNameLowerCase;
-    
     private ArrayList<Column> lobColumns;
-    
     private CompressionTypes compressionType = CompressionTypes.NONE;
 
     public Table() {
@@ -148,7 +128,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                 column.setPrimaryKey(true);
             }
         }
-
     }
 
     public void removeAllColumns() {
@@ -192,7 +171,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         this.oldCatalog = this.catalog != null ? this.catalog : catalog;
         this.catalog = catalog;
         this.fullyQualifiedTableName = this.fullyQualifiedTableNameLowerCase = null;
-        
     }
 
     /**
@@ -353,8 +331,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      * Adds the column after the given previous column.
      * 
      * @param previousColumn
-     *            The column to add the new column after; use <code>null</code>
-     *            for adding at the begin
+     *            The column to add the new column after; use <code>null</code> for adding at the begin
      * @param column
      *            The column
      */
@@ -415,7 +392,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void removeColumn(Column column) {
         if (column != null) {
             columns.remove(column);
-            lobColumns= null;
+            lobColumns = null;
         }
     }
 
@@ -647,29 +624,27 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Determines whether there is at least one primary key column on this
-     * table.
+     * Determines whether there is at least one primary key column on this table.
      * 
      * @return <code>true</code> if there are one or more primary key columns
      */
     public boolean hasPrimaryKey() {
         for (Iterator<Column> it = columns.iterator(); it.hasNext();) {
             Column column = (Column) it.next();
-
             if (column.isPrimaryKey()) {
                 return true;
             }
         }
         return false;
     }
-    
+
     public boolean hasNTypeColumns() {
-        for (Iterator< Column>it = columns.iterator(); it.hasNext();) {
+        for (Iterator<Column> it = columns.iterator(); it.hasNext();) {
             Column column = (Column) it.next();
             if (column.getJdbcTypeCode() == ColumnTypes.NCHAR || column.getJdbcTypeCode() == ColumnTypes.NVARCHAR
                     || column.getJdbcTypeCode() == ColumnTypes.LONGNVARCHAR || column.getJdbcTypeCode() == ColumnTypes.NCLOB
-                    || (column.getJdbcTypeName() != null 
-                        && (column.getJdbcTypeName().startsWith("NVARCHAR") || column.getJdbcTypeName().startsWith("NCHAR")))) {
+                    || (column.getJdbcTypeName() != null
+                            && (column.getJdbcTypeName().startsWith("NVARCHAR") || column.getJdbcTypeName().startsWith("NCHAR")))) {
                 return true;
             }
         }
@@ -677,9 +652,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Finds the column with the specified name, using case insensitive
-     * matching. Note that this method is not called getColumn(String) to avoid
-     * introspection problems.
+     * Finds the column with the specified name, using case insensitive matching. Note that this method is not called getColumn(String) to avoid introspection
+     * problems.
      * 
      * @param name
      *            The name of the column
@@ -690,9 +664,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Finds the column with the specified name, using case insensitive
-     * matching. Note that this method is not called getColumn(String) to avoid
-     * introspection problems.
+     * Finds the column with the specified name, using case insensitive matching. Note that this method is not called getColumn(String) to avoid introspection
+     * problems.
      * 
      * @param name
      *            The name of the column
@@ -703,7 +676,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public Column findColumn(String name, boolean caseSensitive) {
         for (Iterator<Column> it = columns.iterator(); it.hasNext();) {
             Column column = (Column) it.next();
-
             if (caseSensitive) {
                 if (column.getName().equals(name)) {
                     return column;
@@ -750,9 +722,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Finds the index with the specified name, using case insensitive matching.
-     * Note that this method is not called getIndex to avoid introspection
-     * problems.
+     * Finds the index with the specified name, using case insensitive matching. Note that this method is not called getIndex to avoid introspection problems.
      * 
      * @param name
      *            The name of the index
@@ -763,9 +733,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Finds the index with the specified name, using case insensitive matching.
-     * Note that this method is not called getIndex to avoid introspection
-     * problems.
+     * Finds the index with the specified name, using case insensitive matching. Note that this method is not called getIndex to avoid introspection problems.
      * 
      * @param name
      *            The name of the index
@@ -776,7 +744,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public IIndex findIndex(String name, boolean caseSensitive) {
         for (int idx = 0; idx < getIndexCount(); idx++) {
             IIndex index = getIndex(idx);
-
             if (caseSensitive) {
                 if (index.getName().equals(name)) {
                     return index;
@@ -791,8 +758,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Finds the foreign key in this table that is equal to the supplied foreign
-     * key.
+     * Finds the foreign key in this table that is equal to the supplied foreign key.
      * 
      * @param key
      *            The foreign key to search for
@@ -801,7 +767,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public ForeignKey findForeignKey(ForeignKey key) {
         for (int idx = 0; idx < getForeignKeyCount(); idx++) {
             ForeignKey fk = getForeignKey(idx);
-
             if (fk.equals(key)) {
                 return fk;
             }
@@ -810,8 +775,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Finds the foreign key in this table that is equal to the supplied foreign
-     * key.
+     * Finds the foreign key in this table that is equal to the supplied foreign key.
      * 
      * @param key
      *            The foreign key to search for
@@ -822,7 +786,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public ForeignKey findForeignKey(ForeignKey key, boolean caseSensitive) {
         for (int idx = 0; idx < getForeignKeyCount(); idx++) {
             ForeignKey fk = getForeignKey(idx);
-
             if ((caseSensitive && fk.equals(key)) || (!caseSensitive && fk.equalsIgnoreCase(key))) {
                 return fk;
             }
@@ -838,7 +801,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public ForeignKey getSelfReferencingForeignKey() {
         for (int idx = 0; idx < getForeignKeyCount(); idx++) {
             ForeignKey fk = getForeignKey(idx);
-
             if (this.getName().equalsIgnoreCase(fk.getForeignTableName())) {
                 return fk;
             }
@@ -899,8 +861,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * Returns the auto increment columns in this table. If no incrementcolumns
-     * are found, it will return an empty array.
+     * Returns the auto increment columns in this table. If no incrementcolumns are found, it will return an empty array.
      * 
      * @return The columns
      */
@@ -927,12 +888,10 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public void sortForeignKeys(final boolean caseSensitive) {
         if (!foreignKeys.isEmpty()) {
             final Collator collator = Collator.getInstance();
-
             Collections.sort(foreignKeys, new Comparator<ForeignKey>() {
                 public int compare(ForeignKey obj1, ForeignKey obj2) {
                     String fk1Name = ((ForeignKey) obj1).getName();
                     String fk2Name = ((ForeignKey) obj2).getName();
-
                     if (!caseSensitive) {
                         fk1Name = (fk1Name != null ? fk1Name.toLowerCase() : null);
                         fk2Name = (fk2Name != null ? fk2Name.toLowerCase() : null);
@@ -996,7 +955,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         if (other != null && StringUtils.equalsIgnoreCase(catalog, other.catalog) && StringUtils.equalsIgnoreCase(schema, other.schema) &&
                 StringUtils.equalsIgnoreCase(name, other.name)) {
-
             if (columns == other.columns) {
                 return true;
             }
@@ -1024,13 +982,11 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-
         result.append("Table [name=");
         result.append(getName());
         result.append("; ");
         result.append(getColumnCount());
         result.append(" columns]");
-
         return result.toString();
     }
 
@@ -1041,7 +997,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
      */
     public String toVerboseString() {
         StringBuilder result = new StringBuilder();
-
         result.append("Table [name=");
         result.append(getName());
         result.append("; catalog=");
@@ -1065,32 +1020,31 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             result.append(" ");
             result.append(getForeignKey(idx).toVerboseString());
         }
-
         return result.toString();
     }
 
     public String getTableKey() {
         return getFullyQualifiedTableName() + "-" + calculateTableHashcode();
     }
-    
+
     public boolean containsLobColumns(IDatabasePlatform platform) {
-        if(lobColumns == null) {
+        if (lobColumns == null) {
             lobColumns = populateLobColumns(platform);
         }
         return lobColumns.size() > 0;
     }
-    
+
     public List<Column> getLobColumns(IDatabasePlatform platform) {
-        if(lobColumns == null) {
+        if (lobColumns == null) {
             lobColumns = populateLobColumns(platform);
         }
         return lobColumns;
     }
-    
+
     private ArrayList<Column> populateLobColumns(IDatabasePlatform platform) {
         ArrayList<Column> lobColumns = new ArrayList<Column>();
-        for(Column c: columns) {
-            if(platform.isLob(c.getMappedTypeCode())){
+        for (Column c : columns) {
+            if (platform.isLob(c.getMappedTypeCode())) {
                 lobColumns.add(c);
             }
         }
@@ -1110,13 +1064,13 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         return fullyQualifiedTableNameLowerCase;
     }
-    
+
     public String getNameLowerCase() {
         if (tableNameLowerCase == null) {
             tableNameLowerCase = getName().toLowerCase();
         }
         return tableNameLowerCase;
-    }    
+    }
 
     public static String getFullyQualifiedTableName(String catalogName, String schemaName,
             String tableName) {
@@ -1134,7 +1088,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public String getQualifiedTableName(String quoteString, String catalogSeparator, String schemaSeparator) {
         return getFullyQualifiedTableName(catalog, schema, name, quoteString, catalogSeparator, schemaSeparator);
     }
-    
+
     public String getQualifiedTableName() {
         return getQualifiedTableName("", ".", ".");
     }
@@ -1149,7 +1103,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         sb.append(quoteString).append(tableName).append(quoteString);
         return sb.toString();
     }
-    
+
     public static String getFullyQualifiedTablePrefix(String catalogName, String schemaName,
             String quoteString, String catalogSeparator, String schemaSeparator) {
         return getFullyQualifiedTablePrefix(new StringBuilder(), catalogName, schemaName, quoteString, catalogSeparator, schemaSeparator);
@@ -1184,7 +1138,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
         }
         return null;
     }
-    
+
     public Column[] getColumnsWithName(String[] columnNames) {
         Column[] columns = new Column[columnNames.length];
         int index = 0;
@@ -1286,7 +1240,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     }
 
     /**
-     * @param isAccessControlled the isAccessControlled to set
+     * @param isAccessControlled
+     *            the isAccessControlled to set
      */
     public void setAccessControlled(boolean isAccessControlled) {
         this.isAccessControlled = isAccessControlled;
@@ -1304,33 +1259,29 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             boolean setPrimaryKeys) {
         Table table = copy();
         table.orderColumns(orderedColumnNames);
-        
         Set<String> columnNameSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         columnNameSet.addAll(Arrays.asList(orderedColumnNames));
-
         List<IIndex> indices = new ArrayList<IIndex>();
-        for(IIndex index : table.getIndices()){
+        for (IIndex index : table.getIndices()) {
             boolean keepIndex = true;
-            for(IndexColumn columnInIndex : index.getColumns()){
-                if(columnInIndex == null || !columnNameSet.contains(columnInIndex.getName())){
+            for (IndexColumn columnInIndex : index.getColumns()) {
+                if (columnInIndex == null || !columnNameSet.contains(columnInIndex.getName())) {
                     keepIndex = false;
                     break;
                 }
             }
-            if(keepIndex){
+            if (keepIndex) {
                 indices.add(index);
             }
         }
         table.removeAllIndices();
         table.addIndices(indices);
-
         if (setPrimaryKeys && columns != null) {
             for (Column column : table.columns) {
                 if (column != null) {
                     column.setPrimaryKey(false);
                 }
             }
-
             if (pkColumnNames != null) {
                 for (Column column : table.columns) {
                     if (column != null) {
@@ -1342,7 +1293,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     }
                 }
             }
-            
             if (table.getForeignKeys() != null && table.getForeignKeys().length > 0) {
                 List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
                 Set<String> columnsSet = new HashSet<String>(Arrays.asList(orderedColumnNames));
@@ -1350,8 +1300,8 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                     boolean addFk = true;
                     for (Reference ref : fk.getReferences()) {
                         if (ref != null && ref.getLocalColumnName() != null && !columnsSet.contains(ref.getLocalColumnName())) {
-                            addFk = false; 
-                        }  
+                            addFk = false;
+                        }
                     }
                     if (addFk) {
                         foreignKeys.add(fk);
@@ -1361,7 +1311,6 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
                 table.addForeignKeys(foreignKeys);
             }
         }
-
         return table;
     }
 
@@ -1432,7 +1381,7 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
     public static String getCommaDeliminatedColumns(Column[] cols) {
         StringBuilder columns = new StringBuilder();
         if (cols != null && cols.length > 0) {
-            for (Column column : cols) {            
+            for (Column column : cols) {
                 columns.append(escapeColumnNameForCsv(column.getName()));
                 columns.append(",");
             }
@@ -1492,24 +1441,24 @@ public class Table implements Serializable, Cloneable, Comparable<Table> {
             }
         }
     }
-    
+
     public int compareTo(Table o) {
         return this.getFullyQualifiedTableName().compareTo(o.getFullyQualifiedTableName());
     }
-    
+
     public static String escapeColumnNameForCsv(String columnName) {
-        if (columnName != null && 
-                (columnName.indexOf('\\') != -1 
-                || columnName.indexOf(',') != -1 
-                || columnName.indexOf('"') != -1)) {
+        if (columnName != null &&
+                (columnName.indexOf('\\') != -1
+                        || columnName.indexOf(',') != -1
+                        || columnName.indexOf('"') != -1)) {
             columnName = columnName.replace("\\", "\\\\");
-            columnName = columnName.replace("\"", "\\\"");            
-           return "\"" + columnName + "\""; 
-        } else {            
+            columnName = columnName.replace("\"", "\\\"");
+            return "\"" + columnName + "\"";
+        } else {
             return columnName;
         }
-    }    
-    
+    }
+
     public CompressionTypes getCompressionType() {
         return compressionType;
     }

@@ -32,9 +32,8 @@ import org.jumpmind.db.model.Table;
 import org.jumpmind.db.platform.DatabaseNamesConstants;
 
 public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
-    
     public static final String CHANGE_TRACKING_SYM_PREFIX = "SymmetricDS";
-    
+
     public MsSql2008DdlBuilder() {
         super();
         this.databaseName = DatabaseNamesConstants.MSSQL2008;
@@ -44,14 +43,14 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
         databaseInfo.addNativeTypeMapping(Types.TIMESTAMP, "DATETIME2");
         databaseInfo.addNativeTypeMapping(ColumnTypes.MAPPED_TIMESTAMPTZ, "DATETIMEOFFSET");
     }
-    
+
     @Override
     protected void writeExternalIndexCreate(Table table, IIndex index, StringBuilder ddl) {
         super.writeExternalIndexCreate(table, index, ddl);
         if (index.getPlatformIndexes() != null && index.getPlatformIndexes().size() > 0) {
             Map<String, PlatformIndex> platformIndices = index.getPlatformIndexes();
-            for(PlatformIndex platformIndex : platformIndices.values()) {
-                if (StringUtils.equals(platformIndex.getName(),index.getName())) {
+            for (PlatformIndex platformIndex : platformIndices.values()) {
+                if (StringUtils.equals(platformIndex.getName(), index.getName())) {
                     if (platformIndex.getFilterCondition() != null) {
                         println(ddl);
                         ddl.append(platformIndex.getFilterCondition());
@@ -66,7 +65,7 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
             }
         }
     }
-    
+
     @Override
     protected void writeTableCreationStmt(Table table, StringBuilder ddl) {
         super.writeTableCreationStmt(table, ddl);
@@ -74,11 +73,11 @@ public class MsSql2008DdlBuilder extends MsSql2005DdlBuilder {
             ddl.append(" WITH(data_compression=" + table.getCompressionType().name() + ")");
         }
     }
-    
+
     @Override
     public void initCteExpression() {
         if (getDatabaseInfo().isLogBased()) {
-            getDatabaseInfo().setCteExpression("DECLARE @ctcontext varbinary(128) = CAST('" + CHANGE_TRACKING_SYM_PREFIX 
+            getDatabaseInfo().setCteExpression("DECLARE @ctcontext varbinary(128) = CAST('" + CHANGE_TRACKING_SYM_PREFIX
                     + ":' AS varbinary(128)); WITH CHANGE_TRACKING_CONTEXT (@ctcontext) ");
         }
     }

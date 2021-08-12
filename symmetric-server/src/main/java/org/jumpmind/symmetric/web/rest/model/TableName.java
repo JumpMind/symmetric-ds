@@ -24,16 +24,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class TableName {
-
     protected String catalogName;
-    
     protected String schemaName;
-    
     protected String tableName;
 
     public TableName() {
     }
-    
+
     public TableName(String catalogName, String schemaName, String tableName) {
         this.catalogName = catalogName;
         this.schemaName = schemaName;
@@ -63,6 +60,4 @@ public class TableName {
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-    
-    
 }

@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 public class Sequence {
-
     private String sequenceName;
     private long currentValue;
     private int incrementBy;
@@ -117,11 +116,11 @@ public class Sequence {
     public void setCycle(boolean cycle) {
         this.cycle = cycle;
     }
-    
+
     public boolean isCycle() {
         return cycle;
     }
-    
+
     public int getCacheSize() {
         return cacheSize;
     }

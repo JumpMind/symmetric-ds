@@ -29,11 +29,8 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
-
     public final static String NAME = "columnsToRowsValue";
-    
     protected final static String OPTION_CHANGES_ONLY = "changesOnly";
-    
     protected final static String OPTION_IGNORE_NULLS = "ignoreNulls";
 
     public String getName() {
@@ -50,13 +47,10 @@ public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTran
 
     public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column, TransformedData data,
             Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreRowException, IgnoreColumnException {
-
         String contextBase = ColumnsToRowsKeyColumnTransform.getContextBase(column.getTransformId());
-
         @SuppressWarnings("unchecked")
         Map<String, String> reverseMap = (Map<String, String>) context.get(contextBase + ColumnsToRowsKeyColumnTransform.CONTEXT_MAP);
         String pkColumnName = (String) context.get(contextBase + ColumnsToRowsKeyColumnTransform.CONTEXT_PK_COLUMN);
-
         if (reverseMap == null) {
             throw new RuntimeException("Reverse map not found in context as key " + contextBase
                     + ColumnsToRowsKeyColumnTransform.CONTEXT_MAP + "  Unable to transform.");
@@ -65,7 +59,6 @@ public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTran
             throw new RuntimeException("Primary key column name not found in context as key " + contextBase
                     + ColumnsToRowsKeyColumnTransform.CONTEXT_PK_COLUMN + "  Unable to transform.");
         }
-
         String expr = column.getTransformExpression();
         boolean isChangesOnly = false;
         boolean isIgnoreNulls = false;
@@ -73,10 +66,8 @@ public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTran
             isChangesOnly = expr.indexOf(OPTION_CHANGES_ONLY + "=true") != -1;
             isIgnoreNulls = expr.indexOf(OPTION_IGNORE_NULLS + "=true") != -1;
         }
-
         String pkValue = data.getTargetKeyValues().get(pkColumnName);
         String value = null;
-
         if (pkValue != null) {
             value = reverseMap.get(pkValue);
             if (value != null) {
@@ -87,7 +78,7 @@ public class ColumnsToRowsValueColumnTransform implements ISingleValueColumnTran
                 } else if (DataEventType.UPDATE == data.getSourceDmlType()) {
                     if (isChangesOnly && StringUtils.trimToEmpty(srcNewValue).equals(StringUtils.trimToEmpty(srcOldValue))) {
                         throw new IgnoreRowException();
-                    } else if (isIgnoreNulls && StringUtils.trimToNull(srcNewValue) == null) { 
+                    } else if (isIgnoreNulls && StringUtils.trimToNull(srcNewValue) == null) {
                         data.setTargetDmlType(DataEventType.DELETE);
                     }
                 }

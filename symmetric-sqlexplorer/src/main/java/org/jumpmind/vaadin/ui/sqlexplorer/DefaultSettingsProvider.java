@@ -34,15 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultSettingsProvider implements ISettingsProvider, Serializable {
-
     private static final long serialVersionUID = 1L;
-
     final Logger log = LoggerFactory.getLogger(getClass());
-
     File dir;
-
     Settings settings;
-    
+
     public DefaultSettingsProvider(String dir) {
         this(dir, null);
     }
@@ -99,19 +95,19 @@ public class DefaultSettingsProvider implements ISettingsProvider, Serializable 
             return new Settings();
         }
     }
-    
+
     protected ClassLoader setContextClassloader() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        try {            
+        try {
             Thread.currentThread().setContextClassLoader(Settings.class.getClassLoader());
         } catch (Exception e) {
             log.warn("", e);
         }
         return classLoader;
     }
-    
+
     protected void restoreContextClassloader(ClassLoader classloader) {
-        try {            
+        try {
             Thread.currentThread().setContextClassLoader(classloader);
         } catch (Exception e) {
             log.warn("", e);
@@ -125,5 +121,4 @@ public class DefaultSettingsProvider implements ISettingsProvider, Serializable 
         }
         return settings;
     }
-
 }

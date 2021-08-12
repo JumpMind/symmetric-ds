@@ -31,14 +31,11 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.ui.UI;
 
 public class CsvExport {
-
     protected IDataProvider gridData = null;
     protected String fileName;
     protected String title;
-
     protected StringBuffer cellData;
     protected final String csvMimeContentType = "text/csv";
-
     final Logger log = LoggerFactory.getLogger(getClass());
 
     public CsvExport(final IDataProvider gridData) {
@@ -60,7 +57,6 @@ public class CsvExport {
         } else {
             this.fileName = fileName;
         }
-
         if (title == null || title.isEmpty()) {
             this.title = "";
         } else {
@@ -135,19 +131,18 @@ public class CsvExport {
             file = File.createTempFile(prefix, ".csv");
             outStream = new FileOutputStream(file);
             outStream.write(cellData.toString().getBytes());
-
             ExportFileDownloader downloader = new ExportFileDownloader(fileName, csvMimeContentType, file);
             UI.getCurrent().getPage().open(downloader, "Download", false);
         } catch (Exception e) {
             log.error("", e);
         } finally {
             try {
-            	if (file != null) {
-            		file.delete();
-            	}
-            	if (outStream != null) {
-            		outStream.close();
-            	}
+                if (file != null) {
+                    file.delete();
+                }
+                if (outStream != null) {
+                    outStream.close();
+                }
             } catch (IOException e) {
                 log.error("Problem closing File Stream", e);
             }

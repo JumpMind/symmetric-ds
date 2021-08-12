@@ -32,9 +32,7 @@ import org.jumpmind.extension.IBuiltInExtensionPoint;
 import org.jumpmind.symmetric.io.data.DataContext;
 
 public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTransform, IBuiltInExtensionPoint {
-
     public final static String NAME = "columnsToRowsKey";
-
     public final static String CONTEXT_MAP = "Map";
     public final static String CONTEXT_PK_COLUMN = "PKColumn";
 
@@ -56,20 +54,15 @@ public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTran
 
     public List<String> transform(IDatabasePlatform platform, DataContext context, TransformColumn column, TransformedData data,
             Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreRowException {
-
         if (StringUtils.trimToNull(column.getTransformExpression()) == null) {
             throw new RuntimeException(
                     "Transform configured incorrectly.  A map representing PK and column names must be defined as part of the transform expression");
         }
         String mapAsString = StringUtils.trimToEmpty(column.getTransformExpression());
-
         // Build reverse map, while also building up array to return
-
         List<String> result = new ArrayList<String>();
         Map<String, String> reverseMap = new HashMap<String, String>();
-
         StringTokenizer tokens = new StringTokenizer(mapAsString);
-
         while (tokens.hasMoreElements()) {
             String keyValue = (String) tokens.nextElement();
             int equalIndex = keyValue.indexOf("=");
@@ -80,11 +73,8 @@ public class ColumnsToRowsKeyColumnTransform implements IMultipleValueColumnTran
                 throw new RuntimeException("Map string for " + column.getTransformExpression() + " is invalid format: " + mapAsString);
             }
         }
-
         context.put(getContextBase(column.getTransformId()) + CONTEXT_MAP, reverseMap);
         context.put(getContextBase(column.getTransformId()) + CONTEXT_PK_COLUMN, column.getTargetColumnName());
-
         return result;
     }
-
 }

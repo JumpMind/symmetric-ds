@@ -21,30 +21,23 @@
 package org.jumpmind.db.io;
 
 public class ReleaseNotesConstants {
-
     public static final String PRO_INDICATOR = "(Pro)";
     public static final String PRO_TOKEN_START = "ifdef::pro[]";
     public static final String PRO_TOKEN_END = "endif::pro[]";
     public static final String OS_TOKEN_START = "ifndef::pro[]";
     public static final String OS_TOKEN_END = "endif::pro[]";
-
     public static final String PROPERTIES_DIR = "../symmetric-core/src/main/resources/symmetric-default.properties";
     public static final String PRO_PROPERTIES_DIR = "../../symmetric-pro/symmetric-pro/src/main/resources/symmetric-console-default.properties";
-
     public static final String SCHEMA_DIR = "../symmetric-core/src/main/resources/symmetric-schema.xml";
     public static final String PRO_SCHEMA_DIR = "../../symmetric-pro/symmetric-pro/src/main/resources/console-schema.xml";
-
     public static final String ISSUE_URL = "https://www.symmetricds.org/issues/view.php?id=%s[%s]";
-
     public static final String PROPERTIES_OLD_LOCATION = "build/";
-
     public static final String NOTES_HEADER = "= Release Notes";
     public static final String OVERVIEW_HEADER = "== Overview";
     public static final String OVERVIEW_DESC = "SymmetricDS @appMajorVersion@ release includes %d features, %d improvements, and %d bug fixes.";
     public static final String OVERVIEW_PRO_DESC = "SymmetricDS Pro @appMajorVersion@ release includes %d features, %d improvements, and %d bug fixes.";
     public static final String INCLUDE_FORMAT_GENERATED = "include::%s[]";
     public static final String INCLUDE_FORMAT_WRITTEN = "include::../release-notes/%s[]";
-
     public static final String PARAMETER_SEC_HEADER = "== Parameters";
     public static final String PARAMETER_SEC_DESC = "The following changes were made to add new parameters, modify their default value, modify their "
             + "description, or remove them from use.";
@@ -55,7 +48,6 @@ public class ReleaseNotesConstants {
     public static final String PARAMETER_DESC_FORMAT = "%s (Default: %s)";
     public static final String PARAMETER_DESC_MOD_FORMAT = "%s (Old Default: %s) (New Default: %s)";
     public static final String PARAMETER_DESC_REMOVED = "{REMOVED}";
-
     public static final String TABLES_SEC_HEADER = "== Tables";
     public static final String TABLES_SEC_DESC = "The following changes were made to the definition of configuration and runtime tables. Table changes "
             + "are applied to the database automatically using data definition language (DDL) during startup.";
@@ -81,7 +73,6 @@ public class ReleaseNotesConstants {
     public static final String TABLES_ADD_INDEX_FORMAT = "Added index `%s` (`%s`)";
     public static final String TABLES_DEL_INDEX_FORMAT = "Removed index `%s` (`%s`)";
     public static final String TABLES_MOD_INDEX_FORMAT = "Modified columns on index `%s`:\n** Old: (`%s`)\n** New: (`%s`)";
-
     public static final String MODIFIED_CONSTANT_DEF_VAL = "default value";
     public static final String MODIFIED_CONSTANT_IS_REQ = "isRequired";
     public static final String MODIFIED_CONSTANT_IS_UNQ = "isUnique";
@@ -95,17 +86,14 @@ public class ReleaseNotesConstants {
     public static final String MODIFIED_CONSTANT_PKEY = "Primary key(s)";
     public static final String MODIFIED_CONSTANT_IS_AUTOIDX = "auto index";
     public static final String MODIFIED_CONSTANT_IS_TIMEZONE = "timestamp with timezone";
-
     public static final String NULL = "null";
     public static final String VALUE_SEPARATOR = "`, `";
-
     public static final String FIXES_SECURITY_HEADER = "=== Security Fixes";
     public static final String FIXES_PERFORMANCE_HEADER = "=== Performance Fixes";
     public static final String FIXES_TABLE_HEADER = "[cols=\"1,7,2\"]\n|===\n|Issue |Summary |Severity";
     public static final String FIXES_TABLE_FOOTER = "|===";
     public static final String FIXES_TABLE_ELEMENT = "|%s\n|%s\n|%s";
     public static final String FIXES_TABLE_ELEMENT_PRO = "|%s\n|%s (Pro)\n|%s";
-
     public static final String ISSUES_SEC_HEADER = "== Issues";
     public static final String ISSUES_FEATURES_HEADER = "=== New Features";
     public static final String ISSUES_IMPROVEMENTS_HEADER = "=== Improvements";
@@ -115,5 +103,4 @@ public class ReleaseNotesConstants {
     public static final String ISSUES_VERSION_HEADER_PRO = "*%s (Pro)*";
     public static final String ISSUES_VERSION_HEADER = "*%s*";
     public static final String ISSUES_FORMAT = "%s - %s";
-
 }

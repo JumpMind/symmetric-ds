@@ -43,16 +43,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultParameterParser {
-
     private static final String COMMENT = "#";
     private static final String DATABASE_OVERRIDABLE = "DatabaseOverridable:";
     private static final String TAGS = "Tags:";
     private static final String TYPE = "Type:";
-
     private String propertiesFilePath;
-
     private InputStream inputStream;
-
     final Logger log = LoggerFactory.getLogger(getClass());
 
     public DefaultParameterParser(InputStream inputStream) {
@@ -87,7 +83,6 @@ public class DefaultParameterParser {
                         line = StringEscapeUtils.unescapeJava(line);
                         currentMetaData.setDefaultValue(currentMetaData.getDefaultValue() + line);
                     }
-
                     if (!extraLine) {
                         currentMetaData = new ParameterMetaData();
                     }
@@ -142,30 +137,26 @@ public class DefaultParameterParser {
         List<DefaultParameterParser> parmParsers = new ArrayList<DefaultParameterParser>();
         if (args[0].startsWith("classpath:")) {
             paths = args[0].replaceAll("classpath:", "").split(",");
-            for(String path: paths) {
+            for (String path : paths) {
                 parmParsers.add(new DefaultParameterParser(path));
             }
         } else {
             paths = args[0].split(",");
-            for(String path: paths) {
+            for (String path : paths) {
                 parmParsers.add(new DefaultParameterParser(FileUtils.openInputStream(new File(path))));
             }
         }
         new File(args[1]).getParentFile().mkdirs();
-        
         FileWriter writer = new FileWriter(args[1]);
         boolean isDatabaseOverridable = Boolean.parseBoolean(args[2]);
         boolean isAsciiDocFormat = args.length > 3 && "asciidoc".equals(args[3]);
-
         TreeMap<String, ParameterMetaData> map = new TreeMap<String, ParameterMetaData>();
-        for(DefaultParameterParser parser: parmParsers) {
+        for (DefaultParameterParser parser : parmParsers) {
             map.putAll(parser.parse());
         }
-        
         if (!isAsciiDocFormat) {
             writer.write("<variablelist>\n");
         }
-
         for (ParameterMetaData parm : map.values()) {
             if ((isDatabaseOverridable && parm.isDatabaseOverridable())
                     || (!isDatabaseOverridable && !parm.isDatabaseOverridable())) {
@@ -184,11 +175,10 @@ public class DefaultParameterParser {
                             + parm.getDescription()
                             + "\n\n_Default:_ "
                             + (parm.isXmlType() ? "\n\n[source, xml]\n----\n" + parm
-                                    .getDefaultValue() + "\n----\n\n" : (isBlank(parm.getDefaultValue()) ? "" : "_" +parm.getDefaultValue() + "_") + "\n\n"));
+                                    .getDefaultValue() + "\n----\n\n" : (isBlank(parm.getDefaultValue()) ? "" : "_" + parm.getDefaultValue() + "_") + "\n\n"));
                 }
             }
         }
-
         if (!isAsciiDocFormat) {
             writer.write("</variablelist>\n");
         }
@@ -196,7 +186,6 @@ public class DefaultParameterParser {
     }
 
     public static class ParameterMetaData implements Serializable {
-
         public static final String TYPE_BOOLEAN = "boolean";
         public static final String TYPE_INT = "integer";
         public static final String TYPE_TEXT_BOX = "textbox";
@@ -204,7 +193,6 @@ public class DefaultParameterParser {
         public static final String TYPE_CODE = "code";
         public static final String TYPE_XML = "xml";
         public static final String TYPE_ENCRYPTED = "encrypted";
-
         private static final long serialVersionUID = 1L;
         private String key;
         private String description;
@@ -292,7 +280,7 @@ public class DefaultParameterParser {
         public boolean isTextBoxType() {
             return type != null && type.equals(TYPE_TEXT_BOX);
         }
-        
+
         public boolean isEncryptedType() {
             return type != null && type.equals(TYPE_ENCRYPTED);
         }

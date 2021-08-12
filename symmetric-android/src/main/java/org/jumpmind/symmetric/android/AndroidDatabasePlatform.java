@@ -37,11 +37,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
-
     protected SQLiteOpenHelper database;
-
     protected AndroidSqlTemplate sqlTemplate;
-    
     protected Context androidContext;
 
     public AndroidDatabasePlatform(SQLiteOpenHelper database, Context androidContext) {
@@ -51,7 +48,6 @@ public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
         sqlTemplate = new AndroidSqlTemplate(database, androidContext);
         ddlReader = new SqliteDdlReader(this);
         ddlBuilder = new SqliteDdlBuilder();
-
     }
 
     public String getName() {
@@ -116,28 +112,28 @@ public class AndroidDatabasePlatform extends AbstractDatabasePlatform {
     }
 
     @Override
-    public PermissionResult getCreateSymTablePermission(Database database) {     
+    public PermissionResult getCreateSymTablePermission(Database database) {
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getDropSymTablePermission() {     
+    public PermissionResult getDropSymTablePermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getAlterSymTablePermission(Database database) {     
+    public PermissionResult getAlterSymTablePermission(Database database) {
         PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getDropSymTriggerPermission() {     
+    public PermissionResult getDropSymTriggerPermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;

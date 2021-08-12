@@ -21,39 +21,31 @@
 package org.jumpmind.symmetric.web.rest.model;
 
 public class ChannelStatus {
-
     /**
      * The ID or name of the channel. (e.g., 'employee')
      */
     String channelId;
-
     /**
      * Is the channel enabled. Disabling the channel prevents all communication on the channel.
      */
     boolean enabled;
-
     /**
      * An outgoing batch is in error.
      */
     boolean outgoingError;
-
     /**
      * An incoming batch is in error.
      */
     boolean incomingError;
-
     /**
      * The number of batches waiting to be sent.
      */
     private int batchToSendCount;
-
     /**
      * The number of batches in the error state.
      */
     private int batchInErrorCount;
-    
     private boolean ignoreEnabled;
-    
     private boolean suspendEnabled;
 
     /**
@@ -64,7 +56,8 @@ public class ChannelStatus {
     }
 
     /**
-     * @param channelId The ID or name of the channel. (e.g., 'employee')
+     * @param channelId
+     *            The ID or name of the channel. (e.g., 'employee')
      */
     public void setChannelId(String channelId) {
         this.channelId = channelId;
@@ -78,7 +71,8 @@ public class ChannelStatus {
     }
 
     /**
-     * @param enabled Is the channel enabled. Disabling the channel prevents all communication on the channel.
+     * @param enabled
+     *            Is the channel enabled. Disabling the channel prevents all communication on the channel.
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -92,7 +86,8 @@ public class ChannelStatus {
     }
 
     /**
-     * @param enabled An outgoing batch is in error.
+     * @param enabled
+     *            An outgoing batch is in error.
      */
     public void setOutgoingError(boolean outgoingError) {
         this.outgoingError = outgoingError;
@@ -106,7 +101,8 @@ public class ChannelStatus {
     }
 
     /**
-     * @param enabled An incoming batch is in error.
+     * @param enabled
+     *            An incoming batch is in error.
      */
     public void setIncomingError(boolean incomingError) {
         this.incomingError = incomingError;
@@ -120,7 +116,8 @@ public class ChannelStatus {
     }
 
     /**
-     * @param enabled The number of batches waiting to be sent.
+     * @param enabled
+     *            The number of batches waiting to be sent.
      */
     public void setBatchToSendCount(int batchToSendCount) {
         this.batchToSendCount = batchToSendCount;
@@ -134,26 +131,26 @@ public class ChannelStatus {
     }
 
     /**
-     * @param enabled The number of batches in the error state.
+     * @param enabled
+     *            The number of batches in the error state.
      */
     public void setBatchInErrorCount(int batchInErrorCount) {
         this.batchInErrorCount = batchInErrorCount;
     }
-    
+
     public void setIgnoreEnabled(boolean ignoreEnabled) {
         this.ignoreEnabled = ignoreEnabled;
     }
-    
+
     public boolean isIgnoreEnabled() {
         return ignoreEnabled;
     }
-    
+
     public void setSuspendEnabled(boolean suspendEnabled) {
         this.suspendEnabled = suspendEnabled;
     }
-    
+
     public boolean isSuspendEnabled() {
         return suspendEnabled;
     }
-
 }

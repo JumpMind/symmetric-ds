@@ -29,5 +29,4 @@ package org.jumpmind.symmetric.transport;
  * 
  */
 public interface ITransportResourceHandler {
-
 }

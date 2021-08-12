@@ -26,15 +26,17 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
  * Trigger templates for Firebird version 2.0.
  */
 public class Firebird20TriggerTemplate extends FirebirdTriggerTemplate {
-
     public Firebird20TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-
         if (isDialect1) {
-            numberColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || trim(trailing '.000000' from trim(trailing '.0' from $(tableAlias)." + quo + "$(columnName)" + quo + ")) || '\"' end" ;
-            datetimeColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || extract(year from $(tableAlias)." + quo + "$(columnName)" + quo + ") || '-'|| extract(month from $(tableAlias)." + quo + "$(columnName)" + quo + ") || '-' || extract(day from $(tableAlias)." + quo + "$(columnName)" + quo + ") || case when position(' ', $(tableAlias)." + quo + "$(columnName)" + quo + ") > 0 then substring($(tableAlias)." + quo + "$(columnName)" + quo + " from position(' ', $(tableAlias)." + quo + "$(columnName)" + quo + ")) else ' 00:00:00' end || '\"' end" ;
+            numberColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo
+                    + " is null then '' else '\"' || trim(trailing '.000000' from trim(trailing '.0' from $(tableAlias)." + quo + "$(columnName)" + quo
+                    + ")) || '\"' end";
+            datetimeColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || extract(year from $(tableAlias)."
+                    + quo + "$(columnName)" + quo + ") || '-'|| extract(month from $(tableAlias)." + quo + "$(columnName)" + quo
+                    + ") || '-' || extract(day from $(tableAlias)." + quo + "$(columnName)" + quo + ") || case when position(' ', $(tableAlias)." + quo
+                    + "$(columnName)" + quo + ") > 0 then substring($(tableAlias)." + quo + "$(columnName)" + quo + " from position(' ', $(tableAlias)." + quo
+                    + "$(columnName)" + quo + ")) else ' 00:00:00' end || '\"' end";
         }
-
     }
-
 }

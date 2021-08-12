@@ -49,65 +49,46 @@ import org.slf4j.LoggerFactory;
  * Builds a SQL DML statement
  */
 public class DmlStatement {
-    
-	private static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
+    private static final Logger log = LoggerFactory.getLogger(DmlStatement.class);
 
     public enum DmlType {
         INSERT, UPDATE, DELETE, UPSERT, COUNT, FROM, WHERE, SELECT, SELECT_ALL, UNKNOWN
     };
-    
+
     protected String catalogName;
-    
     protected String schemaName;
-    
     protected String tableName;
-
     protected DmlType dmlType;
-
     protected String sql;
-    
     protected boolean namedParameters = false;
-
     protected int[] types;
-
     protected String quote;
-    
     protected DatabaseInfo databaseInfo;
-
     protected Column[] keys;
-
     protected Column[] columns;
-
     protected boolean[] nullKeyValues;
-    
     protected String textColumnExpression;
-    
     protected static final String QUESTION_MARK = "<!QUESTION_MARK!>";
-    
+
     public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        
         init(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues,
                 databaseInfo, useQuotedIdentifiers, textColumnExpression, false);
-
     }
 
     public DmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression,
             boolean namedParameters) {
-        
         init(type, catalogName, schemaName, tableName, keysColumns, columns, nullKeyValues,
                 databaseInfo, useQuotedIdentifiers, textColumnExpression, namedParameters);
-
     }
-        
+
     protected final void init(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
-            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
+            DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression,
             boolean namedParameters) {
-        
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
@@ -130,8 +111,7 @@ public class DmlStatement {
             this.keys = cols.toArray(new Column[cols.size()]);
             this.nullKeyValues = nullKeyValues;
         }
-        this.quote = databaseInfo.getDelimiterToken() == null || !useQuotedIdentifiers ? "" : 
-            databaseInfo.getDelimiterToken();
+        this.quote = databaseInfo.getDelimiterToken() == null || !useQuotedIdentifiers ? "" : databaseInfo.getDelimiterToken();
         if (type == DmlType.INSERT) {
             this.sql = buildInsertSql(Table.getFullyQualifiedTableName(catalogName, schemaName,
                     tableName, quote, databaseInfo.getCatalogSeparator(), databaseInfo.getSchemaSeparator()), keysColumns, columns);
@@ -164,9 +144,8 @@ public class DmlStatement {
         }
         this.dmlType = type;
         this.types = buildTypes(this.keys, columns, databaseInfo.isDateOverridesToTimestamp());
-
     }
-    
+
     protected int[] buildTypes(Column[] keys, Column[] columns, boolean isDateOverrideToTimestamp) {
         switch (dmlType) {
             case UPDATE:
@@ -184,7 +163,6 @@ public class DmlStatement {
                 break;
         }
         return null;
-
     }
 
     protected int getTypeCode(Column column, boolean isDateOverrideToTimestamp) {
@@ -205,7 +183,6 @@ public class DmlStatement {
                     list.add(getTypeCode(columns[i], isDateOverrideToTimestamp));
                 }
             }
-
             int[] types = new int[list.size()];
             for (int index = 0; index < list.size(); index++) {
                 types[index] = list.get(index);
@@ -224,7 +201,7 @@ public class DmlStatement {
         sql.append(")");
         return sql.toString();
     }
-    
+
     protected String buildUpsertSql(String tableName, Column[] keyColumns, Column[] columns) {
         throw new NotImplementedException("Unimplemented SQL type: " + DmlType.UPSERT);
     }
@@ -277,7 +254,7 @@ public class DmlStatement {
     protected String buildSelectSqlAll(String tableName, Column[] keyColumns, Column[] columns) {
         StringBuilder sql = new StringBuilder("select ");
         if (columns != null && columns.length > 0) {
-            appendColumns(sql, columns, true);            
+            appendColumns(sql, columns, true);
         } else {
             sql.append("*");
         }
@@ -299,7 +276,7 @@ public class DmlStatement {
                         sql.append(separator);
                     }
                     if (!nullColumns[i]) {
-                        appendColumnEquals(sql, columns[i]);                   
+                        appendColumnEquals(sql, columns[i]);
                     } else {
                         sql.append(quote).append(columns[i].getName()).append(quote)
                                 .append(" is NULL");
@@ -308,7 +285,7 @@ public class DmlStatement {
             }
         }
     }
-    
+
     protected void appendColumnEquals(StringBuilder sql, Column column) {
         boolean textType = TypeMap.isTextType(column.getMappedTypeCode());
         String parameter = "?";
@@ -319,7 +296,7 @@ public class DmlStatement {
             sql.append(quote).append(column.getName()).append(quote).append(" = ").append(textColumnExpression.replace("$(columnName)", parameter));
         } else {
             sql.append(quote).append(column.getName()).append(quote).append(" = ").append(parameter);
-        } 
+        }
     }
 
     protected int appendColumns(StringBuilder sql, Column[] columns, boolean select) {
@@ -336,9 +313,9 @@ public class DmlStatement {
         }
         return existingCount;
     }
-    
+
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
-        String columnName = column.getName();        
+        String columnName = column.getName();
         sql.append(quote).append(columnName).append(quote);
     }
 
@@ -354,10 +331,10 @@ public class DmlStatement {
             }
         }
     }
-    
+
     protected void appendColumnParameter(StringBuilder sql, Column column) {
         boolean textType = TypeMap.isTextType(column.getMappedTypeCode());
-        String parameter="?";
+        String parameter = "?";
         if (namedParameters) {
             parameter = ":" + column.getName();
         }
@@ -378,7 +355,7 @@ public class DmlStatement {
     public String getSql() {
         return sql;
     }
-    
+
     public String getSql(boolean allowIgnoreOnConflict) {
         return sql;
     }
@@ -403,7 +380,7 @@ public class DmlStatement {
         switch (dmlType) {
             case UPDATE:
             case UPSERT:
-                return getColumnKeyMetaData();                
+                return getColumnKeyMetaData();
             case INSERT:
                 return getColumns();
             case DELETE:
@@ -417,7 +394,7 @@ public class DmlStatement {
     public Column[] getKeys() {
         return keys;
     }
-   
+
     public <T> T[] getValueArray(T[] columnValues, T[] keyValues) {
         switch (dmlType) {
             case UPDATE:
@@ -431,7 +408,7 @@ public class DmlStatement {
                 break;
         }
         return null;
-    }    
+    }
 
     public Object[] getValueArray(Map<String, Object> params) {
         Object[] args = null;
@@ -468,7 +445,7 @@ public class DmlStatement {
         }
         return args;
     }
-    
+
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat, Column[] columns) {
         String newSql = sql;
@@ -476,17 +453,13 @@ public class DmlStatement {
         String binaryQuoteStart = databaseInfo.getBinaryQuoteStart();
         String binaryQuoteEnd = databaseInfo.getBinaryQuoteEnd();
         String regex = "\\?";
-        
         List<Column> columnsToProcess = new ArrayList<Column>();
         columnsToProcess.addAll(Arrays.asList(columns));
-        
         for (int i = 0; i < columnsToProcess.size(); i++) {
             Column column = columnsToProcess.get(i);
             String name = column.getName();
             int type = column.getMappedTypeCode();
-
-            log.debug("Building where clause for column=" + name +", type=" + type);
-            
+            log.debug("Building where clause for column=" + name + ", type=" + type);
             if (row.get(name) != null) {
                 if (column.isOfTextType()) {
                     try {
@@ -525,7 +498,7 @@ public class DmlStatement {
                         newSql = newSql.replaceFirst(regex, binaryQuoteStart
                                 + new String(Hex.encodeHex(bytes)) + binaryQuoteEnd);
                     }
-                }  else if (type == Types.BIT) {
+                } else if (type == Types.BIT) {
                     String value = row.getString(name);
                     newSql = newSql.replaceFirst(regex, value != null && value.toLowerCase().equals("true") ? "1" : "0");
                 } else {
@@ -535,26 +508,25 @@ public class DmlStatement {
                 newSql = newSql.replaceFirst(regex, "null");
             }
         }
-        
         newSql = newSql.replace(QUESTION_MARK, "?");
         log.debug("Final SQL " + newSql);
-        return newSql + databaseInfo.getSqlCommandDelimiter();    
+        return newSql + databaseInfo.getSqlCommandDelimiter();
     }
-    
+
     public String buildDynamicDeleteSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat) {
         return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, keys);
     }
-    
+
     public String buildDynamicSql(BinaryEncoding encoding, Row row,
             boolean useVariableDates, boolean useJdbcTimestampFormat) {
         return buildDynamicSql(encoding, row, useVariableDates, useJdbcTimestampFormat, (Column[]) ArrayUtils.addAll(columns, keys));
     }
-    
+
     public boolean isUpsertSupported() {
         return false;
     }
-        
+
     public boolean isNamedParameters() {
         return namedParameters;
     }
@@ -573,17 +545,15 @@ public class DmlStatement {
         }
         return null;
     }
-    
+
     protected String escapeText(String value) {
         value = value.replace("?", QUESTION_MARK);
         value = value.replace("'", "''");
         return value;
     }
-    
+
     public void updateCteExpression(String value) {
-        this.sql = this.sql.replaceAll(MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":",  
+        this.sql = this.sql.replaceAll(MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":",
                 MsSql2008DdlBuilder.CHANGE_TRACKING_SYM_PREFIX + ":" + value);
-
     }
-
 }

@@ -43,68 +43,60 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 
 public class RaimaDdlReader extends AbstractJdbcDdlReader {
-
-    public RaimaDdlReader(IDatabasePlatform platform){
-        super(platform); 
+    public RaimaDdlReader(IDatabasePlatform platform) {
+        super(platform);
         setDefaultCatalogPattern(null);
         setDefaultSchemaPattern(null);
-        setDefaultTablePattern(null);        
+        setDefaultTablePattern(null);
     }
-    
+
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
-
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             determineAutoIncrementFromResultSetMetaData(connection, table,
                     table.getColumns());
             table.setCatalog(null);
-            
             if (table.getIndexCount() > 0) {
-                    Collection<IIndex> nonPkIndices = new ArrayList<IIndex>();
-                    
-                    for (IIndex index : table.getIndices()) {
-                        if (index.getColumnCount() == table.getPrimaryKeyColumnCount()) {
-                            int matches = 0;
-                            for (IndexColumn indexColumn : index.getColumns()) {
-                                for (String pkColName : table.getPrimaryKeyColumnNames()) {
-                                    if (pkColName.equals(indexColumn.getName())) {
-                                        matches++;
-                                    }
+                Collection<IIndex> nonPkIndices = new ArrayList<IIndex>();
+                for (IIndex index : table.getIndices()) {
+                    if (index.getColumnCount() == table.getPrimaryKeyColumnCount()) {
+                        int matches = 0;
+                        for (IndexColumn indexColumn : index.getColumns()) {
+                            for (String pkColName : table.getPrimaryKeyColumnNames()) {
+                                if (pkColName.equals(indexColumn.getName())) {
+                                    matches++;
                                 }
                             }
-                            if (matches != index.getColumnCount()) {
-                                nonPkIndices.add(index);
-                            }
                         }
-                        else {
+                        if (matches != index.getColumnCount()) {
                             nonPkIndices.add(index);
                         }
+                    } else {
+                        nonPkIndices.add(index);
                     }
-                    
-                    table.removeAllIndices();
-                    table.addIndices(nonPkIndices);
+                }
+                table.removeAllIndices();
+                table.addIndices(nonPkIndices);
             }
         }
         return table;
     }
 
-    
     @Override
     protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values)
             throws SQLException {
         Column column = super.readColumn(metaData, values);
         return column;
     }
-    
+
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return ((table.getName()).toUpperCase() + "..PRIMARY_KEY").equals(index.getName());
     }
-    
+
     @Override
     protected boolean isInternalForeignKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, ForeignKey fk, IIndex index) {
@@ -113,21 +105,18 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
 
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-        
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "TRIGGERNAME, "
-                        + "SCHEMA, "
-                        + "TRIGGER_TYPE, "
-                        + "TABLENAME, "
-                        + "TRIG.* "
-                    + "FROM SYSTEM.TRIGGERS AS TRIG "
-                    + "WHERE TABLENAME=? and SCHEMA=? ;";
+                + "TRIGGERNAME, "
+                + "SCHEMA, "
+                + "TRIGGER_TYPE, "
+                + "TABLENAME, "
+                + "TRIG.* "
+                + "FROM SYSTEM.TRIGGERS AS TRIG "
+                + "WHERE TABLENAME=? and SCHEMA=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -145,10 +134,9 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, catalog);
-                
         return triggers;
     }
-    
+
     @Override
     protected Integer mapUnknownJdbcTypeForColumn(Map<String, Object> values) {
         Integer type = (Integer) values.get("DATA_TYPE");
@@ -158,5 +146,4 @@ public class RaimaDdlReader extends AbstractJdbcDdlReader {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
-    
 }

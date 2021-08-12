@@ -55,20 +55,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InitialLoadService extends AbstractService implements IInitialLoadService {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected ISymmetricEngine engine;
-    
     protected IExtensionService extensionService;
-
     protected boolean syncTriggersBeforeInitialLoadAttempted = false;
-    
     protected int lastLoadCountToProcess;
-    
+
     public InitialLoadService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
-
         this.engine = engine;
         this.extensionService = engine.getExtensionService();
     }
@@ -82,9 +76,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 try {
                     processInfo = engine.getStatisticManager().newProcessInfo(
                             new ProcessInfoKey(identity.getNodeId(), null, ProcessType.INSERT_LOAD_EVENTS));
-                    processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);                    
+                    processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
                     boolean isRegistered = false;
-
                     if (engine.getParameterService().isRegistrationServer()) {
                         isRegistered = true;
                     } else {
@@ -92,17 +85,15 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         NodeSecurity identitySecurity = engine.getNodeService().findNodeSecurity(identity.getNodeId(), !isClusteringEnabled);
                         isRegistered = identitySecurity != null && identitySecurity.hasRegistered();
                     }
-
                     if (isRegistered) {
                         processInitialLoadEnabledFlag(identity, processInfo);
                         processTableRequestLoads(identity, processInfo);
                     }
-                    
                     processInfo.setStatus(ProcessInfo.ProcessStatus.OK);
                 } catch (Exception e) {
-                	if (processInfo != null) {
-                		processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
-                	}
+                    if (processInfo != null) {
+                        processInfo.setStatus(ProcessInfo.ProcessStatus.ERROR);
+                    }
                     log.error("Error while queuing initial loads", e);
                 } finally {
                     if (!force) {
@@ -112,17 +103,16 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
             }
         }
     }
-    
+
     @Override
     public void cancelLoad(TableReloadStatus status) {
-    	List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
+        List<ProcessInfo> infos = engine.getStatisticManager().getProcessInfos();
         for (ProcessInfo info : infos) {
             if (info.getCurrentLoadId() == status.getLoadId()) {
                 log.info("Sending interrupt to " + info.getKey());
                 info.getThread().interrupt();
             }
         }
-        
         IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
         log.info("Cancelling load {} for node {}", status.getLoadId(), status.getTargetNodeId());
         int count = engine.getDataService().updateTableReloadRequestsCancelled(status.getLoadId());
@@ -132,15 +122,13 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         count = outgoingBatchService.cancelLoadBatches(status.getLoadId());
         log.info("Marked {} batches as OK for node {}", count, status.getTargetNodeId());
         engine.getDataExtractorService().releaseMissedExtractRequests();
-        
         if (status.isFullLoad()) {
             engine.getNodeService().setInitialLoadEnded(null, status.getTargetNodeId());
         }
     }
 
     /**
-     * If a load has been queued up by setting the initial load enabled or reverse
-     * initial load enabled flags, then the router service will insert the reload
+     * If a load has been queued up by setting the initial load enabled or reverse initial load enabled flags, then the router service will insert the reload
      * events. This process will not run at the same time sync triggers is running.
      */
     public void processInitialLoadEnabledFlag(Node identity, ProcessInfo processInfo) {
@@ -153,39 +141,34 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                 if (reloadGenerator == null) {
                     activeHistories = engine.getTriggerRouterService().getActiveTriggerHistories();
                 }
-                
                 for (NodeSecurity security : nodeSecurities) {
                     if (reloadGenerator != null) {
                         Node targetNode = engine.getNodeService().findNode(security.getNodeId());
                         activeHistories = reloadGenerator.getActiveTriggerHistories(targetNode);
                     }
-
                     if (activeHistories.size() > 0) {
                         boolean thisMySecurityRecord = security.getNodeId().equals(identity.getNodeId());
                         boolean reverseLoadEnabled = security.isRevInitialLoadEnabled();
                         boolean initialLoadEnabled = security.isInitialLoadEnabled();
                         boolean registered = security.hasRegistered();
-                        if (! thisMySecurityRecord && registered && reverseLoadEnabled && (reverseLoadFirst || !initialLoadEnabled)) {
+                        if (!thisMySecurityRecord && registered && reverseLoadEnabled && (reverseLoadFirst || !initialLoadEnabled)) {
                             // If node is created by me then set up reverse initial load
-                            if(StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
+                            if (StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
                                 TableReloadRequest request = new TableReloadRequest();
-                                
                                 request.setTriggerId(ParameterConstants.ALL);
                                 request.setRouterId(ParameterConstants.ALL);
                                 request.setSourceNodeId(security.getNodeId());
                                 request.setTargetNodeId(identity.getNodeId());
                                 request.setCreateTime(new Date());
-                                
                                 log.info("Creating load request from node " + security.getNodeId() + " to node " + identity.getNodeId());
                                 engine.getDataService().insertTableReloadRequest(request);
                                 processInfo.incrementCurrentDataCount();
-                                
                                 // Reset reverse initial load flag to off
                                 engine.getNodeService().setReverseInitialLoadEnabled(security.getNodeId(), false, true, 0l, "initialLoadService");
                             }
                         } else if (!thisMySecurityRecord && registered && initialLoadEnabled && (!reverseLoadFirst || !reverseLoadEnabled)) {
                             // If node is created by me then set up initial load
-                            if(StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
+                            if (StringUtils.equals(security.getCreatedAtNodeId(), identity.getNodeId())) {
                                 TableReloadRequest reloadRequest = new TableReloadRequest();
                                 reloadRequest.setTriggerId(ParameterConstants.ALL);
                                 reloadRequest.setRouterId(ParameterConstants.ALL);
@@ -197,7 +180,6 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                                 log.info("Creating load request from node " + identity.getNodeId() + " to node " + security.getNodeId());
                                 engine.getDataService().insertTableReloadRequest(reloadRequest);
                                 processInfo.incrementCurrentDataCount();
-                                
                                 // Reset initial load flag to off
                                 engine.getNodeService().setInitialLoadEnabled(security.getNodeId(), false, false, 0l, "initialLoadService");
                             }
@@ -228,18 +210,14 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         List<TableReloadRequest> loadsToProcess = engine.getDataService().getTableReloadRequestToProcess(source.getNodeId());
         if (loadsToProcess.size() > 0) {
             processInfo.setStatus(ProcessInfo.ProcessStatus.CREATING);
-
-            int maxLoadCount = parameterService.getInt(ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER, 20);            
+            int maxLoadCount = parameterService.getInt(ParameterConstants.INITIAL_LOAD_EXTRACT_THREAD_COUNT_PER_SERVER, 20);
             int activeLoadCount = engine.getDataService().getActiveTableReloadStatus().size();
-            int loadCountToProcess = loadsToProcess.size(); 
-
+            int loadCountToProcess = loadsToProcess.size();
             if (activeLoadCount >= maxLoadCount) {
                 logActiveLoadCount(activeLoadCount, loadCountToProcess);
                 return;
             }
-
             boolean useExtractJob = parameterService.is(ParameterConstants.INITIAL_LOAD_USE_EXTRACT_JOB, true);
-
             if (useExtractJob) {
                 Map<String, Channel> channels = engine.getConfigurationService().getChannels(false);
                 boolean isError = false;
@@ -255,20 +233,15 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     return;
                 }
             }
-
             log.info("Found {} table reload requests to process.", loadCountToProcess);
-
             boolean streamToFile = parameterService.is(ParameterConstants.STREAM_TO_FILE_ENABLED, false);
             Map<String, List<TableReloadRequest>> requestsSplitByLoad = new HashMap<String, List<TableReloadRequest>>();
             Map<String, List<TriggerRouter>> triggerRoutersByNodeGroup = new HashMap<String, List<TriggerRouter>>();
             Map<Integer, ExtractRequest> extractRequests = null;
-
             IReloadGenerator reloadGenerator = extensionService.getExtensionPoint(IReloadGenerator.class);
-
             for (TableReloadRequest load : loadsToProcess) {
                 Node targetNode = engine.getNodeService().findNode(load.getTargetNodeId(), true);
                 NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(load.getTargetNodeId(), true);
-
                 if (useExtractJob && !streamToFile) {
                     throw new SymmetricException(
                             String.format("Node '%s' can't process load for '%s' because of conflicting parameters: %s=%s and %s=%s",
@@ -279,11 +252,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                         List<TableReloadRequest> fullLoad = new ArrayList<TableReloadRequest>();
                         fullLoad.add(load);
                         List<TriggerRouter> triggerRouters = getTriggerRoutersForNodeGroup(triggerRoutersByNodeGroup, targetNode.getNodeGroupId());
-
-
                         extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, fullLoad, processInfo,
                                 triggerRouters, extractRequests, reloadGenerator);
-
                         loadCountToProcess--;
                         if (++activeLoadCount >= maxLoadCount) {
                             logActiveLoadCount(activeLoadCount, loadCountToProcess);
@@ -306,9 +276,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                     }
                 }
             }
-
             Map<String, List<TriggerRouter>> triggerRoutersByTargetNodeGroupId = new HashMap<String, List<TriggerRouter>>();
-
             for (Map.Entry<String, List<TableReloadRequest>> entry : requestsSplitByLoad.entrySet()) {
                 Node targetNode = engine.getNodeService().findNode(entry.getKey().split("::")[0], true);
                 if (targetNode == null) {
@@ -321,10 +289,8 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
                             targetNode.getNodeGroupId());
                     triggerRoutersByTargetNodeGroupId.put(targetNode.getNodeGroupId(), triggerRouters);
                 }
-
                 extractRequests = engine.getDataService().insertReloadEvents(targetNode, false, entry.getValue(), processInfo,
                         triggerRouters, extractRequests, reloadGenerator);
-
                 loadCountToProcess--;
                 if (++activeLoadCount >= maxLoadCount) {
                     logActiveLoadCount(activeLoadCount, loadCountToProcess);
@@ -366,7 +332,7 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         }
         return toReturn;
     }
-    
+
     protected boolean isOkayToQueueLoad(NodeSecurity nodeSecurity) {
         boolean okayToQueueLoad = true;
         if (engine.getConfigurationService().isMasterToMaster() && nodeSecurity != null) {
@@ -391,12 +357,10 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
     protected boolean isValidLoadTarget(String targetNodeId) {
         boolean result = false;
         NodeSecurity targetNodeSecurity = engine.getNodeService().findNodeSecurity(targetNodeId);
-
         if (targetNodeSecurity != null) {
             boolean reverseLoadFirst = parameterService.is(ParameterConstants.INITIAL_LOAD_REVERSE_FIRST);
             boolean registered = targetNodeSecurity.hasRegistered();
             boolean reverseLoadQueued = targetNodeSecurity.isRevInitialLoadEnabled();
-    
             if (registered && (!reverseLoadFirst || !reverseLoadQueued)) {
                 result = true;
             } else {
@@ -406,5 +370,4 @@ public class InitialLoadService extends AbstractService implements IInitialLoadS
         }
         return result;
     }
-
 }

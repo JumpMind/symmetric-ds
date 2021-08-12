@@ -25,9 +25,10 @@ import java.util.Date;
 import org.apache.commons.lang3.math.NumberUtils;
 
 public class JobDefinition {
-    
-    public enum JobType {BUILT_IN, BSH, JAVA, SQL}
-    
+    public enum JobType {
+        BUILT_IN, BSH, JAVA, SQL
+    }
+
     private String jobName;
     private JobType jobType;
     private boolean requiresRegistration;
@@ -42,66 +43,83 @@ public class JobDefinition {
     private String nodeGroupId;
     private transient boolean automaticStartup = true;
     private transient String schedule;
-    
+
     public boolean isCronSchedule() {
         return !isPeriodicSchedule();
     }
-    
+
     public boolean isPeriodicSchedule() {
         return NumberUtils.isDigits(schedule);
     }
-    
+
     public String getJobName() {
         return jobName;
     }
+
     public void setJobName(String jobName) {
         this.jobName = jobName;
     }
+
     public JobType getJobType() {
         return jobType;
     }
+
     public void setJobType(JobType jobType) {
         this.jobType = jobType;
     }
+
     public boolean isRequiresRegistration() {
         return requiresRegistration;
     }
+
     public void setRequiresRegistration(boolean requiresRegistration) {
         this.requiresRegistration = requiresRegistration;
     }
+
     public String getJobExpression() {
         return jobExpression;
     }
+
     public void setJobExpression(String jobExpression) {
         this.jobExpression = jobExpression;
     }
+
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
+
     public String getCreateBy() {
         return createBy;
     }
+
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
+
     public Date getCreateTime() {
         return createTime;
     }
+
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
+
     public void setLastUpdateBy(String lastUpdateBy) {
         this.lastUpdateBy = lastUpdateBy;
     }
+
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
+
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
@@ -145,23 +163,24 @@ public class JobDefinition {
     public void setAutomaticStartup(boolean automaticStartup) {
         this.automaticStartup = automaticStartup;
     }
-    
+
     public static String getJobNameParameter(String name) {
-        if (name != null) {            
+        if (name != null) {
             return name.toLowerCase().replace(' ', '.');
         } else {
             return null;
         }
     }
+
     public String getStartParameter() {
         return String.format("start.%s.job", getJobNameParameter(jobName));
     }
-    
+
     public String getPeriodicParameter() {
         return String.format("job.%s.period.time.ms", getJobNameParameter(jobName));
     }
-    
+
     public String getCronParameter() {
         return String.format("job.%s.cron", getJobNameParameter(jobName));
-    }          
+    }
 }

@@ -40,7 +40,7 @@ public interface Advapi32Ex extends Advapi32 {
             W32APIOptions.UNICODE_OPTIONS);
 
     boolean ChangeServiceConfig2(SC_HANDLE service, int infoLevel, SERVICE_INFO info);
-    
+
     boolean DeleteService(SC_HANDLE serviceHandle);
 
     boolean StartServiceCtrlDispatcher(Structure[] serviceTable);
@@ -82,5 +82,4 @@ public interface Advapi32Ex extends Advapi32 {
     public interface HANDLER_FUNCTION extends StdCallCallback {
         void serviceControlHandler(int controlCode);
     }
-
 }

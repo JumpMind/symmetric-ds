@@ -27,7 +27,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 public class Grouplet {
-
     public enum GroupletLinkPolicy {
         I, E
     };

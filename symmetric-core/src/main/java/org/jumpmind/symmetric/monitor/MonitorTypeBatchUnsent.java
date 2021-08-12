@@ -28,7 +28,6 @@ import org.jumpmind.symmetric.model.MonitorEvent;
 import org.jumpmind.symmetric.service.IOutgoingBatchService;
 
 public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     protected IOutgoingBatchService outgoingBatchService;
 
     @Override
@@ -47,10 +46,9 @@ public class MonitorTypeBatchUnsent implements IMonitorType, ISymmetricEngineAwa
     public boolean requiresClusterLock() {
         return true;
     }
-    
+
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         outgoingBatchService = engine.getOutgoingBatchService();
     }
-
 }

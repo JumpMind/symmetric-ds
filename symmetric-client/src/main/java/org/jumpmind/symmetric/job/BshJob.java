@@ -27,23 +27,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import bsh.Interpreter;
 
 public class BshJob extends AbstractJob {
-
     public BshJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(jobName, engine, taskScheduler);
     }
-    
+
     public JobType getJobType() {
         return JobType.BSH;
     }
 
     @Override
     public void doJob(boolean force) throws Exception {
-        try {            
+        try {
             Interpreter interpreter = new Interpreter();
             interpreter.set("engine", engine);
             interpreter.set("sqlTemplate", engine.getDatabasePlatform().getSqlTemplate());
             interpreter.set("log", log);
-            if (getJobDefinition().getJobExpression() != null) {                
+            if (getJobDefinition().getJobExpression() != null) {
                 interpreter.eval(getJobDefinition().getJobExpression());
             }
         } catch (Exception ex) {
@@ -55,5 +54,4 @@ public class BshJob extends AbstractJob {
     public JobDefaults getDefaults() {
         return new JobDefaults();
     }
-
 }

@@ -27,7 +27,6 @@ import java.util.Collection;
 import org.apache.commons.io.FileUtils;
 
 public class RefactorTool {
-
     public static void main(String[] args) throws Exception {
         File dir = new File(System.getProperty("user.dir")).getParentFile();
         Collection<File> files = FileUtils.listFiles(dir, new String[] { "java" }, true);
@@ -51,21 +50,18 @@ public class RefactorTool {
             if (line.contains("log.") || line.contains("logger.")) {
                 logmode = 4;
             }
-
             if (!line.contains("String.format") && logmode > 0) {
                 refactored = true;
                 line = line.replace("%s", "{}");
                 line = line.replace("%d", "{}");
                 logmode--;
             } else {
-                logmode =0;
+                logmode = 0;
             }
-
             contents.append(line);
             contents.append("\n");
-
         }
-        contents.substring(0, contents.length()-1);
+        contents.substring(0, contents.length() - 1);
         return refactored;
     }
 }

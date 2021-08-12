@@ -26,13 +26,10 @@ import org.jumpmind.symmetric.db.ISymmetricDialect;
  * Trigger templates for Firebird version 2.1.
  */
 public class Firebird21TriggerTemplate extends Firebird20TriggerTemplate {
-
     public Firebird21TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
-
-        stringColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || REPLACE(REPLACE($(tableAlias)." + quo + "$(columnName)" + quo + ", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
+        stringColumnTemplate = "case when $(tableAlias)." + quo + "$(columnName)" + quo + " is null then '' else '\"' || REPLACE(REPLACE($(tableAlias)." + quo
+                + "$(columnName)" + quo + ", '\\', '\\\\'), '\"', '\\\"') || '\"' end";
         clobColumnTemplate = stringColumnTemplate;
-
     }
-
 }

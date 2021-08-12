@@ -72,11 +72,10 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.slf4j.Logger;
 
 public interface ISymmetricEngine {
-
     public void stop();
-    
+
     public void destroy();
-    
+
     public void uninstall();
 
     /**
@@ -90,31 +89,30 @@ public interface ISymmetricEngine {
     public Properties getProperties();
 
     /**
-     * @return The lower case representation of the engine name as setup in the
-     *         symmetric.properties file. We always use a lower case
-     *         representation because there are times the engine name is used in
-     *         triggers at which point you can lose the original case
-     *         representation.
+     * @return The lower case representation of the engine name as setup in the symmetric.properties file. We always use a lower case representation because
+     *         there are times the engine name is used in triggers at which point you can lose the original case representation.
      */
     public String getEngineName();
 
     /**
-     * Will setup the SymmetricDS tables, if not already setup and if the engine
-     * is configured to do so.
+     * Will setup the SymmetricDS tables, if not already setup and if the engine is configured to do so.
      */
     public void setup();
 
     /**
      * Must be called to start SymmetricDS.
+     * 
      * @return true if successfully started
      */
     public boolean start();
-    
+
     public boolean start(boolean startJobs);
 
     /**
      * Queue up an initial load or a reload to a node.
-     * @param createBy TODO
+     * 
+     * @param createBy
+     *            TODO
      */
     public String reloadNode(String nodeId, String createBy);
 
@@ -124,7 +122,7 @@ public interface ISymmetricEngine {
      * Will perform a push the same way the {@link PushJob} would have.
      * 
      * @see IPushService#pushData(boolean)
-     * @return {@link RemoteNodeStatuses} 
+     * @return {@link RemoteNodeStatuses}
      */
     public RemoteNodeStatuses push();
 
@@ -134,7 +132,7 @@ public interface ISymmetricEngine {
      * @see ITriggerRouterService#syncTriggers()
      */
     public void syncTriggers();
-    
+
     /**
      * Call this to force all triggers to be rebuilt
      * 
@@ -153,34 +151,33 @@ public interface ISymmetricEngine {
      * Will perform a pull the same way the {@link PullJob} would have.
      * 
      * @see IPullService#pullData(boolean)
-     * @return {@link RemoteNodeStatuses} 
+     * @return {@link RemoteNodeStatuses}
      */
     public RemoteNodeStatuses pull();
-    
+
     /**
      * Route captured data the same way the {@link RouterJob} would have.
      */
     public void route();
 
     /**
-     * This can be called to do a purge. It may be called only if the
-     * {@link OutgoingPurgeJob} has not been enabled.
+     * This can be called to do a purge. It may be called only if the {@link OutgoingPurgeJob} has not been enabled.
      * 
      * @see IPurgeService#purgeOutgoing(boolean)
      */
     public void purge();
 
     /**
-     * Will check to see if this instance of SymmetricDS is configured with the
-     * required properties for a node to operate.
+     * Will check to see if this instance of SymmetricDS is configured with the required properties for a node to operate.
      */
     public boolean isConfigured();
 
     /**
-     * Push a copy of the node onto the push queue so the SymmetricDS node
-     * 'checks' in with it's root node.
-     * @param force When force is true the heart beat will always be inserted.  If it is false, 
-     * the heart beat will only be inserted if the period between heart beats has expired.
+     * Push a copy of the node onto the push queue so the SymmetricDS node 'checks' in with it's root node.
+     * 
+     * @param force
+     *            When force is true the heart beat will always be inserted. If it is false, the heart beat will only be inserted if the period between heart
+     *            beats has expired.
      */
     public void heartbeat(boolean force);
 
@@ -208,23 +205,25 @@ public interface ISymmetricEngine {
     public boolean isStarted();
 
     public boolean isInitialized();
-    
+
     /**
      * Check to see if this node is starting.
      * 
      * @return true if the node is starting
      */
     public boolean isStarting();
-    
-    public void clearCaches();    
-    
+
+    public void clearCaches();
+
     /**
-     * Attempt to configure the database objects that support SymmetricDS.  If they are 
-     * out of date this method will attempt to alter the tables to bring them up to date.
-     * @param force forces this action to be run regardless of the parameter settings
+     * Attempt to configure the database objects that support SymmetricDS. If they are out of date this method will attempt to alter the tables to bring them up
+     * to date.
+     * 
+     * @param force
+     *            forces this action to be run regardless of the parameter settings
      */
     public void setupDatabase(boolean force);
-    
+
     public void removeAndCleanupNode(String nodeId);
 
     public IConfigurationService getConfigurationService();
@@ -242,99 +241,98 @@ public interface ISymmetricEngine {
     public IDataService getDataService();
 
     public ISymmetricDialect getSymmetricDialect();
-    
+
     public ISymmetricDialect getTargetDialect();
-    
+
     public IJobManager getJobManager();
-    
+
     public IOutgoingBatchService getOutgoingBatchService();
-    
+
     public IAcknowledgeService getAcknowledgeService();
-    
+
     public IBandwidthService getBandwidthService();
-    
+
     public IDataExtractorService getDataExtractorService();
-    
+
     public IDataExtractorService getFileSyncExtractorService();
-    
+
     public IDataLoaderService getDataLoaderService();
-    
-    public IIncomingBatchService getIncomingBatchService();   
-    
+
+    public IIncomingBatchService getIncomingBatchService();
+
     public IPullService getPullService();
-    
+
     public IPushService getPushService();
-    
+
     public IOfflinePullService getOfflinePullService();
-    
+
     public IOfflinePushService getOfflinePushService();
-    
+
     public IRouterService getRouterService();
-    
+
     public ISecurityService getSecurityService();
-    
+
     public IStatisticService getStatisticService();
-    
+
     public ITriggerRouterService getTriggerRouterService();
-    
+
     public IGroupletService getGroupletService();
-    
+
     public IStatisticManager getStatisticManager();
-    
+
     public String getDeploymentType();
-    
+
     public String getDeploymentSubType();
-    
+
     public IConcurrentConnectionManager getConcurrentConnectionManager();
-    
+
     public ITransformService getTransformService();
-    
+
     public ILoadFilterService getLoadFilterService();
-    
+
     public IInitialLoadService getInitialLoadService();
-    
+
     public ITransportManager getTransportManager();
-    
+
     public INodeCommunicationService getNodeCommunicationService();
-    
+
     public ISequenceService getSequenceService();
-    
+
     public String getTablePrefix();
-    
+
     public Logger getLog();
-    
+
     public IExtensionService getExtensionService();
-    
+
     public IMonitorService getMonitorService();
-    
+
     public IMailService getMailService();
-    
+
     public IStagingManager getStagingManager();
-    
+
     public ISqlTemplate getSqlTemplate();
-    
+
     public IFileSyncService getFileSyncService();
 
     public IContextService getContextService();
-    
+
     public IUpdateService getUpdateService();
-    
+
     public Date getLastRestartTime();
-    
+
     public <T> T getDataSource();
-    
+
     public IDatabasePlatform getDatabasePlatform();
-    
+
     public File snapshot(IProgressListener listener);
-    
+
     public List<File> listSnapshots();
-    
+
     public String getNodeId();
 
     public Throwable getLastException();
-    
+
     public String getLastExceptionMessage();
-    
+
     public String getEngineDescription(String mesage);
-    
 }

@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jumpmind.db.model.Table;
 
 public class Conflict implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     public enum DetectConflict {
@@ -152,7 +151,7 @@ public class Conflict implements Serializable {
             String[] parms = detectExpression.split(";");
             for (String parm : parms) {
                 String[] args = parm.split("=");
-                if (args.length==2 && args[0].trim().equalsIgnoreCase(key.name())) {
+                if (args.length == 2 && args[0].trim().equalsIgnoreCase(key.name())) {
                     value = args[1].trim();
                     break;
                 }
@@ -196,5 +195,4 @@ public class Conflict implements Serializable {
     public PingBack getPingBack() {
         return pingBack;
     }
-
 }

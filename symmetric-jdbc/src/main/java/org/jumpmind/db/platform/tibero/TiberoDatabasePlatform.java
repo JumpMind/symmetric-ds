@@ -35,9 +35,7 @@ import org.jumpmind.db.sql.SqlException;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     public static final String JDBC_DRIVER = "com.tmax.tibero.jdbc.TbDriver";
-
     public static final String JDBC_SUBPROTOCOL_THIN = "tibero:thin";
 
     /*
@@ -93,11 +91,8 @@ public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-        String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";  
-        
+        String triggerSql = "CREATE OR REPLACE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " BEGIN END";
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-        
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -105,19 +100,15 @@ public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-        
         return result;
     }
-    
+
     @Override
     public PermissionResult getExecuteSymPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-           
-        String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";  
-        
+        String executeSql = "SELECT DBMS_LOB.GETLENGTH('TEST'), UTL_RAW.CAST_TO_RAW('TEST') FROM DUAL";
         PermissionResult result = new PermissionResult(PermissionType.EXECUTE, executeSql);
-        
         try {
             getSqlTemplate().update(executeSql);
             result.setStatus(Status.PASS);
@@ -125,7 +116,6 @@ public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant EXECUTE on DBMS_LOB and UTL_RAW");
         }
-        
         return result;
     }
 
@@ -134,5 +124,4 @@ public class TiberoDatabasePlatform extends AbstractJdbcDatabasePlatform {
         return getSqlTemplateDirty().queryForLong("select nvl(num_rows,-1) from all_tables where table_name = ? and owner = ?",
                 table.getName(), table.getSchema());
     }
-
 }

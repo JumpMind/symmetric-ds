@@ -28,19 +28,15 @@ import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.themes.ValoTheme;
 
 public class SqlExplorerTabPanel extends TabSheet {
-    
     private static final long serialVersionUID = 1L;
-    
+
     public SqlExplorerTabPanel() {
         super();
-        
         setSizeFull();
         addStyleName(ValoTheme.TABSHEET_FRAMED);
         addStyleName(ValoTheme.TABSHEET_COMPACT_TABBAR);
         addStyleName(ValoTheme.TABSHEET_PADDED_TABBAR);
-        
         setCloseHandler(new CloseHandler() {
-            
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -55,7 +51,4 @@ public class SqlExplorerTabPanel extends TabSheet {
             }
         });
     }
-    
-    
-
 }

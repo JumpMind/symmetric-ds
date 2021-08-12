@@ -31,9 +31,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 import org.jumpmind.symmetric.io.data.DataEventType;
 
 public class ClarionDateTimeColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public final static String NAME = "clarionDateTime";
-
     public final static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
 
     public String getName() {
@@ -52,14 +50,12 @@ public class ClarionDateTimeColumnTransform implements ISingleNewAndOldValueColu
             DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues,
             String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {
-
         String clarionTimeStr = null;
         String columnName = column.getTransformExpression();
         if (columnName != null && !StringUtils.isEmpty(columnName)) {
             clarionTimeStr = sourceValues.get(columnName);
         }
         String value = convertClarionDate(newValue, clarionTimeStr);
-        
         if (data.getTargetDmlType() == DataEventType.DELETE && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
@@ -74,7 +70,6 @@ public class ClarionDateTimeColumnTransform implements ISingleNewAndOldValueColu
             cal.set(1800, Calendar.DECEMBER, 28, 0, 0, 0);
             cal.add(Calendar.DATE, date);
             cal.set(Calendar.MILLISECOND, 0);
-
             if (clarionTime != null && !StringUtils.isEmpty(clarionTime)) {
                 Integer time = Integer.parseInt(clarionTime);
                 if (time > 0) {
@@ -85,5 +80,4 @@ public class ClarionDateTimeColumnTransform implements ISingleNewAndOldValueColu
         }
         return null;
     }
-
 }

@@ -30,18 +30,17 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that is responsible for pushing data to linked nodes.
  */
 public class OfflinePushJob extends AbstractJob {
-
     public OfflinePushJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.OFFLINE_PUSH, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule(EVERY_MINUTE)
                 .enabled(false)
                 .description("Creates offline batch files");
-    }    
+    }
 
     @Override
     public void doJob(boolean force) throws Exception {
@@ -49,5 +48,4 @@ public class OfflinePushJob extends AbstractJob {
             engine.getOfflinePushService().pushData(force).getDataProcessedCount();
         }
     }
-
 }

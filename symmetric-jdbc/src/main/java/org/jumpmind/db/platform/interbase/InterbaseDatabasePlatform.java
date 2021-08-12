@@ -54,10 +54,8 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for the Interbase database.
  */
 public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The interbase jdbc driver. */
     public static final String JDBC_DRIVER = "interbase.interclient.Driver";
-
     /* The subprotocol used by the interbase driver. */
     public static final String JDBC_SUBPROTOCOL = "interbase";
 
@@ -94,19 +92,19 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getDefaultSchema() {
         return null;
     }
-    
+
     @Override
     protected ISqlTemplate createSqlTemplateDirty() {
         return sqlTemplate;
     }
-    
+
     @Override
-    public PermissionResult getDropSymTriggerPermission() {     
+    public PermissionResult getDropSymTriggerPermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
     public String getTruncateSql(Table table) {
         String sql = super.getTruncateSql(table);
@@ -120,12 +118,12 @@ public class InterbaseDatabasePlatform extends AbstractJdbcDatabasePlatform {
         sql += " cascade";
         return sql;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {

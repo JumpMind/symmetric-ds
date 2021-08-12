@@ -44,16 +44,14 @@ import java.util.ArrayList;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
- * Provides compatibility with Torque-style xml with separate &lt;index&gt; and
- * &lt;unique&gt; tags, but adds no functionality. All indexes are treated the
- * same by the Table.
+ * Provides compatibility with Torque-style xml with separate &lt;index&gt; and &lt;unique&gt; tags, but adds no functionality. All indexes are treated the same
+ * by the Table.
  */
 public class UniqueIndex extends IndexImpBase {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
 
     public UniqueIndex() {
-
     }
 
     public UniqueIndex(String name) {
@@ -67,19 +65,15 @@ public class UniqueIndex extends IndexImpBase {
     @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
         UniqueIndex result = new UniqueIndex();
-
         result.name = name;
         result.columns = (ArrayList<IndexColumn>) columns.clone();
-        
         clonePlatformIndexes(result);
-
         return result;
     }
 
     public boolean equals(Object obj) {
         if (obj instanceof UniqueIndex) {
             UniqueIndex other = (UniqueIndex) obj;
-
             return new EqualsBuilder().append(name, other.name).append(columns, other.columns)
                     .append(platformIndexes, other.platformIndexes)
                     .isEquals();
@@ -91,10 +85,8 @@ public class UniqueIndex extends IndexImpBase {
     public boolean equalsIgnoreCase(IIndex other) {
         if (other instanceof UniqueIndex) {
             UniqueIndex otherIndex = (UniqueIndex) other;
-
             boolean checkName = (name != null) && (name.length() > 0) && (otherIndex.name != null)
                     && (otherIndex.name.length() > 0);
-
             if ((!checkName || name.equalsIgnoreCase(otherIndex.name))
                     && (getColumnCount() == otherIndex.getColumnCount())) {
                 for (int idx = 0; idx < getColumnCount(); idx++) {
@@ -113,20 +105,17 @@ public class UniqueIndex extends IndexImpBase {
     }
 
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Unique index [name=");
         result.append(getName());
         result.append("; ");
         result.append(getColumnCount());
         result.append(" columns]");
-
         return result.toString();
     }
 
     public String toVerboseString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Unique index [");
         result.append(getName());
         result.append("] columns:");
@@ -134,7 +123,6 @@ public class UniqueIndex extends IndexImpBase {
             result.append(" ");
             result.append(getColumn(idx));
         }
-
         return result.toString();
     }
 }

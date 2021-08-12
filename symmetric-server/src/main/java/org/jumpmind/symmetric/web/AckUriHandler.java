@@ -38,7 +38,6 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.transport.AbstractTransportManager;
 
 public class AckUriHandler extends AbstractUriHandler {
-
     private static final Comparator<BatchAck> BATCH_ID_COMPARATOR = new Comparator<BatchAck>() {
         public int compare(BatchAck batchInfo1, BatchAck batchInfo2) {
             Long batchId1 = batchInfo1.getBatchId();
@@ -46,12 +45,10 @@ public class AckUriHandler extends AbstractUriHandler {
             return batchId1.compareTo(batchId2);
         }
     };
-
     private IAcknowledgeService acknowledgeService;
-    
     private boolean isStandalone = false;
-    
-    public AckUriHandler(IParameterService parameterService, IAcknowledgeService acknowledgeService, IInterceptor...interceptors) {
+
+    public AckUriHandler(IParameterService parameterService, IAcknowledgeService acknowledgeService, IInterceptor... interceptors) {
         super("/ack/*", parameterService, interceptors);
         this.acknowledgeService = acknowledgeService;
         if ("true".equals(System.getProperty(SystemConstants.SYSPROP_STANDALONE_WEB))) {
@@ -66,18 +63,14 @@ public class AckUriHandler extends AbstractUriHandler {
         }
         List<BatchAck> batches = AbstractTransportManager.readAcknowledgement(req.getParameterMap());
         Collections.sort(batches, BATCH_ID_COMPARATOR);
-
         if (isStandalone) {
             res.setHeader("Transfer-Encoding", "chunked");
         }
-
         long keepAliveMillis = parameterService.getLong(ParameterConstants.DATA_LOADER_SEND_ACK_KEEPALIVE);
         long ts = System.currentTimeMillis();
         PrintWriter writer = res.getWriter();
-
         for (BatchAck batchInfo : batches) {
             acknowledgeService.ack(batchInfo);
-
             if (keepAliveMillis > 0 && System.currentTimeMillis() - ts >= keepAliveMillis) {
                 try {
                     writer.write("1=1&");
@@ -89,7 +82,6 @@ public class AckUriHandler extends AbstractUriHandler {
             }
             ts = System.currentTimeMillis();
         }
-        
         writer.close();
     }
 
@@ -98,5 +90,4 @@ public class AckUriHandler extends AbstractUriHandler {
             acknowledgeService.ack(batchInfo);
         }
     }
-
 }

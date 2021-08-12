@@ -62,31 +62,18 @@ import org.jumpmind.util.AppUtils;
  * @see INodeService
  */
 public class NodeService extends AbstractService implements INodeService {
-
     private ISymmetricEngine engine;
-
     private IExtensionService extensionService;
-
     private Node cachedNodeIdentity;
-
     private Map<String, NodeSecurity> securityCache;
-
     private long securityCacheTime;
-
     private Map<String, Node> nodeCache = new HashMap<String, Node>();
-
     private long nodeCacheTime;
-
     private Map<String, List<Node>> sourceNodesCache = new HashMap<String, List<Node>>();
-
     private Map<String, List<Node>> targetNodesCache = new HashMap<String, List<Node>>();
-
-    private Map<String, Long> sourceNodeLinkCacheTime = new HashMap<String, Long>(); 
-    
+    private Map<String, Long> sourceNodeLinkCacheTime = new HashMap<String, Long>();
     private Map<String, Long> targetNodeLinkCacheTime = new HashMap<String, Long>();
-
     private INodePasswordFilter nodePasswordFilter;
-
     private NodeHost nodeHostForCurrentNode = null;
 
     public NodeService(ISymmetricEngine engine) {
@@ -144,14 +131,13 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     /**
-     * Lookup a node in the database, which contains information for syncing
-     * with it.
+     * Lookup a node in the database, which contains information for syncing with it.
      */
     public Node findNode(String id) {
         List<Node> list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodeSql"), new NodeRowMapper(), id);
         return (Node) getFirstEntry(list);
-    } 
-    
+    }
+
     public Node findNodeInCacheOnly(String id) {
         return nodeCache.get(id);
     }
@@ -195,17 +181,14 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     public void updateNodeHost(NodeHost nodeHost) {
-
         Object[] params = new Object[] { nodeHost.getIpAddress(), nodeHost.getInstanceId(), nodeHost.getOsUser(), nodeHost.getOsName(), nodeHost.getOsArch(),
                 nodeHost.getOsVersion(), nodeHost.getAvailableProcessors(), nodeHost.getFreeMemoryBytes(), nodeHost.getTotalMemoryBytes(),
                 nodeHost.getMaxMemoryBytes(), nodeHost.getJavaVersion(), nodeHost.getJavaVendor(), nodeHost.getJdbcVersion(),
                 nodeHost.getSymmetricVersion(), nodeHost.getTimezoneOffset(), nodeHost.getHeartbeatTime(), nodeHost.getLastRestartTime(),
-                nodeHost.getNodeId(), nodeHost.getHostName()};
-
+                nodeHost.getNodeId(), nodeHost.getHostName() };
         if (sqlTemplate.update(getSql("updateNodeHostSql"), params) <= 0) {
             sqlTemplate.update(getSql("insertNodeHostSql"), params);
         }
-
     }
 
     public void updateNodeHostForCurrentNode() {
@@ -253,7 +236,6 @@ public class NodeService extends AbstractService implements INodeService {
             if (!syncChange) {
                 symmetricDialect.enableSyncTriggers(transaction);
             }
-
             close(transaction);
         }
     }
@@ -283,7 +265,6 @@ public class NodeService extends AbstractService implements INodeService {
 
     public void save(Node node) {
         if (!updateNode(node)) {
-
             sqlTemplate.update(
                     getSql("insertNodeSql"),
                     new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
@@ -291,21 +272,19 @@ public class NodeService extends AbstractService implements INodeService {
                             node.getSymmetricVersion(), node.getSyncUrl(),
                             node.isSyncEnabled() ? 1 : 0,
                             node.getBatchToSendCount(), node.getBatchInErrorCount(),
-                            node.getCreatedAtNodeId(), node.getDeploymentType(), 
-                            node.getDeploymentSubType(), node.getConfigVersion(), 
+                            node.getCreatedAtNodeId(), node.getDeploymentType(),
+                            node.getDeploymentSubType(), node.getConfigVersion(),
                             node.getNodeId() },
                     new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                             Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                             Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
-
             flushNodeGroupCache();
         }
         flushNodeCache();
     }
 
     public boolean updateNode(Node node) {
-
         boolean updated = sqlTemplate.update(
                 getSql("updateNodeSql"),
                 new Object[] { node.getNodeGroupId(), node.getExternalId(), node.getDatabaseType(),
@@ -319,7 +298,6 @@ public class NodeService extends AbstractService implements INodeService {
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                         Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.VARCHAR,
                         Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }) == 1;
-
         return updated;
     }
 
@@ -360,7 +338,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findNodesToPull() {
         return findSourceNodesFor(NodeGroupLinkAction.W);
     }
-    
+
     public List<Node> findNodesWhoPushToMe() {
         return findSourceNodesFor(NodeGroupLinkAction.P);
     }
@@ -368,7 +346,7 @@ public class NodeService extends AbstractService implements INodeService {
     public List<Node> findNodesToPushTo() {
         return findTargetNodesFor(NodeGroupLinkAction.P);
     }
-    
+
     public List<Node> findNodesWhoPullFromMe() {
         return findTargetNodesFor(NodeGroupLinkAction.W);
     }
@@ -395,12 +373,11 @@ public class NodeService extends AbstractService implements INodeService {
         long cacheTimeoutInMs = parameterService.getLong(ParameterConstants.CACHE_TIMEOUT_NODE_GROUP_LINK_IN_MS);
         if (node != null) {
             List<Node> list = targetNodesCache.get(eventAction.name());
-            
             if (list == null || (System.currentTimeMillis() - targetNodeLinkCacheTime.get(eventAction.toString())) >= cacheTimeoutInMs) {
                 list = sqlTemplate.query(getSql("selectNodePrefixSql", "findNodesWhoITargetSql"),
                         new NodeRowMapper(), node.getNodeGroupId(), eventAction.name());
                 targetNodesCache.put(eventAction.name(), list);
-                targetNodeLinkCacheTime.put(eventAction.toString(),System.currentTimeMillis());
+                targetNodeLinkCacheTime.put(eventAction.toString(), System.currentTimeMillis());
             }
             return new ArrayList<Node>(list);
         } else {
@@ -430,16 +407,14 @@ public class NodeService extends AbstractService implements INodeService {
         }
         return nodeMap;
     }
-    
+
     public List<Node> findFilteredNodesWithLimit(int offset, int limit, List<FilterCriterion> filter,
             String orderColumn, String orderDirection) {
         String where = filter != null ? buildWhere(filter) : null;
         Map<String, Object> params = filter != null ? buildParams(filter) : new HashMap<String, Object>();
         String orderBy = buildOrderBy(orderColumn, orderDirection);
         String sql = getSql("selectNodePrefixSql", where, orderBy);
-        
         List<Node> nodeList;
-        
         if (platform.supportsLimitOffset()) {
             sql = platform.massageForLimitOffset(sql, limit, offset);
             nodeList = sqlTemplateDirty.query(sql, new NodeRowMapper(), params);
@@ -457,7 +432,6 @@ public class NodeService extends AbstractService implements INodeService {
                         }
                         rowCount++;
                     }
-
                     if (rowCount >= limit + offset) {
                         break;
                     }
@@ -468,10 +442,9 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-        
         return nodeList;
     }
-    
+
     public int countFilteredNodes(List<FilterCriterion> filter) {
         String where = filter != null ? buildWhere(filter) : null;
         Map<String, Object> params = filter != null ? buildParams(filter) : new HashMap<String, Object>();
@@ -479,34 +452,30 @@ public class NodeService extends AbstractService implements INodeService {
         int size = sqlTemplate.queryForInt(sql, params);
         return size;
     }
-    
+
     protected String buildWhere(List<FilterCriterion> filter) {
         StringBuilder where = new StringBuilder();
         boolean needsAnd = false;
         int id = 0;
-        
         for (FilterCriterion criterion : filter) {
             if (needsAnd) {
                 where.append(" and ");
             } else {
                 needsAnd = true;
             }
-            
             FilterOption option = criterion.getOption();
             String optionSql = option.toSql();
             String prefix = criterion.getPropertyId().replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase() + " " + optionSql;
             where.append(prefix + " :" + id++);
         }
-        
         if (where.length() > 0) {
             where.insert(0, " where ");
         }
         return where.toString();
     }
-    
+
     protected Map<String, Object> buildParams(List<FilterCriterion> filter) {
         Map<String, Object> params = new HashMap<String, Object>();
-        
         int id = 0;
         for (FilterCriterion criterion : filter) {
             Object value = criterion.getValues().get(0);
@@ -515,10 +484,9 @@ public class NodeService extends AbstractService implements INodeService {
             }
             params.put(String.valueOf(id++), value);
         }
-        
         return params;
     }
-    
+
     protected String buildOrderBy(String orderColumn, String orderDirection) {
         String orderBy = " order by ";
         if (orderColumn == null) {
@@ -544,7 +512,6 @@ public class NodeService extends AbstractService implements INodeService {
                 leaves.put(node.getNodeId(), nodeLeaf);
             }
         }
-
         nodeLeaf = leaves.get(findIdentityNodeId());
         if (nodeLeaf != null) {
             NetworkedNode root = nodeLeaf.getRoot();
@@ -562,10 +529,9 @@ public class NodeService extends AbstractService implements INodeService {
         }
         return null;
     }
-    
+
     /**
-     * Lookup a node_security in the database, which contains private
-     * information used to authenticate.
+     * Lookup a node_security in the database, which contains private information used to authenticate.
      */
     public NodeSecurity findNodeSecurity(String id) {
         return findNodeSecurity(id, false);
@@ -648,8 +614,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     /**
-     * Check that the given node and password match in the node_security table.
-     * A node must authenticate before it's allowed to sync data.
+     * Check that the given node and password match in the node_security table. A node must authenticate before it's allowed to sync data.
      */
     public boolean isNodeAuthorized(String nodeId, String password) {
         int maxFailedLogins = parameterService.getInt(ParameterConstants.NODE_PASSWORD_FAILED_ATTEMPTS);
@@ -718,10 +683,10 @@ public class NodeService extends AbstractService implements INodeService {
                         security.getRevInitialLoadCreateBy(),
                         security.getFailedLogins(),
                         security.getNodeId() }, new int[] {
-                        Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
-                        Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
-                        Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
-                        Types.VARCHAR });
+                                Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP, Types.INTEGER,
+                                Types.TIMESTAMP, Types.TIMESTAMP, Types.VARCHAR, Types.INTEGER, Types.TIMESTAMP,
+                                Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.INTEGER,
+                                Types.VARCHAR });
         boolean updated = (updateCount == 1);
         flushNodeAuthorizedCache();
         return updated;
@@ -789,7 +754,6 @@ public class NodeService extends AbstractService implements INodeService {
                 nodeSecurity.setInitialLoadEndTime(new Date());
                 isUpdated = updateNodeSecurity(transaction, nodeSecurity);
             }
-
             if (isAutoCommit) {
                 transaction.commit();
             }
@@ -817,7 +781,6 @@ public class NodeService extends AbstractService implements INodeService {
             if (!syncChange) {
                 symmetricDialect.disableSyncTriggers(transaction, nodeId);
             }
-
             NodeSecurity nodeSecurity = findOrCreateNodeSecurity(nodeId);
             if (nodeSecurity != null) {
                 nodeSecurity.setRevInitialLoadEnabled(initialLoadEnabled);
@@ -887,7 +850,7 @@ public class NodeService extends AbstractService implements INodeService {
     public NodeStatus getNodeStatus() {
         return getNodeStatus(findIdentityNodeId());
     }
-    
+
     public NodeStatus getNodeStatus(String nodeId) {
         long ts = System.currentTimeMillis();
         try {
@@ -933,7 +896,6 @@ public class NodeService extends AbstractService implements INodeService {
         // offline detection period is a positive value. The default value
         // of -1 disables the feature.
         if (offlineServerListeners != null && offlineNodeDetectionMinutes > 0) {
-
             List<Node> list = findOfflineNodes();
             if (list.size() > 0) {
                 fireOffline(list);
@@ -949,11 +911,9 @@ public class NodeService extends AbstractService implements INodeService {
         List<Node> offlineNodeList = new ArrayList<Node>();
         Node myNode = findIdentity();
         long restartDelayMinutes = parameterService.getLong(ParameterConstants.OFFLINE_NODE_DETECTION_RESTART_MINUTES);
-
         Date lastRestartTime = engine.getLastRestartTime() != null ? engine.getLastRestartTime() : new Date();
         if (myNode != null && System.currentTimeMillis() - lastRestartTime.getTime() > restartDelayMinutes * 60000) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
-
             List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));
             for (Row node : list) {
                 String nodeId = node.getString("node_id");
@@ -973,7 +933,6 @@ public class NodeService extends AbstractService implements INodeService {
                 }
             }
         }
-
         return offlineNodeList;
     }
 
@@ -994,10 +953,8 @@ public class NodeService extends AbstractService implements INodeService {
     public List<String> findOfflineNodeIds(long minutesOffline) {
         List<String> offlineNodeList = new ArrayList<String>();
         Node myNode = findIdentity();
-
         if (myNode != null) {
             long offlineNodeDetectionMillis = minutesOffline * 60 * 1000;
-
             List<Row> list = sqlTemplate.query(getSql("findNodeHeartbeatsSql"));
             for (Row node : list) {
                 String nodeId = node.getString("node_id");
@@ -1027,7 +984,7 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
     }
-        
+
     static class NodeRowMapper implements ISqlRowMapper<Node> {
         public Node mapRow(Row rs) {
             Node node = new Node();
@@ -1099,11 +1056,11 @@ public class NodeService extends AbstractService implements INodeService {
             return nodeHost;
         }
     }
-    
+
     public AuthenticationStatus getAuthenticationStatus(String nodeId, String securityToken) {
         AuthenticationStatus retVal = AuthenticationStatus.ACCEPTED;
         Node node = findNode(nodeId, true);
-        if(node == null) {
+        if (node == null) {
             node = findNode(nodeId, false);
         }
         if (node == null) {
@@ -1115,7 +1072,7 @@ public class NodeService extends AbstractService implements INodeService {
                 retVal = AuthenticationStatus.SYNC_DISABLED;
             }
         } else if (!isNodeAuthorized(nodeId, securityToken)) {
-            if (isNodeAuthorizationLocked(nodeId) ) {
+            if (isNodeAuthorizationLocked(nodeId)) {
                 retVal = AuthenticationStatus.LOCKED;
             } else {
                 retVal = AuthenticationStatus.FORBIDDEN;
@@ -1147,7 +1104,6 @@ public class NodeService extends AbstractService implements INodeService {
                 if (nodeSecurity.getFailedLogins() < maxFailedAttempts) {
                     nodeSecurity.setFailedLogins(nodeSecurity.getFailedLogins() + 1);
                     updateNodeSecurity(nodeSecurity);
-                    
                     Map<String, NodeSecurity> cache = findAllNodeSecurity(true);
                     NodeSecurity cacheSecurity = cache.get(nodeId);
                     if (cacheSecurity != null) {
@@ -1173,5 +1129,4 @@ public class NodeService extends AbstractService implements INodeService {
         }
         return false;
     }
-
 }

@@ -21,21 +21,22 @@
 package org.jumpmind.driver;
 
 public class InterceptResult {
-    
     private boolean intercepted;
     private Object interceptResult;
-    
+
     public boolean isIntercepted() {
         return intercepted;
     }
+
     public void setIntercepted(boolean intercepted) {
         this.intercepted = intercepted;
     }
+
     public Object getInterceptResult() {
         return interceptResult;
     }
+
     public void setInterceptResult(Object interceptResult) {
         this.interceptResult = interceptResult;
     }
-
 }

@@ -24,9 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListSqlStatementSource implements ISqlStatementSource {
-
     protected List<String> statements;
-    
+
     public ListSqlStatementSource(String... statements) {
         this.statements = new ArrayList<String>();
         for (String sql : statements) {
@@ -41,5 +40,4 @@ public class ListSqlStatementSource implements ISqlStatementSource {
     public String readSqlStatement() {
         return statements.size() > 0 ? statements.remove(0) : null;
     }
-
 }

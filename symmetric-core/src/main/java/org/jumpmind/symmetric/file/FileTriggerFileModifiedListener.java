@@ -38,12 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileTriggerFileModifiedListener extends FileAlterationListenerAdaptor {
-
     final protected Logger log = LoggerFactory.getLogger(getClass());
-
     protected FileTriggerRouter fileTriggerRouter;
     protected DirectorySnapshot snapshot;
-    protected Date fromDate;    
+    protected Date fromDate;
     protected Date toDate;
     protected FileModifiedCallback fileModifiedCallback;
     protected ProcessInfo processInfo;
@@ -51,13 +49,12 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     protected boolean useCrc;
     protected ISymmetricEngine engine;
     protected Map<String, DirectorySnapshot> modifiedDirs = new HashMap<String, DirectorySnapshot>();
-
     protected long startTime = System.currentTimeMillis();
     protected long ts = startTime;
     protected long fileCount = 0;
-    protected long changeCount = 0;    
+    protected long changeCount = 0;
 
-    public FileTriggerFileModifiedListener(FileTriggerRouter fileTriggerRouter, Date fromDate, Date toDate, ProcessInfo processInfo, 
+    public FileTriggerFileModifiedListener(FileTriggerRouter fileTriggerRouter, Date fromDate, Date toDate, ProcessInfo processInfo,
             boolean useCrc, FileModifiedCallback fileModifiedCallback, ISymmetricEngine engine) {
         this.fileTriggerRouter = fileTriggerRouter;
         this.snapshot = new DirectorySnapshot(fileTriggerRouter);
@@ -70,10 +67,10 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         this.engine = engine;
         this.processInfo.setStatus(ProcessInfo.ProcessStatus.PROCESSING);
     }
-    
+
     public void onStart(final FileAlterationObserver observer) {
         long lastModified = observer.getDirectory().lastModified();
-        if (fromDate ==  null || ((fromDate != null && lastModified >= fromDate.getTime()) && lastModified <= toDate.getTime())) {
+        if (fromDate == null || ((fromDate != null && lastModified >= fromDate.getTime()) && lastModified <= toDate.getTime())) {
             modifiedDirs.put(".", new DirectorySnapshot(fileTriggerRouter));
         }
     }
@@ -82,7 +79,6 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         log.debug("onFileCreate: " + file);
         if (isSyncOnCtlFile) {
             File ctlFile = engine.getFileSyncService().getControleFile(file);
-            
             if (ctlFile.exists()) {
                 log.debug("Control file detected: {}", file.getAbsolutePath());
                 addSnapshot(file, LastEventType.CREATE, false);
@@ -97,19 +93,17 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         log.debug("File create detected: {}", directory.getAbsolutePath());
         addSnapshot(directory, LastEventType.CREATE, true);
     }
-    
+
     public void onStop(final FileAlterationObserver observer) {
         if (snapshot.size() > 0) {
             commit();
         }
-
         long scanTime = (System.currentTimeMillis() - startTime) / 1000;
         long modifiedDirStartTime = System.currentTimeMillis();
         long ts = modifiedDirStartTime;
         int modifiedDirCount = 0;
         int modifiedDirFileCount = 0;
         int modifiedDirChangeCount = 0;
-        
         processInfo.setStatus(ProcessStatus.QUERYING);
         for (String relativeDir : modifiedDirs.keySet()) {
             DirectorySnapshot lastSnapshot = fileModifiedCallback.getLastDirectorySnapshot(relativeDir);
@@ -123,21 +117,19 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
                 fileModifiedCallback.commit(changesSinceLastSnapshot);
             }
             if (System.currentTimeMillis() - ts > 60000) {
-                log.info("File tracker has been processing modified directories for {} seconds.  The following stats have been gathered: {}", 
+                log.info("File tracker has been processing modified directories for {} seconds.  The following stats have been gathered: {}",
                         new Object[] { (System.currentTimeMillis() - modifiedDirStartTime) / 1000,
-                        "{ modifiedDirCount=" + modifiedDirCount + " of " + modifiedDirs.size() + 
-                        ", modifiedDirFileCount=" + modifiedDirFileCount + ", modifiedDirChangeCount= " + modifiedDirChangeCount + " }" });
+                                "{ modifiedDirCount=" + modifiedDirCount + " of " + modifiedDirs.size() +
+                                        ", modifiedDirFileCount=" + modifiedDirFileCount + ", modifiedDirChangeCount= " + modifiedDirChangeCount + " }" });
                 ts = System.currentTimeMillis();
             }
         }
-
         if (changeCount > 0 || modifiedDirChangeCount > 0) {
             String extra = ".";
             if (modifiedDirChangeCount > 0) {
                 extra = String.format(", slow scan %d directories in %d seconds for %d changes.",
                         modifiedDirCount, (System.currentTimeMillis() - modifiedDirStartTime) / 1000, modifiedDirChangeCount);
             }
-            
             log.info("File tracker fast scan {} files in {} seconds for {} changes" + extra,
                     new Object[] { fileCount, scanTime, changeCount });
         }
@@ -149,7 +141,6 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
         processInfo.incrementCurrentDataCount();
         FileSnapshot fileSnapshot = new FileSnapshot(fileTriggerRouter, file, lastEventType, useCrc);
         DirectorySnapshot modifiedDir = modifiedDirs.get(fileSnapshot.getRelativeDir());
-        
         if (!isDir && modifiedDir != null) {
             // This file belongs to a directory that had a file add/delete, so we will process the directory later
             modifiedDir.add(fileSnapshot);
@@ -160,21 +151,21 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
                     // This is a directory that had a file add/delete, so we'll need to look for deletes later
                     // Let's not save the beginning ./ in the front of the directory location, it doesn't match the value in the database.
                     String relativeDir = StringUtils.removeStart(fileSnapshot.getRelativeDir() + "/" + fileSnapshot.getFileName(), "./");
-                    modifiedDirs.put(relativeDir, 
+                    modifiedDirs.put(relativeDir,
                             new DirectorySnapshot(fileTriggerRouter));
                 } else {
                     snapshot.add(fileSnapshot);
                     changeCount++;
-
                     if (snapshot.size() >= fileModifiedCallback.getCommitSize()) {
                         commit();
                     }
                 }
             } else {
-                log.debug("Not processing " + file + " fromDate: " + fromDate + " lastModified: " + lastModified + " fromDateTime: " + (fromDate != null ? fromDate.getTime() : 0l) + " toDateTime: " + (toDate != null ? toDate.getTime() : 0l));
+                log.debug("Not processing " + file + " fromDate: " + fromDate + " lastModified: " + lastModified + " fromDateTime: " + (fromDate != null
+                        ? fromDate.getTime()
+                        : 0l) + " toDateTime: " + (toDate != null ? toDate.getTime() : 0l));
             }
         }
-
         if (System.currentTimeMillis() - ts > 60000) {
             log.info("File tracker has been processing for {} seconds.  The following stats have been gathered: {}", new Object[] {
                     (System.currentTimeMillis() - startTime) / 1000,
@@ -185,7 +176,7 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
 
     protected void commit() {
         fileModifiedCallback.commit(snapshot);
-        snapshot.clear();        
+        snapshot.clear();
     }
 
     public Map<String, DirectorySnapshot> getModifiedDirs() {
@@ -193,23 +184,21 @@ public class FileTriggerFileModifiedListener extends FileAlterationListenerAdapt
     }
 
     static public class FileModifiedCallback {
-
         int commitSize;
-        
+
         public FileModifiedCallback(int commitSize) {
             this.commitSize = commitSize;
         }
-        
-        public void commit(DirectorySnapshot dirSnapshot) { 
+
+        public void commit(DirectorySnapshot dirSnapshot) {
         }
-        
+
         public DirectorySnapshot getLastDirectorySnapshot(String relativeDir) {
             return null;
         }
-        
+
         public int getCommitSize() {
             return commitSize;
         }
     }
-
 }

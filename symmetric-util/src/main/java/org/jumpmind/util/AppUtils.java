@@ -50,17 +50,11 @@ import org.slf4j.LoggerFactory;
  * General application utility methods
  */
 public class AppUtils {
-
     public final static String SYSPROP_HOST_NAME = "host.name";
-    
     public final static String SYSPROP_PORT_NUMBER = "port.number";
-    
     public final static String SYSPROP_IP_ADDRESS = "ip.address";
-    
     private static String UNKNOWN = "unknown";
-
     private static Logger log = LoggerFactory.getLogger(AppUtils.class);
-
     private static FastDateFormat timezoneFormatter = FastDateFormat.getInstance("Z");
 
     public static String getSymHome() {
@@ -77,32 +71,28 @@ public class AppUtils {
         }
         return dirName;
     }
-    
+
     public static String getHostName() {
         String hostName = System.getProperty(SYSPROP_HOST_NAME, UNKNOWN);
         if (UNKNOWN.equals(hostName)) {
             try {
                 hostName = System.getenv("HOSTNAME");
-                
                 if (isBlank(hostName)) {
                     hostName = System.getenv("COMPUTERNAME");
                 }
-
                 if (isBlank(hostName)) {
                     try {
                         hostName = IOUtils.toString(Runtime.getRuntime().exec("hostname").getInputStream(), Charset.defaultCharset());
-                    } catch (Exception ex) {}
+                    } catch (Exception ex) {
+                    }
                 }
-                
                 if (isBlank(hostName)) {
                     hostName = InetAddress.getByName(
                             InetAddress.getLocalHost().getHostAddress()).getHostName();
                 }
-                
                 if (isNotBlank(hostName)) {
                     hostName = hostName.trim();
                 }
-
             } catch (Exception ex) {
                 log.info("Unable to lookup hostname: " + ex.getMessage());
             }
@@ -114,7 +104,6 @@ public class AppUtils {
         String httpPort = System.getProperty(SYSPROP_PORT_NUMBER, System.getProperty("http.port"));
         String port = httpPort == null ? "31415" : httpPort;
         String httpsEnable = System.getProperty("https.enable");
-
         if (httpsEnable != null && httpsEnable.equalsIgnoreCase("true")) {
             String httpsPort = System.getProperty("https.port");
             port = httpsPort == null ? "31417" : httpsPort;
@@ -125,7 +114,6 @@ public class AppUtils {
     public static String getProtocol() {
         String protocol = "http";
         String httpsEnable = System.getProperty("https.enable");
-
         if (httpsEnable != null && httpsEnable.equalsIgnoreCase("true")) {
             protocol = "https";
         }
@@ -152,7 +140,6 @@ public class AppUtils {
             } finally {
             }
         }
-
         if (UNKNOWN.equals(ipAddress)) {
             try {
                 ipAddress = InetAddress.getLocalHost().getHostAddress();
@@ -165,15 +152,12 @@ public class AppUtils {
     }
 
     /**
-     * This method will return the timezone in RFC822 format. <p> The format
-     * ("-+HH:MM") has advantages over the older timezone codes ("AAA"). The
-     * difference of 5 hours from GMT is obvious with "-05:00" but only implied
-     * with "EST". There is no ambiguity saying "-06:00", but you don't know if
-     * "CST" means Central Standard Time ("-06:00") or China Standard Time
-     * ("+08:00"). The timezone codes need to be loaded on the system, and
-     * definitions are not standardized between systems. Therefore, to remain
-     * agnostic to operating systems and databases, the RFC822 format is the
-     * best choice.
+     * This method will return the timezone in RFC822 format.
+     * <p>
+     * The format ("-+HH:MM") has advantages over the older timezone codes ("AAA"). The difference of 5 hours from GMT is obvious with "-05:00" but only implied
+     * with "EST". There is no ambiguity saying "-06:00", but you don't know if "CST" means Central Standard Time ("-06:00") or China Standard Time ("+08:00").
+     * The timezone codes need to be loaded on the system, and definitions are not standardized between systems. Therefore, to remain agnostic to operating
+     * systems and databases, the RFC822 format is the best choice.
      */
     public static String getTimezoneOffset() {
         String tz = timezoneFormatter.format(new Date());
@@ -186,8 +170,7 @@ public class AppUtils {
     /**
      * @param timezoneOffset
      *            see description for {@link #getTimezoneOffset()}
-     * @return a date object that represents the local date and time at the
-     *         passed in offset
+     * @return a date object that represents the local date and time at the passed in offset
      */
     public static Date getLocalDateForOffset(String timezoneOffset) {
         long currentTime = System.currentTimeMillis();
@@ -197,8 +180,7 @@ public class AppUtils {
     }
 
     /**
-     * Useful method to sleep that catches and ignores the
-     * {@link InterruptedException}
+     * Useful method to sleep that catches and ignores the {@link InterruptedException}
      *
      * @param ms
      *            milliseconds to sleep
@@ -235,7 +217,7 @@ public class AppUtils {
                             file.getParentFile().mkdirs();
                             file.getParentFile().setLastModified(entry.getTime());
                         }
-                        try(FileOutputStream fos = new FileOutputStream(file)) {
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
                             IOUtils.copy(is, fos);
                             file.setLastModified(entry.getTime());
                         }
@@ -245,18 +227,15 @@ public class AppUtils {
         } catch (IOException e) {
             throw new IoException(e);
         }
-
     }
-    
+
     public static String formatStackTrace(StackTraceElement[] stackTrace) {
         return formatStackTrace(stackTrace, 0, true);
     }
-    
+
     public static String formatStackTrace(StackTraceElement[] stackTrace, int indentSpaces, boolean indentFirst) {
         StringBuilder buff = new StringBuilder(256);
-        
         boolean first = true;
-        
         for (StackTraceElement stackTraceElement : stackTrace) {
             if (!first || indentFirst) {
                 buff.append(StringUtils.rightPad("", indentSpaces));
@@ -273,8 +252,7 @@ public class AppUtils {
                 buff.append(Integer.toString(stackTraceElement.getLineNumber()));
             }
             buff.append("\r\n");
-        }        
+        }
         return buff.toString();
     }
-
 }

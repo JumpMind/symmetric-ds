@@ -46,43 +46,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StagedResource implements IStagedResource {
-
-	private static final Logger log = LoggerFactory.getLogger(StagedResource.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(StagedResource.class);
     private AtomicInteger references = new AtomicInteger(0);
-
     protected File directory;
-    
     protected File file;
-
     protected String path;
-
     protected StringBuilder memoryBuffer;
-
     protected long lastUpdateTime;
-
     protected State state;
-    
     protected OutputStream outputStream = null;
-    
     protected Map<Thread, InputStream> inputStreams = null;
-    
     protected Map<Thread, BufferedReader> readers = null;
-
     protected BufferedWriter writer;
-    
     protected StagingManager stagingManager;
-    
+
     public StagedResource(File directory, String path, StagingManager stagingManager) {
         this.directory = directory;
         this.path = path;
         this.stagingManager = stagingManager;
-        lastUpdateTime = System.currentTimeMillis();   
-
-        File doneFile = buildFile(State.DONE); 
-        
+        lastUpdateTime = System.currentTimeMillis();
+        File doneFile = buildFile(State.DONE);
         if (doneFile.exists()) { // Only call exists once for done files. This can be expensive on some SAN type devices.
-            this.state = State.DONE; 
+            this.state = State.DONE;
             this.file = doneFile;
             lastUpdateTime = file.lastModified();
         } else {
@@ -92,8 +77,8 @@ public class StagedResource implements IStagedResource {
                 lastUpdateTime = file.lastModified();
             }
         }
-    }    
-    
+    }
+
     protected static String toPath(File directory, File file) {
         String path = file.getAbsolutePath();
         path = path.replaceAll("\\\\", "/");
@@ -106,29 +91,29 @@ public class StagedResource implements IStagedResource {
             throw new IllegalStateException("Expected an extension of .done or .create at the end of the path and did not find it: " + path);
         }
     }
-    
+
     @Override
     public void reference() {
         references.incrementAndGet();
         log.debug("Increased reference to {} for {} by {}", references, path, Thread.currentThread().getName());
     }
-    
+
     @Override
     public void dereference() {
         references.decrementAndGet();
         log.debug("Decreased reference to {} for {} by {}", references, path, Thread.currentThread().getName());
     }
-    
+
     public boolean isInUse() {
-        return references.get() > 0 || (readers != null && readers.size() > 0) || writer != null || 
+        return references.get() > 0 || (readers != null && readers.size() > 0) || writer != null ||
                 (inputStreams != null && inputStreams.size() > 0) ||
                 outputStream != null;
     }
-    
-    public boolean isFileResource() {     
+
+    public boolean isFileResource() {
         return file != null && file.exists();
     }
-    
+
     public boolean isMemoryResource() {
         return memoryBuffer != null && memoryBuffer.length() > 0;
     }
@@ -146,87 +131,78 @@ public class StagedResource implements IStagedResource {
             File newFile = buildFile(state);
             if (!newFile.equals(file)) {
                 closeInternal();
-                
                 if (newFile.exists()) {
                     if (writer != null || outputStream != null) {
-                        throw new IoException("Could not write '{}' it is currently being written to", newFile.getAbsolutePath());                                
+                        throw new IoException("Could not write '{}' it is currently being written to", newFile.getAbsolutePath());
                     }
-                    
                     if (!FileUtils.deleteQuietly(newFile)) {
                         log.warn("Failed to delete '{}' in preparation for renaming '{}'", newFile.getAbsolutePath(), file.getAbsoluteFile());
                         if (readers != null && readers.size() > 0) {
                             for (Thread thread : readers.keySet()) {
                                 BufferedReader reader = readers.get(thread);
-                                log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());                                         
+                                log.warn("Closing unwanted reader for '{}' that had been created on thread '{}'", newFile.getAbsolutePath(), thread.getName());
                                 try {
-                                    if(reader != null) {
-                                        reader.close();     
+                                    if (reader != null) {
+                                        reader.close();
                                     }
-                                } catch(IOException e) { }
+                                } catch (IOException e) {
+                                }
                             }
                         }
                         readers = null;
-                        
                         if (!FileUtils.deleteQuietly(newFile)) {
                             log.warn("Failed to delete '{}' for a second time", newFile.getAbsolutePath());
                         }
                     }
                 }
-                
                 if (!file.renameTo(newFile)) {
                     handleFailedRename(file, newFile);
                 }
             }
-        } 
-        
+        }
         refreshLastUpdateTime();
         this.state = state;
         this.file = buildFile(state);
     }
-    
+
     protected void handleFailedRename(File oldFile, File newFile) {
-        
         String msg = null;
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-        
         int tries = 5;
-        
         while (!newFile.exists() && tries-- > 0) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
             }
         }
-        
         if (newFile.exists()) {
             if (isSameFile(oldFile, newFile)) {
-                msg = String.format("Had trouble renaming file.  The destination file already exists, and is the same size - will proceed. " + 
-                        "Source file: (%s size: %s lastModified: %s) Target file: (%s size: %s lastModified: %s)" ,
+                msg = String.format("Had trouble renaming file.  The destination file already exists, and is the same size - will proceed. " +
+                        "Source file: (%s size: %s lastModified: %s) Target file: (%s size: %s lastModified: %s)",
                         oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
-                        newFile, newFile.length(), dateFormat.format(newFile.lastModified()));                
+                        newFile, newFile.length(), dateFormat.format(newFile.lastModified()));
                 FileUtils.deleteQuietly(oldFile);
                 log.info(msg);
                 return;
             } else {
-                msg = String.format("Had trouble renaming file.  The destination file already exists, but is not the same size. " + 
-                                "Source file: (%s size: %s lastModified: %s) Target file: (%s size: %s lastModified: %s)" ,
-                                oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
-                                newFile, newFile.length(), dateFormat.format(newFile.lastModified()));                
+                msg = String.format("Had trouble renaming file.  The destination file already exists, but is not the same size. " +
+                        "Source file: (%s size: %s lastModified: %s) Target file: (%s size: %s lastModified: %s)",
+                        oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
+                        newFile, newFile.length(), dateFormat.format(newFile.lastModified()));
             }
-        } else {            
-            msg = String.format("Had trouble renaming file. The destination file does not appear to exist. " + 
-                    "Source file: (%s size: %s lastModified: %s) Target file: (%s)" ,
+        } else {
+            msg = String.format("Had trouble renaming file. The destination file does not appear to exist. " +
+                    "Source file: (%s size: %s lastModified: %s) Target file: (%s)",
                     oldFile, oldFile.length(), dateFormat.format(oldFile.lastModified()),
-                    newFile);              
+                    newFile);
         }
         log.warn(msg);
-        throw new IllegalStateException(msg);        
+        throw new IllegalStateException(msg);
     }
 
     protected boolean isSameFile(File oldFile, File newFile) {
         return (oldFile.length() == newFile.length());
     }
-    
 
     public synchronized BufferedReader getReader() {
         refreshLastUpdateTime();
@@ -253,7 +229,7 @@ public class StagedResource implements IStagedResource {
         }
         return reader;
     }
-    
+
     protected BufferedReader createReader() throws IOException {
         return new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8.name()));
     }
@@ -263,65 +239,66 @@ public class StagedResource implements IStagedResource {
             readers = new HashMap<Thread, BufferedReader>(path.contains("common") ? 10 : 1);
         }
     }
-    
+
     private synchronized final void closeReadersMap() {
         if (readers != null && readers.size() == 0) {
             readers = null;
         }
     }
-    
+
     private synchronized final void createInputStreamsMap() {
         if (inputStreams == null) {
             inputStreams = new HashMap<Thread, InputStream>(path.contains("common") ? 10 : 1);
         }
     }
-    
+
     private synchronized final void closeInputStreamsMap() {
         if (inputStreams != null && inputStreams.size() == 0) {
             inputStreams = null;
         }
-    }    
-    
+    }
+
     public void close() {
         refreshLastUpdateTime();
         closeInternal();
     }
-    
+
     private void closeInternal() {
         Thread thread = Thread.currentThread();
         BufferedReader reader = readers != null ? readers.get(thread) : null;
         if (reader != null) {
             try {
                 reader.close();
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             readers.remove(thread);
             closeReadersMap();
         }
-
         if (writer != null) {
             try {
                 writer.close();
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             writer = null;
         }
-        
         if (outputStream != null) {
             try {
                 outputStream.close();
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             outputStream = null;
         }
-        
         InputStream inputStream = inputStreams != null ? inputStreams.get(thread) : null;
         if (inputStream != null) {
             try {
                 inputStream.close();
-            } catch(IOException e) { }
+            } catch (IOException e) {
+            }
             inputStreams.remove(thread);
             closeInputStreamsMap();
         }
     }
-    
+
     public OutputStream getOutputStream() {
         refreshLastUpdateTime();
         try {
@@ -368,11 +345,11 @@ public class StagedResource implements IStagedResource {
         }
         return reader;
     }
-    
+
     protected InputStream createInputStream() throws FileNotFoundException {
         return new BufferedInputStream(new FileInputStream(file));
     }
-    
+
     public BufferedWriter getWriter(long threshold) {
         refreshLastUpdateTime();
         if (writer == null) {
@@ -390,7 +367,7 @@ public class StagedResource implements IStagedResource {
     }
 
     protected BufferedWriter createWriter(long threshold) {
-        return new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer, file));        
+        return new BufferedWriter(new ThresholdFileWriter(threshold, this.memoryBuffer, file));
     }
 
     public long getSize() {
@@ -410,31 +387,28 @@ public class StagedResource implements IStagedResource {
     public long getLastUpdateTime() {
         return lastUpdateTime;
     }
-    
+
     public void refreshLastUpdateTime() {
         this.lastUpdateTime = System.currentTimeMillis();
     }
 
-    public boolean delete() {        
+    public boolean delete() {
         close();
         boolean deleted = false;
         if (file != null && file.exists()) {
             FileUtils.deleteQuietly(file);
             deleted = !file.exists();
         }
-
         if (memoryBuffer != null) {
             memoryBuffer = null;
             deleted = true;
         }
-
         stagingManager.removeResourcePath(path);
-
         if (deleted) {
             if (log.isDebugEnabled() && path.contains("outgoing")) {
                 log.debug("Deleted staging resource {}", path);
             }
-        }              
+        }
         return deleted;
     }
 
@@ -448,8 +422,8 @@ public class StagedResource implements IStagedResource {
 
     @Override
     public String toString() {
-        return (file != null && file.exists()) ? file.getAbsolutePath() : String.format("%d bytes in memory",
-                memoryBuffer != null ? memoryBuffer.length() : 0);
+        return (file != null && file.exists()) ? file.getAbsolutePath()
+                : String.format("%d bytes in memory",
+                        memoryBuffer != null ? memoryBuffer.length() : 0);
     }
-
 }

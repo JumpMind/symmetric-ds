@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.transport;
 
 import java.io.BufferedWriter;
@@ -29,9 +28,8 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IConfigurationService;
 
 public interface IOutgoingTransport {
-
     public BufferedWriter openWriter();
-    
+
     public BufferedWriter getWriter();
 
     public OutputStream openStream();
@@ -41,9 +39,8 @@ public interface IOutgoingTransport {
     public boolean isOpen();
 
     /**
-     * This returns a (combined) list of suspended or ignored channels. In
-     * addition, it will optionally do a reservation in the case of a Push
-     * request
+     * This returns a (combined) list of suspended or ignored channels. In addition, it will optionally do a reservation in the case of a Push request
+     * 
      * @param targetNode
      */
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode);

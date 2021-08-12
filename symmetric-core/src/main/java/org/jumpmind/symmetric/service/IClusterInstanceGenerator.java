@@ -23,9 +23,7 @@ package org.jumpmind.symmetric.service;
 import org.jumpmind.extension.IExtensionPoint;
 
 public interface IClusterInstanceGenerator extends IExtensionPoint {
-
     public String generateInstanceId();
-    
-    public boolean isValid(String instanceId);
 
+    public boolean isValid(String instanceId);
 }

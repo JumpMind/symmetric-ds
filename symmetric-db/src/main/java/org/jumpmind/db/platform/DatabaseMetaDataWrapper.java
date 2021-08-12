@@ -135,16 +135,14 @@ public class DatabaseMetaDataWrapper {
     }
 
     /**
-     * Convenience method to return the table meta data using the configured
-     * catalog, schema pattern and table types.
+     * Convenience method to return the table meta data using the configured catalog, schema pattern and table types.
      * 
      * @param tableNamePattern
      *            The pattern identifying for which tables to return info
      * @return The table meta data
      * @throws SQLException
      *             If an error occurred retrieving the meta data
-     * @see DatabaseMetaData#getTables(java.lang.String, java.lang.String,
-     *      java.lang.String, java.lang.String[])
+     * @see DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
      */
     public ResultSet getTables(String tableNamePattern) throws SQLException {
         return getMetaData().getTables(getCatalog(), getSchemaPattern(), tableNamePattern,
@@ -152,8 +150,7 @@ public class DatabaseMetaDataWrapper {
     }
 
     /**
-     * Convenience method to return the column meta data using the configured
-     * catalog and schema pattern.
+     * Convenience method to return the column meta data using the configured catalog and schema pattern.
      * 
      * @param tableNamePattern
      *            The pattern identifying for which tables to return info
@@ -162,8 +159,7 @@ public class DatabaseMetaDataWrapper {
      * @return The column meta data
      * @throws SQLException
      *             If an error occurred retrieving the meta data
-     * @see DatabaseMetaData#getColumns(java.lang.String, java.lang.String,
-     *      java.lang.String, java.lang.String)
+     * @see DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     public ResultSet getColumns(String tableNamePattern, String columnNamePattern)
             throws SQLException {
@@ -172,69 +168,60 @@ public class DatabaseMetaDataWrapper {
     }
 
     /**
-     * Convenience method to return the primary key meta data using the
-     * configured catalog and schema pattern.
+     * Convenience method to return the primary key meta data using the configured catalog and schema pattern.
      * 
      * @param tableNamePattern
      *            The pattern identifying for which tables to return info
      * @return The primary key meta data
      * @throws SQLException
      *             If an error occurred retrieving the meta data
-     * @see DatabaseMetaData#getPrimaryKeys(java.lang.String, java.lang.String,
-     *      java.lang.String)
+     * @see DatabaseMetaData#getPrimaryKeys(java.lang.String, java.lang.String, java.lang.String)
      */
     public ResultSet getPrimaryKeys(String tableNamePattern) throws SQLException {
         return getMetaData().getPrimaryKeys(getCatalog(), getSchemaPattern(), tableNamePattern);
     }
 
     /**
-     * Convenience method to return the foreign key meta data using the
-     * configured catalog and schema pattern.
+     * Convenience method to return the foreign key meta data using the configured catalog and schema pattern.
      * 
      * @param tableNamePattern
      *            The pattern identifying for which tables to return info
      * @return The foreign key meta data
      * @throws SQLException
      *             If an error occurred retrieving the meta data
-     * @see DatabaseMetaData#getImportedKeys(java.lang.String, java.lang.String,
-     *      java.lang.String)
+     * @see DatabaseMetaData#getImportedKeys(java.lang.String, java.lang.String, java.lang.String)
      */
     public ResultSet getForeignKeys(String tableNamePattern) throws SQLException {
         return getMetaData().getImportedKeys(getCatalog(), getSchemaPattern(), tableNamePattern);
     }
 
     /**
-     * Convenience method to return the foreign keys that reference this table using the
-     * configured catalog and schema pattern.
+     * Convenience method to return the foreign keys that reference this table using the configured catalog and schema pattern.
      * 
      * @param tableNamePattern
      *            The pattern identifying for which tables to return info
      * @return The foreign key meta data
      * @throws SQLException
      *             If an error occurred retrieving the meta data
-     * @see DatabaseMetaData#getImportedKeys(java.lang.String, java.lang.String,
-     *      java.lang.String)
+     * @see DatabaseMetaData#getImportedKeys(java.lang.String, java.lang.String, java.lang.String)
      */
     public ResultSet getExportedKeys(String tableNamePattern) throws SQLException {
         return getMetaData().getExportedKeys(getCatalog(), getSchemaPattern(), tableNamePattern);
     }
 
     /**
-     * Convenience method to return the index meta data using the configured
-     * catalog and schema pattern.
+     * Convenience method to return the index meta data using the configured catalog and schema pattern.
      * 
      * @param tableNamePattern
      *            The pattern identifying for which tables to return info
      * @param unique
      *            Whether to return only indices for unique values
      * @param approximate
-     *            Whether the result is allowed to reflect approximate or out of
-     *            data values
+     *            Whether the result is allowed to reflect approximate or out of data values
      * @return The index meta data
      * @throws SQLException
      *             If an error occurred retrieving the meta data
-     * @see DatabaseMetaData#getIndexInfo(java.lang.String, java.lang.String,
-     *      java.lang.String, boolean, boolean)
+     * @see DatabaseMetaData#getIndexInfo(java.lang.String, java.lang.String, java.lang.String, boolean, boolean)
      */
     public ResultSet getIndices(String tableNamePattern, boolean unique, boolean approximate)
             throws SQLException {

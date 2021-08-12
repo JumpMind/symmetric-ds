@@ -126,16 +126,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /**
- * This is a REST API for SymmetricDS. The API will be active only if
- * rest.api.enable=true. The property is turned off by default. The REST API is
- * available at http://hostname:port/api for the stand alone SymmetricDS
- * installation.
+ * This is a REST API for SymmetricDS. The API will be active only if rest.api.enable=true. The property is turned off by default. The REST API is available at
+ * http://hostname:port/api for the stand alone SymmetricDS installation.
  * 
  * <p>
  * <b>General HTTP Responses to the methods:</b>
  * <ul>
- * <li>
- * ALL Methods may return the following HTTP responses.<br>
+ * <li>ALL Methods may return the following HTTP responses.<br>
  * <br>
  * In general:<br>
  * <ul>
@@ -145,34 +142,26 @@ import io.swagger.annotations.ApiParam;
  * </ul>
  * ALL Methods
  * <ul>
- * <li>HTTP 401 - Unauthorized. You have not successfully authenticated.
- * Authentication details are in the response body.</li>
- * <li>HTTP 404 - Not Found. You attempted to perform an operation on a resource
- * that doesn't exist. I.E. you tried to start or stop an engine that doesn't
+ * <li>HTTP 401 - Unauthorized. You have not successfully authenticated. Authentication details are in the response body.</li>
+ * <li>HTTP 404 - Not Found. You attempted to perform an operation on a resource that doesn't exist. I.E. you tried to start or stop an engine that doesn't
  * exist.</li>
- * <li>HTTP 405 - Method Not Allowed. I.E. you attempted a service call that
- * uses the default engine (/engine/identity vs engine/{engine}/identity) and
- * there was more than one engine found on the server.</li>
- * <li>HTTP 500 - Internal Server Error. Something went wrong on the server /
- * service, and we couldn't fulfill the request. Details are in the response
+ * <li>HTTP 405 - Method Not Allowed. I.E. you attempted a service call that uses the default engine (/engine/identity vs engine/{engine}/identity) and there
+ * was more than one engine found on the server.</li>
+ * <li>HTTP 500 - Internal Server Error. Something went wrong on the server / service, and we couldn't fulfill the request. Details are in the response
  * body.</li>
  * </ul>
  * </li>
- * <li>
- * GET Methods
+ * <li>GET Methods
  * <ul>
  * <li>HTTP 200 - Success with result contained in the response body.</li>
- * <li>HTTP 204 - Success with no results. Your GET request completed
- * successfully, but found no matching entities.</li>
+ * <li>HTTP 204 - Success with no results. Your GET request completed successfully, but found no matching entities.</li>
  * </ul>
  * </ul>
  * </p>
  */
 @Controller
 public class RestService {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     @Autowired
     ServletContext context;
 
@@ -193,7 +182,7 @@ public class RestService {
      * <br>
      * Example json response is as follows:<br><br>
      *   {"engines":[{"name":"RootSugarDB-root"}]}
-     * </pre>
+     *         </pre>
      */
     @ApiOperation(value = "Obtain a list of configured Engines")
     @RequestMapping(value = "/enginelist", method = RequestMethod.GET)
@@ -292,8 +281,7 @@ public class RestService {
     }
 
     /**
-     * Provides a list of children {@link Node} that are registered with this
-     * engine.
+     * Provides a list of children {@link Node} that are registered with this engine.
      */
     @ApiOperation(value = "Obtain list of children for the specified engine")
     @RequestMapping(value = "engine/{engine}/children", method = RequestMethod.GET)
@@ -304,10 +292,8 @@ public class RestService {
     }
 
     /**
-     * Takes a snapshot for this engine and streams it to the client. The result
-     * of this call is a stream that should be written to a zip file. The zip
-     * contains configuration and operational information about the installation
-     * and can be used to diagnose state of the node
+     * Takes a snapshot for this engine and streams it to the client. The result of this call is a stream that should be written to a zip file. The zip contains
+     * configuration and operational information about the installation and can be used to diagnose state of the node
      */
     @ApiOperation(value = "Take a diagnostic snapshot for the single engine")
     @RequestMapping(value = "engine/snapshot", method = RequestMethod.GET)
@@ -321,12 +307,11 @@ public class RestService {
      * Executes a select statement on the node and returns results. <br>
      * Example json response is as follows:<br>
      * <br>
-     * {"nbrResults":1,"results":[{"rowNum":1,"columnData":[{"ordinal":1,"name":
-     * "node_id","value":"root"}]}]}
+     * {"nbrResults":1,"results":[{"rowNum":1,"columnData":[{"ordinal":1,"name": "node_id","value":"root"}]}]}
      * 
      */
     @ApiOperation(value = "Execute the specified SQL statement on the single engine")
-    @RequestMapping(value = "engine/querynode", method = {RequestMethod.POST})
+    @RequestMapping(value = "engine/querynode", method = { RequestMethod.POST })
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@RequestParam(value = "query") String sql, @RequestParam(value = "isquery", defaultValue = "true") boolean isQuery) {
@@ -337,7 +322,7 @@ public class RestService {
      * Executes a select statement on the node and returns results.
      */
     @ApiOperation(value = "Execute the specified SQL statement for the specified engine")
-    @RequestMapping(value = "engine/{engine}/querynode", method = {RequestMethod.POST})
+    @RequestMapping(value = "engine/{engine}/querynode", method = { RequestMethod.POST })
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final QueryResults getQueryNode(@PathVariable("engine") String engineName,
@@ -346,13 +331,14 @@ public class RestService {
     }
 
     /**
-     * Execute the named job.  This can be used to control when jobs are run via and external application.  You would typically 
-     * disable the job first so it no longer runs automatically.  
+     * Execute the named job. This can be used to control when jobs are run via and external application. You would typically disable the job first so it no
+     * longer runs automatically.
      */
-    @ApiOperation(value = "Execute the named job.  This can be used to control when jobs are run via and external application.  "
-            + "You would typically disable the job first so it no longer runs automatically.  Jobs you might want to control include: "
-            + "job.route, job.push, job.pull, job.offline.push, job.offline.pull")
-    @RequestMapping(value = "engine/{engine}/invokejob", method = {RequestMethod.POST})
+    @ApiOperation(
+            value = "Execute the named job.  This can be used to control when jobs are run via and external application.  "
+                    + "You would typically disable the job first so it no longer runs automatically.  Jobs you might want to control include: "
+                    + "job.route, job.push, job.pull, job.offline.push, job.offline.pull")
+    @RequestMapping(value = "engine/{engine}/invokejob", method = { RequestMethod.POST })
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public boolean invokeJob(@PathVariable("engine") String engineName, @RequestParam("jobname") String jobName) {
@@ -383,7 +369,7 @@ public class RestService {
         File file = engine.snapshot(null);
         resp.setHeader("Content-Disposition",
                 String.format("attachment; filename=%s", file.getName()));
-        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
             IOUtils.copy(bis, resp.getOutputStream());
         } catch (IOException e) {
             throw new IoException(e);
@@ -416,7 +402,6 @@ public class RestService {
     @ResponseBody
     public final void postProfileByEngine(@PathVariable("engine") String engineName,
             @RequestParam(value = "file") MultipartFile file) {
-
         loadProfileImpl(getSymmetricEngine(engineName), file);
     }
 
@@ -465,8 +450,7 @@ public class RestService {
     }
 
     /**
-     * Creates instances of triggers for each entry configured table/trigger for
-     * the single engine on the node
+     * Creates instances of triggers for each entry configured table/trigger for the single engine on the node
      */
     @ApiOperation(value = "Sync triggers on the single engine")
     @RequestMapping(value = "engine/synctriggers", method = RequestMethod.POST)
@@ -478,8 +462,7 @@ public class RestService {
     }
 
     /**
-     * Creates instances of triggers for each entry configured table/trigger for
-     * the specified engine on the node
+     * Creates instances of triggers for each entry configured table/trigger for the specified engine on the node
      */
     @ApiOperation(value = "Sync triggers on the specified engine")
     @RequestMapping(value = "engine/{engine}/synctriggers", method = RequestMethod.POST)
@@ -515,8 +498,7 @@ public class RestService {
     }
 
     /**
-     * Send schema updates for all tables or a list of tables to a list of nodes
-     * or to all nodes in a group.
+     * Send schema updates for all tables or a list of tables to a list of nodes or to all nodes in a group.
      * <p>
      * Example json request to send all tables to all nodes in group:<br>
      * { "nodeGroupIdToSendTo": "target_group_name" }
@@ -525,10 +507,9 @@ public class RestService {
      * { "nodeIdsToSendTo": [ "1", "2" ] }
      * <p>
      * Example json request to send a table to a list of nodes:<br>
-     * { "nodeIdsToSendTo": ["1", "2"], "tablesToSend": [ {  "catalogName": "", "schemaName": "", "tableName": "A" } ] }
+     * { "nodeIdsToSendTo": ["1", "2"], "tablesToSend": [ { "catalogName": "", "schemaName": "", "tableName": "A" } ] }
      * <p>
-     * Example json response:
-     * { "nodeIdsSentTo": { "1": [ {  "catalogName": null, "schemaName": null, "tableName": "A" } ] } }
+     * Example json response: { "nodeIdsSentTo": { "1": [ { "catalogName": null, "schemaName": null, "tableName": "A" } ] } }
      * 
      * @param engineName
      * @param request
@@ -544,10 +525,8 @@ public class RestService {
     }
 
     /**
-     * Send schema updates for all tables or a list of tables to a list of nodes
-     * or to all nodes in a group. See
-     * {@link RestService#postSendSchema(String, SendSchemaRequest)} for
-     * additional details.
+     * Send schema updates for all tables or a list of tables to a list of nodes or to all nodes in a group. See
+     * {@link RestService#postSendSchema(String, SendSchemaRequest)} for additional details.
      * 
      * @param request
      * @return {@link SendSchemaResponse}
@@ -561,8 +540,7 @@ public class RestService {
     }
 
     /**
-     * Removes instances of triggers for each entry configured table/trigger for
-     * the single engine on the node
+     * Removes instances of triggers for each entry configured table/trigger for the single engine on the node
      */
     @ApiOperation(value = "Drop triggers on the single engine")
     @RequestMapping(value = "engine/droptriggers", method = RequestMethod.POST)
@@ -573,8 +551,7 @@ public class RestService {
     }
 
     /**
-     * Removes instances of triggers for each entry configured table/trigger for
-     * the specified engine on the node
+     * Removes instances of triggers for each entry configured table/trigger for the specified engine on the node
      */
     @ApiOperation(value = "Drop triggers on the specified engine")
     @RequestMapping(value = "engine/{engine}/droptriggers", method = RequestMethod.POST)
@@ -585,8 +562,7 @@ public class RestService {
     }
 
     /**
-     * Removes instances of triggers for the specified table for the single
-     * engine on the node
+     * Removes instances of triggers for the specified table for the single engine on the node
      */
     @ApiOperation(value = "Drop triggers for the specified table on the single engine")
     @RequestMapping(value = "engine/table/{table}/droptriggers", method = RequestMethod.POST)
@@ -597,8 +573,7 @@ public class RestService {
     }
 
     /**
-     * Removes instances of triggers for the specified table for the single
-     * engine on the node
+     * Removes instances of triggers for the specified table for the single engine on the node
      * 
      */
     @ApiOperation(value = "Drop triggers for the specified table on the specified engine")
@@ -609,7 +584,7 @@ public class RestService {
             @PathVariable("table") String tableName) {
         dropTriggersImpl(getSymmetricEngine(engineName), tableName);
     }
-    
+
     /**
      * Installs and starts a new node
      * 
@@ -630,11 +605,10 @@ public class RestService {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }   
+    }
 
     /**
-     * Uninstalls all SymmetricDS objects from the given node (database) for the
-     * single engine on the node
+     * Uninstalls all SymmetricDS objects from the given node (database) for the single engine on the node
      */
     @ApiOperation(value = "Uninstall SymmetricDS on the single engine")
     @RequestMapping(value = "engine/uninstall", method = RequestMethod.POST)
@@ -645,8 +619,7 @@ public class RestService {
     }
 
     /**
-     * Uninstalls all SymmetricDS objects from the given node (database) for the
-     * specified engine on the node
+     * Uninstalls all SymmetricDS objects from the given node (database) for the specified engine on the node
      * 
      */
     @ApiOperation(value = "Uninstall SymmetricDS on the specified engine")
@@ -669,8 +642,7 @@ public class RestService {
     }
 
     /**
-     * Reinitializes the given node (database) for the specified engine on the
-     * node
+     * Reinitializes the given node (database) for the specified engine on the node
      * 
      */
     @ApiOperation(value = "Reinitiailize SymmetricDS on the specified engine")
@@ -739,7 +711,7 @@ public class RestService {
      * "databaseVersion":"9.0","syncEnabled":true,"createdAtNodeId":null,"batchToSendCount":0,
      * "batchInErrorCount":0,"deploymentType":"professional","symmetricVersion":"3.1.10",
      * "lastHeartbeat":"2012-11-17 15:15:00.033","hearbeatInterval":null}
-     * </pre>
+     *         </pre>
      */
     @ApiOperation(value = "Obtain the status of the single engine")
     @RequestMapping(value = "/engine/status", method = RequestMethod.GET)
@@ -809,8 +781,7 @@ public class RestService {
     }
 
     /**
-     * Requests the server to add this node to the synchronization scenario as a
-     * "pull only" node
+     * Requests the server to add this node to the synchronization scenario as a "pull only" node
      * 
      * @param externalId
      *            The external id for this node
@@ -834,7 +805,7 @@ public class RestService {
      * on the server for the given node.<br/><br/>
      * {"registered":true,"nodeId":"001","syncUrl":"http://myserverhost:31415/sync/server-000","nodePassword":"1880fbffd2bc2d00e1d58bd0c734ff"}<br/>
      * The nodeId, syncUrl and nodePassword should be stored for subsequent calls to the REST API.
-     * </pre>
+     *         </pre>
      */
     @ApiOperation(value = "Register the specified node for the single engine")
     @RequestMapping(value = "/engine/registernode", method = RequestMethod.POST)
@@ -860,12 +831,10 @@ public class RestService {
             @RequestParam(value = "databaseType") String databaseType,
             @RequestParam(value = "databaseVersion") String databaseVersion,
             @RequestParam(value = "hostName") String hostName) {
-
         ISymmetricEngine engine = getSymmetricEngine(engineName);
         IRegistrationService registrationService = engine.getRegistrationService();
         INodeService nodeService = engine.getNodeService();
         RegistrationInfo regInfo = new org.jumpmind.symmetric.web.rest.model.RegistrationInfo();
-
         try {
             org.jumpmind.symmetric.model.Node processedNode = registrationService
                     .registerPullOnlyNode(externalId, nodeGroupId, databaseType, databaseVersion, engine.getDatabasePlatform().getName());
@@ -876,7 +845,6 @@ public class RestService {
                 regInfo.setNodePassword(nodeSecurity.getNodePassword());
                 org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
                 regInfo.setSyncUrl(modelNode.getSyncUrl());
-
                 // do an initial heartbeat
                 Heartbeat heartbeat = new Heartbeat();
                 heartbeat.setNodeId(regInfo.getNodeId());
@@ -887,7 +855,6 @@ public class RestService {
                 heartbeat.setHeartbeatTime(now);
                 this.heartbeatImpl(engine, heartbeat);
             }
-
             // TODO: Catch a RegistrationRedirectException and redirect.
         } catch (IOException e) {
             throw new IoException(e);
@@ -901,30 +868,24 @@ public class RestService {
      * @param nodeId
      *            The node id of the node requesting to pull data
      * @param securityToken
-     *            The security token or password used to authenticate the pull.
-     *            The security token is provided during the registration
-     *            process.
+     *            The security token or password used to authenticate the pull. The security token is provided during the registration process.
      * @param useJdbcTimestampFormat
      * @param useUpsertStatements
      * @param useDelimitedIdentifiers
      * @param hostName
-     *            The name of the host machine requesting the pull. Only
-     *            required if you have the rest heartbeat on pull paramter set.
+     *            The name of the host machine requesting the pull. Only required if you have the rest heartbeat on pull paramter set.
      * @return {@link PullDataResults}
      * 
      *         Example json response is as follows:<br/>
-     * <br/>
-     *         {"nbrBatches":2,"batches":[{"batchId":20,"sqlStatements":[
-     *         "insert into table1 (field1, field2) values (value1,value2);"
-     *         ,"update table1 set field1=value1;"
-     *         ]},{"batchId":21,"sqlStatements"
-     *         :["insert into table2 (field1, field2) values (value1,value2);"
-     *         ,"update table2 set field1=value1;"]}]}<BR>
-     * <br/>
-     *         If there are no batches to be pulled, the json response will look
-     *         as follows:<br/>
-     * <br/>
-     *         {"nbrBatches":0,"batches":[]} </pre>
+     *         <br/>
+     *         {"nbrBatches":2,"batches":[{"batchId":20,"sqlStatements":[ "insert into table1 (field1, field2) values (value1,value2);" ,"update table1 set
+     *         field1=value1;" ]},{"batchId":21,"sqlStatements" :["insert into table2 (field1, field2) values (value1,value2);" ,"update table2 set
+     *         field1=value1;"]}]}<BR>
+     *         <br/>
+     *         If there are no batches to be pulled, the json response will look as follows:<br/>
+     *         <br/>
+     *         {"nbrBatches":0,"batches":[]}
+     *         </pre>
      */
     @ApiOperation(value = "Pull pending batches for the specified node for the single engine")
     @RequestMapping(value = "/engine/pulldata", method = RequestMethod.GET)
@@ -932,8 +893,8 @@ public class RestService {
     @ResponseBody
     public final PullDataResults getPullData(
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table") 
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required = false, defaultValue = "true") boolean useJdbcTimestampFormat,
             @RequestParam(value = "useUpsertStatements", required = false, defaultValue = "false") boolean useUpsertStatements,
             @RequestParam(value = "useDelimitedIdentifiers", required = false, defaultValue = "true") boolean useDelimitedIdentifiers,
@@ -949,25 +910,21 @@ public class RestService {
     public final PullDataResults getPullData(
             @PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.") 
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestParam(value = "useJdbcTimestampFormat", required = false, defaultValue = "true") boolean useJdbcTimestampFormat,
             @RequestParam(value = "useUpsertStatements", required = false, defaultValue = "false") boolean useUpsertStatements,
             @RequestParam(value = "useDelimitedIdentifiers", required = false, defaultValue = "true") boolean useDelimitedIdentifiers,
             @RequestParam(value = "hostName", required = false) String hostName) {
-
         ISymmetricEngine engine = getSymmetricEngine(engineName);
-
         IDataExtractorService dataExtractorService = engine.getDataExtractorService();
         IStatisticManager statisticManager = engine.getStatisticManager();
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId, true);
-
         if (securityVerified(nodeId, engine, securityToken)) {
             ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                     nodeService.findIdentityNodeId(), nodeId, ProcessType.REST_PULL_HANLDER));
             try {
-
                 PullDataResults results = new PullDataResults();
                 List<OutgoingBatchWithPayload> extractedBatches = dataExtractorService
                         .extractToPayload(processInfo, targetNode, PayloadType.SQL,
@@ -987,7 +944,6 @@ public class RestService {
                 results.setBatches(batches);
                 results.setNbrBatches(batches.size());
                 processInfo.setStatus(org.jumpmind.symmetric.model.ProcessInfo.ProcessStatus.OK);
-
                 if (engine.getParameterService().is(ParameterConstants.REST_HEARTBEAT_ON_PULL)
                         && hostName != null) {
                     Heartbeat heartbeat = new Heartbeat();
@@ -1011,16 +967,15 @@ public class RestService {
      * Sends a heartbeat to the server for the given node.
      * 
      * @param nodeID
-     *            - Required - The client nodeId this to which this heartbeat
-     *            belongs See {@link Heartbeat} for request body requirements
+     *            - Required - The client nodeId this to which this heartbeat belongs See {@link Heartbeat} for request body requirements
      */
     @ApiOperation(value = "Send a heartbeat for the single engine")
     @RequestMapping(value = "/engine/heartbeat", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public final void putHeartbeat(
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody Heartbeat heartbeat) {
         if (securityVerified(heartbeat.getNodeId(), getSymmetricEngine(), securityToken)) {
             putHeartbeat(getSymmetricEngine().getEngineName(), securityToken, heartbeat);
@@ -1033,18 +988,16 @@ public class RestService {
      * Sends a heartbeat to the server for the given node.
      * 
      * @param nodeID
-     *            - Required - The client nodeId this to which this heartbeat
-     *            belongs See {@link Heartbeat} for request body requirements
+     *            - Required - The client nodeId this to which this heartbeat belongs See {@link Heartbeat} for request body requirements
      */
     @ApiOperation(value = "Send a heartbeat for the specified engine")
     @RequestMapping(value = "/engine/{engine}/heartbeat", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
     public final void putHeartbeat(@PathVariable("engine") String engineName,
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.") 
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody Heartbeat heartbeat) {
-
         ISymmetricEngine engine = getSymmetricEngine(engineName);
         if (securityVerified(heartbeat.getNodeId(), engine, securityToken)) {
             heartbeatImpl(engine, heartbeat);
@@ -1055,7 +1008,6 @@ public class RestService {
 
     private void heartbeatImpl(ISymmetricEngine engine, Heartbeat heartbeat) {
         INodeService nodeService = engine.getNodeService();
-
         NodeHost nodeHost = new NodeHost();
         if (heartbeat.getAvailableProcessors() != null) {
             nodeHost.setAvailableProcessors(heartbeat.getAvailableProcessors());
@@ -1114,25 +1066,21 @@ public class RestService {
         if (heartbeat.getTotalMemoryBytes() != null) {
             nodeHost.setTotalMemoryBytes(heartbeat.getTotalMemoryBytes());
         }
-
         nodeService.updateNodeHost(nodeHost);
     }
 
     /**
-     * Acknowledges a set of batches that have been pulled and processed on the
-     * client side. Setting the status to OK will render the batch complete.
-     * Setting the status to anything other than OK will queue the batch on the
-     * server to be sent again on the next pull. if the status is "ER". In error
-     * status the status description should contain relevant information about
-     * the error on the client including SQL Error Number and description
+     * Acknowledges a set of batches that have been pulled and processed on the client side. Setting the status to OK will render the batch complete. Setting
+     * the status to anything other than OK will queue the batch on the server to be sent again on the next pull. if the status is "ER". In error status the
+     * status description should contain relevant information about the error on the client including SQL Error Number and description
      */
     @ApiOperation(value = "Acknowledge a set of batches for the single engine")
     @RequestMapping(value = "/engine/acknowledgebatch", method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final BatchAckResults putAcknowledgeBatch(
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody BatchResults batchResults) {
         BatchAckResults results = putAcknowledgeBatch(getSymmetricEngine().getEngineName(),
                 securityToken, batchResults);
@@ -1144,10 +1092,9 @@ public class RestService {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public final BatchAckResults putAcknowledgeBatch(@PathVariable("engine") String engineName,
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken,
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken,
             @RequestBody BatchResults batchResults) {
-
         BatchAckResults finalResult = new BatchAckResults();
         ISymmetricEngine engine = getSymmetricEngine(engineName);
         List<BatchAckResult> results = null;
@@ -1191,10 +1138,8 @@ public class RestService {
     }
 
     /**
-     * Requests an initial load from the server for the node id provided. The
-     * initial load requst directs the server to queue up initial load data for
-     * the client node. Data is obtained for the initial load by the client
-     * calling the pull method.
+     * Requests an initial load from the server for the node id provided. The initial load requst directs the server to queue up initial load data for the
+     * client node. Data is obtained for the initial load by the client calling the pull method.
      * 
      * @param nodeID
      */
@@ -1207,10 +1152,8 @@ public class RestService {
     }
 
     /**
-     * Requests an initial load from the server for the node id provided. The
-     * initial load requst directs the server to queue up initial load data for
-     * the client node. Data is obtained for the initial load by the client
-     * calling the pull method.
+     * Requests an initial load from the server for the node id provided. The initial load requst directs the server to queue up initial load data for the
+     * client node. Data is obtained for the initial load by the client calling the pull method.
      * 
      * @param nodeID
      */
@@ -1220,11 +1163,9 @@ public class RestService {
     @ResponseBody
     public final void postRequestInitialLoad(@PathVariable("engine") String engineName,
             @RequestParam(value = "nodeId") String nodeId) {
-
         ISymmetricEngine engine = getSymmetricEngine(engineName);
         INodeService nodeService = engine.getNodeService();
         nodeService.setInitialLoadEnabled(nodeId, true, false, -1, "restapi");
-
     }
 
     @ApiOperation(value = "Outgoing summary of batches and data counts waiting for a node")
@@ -1233,8 +1174,8 @@ public class RestService {
     @ResponseBody
     public final BatchSummaries getOutgoingBatchSummary(
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken) {
         return getOutgoingBatchSummary(getSymmetricEngine().getEngineName(), nodeId, securityToken);
     }
 
@@ -1245,16 +1186,12 @@ public class RestService {
     public final BatchSummaries getOutgoingBatchSummary(
             @PathVariable("engine") String engineName,
             @RequestParam(value = WebConstants.NODE_ID) String nodeId,
-            @ApiParam(value="This the password for the nodeId being passed in.  The password is stored in the node_security table.")
-            @RequestParam(value = WebConstants.SECURITY_TOKEN) String securityToken) {
-
-        
+            @ApiParam(value = "This the password for the nodeId being passed in.  The password is stored in the node_security table.") @RequestParam(
+                    value = WebConstants.SECURITY_TOKEN) String securityToken) {
         ISymmetricEngine engine = getSymmetricEngine(engineName);
-
         if (securityVerified(nodeId, engine, securityToken)) {
             BatchSummaries summaries = new BatchSummaries();
             summaries.setNodeId(nodeId);
-
             IOutgoingBatchService outgoingBatchService = engine.getOutgoingBatchService();
             List<OutgoingBatchSummary> list = outgoingBatchService.findOutgoingBatchSummary(
                     OutgoingBatch.Status.RQ, OutgoingBatch.Status.QY, OutgoingBatch.Status.NE,
@@ -1269,7 +1206,6 @@ public class RestService {
                     summaries.getBatchSummaries().add(summary);
                 }
             }
-            
             return summaries;
         } else {
             throw new NotAllowedException();
@@ -1291,17 +1227,18 @@ public class RestService {
     public final String getParameter(@PathVariable("engine") String engineName, @PathVariable("name") String name) {
         return getParameterImpl(getSymmetricEngine(engineName), name);
     }
-    
-    private String getParameterImpl(ISymmetricEngine service, String name){
+
+    private String getParameterImpl(ISymmetricEngine service, String name) {
         String parameterName = name.replace('_', '.');
-        if(parameterName.equals(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)){
+        if (parameterName.equals(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD)) {
             return "";
         }
         return service.getParameterService().getString(parameterName);
     }
 
     /**
-     *  The presence of this handler makes sure we return HTTP 406 when the rest API is disabled or 500 for general errors.
+     * The presence of this handler makes sure we return HTTP 406 when the rest API is disabled or 500 for general errors.
+     * 
      * @param ex
      * @return
      */
@@ -1313,11 +1250,10 @@ public class RestService {
         if (annotation != null) {
             httpErrorCode = ((ResponseStatus) annotation).value().value();
         }
-
         HttpHeaders headers = new HttpHeaders();
         if (httpErrorCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             log.warn("Internal server error during rest service call.", ex);
-        } else {            
+        } else {
             log.debug("Exception during rest services http=" + httpErrorCode, ex);
         }
         return new ResponseEntity<String>("SymmetricDS API Invocation failed. " + ex.getMessage(), headers, HttpStatus.valueOf(httpErrorCode));
@@ -1338,31 +1274,27 @@ public class RestService {
     }
 
     private void syncTriggersImpl(ISymmetricEngine engine, boolean force) {
-
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         StringBuilder buffer = new StringBuilder();
         triggerRouterService.syncTriggers(buffer, force);
-
         assertTriggerCreation(triggerRouterService, null);
     }
 
     private void syncTriggersByTableImpl(ISymmetricEngine engine, String catalogName,
             String schemaName, String tableName, boolean force) {
-
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         Table table = getSymmetricEngine().getDatabasePlatform().getTableFromCache(catalogName,
                 schemaName, tableName, true);
         if (table == null) {
             throw new NotFoundException();
         }
-
         triggerRouterService.syncTriggers(table, force);
         assertTriggerCreation(triggerRouterService, table);
     }
 
-    private void assertTriggerCreation(ITriggerRouterService triggerRouterService, Table table){
-        for(Map.Entry<Trigger, Exception> failedTriggers : triggerRouterService.getFailedTriggers().entrySet()){
-            if(table == null || failedTriggers.getKey().getFullyQualifiedSourceTableName().equalsIgnoreCase(table.getFullyQualifiedTableName())){
+    private void assertTriggerCreation(ITriggerRouterService triggerRouterService, Table table) {
+        for (Map.Entry<Trigger, Exception> failedTriggers : triggerRouterService.getFailedTriggers().entrySet()) {
+            if (table == null || failedTriggers.getKey().getFullyQualifiedSourceTableName().equalsIgnoreCase(table.getFullyQualifiedTableName())) {
                 throw new SymmetricException("Trigger creation failed", failedTriggers.getValue());
             }
         }
@@ -1381,18 +1313,14 @@ public class RestService {
     }
 
     private SendSchemaResponse sendSchemaImpl(ISymmetricEngine engine, SendSchemaRequest request) {
-
         IConfigurationService configurationService = engine.getConfigurationService();
         INodeService nodeService = engine.getNodeService();
         ITriggerRouterService triggerRouterService = engine.getTriggerRouterService();
         IDataService dataService = engine.getDataService();
-
         SendSchemaResponse response = new SendSchemaResponse();
-
         org.jumpmind.symmetric.model.Node identity = nodeService.findIdentity();
         if (identity != null) {
             List<org.jumpmind.symmetric.model.Node> nodesToSendTo = new ArrayList<org.jumpmind.symmetric.model.Node>();
-
             List<String> nodeIds = request.getNodeIdsToSendTo();
             if (nodeIds == null || nodeIds.size() == 0) {
                 String nodeGroupIdToSendTo = request.getNodeGroupIdToSendTo();
@@ -1428,13 +1356,11 @@ public class RestService {
                     }
                 }
             }
-
             Map<String, List<TableName>> results = response.getNodeIdsSentTo();
             List<String> nodeIdsToSendTo = toNodeIds(nodesToSendTo);
             for (String nodeId : nodeIdsToSendTo) {
                 results.put(nodeId, new ArrayList<TableName>());
             }
-
             if (nodesToSendTo.size() > 0) {
                 List<TableName> tablesToSend = request.getTablesToSend();
                 List<TriggerRouter> triggerRouters = triggerRouterService.getTriggerRouters(false);
@@ -1453,7 +1379,7 @@ public class RestService {
                                     results.get(node.getNodeId()).add(
                                             new TableName(trigger.getSourceCatalogName(), trigger
                                                     .getSourceSchemaName(), trigger
-                                                    .getSourceTableName()));
+                                                            .getSourceTableName()));
                                 }
                             }
                         }
@@ -1490,11 +1416,9 @@ public class RestService {
     private void reinitializeImpl(ISymmetricEngine engine) {
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-
         if (!this.isRootNode(engine, modelNode)) {
             engine.uninstall();
         }
-
         engine.start();
     }
 
@@ -1503,7 +1427,6 @@ public class RestService {
     }
 
     private void loadProfileImpl(ISymmetricEngine engine, MultipartFile file) {
-
         IDataLoaderService dataLoaderService = engine.getDataLoaderService();
         boolean inError = false;
         try {
@@ -1525,28 +1448,23 @@ public class RestService {
     private NodeList childrenImpl(ISymmetricEngine engine) {
         NodeList children = new NodeList();
         Node xmlChildNode = null;
-
         INodeService nodeService = engine.getNodeService();
         org.jumpmind.symmetric.model.Node modelNode = nodeService.findIdentity();
-
         if (isRegistered(engine)) {
             if (isRootNode(engine, modelNode)) {
                 NetworkedNode networkedNode = nodeService.getRootNetworkedNode();
                 Set<NetworkedNode> childNetwork = networkedNode.getChildren();
                 if (childNetwork != null) {
                     for (NetworkedNode child : childNetwork) {
-
                         List<NodeHost> nodeHosts = nodeService.findNodeHosts(child.getNode()
                                 .getNodeId());
                         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(child.getNode()
                                 .getNodeId());
-
                         xmlChildNode = new Node();
                         xmlChildNode.setNodeId(child.getNode().getNodeId());
                         xmlChildNode.setExternalId(child.getNode().getExternalId());
                         xmlChildNode.setRegistrationServer(false);
                         xmlChildNode.setSyncUrl(child.getNode().getSyncUrl());
-
                         xmlChildNode.setBatchInErrorCount(child.getNode().getBatchInErrorCount());
                         xmlChildNode.setBatchToSendCount(child.getNode().getBatchToSendCount());
                         if (nodeHosts.size() > 0) {
@@ -1570,7 +1488,6 @@ public class RestService {
     }
 
     private Node nodeImpl(ISymmetricEngine engine) {
-
         Node xmlNode = new Node();
         if (isRegistered(engine)) {
             INodeService nodeService = engine.getNodeService();
@@ -1630,7 +1547,6 @@ public class RestService {
     }
 
     private NodeStatus nodeStatusImpl(ISymmetricEngine engine) {
-
         NodeStatus status = new NodeStatus();
         if (isRegistered(engine)) {
             INodeService nodeService = engine.getNodeService();
@@ -1699,19 +1615,16 @@ public class RestService {
     }
 
     private QueryResults queryNodeImpl(ISymmetricEngine engine, String sql, boolean isQuery) {
-
         QueryResults results = new QueryResults();
         org.jumpmind.symmetric.web.rest.model.Row xmlRow = null;
         org.jumpmind.symmetric.web.rest.model.Column xmlColumn = null;
-
         ISqlTemplate sqlTemplate = engine.getSqlTemplate();
         try {
-            if(!isQuery){
+            if (!isQuery) {
                 int updates = sqlTemplate.update(sql);
                 results.setNbrResults(updates);
                 return results;
             }
-            
             List<Row> rows = sqlTemplate.query(sql);
             int nbrRows = 0;
             for (Row row : rows) {
@@ -1751,7 +1664,6 @@ public class RestService {
 
     protected ISymmetricEngine getSymmetricEngine(String engineName) {
         SymmetricEngineHolder holder = getSymmetricEngineHolder();
-
         ISymmetricEngine engine = null;
         if (StringUtils.isNotBlank(engineName)) {
             engine = holder.getEngines().get(engineName);
@@ -1768,7 +1680,6 @@ public class RestService {
     }
 
     protected boolean securityVerified(String nodeId, ISymmetricEngine engine, String securityToken) {
-
         INodeService nodeService = engine.getNodeService();
         boolean allowed = false;
         org.jumpmind.symmetric.model.Node targetNode = nodeService.findNode(nodeId);
@@ -1782,11 +1693,9 @@ public class RestService {
     protected ISymmetricEngine getSymmetricEngine() {
         ISymmetricEngine engine = null;
         SymmetricEngineHolder holder = getSymmetricEngineHolder();
-
         if (holder.getEngines().size() > 0) {
             engine = holder.getEngines().values().iterator().next();
         }
-
         if (engine == null) {
             throw new NotAllowedException();
         } else if (!engine.getParameterService().is(ParameterConstants.REST_API_ENABLED)) {
@@ -1795,7 +1704,5 @@ public class RestService {
         } else {
             return engine;
         }
-
     }
-
 }

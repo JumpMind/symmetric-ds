@@ -39,11 +39,9 @@ import org.jumpmind.symmetric.load.AbstractDataLoaderFactory;
 import org.jumpmind.symmetric.load.IDataLoaderFactory;
 
 public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory implements IDataLoaderFactory {
-    
     private IStagingManager stagingManager;
-    
     private ISecurityService securityService;
-    
+
     public SnowflakeBulkDataLoaderFactory(ISymmetricEngine engine) {
         this.stagingManager = engine.getStagingManager();
         this.securityService = engine.getSecurityService();
@@ -55,11 +53,10 @@ public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory im
     }
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter,
+            TransformWriter transformWriter,
             List<IDatabaseWriterFilter> filters, List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-
-        return new SnowflakeBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(), 
+        return new SnowflakeBulkDatabaseWriter(symmetricDialect.getPlatform(), symmetricDialect.getTargetPlatform(),
                 symmetricDialect.getTablePrefix(), stagingManager, filters, errorHandlers, parameterService, securityService,
                 buildParameterDatabaseWritterSettings());
     }
@@ -67,5 +64,4 @@ public class SnowflakeBulkDataLoaderFactory extends AbstractDataLoaderFactory im
     public boolean isPlatformSupported(IDatabasePlatform platform) {
         return (DatabaseNamesConstants.SNOWFLAKE.equals(platform.getName()));
     }
-
 }

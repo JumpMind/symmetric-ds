@@ -24,53 +24,42 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class FileTriggerRouter implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private FileTrigger fileTrigger;
-    
     private Router router;
-    
     private boolean enabled = true;
-    
     private boolean initialLoadEnabled;
-    
     private String targetBaseDir;
-    
     private FileConflictStrategy conflictStrategy = FileConflictStrategy.SOURCE_WINS;
-    
     private String conflictStrategyString;
-    
     private Date createTime = new Date();
-    
     private String lastUpdateBy;
-    
     private Date lastUpdateTime;
 
     public FileTriggerRouter(FileTrigger fileTrigger, Router router) {
         this.fileTrigger = fileTrigger;
         this.router = router;
     }
-    
+
     public FileTriggerRouter() {
     }
-    
+
     public void setFileTrigger(FileTrigger fileTrigger) {
         this.fileTrigger = fileTrigger;
     }
-    
+
     public FileTrigger getFileTrigger() {
         return fileTrigger;
     }
-    
+
     public void setRouter(Router router) {
         this.router = router;
     }
-    
+
     public Router getRouter() {
         return router;
     }
-    
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -78,11 +67,11 @@ public class FileTriggerRouter implements Serializable {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     public void setInitialLoadEnabled(boolean initialLoadEnabled) {
         this.initialLoadEnabled = initialLoadEnabled;
     }
-    
+
     public boolean isInitialLoadEnabled() {
         return initialLoadEnabled;
     }
@@ -167,27 +156,25 @@ public class FileTriggerRouter implements Serializable {
         return true;
     }
 
-    
     public String getTriggerId() {
         return this.fileTrigger != null ? this.fileTrigger.getTriggerId() : null;
     }
-    
+
     public String getRouterId() {
         return this.router != null ? this.router.getRouterId() : null;
     }
-    
+
     public void setTriggerId(String triggerId) {
         if (this.fileTrigger == null) {
             this.fileTrigger = new FileTrigger();
         }
         this.fileTrigger.setTriggerId(triggerId);
     }
-    
+
     public void setRouterId(String routerId) {
         if (this.router == null) {
             this.router = new Router();
         }
         this.router.setRouterId(routerId);
     }
-    
 }

@@ -29,14 +29,13 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class OracleDmlStatement extends DmlStatement {
-
     public OracleDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns, 
+        super(type, catalogName, schemaName, tableName, keysColumns, columns,
                 nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
-   
+
     @Override
     protected void appendColumnParameter(StringBuilder sql, Column column) {
         if (column.isTimestampWithTimezone()) {
@@ -50,7 +49,7 @@ public class OracleDmlStatement extends DmlStatement {
             super.appendColumnParameter(sql, column);
         }
     }
-    
+
     @Override
     protected void appendColumnEquals(StringBuilder sql, Column column) {
         if (column.isTimestampWithTimezone()) {
@@ -64,7 +63,7 @@ public class OracleDmlStatement extends DmlStatement {
                     .append("XMLTYPE(?)");
         } else {
             super.appendColumnEquals(sql, column);
-        }        
+        }
     }
 
     @Override
@@ -77,7 +76,7 @@ public class OracleDmlStatement extends DmlStatement {
         }
         return typeCode;
     }
-    
+
     @Override
     protected void appendColumnNameForSql(StringBuilder sql, Column column, boolean select) {
         String columnName = column.getName();
@@ -85,27 +84,26 @@ public class OracleDmlStatement extends DmlStatement {
             sql.append("to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.FF TZH:TZM') as ").append(columnName);
         } else {
             super.appendColumnNameForSql(sql, column, select);
-        }        
+        }
     }
-    
+
     protected boolean isGeometry(Column column) {
         String name = column.getJdbcTypeName();
-        if (name != null && (
-                name.toUpperCase().contains(TypeMap.GEOMETRY) || 
+        if (name != null && (name.toUpperCase().contains(TypeMap.GEOMETRY) ||
                 name.toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             return true;
         } else {
             return false;
         }
     }
-    
+
     protected String buildSRIDSelect(Column column) {
         if (!StringUtils.isEmpty(schemaName)) {
-            return String.format("(select SRID from all_sdo_geom_metadata where owner = '%s' and table_name = '%s' and column_name = '%s')", 
+            return String.format("(select SRID from all_sdo_geom_metadata where owner = '%s' and table_name = '%s' and column_name = '%s')",
                     schemaName.toUpperCase(), tableName.toUpperCase(), column.getName().toUpperCase());
         } else {
-            return String.format("(select SRID from user_sdo_geom_metadata where table_name = '%s' and column_name = '%s')", 
+            return String.format("(select SRID from user_sdo_geom_metadata where table_name = '%s' and column_name = '%s')",
                     tableName.toUpperCase(), column.getName().toUpperCase());
         }
-    }    
+    }
 }

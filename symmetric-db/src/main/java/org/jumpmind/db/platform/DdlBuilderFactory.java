@@ -52,12 +52,12 @@ import org.jumpmind.db.platform.voltdb.VoltDbDdlBuilder;
  * Factory that creates {@link IDdlBuilder} from {@link DatabaseNamesConstants} values.
  */
 final public class DdlBuilderFactory {
-
     private DdlBuilderFactory() {
     }
 
     /**
-     * @param databaseName see {@link DatabaseNamesConstants}
+     * @param databaseName
+     *            see {@link DatabaseNamesConstants}
      * @return the associated ddl builder
      */
     public static final IDdlBuilder createDdlBuilder(String databaseName) {
@@ -119,5 +119,4 @@ final public class DdlBuilderFactory {
             return null;
         }
     }
-
 }

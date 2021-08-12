@@ -37,15 +37,14 @@ import org.junit.Test;
 import org.junit.Assert;
 
 public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
-
     @BeforeClass
     public static void setup() throws Exception {
         if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT)
                 .get(BasicDataSourcePropertyConstants.DB_POOL_DRIVER)
                 .equals("org.postgresql.Driver")) {
-        platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
-        platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true,
-                false);
+            platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
+            platform.createDatabase(platform.readDatabaseFromXml("/testBulkWriter.xml", true), true,
+                    false);
         }
     }
 
@@ -69,7 +68,6 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
     public void testInsert1000Rows() {
         if (platform != null && platform instanceof PostgreSqlDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-
             List<CsvData> datas = new ArrayList<CsvData>();
             for (int i = 0; i < 1000; i++) {
                 String[] values = { getNextId(), "stri'ng2", "string not null2", "char2",
@@ -78,30 +76,24 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
                 CsvData data = new CsvData(DataEventType.INSERT, values);
                 datas.add(data);
             }
-
             long count = writeData(new TableCsvData(platform.getTableFromCache(
                     "test_bulkload_table_1", false), datas));
-
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
-
     }
 
     @Test
     public void testInsertCollision() {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-
             String[] values = { getNextId(), "string2", "string not null2", "char2",
                     "char not null2", "2007-01-02 03:20:10.0", "2007-02-03 04:05:06.0", "0", "47",
                     "67.89", "-0.0747663" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             writeData(data, values);
             Assert.assertEquals(1, countRows("test_bulkload_table_1"));
-
             try {
                 setErrorExpected(true);
-
                 List<CsvData> datas = new ArrayList<CsvData>();
                 datas.add(data);
                 for (int i = 0; i < 10; i++) {
@@ -111,17 +103,13 @@ public class PostgresBulkDatabaseWriterTest extends AbstractWriterTest {
                     data = new CsvData(DataEventType.INSERT, values);
                     datas.add(data);
                 }
-
                 // we should collide and rollback
                 writeData(new TableCsvData(platform.getTableFromCache("test_bulkload_table_1",
                         false), datas));
-
                 Assert.assertEquals(1, countRows("test_bulkload_table_1"));
-
             } finally {
                 setErrorExpected(false);
             }
         }
-
     }
 }

@@ -57,49 +57,27 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
 public class SqlRunner extends Thread {
-
-	private static final Logger log = LoggerFactory.getLogger(SqlRunner.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(SqlRunner.class);
     private SqlExplorer explorer;
-
     private static List<SqlRunner> sqlRunners = new ArrayList<SqlRunner>();
-
     private ISqlRunnerListener listener;
-    
     private QueryPanel queryPanel;
-    
     private boolean isInQueryGeneralResults;
-
     private boolean runAsScript;
-
     private String sqlText;
-
     private Connection connection;
-
     private Date startTime = new Date();
-
     private Date endTime = null;
-
     private boolean rowsUpdated = false;
-
     private boolean createdConnection = true;
-
     private boolean showSqlOnResults = true;
-
     private IDb db;
-
     private String user;
-
     private boolean autoCommit;
-
     private boolean logAtDebug;
-
     private static final String COMMIT_COMMAND = "commit";
-
     private Settings settings;
-    
     private boolean isCanceled = false;
-    
     private PreparedStatement stmt;
 
     public static List<SqlRunner> getSqlRunners() {
@@ -113,20 +91,21 @@ public class SqlRunner extends Thread {
     public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, ISqlRunnerListener listener) {
         this(sqlText, runAsScript, user, db, settings, null, listener);
     }
-    
+
     public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, SqlExplorer explorer) {
         this(sqlText, runAsScript, user, db, settings, explorer, null);
     }
-    
+
     public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, SqlExplorer explorer, ISqlRunnerListener listener) {
         this(sqlText, runAsScript, user, db, settings, explorer, listener, null, false);
     }
-    
+
     public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, QueryPanel queryPanel, boolean isInQueryGeneralResults) {
         this(sqlText, runAsScript, user, db, settings, null, null, queryPanel, isInQueryGeneralResults);
     }
 
-    public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, SqlExplorer explorer, ISqlRunnerListener listener, QueryPanel queryPanel, boolean isInQueryGeneralResults) {
+    public SqlRunner(String sqlText, boolean runAsScript, String user, IDb db, Settings settings, SqlExplorer explorer, ISqlRunnerListener listener,
+            QueryPanel queryPanel, boolean isInQueryGeneralResults) {
         this.setName("sql-runner-" + getId());
         this.sqlText = sqlText;
         this.runAsScript = runAsScript;
@@ -200,7 +179,6 @@ public class SqlRunner extends Thread {
         int maxResultsSize = properties.getInt(SQL_EXPLORER_MAX_RESULTS);
         String delimiter = properties.get(SQL_EXPLORER_DELIMITER);
         boolean ignoreWhenRunAsScript = properties.is(SQL_EXPLORER_IGNORE_ERRORS_WHEN_RUNNING_SCRIPTS);
-
         List<Component> resultComponents = new ArrayList<Component>();
         VaadinIcons icon = VaadinIcons.CHECK_CIRCLE;
         rowsUpdated = false;
@@ -216,7 +194,6 @@ public class SqlRunner extends Thread {
                     connection = dataSource.getConnection();
                     connection.setAutoCommit(autoCommit);
                 }
-
                 autoCommitBefore = connection.getAutoCommit();
                 if (connection.getTransactionIsolation() != sqlTemplate.getIsolationLevel()) {
                     connection.setTransactionIsolation(sqlTemplate.getIsolationLevel());
@@ -224,18 +201,16 @@ public class SqlRunner extends Thread {
                 if (sqlTemplate.isRequiresAutoCommitFalseToSetFetchSize()) {
                     connection.setAutoCommit(false);
                 }
-
                 try (SqlScriptReader sqlReader = new SqlScriptReader(new StringReader(sqlText))) {
                     sqlReader.setDelimiter(delimiter);
                     String sql = sqlReader.readSqlStatement();
                     while (sql != null) {
                         JdbcSqlTemplate.close(stmt);
                         if (db.getPlatform().getName().equals("voltdb")) {
-                            stmt = connection.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);                            
-                        } else {                            
+                            stmt = connection.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                        } else {
                             stmt = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                         }
-
                         String lowercaseSql = sql.trim().toLowerCase();
                         if (!lowercaseSql.startsWith("delete") && !lowercaseSql.startsWith("update") && !lowercaseSql.startsWith("insert")) {
                             if (db.getPlatform().getName().equals(DatabaseNamesConstants.MYSQL)) {
@@ -244,19 +219,16 @@ public class SqlRunner extends Thread {
                                 stmt.setFetchSize(maxResultsSize < 100 ? maxResultsSize : 100);
                             }
                         }
-
                         if (logAtDebug) {
-                            log.debug("["+db.getName()+"] Executing: {}", sql.trim());
-                            
+                            log.debug("[" + db.getName() + "] Executing: {}", sql.trim());
                         } else {
-                            log.info("["+db.getName()+"] Executing: {}", sql.trim());
+                            log.info("[" + db.getName() + "] Executing: {}", sql.trim());
                         }
                         if (sql.replaceAll("\\s", "").equalsIgnoreCase(COMMIT_COMMAND)) {
                             committed = true;
                         } else {
                             committed = false;
                         }
-
                         boolean hasResults = false;
                         try {
                             hasResults = stmt.execute();
@@ -280,7 +252,8 @@ public class SqlRunner extends Thread {
                                     rs = stmt.getResultSet();
                                     if (!runAsScript) {
                                         if (!resultsAsText) {
-                                            resultComponents.add(new TabularResultLayout(explorer, db, sql, rs, listener, user, settings, queryPanel, showSqlOnResults, isInQueryGeneralResults));
+                                            resultComponents.add(new TabularResultLayout(explorer, db, sql, rs, listener, user, settings, queryPanel,
+                                                    showSqlOnResults, isInQueryGeneralResults));
                                         } else {
                                             resultComponents.add(putResultsInArea(rs, maxResultsSize));
                                         }
@@ -329,15 +302,12 @@ public class SqlRunner extends Thread {
                                 firstTimeThrough = false;
                             }
                         }
-
                         sql = sqlReader.readSqlStatement();
-
                     }
-
                 }
             } catch (Throwable ex) {
                 if (isCanceled) {
-                    String canceledMessage = "Canceled successfully.\n\n"+sqlText;
+                    String canceledMessage = "Canceled successfully.\n\n" + sqlText;
                     resultComponents.add(wrapTextInComponent(canceledMessage));
                 } else {
                     icon = VaadinIcons.BAN;
@@ -356,13 +326,10 @@ public class SqlRunner extends Thread {
                     JdbcSqlTemplate.close(connection);
                     connection = null;
                 }
-
             }
-
             if (resultComponents.size() == 0 && StringUtils.isNotBlank(results.toString())) {
                 resultComponents.add(wrapTextInComponent(results.toString(), icon == VaadinIcons.BAN ? "marked" : null));
             }
-
         } finally {
             endTime = new Date();
             if (listener != null) {
@@ -370,7 +337,6 @@ public class SqlRunner extends Thread {
             } else if (!autoCommit) {
                 rollback(connection);
             }
-
         }
     }
 
@@ -405,7 +371,7 @@ public class SqlRunner extends Thread {
 
     protected Component wrapTextInComponent(String text, String style) {
         Panel panel = new Panel();
-        VerticalLayout content = new VerticalLayout();        
+        VerticalLayout content = new VerticalLayout();
         content.setMargin(true);
         panel.setContent(content);
         Label label = new Label("<pre>" + text + "</pre>", ContentMode.HTML);
@@ -421,55 +387,50 @@ public class SqlRunner extends Thread {
     }
 
     protected String resultsAsText(ResultSet rs, int maxResultSize) throws SQLException {
-            ResultSetMetaData meta = rs.getMetaData();
-            int columns = meta.getColumnCount();
-            int[] maxColumnSizes = new int[columns];
+        ResultSetMetaData meta = rs.getMetaData();
+        int columns = meta.getColumnCount();
+        int[] maxColumnSizes = new int[columns];
+        for (int i = 1; i <= columns; i++) {
+            String columnName = meta.getColumnName(i);
+            maxColumnSizes[i - 1] = columnName.length();
+        }
+        int rowNumber = 1;
+        List<Object[]> rows = new ArrayList<Object[]>();
+        while (rs.next() && rowNumber <= maxResultSize) {
+            Object[] row = new Object[columns];
             for (int i = 1; i <= columns; i++) {
-                String columnName = meta.getColumnName(i);
-                maxColumnSizes[i - 1] = columnName.length();
-            }
-            int rowNumber = 1;
-            List<Object[]> rows = new ArrayList<Object[]>();
-            while (rs.next() && rowNumber <= maxResultSize) {
-                Object[] row = new Object[columns];
-                for (int i = 1; i <= columns; i++) {
-                    Object obj = CommonUiUtils.getObject(rs, i);
-                    row[i - 1] = obj;
-                    if (obj != null) {
-                        int size = obj.toString().length();
-                        if (maxColumnSizes[i - 1] < size) {
-                            maxColumnSizes[i - 1] = size;
-                        }
+                Object obj = CommonUiUtils.getObject(rs, i);
+                row[i - 1] = obj;
+                if (obj != null) {
+                    int size = obj.toString().length();
+                    if (maxColumnSizes[i - 1] < size) {
+                        maxColumnSizes[i - 1] = size;
                     }
                 }
-                rows.add(row);
-                rowNumber++;
             }
-
-            StringBuilder text = new StringBuilder();
-            for (int i = 1; i <= columns; i++) {
-                String columnName = meta.getColumnName(i);
-                text.append(StringUtils.rightPad(columnName, maxColumnSizes[i - 1]));
+            rows.add(row);
+            rowNumber++;
+        }
+        StringBuilder text = new StringBuilder();
+        for (int i = 1; i <= columns; i++) {
+            String columnName = meta.getColumnName(i);
+            text.append(StringUtils.rightPad(columnName, maxColumnSizes[i - 1]));
+            text.append(" ");
+        }
+        text.append("\n");
+        for (int i = 1; i <= columns; i++) {
+            text.append(StringUtils.rightPad("", maxColumnSizes[i - 1], "-"));
+            text.append(" ");
+        }
+        text.append("\n");
+        for (Object[] objects : rows) {
+            for (int i = 0; i < objects.length; i++) {
+                text.append(StringUtils.rightPad(objects[i] != null ? objects[i].toString() : "<null>", maxColumnSizes[i]));
                 text.append(" ");
             }
             text.append("\n");
-
-            for (int i = 1; i <= columns; i++) {
-                text.append(StringUtils.rightPad("", maxColumnSizes[i - 1], "-"));
-                text.append(" ");
-            }
-            text.append("\n");
-
-            for (Object[] objects : rows) {
-                for (int i = 0; i < objects.length; i++) {
-                    text.append(StringUtils.rightPad(objects[i] != null ? objects[i].toString() : "<null>", maxColumnSizes[i]));
-                    text.append(" ");
-                }
-                text.append("\n");
-            }
-
-            return text.toString();
-
+        }
+        return text.toString();
     }
 
     public void setListener(ISqlRunnerListener listener) {
@@ -506,7 +467,7 @@ public class SqlRunner extends Thread {
     public boolean isRunAsScript() {
         return runAsScript;
     }
-    
+
     public void cancel() {
         try {
             stmt.cancel();
@@ -517,7 +478,6 @@ public class SqlRunner extends Thread {
     }
 
     interface ISqlRunnerListener extends Serializable {
-
         public void writeSql(String sql);
 
         public void reExecute(String sql);
@@ -525,5 +485,4 @@ public class SqlRunner extends Thread {
         public void finished(VaadinIcons icon, List<Component> results, long executionTimeInMs, boolean transactionStarted,
                 boolean transactionEnded);
     }
-
 }

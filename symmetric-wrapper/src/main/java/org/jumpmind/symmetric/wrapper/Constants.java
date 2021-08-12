@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.wrapper;
 
 public class Constants {
-
     public enum Status {
         START_PENDING, RUNNING, STOP_PENDING, STOPPED;
     }
@@ -49,5 +48,4 @@ public class Constants {
     public static final int RC_MISSING_SERVER_PROPERTIES = 21;
     public static final int RC_FAIL_CHECK_STATUS = 23;
     public static final int RC_ALREADY_RUNNING = 24;
-    
 }

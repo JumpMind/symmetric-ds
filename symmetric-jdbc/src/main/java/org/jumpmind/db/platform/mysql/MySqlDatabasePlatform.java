@@ -65,13 +65,10 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
  * The platform implementation for MySQL.
  */
 public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     /* The standard MySQL jdbc driver. */
     public static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-
     /* The old MySQL jdbc driver. */
     public static final String JDBC_DRIVER_OLD = "org.gjt.mm.mysql.Driver";
-
     /* The subprotocol used by the standard MySQL driver. */
     public static final String JDBC_SUBPROTOCOL = "mysql";
 
@@ -98,8 +95,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     }
 
     /*
-     * According to the documentation (and experience) the jdbc driver for mysql
-     * requires the fetch size to be as follows.
+     * According to the documentation (and experience) the jdbc driver for mysql requires the fetch size to be as follows.
      */
     protected static SqlTemplateSettings overrideSettings(SqlTemplateSettings settings) {
         if (settings == null) {
@@ -128,12 +124,9 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymTriggerPermission() {
         String delimiter = getDatabaseInfo().getDelimiterToken();
         delimiter = delimiter != null ? delimiter : "";
-
         String triggerSql = "CREATE TRIGGER TEST_TRIGGER AFTER UPDATE ON " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter
                 + " FOR EACH ROW INSERT INTO " + delimiter + PERMISSION_TEST_TABLE_NAME + delimiter + " VALUES(NULL,NULL)";
-
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TRIGGER, triggerSql);
-
         try {
             getSqlTemplate().update(triggerSql);
             result.setStatus(Status.PASS);
@@ -141,7 +134,6 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             result.setException(e);
             result.setSolution("Grant CREATE TRIGGER permission or TRIGGER permission");
         }
-
         return result;
     }
 
@@ -149,10 +141,8 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public PermissionResult getCreateSymRoutinePermission() {
         String routineSql = "CREATE PROCEDURE TEST_PROC() BEGIN SELECT 1; END";
         String dropSql = "DROP PROCEDURE IF EXISTS TEST_PROC";
-
-        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE, 
+        PermissionResult result = new PermissionResult(PermissionType.CREATE_ROUTINE,
                 dropSql + "\r\n" + routineSql + "\r\n" + dropSql);
-
         try {
             getSqlTemplate().update(dropSql);
             getSqlTemplate().update(routineSql);
@@ -164,32 +154,32 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return result;
     }
-    
+
     @Override
     public void makePlatformSpecific(Database database) {
         for (Table table : database.getTables()) {
             for (Column column : table.getColumns()) {
                 try {
-                    if (column.getMappedTypeCode() == Types.DATE 
+                    if (column.getMappedTypeCode() == Types.DATE
                             && column.findPlatformColumn(DatabaseNamesConstants.ORACLE) != null
                             && column.findPlatformColumn(DatabaseNamesConstants.ORACLE122) != null) {
                         column.setMappedType(TypeMap.TIMESTAMP);
                         column.setMappedTypeCode(Types.TIMESTAMP);
                         column.setScale(6);
                     }
+                } catch (Exception e) {
                 }
-                catch (Exception e) {}
             }
         }
         super.makePlatformSpecific(database);
     }
-    
+
     @Override
-    public long getEstimatedRowCount(Table table) {        
+    public long getEstimatedRowCount(Table table) {
         return getSqlTemplateDirty().queryForLong("select ifnull(table_rows,-1) from information_schema.tables where table_name = ? and table_schema = ?",
                 table.getName(), table.getCatalog());
     }
-    
+
     @Override
     public boolean canColumnBeUsedInWhereClause(Column column) {
         if ((column.getMappedTypeCode() == Types.VARBINARY && column.getSizeAsInt() <= 8000)
@@ -198,7 +188,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return !column.isOfBinaryType();
     }
-    
+
     @Override
     public List<Transaction> getTransactions() {
         ISqlTemplate template = getSqlTemplate();
@@ -210,15 +200,15 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         List<Transaction> transactions = new ArrayList<Transaction>();
         if (template.getDatabaseMajorVersion() == 5 && template.getDatabaseMinorVersion() <= 5) {
-            String sql = "SELECT" + 
-                    "  b.trx_id," + 
-                    "  b.trx_started," + 
-                    "  b.trx_state," + 
-                    "  b.trx_rows_modified," + 
-                    "  w.blocking_" + transactionString + "_id 'blockingId'," + 
-                    "  b.trx_query " + 
-                    "FROM " + lockWaitsString + " w " + 
-                    "RIGHT JOIN information_schema.innodb_trx b" + 
+            String sql = "SELECT" +
+                    "  b.trx_id," +
+                    "  b.trx_started," +
+                    "  b.trx_state," +
+                    "  b.trx_rows_modified," +
+                    "  w.blocking_" + transactionString + "_id 'blockingId'," +
+                    "  b.trx_query " +
+                    "FROM " + lockWaitsString + " w " +
+                    "RIGHT JOIN information_schema.innodb_trx b" +
                     "  ON b.trx_id = w.requesting_" + transactionString + "_id;";
             for (Row row : template.query(sql)) {
                 Transaction transaction = new Transaction(row.getString("trx_id"), "",
@@ -229,19 +219,19 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
             }
             return transactions;
         }
-        String sql = "SELECT" + 
-                "  b.trx_id," + 
-                "  t.processlist_user," + 
-                "  t.processlist_host," + 
-                "  b.trx_started," + 
-                "  b.trx_state," + 
-                "  b.trx_rows_modified," + 
-                "  w.blocking_" + transactionString + "_id 'blockingId'," + 
-                "  b.trx_query " + 
-                "FROM " + lockWaitsString + " w " + 
-                "RIGHT JOIN information_schema.innodb_trx b" + 
-                "  ON b.trx_id = w.requesting_" + transactionString + "_id " + 
-                "INNER JOIN performance_schema.threads t" + 
+        String sql = "SELECT" +
+                "  b.trx_id," +
+                "  t.processlist_user," +
+                "  t.processlist_host," +
+                "  b.trx_started," +
+                "  b.trx_state," +
+                "  b.trx_rows_modified," +
+                "  w.blocking_" + transactionString + "_id 'blockingId'," +
+                "  b.trx_query " +
+                "FROM " + lockWaitsString + " w " +
+                "RIGHT JOIN information_schema.innodb_trx b" +
+                "  ON b.trx_id = w.requesting_" + transactionString + "_id " +
+                "INNER JOIN performance_schema.threads t" +
                 "  ON b.trx_mysql_thread_id = t.thread_id;";
         for (Row row : template.query(sql)) {
             Transaction transaction = new Transaction(row.getString("trx_id"), row.getString("processlist_user"),
@@ -253,7 +243,7 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return transactions;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
@@ -266,15 +256,14 @@ public class MySqlDatabasePlatform extends AbstractJdbcDatabasePlatform {
         }
         return sql + " limit " + offset + "," + limit;
     }
-    
+
     @Override
     public boolean supportsSliceTables() {
         return true;
     }
-    
+
     @Override
     public String getSliceTableSql(String columnName, int sliceNum, int totalSlices) {
         return "ascii(substring(" + columnName + ", 1, 1)) % " + totalSlices + " = " + sliceNum;
     }
-    
 }

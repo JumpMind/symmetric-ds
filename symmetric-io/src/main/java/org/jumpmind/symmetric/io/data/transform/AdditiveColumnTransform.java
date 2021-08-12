@@ -37,26 +37,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
-
-	private static final Logger log = LoggerFactory.getLogger(AdditiveColumnTransform.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(AdditiveColumnTransform.class);
     public static final String NAME = "additive";
-    
+
     public String getName() {
         return NAME;
     }
-    
+
     public boolean isExtractColumnTransform() {
         return false;
     }
-    
+
     public boolean isLoadColumnTransform() {
         return true;
     }
-    
+
     public String getFullyQualifiedTableName(IDatabasePlatform platform, String schema, String catalog, String tableName) {
         String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
-            .getDatabaseInfo().getDelimiterToken() : "";
+                .getDatabaseInfo().getDelimiterToken() : "";
         tableName = quote + tableName + quote;
         if (!StringUtils.isBlank(schema)) {
             tableName = schema + "." + tableName;
@@ -70,51 +68,44 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
     public String transform(IDatabasePlatform platform, DataContext context,
             TransformColumn column, TransformedData data, Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreColumnException,
             IgnoreRowException {
-        
         BigDecimal multiplier = new BigDecimal(1.00);
-        
         if (StringUtils.isNotBlank(column.getTransformExpression())) {
-            multiplier = new BigDecimal(column.getTransformExpression());            
+            multiplier = new BigDecimal(column.getTransformExpression());
         }
-        
         Table table = platform.getTableFromCache(data.getCatalogName(), data.getSchemaName(),
                 data.getTableName(), false);
         if (table == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Could not find the target table '{}'" , data.getFullyQualifiedTableName());
+                log.debug("Could not find the target table '{}'", data.getFullyQualifiedTableName());
             }
             throw new IgnoreColumnException();
         } else if (table.getColumnWithName(column.getTargetColumnName()) == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Could not find the target column '{}'" , column.getTargetColumnName());
+                log.debug("Could not find the target column '{}'", column.getTargetColumnName());
             }
             throw new IgnoreColumnException();
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Old, new, transform expression as received: "+oldValue+", "+newValue+", "+column.getTransformExpression());
+                log.debug("Old, new, transform expression as received: " + oldValue + ", " + newValue + ", " + column.getTransformExpression());
             }
-            
-            if (!StringUtils.isNotBlank(newValue) || 
+            if (!StringUtils.isNotBlank(newValue) ||
                     data.getSourceDmlType() == DataEventType.DELETE) {
-                newValue="0";
+                newValue = "0";
             }
             if (!StringUtils.isNotBlank(oldValue)) {
-                oldValue="0";
+                oldValue = "0";
             }
-            
             BigDecimal delta = new BigDecimal(newValue);
             delta = delta.subtract(new BigDecimal(oldValue));
             delta = delta.multiply(multiplier);
             newValue = delta.toString();
-            
             String quote = platform.getDdlBuilder().isDelimitedIdentifierModeOn() ? platform
                     .getDatabaseInfo().getDelimiterToken() : "";
             StringBuilder sql = new StringBuilder(String.format("update %s set %s=%s+(%s) where ",
-                    getFullyQualifiedTableName(platform, data.getSchemaName(), data.getCatalogName(), data.getTableName()), 
+                    getFullyQualifiedTableName(platform, data.getSchemaName(), data.getCatalogName(), data.getTableName()),
                     quote + column.getTargetColumnName() + quote,
                     quote + column.getTargetColumnName() + quote,
                     newValue));
-
             String[] keyNames = data.getKeyNames();
             List<Column> columns = new ArrayList<Column>();
             List<String> keyValuesList = new ArrayList<String>();
@@ -136,15 +127,14 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                     sql.append(keyNames[i]);
                     sql.append(quote);
                     if (value == null) {
-                       sql.append("is null ");
+                        sql.append("is null ");
                     } else {
-                       sql.append("=? ");
+                        sql.append("=? ");
                     }
                 }
             }
-
             if (log.isDebugEnabled()) {
-                log.debug("SQL: "+sql);
+                log.debug("SQL: " + sql);
             }
             ISqlTransaction transaction = context.findTransaction();
             if (0 < transaction.prepareAndExecute(
@@ -154,9 +144,7 @@ public class AdditiveColumnTransform implements ISingleValueColumnTransform, IBu
                             columns.toArray(new Column[columns.size()])))) {
                 throw new IgnoreColumnException();
             }
-
-        } 
-        
+        }
         return newValue;
     }
 }

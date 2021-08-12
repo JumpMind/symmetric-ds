@@ -21,5 +21,4 @@
 package org.jumpmind.symmetric.io.data.transform;
 
 public interface ISingleNewAndOldValueColumnTransform extends IColumnTransform<NewAndOldValue> {
-
 }

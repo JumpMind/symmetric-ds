@@ -84,7 +84,6 @@ import org.xmlpull.v1.XmlPullParserFactory;
  * This class provides functions to read and write database models from/to XML.
  */
 public class DatabaseXmlUtil {
-
     public static final String DTD_PREFIX = "http://db.apache.org/torque/dtd/database";
 
     private DatabaseXmlUtil() {
@@ -109,7 +108,7 @@ public class DatabaseXmlUtil {
      * @return The database model
      */
     public static Database read(File file) {
-        try(FileReader reader = new FileReader(file)) {
+        try (FileReader reader = new FileReader(file)) {
             return read(reader);
         } catch (IOException e) {
             throw new IoException(e);
@@ -146,10 +145,8 @@ public class DatabaseXmlUtil {
         try {
             boolean done = false;
             Database database = null;
-
             XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
             parser.setInput(reader);
-
             int eventType = parser.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT && !done) {
                 switch (eventType) {
@@ -186,7 +183,6 @@ public class DatabaseXmlUtil {
                 }
                 eventType = parser.next();
             }
-
             if (validate) {
                 database.initialize();
             }
@@ -201,7 +197,7 @@ public class DatabaseXmlUtil {
     public static Table nextTable(XmlPullParser parser) {
         return nextTable(parser, null, null);
     }
-    
+
     public static Table nextTable(XmlPullParser parser, String catalog, String schema) {
         try {
             Table table = null;
@@ -292,14 +288,14 @@ public class DatabaseXmlUtil {
                                         platformColumn.setDecimalDigits(Integer.parseInt(attributeValue));
                                     }
                                 } else if (attributeName.equalsIgnoreCase("enumValues")) {
-                                    if(isNotBlank(attributeValue)) {
+                                    if (isNotBlank(attributeValue)) {
                                         platformColumn.setEnumValues(attributeValue.split(","));
                                     }
                                 }
                             }
                             if (table != null && table.getColumnCount() > 0) {
-                                table.getColumn(table.getColumnCount()-1).addPlatformColumn(platformColumn);
-                            }                            
+                                table.getColumn(table.getColumnCount() - 1).addPlatformColumn(platformColumn);
+                            }
                         } else if (name.equalsIgnoreCase("foreign-key")) {
                             fk = new ForeignKey();
                             for (int i = 0; i < parser.getAttributeCount(); i++) {
@@ -359,17 +355,16 @@ public class DatabaseXmlUtil {
                                     indexColumn.setSize(attributeValue);
                                 }
                             }
-
                             indexColumn.setColumn(table.getColumnWithName(indexColumn.getName()));
                             if (index != null) {
                                 index.addColumn(indexColumn);
                             }
                         } else if (name.equalsIgnoreCase("platform-index")) {
                             PlatformIndex platformIndex = new PlatformIndex();
-                            for(int i = 0; i < parser.getAttributeCount(); i++) {
+                            for (int i = 0; i < parser.getAttributeCount(); i++) {
                                 String attributeName = parser.getAttributeName(i);
                                 String attributeValue = parser.getAttributeValue(i);
-                                if(attributeName.equalsIgnoreCase("name")) {
+                                if (attributeName.equalsIgnoreCase("name")) {
                                     platformIndex.setName(attributeValue);
                                 } else if (attributeName.equalsIgnoreCase("filter-condition")) {
                                     platformIndex.setFilterCondition(attributeValue);
@@ -387,7 +382,7 @@ public class DatabaseXmlUtil {
                                     }
                                 }
                             }
-                            if(index != null) {
+                            if (index != null) {
                                 index.addPlatformIndex(platformIndex);
                             }
                         }
@@ -406,12 +401,10 @@ public class DatabaseXmlUtil {
                         }
                         break;
                 }
-
                 if (!done) {
                     eventType = parser.next();
                 }
             }
-            
             return table;
         } catch (XmlPullParserException e) {
             throw new IoException(e);
@@ -445,8 +438,7 @@ public class DatabaseXmlUtil {
     }
 
     /*
-     * Writes the database model to the given output stream. Note that this
-     * method does not flush the stream.
+     * Writes the database model to the given output stream. Note that this method does not flush the stream.
      * 
      * @param model The database model
      * 
@@ -461,10 +453,8 @@ public class DatabaseXmlUtil {
             throw new IoException(e);
         }
     }
-
     /*
-     * Writes the database model to the given output writer. Note that this
-     * method does not flush the writer.
+     * Writes the database model to the given output writer. Note that this method does not flush the writer.
      * 
      * @param model The database model
      * 
@@ -486,7 +476,6 @@ public class DatabaseXmlUtil {
                 output.write(" defaultIdMethod=\"" + model.getIdMethod() + "\"");
             }
             output.write(">\n");
-
             for (Table table : model.getTables()) {
                 write(table, output);
             }
@@ -495,7 +484,7 @@ public class DatabaseXmlUtil {
             throw new IoException(e);
         }
     }
-    
+
     public static String toXml(Table table) {
         StringWriter writer = new StringWriter();
         write(table, writer);
@@ -507,41 +496,38 @@ public class DatabaseXmlUtil {
         write(db, writer);
         return writer.toString();
     }
-    
+
     public static boolean isOracle(Column column) {
-        if(column.getPlatformColumns() != null) {
+        if (column.getPlatformColumns() != null) {
             Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
-                .values();
-            for(PlatformColumn col: platformColumns) {
-                if(col.getName().equals(DatabaseNamesConstants.ORACLE) || col.getName().equals(DatabaseNamesConstants.ORACLE122)) {
+                    .values();
+            for (PlatformColumn col : platformColumns) {
+                if (col.getName().equals(DatabaseNamesConstants.ORACLE) || col.getName().equals(DatabaseNamesConstants.ORACLE122)) {
                     return true;
                 }
             }
         }
         return false;
     }
-    
-    public static void write(Table table, Writer output) {
 
+    public static void write(Table table, Writer output) {
         try {
             output.write("\t<table name=\"" + StringEscapeUtils.escapeXml10(table.getName()) + "\"");
             if (table.getCompressionType() != CompressionTypes.NONE) {
                 output.write(" compression=\"" + table.getCompressionType().name() + "\"");
             }
             output.write(">\n");
-
             for (Column column : table.getColumns()) {
                 output.write("\t\t<column name=\"" + StringEscapeUtils.escapeXml10(column.getName()) + "\"");
                 if (column.isPrimaryKey()) {
                     output.write(" primaryKey=\"" + column.isPrimaryKey() + "\"");
                     output.write(" primaryKeySeq=\"" + column.getPrimaryKeySequence() + "\"");
-                    
                 }
                 if (column.isRequired()) {
                     output.write(" required=\"" + column.isRequired() + "\"");
                 }
                 if (column.getMappedType() != null) {
-                    if(isOracle(column) && column.getMappedType().equalsIgnoreCase("date")) {
+                    if (isOracle(column) && column.getMappedType().equalsIgnoreCase("date")) {
                         output.write(" type=\"" + TypeMap.TIMESTAMP + "\"");
                     } else {
                         output.write(" type=\"" + column.getMappedType() + "\"");
@@ -562,69 +548,63 @@ public class DatabaseXmlUtil {
                 if (column.isUnique()) {
                     output.write(" unique=\"" + column.isUnique() + "\"");
                 }
-                
                 if (column.getPlatformColumns() != null && column.getPlatformColumns().size() > 0) {
                     Collection<PlatformColumn> platformColumns = column.getPlatformColumns()
                             .values();
-                        output.write(">\n");
-                        for (PlatformColumn platformColumn : platformColumns) {
-                            output.write("\t\t\t<platform-column name=\""
-                                    + platformColumn.getName() + "\"");
-                            output.write(" type=\"" + platformColumn.getType() + "\"");
-                            if (platformColumn.getSize() > 0) {
-                                output.write(" size=\"" + platformColumn.getSize() + "\"");
-                            }
-                            if (platformColumn.getDecimalDigits() > 0) {
-                                output.write(" decimalDigits=\""
-                                        + platformColumn.getDecimalDigits() + "\"");
-                            }
-                            
-                            if (platformColumn.getDefaultValue() != null) {
-                                output.write(" default=\"" + StringEscapeUtils.escapeXml10(platformColumn.getDefaultValue()) + "\"");
-                            }
-                            if(platformColumn.getEnumValues() != null && platformColumn.getEnumValues().length > 0) {
-                                output.write(" enumValues=\"");
-                                boolean writeComma = false;
-                                for(String enumValue : platformColumn.getEnumValues()) {
-                                    if(writeComma) {
-                                        output.write(",");
-                                    }
-                                    output.write(enumValue);
-                                    writeComma = true;
-                                }
-                                output.write("\"");
-                            }
-
-                            output.write("/>\n");
+                    output.write(">\n");
+                    for (PlatformColumn platformColumn : platformColumns) {
+                        output.write("\t\t\t<platform-column name=\""
+                                + platformColumn.getName() + "\"");
+                        output.write(" type=\"" + platformColumn.getType() + "\"");
+                        if (platformColumn.getSize() > 0) {
+                            output.write(" size=\"" + platformColumn.getSize() + "\"");
                         }
-                        output.write("\t\t</column>\n");                    
+                        if (platformColumn.getDecimalDigits() > 0) {
+                            output.write(" decimalDigits=\""
+                                    + platformColumn.getDecimalDigits() + "\"");
+                        }
+                        if (platformColumn.getDefaultValue() != null) {
+                            output.write(" default=\"" + StringEscapeUtils.escapeXml10(platformColumn.getDefaultValue()) + "\"");
+                        }
+                        if (platformColumn.getEnumValues() != null && platformColumn.getEnumValues().length > 0) {
+                            output.write(" enumValues=\"");
+                            boolean writeComma = false;
+                            for (String enumValue : platformColumn.getEnumValues()) {
+                                if (writeComma) {
+                                    output.write(",");
+                                }
+                                output.write(enumValue);
+                                writeComma = true;
+                            }
+                            output.write("\"");
+                        }
+                        output.write("/>\n");
+                    }
+                    output.write("\t\t</column>\n");
                 } else {
                     output.write("/>\n");
                 }
             }
-            
-
             for (ForeignKey fk : table.getForeignKeys()) {
                 output.write("\t\t<foreign-key name=\"" + StringEscapeUtils.escapeXml10(fk.getName()) + "\" foreignTable=\""
                         + StringEscapeUtils.escapeXml10(fk.getForeignTableName()) + "\" foreignTableCatalog=\""
-                        + StringEscapeUtils.escapeXml10(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog()) 
-                            ? "" : fk.getForeignTableCatalog()) + 
-                        "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml10(fk.getForeignTableSchema() == null || 
-                            fk.getForeignTableSchema().equals(table.getSchema()) ? "" : fk.getForeignTableSchema())  + "\""
+                        + StringEscapeUtils.escapeXml10(fk.getForeignTableCatalog() == null || fk.getForeignTableCatalog().equals(table.getCatalog())
+                                ? ""
+                                : fk.getForeignTableCatalog()) +
+                        "\" foreignTableSchema=\"" + StringEscapeUtils.escapeXml10(fk.getForeignTableSchema() == null ||
+                                fk.getForeignTableSchema().equals(table.getSchema()) ? "" : fk.getForeignTableSchema()) + "\""
                         +
                         writeForeignKeyOnUpdateClause(fk)
                         +
                         writeForeignKeyOnDeleteClause(fk)
                         +
                         ">\n");
-                                
                 for (Reference ref : fk.getReferences()) {
                     output.write("\t\t\t<reference local=\"" + StringEscapeUtils.escapeXml10(ref.getLocalColumnName())
                             + "\" foreign=\"" + StringEscapeUtils.escapeXml10(ref.getForeignColumnName()) + "\"/>\n");
                 }
                 output.write("\t\t</foreign-key>\n");
             }
-
             for (IIndex index : table.getIndices()) {
                 if (index.isUnique()) {
                     output.write("\t\t<unique name=\"" + StringEscapeUtils.escapeXml10(index.getName()) + "\">\n");
@@ -641,20 +621,18 @@ public class DatabaseXmlUtil {
                         output.write("/>\n");
                     }
                 }
-                if(index.getPlatformIndexes() != null && index.getPlatformIndexes().size() > 0) {
+                if (index.getPlatformIndexes() != null && index.getPlatformIndexes().size() > 0) {
                     Map<String, PlatformIndex> platformIndexes = index.getPlatformIndexes();
-                    for(String key : platformIndexes.keySet()) {
+                    for (String key : platformIndexes.keySet()) {
                         PlatformIndex platformIndex = platformIndexes.get(key);
                         if ((platformIndex.getFilterCondition() != null && platformIndex.getFilterCondition().length() > 0) ||
-                                platformIndex.getCompressionType() != CompressionTypes.NONE)
-                        {
+                                platformIndex.getCompressionType() != CompressionTypes.NONE) {
                             output.write("\t\t\t<platform-index name=\"" + StringEscapeUtils.escapeXml10(platformIndex.getName()) + "\"");
                             if (platformIndex.getFilterCondition() != null && platformIndex.getFilterCondition().length() > 0) {
                                 output.write(" filter-condition=\"" + platformIndex.getFilterCondition() + "\"");
                             }
                             if (platformIndex.getCompressionType() != CompressionTypes.NONE) {
                                 output.write(" compression=\"" + platformIndex.getCompressionType().name() + "\"");
-                                
                             }
                             output.write("/>\n");
                         }
@@ -666,29 +644,28 @@ public class DatabaseXmlUtil {
                     output.write("\t\t</index>\n");
                 }
             }
-
             output.write("\t</table>\n");
         } catch (IOException e) {
             throw new IoException(e);
         }
     }
-    
+
     public static String writeForeignKeyOnUpdateClause(ForeignKey fk) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         StringBuilder sb = new StringBuilder();
         if (fk.getOnUpdateAction() != ForeignKeyAction.RESTRICT && fk.getOnUpdateAction() != ForeignKeyAction.NOACTION) {
             sb.append(" foreignOnUpdateAction=\"" +
-                StringEscapeUtils.escapeXml10(fk.getOnUpdateAction().getForeignKeyActionName()) + "\"");
+                    StringEscapeUtils.escapeXml10(fk.getOnUpdateAction().getForeignKeyActionName()) + "\"");
         }
         return sb.toString();
     }
-    
+
     public static String writeForeignKeyOnDeleteClause(ForeignKey fk) {
         // No need to output action for RESTRICT and NO ACTION since that is the default in every database that supports foreign keys
         StringBuilder sb = new StringBuilder();
         if (fk.getOnDeleteAction() != ForeignKeyAction.RESTRICT && fk.getOnDeleteAction() != ForeignKeyAction.NOACTION) {
             sb.append(" foreignOnDeleteAction=\"" +
-                StringEscapeUtils.escapeXml10(fk.getOnDeleteAction().getForeignKeyActionName()) + "\"");
+                    StringEscapeUtils.escapeXml10(fk.getOnDeleteAction().getForeignKeyActionName()) + "\"");
         }
         return sb.toString();
     }

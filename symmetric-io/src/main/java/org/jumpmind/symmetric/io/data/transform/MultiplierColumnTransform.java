@@ -30,9 +30,7 @@ import org.jumpmind.symmetric.io.data.DataContext;
 
 public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
         IBuiltInExtensionPoint {
-
     public static final String NAME = "multiply";
-
     protected static final StringMapper rowMapper = new StringMapper();
 
     public String getName() {
@@ -54,5 +52,4 @@ public class MultiplierColumnTransform implements IMultipleValueColumnTransform,
         return platform.getSqlTemplate().query(column.getTransformExpression(), rowMapper,
                 sourceValues);
     }
-
 }

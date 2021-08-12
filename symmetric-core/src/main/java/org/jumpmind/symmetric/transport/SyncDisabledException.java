@@ -20,8 +20,6 @@
  */
 package org.jumpmind.symmetric.transport;
 
-
 public class SyncDisabledException extends OfflineException {
-
     private static final long serialVersionUID = 8646739179107142193L;
 }

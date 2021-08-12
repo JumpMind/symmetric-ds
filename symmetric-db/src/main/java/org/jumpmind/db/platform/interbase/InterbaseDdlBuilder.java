@@ -65,18 +65,14 @@ import org.jumpmind.db.platform.PlatformUtils;
  * The SQL Builder for the Interbase database.
  */
 public class InterbaseDdlBuilder extends AbstractDdlBuilder {
-
     public static int SWITCH_TO_LONGVARCHAR_SIZE = 4096;
 
     public InterbaseDdlBuilder() {
-        
         super(DatabaseNamesConstants.INTERBASE);
-
         databaseInfo.setMaxIdentifierLength(31);
         databaseInfo.setCommentPrefix("/*");
         databaseInfo.setCommentSuffix("*/");
         databaseInfo.setSystemForeignKeyIndicesAlwaysNonUnique(true);
-
         // BINARY and VARBINARY are also handled by the
         // InterbaseBuilder.getSqlType method
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.LONGVARBINARY);
@@ -108,28 +104,23 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "VARCHAR", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.NCHAR, "CHAR", Types.CHAR);
-
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setHasSize(Types.BINARY, false);
         databaseInfo.setHasSize(Types.VARBINARY, false);
-
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
         databaseInfo.setBlankCharColumnSpacePadded(true);
         databaseInfo.setCharColumnSpaceTrimmed(false);
         databaseInfo.setEmptyStringNulled(false);
-
         databaseInfo.setMinIsolationLevelToPreventPhantomReads(Connection.TRANSACTION_READ_COMMITTED);
     }
 
     @Override
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         super.createTable(table, ddl, temporary, recreate);
-
         if (!temporary) {
             // creating generator and trigger for auto-increment
             Column[] columns = table.getAutoIncrementColumns();
-
             for (int idx = 0; idx < columns.length; idx++) {
                 writeAutoIncrementCreateStmts(table, columns[idx], ddl);
             }
@@ -153,7 +144,6 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         if (!temporary && !recreate) {
             // dropping generators for auto-increment
             Column[] columns = table.getAutoIncrementColumns();
-
             for (int idx = 0; idx < columns.length; idx++) {
                 writeAutoIncrementDropStmts(table, columns[idx], ddl);
             }
@@ -171,14 +161,12 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Writes the creation statements to make the given column an auto-increment
-     * column.
+     * Writes the creation statements to make the given column an auto-increment column.
      */
     private void writeAutoIncrementCreateStmts(Table table, Column column, StringBuilder ddl) {
         ddl.append("CREATE GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
         printEndOfStatement(ddl);
-
         ddl.append("CREATE TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         ddl.append(" FOR ");
@@ -195,14 +183,12 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Writes the statements to drop the auto-increment status for the given
-     * column.
+     * Writes the statements to drop the auto-increment status for the given column.
      */
     private void writeAutoIncrementDropStmts(Table table, Column column, StringBuilder ddl) {
         ddl.append("DROP TRIGGER ");
         printIdentifier(getTriggerName(table, column), ddl);
         printEndOfStatement(ddl);
-
         ddl.append("DROP GENERATOR ");
         printIdentifier(getGeneratorName(table, column), ddl);
         printEndOfStatement(ddl);
@@ -252,12 +238,10 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String getSelectLastIdentityValues(Table table) {
         Column[] columns = table.getAutoIncrementColumns();
-
         if (columns.length == 0) {
             return null;
         } else {
             StringBuilder result = new StringBuilder();
-
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {
                 result.append("GEN_ID(");
@@ -271,12 +255,10 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
 
     public String fixLastIdentityValues(Table table) {
         Column[] columns = table.getAutoIncrementColumns();
-
         if (columns.length == 0) {
             return null;
         } else {
-        	StringBuilder result = new StringBuilder();
-
+            StringBuilder result = new StringBuilder();
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {
                 result.append("GEN_ID(");
@@ -299,13 +281,10 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         // use DDL)
         // This will be easier once named primary keys are supported
         boolean pkColumnAdded = false;
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
-
                 // TODO: we cannot add columns to the primary key this way
                 // because we would have to drop the pk first and then
                 // add a new one afterwards which is not supported yet
@@ -317,7 +296,6 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
                 }
             } else if (change instanceof RemoveColumnChange) {
                 RemoveColumnChange removeColumnChange = (RemoveColumnChange) change;
-
                 // TODO: we cannot drop primary key columns this way
                 // because we would have to drop the pk first and then
                 // add a new one afterwards which is not supported yet
@@ -326,15 +304,13 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
                     changeIt.remove();
                 }
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             }
         }
-
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             // we can only add a primary key if all columns are present in the
             // table
             // i.e. none was added during this alteration
@@ -356,13 +332,10 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         ddl.append("ADD ");
         writeColumn(change.getChangedTable(), change.getNewColumn(), ddl);
         printEndOfStatement(ddl);
-
         Table curTable = currentModel.findTable(change.getChangedTable().getName(),
                 delimitedIdentifierModeOn);
-
         if (!change.isAtEnd()) {
             Column prevColumn = change.getPreviousColumn();
-
             if (prevColumn != null) {
                 // we need the corresponding column object from the current
                 // table
@@ -377,8 +350,9 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
             printIdentifier(getColumnName(change.getNewColumn()), ddl);
             ddl.append(" POSITION ");
             // column positions start at 1 in Interbase
-            ddl.append(prevColumn == null ? "1" : String.valueOf(curTable
-                    .getColumnIndex(prevColumn) + 1));
+            ddl.append(prevColumn == null ? "1"
+                    : String.valueOf(curTable
+                            .getColumnIndex(prevColumn) + 1));
             printEndOfStatement(ddl);
         }
         if (change.getNewColumn().isAutoIncrement()) {
@@ -403,7 +377,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // Interbase does not support ON UPDATE RESTRICT, but RESTRICT is just like NOACTION
@@ -414,7 +388,7 @@ public class InterbaseDdlBuilder extends AbstractDdlBuilder {
         super.writeCascadeAttributesForForeignKeyUpdate(key, ddl);
         key.setOnUpdateAction(original);
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Interbase does not support ON DELETE RESTRICT, but RESTRICT is just like NOACTION

@@ -25,7 +25,6 @@ import java.util.List;
 import org.jumpmind.symmetric.model.BatchAckResult;
 
 public class BatchAckResults {
-
     /**
      * A list of batch ack results
      */
@@ -38,5 +37,4 @@ public class BatchAckResults {
     public void setBatchAckResults(List<BatchAckResult> batchAckResults) {
         this.batchAckResults = batchAckResults;
     }
-
 }

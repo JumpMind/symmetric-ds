@@ -23,15 +23,10 @@ package org.jumpmind.symmetric.model;
 import java.io.Serializable;
 
 public class ProcessInfoKey implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private String sourceNodeId;
-
     private String targetNodeId;
-
     private ProcessType processType;
-
     private String queue;
 
     public ProcessInfoKey(String sourceNodeId, String targetNodeId, ProcessType processType) {
@@ -109,5 +104,4 @@ public class ProcessInfoKey implements Serializable {
         return String.format("processType=%s,sourceNodeId=%s,targetNodeId=%s,queue=%s", processType.toString(), sourceNodeId,
                 targetNodeId, queue);
     }
-
 }

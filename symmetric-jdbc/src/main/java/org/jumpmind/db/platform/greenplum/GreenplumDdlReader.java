@@ -43,17 +43,14 @@ import org.jumpmind.db.sql.JdbcSqlTemplate;
 import org.jumpmind.db.sql.Row;
 
 public class GreenplumDdlReader extends PostgreSqlDdlReader {
-
     public GreenplumDdlReader(IDatabasePlatform platform) {
         super(platform);
     }
 
     protected void setDistributionKeys(Connection connection, Table table, String schema)
             throws SQLException {
-
         // get the distribution keys for segments
         StringBuilder query = new StringBuilder();
-
         query.append("select                                        ");
         query.append("   t.relname,                                 ");
         query.append("   a.attname                                  ");
@@ -69,15 +66,12 @@ public class GreenplumDdlReader extends PostgreSqlDdlReader {
         query.append("   a.attnum = any(p.attrnums) and             ");
         query.append("   n.nspname = ? and                          ");
         query.append("   t.relname = ?                              ");
-
         PreparedStatement prepStmt = connection.prepareStatement(query.toString());
-
         try {
             // set the schema parm in the query
             prepStmt.setString(1, schema);
             prepStmt.setString(2, table.getName());
             ResultSet rs = prepStmt.executeQuery();
-
             // for every row, set the distributionKey for the corresponding
             // columns
             while (rs.next()) {
@@ -102,36 +96,33 @@ public class GreenplumDdlReader extends PostgreSqlDdlReader {
         setDistributionKeys(connection, table, metaData.getSchemaPattern());
         return table;
     }
-    
+
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }
-    
+
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-        
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "trigger_name, "
-                        + "trigger_schema, "
-                        + "trigger_catalog, "
-                        + "event_manipulation AS trigger_type, "
-                        + "event_object_table AS table_name,"
-                        + "trig.*, "
-                        + "pgproc.prosrc "
-                    + "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
-                    + "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
-                        + "ON pgtrig.tgname=trig.trigger_name "
-                    + "INNER JOIN pg_catalog.pg_proc AS pgproc "
-                        + "ON pgproc.oid=pgtrig.tgfoid "
-                    + "WHERE event_object_table=? AND event_object_schema=?;";
+                + "trigger_name, "
+                + "trigger_schema, "
+                + "trigger_catalog, "
+                + "event_manipulation AS trigger_type, "
+                + "event_object_table AS table_name,"
+                + "trig.*, "
+                + "pgproc.prosrc "
+                + "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
+                + "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
+                + "ON pgtrig.tgname=trig.trigger_name "
+                + "INNER JOIN pg_catalog.pg_proc AS pgproc "
+                + "ON pgproc.oid=pgtrig.tgfoid "
+                + "WHERE event_object_table=? AND event_object_schema=?;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -152,20 +143,18 @@ public class GreenplumDdlReader extends PostgreSqlDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         return triggers;
     }
-    
+
     @Override
     protected void readForeignKeyUpdateRule(Map<String, Object> values, ForeignKey fk) {
         // Greenplum does not support cascading
         fk.setOnUpdateAction(ForeignKeyAction.NOACTION);
     }
-    
+
     @Override
     protected void readForeignKeyDeleteRule(Map<String, Object> values, ForeignKey fk) {
         // Greenplum does not support cascading
         fk.setOnDeleteAction(ForeignKeyAction.NOACTION);
     }
-    
 }

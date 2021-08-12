@@ -30,14 +30,13 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.impl.TransformService.TransformTableNodeGroupLink;
 
 public interface ITransformService {
-    
     public boolean refreshFromDatabase();
 
     public List<TransformTableNodeGroupLink> findTransformsFor(NodeGroupLink link,
             TransformPoint transformPoint);
-    
-    public List<TransformTableNodeGroupLink> findTransformsFor(String sourceNodeGroupId, String targetNodeGroupId, String table);    
-    
+
+    public List<TransformTableNodeGroupLink> findTransformsFor(String sourceNodeGroupId, String targetNodeGroupId, String table);
+
     public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns);
 
     public List<TransformTableNodeGroupLink> getTransformTables(boolean includeColumns, boolean replaceTokens);
@@ -49,15 +48,14 @@ public interface ITransformService {
     public void saveTransformTable(TransformTableNodeGroupLink transformTable, boolean saveTransformColumns);
 
     public void deleteTransformTable(String transformTableId);
-    
+
     public void deleteAllTransformTables();
 
     public Map<String, IColumnTransform<?>> getColumnTransforms();
 
     public void clearCache();
-    
-    public List<TransformTableNodeGroupLink> getConfigExtractTransforms(NodeGroupLink nodeGroupLink);
-    
-    public List<TransformTableNodeGroupLink> getConfigLoadTransforms(NodeGroupLink nodeGroupLink);
 
+    public List<TransformTableNodeGroupLink> getConfigExtractTransforms(NodeGroupLink nodeGroupLink);
+
+    public List<TransformTableNodeGroupLink> getConfigLoadTransforms(NodeGroupLink nodeGroupLink);
 }

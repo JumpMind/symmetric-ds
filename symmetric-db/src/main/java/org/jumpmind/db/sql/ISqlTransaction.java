@@ -26,7 +26,6 @@ import java.util.Map;
 import org.jumpmind.db.model.Table;
 
 public interface ISqlTransaction {
-    
     public void addSqlTransactionListener(ISqlTransactionListener listener);
 
     public boolean isInBatchMode();
@@ -36,9 +35,9 @@ public interface ISqlTransaction {
     public <T> T queryForObject(String sql, Class<T> clazz, Object... args);
 
     public Row queryForRow(String sql, Object... args);
-    
+
     public int queryForInt(String sql, Object... args);
-    
+
     public long queryForLong(String sql, Object... args);
 
     public int execute(String sql);
@@ -46,7 +45,7 @@ public interface ISqlTransaction {
     public int prepareAndExecute(String sql, Object[] args, int[] types);
 
     public int prepareAndExecute(String sql, Object... args);
-    
+
     public int prepareAndExecute(String sql, Map<String, Object> args);
 
     public <T> List<T> query(String sql, ISqlRowMapper<T> mapper, Map<String, Object> namedParams);
@@ -71,16 +70,14 @@ public interface ISqlTransaction {
     public <T> List<T> getUnflushedMarkers(boolean clear);
 
     /**
-     * Indicate that the current session is to allow updates to columns that
-     * have been marked as auto increment. This is specific to SQL Server.
+     * Indicate that the current session is to allow updates to columns that have been marked as auto increment. This is specific to SQL Server.
      */
     public void allowInsertIntoAutoIncrementColumns(boolean value, Table table, String quote, String catalogSeparator, String schemaSeparator);
-   
+
     public boolean isAllowInsertIntoAutoIncrement();
-    
+
     public long insertWithGeneratedKey(String sql, String column, String sequenceName,
             Object[] args, int[] types);
-    
-    public void clearBatch();
 
+    public void clearBatch();
 }

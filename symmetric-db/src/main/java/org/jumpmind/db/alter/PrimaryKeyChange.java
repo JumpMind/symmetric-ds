@@ -48,8 +48,7 @@ import org.jumpmind.db.model.Table;
  * 
  * @version $Revision: $
  */
-public class PrimaryKeyChange extends TableChangeImplBase
-{
+public class PrimaryKeyChange extends TableChangeImplBase {
     /** The columns making up the original primary key. */
     private Column[] _oldPrimaryKeyColumns;
     /** The columns making up the new primary key. */
@@ -58,12 +57,14 @@ public class PrimaryKeyChange extends TableChangeImplBase
     /**
      * Creates a new change object.
      * 
-     * @param table                The table whose primary key is to be changed
-     * @param oldPrimaryKeyColumns The columns making up the original primary key
-     * @param newPrimaryKeyColumns The columns making up the new primary key
+     * @param table
+     *            The table whose primary key is to be changed
+     * @param oldPrimaryKeyColumns
+     *            The columns making up the original primary key
+     * @param newPrimaryKeyColumns
+     *            The columns making up the new primary key
      */
-    public PrimaryKeyChange(Table table, Column[] oldPrimaryKeyColumns, Column[] newPrimaryKeyColumns)
-    {
+    public PrimaryKeyChange(Table table, Column[] oldPrimaryKeyColumns, Column[] newPrimaryKeyColumns) {
         super(table);
         _oldPrimaryKeyColumns = oldPrimaryKeyColumns;
         _newPrimaryKeyColumns = newPrimaryKeyColumns;
@@ -74,8 +75,7 @@ public class PrimaryKeyChange extends TableChangeImplBase
      *
      * @return The columns
      */
-    public Column[] getOldPrimaryKeyColumns()
-    {
+    public Column[] getOldPrimaryKeyColumns() {
         return _oldPrimaryKeyColumns;
     }
 
@@ -84,30 +84,23 @@ public class PrimaryKeyChange extends TableChangeImplBase
      *
      * @return The columns
      */
-    public Column[] getNewPrimaryKeyColumns()
-    {
+    public Column[] getNewPrimaryKeyColumns() {
         return _newPrimaryKeyColumns;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         Table table = database.findTable(getChangedTable().getName(), caseSensitive);
-
-        for (int idx = 0; idx < _oldPrimaryKeyColumns.length; idx++)
-        {
+        for (int idx = 0; idx < _oldPrimaryKeyColumns.length; idx++) {
             Column column = table.findColumn(_oldPrimaryKeyColumns[idx].getName(), caseSensitive);
-
             if (column != null) {
                 column.setPrimaryKey(false);
             }
         }
-        for (int idx = 0; idx < _newPrimaryKeyColumns.length; idx++)
-        {
+        for (int idx = 0; idx < _newPrimaryKeyColumns.length; idx++) {
             Column column = table.findColumn(_newPrimaryKeyColumns[idx].getName(), caseSensitive);
-
             column.setPrimaryKey(true);
         }
     }

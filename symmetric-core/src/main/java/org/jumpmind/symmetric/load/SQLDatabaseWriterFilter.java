@@ -45,12 +45,9 @@ import org.jumpmind.util.LinkedCaseInsensitiveMap;
 import bsh.TargetError;
 
 /**
- * User: Markus Schulz <msc@antzsystem.de>
- * Date: 24.08.15
- * Time: 10:53
+ * User: Markus Schulz <msc@antzsystem.de> Date: 24.08.15 Time: 10:53
  */
 public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
-
     protected static final ISqlRowMapper<Boolean> lookupColumnRowMapper = new ISqlRowMapper<Boolean>() {
         @Override
         public Boolean mapRow(Row row) {
@@ -59,17 +56,16 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
             if (i.hasNext()) {
                 Object val = i.next();
                 if (val instanceof Boolean) {
-                    result = (Boolean)val;
+                    result = (Boolean) val;
                 } else if (val instanceof Number) {
-                    result = ((Number)val).intValue() > 0;
-                } else if (val instanceof String) {                    
-                    result = !((String)val).equals("0") && !((String)val).equalsIgnoreCase("false");
+                    result = ((Number) val).intValue() > 0;
+                } else if (val instanceof String) {
+                    result = !((String) val).equals("0") && !((String) val).equalsIgnoreCase("false");
                 }
             }
             return result;
         }
     };
-
     private static final String OLD_ = "OLD_";
 
     public SQLDatabaseWriterFilter(ISymmetricEngine engine, Map<String, List<LoadFilter>> loadFilters) {
@@ -78,8 +74,7 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
 
     @Override
     protected boolean processLoadFilters(DataContext context, Table table, CsvData data, Exception error,
-        WriteMethod writeMethod, List<LoadFilter> loadFiltersForTable) {
-
+            WriteMethod writeMethod, List<LoadFilter> loadFiltersForTable) {
         boolean writeRow = true;
         LoadFilter currentFilter = null;
         List<Boolean> values = null;
@@ -89,16 +84,14 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                 currentFilter = filter;
                 values = null;
                 if (filter.isFilterOnDelete() && data.getDataEventType().equals(DataEventType.DELETE)
-                    || filter.isFilterOnInsert() && data.getDataEventType().equals(DataEventType.INSERT)
-                    || filter.isFilterOnUpdate() && data.getDataEventType().equals(DataEventType.UPDATE)) {
+                        || filter.isFilterOnInsert() && data.getDataEventType().equals(DataEventType.INSERT)
+                        || filter.isFilterOnUpdate() && data.getDataEventType().equals(DataEventType.UPDATE)) {
                     String sql = null;
                     if (writeMethod.equals(WriteMethod.BEFORE_WRITE) && filter.getBeforeWriteScript() != null) {
                         sql = doTokenReplacementOnSql(context, filter.getBeforeWriteScript());
-                    }
-                    else if (writeMethod.equals(WriteMethod.AFTER_WRITE) && filter.getAfterWriteScript() != null) {
+                    } else if (writeMethod.equals(WriteMethod.AFTER_WRITE) && filter.getAfterWriteScript() != null) {
                         sql = doTokenReplacementOnSql(context, filter.getAfterWriteScript());
-                    }
-                    else if (writeMethod.equals(WriteMethod.HANDLE_ERROR) && filter.getHandleErrorScript() != null) {
+                    } else if (writeMethod.equals(WriteMethod.HANDLE_ERROR) && filter.getHandleErrorScript() != null) {
                         sql = doTokenReplacementOnSql(context, filter.getHandleErrorScript());
                     }
                     if (sql != null && !sql.trim().isEmpty()) {
@@ -108,14 +101,12 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                         ISqlTransaction transaction = context.findTransaction();
                         values = transaction.query(sql, lookupColumnRowMapper, namedParams);
                     }
-
                     if (values != null && values.size() > 0) {
                         writeRow = values.get(0);
                     }
                 }
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             processError(currentFilter, table, ex);
         }
         return writeRow;
@@ -130,18 +121,16 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                     namedParams.put(columnName, sourceValues.get(columnName));
                     namedParams.put(columnName.toUpperCase(), sourceValues.get(columnName));
                 }
-            }
-            else {
+            } else {
                 Map<String, String> pkValues = data.toColumnNameValuePairs(
-                    table.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
+                        table.getPrimaryKeyColumnNames(), CsvData.PK_DATA);
                 for (String columnName : pkValues.keySet()) {
                     namedParams.put(columnName, pkValues.get(columnName));
                     namedParams.put(columnName.toUpperCase(), pkValues.get(columnName));
                 }
             }
-
             Map<String, String> oldValues = data.toColumnNameValuePairs(table.getColumnNames(),
-                CsvData.OLD_DATA);
+                    CsvData.OLD_DATA);
             for (String columnName : oldValues.keySet()) {
                 namedParams.put(OLD_ + columnName, sourceValues.get(columnName));
                 namedParams.put(OLD_ + columnName.toUpperCase(), sourceValues.get(columnName));
@@ -159,12 +148,10 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
                     String sql = doTokenReplacementOnSql(context, script);
                     transaction.query(sql, lookupColumnRowMapper, null);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 if (isFailOnError) {
                     throw (RuntimeException) e;
-                }
-                else {
+                } else {
                     log.error("Failed while executing sql script", e);
                 }
             }
@@ -174,33 +161,29 @@ public class SQLDatabaseWriterFilter extends DynamicDatabaseWriterFilter {
     protected String doTokenReplacementOnSql(DataContext context, String sql) {
         if (isNotBlank(sql)) {
             Data csvData = (Data) context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
-
             if (csvData != null && csvData.getTriggerHistory() != null) {
                 sql = FormatUtils
-                    .replaceToken(sql, "sourceCatalogName", csvData.getTriggerHistory().getSourceCatalogName(), true);
+                        .replaceToken(sql, "sourceCatalogName", csvData.getTriggerHistory().getSourceCatalogName(), true);
             }
-
             if (csvData != null && csvData.getTriggerHistory() != null) {
                 sql = FormatUtils
-                    .replaceToken(sql, "sourceSchemaName", csvData.getTriggerHistory().getSourceSchemaName(), true);
+                        .replaceToken(sql, "sourceSchemaName", csvData.getTriggerHistory().getSourceSchemaName(), true);
             }
         }
         return sql;
     }
-
 
     protected void processError(LoadFilter currentFilter, Table table, Throwable ex) {
         if (ex instanceof TargetError) {
             ex = ((TargetError) ex).getTarget();
         }
         String formattedMessage = String
-            .format("Error executing sql script for load filter %s on table %s. The error was: %s",
-                new Object[]{currentFilter != null ? currentFilter.getLoadFilterId() : "N/A", table.getName(),
-                                 ex.getMessage()});
+                .format("Error executing sql script for load filter %s on table %s. The error was: %s",
+                        new Object[] { currentFilter != null ? currentFilter.getLoadFilterId() : "N/A", table.getName(),
+                                ex.getMessage() });
         log.error(formattedMessage);
         if (currentFilter.isFailOnError()) {
             throw new SymmetricException(formattedMessage, ex);
         }
     }
-
 }

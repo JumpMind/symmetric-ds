@@ -29,13 +29,12 @@ import org.jumpmind.db.platform.DatabaseInfo;
 import org.jumpmind.db.sql.DmlStatement;
 
 public class PostgreSqlDmlStatement extends DmlStatement {
-
     protected boolean allowIgnoreOnConflict = true;
 
     public PostgreSqlDmlStatement(DmlType type, String catalogName, String schemaName, String tableName,
-            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues, 
+            Column[] keysColumns, Column[] columns, boolean[] nullKeyValues,
             DatabaseInfo databaseInfo, boolean useQuotedIdentifiers, String textColumnExpression) {
-        super(type, catalogName, schemaName, tableName, keysColumns, columns, 
+        super(type, catalogName, schemaName, tableName, keysColumns, columns,
                 nullKeyValues, databaseInfo, useQuotedIdentifiers, textColumnExpression);
     }
 
@@ -125,27 +124,23 @@ public class PostgreSqlDmlStatement extends DmlStatement {
     @Override
     protected void appendColumnParameter(StringBuilder sql, Column column) {
         String typeToCast = getTypeToCast(column);
-
         if (typeToCast != null) {
             sql.append("cast(? as ").append(typeToCast).append(")").append(",");
-        } else if (column.getJdbcTypeName() != null && (
-                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
+        } else if (column.getJdbcTypeName() != null && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append("ST_GEOMFROMTEXT(?)").append(",");
         } else {
             super.appendColumnParameter(sql, column);
         }
     }
-    
+
     @Override
     protected void appendColumnEquals(StringBuilder sql, Column column) {
         String typeToCast = getTypeToCast(column);
-
         if (typeToCast != null) {
             sql.append(quote).append(column.getName()).append(quote)
                     .append(" = cast(? as ").append(typeToCast).append(")");
-        } else if (column.getJdbcTypeName() != null && (
-                column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
+        } else if (column.getJdbcTypeName() != null && (column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOMETRY) ||
                 column.getJdbcTypeName().toUpperCase().contains(TypeMap.GEOGRAPHY))) {
             sql.append(" = ST_GEOMFROMTEXT(?)");
         } else {
@@ -155,7 +150,6 @@ public class PostgreSqlDmlStatement extends DmlStatement {
 
     private String getTypeToCast(Column column) {
         String typeToCast = null;
-
         if (column.isTimestampWithTimezone()) {
             typeToCast = "timestamp with time zone";
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.UUID)) {
@@ -171,11 +165,9 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         } else if (column.getJdbcTypeName() != null && column.getJdbcTypeName().toUpperCase().contains(TypeMap.JSON)) {
             typeToCast = "json";
         }
-
         if (typeToCast != null && column.getMappedType() != null && column.getMappedType().equals(TypeMap.ARRAY)) {
             typeToCast = typeToCast + "[]";
         }
-
         return typeToCast;
     }
 
@@ -184,19 +176,26 @@ public class PostgreSqlDmlStatement extends DmlStatement {
         String columnName = column.getName();
         if (select && column.isTimestampWithTimezone()) {
             sql.append(
-            "   case                                                                                                                                 " +
-            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") < 0 then                                 " +
-            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                            " +
-            "     lpad(cast(abs(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(")) as varchar),2,'0')||':'||    " +
-            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
-            "   else                                                                                                                                 " +
-            "     to_char(").append(quote).append(columnName).append(quote).append(", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                            " +
-            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(") as varchar),2,'0')||':'||         " +
-            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(") as varchar), 2, '0')            " +
-            "   end as ").append(columnName);
+                    "   case                                                                                                                                 " +
+                            "   when extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(
+                                    ") < 0 then                                 " +
+                                            "     to_char(").append(quote).append(columnName).append(quote).append(
+                                                    ", 'YYYY-MM-DD HH24:MI:SS.US ')||'-'||                            " +
+                                                            "     lpad(cast(abs(extract(timezone_hour from ").append(quote).append(columnName).append(quote)
+                    .append(")) as varchar),2,'0')||':'||    " +
+                            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName).append(quote).append(
+                                    ") as varchar), 2, '0')            " +
+                                            "   else                                                                                                                                 "
+                                            +
+                                            "     to_char(").append(quote).append(columnName).append(quote).append(
+                                                    ", 'YYYY-MM-DD HH24:MI:SS.US ')||'+'||                            " +
+                                                            "     lpad(cast(extract(timezone_hour from ").append(quote).append(columnName).append(quote).append(
+                                                                    ") as varchar),2,'0')||':'||         " +
+                                                                            "     lpad(cast(extract(timezone_minute from ").append(quote).append(columnName)
+                    .append(quote).append(") as varchar), 2, '0')            " +
+                            "   end as ").append(columnName);
         } else {
             super.appendColumnNameForSql(sql, column, select);
         }
     }
-
 }

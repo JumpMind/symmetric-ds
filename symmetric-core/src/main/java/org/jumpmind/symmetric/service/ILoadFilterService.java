@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.model.NodeGroupLink;
 import org.jumpmind.symmetric.service.impl.LoadFilterService.LoadFilterNodeGroupLink;
 
 public interface ILoadFilterService {
-
     public Map<LoadFilterType, Map<String, List<LoadFilter>>> findLoadFiltersFor(NodeGroupLink link, boolean useCache);
 
     public List<LoadFilterNodeGroupLink> getLoadFilterNodeGroupLinks();
@@ -39,7 +38,6 @@ public interface ILoadFilterService {
     public void deleteLoadFilter(String loadFilterId);
 
     public void clearCache();
-    
-    public boolean refreshFromDatabase();
 
+    public boolean refreshFromDatabase();
 }

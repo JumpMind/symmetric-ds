@@ -24,31 +24,18 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Extension implements Serializable {
-
     private static final long serialVersionUID = 1L;
-    
     public static String EXTENSION_TYPE_JAVA = "java";
-    
     public static String EXTENSION_TYPE_BSH = "bsh";
-
     private String extensionId;
-    
     private String extensionType;
-    
     private String interfaceName;
-    
     private String nodeGroupId;
-    
     private boolean enabled = true;
-    
     private int extensionOrder = 1;
-    
     private String extensionText;
-    
     private Date createTime;
-    
     private String lastUpdateBy;
-    
     private Date lastUpdateTime;
 
     public String getExtensionId() {
@@ -130,5 +117,4 @@ public class Extension implements Serializable {
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-
 }

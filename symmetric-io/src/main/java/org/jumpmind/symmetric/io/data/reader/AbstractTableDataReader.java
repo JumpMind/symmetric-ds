@@ -40,14 +40,11 @@ import org.jumpmind.symmetric.io.data.IDataReader;
 import org.jumpmind.util.Statistics;
 
 /**
- * A data reader that knows it will be reading a single batch and a single
- * table.
+ * A data reader that knows it will be reading a single batch and a single table.
  */
 abstract public class AbstractTableDataReader extends AbstractDataReader implements IDataReader {
-
     public static final String CTX_LINE_NUMBER = AbstractTableDataReader.class.getSimpleName()
             + ".lineNumber";
-
     protected Reader reader;
     protected Statistics statistics = new Statistics();
     protected DataContext context;
@@ -137,7 +134,6 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
             }
         }
         return null;
-
     }
 
     public Batch nextBatch() {
@@ -160,10 +156,11 @@ abstract public class AbstractTableDataReader extends AbstractDataReader impleme
 
     public void close() {
         try {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         finish();
     }
 

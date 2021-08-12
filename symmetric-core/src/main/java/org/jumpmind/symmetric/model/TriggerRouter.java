@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -31,47 +30,36 @@ import org.jumpmind.symmetric.io.data.DataEventType;
  * Defines the trigger via which a table will be synchronized.
  */
 public class TriggerRouter implements Serializable, Cloneable {
-
     private static final long serialVersionUID = 1L;
-
-    private boolean enabled =  true;
-
+    private boolean enabled = true;
     /**
      * This is the order in which the definitions will be processed.
      */
     private int initialLoadOrder = 50;
-    
     private String initialLoadSelect;
-    
     private String initialLoadDeleteStmt;
-        
     private Trigger trigger;
-
     private Router router;
-
     private Date createTime;
-
     private Date lastUpdateTime;
-
     private String lastUpdateBy;
-    
     private boolean pingBackEnabled = false;
-    
+
     public TriggerRouter() {
         this(new Trigger(), new Router());
     }
-    
+
     public TriggerRouter(Trigger trigger, Router router) {
         this.trigger = trigger;
         this.router = router;
         createTime = new Date();
-        lastUpdateTime = new Date();        
+        lastUpdateTime = new Date();
     }
-    
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-    
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -123,15 +111,15 @@ public class TriggerRouter implements Serializable, Cloneable {
     public Trigger getTrigger() {
         return trigger;
     }
-    
+
     public void setInitialLoadSelect(String initialLoadSelect) {
         this.initialLoadSelect = initialLoadSelect;
     }
-    
+
     public String getInitialLoadSelect() {
         return initialLoadSelect;
     }
-    
+
     public String getInitialLoadDeleteStmt() {
         return initialLoadDeleteStmt;
     }
@@ -142,14 +130,14 @@ public class TriggerRouter implements Serializable, Cloneable {
 
     public boolean isRouted(DataEventType event) {
         switch (event) {
-        case INSERT:
-            return router.isSyncOnInsert();
-        case DELETE:
-            return router.isSyncOnDelete();
-        case UPDATE:
-            return router.isSyncOnUpdate();
-        default:
-            return true;
+            case INSERT:
+                return router.isSyncOnInsert();
+            case DELETE:
+                return router.isSyncOnDelete();
+            case UPDATE:
+                return router.isSyncOnUpdate();
+            default:
+                return true;
         }
     }
 
@@ -157,7 +145,7 @@ public class TriggerRouter implements Serializable, Cloneable {
         if (router != null && !StringUtils.isBlank(router.getTargetSchemaName())) {
             return router.getTargetSchemaName();
         } else if (router != null && router.isUseSourceCatalogSchema() && triggerHistory != null) {
-            return triggerHistory.getSourceSchemaName(); 
+            return triggerHistory.getSourceSchemaName();
         } else {
             return defaultSchema;
         }
@@ -167,7 +155,7 @@ public class TriggerRouter implements Serializable, Cloneable {
         if (router != null && !StringUtils.isBlank(router.getTargetCatalogName())) {
             return router.getTargetCatalogName();
         } else if (router != null && router.isUseSourceCatalogSchema() && triggerHistory != null) {
-            return triggerHistory.getSourceCatalogName(); 
+            return triggerHistory.getSourceCatalogName();
         } else {
             return defaultCatalog;
         }
@@ -185,7 +173,7 @@ public class TriggerRouter implements Serializable, Cloneable {
         } else {
             return null;
         }
-    }   
+    }
 
     public String qualifiedTargetTableName(TriggerHistory triggerHistory) {
         String catalog = getTargetCatalog(null, triggerHistory);
@@ -199,50 +187,49 @@ public class TriggerRouter implements Serializable, Cloneable {
         }
         return tableName;
     }
-    
+
     public void setPingBackEnabled(boolean pingBackEnabled) {
         this.pingBackEnabled = pingBackEnabled;
     }
-    
+
     public boolean isPingBackEnabled() {
         return pingBackEnabled;
     }
-    
+
     public boolean isSame(TriggerRouter triggerRouter) {
         return (this.trigger == null && triggerRouter.trigger == null)
                 || (this.trigger != null && triggerRouter.trigger != null && this.trigger
                         .matches(triggerRouter.trigger))
-                && (this.router == null && triggerRouter.router == null)
+                        && (this.router == null && triggerRouter.router == null)
                 || (this.router != null && triggerRouter.router != null && this.router
                         .equals(triggerRouter.router));
     }
-    
+
     @Override
     public String toString() {
         return (trigger != null ? trigger.toString() : "") + ":"
                 + (router != null ? router.toString() : "");
     }
-    
+
     public String getIdentifier() {
         return getTrigger().getTriggerId() + getRouter().getRouterId();
     }
 
-    
     public String getTriggerId() {
         return this.trigger != null ? this.trigger.getTriggerId() : null;
     }
-    
+
     public String getRouterId() {
         return this.router != null ? this.router.getRouterId() : null;
     }
-    
+
     public void setTriggerId(String triggerId) {
         if (this.trigger == null) {
             this.trigger = new Trigger();
         }
         this.trigger.setTriggerId(triggerId);
     }
-    
+
     public void setRouterId(String routerId) {
         if (this.router == null) {
             this.router = new Router();
@@ -260,5 +247,4 @@ public class TriggerRouter implements Serializable, Cloneable {
         }
         return triggerRouter;
     }
-
 }

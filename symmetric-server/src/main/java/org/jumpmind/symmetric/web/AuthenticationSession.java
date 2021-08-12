@@ -23,18 +23,15 @@ package org.jumpmind.symmetric.web;
 import java.util.HashMap;
 
 public class AuthenticationSession extends HashMap<String, Object> {
-
     private static final long serialVersionUID = 1L;
-
     private String id;
-    
     private long creationTime;
 
     public AuthenticationSession(String id) {
         this.id = id;
         this.creationTime = System.currentTimeMillis();
     }
-    
+
     @Override
     public int hashCode() {
         return id.hashCode();
@@ -67,9 +64,8 @@ public class AuthenticationSession extends HashMap<String, Object> {
     public Object getAttribute(String name) {
         return get(name);
     }
-    
+
     public Object setAttribute(String name, Object value) {
         return put(name, value);
     }
-    
 }

@@ -21,7 +21,6 @@
 package org.jumpmind.symmetric.route;
 
 public class CommonBatchCollisionException extends RuntimeException {
-
     private static final long serialVersionUID = 1L;
 
     public CommonBatchCollisionException() {

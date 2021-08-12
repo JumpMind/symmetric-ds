@@ -43,19 +43,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SymmetricPushClient {
-
-	private static final Logger log = LoggerFactory.getLogger(SymmetricPushClient.class);
-
+    private static final Logger log = LoggerFactory.getLogger(SymmetricPushClient.class);
     protected String nodeId;
-
     protected String securityToken;
-
     protected String syncUrl;
-
     protected HttpOutgoingTransport transport;
-
     protected ProtocolDataWriter writer;
-
     protected Batch batch;
 
     public SymmetricPushClient(String nodeId, String securityToken, String syncUrl) {
@@ -84,13 +77,10 @@ public class SymmetricPushClient {
             BufferedReader reader = transport.readResponse();
             String ackString = reader.readLine();
             String ackExtendedString = reader.readLine();
-
             log.debug("Reading ack: {}", ackString);
             log.debug("Reading extend ack: {}", ackExtendedString);
-
             List<BatchAck> batchAcks = new HttpTransportManager().readAcknowledgement(ackString,
                     ackExtendedString);
-
             if (batchAcks.size() > 0) {
                 return batchAcks.get(0);
             } else {
@@ -141,5 +131,4 @@ public class SymmetricPushClient {
         sb.append(AppUtils.getIpAddress());
         return sb.toString();
     }
-
 }

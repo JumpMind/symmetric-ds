@@ -70,7 +70,6 @@ import org.jumpmind.db.sql.Row;
  * Reads a database model from a PostgreSql database.
  */
 public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
-
     public PostgreSqlDdlReader(IDatabasePlatform platform) {
         super(platform);
         setDefaultCatalogPattern(null);
@@ -82,15 +81,12 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             // PostgreSQL also returns unique indices for non-pk auto-increment
             // columns which are of the form "[table]_[column]_key"
-            HashMap<String,IIndex> uniquesByName = new HashMap<String,IIndex>();
-
+            HashMap<String, IIndex> uniquesByName = new HashMap<String, IIndex>();
             for (int indexIdx = 0; indexIdx < table.getIndexCount(); indexIdx++) {
                 IIndex index = table.getIndex(indexIdx);
-
                 if (index.isUnique() && (index.getName() != null)) {
                     uniquesByName.put(index.getName(), index);
                 }
@@ -105,12 +101,11 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     }
                 }
             }
-            
             setPrimaryKeyConstraintName(connection, table);
         }
         return table;
     }
-    
+
     protected void setPrimaryKeyConstraintName(Connection connection, Table table) throws SQLException {
         String sql = "select conname from pg_constraint where conrelid in (select oid from pg_class where relname=? and relnamespace in (select oid from pg_namespace where nspname=?)) and contype='p'";
         PreparedStatement pstmt = null;
@@ -122,7 +117,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             rs = pstmt.executeQuery();
             if (rs.next()) {
                 table.setPrimaryKeyConstraintName(rs.getString(1).trim());
-            }            
+            }
         } finally {
             JdbcSqlTemplate.close(rs);
             JdbcSqlTemplate.close(pstmt);
@@ -137,32 +132,29 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             return Types.TIMESTAMP;
         } else if (typeName != null && typeName.equalsIgnoreCase("TIMESTAMPTZ")) {
             // lets use the same type code that oracle uses
-            return MAPPED_TIMESTAMPTZ;            
+            return MAPPED_TIMESTAMPTZ;
         } else if (PostgreSqlDatabasePlatform.isBlobStoredByReference(typeName)) {
             return Types.BLOB;
         } else if (type != null && (type == Types.STRUCT || type == Types.OTHER)) {
             return Types.LONGVARCHAR;
         } else if (typeName != null && typeName.equalsIgnoreCase("BIT")) {
             return Types.VARCHAR;
-        }
-        else {
+        } else {
             return super.mapUnknownJdbcTypeForColumn(values);
         }
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
-        
         PlatformColumn platformColumn = column.findPlatformColumn(platform.getName());
         if (platformColumn != null) {
-	        if ("serial".equals(platformColumn.getType()) || "serial4".equals(platformColumn.getType())) {
-	            platformColumn.setType("int4");
-	        } else if ("bigserial".equals(platformColumn.getType()) || "serial8".equals(platformColumn.getType())) {
-	            platformColumn.setType("int8");
-	        }
+            if ("serial".equals(platformColumn.getType()) || "serial4".equals(platformColumn.getType())) {
+                platformColumn.setType("int4");
+            } else if ("bigserial".equals(platformColumn.getType()) || "serial8".equals(platformColumn.getType())) {
+                platformColumn.setType("int8");
+            }
         }
-
         if (column.getSize() != null) {
             if (column.getSizeAsInt() <= 0) {
                 column.setSize(null);
@@ -182,7 +174,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             // on columns defined as TEXT.
             else if (column.getSizeAsInt() == Integer.MAX_VALUE) {
                 if (column.getMappedTypeCode() == Types.VARCHAR) {
-                    if(column.getJdbcTypeName().equalsIgnoreCase("TEXT")) {
+                    if (column.getJdbcTypeName().equalsIgnoreCase("TEXT")) {
                         column.setMappedTypeCode(Types.LONGVARCHAR);
                         column.setSize(null);
                     }
@@ -190,7 +182,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     column.setMappedTypeCode(Types.LONGVARBINARY);
                     column.setSize(null);
                 }
-            } else if (column.getSizeAsInt() == 131089 && column.getJdbcTypeCode() == Types.NUMERIC) {                
+            } else if (column.getSizeAsInt() == 131089 && column.getJdbcTypeCode() == Types.NUMERIC) {
                 column.setSizeAndScale(0, 0);
                 column.setMappedTypeCode(Types.DECIMAL);
                 if (platformColumn != null) {
@@ -198,16 +190,13 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                     platformColumn.setDecimalDigits(-1);
                 }
             }
-            
         }
-
         String defaultValue = column.getDefaultValue();
-
         if ((defaultValue != null) && (defaultValue.length() > 0)) {
             // If the default value looks like
             // "nextval('ROUNDTRIP_VALUE_seq'::text)"
             // then it is an auto-increment column
-            if (defaultValue.startsWith("nextval(") || 
+            if (defaultValue.startsWith("nextval(") ||
                     (PostgreSqlDdlBuilder.isUsePseudoSequence() && defaultValue.endsWith("seq()"))) {
                 column.setAutoIncrement(true);
                 defaultValue = null;
@@ -216,20 +205,20 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 // "-9000000000000000000::bigint" or
                 // "'some value'::character varying" or "'2000-01-01'::date"
                 switch (column.getMappedTypeCode()) {
-                case Types.INTEGER:
-                case Types.BIGINT:
-                case Types.DECIMAL:
-                case Types.NUMERIC:
-                    defaultValue = extractUndelimitedDefaultValue(defaultValue);
-                    break;
-                case Types.CHAR:
-                case Types.VARCHAR:
-                case Types.LONGVARCHAR:
-                case Types.DATE:
-                case Types.TIME:
-                case Types.TIMESTAMP:
-                    defaultValue = extractDelimitedDefaultValue(defaultValue);
-                    break;
+                    case Types.INTEGER:
+                    case Types.BIGINT:
+                    case Types.DECIMAL:
+                    case Types.NUMERIC:
+                        defaultValue = extractUndelimitedDefaultValue(defaultValue);
+                        break;
+                    case Types.CHAR:
+                    case Types.VARCHAR:
+                    case Types.LONGVARCHAR:
+                    case Types.DATE:
+                    case Types.TIME:
+                    case Types.TIMESTAMP:
+                        defaultValue = extractDelimitedDefaultValue(defaultValue);
+                        break;
                 }
                 if (TypeMap.isTextType(column.getMappedTypeCode())) {
                     // We assume escaping via double quote (see also the
@@ -244,8 +233,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     /*
-     * Extractes the default value from a default value spec of the form
-     * "'some value'::character varying" or "'2000-01-01'::date".
+     * Extractes the default value from a default value spec of the form "'some value'::character varying" or "'2000-01-01'::date".
      * 
      * @param defaultValue The default value spec
      * 
@@ -254,7 +242,6 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     private String extractDelimitedDefaultValue(String defaultValue) {
         if (defaultValue.startsWith("'")) {
             int valueEnd = defaultValue.indexOf("'::");
-
             if (valueEnd > 0) {
                 return defaultValue.substring("'".length(), valueEnd);
             }
@@ -263,8 +250,7 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
     }
 
     /*
-     * Extractes the default value from a default value spec of the form
-     * "-9000000000000000000::bigint".
+     * Extractes the default value from a default value spec of the form "-9000000000000000000::bigint".
      * 
      * @param defaultValue The default value spec
      * 
@@ -272,7 +258,6 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
      */
     private String extractUndelimitedDefaultValue(String defaultValue) {
         int valueEnd = defaultValue.indexOf("::");
-
         if (valueEnd > 0) {
             defaultValue = defaultValue.substring(0, valueEnd);
         } else {
@@ -295,31 +280,28 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) {
         return table.doesIndexContainOnlyPrimaryKeyColumns(index);
     }
-    
+
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-        
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "trigger_name, "
-                        + "trigger_schema, "
-                        + "trigger_catalog, "
-                        + "event_manipulation AS trigger_type, "
-                        + "event_object_table AS table_name,"
-                        + "trig.*, "
-                        + "pgproc.prosrc "
-                    + "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
-                    + "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
-                        + "ON pgtrig.tgname=trig.trigger_name "
-                    + "INNER JOIN pg_catalog.pg_proc AS pgproc "
-                        + "ON pgproc.oid=pgtrig.tgfoid "
-                    + "WHERE event_object_table=? AND event_object_schema=?;";
+                + "trigger_name, "
+                + "trigger_schema, "
+                + "trigger_catalog, "
+                + "event_manipulation AS trigger_type, "
+                + "event_object_table AS table_name,"
+                + "trig.*, "
+                + "pgproc.prosrc "
+                + "FROM INFORMATION_SCHEMA.TRIGGERS AS trig "
+                + "INNER JOIN pg_catalog.pg_trigger AS pgtrig "
+                + "ON pgtrig.tgname=trig.trigger_name "
+                + "INNER JOIN pg_catalog.pg_proc AS pgproc "
+                + "ON pgproc.oid=pgtrig.tgfoid "
+                + "WHERE event_object_table=? AND event_object_schema=?;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -340,8 +322,6 @@ public class PostgreSqlDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-        
         return triggers;
     }
-
 }

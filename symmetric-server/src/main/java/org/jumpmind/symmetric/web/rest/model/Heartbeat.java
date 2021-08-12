@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.web.rest.model;
 import java.util.Date;
 
 public class Heartbeat {
-
     private String nodeId;
     private String hostName;
     private String ipAddress;

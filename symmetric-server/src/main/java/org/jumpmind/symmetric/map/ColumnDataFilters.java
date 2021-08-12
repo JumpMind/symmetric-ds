@@ -34,17 +34,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scripting.ScriptCompilationException;
 
 public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements IDatabaseWriterFilter, INodeGroupExtensionPoint {
-
     final Logger log = LoggerFactory.getLogger(getClass());
-
     private String[] nodeGroupIdsToApplyTo;
-
     List<TableColumnValueFilter> filters;
-
     private boolean ignoreCase = true;
-
     private boolean enabled = true;
-    
+
     @Override
     public boolean beforeWrite(
             DataContext context, Table table, CsvData data) {
@@ -59,7 +54,7 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                     if (filteredColumn.isEnabled()
                             && ((ignoreCase && filteredColumn.getTableName().equalsIgnoreCase(
                                     table.getName())) || (!ignoreCase && filteredColumn
-                                    .getTableName().equals(table.getName())))) {
+                                            .getTableName().equals(table.getName())))) {
                         String columnName = filteredColumn.getColumnName();
                         int index = table.getColumnIndex(columnName);
                         if (index < 0 && ignoreCase) {
@@ -74,10 +69,10 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
                             try {
                                 String[] columnValues = data.getParsedData(CsvData.ROW_DATA);
                                 if (columnValues != null && columnValues.length > index) {
-                                columnValues[index] = filteredColumn.getFilter().filter(
-                                        filteredColumn.getTableName(),
-                                        filteredColumn.getColumnName(), columnValues[index],
-                                        context);
+                                    columnValues[index] = filteredColumn.getFilter().filter(
+                                            filteredColumn.getTableName(),
+                                            filteredColumn.getColumnName(), columnValues[index],
+                                            context);
                                 }
                             } catch (RuntimeException ex) {
                                 // Try to log script errors so they are more
@@ -126,5 +121,4 @@ public class ColumnDataFilters extends DatabaseWriterFilterAdapter implements ID
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-
 }

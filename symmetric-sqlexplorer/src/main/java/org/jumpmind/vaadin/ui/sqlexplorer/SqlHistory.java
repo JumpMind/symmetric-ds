@@ -24,9 +24,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class SqlHistory implements Serializable, Comparable<SqlHistory> {
-
     private static final long serialVersionUID = 1L;
-
     private String sqlStatement;
     private Date lastExecuteTime;
     private long lastExecuteDuration;
@@ -72,10 +70,9 @@ public class SqlHistory implements Serializable, Comparable<SqlHistory> {
     public void setExecuteCount(long executeCount) {
         this.executeCount = executeCount;
     }
-    
+
     @Override
     public int compareTo(SqlHistory o) {
         return -lastExecuteTime.compareTo(o.lastExecuteTime);
     }
-
 }

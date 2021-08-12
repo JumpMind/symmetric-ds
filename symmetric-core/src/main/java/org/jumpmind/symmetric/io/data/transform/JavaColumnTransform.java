@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltInExtensionPoint {
-
     public final static String CODE_START = "import org.jumpmind.symmetric.io.data.transform.*;\n"
             + "import org.jumpmind.symmetric.io.data.*;\n"
             + "import org.jumpmind.db.platform.*;\n"
@@ -39,15 +38,10 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
             + "public class JavaColumnTransformExt extends JavaColumnTransform { \n"
             + "    public String transform(IDatabasePlatform platform, DataContext context, TransformColumn column, TransformedData data,\n"
             + "        Map<String, String> sourceValues, String newValue, String oldValue) throws IgnoreColumnException, IgnoreRowException {\n\n";
-
     public final static String CODE_END = "\n\n   }\n}\n";
-
     public static final String NAME = "java";
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected final String TRANSFORM_KEY = String.format("%d.JavaRouter", hashCode());
-    
     protected IExtensionService extensionService;
 
     public JavaColumnTransform() {
@@ -56,7 +50,7 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
     public JavaColumnTransform(IExtensionService extensionService) {
         this.extensionService = extensionService;
     }
-    
+
     public String getName() {
         return NAME;
     }
@@ -82,11 +76,10 @@ public class JavaColumnTransform implements ISingleValueColumnTransform, IBuiltI
     protected ISingleValueColumnTransform getCompiledClass(DataContext context, TransformColumn column) throws Exception {
         ISingleValueColumnTransform colTransform = (ISingleValueColumnTransform) context.get(TRANSFORM_KEY);
         if (colTransform == null) {
-            String javaCode = CODE_START + column.getTransformExpression() + CODE_END;    
+            String javaCode = CODE_START + column.getTransformExpression() + CODE_END;
             colTransform = (ISingleValueColumnTransform) extensionService.getCompiledClass(javaCode);
             context.put(TRANSFORM_KEY, colTransform);
         }
         return colTransform;
     }
-
 }

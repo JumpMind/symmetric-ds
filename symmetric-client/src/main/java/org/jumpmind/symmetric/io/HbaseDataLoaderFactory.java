@@ -34,13 +34,10 @@ import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 import org.jumpmind.symmetric.load.DefaultDataLoaderFactory;
 
 public class HbaseDataLoaderFactory extends DefaultDataLoaderFactory implements IBuiltInExtensionPoint {
-
     protected String typeName = "hbase";
-
     protected String hbaseSiteXmlPath;
-    
     protected IDataWriter hbaseDataWriter;
-    
+
     public HbaseDataLoaderFactory() {
         super();
     }
@@ -49,17 +46,16 @@ public class HbaseDataLoaderFactory extends DefaultDataLoaderFactory implements 
     public String getTypeName() {
         return typeName;
     }
-    
+
     public void setTypeName(String typeName) {
         this.typeName = typeName;
     }
 
     @Override
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
-                TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
+            TransformWriter transformWriter, List<IDatabaseWriterFilter> filters,
             List<IDatabaseWriterErrorHandler> errorHandlers,
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData) {
-        
         if (hbaseDataWriter == null) {
             this.hbaseSiteXmlPath = parameterService.getString(ParameterConstants.HBASE_SITE_XML_PATH);
             this.hbaseDataWriter = new HbaseDatabaseWriter(this.hbaseSiteXmlPath);

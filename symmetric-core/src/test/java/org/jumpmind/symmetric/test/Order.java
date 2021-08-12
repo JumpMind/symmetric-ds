@@ -25,12 +25,10 @@ import java.util.Date;
 import java.util.List;
 
 public class Order {
-
     private String orderId;
     private int customerId;
     private String status;
     private Date deliverDate;
-    
     private List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
 
     public Order(String orderId, int customerId, String status, Date deliverDate) {
@@ -39,11 +37,11 @@ public class Order {
         this.status = status;
         this.deliverDate = deliverDate;
     }
-    
+
     public List<OrderDetail> getOrderDetails() {
         return orderDetails;
     }
-    
+
     public String getOrderId() {
         return orderId;
     }
@@ -75,5 +73,4 @@ public class Order {
     public void setDeliverDate(Date deliverDate) {
         this.deliverDate = deliverDate;
     }
-
 }

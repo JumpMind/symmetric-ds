@@ -50,21 +50,20 @@ import org.jumpmind.symmetric.model.TriggerRouter;
  * This service provides an API to access and update {@link Data}.
  */
 public interface IDataService {
-        
     public void insertTableReloadRequest(ISqlTransaction transaction, TableReloadRequest request);
-    
+
     public void insertTableReloadRequest(TableReloadRequest request);
-    
+
     public TableReloadRequest getTableReloadRequest(TableReloadRequestKey key);
-    
+
     public TableReloadRequest getTableReloadRequest(long loadId);
-    
+
     public TableReloadRequest getTableReloadRequest(long loadId, String triggerId, String routerId);
-    
+
     public List<TableReloadRequest> getTableReloadRequestToProcess(final String sourceNodeId);
-        
+
     public List<TableReloadStatus> getTableReloadStatus();
-    
+
     public List<TableReloadStatus> getActiveTableReloadStatus();
 
     public TableReloadStatus getTableReloadStatusByLoadId(long loadId);
@@ -72,42 +71,47 @@ public interface IDataService {
     public List<TableReloadStatus> getTableReloadStatusByTarget(String targetNodeId);
 
     public TableReloadStatus updateTableReloadStatusDataLoaded(ISqlTransaction transcation, long loadId, long batchId, int batchCount);
-    
+
     public int updateTableReloadRequestsCancelled(long loadId);
-    
+
     public int cancelTableReloadRequest(TableReloadRequest request);
-    
+
     public String reloadNode(String nodeId, boolean reverseLoad, String createBy);
-    
+
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName);
 
     public String reloadTable(String nodeId, String catalogName, String schemaName, String tableName, String overrideInitialLoadSelect);
 
-    public String reloadTableImmediate(String nodeId, String catalogName, String schemaName, String tableName, 
+    public String reloadTableImmediate(String nodeId, String catalogName, String schemaName, String tableName,
             String overrideInitialLoadSelect, String overrideChannelId);
 
     public void reloadMissingForeignKeyRows(long batchId, String nodeId, long dataId, long rowNumber);
-    
+
     public void reloadMissingForeignKeyRowsForLoad(String sourceNodeId, long batchId, long rowNumber, Table table, CsvData data, String channelId);
 
-    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data, 
+    public void reloadMissingForeignKeyRowsReverse(String sourceNodeId, Table table, CsvData data,
             String channelId, boolean sendCorrectionToPeers);
-    
-    public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData, 
+
+    public void sendNewerDataToNode(ISqlTransaction transaction, String targetNodeId, String tableName, String pkCsvData,
             Date minCreateTime, String winningNodeId);
 
     /**
      * Sends a SQL command to the remote node for execution by creating a SQL event that is synced like other data
      * 
-     *  @param nodeId the remote node where the SQL statement will be executed
-     * @param catalogName used to find the sym_trigger entry for table that will be associated with this event 
-     * @param schemaName used to find the sym_trigger entry for table that will be associated with this event
-     * @param tableName used to find the sym_trigger entry for table that will be associated with this event
-     * @param sql the SQL statement to run on the remote node database
-     *  @return message string indicating success or error
+     * @param nodeId
+     *            the remote node where the SQL statement will be executed
+     * @param catalogName
+     *            used to find the sym_trigger entry for table that will be associated with this event
+     * @param schemaName
+     *            used to find the sym_trigger entry for table that will be associated with this event
+     * @param tableName
+     *            used to find the sym_trigger entry for table that will be associated with this event
+     * @param sql
+     *            the SQL statement to run on the remote node database
+     * @return message string indicating success or error
      */
     public String sendSQL(String nodeId, String catalogName, String schemaName, String tableName, String sql);
-    
+
     public String sendSQL(String nodeId, String sql);
 
     public Map<Integer, ExtractRequest> insertReloadEvents(
@@ -115,14 +119,15 @@ public interface IDataService {
             ProcessInfo processInfo, List<TriggerRouter> triggerRouters,
             Map<Integer, ExtractRequest> extractRequests,
             IReloadGenerator reloadGenerator);
-    
+
     public boolean insertReloadEvent(TableReloadRequest request, boolean deleteAtClient);
-    
+
     public long insertReloadEvent(ISqlTransaction transaction, Node targetNode,
-            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy, Status status, long estimatedBatchRowCount);
-    
+            TriggerRouter triggerRouter, TriggerHistory triggerHistory, String overrideInitialLoadSelect, boolean isLoad, long loadId, String createBy,
+            Status status, long estimatedBatchRowCount);
+
     public void sendScript(String nodeId, String script, boolean isLoad);
-    
+
     public boolean sendSchema(String nodeId, String catalogName, String schemaName,
             String tableName, boolean isLoad, boolean excludeIndices, boolean excludeForeignKeys,
             boolean excludeDefaults);
@@ -133,15 +138,15 @@ public interface IDataService {
     public void heartbeat(boolean force);
 
     public void insertHeartbeatEvent(Node node, boolean isReload);
-    
+
     public long insertData(Data data);
-    
+
     public long insertData(ISqlTransaction transaction, final Data data);
-    
+
     public void insertDataEvents(ISqlTransaction transaction, List<DataEvent> events);
-    
+
     public void insertDataAndDataEventAndOutgoingBatch(Data data, String channelId, List<Node> nodes, boolean isLoad, long loadId, String createBy);
-    
+
     public long insertDataAndDataEventAndOutgoingBatch(ISqlTransaction transaction, Data data,
             String nodeId, boolean isLoad, long loadId, String createBy, Status status, long estimatedBatchRowCount);
 
@@ -149,82 +154,86 @@ public interface IDataService {
 
     public void insertSqlEvent(ISqlTransaction transaction, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
 
-    public void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history, String channelId, Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
+    public void insertSqlEvent(ISqlTransaction transaction, TriggerHistory history, String channelId, Node targetNode, String sql, boolean isLoad, long loadId,
+            String createBy);
 
     public void insertSqlEvent(Node targetNode, String sql, boolean isLoad, long loadId, String createBy);
-    
+
     public void insertScriptEvent(String channelId, Node targetNode, String script, boolean isLoad,
             long loadId, String createBy);
 
     public void insertScriptEvent(ISqlTransaction transaction, String channelId,
             Node targetNode, String script, boolean isLoad, long loadId, String createBy);
 
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
-    
-    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
-    
-    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId, String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
-    
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, String createBy, boolean excludeIndices, boolean excludeForeignKeys,
+            boolean excludeDefaults);
+
+    public void insertCreateEvent(Node targetNode, TriggerHistory triggerHistory, boolean isLoad, long loadId, String createBy, boolean excludeIndices,
+            boolean excludeForeignKeys, boolean excludeDefaults);
+
+    public void insertCreateEvent(ISqlTransaction transaction, Node targetNode, TriggerHistory triggerHistory, String channelId, boolean isLoad, long loadId,
+            String createBy, boolean excludeIndices, boolean excludeForeignKeys, boolean excludeDefaults);
+
     /**
      * Count the number of data ids in a range
      */
     public int countDataInRange(long firstDataId, long secondDataId);
-    
+
     public long countDataGaps();
 
     public List<DataGap> findDataGapsUnchecked();
-    
+
     public List<DataGap> findDataGaps();
 
     public Date findCreateTimeOfEvent(long dataId);
-    
+
     public Date findCreateTimeOfData(long dataId);
-    
+
     public Date findNextCreateTimeOfDataStartingAt(long dataId);
 
     public Data createData(String catalogName, String schemaName, String tableName);
 
     public Data createData(String catalogName, String schemaName, String tableName, String whereClause);
-    
+
     public Data createData(ISqlTransaction transaction, String catalogName, String schemaName, String tableName, String whereClause);
 
     public ISqlRowMapper<Data> getDataMapper();
-    
+
     public List<Number> listDataIds(long batchId, String nodeId);
-    
+
     public List<Data> listData(long batchId, String nodeId, long startDataId, String channelId, int maxRowsToRetrieve);
-    
+
     public void insertDataGap(DataGap gap);
 
     public void insertDataGap(ISqlTransaction transaction, DataGap gap);
-    
+
     public void insertDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps);
 
     public void deleteDataGap(ISqlTransaction transaction, DataGap gap);
-    
+
     public void deleteDataGaps(ISqlTransaction transaction, Collection<DataGap> gaps);
-    
+
     public void deleteAllDataGaps(ISqlTransaction transaction);
-    
+
     public void deleteDataGap(DataGap gap);
-    
+
     public void deleteCapturedConfigChannelData();
-    
+
     public boolean fixLastDataGap();
-    
+
     public long findMaxDataId();
-    
+
     public Data findData(long dataId);
 
     public long findMinDataId();
-    
+
     public ISqlReadCursor<Data> selectDataFor(Batch batch);
-    
+
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String channelId);
-    
+
     public ISqlReadCursor<Data> selectDataFor(Long batchId, String targetNodeId, boolean isContainsBigLob);
 
     public Map<String, Date> getLastDataCaptureByChannel();
-    
+
     public String findNodeIdsByNodeGroupId();
 }

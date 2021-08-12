@@ -39,38 +39,25 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 /**
- * The default mapping is that a catalog or schema or catalog.schema is mapped
- * to a Mongo database that is named the same as the catalog and/or schema
- * and/or pair combined.
+ * The default mapping is that a catalog or schema or catalog.schema is mapped to a Mongo database that is named the same as the catalog and/or schema and/or
+ * pair combined.
  */
 public class MongoDatabaseWriter extends AbstractDatabaseWriter {
-
     /*
-     * TODO talk about initial load. if reload channel is set to mongodb then
-     * sym_node_security records would be written to mongo unless we filtered
-     * out sym_ records. sym_node_security would never get updated in the
-     * regular database if i turn off the use.reload property initial load
-     * works.
+     * TODO talk about initial load. if reload channel is set to mongodb then sym_node_security records would be written to mongo unless we filtered out sym_
+     * records. sym_node_security would never get updated in the regular database if i turn off the use.reload property initial load works.
      * 
-     * TODO It looks like mongodb handles strings, byte[] and date() objects how
-     * do we determine when to insert certain types because there is no schema
-     * in mongo db. One idea I had was to cache create xml for tables somewhere
-     * in mongodb and use it to determine types from the source.
+     * TODO It looks like mongodb handles strings, byte[] and date() objects how do we determine when to insert certain types because there is no schema in
+     * mongo db. One idea I had was to cache create xml for tables somewhere in mongodb and use it to determine types from the source.
      * 
      * TODO support mapping foreign keys into references
      * 
-     * TODO could add support for bulk inserts. the insert api can take an array
-     * of dbobjects
+     * TODO could add support for bulk inserts. the insert api can take an array of dbobjects
      * 
-     * TODO property for write concern
-     * http://api.mongodb.org/java/current/com/mongodb
-     * /WriteConcern.html#ACKNOWLEDGED
+     * TODO property for write concern http://api.mongodb.org/java/current/com/mongodb /WriteConcern.html#ACKNOWLEDGED
      */
-	
-	private static final Logger log = LoggerFactory.getLogger(MongoDatabaseWriter.class);
-
+    private static final Logger log = LoggerFactory.getLogger(MongoDatabaseWriter.class);
     protected IMongoClientManager clientManager;
-
     protected IDBObjectMapper objectMapper;
 
     public MongoDatabaseWriter(IDBObjectMapper objectMapper, IMongoClientManager clientManager,
@@ -89,11 +76,11 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
     protected LoadStatus update(CsvData data, boolean applyChangesOnly, boolean useConflictDetection) {
         return upsert(data);
     }
-    
+
     @Override
     protected void logFailureDetails(Throwable e, CsvData data, boolean logLastDmlDetails) {
         /*
-         * Stacktrace will be printed after the error continues to bubble up 
+         * Stacktrace will be printed after the error continues to bubble up
          */
     }
 
@@ -148,7 +135,6 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
         } finally {
             statistics.get(batch).stopTimer(DataWriterStatisticConstants.LOADMILLIS);
         }
-
     }
 
     @Override
@@ -170,5 +156,4 @@ public class MongoDatabaseWriter extends AbstractDatabaseWriter {
         }
         return true;
     }
-
 }

@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.db.ase;
 import org.jumpmind.symmetric.db.ISymmetricDialect;
 
 public class Ase16TriggerTemplate extends AseTriggerTemplate {
-
     public Ase16TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
     }
@@ -32,5 +31,4 @@ public class Ase16TriggerTemplate extends AseTriggerTemplate {
     protected String getOrderClause() {
         return "order 1";
     }
-
 }

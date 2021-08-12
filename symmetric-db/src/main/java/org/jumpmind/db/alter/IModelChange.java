@@ -44,13 +44,14 @@ import org.jumpmind.db.model.Database;
 /**
  * Marker interface for changes to a database model element.
  */
-public interface IModelChange
-{
+public interface IModelChange {
     /**
      * Applies this change to the given database.
      * 
-     * @param database      The database
-     * @param caseSensitive Whether the case of names matters
+     * @param database
+     *            The database
+     * @param caseSensitive
+     *            Whether the case of names matters
      */
     public void apply(Database database, boolean caseSensitive);
 }

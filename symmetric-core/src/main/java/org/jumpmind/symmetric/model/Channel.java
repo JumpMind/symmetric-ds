@@ -26,55 +26,32 @@ import java.util.Collection;
 import java.util.Date;
 
 /**
- * Definition of a channel and it's priority. A channel is a group of tables
- * that get synchronized together.
+ * Definition of a channel and it's priority. A channel is a group of tables that get synchronized together.
  */
 public class Channel implements Serializable, Cloneable {
-
     private static final long serialVersionUID = 1L;
-
     private String channelId;
-
     private int processingOrder;
-
     private int maxBatchSize = 10000;
-
     private int maxBatchToSend = 100;
-    
     private int maxDataToRoute = 500000;
-    
     private BigDecimal maxKBytesPerSecond = BigDecimal.ZERO;
-
     private boolean enabled = true;
-    
     private boolean useOldDataToRoute = true;
-    
     private boolean useRowDataToRoute = true;
-    
     private boolean usePkDataToRoute = true;
-    
     private boolean containsBigLob = false;
-
     private String batchAlgorithm = "default";
-
     private long extractPeriodMillis = 0;
-    
     private String dataLoaderType = "default";
-    
     private Date createTime;
-    
     private Date lastUpdateTime;
-    
     private String lastUpdateBy;
-    
     private boolean reloadFlag = false;
-    
     private boolean fileSyncFlag = false;
-
     private String queue = "default";
-
     private NodeGroupLinkAction dataEventAction = null;
-    
+
     public Channel() {
     }
 
@@ -82,13 +59,13 @@ public class Channel implements Serializable, Cloneable {
         this.channelId = id;
         this.processingOrder = processingOrder;
     }
-    
+
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
             long extractPeriodMillis, boolean containsBigLobs, String batchAlgorithm, boolean reloadFlag, boolean filesyncFlag) {
         this(id, processingOrder, maxBatchSize, maxBatchToSend, enabled, extractPeriodMillis, containsBigLobs, reloadFlag, filesyncFlag);
         this.batchAlgorithm = batchAlgorithm;
     }
-    
+
     public Channel(String id, int processingOrder, int maxBatchSize, int maxBatchToSend, boolean enabled,
             long extractPeriodMillis, boolean containsBigLobs, boolean reloadFlag, boolean filesyncFlag) {
         this(id, processingOrder, maxBatchSize, maxBatchToSend, enabled, extractPeriodMillis, containsBigLobs);
@@ -122,11 +99,11 @@ public class Channel implements Serializable, Cloneable {
     public void setProcessingOrder(int priority) {
         this.processingOrder = priority;
     }
-    
+
     public void setMaxDataToRoute(int maxDataToRoute) {
         this.maxDataToRoute = maxDataToRoute;
     }
-    
+
     public int getMaxDataToRoute() {
         return maxDataToRoute;
     }
@@ -156,16 +133,14 @@ public class Channel implements Serializable, Cloneable {
     }
 
     /**
-     * Check to see if this channel id matches one of the channels in the
-     * collection
+     * Check to see if this channel id matches one of the channels in the collection
      * 
      * @return true if a match is found
      */
     public boolean isInList(Collection<? extends NodeChannel> channels) {
         return findInList(channels) != null;
     }
-    
-    
+
     public Channel findInList(Collection<? extends NodeChannel> channels) {
         if (channels != null) {
             for (NodeChannel channel : channels) {
@@ -196,83 +171,83 @@ public class Channel implements Serializable, Cloneable {
     public void setUseOldDataToRoute(boolean useOldDataToRoute) {
         this.useOldDataToRoute = useOldDataToRoute;
     }
- 
+
     public boolean isUseOldDataToRoute() {
         return useOldDataToRoute;
     }
-    
+
     public void setUseRowDataToRoute(boolean useRowDataToRoute) {
         this.useRowDataToRoute = useRowDataToRoute;
     }
-    
+
     public boolean isUseRowDataToRoute() {
         return useRowDataToRoute;
     }
-    
+
     public void setUsePkDataToRoute(boolean usePkDataToRoute) {
         this.usePkDataToRoute = usePkDataToRoute;
     }
-    
+
     public boolean isUsePkDataToRoute() {
         return usePkDataToRoute;
     }
-    
+
     public void setContainsBigLob(boolean containsBigLobs) {
         this.containsBigLob = containsBigLobs;
     }
-    
+
     public boolean isContainsBigLob() {
         return containsBigLob;
     }
-    
+
     public void setDataLoaderType(String dataloader) {
         this.dataLoaderType = dataloader;
     }
-    
+
     public String getDataLoaderType() {
         return dataLoaderType;
     }
-    
+
     public Date getCreateTime() {
         return createTime;
     }
-    
+
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public String getLastUpdateBy() {
         return lastUpdateBy;
     }
-    
+
     public void setLastUpdateBy(String lastUpdateBy) {
         this.lastUpdateBy = lastUpdateBy;
     }
-    
+
     public Date getLastUpdateTime() {
         return lastUpdateTime;
     }
-    
+
     public void setLastUpdateTime(Date lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-    
+
     public void setFileSyncFlag(boolean filesyncFlag) {
         this.fileSyncFlag = filesyncFlag;
     }
-    
+
     public boolean isFileSyncFlag() {
         return fileSyncFlag;
     }
-    
+
     public void setReloadFlag(boolean reloadFlag) {
         this.reloadFlag = reloadFlag;
     }
-    
+
     public boolean isReloadFlag() {
         return reloadFlag;
     }
-    
+
     public String getQueue() {
         return queue;
     }
@@ -305,7 +280,7 @@ public class Channel implements Serializable, Cloneable {
             return super.hashCode();
         }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (channelId != null) {
@@ -325,9 +300,9 @@ public class Channel implements Serializable, Cloneable {
             return channelId;
         } else {
             return super.toString();
-        }        
+        }
     }
-    
+
     public Channel copy() {
         Channel channel = null;
         try {
@@ -336,5 +311,4 @@ public class Channel implements Serializable, Cloneable {
         }
         return channel;
     }
-
 }

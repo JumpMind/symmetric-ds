@@ -48,9 +48,8 @@ import oracle.sql.TIMESTAMPLTZ;
 import oracle.sql.TIMESTAMPTZ;
 
 public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
-
     protected static IStagingManager stagingManager;
-    
+
     @BeforeClass
     public static void setup() throws Exception {
         if (DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT)
@@ -59,7 +58,7 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             platform = DbTestUtils.createDatabasePlatform(DbTestUtils.ROOT);
             platform.createDatabase(
                     platform.readDatabaseFromXml("/testOracleBulkWriter.xml", true), true, false);
-            stagingManager = new StagingManager("tmp",false);
+            stagingManager = new StagingManager("tmp", false);
         }
     }
 
@@ -71,18 +70,18 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     @Override
     protected long writeData(TableCsvData... datas) {
         EnvironmentSpecificProperties prop = DbTestUtils.getEnvironmentSpecificProperties(DbTestUtils.ROOT);
-        if(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.startsWith("oracle.")) {
+        if (ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.startsWith("oracle.")) {
             // The oracle. gets stripped from the property keyname, need to add it back
-            if(prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.replace("oracle.", "")) != null) {
-                prop.put(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD, prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.replace("oracle.", "")));
+            if (prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.replace("oracle.", "")) != null) {
+                prop.put(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD, prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD.replace(
+                        "oracle.", "")));
             }
-
         }
         return writeData(new OracleBulkDatabaseWriter(platform, platform, stagingManager, "sym_",
                 prop.get(ParameterConstants.DBDIALECT_ORACLE_BULK_LOAD_SQLLDR_CMD),
                 "silent=(header,discards) direct=false readsize=4096000 bindsize=4096000 rows=1000 discardmax=1 errors=0",
                 prop.get(BasicDataSourcePropertyConstants.DB_POOL_USER),
-                prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD), 
+                prop.get(BasicDataSourcePropertyConstants.DB_POOL_PASSWORD),
                 prop.get(BasicDataSourcePropertyConstants.DB_POOL_URL), null, null, "|}", "|>", null, true), datas);
     }
 
@@ -95,7 +94,6 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     public void testInsert1000Rows() {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-
             List<CsvData> datas = new ArrayList<CsvData>();
             for (int i = 0; i < 1000; i++) {
                 String[] values = { getNextId(), "string2", "string not null2", "char2",
@@ -104,111 +102,85 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
                 CsvData data = new CsvData(DataEventType.INSERT, values);
                 datas.add(data);
             }
-
             long count = writeData(new TableCsvData(platform.getTableFromCache(
                     "test_bulkload_table_1", false), datas));
-
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
     }
-    
+
     @Test
     public void testInsertTimestampTZ_timestamp() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
-
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-
             List<CsvData> datas = new ArrayList<CsvData>();
-
             String id = getNextId();
-
             String[] values = { id, "string2", "string not null2", "char2",
                     "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
-                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10.000", "2007-01-02 03:20:10.000", 
+                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10.000", "2007-01-02 03:20:10.000",
                     "2007-01-02 03:20:10.000", "2007-01-02 03:20:10.000" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             datas.add(data);
-
             long count = writeData(new TableCsvData(platform.getTableFromCache(
                     "test_bulkload_table_1", false), datas));
-
             Map<String, Object> rowData = queryForRow(id);
-            DataSource datasource = (DataSource)platform.getDataSource();
+            DataSource datasource = (DataSource) platform.getDataSource();
             Connection connection = datasource.getConnection();
             Connection oracleConnection = connection.unwrap(oracle.jdbc.driver.OracleConnection.class);
-
-            final String[] EXPECTED_TIMESTAMPTZ = {"2007-01-02 03:20:10.0 -5:00","2007-01-02 03:20:10.0 -4:00"};
-
+            final String[] EXPECTED_TIMESTAMPTZ = { "2007-01-02 03:20:10.0 -5:00", "2007-01-02 03:20:10.0 -4:00" };
             checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
             checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
             checkTimestampTZ(rowData.get("TIMESTAMPTZ6_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
             checkTimestampTZ(rowData.get("TIMESTAMPTZ9_VALUE"), oracleConnection, EXPECTED_TIMESTAMPTZ);
-
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
     }
-    
+
     @Test
     public void testInsertTimestampTZ_timestampWithTimeZone() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
-
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-
             List<CsvData> datas = new ArrayList<CsvData>();
-
             String id = getNextId();
-
             String[] values = { id, "string2", "string not null2", "char2",
                     "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
-                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10.123456789 -08:00", "2007-01-02 03:20:10.123456789 -08:00", 
+                    "47", "67.89", "-0.0747663", "2007-01-02 03:20:10.123456789 -08:00", "2007-01-02 03:20:10.123456789 -08:00",
                     "2007-01-02 03:20:10.123456789 -08:00", "2007-01-02 03:20:10.123456789 -08:00" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             datas.add(data);
-
             long count = writeData(new TableCsvData(platform.getTableFromCache(
                     "test_bulkload_table_1", false), datas));
-
             Map<String, Object> rowData = queryForRow(id);
-            DataSource datasource = (DataSource)platform.getDataSource();
+            DataSource datasource = (DataSource) platform.getDataSource();
             Connection connection = datasource.getConnection();
             Connection oracleConnection = connection.unwrap(oracle.jdbc.driver.OracleConnection.class);
-
             checkTimestampTZ(rowData.get("TIMESTAMPTZ0_VALUE"), oracleConnection, "2007-01-02 03:20:10.0 -8:00");
             checkTimestampTZ(rowData.get("TIMESTAMPTZ3_VALUE"), oracleConnection, "2007-01-02 03:20:10.123 -8:00");
             checkTimestampTZ(rowData.get("TIMESTAMPTZ6_VALUE"), oracleConnection, "2007-01-02 03:20:10.123457 -8:00");
             checkTimestampTZ(rowData.get("TIMESTAMPTZ9_VALUE"), oracleConnection, "2007-01-02 03:20:10.123456789 -8:00");
-
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
     }
-    
+
     @Test
     public void testInsertTimestampTZ_timestampWithLocalTimeZone() throws Exception {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
-            
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-            
             List<CsvData> datas = new ArrayList<CsvData>();
-            
             String id = getNextId();
-            
             String[] values = { id, "string2", "string not null2", "char2",
                     "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0",
-                    "47", "67.89", "-0.0747663", null, null, 
+                    "47", "67.89", "-0.0747663", null, null,
                     null, null, "2007-01-02 03:20:10.123456789 -08:00" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             datas.add(data);
-            
             long count = writeData(new TableCsvData(platform.getTableFromCache(
                     "test_bulkload_table_1", false), datas));
-            
             Map<String, Object> rowData = queryForRow(id);
-            DataSource datasource = (DataSource)platform.getDataSource();
+            DataSource datasource = (DataSource) platform.getDataSource();
             Connection connection = datasource.getConnection();
             Connection oracleConnection = connection.unwrap(oracle.jdbc.driver.OracleConnection.class);
-            
-            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, new String[]{"2007-01-02 06:20:10.123456789 America/New_York","2007-01-02 06:20:10.123456789 US/Eastern"});
-            
+            checkTimestampLTZ(rowData.get("TIMESTAMPLTZ9_VALUE"), oracleConnection, new String[] { "2007-01-02 06:20:10.123456789 America/New_York",
+                    "2007-01-02 06:20:10.123456789 US/Eastern" });
             Assert.assertEquals(count, countRows("test_bulkload_table_1"));
         }
     }
@@ -223,37 +195,35 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
             throws SQLException {
         String actualTimestampString = null;
         boolean match = false;
-    	if (value instanceof TIMESTAMPTZ) {
-	        TIMESTAMPTZ timestamp = (TIMESTAMPTZ) value;
-	        actualTimestampString = timestamp.stringValue(oracleConnection);
-	        for (String expectedValue : expectedValues) {
-	            if (StringUtils.equals(expectedValue, actualTimestampString)) {
-	                match = true;
-	                break;
-	            }
-	        }
-    	}
-        
-        Assert.assertTrue(actualTimestampString + 
+        if (value instanceof TIMESTAMPTZ) {
+            TIMESTAMPTZ timestamp = (TIMESTAMPTZ) value;
+            actualTimestampString = timestamp.stringValue(oracleConnection);
+            for (String expectedValue : expectedValues) {
+                if (StringUtils.equals(expectedValue, actualTimestampString)) {
+                    match = true;
+                    break;
+                }
+            }
+        }
+        Assert.assertTrue(actualTimestampString +
                 " not found in " + Arrays.toString(expectedValues), match);
     }
-    
+
     private void checkTimestampLTZ(Object value, Connection oracleConnection, final String... expectedValues)
             throws SQLException {
-    	String actualTimestampString = null;
-    	boolean match = false;
-    	if (value instanceof TIMESTAMPLTZ) {
-	        TIMESTAMPLTZ timestamp = (TIMESTAMPLTZ) value;
-	        actualTimestampString = timestamp.stringValue(oracleConnection);
-	        for (String expectedValue : expectedValues) {
-	            if (StringUtils.equals(expectedValue, actualTimestampString)) {
-	                match = true;
-	                break;
-	            }
-	        }
-    	}
-        
-        Assert.assertTrue(actualTimestampString + 
+        String actualTimestampString = null;
+        boolean match = false;
+        if (value instanceof TIMESTAMPLTZ) {
+            TIMESTAMPLTZ timestamp = (TIMESTAMPLTZ) value;
+            actualTimestampString = timestamp.stringValue(oracleConnection);
+            for (String expectedValue : expectedValues) {
+                if (StringUtils.equals(expectedValue, actualTimestampString)) {
+                    match = true;
+                    break;
+                }
+            }
+        }
+        Assert.assertTrue(actualTimestampString +
                 " not found in " + Arrays.toString(expectedValues), match);
     }
 
@@ -261,23 +231,17 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
     public void testInsertCollision() {
         if (platform != null && platform instanceof OracleDatabasePlatform) {
             platform.getSqlTemplate().update("truncate table test_bulkload_table_1");
-
             String id = getNextId();
-
             String[] values = { id, "string2", "string not null2", "char2",
                     "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000", "0", "47",
                     "67.89", "-0.0747663" };
             CsvData data = new CsvData(DataEventType.INSERT, values);
             writeData(data, values);
             Assert.assertEquals(1, countRows("test_bulkload_table_1"));
-
-
             try {
                 setErrorExpected(true);
-
                 List<CsvData> datas = new ArrayList<CsvData>();
                 datas.add(data);
-
                 for (int i = 0; i < 10; i++) {
                     values = new String[] { id, "string2", "string not null2", "char2",
                             "char not null2", "2007-01-02 03:20:10.000", "2007-02-03 04:05:06.000",
@@ -285,13 +249,10 @@ public class OracleBulkDatabaseWriterTest extends AbstractWriterTest {
                     data = new CsvData(DataEventType.INSERT, values);
                     datas.add(data);
                 }
-
                 // we should collide and rollback
                 writeData(new TableCsvData(platform.getTableFromCache("test_bulkload_table_1",
                         false), datas));
-
                 Assert.assertEquals(1, countRows("test_bulkload_table_1"));
-
             } finally {
                 setErrorExpected(false);
             }

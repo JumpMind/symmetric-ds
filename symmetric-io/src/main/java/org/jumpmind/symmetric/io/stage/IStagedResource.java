@@ -27,52 +27,49 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface IStagedResource {
-
     public enum State {
         CREATE, DONE;
 
         public String getExtensionName() {
             return name().toLowerCase();
         }
-
     };
 
     public BufferedReader getReader();
 
     public BufferedWriter getWriter(long threshold);
-    
+
     public OutputStream getOutputStream();
 
-    public InputStream getInputStream();    
-    
+    public InputStream getInputStream();
+
     public File getFile();
-    
+
     public void close();
 
     public long getSize();
 
     public State getState();
-    
+
     public String getPath();
-    
+
     public void setState(State state);
-    
+
     public long getLastUpdateTime();
-    
+
     public void refreshLastUpdateTime();
-    
+
     public boolean isFileResource();
-    
+
     public boolean isMemoryResource();
-    
+
     public boolean delete();
-    
+
     public boolean exists();
-    
+
     public boolean isInUse();
 
     public void dereference();
 
     public void reference();
-
 }

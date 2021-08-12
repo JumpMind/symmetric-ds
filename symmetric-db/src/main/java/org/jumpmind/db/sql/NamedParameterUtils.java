@@ -29,40 +29,32 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Helper methods for named parameter parsing. Only intended for internal use
- * within Spring's JDBC framework.
+ * Helper methods for named parameter parsing. Only intended for internal use within Spring's JDBC framework.
  * 
  * @author Thomas Risberg
  * @author Juergen Hoeller
  * @since 2.0
  */
 public abstract class NamedParameterUtils {
-
     /**
-     * Set of characters that qualify as parameter separators, indicating that a
-     * parameter name in a SQL String has ended.
+     * Set of characters that qualify as parameter separators, indicating that a parameter name in a SQL String has ended.
      */
     private static final char[] PARAMETER_SEPARATORS = new char[] { '"', '\'', ':', '&', ',', ';',
             '(', ')', '|', '=', '+', '-', '*', '%', '/', '\\', '<', '>', '^' };
-
     /**
      * Set of characters that qualify as comment or quotes starting characters.
      */
     private static final String[] START_SKIP = new String[] { "'", "\"", "--", "/*" };
-
     /**
-     * Set of characters that at are the corresponding comment or quotes ending
-     * characters.
+     * Set of characters that at are the corresponding comment or quotes ending characters.
      */
     private static final String[] STOP_SKIP = new String[] { "'", "\"", "\n", "*/" };
-
     // -------------------------------------------------------------------------
     // Core methods used by NamedParameterJdbcTemplate and SqlQuery/SqlUpdate
     // -------------------------------------------------------------------------
 
     /**
-     * Parse the SQL statement and locate any placeholders or named parameters.
-     * Named parameters are substituted for a JDBC placeholder.
+     * Parse the SQL statement and locate any placeholders or named parameters. Named parameters are substituted for a JDBC placeholder.
      * 
      * @param sql
      *            the SQL statement
@@ -71,12 +63,10 @@ public abstract class NamedParameterUtils {
     public static ParsedSql parseSqlStatement(String sql) {
         Set<String> namedParameters = new HashSet<String>();
         ParsedSql parsedSql = new ParsedSql(sql);
-
         char[] statement = sql.toCharArray();
         int namedParameterCount = 0;
         int unnamedParameterCount = 0;
         int totalParameterCount = 0;
-
         int i = 0;
         while (i < statement.length) {
             int skipToPosition = skipCommentsAndQuotes(statement, i);
@@ -166,26 +156,19 @@ public abstract class NamedParameterUtils {
                     // character sequence ending comment or quote not found
                     return statement.length;
                 }
-
             }
         }
         return position;
     }
 
     /**
-     * Parse the SQL statement and locate any placeholders or named parameters.
-     * Named parameters are substituted for a JDBC placeholder and any select
-     * list is expanded to the required number of placeholders. Select lists may
-     * contain an array of objects and in that case the placeholders will be
-     * grouped and enclosed with parentheses. This allows for the use of
-     * "expression lists" in the SQL statement like:<br/>
-     * select id, name, state from table where (name, age) in (('John', 35),
-     * ('Ann', 50))
+     * Parse the SQL statement and locate any placeholders or named parameters. Named parameters are substituted for a JDBC placeholder and any select list is
+     * expanded to the required number of placeholders. Select lists may contain an array of objects and in that case the placeholders will be grouped and
+     * enclosed with parentheses. This allows for the use of "expression lists" in the SQL statement like:<br/>
+     * select id, name, state from table where (name, age) in (('John', 35), ('Ann', 50))
      * <p>
-     * The parameter values passed in are used to determine the number of
-     * placeholder to be used for a select list. Select lists should be limited
-     * to 100 or fewer elements. A larger number of elements is not guaranteed
-     * to be supported by the database and is strictly vendor-dependent.
+     * The parameter values passed in are used to determine the number of placeholder to be used for a select list. Select lists should be limited to 100 or
+     * fewer elements. A larger number of elements is not guaranteed to be supported by the database and is strictly vendor-dependent.
      * 
      * @param parsedSql
      *            the parsed representation of the SQL statement
@@ -236,7 +219,7 @@ public abstract class NamedParameterUtils {
                 }
             } else {
                 throw new InvalidSqlException("The parameter map passed in did not contain "
-                        + "a key for the named parameter %s. \nKeys: %s \nSQL: %s", 
+                        + "a key for the named parameter %s. \nKeys: %s \nSQL: %s",
                         paramName, paramSource != null ? paramSource.keySet() : "null", originalSql);
             }
             lastIndex = endIndex;
@@ -280,8 +263,7 @@ public abstract class NamedParameterUtils {
     }
 
     /**
-     * Determine whether a parameter name ends at the current position, that is,
-     * whether the given character qualifies as a separator.
+     * Determine whether a parameter name ends at the current position, that is, whether the given character qualifies as a separator.
      */
     private static boolean isParameterSeparator(char c) {
         if (Character.isWhitespace(c)) {
@@ -294,5 +276,4 @@ public abstract class NamedParameterUtils {
         }
         return false;
     }
-
 }

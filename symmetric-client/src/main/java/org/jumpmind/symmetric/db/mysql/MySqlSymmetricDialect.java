@@ -43,36 +43,23 @@ import org.jumpmind.symmetric.util.SymmetricUtils;
 import org.jumpmind.util.FormatUtils;
 
 public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
-
     private static final String PRE_5_1_23 = "_pre_5_1_23";
-    
     private static final String PRE_5_7_6 = "_pre_5_7_6";
-
     private static final String POST_5_7_6 = "_post_5_7_6";
-
     private static final String TRANSACTION_ID = "transaction_id";
-
     static final String SYNC_TRIGGERS_DISABLED_USER_VARIABLE = "@sync_triggers_disabled";
-
     static final String SYNC_TRIGGERS_DISABLED_NODE_VARIABLE = "@sync_node_disabled";
-
     static final String SQL_DROP_FUNCTION = "drop function $(functionName)";
-    
-    static final String SQL_FUNCTION_INSTALLED = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())" ;
-
+    static final String SQL_FUNCTION_INSTALLED = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())";
     static final String SQL_FUNCTION_EQUALS = "select count(*) from information_schema.routines where routine_name='$(functionName)' and routine_schema in (select database())"
             + " and trim(routine_definition)=trim('$(functionBody)')";
-    
     private String functionTemplateKeySuffix = null;
-    
     private boolean isConvertZeroDateToNull;
-    
     private String characterSet;
 
     public MySqlSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.parameterService = parameterService;
-
         if (parameterService.getString(BasicDataSourcePropertyConstants.DB_POOL_URL).contains("zeroDateTimeBehavior=convertToNull")) {
             try {
                 String sqlMode = platform.getSqlTemplate().queryForString("select @@sql_mode");
@@ -84,24 +71,23 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 log.warn("Cannot convert zero dates to null because unable to verify sql_mode: {}", e.getMessage());
             }
         }
-
-        String version = getProductVersion(); 
+        String version = getProductVersion();
         if (Version.isOlderThanVersion(version, "5.1.23")) {
-            this.functionTemplateKeySuffix = PRE_5_1_23;    
+            this.functionTemplateKeySuffix = PRE_5_1_23;
         } else if (Version.isOlderThanVersion(version, "5.7.6")) {
             this.functionTemplateKeySuffix = PRE_5_7_6;
         } else {
             this.functionTemplateKeySuffix = POST_5_7_6;
         }
-
-        characterSet = parameterService.getString(ParameterConstants.DB_MASTER_COLLATION, Version.isOlderThanVersion(getProductVersion(), "5.5.3") ? "utf8" : "utf8mb4");
+        characterSet = parameterService.getString(ParameterConstants.DB_MASTER_COLLATION, Version.isOlderThanVersion(getProductVersion(), "5.5.3") ? "utf8"
+                : "utf8mb4");
         this.triggerTemplate = new MySqlTriggerTemplate(this, isConvertZeroDateToNull, characterSet);
     }
 
     @Override
     public boolean supportsTransactionId() {
         return true;
-    }        
+    }
 
     @Override
     public void createRequiredDatabaseObjects() {
@@ -110,55 +96,51 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         String sql = null;
         if (this.functionTemplateKeySuffix.equals(PRE_5_1_23)) {
             function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
-            functionBody =
-                    " begin                                                        " +
-                    " declare comm_name varchar(50);                                                        " + 
-                    " declare comm_value varchar(50);                                                        " + 
-                    " declare comm_cur cursor for show status like 'Com_commit';                                                        " + 
-                    " if @@autocommit = 0 then                                                        " + 
-                    " open comm_cur;                                                        " + 
-                    " fetch comm_cur into comm_name, comm_value;                                                        " + 
-                    " close comm_cur;                                                        " + 
-                    " return concat(concat(connection_id(), '.'), comm_value);                                                        " + 
-                    " else                                                        " + 
-                    " return null;                                                        " + 
-                    " end if;                                                          " + 
+            functionBody = " begin                                                        " +
+                    " declare comm_name varchar(50);                                                        " +
+                    " declare comm_value varchar(50);                                                        " +
+                    " declare comm_cur cursor for show status like 'Com_commit';                                                        " +
+                    " if @@autocommit = 0 then                                                        " +
+                    " open comm_cur;                                                        " +
+                    " fetch comm_cur into comm_name, comm_value;                                                        " +
+                    " close comm_cur;                                                        " +
+                    " return concat(concat(connection_id(), '.'), comm_value);                                                        " +
+                    " else                                                        " +
+                    " return null;                                                        " +
+                    " end if;                                                          " +
                     " end                                                             ";
-
-            sql = "create function $(functionName)()                                                        " + 
-                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                        " + 
+            sql = "create function $(functionName)()                                                        " +
+                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                        " +
                     functionBody;
-        } else if (this.functionTemplateKeySuffix.equals(PRE_5_7_6)){
+        } else if (this.functionTemplateKeySuffix.equals(PRE_5_7_6)) {
             function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
-            functionBody = 
-                    " begin                                                                                                                          \n" + 
-                    "    declare comm_value varchar(50);                                                                                             \n" + 
-                    "    declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';  \n" + 
-                    "    open comm_cur;                                                                                                              \n" + 
-                    "    fetch comm_cur into comm_value;                                                                                             \n" + 
-                    "    close comm_cur;                                                                                                             \n" + 
-                    "    return concat(concat(connection_id(), '.'), comm_value);                                                                    \n" + 
+            functionBody = " begin                                                                                                                          \n"
+                    +
+                    "    declare comm_value varchar(50);                                                                                             \n" +
+                    "    declare comm_cur cursor for select VARIABLE_VALUE from INFORMATION_SCHEMA.SESSION_STATUS where VARIABLE_NAME='COM_COMMIT';  \n" +
+                    "    open comm_cur;                                                                                                              \n" +
+                    "    fetch comm_cur into comm_value;                                                                                             \n" +
+                    "    close comm_cur;                                                                                                             \n" +
+                    "    return concat(concat(connection_id(), '.'), comm_value);                                                                    \n" +
                     " end                                                                                                                            ";
-                    
-            sql = "create function $(functionName)()                                                                                          \n" + 
-                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                           \n" + 
+            sql = "create function $(functionName)()                                                                                          \n" +
+                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                           \n" +
                     functionBody;
         } else {
             function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
-            functionBody = 
-                    " begin                                                                                                                           \n" + 
+            functionBody = " begin                                                                                                                           \n"
+                    +
                     "    declare done int default 0;                                                                                                  \n" +
-                    "    declare comm_value varchar(50);                                                                                              \n" + 
-                    "    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();    \n" + 
+                    "    declare comm_value varchar(50);                                                                                              \n" +
+                    "    declare comm_cur cursor for select TRX_ID from INFORMATION_SCHEMA.INNODB_TRX where TRX_MYSQL_THREAD_ID = CONNECTION_ID();    \n" +
                     "    declare continue handler for not found set done = 1;                                                                         \n" +
-                    "    open comm_cur;                                                                                                               \n" + 
-                    "    fetch comm_cur into comm_value;                                                                                              \n" + 
-                    "    close comm_cur;                                                                                                              \n" + 
-                    "    return concat(concat(connection_id(), '.'), comm_value);                                                                     \n" + 
+                    "    open comm_cur;                                                                                                               \n" +
+                    "    fetch comm_cur into comm_value;                                                                                              \n" +
+                    "    close comm_cur;                                                                                                              \n" +
+                    "    return concat(concat(connection_id(), '.'), comm_value);                                                                     \n" +
                     " end                                                                                                                             ";
-            
-            sql = "create function $(functionName)()                                                                                           \n" + 
-                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                            \n" + 
+            sql = "create function $(functionName)()                                                                                           \n" +
+                    " returns varchar(50) NOT DETERMINISTIC READS SQL DATA                                                                            \n" +
                     functionBody;
         }
         if (!functionEquals(SQL_FUNCTION_EQUALS, function, functionBody)) {
@@ -166,33 +148,33 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
                 uninstall(SQL_DROP_FUNCTION, function);
             }
             install(sql, function);
-        }                    
-
+        }
     }
-    
+
     private boolean functionEquals(String sqlFunctionEquals, String functionName, String functionBody) {
         return platform.getSqlTemplate().queryForInt(replaceTokens(sqlFunctionEquals, functionName, functionBody)) > 0;
     }
-    
+
     private String replaceTokens(String sql, String objectName, String functionBody) {
-        String ddl = super.replaceTokens(sql,  objectName);
+        String ddl = super.replaceTokens(sql, objectName);
         ddl = FormatUtils.replace("functionBody", StringUtils.replace(functionBody, "'", "''"), ddl);
         return ddl;
     }
-    
+
     @Override
     public void dropRequiredDatabaseObjects() {
         String function = this.parameterService.getTablePrefix() + "_" + TRANSACTION_ID + this.functionTemplateKeySuffix;
         if (installed(SQL_FUNCTION_INSTALLED, function)) {
             uninstall(SQL_DROP_FUNCTION, function);
-        }        
+        }
     }
 
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
-        catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null : platform
-                .getDefaultCatalog()) : catalog;
+        catalog = catalog == null ? (platform.getDefaultCatalog() == null ? null
+                : platform
+                        .getDefaultCatalog()) : catalog;
         String checkCatalogSql = (catalog != null && catalog.length() > 0) ? " and trigger_schema='"
                 + catalog + "'"
                 : "";
@@ -209,11 +191,9 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         String quote = platform.getDatabaseInfo().getDelimiterToken();
         String catalogPrefix = StringUtils.isBlank(catalogName) ? "" : (quote + catalogName + quote + ".");
         String sql = "drop trigger if exists " + catalogPrefix + triggerName;
-
         if (Version.isOlderThanVersion(getProductVersion(), "5.0.32")) {
             sql = "drop trigger " + catalogPrefix + triggerName;
         }
-
         logSql(sql, sqlBuffer);
         if (parameterService.is(ParameterConstants.AUTO_SYNC_TRIGGERS)) {
             log.info("Dropping {} trigger for {}", triggerName, Table.getFullyQualifiedTableName(catalogName, schemaName, tableName));
@@ -238,7 +218,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
         return SYNC_TRIGGERS_DISABLED_USER_VARIABLE + " is null";
     }
 
-    private final String getTransactionFunctionName() {        
+    private final String getTransactionFunctionName() {
         return SymmetricUtils.quote(this, platform.getDefaultCatalog()) + "." + parameterService.getTablePrefix() + "_"
                 + TRANSACTION_ID + this.functionTemplateKeySuffix;
     }
@@ -278,7 +258,7 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
     protected String getDbSpecificDataHasChangedCondition(Trigger trigger) {
         return "var_old_data is null or var_row_data != var_old_data";
     }
-    
+
     @Override
     public long getCurrentSequenceValue(SequenceIdentifier identifier) {
         return platform.getSqlTemplate().queryForLong("select auto_increment from information_schema.tables where table_schema = ? and table_name = ?",
@@ -287,7 +267,8 @@ public class MySqlSymmetricDialect extends AbstractSymmetricDialect implements I
 
     @Override
     public PermissionType[] getSymTablePermissions() {
-        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.CREATE_ROUTINE};
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER,
+                PermissionType.CREATE_ROUTINE };
         return permissions;
     }
 }

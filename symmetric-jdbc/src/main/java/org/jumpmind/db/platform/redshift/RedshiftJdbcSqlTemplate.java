@@ -28,7 +28,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class RedshiftJdbcSqlTemplate extends JdbcSqlTemplate {
-
     public RedshiftJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings, SymmetricLobHandler lobHandler,
             DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
@@ -47,5 +46,4 @@ public class RedshiftJdbcSqlTemplate extends JdbcSqlTemplate {
         }
         throw new UnsupportedOperationException();
     }
-
 }

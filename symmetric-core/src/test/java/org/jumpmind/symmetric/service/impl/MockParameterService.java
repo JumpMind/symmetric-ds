@@ -30,38 +30,36 @@ import org.jumpmind.symmetric.model.Node;
 import org.jumpmind.symmetric.service.IParameterService;
 
 public class MockParameterService extends AbstractParameterService implements IParameterService {
-
     private Properties properties = new Properties();
-    
-    public MockParameterService() {
 
+    public MockParameterService() {
     }
-    
+
     public MockParameterService(String... parameters) {
-      if (parameters != null) {
-          String key = null;
-          for (int i = 0; i < parameters.length; i++) {              
-              if (i % 2 != 0) {
-                  properties.setProperty(key, parameters[i]);
-              } else {
-                  key = parameters[0];
-              }
-          }
-      }
+        if (parameters != null) {
+            String key = null;
+            for (int i = 0; i < parameters.length; i++) {
+                if (i % 2 != 0) {
+                    properties.setProperty(key, parameters[i]);
+                } else {
+                    key = parameters[0];
+                }
+            }
+        }
     }
-    
+
     public boolean refreshFromDatabase() {
         return false;
     }
-    
+
     public MockParameterService(Properties properties) {
         this.properties = properties;
     }
-    
+
     public boolean isRegistrationServer() {
         return false;
     }
-    
+
     public void saveParameter(String key, Object paramValue, String lastUpdateBy) {
     }
 
@@ -97,7 +95,7 @@ public class MockParameterService extends AbstractParameterService implements IP
 
     @Override
     public void deleteParameterWithUpdate(String externalId,
-            String nodeGroupId, String key) {        
+            String nodeGroupId, String key) {
     }
 
     @Override
@@ -113,5 +111,4 @@ public class MockParameterService extends AbstractParameterService implements IP
     public boolean isRemoteNodeRegistrationServer(Node remoteNode) {
         return getRegistrationUrl().equalsIgnoreCase(remoteNode.getSyncUrl());
     }
-
 }

@@ -48,60 +48,38 @@ import org.springframework.scheduling.support.SimpleTriggerContext;
 
 @ManagedResource(description = "The management interface for a job")
 abstract public class AbstractJob implements Runnable, IJob {
-
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     private String jobName;
-
     private JobDefinition jobDefinition;
-
     private AtomicBoolean paused = new AtomicBoolean(false);
-
     private Date lastFinishTime;
-
     private AtomicBoolean running = new AtomicBoolean(false);
-
     private long lastExecutionTimeInMs;
-
     private long totalExecutionTimeInMs;
-
     private long numberOfRuns;
-
     private boolean started;
-
     private boolean hasNotRegisteredMessageBeenLogged = false;
-
     protected ISymmetricEngine engine;
-
     private ThreadPoolTaskScheduler taskScheduler;
-
     private ScheduledFuture<?> scheduledJob;
-
     private RandomTimeSlot randomTimeSlot;
-    
     private CronTrigger cronTrigger;
-    
     private Date periodicFirstRunTime;
-    
     private IParameterService parameterService;
-
     private long processedCount;
-    
     private String targetNodeId;
-    
     private int targetNodeCount;
-    
+
     public AbstractJob() {
-        
     }
-    
+
     public AbstractJob(String jobName, ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         this.engine = engine;
         this.taskScheduler = taskScheduler;
         this.jobName = jobName;
         this.parameterService = engine.getParameterService();
         this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
-                parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));        
+                parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
     }
 
     public void start() {
@@ -110,11 +88,12 @@ abstract public class AbstractJob implements Runnable, IJob {
             if (isCronSchedule()) {
                 String cronExpression = getSchedule();
                 cronTrigger = new CronTrigger(cronExpression);
-                log.info("Starting job '{}' on cron schedule '{}' with the first run at {}", jobName, cronExpression, cronTrigger.nextExecutionTime(new SimpleTriggerContext()));
-                try {                    
+                log.info("Starting job '{}' on cron schedule '{}' with the first run at {}", jobName, cronExpression, cronTrigger.nextExecutionTime(
+                        new SimpleTriggerContext()));
+                try {
                     this.scheduledJob = taskScheduler.schedule(this, cronTrigger);
                 } catch (Exception ex) {
-                    throw new SymmetricException("Failed to schedule job '" + jobName + "' with schedule '" + 
+                    throw new SymmetricException("Failed to schedule job '" + jobName + "' with schedule '" +
                             getSchedule() + "'", ex);
                 }
                 started = true;
@@ -123,7 +102,6 @@ abstract public class AbstractJob implements Runnable, IJob {
                 if (timeBetweenRunsInMs <= 0) {
                     return;
                 }
-
                 if (randomTimeSlot == null) {
                     this.randomTimeSlot = new RandomTimeSlot(parameterService.getExternalId(),
                             parameterService.getInt(ParameterConstants.JOB_RANDOM_MAX_START_TIME_MS));
@@ -139,8 +117,8 @@ abstract public class AbstractJob implements Runnable, IJob {
                     }
                 }
                 periodicFirstRunTime = new Date(lastRunTime + timeBetweenRunsInMs + startDelay);
-                log.info("Starting job '{}' on periodic schedule every {}ms with the first run at {}", new Object[] {jobName,
-                        timeBetweenRunsInMs, periodicFirstRunTime});
+                log.info("Starting job '{}' on periodic schedule every {}ms with the first run at {}", new Object[] { jobName,
+                        timeBetweenRunsInMs, periodicFirstRunTime });
                 this.scheduledJob = taskScheduler.scheduleWithFixedDelay(this,
                         periodicFirstRunTime, timeBetweenRunsInMs);
                 started = true;
@@ -151,7 +129,6 @@ abstract public class AbstractJob implements Runnable, IJob {
     protected long getTimeBetweenRunsInMs() {
         long timeBetweenRunsInMs = -1;
         String schedule = getSchedule();
-        
         try {
             if (StringUtils.isEmpty(schedule)) {
                 throw new SymmetricException("Schedule value is not defined for " + jobDefinition.getPeriodicParameter());
@@ -161,7 +138,7 @@ abstract public class AbstractJob implements Runnable, IJob {
                 throw new SymmetricException("Schedule value must be positive, but was '" + schedule + "'");
             }
         } catch (Exception ex) {
-            log.error("Failed to schedule job '" + jobName + "' because of an invalid schedule: '" + 
+            log.error("Failed to schedule job '" + jobName + "' because of an invalid schedule: '" +
                     getSchedule() + "' Check the " + jobDefinition.getPeriodicParameter() + " parameter.", ex);
             return -1;
         }
@@ -202,17 +179,14 @@ abstract public class AbstractJob implements Runnable, IJob {
 
     @Override
     public boolean invoke(boolean force) {
-        try {            
+        try {
             MDC.put("engineName", engine.getEngineName());
-            
             IParameterService parameterService = engine.getParameterService();
-            long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD,-1);
-            
+            long recordStatisticsCountThreshold = parameterService.getLong(ParameterConstants.STATISTIC_RECORD_COUNT_THRESHOLD, -1);
             boolean ok = checkPrerequsites(force);
             if (!ok) {
                 return false;
             }
-            
             long startTime = System.currentTimeMillis();
             try {
                 if (!running.compareAndSet(false, true)) { // This ensures this job only runs once on this instance.
@@ -226,13 +200,12 @@ abstract public class AbstractJob implements Runnable, IJob {
                 } else {
                     doJob(force);
                 }
-
             } finally {
                 lastFinishTime = new Date();
                 long endTime = System.currentTimeMillis();
                 lastExecutionTimeInMs = endTime - startTime;
                 totalExecutionTimeInMs += lastExecutionTimeInMs;
-                if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD || 
+                if (lastExecutionTimeInMs > Constants.LONG_OPERATION_THRESHOLD ||
                         (recordStatisticsCountThreshold > 0 && getProcessedCount() > recordStatisticsCountThreshold)) {
                     engine.getStatisticManager().addJobStats(targetNodeId, targetNodeCount, jobName,
                             startTime, endTime, getProcessedCount());
@@ -242,8 +215,7 @@ abstract public class AbstractJob implements Runnable, IJob {
             }
         } catch (final Throwable ex) {
             log.error("Exception while executing job '" + getName() + "'", ex);
-        } 
-
+        }
         return true;
     }
 
@@ -265,28 +237,26 @@ abstract public class AbstractJob implements Runnable, IJob {
         }
         if (running.get()) {
             log.info("Job '{}' is already marked as running, will not run again now.", getName());
-            return false;            
+            return false;
         }
         if (paused.get() && !force) {
             log.info("Job '{}' is paused and will not run at this time.", getName());
             return false;
         }
-        if (jobDefinition.isRequiresRegistration() && !engine.getRegistrationService().isRegisteredWithServer()) {      
+        if (jobDefinition.isRequiresRegistration() && !engine.getRegistrationService().isRegisteredWithServer()) {
             if (!hasNotRegisteredMessageBeenLogged) {
                 log.info("Did not run the '{}' job because the engine is not registered.", getName());
                 hasNotRegisteredMessageBeenLogged = true;
             }
         }
-
-        if (jobDefinition.getNodeGroupId() != null 
-                && !jobDefinition.getNodeGroupId().equals("ALL") 
-                && !jobDefinition.getNodeGroupId().equals(engine.getNodeService().findIdentity().getNodeGroupId())){
-            log.info("Job should be only run on node groups '{}' but this is '{}'", 
-                    jobDefinition.getNodeGroupId(), 
+        if (jobDefinition.getNodeGroupId() != null
+                && !jobDefinition.getNodeGroupId().equals("ALL")
+                && !jobDefinition.getNodeGroupId().equals(engine.getNodeService().findIdentity().getNodeGroupId())) {
+            log.info("Job should be only run on node groups '{}' but this is '{}'",
+                    jobDefinition.getNodeGroupId(),
                     engine.getNodeService().findIdentity().getNodeGroupId());
             return false;
         }
-
         return true;
     }
 
@@ -357,36 +327,34 @@ abstract public class AbstractJob implements Runnable, IJob {
     public long getTotalExecutionTimeInMs() {
         return totalExecutionTimeInMs;
     }
-    
+
     @Override
     public Date getNextExecutionTime() {
         if (isCronSchedule() && cronTrigger != null) {
             return cronTrigger.nextExecutionTime(new TriggerContext() {
-                
                 @Override
                 public Date lastScheduledExecutionTime() {
                     return null;
                 }
-                
+
                 @Override
                 public Date lastCompletionTime() {
                     return getLastFinishTime();
                 }
-                
+
                 @Override
                 public Date lastActualExecutionTime() {
                     return null;
                 }
             });
-        } else if (isPeriodicSchedule() ) {
+        } else if (isPeriodicSchedule()) {
             if (getLastFinishTime() != null) {
                 return new Date(getLastFinishTime().getTime() + getTimeBetweenRunsInMs());
             } else if (periodicFirstRunTime != null) {
                 return new Date(periodicFirstRunTime.getTime() + getTimeBetweenRunsInMs());
-            } 
+            }
         }
         return null;
-        
     }
 
     @Override
@@ -398,29 +366,28 @@ abstract public class AbstractJob implements Runnable, IJob {
             return 0;
         }
     }
-    
+
     public boolean isCronSchedule() {
         return !isPeriodicSchedule();
     }
-    
+
     public boolean isPeriodicSchedule() {
         String schedule = getSchedule();
         return NumberUtils.isDigits(schedule);
     }
-    
+
     public String getSchedule() {
         String cronSchedule = parameterService.getString(jobDefinition.getCronParameter());
         if (!StringUtils.isEmpty(cronSchedule)) {
             return cronSchedule;
-        } 
+        }
         String periodicSchedule = parameterService.getString(jobDefinition.getPeriodicParameter());
         if (!StringUtils.isEmpty(periodicSchedule)) {
-            return periodicSchedule;            
+            return periodicSchedule;
         }
-        
         return jobDefinition.getDefaultSchedule();
     }
-    
+
     public abstract JobDefaults getDefaults();
 
     public ISymmetricEngine getEngine() {
@@ -446,8 +413,7 @@ abstract public class AbstractJob implements Runnable, IJob {
     public void setTaskScheduler(ThreadPoolTaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }
-    
-    
+
     public long getProcessedCount() {
         return processedCount;
     }
@@ -455,7 +421,7 @@ abstract public class AbstractJob implements Runnable, IJob {
     public void setProcessedCount(long processedCount) {
         this.processedCount = processedCount;
     }
-    
+
     public String getTargetNodeId() {
         return targetNodeId;
     }

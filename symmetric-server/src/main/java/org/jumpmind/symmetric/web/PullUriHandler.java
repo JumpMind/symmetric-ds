@@ -53,23 +53,18 @@ import org.jumpmind.symmetric.transport.TransportUtils;
  * Handles data pulls from other nodes.
  */
 public class PullUriHandler extends AbstractCompressionUriHandler {
-
     private INodeService nodeService;
-
     private IConfigurationService configurationService;
-
     private IDataExtractorService dataExtractorService;
-
     private IRegistrationService registrationService;
-    
     private IStatisticManager statisticManager;
-    
     private IOutgoingBatchService outgoingBatchService;
-    
+
     public PullUriHandler(IParameterService parameterService,
             INodeService nodeService,
             IConfigurationService configurationService, IDataExtractorService dataExtractorService,
-            IRegistrationService registrationService, IStatisticManager statisticManager,  IOutgoingBatchService outgoingBatchService, IInterceptor... interceptors) {
+            IRegistrationService registrationService, IStatisticManager statisticManager, IOutgoingBatchService outgoingBatchService,
+            IInterceptor... interceptors) {
         super("/pull/*", parameterService, interceptors);
         this.nodeService = nodeService;
         this.configurationService = configurationService;
@@ -84,25 +79,21 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
         // request has the "other" nodes info
         String nodeId = ServletUtils.getParameter(req, WebConstants.NODE_ID);
         log.debug("Pull requested from node {} at remote address {}", nodeId, req.getRemoteAddr());
-
         if (StringUtils.isBlank(nodeId)) {
             ServletUtils.sendError(res, HttpServletResponse.SC_BAD_REQUEST, "Node must be specified");
             return;
         }
-
         ChannelMap map = new ChannelMap();
         map.addSuspendChannels(req.getHeader(WebConstants.SUSPENDED_CHANNELS));
         map.addIgnoreChannels(req.getHeader(WebConstants.IGNORED_CHANNELS));
         map.setChannelQueue(req.getHeader(WebConstants.CHANNEL_QUEUE));
-        
         // pull out headers and pass to pull() method
         handlePull(nodeId, req.getRemoteHost(), req.getRemoteAddr(), res.getOutputStream(), req.getHeader(WebConstants.HEADER_ACCEPT_CHARSET), res, map);
-
         log.debug("Pull completed for {} at remote address {}", nodeId, req.getRemoteAddr());
     }
-        
+
     protected void handlePull(String nodeId, String remoteHost, String remoteAddress,
-            OutputStream outputStream,  String encoding, HttpServletResponse res, ChannelMap map) throws IOException {
+            OutputStream outputStream, String encoding, HttpServletResponse res, ChannelMap map) throws IOException {
         NodeSecurity nodeSecurity = nodeService.findNodeSecurity(nodeId, true);
         long ts = System.currentTimeMillis();
         try {
@@ -110,25 +101,22 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
                     .getSuspendIgnoreChannelLists(nodeId);
             map.addSuspendChannels(remoteSuspendIgnoreChannelsList.getSuspendChannels());
             map.addIgnoreChannels(remoteSuspendIgnoreChannelsList.getIgnoreChannels());
-
             if (nodeSecurity != null) {
                 String createdAtNodeId = nodeSecurity.getCreatedAtNodeId();
-                if (nodeSecurity.isRegistrationEnabled() && 
+                if (nodeSecurity.isRegistrationEnabled() &&
                         (createdAtNodeId == null || createdAtNodeId.equals(nodeService.findIdentityNodeId()))) {
                     registrationService.registerNode(nodeService.findNode(nodeId), remoteHost,
                             remoteAddress, outputStream, null, null, false);
                 } else {
-                    IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding, 
+                    IOutgoingTransport outgoingTransport = createOutgoingTransport(outputStream, encoding,
                             map);
                     ProcessInfo processInfo = statisticManager.newProcessInfo(new ProcessInfoKey(
                             nodeService.findIdentityNodeId(), map.getChannelQueue(), nodeId, ProcessType.PULL_HANDLER_EXTRACT));
-                    
                     try {
                         Node targetNode = nodeService.findNode(nodeId, true);
                         List<OutgoingBatch> batchList = dataExtractorService.extract(processInfo, targetNode,
                                 map.getChannelQueue(), outgoingTransport);
                         logDataReceivedFromPull(targetNode, batchList, processInfo, remoteHost);
-                        
                         if (processInfo.getStatus() != ProcessStatus.ERROR) {
                             addPendingBatchCounts(targetNode.getNodeId(), res);
                             processInfo.setStatus(ProcessStatus.OK);
@@ -148,12 +136,11 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             statisticManager.incrementTotalNodesPulledTime(System.currentTimeMillis() - ts);
         }
     }
-    
+
     private void addPendingBatchCounts(String targetNodeId, HttpServletResponse res) {
-        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED))   {            
-            Map<String, Integer> batchesToSendByChannel = 
-                    this.outgoingBatchService.countOutgoingBatchesPendingByChannel(targetNodeId);
-            if (batchesToSendByChannel != null && !batchesToSendByChannel.isEmpty()) {                
+        if (this.parameterService.is(ParameterConstants.HYBRID_PUSH_PULL_ENABLED)) {
+            Map<String, Integer> batchesToSendByChannel = this.outgoingBatchService.countOutgoingBatchesPendingByChannel(targetNodeId);
+            if (batchesToSendByChannel != null && !batchesToSendByChannel.isEmpty()) {
                 res.addHeader(WebConstants.BATCH_TO_SEND_COUNT, TransportUtils.toCSV(batchesToSendByChannel));
             }
         }
@@ -166,19 +153,16 @@ public class PullUriHandler extends AbstractCompressionUriHandler {
             if (outgoingBatch.getStatus() == org.jumpmind.symmetric.model.OutgoingBatch.Status.LD) {
                 batchesCount++;
                 dataCount += outgoingBatch.getDataRowCount();
-            } 
+            }
         }
-        
         if (batchesCount > 0) {
             statisticManager.addJobStats(targetNode.getNodeId(), 1, "Pull Handler",
-                    processInfo.getStartTime().getTime(), 
-                    processInfo.getLastStatusChangeTime().getTime(), 
+                    processInfo.getStartTime().getTime(),
+                    processInfo.getLastStatusChangeTime().getTime(),
                     dataCount);
-            
             log.info(
-                "{} data and {} batches sent during pull request from {}",
-                new Object[] { dataCount, batchesCount, targetNode.toString() });
+                    "{} data and {} batches sent during pull request from {}",
+                    new Object[] { dataCount, batchesCount, targetNode.toString() });
         }
     }
-
 }

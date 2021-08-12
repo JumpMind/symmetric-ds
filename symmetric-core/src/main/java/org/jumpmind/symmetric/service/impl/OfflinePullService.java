@@ -45,21 +45,15 @@ import org.jumpmind.symmetric.transport.ITransportManager;
 import org.jumpmind.symmetric.transport.file.FileIncomingTransport;
 
 public class OfflinePullService extends AbstractService implements IOfflinePullService, INodeCommunicationExecutor {
-
     private INodeService nodeService;
-
     private IClusterService clusterService;
-
     private INodeCommunicationService nodeCommunicationService;
-    
     private IDataLoaderService dataLoaderService;
-    
     private IConfigurationService configurationService;
-    
     private ITransportManager transportManager;
 
     public OfflinePullService(IParameterService parameterService, ISymmetricDialect symmetricDialect,
-            INodeService nodeService, IDataLoaderService dataLoaderService, IClusterService clusterService, 
+            INodeService nodeService, IDataLoaderService dataLoaderService, IClusterService clusterService,
             INodeCommunicationService nodeCommunicationService, IConfigurationService configurationService,
             IExtensionService extensionService, ITransportManager transportManager) {
         super(parameterService, symmetricDialect);
@@ -99,10 +93,9 @@ public class OfflinePullService extends AbstractService implements IOfflinePullS
             long batchesProcessedCount = 0;
             do {
                 batchesProcessedCount = status.getBatchesProcessed();
-                log.debug("Offline pull requested for {}", node);               
+                log.debug("Offline pull requested for {}", node);
                 FileIncomingTransport transport = (FileIncomingTransport) transportManager.getPullTransport(node, local, null, null, null);
                 dataLoaderService.loadDataFromOfflineTransport(node, status, transport);
-                
                 if (!status.failed() && status.getBatchesProcessed() > batchesProcessedCount) {
                     log.info("Offline pull data read for {}.  {} rows and {} batches were processed",
                             new Object[] { node.toString(), status.getDataProcessed(), status.getBatchesProcessed() });
@@ -129,5 +122,4 @@ public class OfflinePullService extends AbstractService implements IOfflinePullS
             return name.endsWith(endFilter);
         }
     }
-
 }

@@ -33,7 +33,6 @@ import org.jumpmind.symmetric.io.data.writer.ResolvedData;
 import org.jumpmind.symmetric.io.data.writer.TransformWriter;
 
 public interface IDataLoaderFactory extends IExtensionPoint {
-
     public String getTypeName();
 
     public IDataWriter getDataWriter(String sourceNodeId, ISymmetricDialect symmetricDialect,
@@ -42,5 +41,4 @@ public interface IDataLoaderFactory extends IExtensionPoint {
             List<? extends Conflict> conflictSettings, List<ResolvedData> resolvedData);
 
     public boolean isPlatformSupported(IDatabasePlatform platform);
-
 }

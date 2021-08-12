@@ -31,24 +31,20 @@ import org.jumpmind.symmetric.transport.IConcurrentConnectionManager.Reservation
 import org.junit.Test;
 
 public class ConcurrentConnectionManagerUnitTest {
-
     @Test
     public void testRemoveTimedOutReservations() {
         ConcurrentConnectionManager mgr = new ConcurrentConnectionManager(null, new MockStatisticManager());
         Map<String, Reservation> reservations = new HashMap<String, Reservation>();
-
         String nodeId = "1";
-        Reservation current = new ConcurrentConnectionManager.Reservation(nodeId, System.currentTimeMillis()+10000, ReservationType.HARD);        
+        Reservation current = new ConcurrentConnectionManager.Reservation(nodeId, System.currentTimeMillis() + 10000, ReservationType.HARD);
         reservations.put(nodeId, current);
-        
         nodeId = "2";
-        current = new ConcurrentConnectionManager.Reservation(nodeId,  System.currentTimeMillis()+10000, ReservationType.HARD);
+        current = new ConcurrentConnectionManager.Reservation(nodeId, System.currentTimeMillis() + 10000, ReservationType.HARD);
         reservations.put(nodeId, current);
-
         assertEquals(2, reservations.size());
         mgr.removeTimedOutReservations(reservations);
         assertEquals(2, reservations.size());
-        current.timeToLiveInMs = System.currentTimeMillis()-10000;
+        current.timeToLiveInMs = System.currentTimeMillis() - 10000;
         mgr.removeTimedOutReservations(reservations);
         assertEquals(1, reservations.size());
     }

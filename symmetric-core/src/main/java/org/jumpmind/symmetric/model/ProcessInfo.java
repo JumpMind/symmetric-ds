@@ -29,7 +29,6 @@ import java.util.Date;
 import org.jumpmind.util.AppUtils;
 
 public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Cloneable {
-
     private static final long serialVersionUID = 1L;
 
     public static enum ProcessStatus {
@@ -58,33 +57,19 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     };
 
     private ProcessInfoKey key;
-
     private ProcessStatus status = ProcessStatus.NEW;
-
     private long currentDataCount;
-    
-    private long totalDataCount = 0;    
-
-    private long totalBatchCount;    
-
+    private long totalDataCount = 0;
+    private long totalBatchCount;
     private long currentBatchId;
-
     private long currentBatchCount;
-
     private String currentChannelId;
-
     private String currentTableName;
-
     private transient Thread thread;
-
     private Date currentBatchStartTime;
-
     private long currentLoadId;
-
     private Date startTime = new Date();
-
     private Date lastStatusChangeTime = new Date();
-
     private Date endTime;
 
     public ProcessInfo() {
@@ -255,7 +240,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
                 case PUSH_JOB_EXTRACT:
                 case PUSH_JOB_TRANSFER:
                 case PULL_HANDLER_EXTRACT:
-                case PULL_HANDLER_TRANSFER:                    
+                case PULL_HANDLER_TRANSFER:
                     return key.getTargetNodeId();
                 case PULL_JOB_LOAD:
                 case PULL_JOB_TRANSFER:
@@ -263,7 +248,7 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
                 case PUSH_HANDLER_TRANSFER:
                 case ROUTER_JOB:
                 case ROUTER_READER:
-                case GAP_DETECT:                    
+                case GAP_DETECT:
                     return key.getSourceNodeId();
                 default:
                     return null;
@@ -316,7 +301,6 @@ public class ProcessInfo implements Serializable, Comparable<ProcessInfo>, Clone
     }
 
     static public class ThreadData {
-
         public ThreadData(String threadName, String stackTrace) {
             this.threadName = threadName;
             this.stackTrace = stackTrace;

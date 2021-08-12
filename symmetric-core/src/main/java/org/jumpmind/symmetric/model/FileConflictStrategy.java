@@ -20,9 +20,6 @@
  */
 package org.jumpmind.symmetric.model;
 
-
 public enum FileConflictStrategy {
-
     SOURCE_WINS, TARGET_WINS, MANUAL
-    
 }

@@ -33,7 +33,7 @@ public class MsSql2008TriggerTemplate extends MsSqlTriggerTemplate {
     public MsSql2008TriggerTemplate(ISymmetricDialect symmetricDialect) {
         super(symmetricDialect);
     }
-    
+
     @Override
     protected String replaceTemplateVariables(DataEventType dml, Trigger trigger,
             TriggerHistory history, Channel channel, String tablePrefix, Table originalTable, Table table,
@@ -43,16 +43,14 @@ public class MsSql2008TriggerTemplate extends MsSqlTriggerTemplate {
                 buildColumnsAreNotEqualString(table, newTriggerValue, oldTriggerValue), ddl);
         return ddl;
     }
-    
-    private String buildColumnsAreNotEqualString(Table table, String table1Name, String table2Name){
+
+    private String buildColumnsAreNotEqualString(Table table, String table1Name, String table2Name) {
         StringBuilder builder = new StringBuilder();
-        
-        for(Column column : table.getColumns()){
+        for (Column column : table.getColumns()) {
             if (builder.length() > 0) {
                 builder.append(" or ");
             }
-
-            if(isNotComparable(column)) {
+            if (isNotComparable(column)) {
                 // Can't compare the value.
                 // Let's use the UPDATE() function to see if it showed up in the SET list of the update statement
                 builder.append(String.format("UPDATE(\"%1$s\")", column.getName()));

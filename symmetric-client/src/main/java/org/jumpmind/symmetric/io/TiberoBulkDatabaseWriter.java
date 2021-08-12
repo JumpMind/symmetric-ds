@@ -29,7 +29,6 @@ import org.jumpmind.symmetric.io.stage.IStagingManager;
 import org.slf4j.LoggerFactory;
 
 public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
-
     public TiberoBulkDatabaseWriter(IDatabasePlatform symmetricPlatform, IDatabasePlatform targetPlatform,
             IStagingManager stagingManager, String tablePrefix, String tbLoaderCommand, String tbLoaderOptions,
             String dbUser, String dbPassword, String dbUrl, String dbName, String sqlLoaderInfileCharset,
@@ -40,7 +39,6 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
                 delimitTokens);
         logger = LoggerFactory.getLogger(getClass());
         ezConnectString = StringUtils.defaultIfBlank(dbName, getDbConnectString(dbUrl));
-
         if (StringUtils.isBlank(sqlLoaderCommand)) {
             String tiberoHome = System.getenv("TB_HOME");
             if (StringUtils.isNotBlank(tiberoHome)) {
@@ -74,5 +72,4 @@ public class TiberoBulkDatabaseWriter extends OracleBulkDatabaseWriter {
         }
         return connectStr;
     }
-    
 }

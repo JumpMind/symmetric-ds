@@ -33,13 +33,9 @@ import org.jumpmind.symmetric.service.IConfigurationService;
 import org.jumpmind.symmetric.transport.IOutgoingTransport;
 
 public class InternalOutgoingTransport implements IOutgoingTransport {
-
     BufferedWriter writer = null;
-
     OutputStream os = null;
-
     ChannelMap map = null;
-
     boolean open = true;
 
     public InternalOutgoingTransport(OutputStream os, String encoding) throws UnsupportedEncodingException {
@@ -59,10 +55,11 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
 
     public void close() {
         try {
-            if(writer != null) {
+            if (writer != null) {
                 writer.close();
             }
-        } catch(IOException e) { }
+        } catch (IOException e) {
+        }
         open = false;
     }
 
@@ -77,14 +74,13 @@ public class InternalOutgoingTransport implements IOutgoingTransport {
     public BufferedWriter openWriter() {
         return writer;
     }
-    
+
     @Override
     public BufferedWriter getWriter() {
         return writer;
-    }    
+    }
 
     public ChannelMap getSuspendIgnoreChannelLists(IConfigurationService configurationService, String queue, Node targetNode) {
         return map;
     }
-
 }

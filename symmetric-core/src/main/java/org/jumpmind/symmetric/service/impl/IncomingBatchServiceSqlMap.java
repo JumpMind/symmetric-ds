@@ -25,10 +25,8 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class IncomingBatchServiceSqlMap extends AbstractSqlMap {
-
-    public IncomingBatchServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) { 
+    public IncomingBatchServiceSqlMap(IDatabasePlatform platform, Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-        
         // @formatter:off
         
         putSql("selectNodesInErrorSql", "select distinct node_id from $(incoming_batch) where error_flag=1");

@@ -23,8 +23,7 @@ package org.jumpmind.symmetric.model;
 import java.util.Date;
 
 public class BatchSummary {
-private static final long serialVersionUID = 1L;
-    
+    private static final long serialVersionUID = 1L;
     private String nodeId;
     private int batchCount;
     private int dataCount;
@@ -36,18 +35,16 @@ private static final long serialVersionUID = 1L;
     private boolean errorFlag;
     private long totalBytes;
     private long totalMillis;
-    
     private long extractMillis;
     private long transferMillis;
     private long loadMillis;
     private long routerMillis;
-    
     private int insertCount;
     private int updateCount;
     private int deleteCount;
     private int otherCount;
     private int reloadCount;
-    
+
     public String getNodeId() {
         return nodeId;
     }
@@ -103,11 +100,11 @@ private static final long serialVersionUID = 1L;
     public void setLastBatchUpdateTime(Date lastBatchUpdateTime) {
         this.lastBatchUpdateTime = lastBatchUpdateTime;
     }
-    
+
     public void setErrorFlag(boolean errorFlag) {
         this.errorFlag = errorFlag;
     }
-    
+
     public boolean isErrorFlag() {
         return errorFlag;
     }
@@ -211,6 +208,4 @@ private static final long serialVersionUID = 1L;
     public void setTotalMillis(long totalMillis) {
         this.totalMillis = totalMillis;
     }
-    
-    
 }

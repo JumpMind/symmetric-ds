@@ -25,11 +25,9 @@ import java.util.Map;
 import org.jumpmind.db.platform.IDatabasePlatform;
 
 public class TriggerRouterServiceSqlMap extends AbstractSqlMap {
-
     public TriggerRouterServiceSqlMap(IDatabasePlatform platform,
             Map<String, String> replacementTokens) {
         super(platform, replacementTokens);
-
         // @formatter:off
 
         putSql("countTriggerRoutersByRouterIdSql",

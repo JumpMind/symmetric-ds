@@ -23,11 +23,9 @@ package org.jumpmind.symmetric.common;
 import org.jumpmind.security.SecurityConstants;
 
 /**
- * These are properties that can be set only as Java System properties using
- * -D settings.
+ * These are properties that can be set only as Java System properties using -D settings.
  */
 public class SystemConstants {
-    
     public static final String SYSPROP_STANDALONE_WEB = "symmetric.standalone.web";
     public static final String SYSPROP_LAUNCHER = "symmetric.launcher";
     public static final String SYSPROP_ENGINES_DIR = "symmetric.engines.dir";
@@ -42,5 +40,4 @@ public class SystemConstants {
     public static final String SYSPROP_REST_PROPERTIES_FILE = "sym.rest.properties.file";
     public static final String SYSPROP_KEYSTORE_TYPE = SecurityConstants.SYSPROP_KEYSTORE_TYPE;
     public static final String SYSPROP_KEYSTORE_CERT_ALIAS = SecurityConstants.SYSPROP_KEYSTORE_CERT_ALIAS;
-
 }

@@ -28,18 +28,17 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * Background job that checks if cached objects should be refreshed
  */
 public class RefreshCacheJob extends AbstractJob {
-
     public RefreshCacheJob(ISymmetricEngine engine, ThreadPoolTaskScheduler taskScheduler) {
         super(ClusterConstants.REFRESH_CACHE, engine, taskScheduler);
     }
-    
+
     @Override
     public JobDefaults getDefaults() {
         return new JobDefaults()
                 .schedule("0/30 * * * * *")
                 .description("Refresh configuration cache");
-    } 
-    
+    }
+
     @Override
     public void doJob(boolean force) throws Exception {
         engine.getParameterService().refreshFromDatabase();
@@ -51,5 +50,4 @@ public class RefreshCacheJob extends AbstractJob {
         engine.getLoadFilterService().refreshFromDatabase();
         engine.getFileSyncService().refreshFromDatabase();
     }
-
 }

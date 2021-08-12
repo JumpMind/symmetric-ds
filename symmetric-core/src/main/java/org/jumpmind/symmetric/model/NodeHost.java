@@ -33,13 +33,9 @@ import org.jumpmind.util.AppUtils;
  * 
  */
 public class NodeHost implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     public static Date LAST_RESTART_TIME = new Date();
-    
     protected final static int MAX_IP_ADDRESS_SIZE = 50;
-    
     private String nodeId;
     private String hostName;
     private String instanceId;
@@ -67,9 +63,9 @@ public class NodeHost implements Serializable {
 
     public NodeHost(String nodeId, String instanceId) {
         this();
-        this.nodeId = nodeId;        
+        this.nodeId = nodeId;
         this.instanceId = instanceId;
-    }        
+    }
 
     public void refresh(IDatabasePlatform platform, String instanceId) {
         this.instanceId = instanceId;
@@ -108,11 +104,11 @@ public class NodeHost implements Serializable {
     public void setHostName(String hostName) {
         this.hostName = StringUtils.left(hostName, 60);
     }
-    
+
     public String getInstanceId() {
         return instanceId;
     }
-    
+
     public void setInstanceId(String instanceId) {
         this.instanceId = instanceId;
     }
@@ -204,11 +200,11 @@ public class NodeHost implements Serializable {
     public void setJavaVendor(String javaVendor) {
         this.javaVendor = javaVendor;
     }
-    
+
     public void setJdbcVersion(String jdbcVersion) {
         this.jdbcVersion = jdbcVersion;
     }
-    
+
     public String getJdbcVersion() {
         return jdbcVersion;
     }
@@ -248,9 +244,8 @@ public class NodeHost implements Serializable {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
-    
+
     public void setLastRestartTime(Date lastRestartTime) {
         this.lastRestartTime = lastRestartTime;
     }
-
 }

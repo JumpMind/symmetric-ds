@@ -18,7 +18,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.jumpmind.symmetric.model;
 
 import java.io.Serializable;
@@ -28,37 +27,21 @@ import java.util.Date;
  * Represents the status of a node.
  */
 public class NodeSecurity implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private String nodeId;
-
     private String nodePassword;
-
     private boolean registrationEnabled;
-
     private Date registrationTime;
-    
     private boolean initialLoadEnabled;
-
     private Date initialLoadTime;
-    
     private Date initialLoadEndTime;
-    
     private long initialLoadId;
-    
     private String initialLoadCreateBy;
-    
     private boolean revInitialLoadEnabled;
-    
     private Date revInitialLoadTime;
-    
     private long revInitialLoadId;
-    
     private String revInitialLoadCreateBy;
-
     private int failedLogins;
-
     private String createdAtNodeId;
 
     public String getNodeId() {
@@ -108,7 +91,7 @@ public class NodeSecurity implements Serializable {
     public void setInitialLoadTime(Date initialLoadTime) {
         this.initialLoadTime = initialLoadTime;
     }
-    
+
     public Date getInitialLoadEndTime() {
         return initialLoadEndTime;
     }
@@ -120,15 +103,15 @@ public class NodeSecurity implements Serializable {
     public void setRevInitialLoadEnabled(boolean reverseInitialLoadEnabled) {
         this.revInitialLoadEnabled = reverseInitialLoadEnabled;
     }
-    
+
     public Date getRevInitialLoadTime() {
         return revInitialLoadTime;
     }
-    
+
     public void setRevInitialLoadTime(Date reverseInitialLoadTime) {
         this.revInitialLoadTime = reverseInitialLoadTime;
     }
-    
+
     public boolean isRevInitialLoadEnabled() {
         return revInitialLoadEnabled;
     }
@@ -140,47 +123,47 @@ public class NodeSecurity implements Serializable {
     public void setCreatedAtNodeId(String createdByNodeId) {
         this.createdAtNodeId = createdByNodeId;
     }
-    
+
     public boolean hasRegistered() {
         return this.registrationEnabled == false && this.registrationTime != null;
     }
-    
+
     public boolean hasInitialLoaded() {
         return this.initialLoadEndTime != null;
     }
-    
+
     public boolean hasReverseInitialLoaded() {
         return this.revInitialLoadTime != null;
     }
-    
+
     public void setInitialLoadCreateBy(String initialLoadCreateBy) {
         this.initialLoadCreateBy = initialLoadCreateBy;
     }
-    
+
     public String getInitialLoadCreateBy() {
         return initialLoadCreateBy;
     }
-    
+
     public void setInitialLoadId(long initialLoadId) {
         this.initialLoadId = initialLoadId;
     }
-   
+
     public long getInitialLoadId() {
         return initialLoadId;
     }
-    
+
     public void setRevInitialLoadCreateBy(String revInitialLoadCreateBy) {
         this.revInitialLoadCreateBy = revInitialLoadCreateBy;
     }
-    
+
     public String getRevInitialLoadCreateBy() {
         return revInitialLoadCreateBy;
     }
-    
+
     public void setRevInitialLoadId(long revInitialLoadId) {
         this.revInitialLoadId = revInitialLoadId;
     }
-    
+
     public long getRevInitialLoadId() {
         return revInitialLoadId;
     }
@@ -192,5 +175,4 @@ public class NodeSecurity implements Serializable {
     public void setFailedLogins(int failedLogins) {
         this.failedLogins = failedLogins;
     }
-
 }

@@ -71,10 +71,8 @@ import org.jumpmind.db.sql.SqlException;
  * Reads a database model from a Sybase database.
  */
 public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
-
     /* The regular expression pattern for the ISO dates. */
     private Pattern isoDatePattern = Pattern.compile("'(\\d{4}\\-\\d{2}\\-\\d{2})'");
-
     /* The regular expression pattern for the ISO times. */
     private Pattern isoTimePattern = Pattern.compile("'(\\d{2}:\\d{2}:\\d{2})'");
 
@@ -89,7 +87,6 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData,
             Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
-
         if (table != null) {
             // Sybase does not return the auto-increment status via the database
             // metadata
@@ -115,9 +112,8 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
     }
 
     @Override
-    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String,Object> values) throws SQLException {
+    protected Column readColumn(DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Column column = super.readColumn(metaData, values);
-
         if ((column.getMappedTypeCode() == Types.NUMERIC) && (column.getSizeAsInt() == 19)
                 && (column.getScale() == 0)) {
             // Back-mapping to BIGINT
@@ -129,7 +125,6 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
                 // migrate the default value to TIMESTAMP
                 Matcher matcher = isoDatePattern.matcher(column.getDefaultValue());
                 Timestamp timestamp = null;
-
                 if (matcher.matches()) {
                     timestamp = new Timestamp(Date.valueOf(matcher.group(1)).getTime());
                 } else {
@@ -145,22 +140,19 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
                 column.setDefaultValue(unescape(column.getDefaultValue(), "'", "''"));
             }
         }
-        
         return column;
     }
 
     @Override
-    protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String,Object> values, Map<String,IIndex> knownIndices)
+    protected void readIndex(DatabaseMetaDataWrapper metaData, Map<String, Object> values, Map<String, IIndex> knownIndices)
             throws SQLException {
         if (getPlatform().getDdlBuilder().isDelimitedIdentifierModeOn()) {
             String indexName = (String) values.get("INDEX_NAME");
-
             // Sometimes, Sybase keeps the delimiter quotes around the index
             // names
             // when returning them in the metadata, so we strip them
             if (indexName != null) {
                 String delimiter = getPlatformInfo().getDelimiterToken();
-
                 if ((indexName != null) && indexName.startsWith(delimiter)
                         && indexName.endsWith(delimiter)) {
                     indexName = indexName.substring(delimiter.length(), indexName.length()
@@ -172,52 +164,44 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
         super.readIndex(metaData, values, knownIndices);
     }
 
-
     @Override
     protected boolean isInternalPrimaryKeyIndex(Connection connection,
             DatabaseMetaDataWrapper metaData, Table table, IIndex index) throws SQLException {
         // We can simply check the sysindexes table where a specific flag is set
         // for pk indexes
         StringBuffer query = new StringBuffer();
-
         query.append("SELECT name = si.name FROM dbo.sysindexes si, dbo.sysobjects so WHERE so.name = '");
         query.append(table.getName());
         query.append("' AND si.name = '");
         query.append(index.getName());
         query.append("' AND so.id = si.id AND (si.status & 2048) > 0");
-
         Statement stmt = connection.createStatement();
-
         try {
             ResultSet rs = stmt.executeQuery(query.toString());
             boolean result = rs.next();
-
             rs.close();
             return result;
         } finally {
             stmt.close();
         }
     }
-    
+
     @Override
     public List<Trigger> getTriggers(final String catalog, final String schema,
             final String tableName) throws SqlException {
-        
         List<Trigger> triggers = new ArrayList<Trigger>();
-
         log.debug("Reading triggers for: " + tableName);
         JdbcSqlTemplate sqlTemplate = (JdbcSqlTemplate) platform
                 .getSqlTemplate();
-        
         String sql = "SELECT "
-                        + "trigname AS trigger_name, "
-                        + "owner, "
-                        + "tname AS table_name, "
-                        + "event AS trigger_type, "
-                        + "trigtime AS trigger_time, "
-                        + "trigdefn "
-                    + "FROM SYS.SYSTRIGGERS "
-                    + "WHERE tname=? and owner=? ;";
+                + "trigname AS trigger_name, "
+                + "owner, "
+                + "tname AS table_name, "
+                + "event AS trigger_type, "
+                + "trigtime AS trigger_time, "
+                + "trigdefn "
+                + "FROM SYS.SYSTRIGGERS "
+                + "WHERE tname=? and owner=? ;";
         triggers = sqlTemplate.query(sql, new ISqlRowMapper<Trigger>() {
             public Trigger mapRow(Row row) {
                 Trigger trigger = new Trigger();
@@ -237,7 +221,6 @@ public class SqlAnywhereDdlReader extends AbstractJdbcDdlReader {
                 return trigger;
             }
         }, tableName, schema);
-
         return triggers;
     }
 }

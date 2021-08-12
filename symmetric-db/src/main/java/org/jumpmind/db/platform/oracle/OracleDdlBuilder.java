@@ -73,20 +73,14 @@ import org.jumpmind.db.platform.PlatformUtils;
  * The SQL Builder for Oracle.
  */
 public class OracleDdlBuilder extends AbstractDdlBuilder {
-
     protected static final String PREFIX_TRIGGER = "TRG";
-
     protected static final String PREFIX_SEQUENCE = "SEQ";
-    
     protected static final String ROWID_TYPE = "ROWID";
 
     public OracleDdlBuilder() {
         super(DatabaseNamesConstants.ORACLE);
-        
-
         databaseInfo.setMaxIdentifierLength(30);
         databaseInfo.setIdentityStatusReadingSupported(false);
-
         // Note that the back-mappings are partially done by the model reader,
         // not the driver
         databaseInfo.addNativeTypeMapping(Types.ARRAY, "BLOB", Types.BLOB);
@@ -117,12 +111,10 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.addNativeTypeMapping("DATALINK", "BLOB", "BLOB");
         databaseInfo.addNativeTypeMapping(ColumnTypes.NVARCHAR, "NVARCHAR2", Types.VARCHAR);
         databaseInfo.addNativeTypeMapping(ColumnTypes.LONGNVARCHAR, "NVARCHAR2", Types.VARCHAR);
-
         databaseInfo.setDefaultSize(Types.CHAR, 254);
         databaseInfo.setDefaultSize(Types.VARCHAR, 254);
         databaseInfo.setDefaultSize(Types.BINARY, 254);
         databaseInfo.setDefaultSize(Types.VARBINARY, 254);
-
         databaseInfo.setPrimaryKeyEmbedded(false);
         databaseInfo.setDateOverridesToTimestamp(true);
         databaseInfo.setNonBlankCharColumnSpacePadded(true);
@@ -133,20 +125,20 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         databaseInfo.setBinaryQuoteStart("0x");
         databaseInfo.setBinaryQuoteEnd("");
     }
-    
+
     @Override
     protected String mapDefaultValue(Object defaultValue, int typeCode) {
         String newValue = super.mapDefaultValue(defaultValue, typeCode).trim();
         if (newValue.startsWith("(") && newValue.endsWith(")")) {
-            newValue = newValue.substring(1, newValue.length()-1);
+            newValue = newValue.substring(1, newValue.length() - 1);
         }
         return newValue;
     }
-    
+
     @Override
     protected void printDefaultValue(String defaultValue, int typeCode, StringBuilder ddl) {
         String defaultValueStr = mapDefaultValue(defaultValue, typeCode);
-        if(defaultValueStr != null && defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")) {
+        if (defaultValueStr != null && defaultValueStr.trim().toUpperCase().startsWith("SYS_GUID")) {
             ddl.append(defaultValueStr);
         } else {
             super.printDefaultValue(defaultValue, typeCode, ddl);
@@ -157,15 +149,12 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected void createTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         // lets create any sequences
         Column[] columns = table.getAutoIncrementColumns();
-
         if (!temporary && !recreate) {
             for (int idx = 0; idx < columns.length; idx++) {
                 createAutoIncrementSequence(table, columns[idx], ddl);
             }
         }
-
         super.createTable(table, ddl, temporary, recreate);
-
         if (!temporary) {
             for (int idx = 0; idx < columns.length; idx++) {
                 createAutoIncrementTrigger(table, columns[idx], ddl);
@@ -177,16 +166,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected void dropTable(Table table, StringBuilder ddl, boolean temporary, boolean recreate) {
         if (!temporary && !recreate) {
             // The only difference to the Oracle 8/9 variant is the purge which
-            // prevents the table from being moved to the recycle bin (which is 
+            // prevents the table from being moved to the recycle bin (which is
             // new in Oracle 10)
             Column[] columns = table.getAutoIncrementColumns();
-
             for (int idx = 0; idx < columns.length; idx++) {
                 dropAutoIncrementTrigger(table, columns[idx], ddl);
                 dropAutoIncrementSequence(table, columns[idx], ddl);
             }
         }
-
         ddl.append("DROP TABLE ");
         ddl.append(getFullyQualifiedTableNameShorten(table));
         ddl.append(" CASCADE CONSTRAINTS PURGE");
@@ -194,8 +181,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
 
     /*
-     * Creates the sequence necessary for the auto-increment of the given
-     * column.
+     * Creates the sequence necessary for the auto-increment of the given column.
      */
     protected void createAutoIncrementSequence(Table table, Column column, StringBuilder ddl) {
         ddl.append("CREATE SEQUENCE ");
@@ -210,7 +196,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     protected void createAutoIncrementTrigger(Table table, Column column, StringBuilder ddl) {
         String columnName = getColumnName(column);
         String triggerName = getConstraintName(PREFIX_TRIGGER, table, column.getName(), null);
-
         if (scriptModeOn) {
             // For the script, we output a more nicely formatted version
             ddl.append("CREATE OR REPLACE TRIGGER ");
@@ -233,9 +218,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             println(ddl);
         } else {
             /**
-             * Note that the BEGIN ... SELECT ... END; is all in one line and
-             * does not contain a semicolon except for the END-one this way, the
-             * tokenizer will not split the statement before the END
+             * Note that the BEGIN ... SELECT ... END; is all in one line and does not contain a semicolon except for the END-one this way, the tokenizer will
+             * not split the statement before the END
              */
             ddl.append("CREATE OR REPLACE TRIGGER ");
             printIdentifier(triggerName, ddl);
@@ -252,10 +236,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(databaseInfo.getSqlCommandDelimiter());
             ddl.append(" END");
             /*
-             * It is important that there is a semicolon at the end of the
-             * statement (or more precisely, at the end of the PL/SQL block),
-             * and thus we put two semicolons here because the tokenizer will
-             * remove the one at the end
+             * It is important that there is a semicolon at the end of the statement (or more precisely, at the end of the PL/SQL block), and thus we put two
+             * semicolons here because the tokenizer will remove the one at the end
              */
             ddl.append(databaseInfo.getSqlCommandDelimiter());
             printEndOfStatement(ddl);
@@ -296,8 +278,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     }
 
     /**
-     * Index names in Oracle are unique to a schema and hence Oracle does not
-     * use the ON <tablename> clause
+     * Index names in Oracle are unique to a schema and hence Oracle does not use the ON <tablename> clause
      */
     @Override
     public void writeExternalIndexDropStmt(Table table, IIndex index, StringBuilder ddl) {
@@ -315,10 +296,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                     column.getMappedTypeCode(), Types.SMALLINT);
         }
         /*
-         * Oracle does not accept ISO formats, so we have to convert an ISO spec
-         * if we find one But these are the only formats that we make sure work,
-         * every other format has to be database-dependent and thus the user has
-         * to ensure that it is correct
+         * Oracle does not accept ISO formats, so we have to convert an ISO spec if we find one But these are the only formats that we make sure work, every
+         * other format has to be database-dependent and thus the user has to ensure that it is correct
          */
         else if (column.getMappedTypeCode() == Types.DATE) {
             if (Pattern.matches("\\d{4}\\-\\d{2}\\-\\d{2}", column.getDefaultValue())) {
@@ -345,10 +324,8 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
     @Override
     public String getSelectLastIdentityValues(Table table) {
         Column[] columns = table.getAutoIncrementColumns();
-
         if (columns.length > 0) {
-        	StringBuilder result = new StringBuilder();
-
+            StringBuilder result = new StringBuilder();
             result.append("SELECT ");
             for (int idx = 0; idx < columns.length; idx++) {
                 if (idx > 0) {
@@ -364,14 +341,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             return null;
         }
     }
-    
+
     protected void processChange(Database currentModel, Database desiredModel,
             ColumnSizeChange change, StringBuilder ddl) {
         writeTableAlterStmt(change.getChangedTable(), ddl);
         ddl.append(" MODIFY ");
         Column column = change.getChangedColumn();
         column.setSizeAndScale(change.getNewSize(), change.getNewScale());
-        printIdentifier(getColumnName(column), ddl);        
+        printIdentifier(getColumnName(column), ddl);
         ddl.append(" ");
         ddl.append(getSqlType(column));
         printEndOfStatement(ddl);
@@ -382,7 +359,6 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             Table sourceTable, Table targetTable, List<TableChange> changes, StringBuilder ddl) {
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 AddColumnChange addColumnChange = (AddColumnChange) change;
                 if (addColumnChange.getNewColumn().isRequired()
@@ -392,7 +368,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 }
             } else if (change instanceof ColumnSizeChange) {
                 processChange(currentModel, desiredModel, (ColumnSizeChange) change, ddl);
-                changeIt.remove();                
+                changeIt.remove();
             } else if (change instanceof ColumnDefaultValueChange) {
                 processChange(currentModel, desiredModel, (ColumnDefaultValueChange) change, ddl);
                 changeIt.remove();
@@ -406,11 +382,9 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 }
             }
         }
-
         // First we drop primary keys as necessary
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof RemovePrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (RemovePrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -418,19 +392,15 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 RemovePrimaryKeyChange removePkChange = new RemovePrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getOldPrimaryKeyColumns());
-
                 processChange(currentModel, desiredModel, removePkChange, ddl);
             }
         }
-
         /*
-         * Next we add/remove columns While Oracle has an ALTER TABLE MODIFY
-         * statement, it is somewhat limited esp. if there is data in the table,
-         * so we don't use it
+         * Next we add/remove columns While Oracle has an ALTER TABLE MODIFY statement, it is somewhat limited esp. if there is data in the table, so we don't
+         * use it
          */
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddColumnChange) {
                 processChange(currentModel, desiredModel, (AddColumnChange) change, ddl);
                 changeIt.remove();
@@ -438,16 +408,14 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 processChange(currentModel, desiredModel, (RemoveColumnChange) change, ddl);
                 changeIt.remove();
             } else if (change instanceof CopyColumnValueChange) {
-                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange)change;
+                CopyColumnValueChange copyColumnChange = (CopyColumnValueChange) change;
                 processChange(currentModel, desiredModel, copyColumnChange, ddl);
                 changeIt.remove();
             }
         }
-
         // Finally we add primary keys
         for (Iterator<TableChange> changeIt = changes.iterator(); changeIt.hasNext();) {
             TableChange change = changeIt.next();
-
             if (change instanceof AddPrimaryKeyChange) {
                 processChange(currentModel, desiredModel, (AddPrimaryKeyChange) change, ddl);
                 changeIt.remove();
@@ -455,12 +423,10 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
                 PrimaryKeyChange pkChange = (PrimaryKeyChange) change;
                 AddPrimaryKeyChange addPkChange = new AddPrimaryKeyChange(
                         pkChange.getChangedTable(), pkChange.getNewPrimaryKeyColumns());
-
                 processChange(currentModel, desiredModel, addPkChange, ddl);
                 changeIt.remove();
             }
         }
-
         super.processTableStructureChanges(currentModel, desiredModel, sourceTable, targetTable,
                 changes, ddl);
     }
@@ -485,7 +451,7 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             ddl.append(" )");
             printEndOfStatement(ddl);
         }
-    }   
+    }
 
     protected boolean processChange(Database currentModel, Database desiredModel,
             ColumnAutoIncrementChange change, StringBuilder ddl) {
@@ -578,24 +544,24 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
         printEndOfStatement(ddl);
         change.apply(currentModel, delimitedIdentifierModeOn);
     }
-    
+
     @Override
     protected String getSqlType(Column column) {
         PlatformColumn platformColumn = column.findPlatformColumn(databaseName);
-        if (platformColumn != null && platformColumn.getType() != null 
+        if (platformColumn != null && platformColumn.getType() != null
                 && platformColumn.getType().equals(ROWID_TYPE)) {
             return ROWID_TYPE;
         } else {
             return super.getSqlType(column);
         }
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyUpdate(ForeignKey key, StringBuilder ddl) {
         // Oracle does not support ON UPDATE
         return;
     }
-    
+
     @Override
     protected void writeCascadeAttributesForForeignKeyDelete(ForeignKey key, StringBuilder ddl) {
         // Oracle only supports CASCADE and SET NULL
@@ -603,5 +569,4 @@ public class OracleDdlBuilder extends AbstractDdlBuilder {
             super.writeCascadeAttributesForForeignKeyDelete(key, ddl);
         }
     }
-
 }

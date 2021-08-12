@@ -31,11 +31,10 @@ import org.jumpmind.db.platform.IDatabasePlatform;
 import org.jumpmind.db.platform.IDdlReader;
 
 public class HanaDdlReader extends AbstractJdbcDdlReader implements IDdlReader {
-
     public HanaDdlReader(IDatabasePlatform platform) {
         super(platform);
     }
-    
+
     @Override
     protected Table readTable(Connection connection, DatabaseMetaDataWrapper metaData, Map<String, Object> values) throws SQLException {
         Table table = super.readTable(connection, metaData, values);
@@ -46,7 +45,4 @@ public class HanaDdlReader extends AbstractJdbcDdlReader implements IDdlReader {
         }
         return table;
     }
-
-
-    
 }

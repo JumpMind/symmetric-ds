@@ -44,23 +44,22 @@ import org.jumpmind.db.model.ForeignKey;
 import org.jumpmind.db.model.Table;
 
 /**
- * Represents the removal of a foreign key from a table. Note that for
- * simplicity and because it fits the model, this change actually implements
- * table change for the table that the foreign key originates.
+ * Represents the removal of a foreign key from a table. Note that for simplicity and because it fits the model, this change actually implements table change
+ * for the table that the foreign key originates.
  */
-public class RemoveForeignKeyChange extends TableChangeImplBase
-{
+public class RemoveForeignKeyChange extends TableChangeImplBase {
     /** The foreign key. */
     private ForeignKey _foreignKey;
 
     /**
      * Creates a new change object.
      * 
-     * @param table      The table to remove the foreign key from
-     * @param foreignKey The foreign key
+     * @param table
+     *            The table to remove the foreign key from
+     * @param foreignKey
+     *            The foreign key
      */
-    public RemoveForeignKeyChange(Table table, ForeignKey foreignKey)
-    {
+    public RemoveForeignKeyChange(Table table, ForeignKey foreignKey) {
         super(table);
         _foreignKey = foreignKey;
     }
@@ -70,18 +69,15 @@ public class RemoveForeignKeyChange extends TableChangeImplBase
      *
      * @return The foreign key
      */
-    public ForeignKey getForeignKey()
-    {
+    public ForeignKey getForeignKey() {
         return _foreignKey;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void apply(Database database, boolean caseSensitive)
-    {
+    public void apply(Database database, boolean caseSensitive) {
         Table table = database.findTable(getChangedTable().getName(), caseSensitive);
-
         table.removeForeignKey(_foreignKey);
     }
 }

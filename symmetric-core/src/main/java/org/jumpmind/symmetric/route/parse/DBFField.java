@@ -24,13 +24,12 @@ import java.text.*;
 import java.util.Date;
 
 public class DBFField {
-
     private String name;
     private char type;
     private int length;
     private int decimalCount;
     private boolean validate;
-    
+
     public DBFField(boolean validate, String s, char c, int i, int j) throws DBFException {
         this.validate = validate;
         if (this.validate) {
@@ -69,9 +68,8 @@ public class DBFField {
             }
             if (j > i - 1) {
                 throw new DBFException("The field decimal count should be less than the length - 1. Got: " + j);
-            } 
+            }
         }
-        
         name = s;
         type = c;
         length = i;
@@ -105,7 +103,6 @@ public class DBFField {
                 StringBuffer stringbuffer = new StringBuffer(getLength());
                 for (int i = 0; i < getLength(); i++) {
                     stringbuffer.append("#");
-
                 }
                 if (getDecimalCount() > 0) {
                     stringbuffer.setCharAt(getLength() - getDecimalCount() - 1, '.');
@@ -119,7 +116,6 @@ public class DBFField {
                 StringBuffer stringbuffer2 = new StringBuffer(k);
                 for (int l = 0; l < k; l++) {
                     stringbuffer2.append(" ");
-
                 }
                 return stringbuffer2 + s1;
             } else {
@@ -138,7 +134,6 @@ public class DBFField {
                 StringBuffer stringbuffer1 = new StringBuffer(getLength() - s.length());
                 for (int j = 0; j < getLength() - s.length(); j++) {
                     stringbuffer1.append(' ');
-
                 }
                 return s + stringbuffer1;
             } else {
@@ -220,5 +215,4 @@ public class DBFField {
     public String toString() {
         return name;
     }
-
 }

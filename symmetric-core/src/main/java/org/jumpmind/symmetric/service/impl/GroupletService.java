@@ -44,34 +44,27 @@ import org.jumpmind.symmetric.model.TriggerRouterGrouplet.AppliesWhen;
 import org.jumpmind.symmetric.service.IGroupletService;
 
 public class GroupletService extends AbstractService implements IGroupletService {
-
     protected ISymmetricEngine engine;
-
     protected List<Grouplet> cache;
-
     protected long lastCacheTime = 0;
-    
     private Date lastUpdateTime;
 
     public GroupletService(ISymmetricEngine engine) {
         super(engine.getParameterService(), engine.getSymmetricDialect());
         this.engine = engine;
-
         setSqlMap(new GroupletServiceSqlMap(symmetricDialect.getPlatform(),
                 createSqlReplacementTokens()));
     }
-    
+
     @Override
     public boolean refreshFromDatabase() {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
             return false;
-        }        
-        
+        }
         Date date1 = sqlTemplate.queryForObject(getSql("selectMaxGroupletLastUpdateTime"), Date.class);
         Date date2 = sqlTemplate.queryForObject(getSql("selectMaxGroupletLinkLastUpdateTime"), Date.class);
         Date date3 = sqlTemplate.queryForObject(getSql("selectMaxTriggerRouterGroupletLastUpdateTime"), Date.class);
         Date date = maxDate(date1, date2, date3);
-        
         if (date != null) {
             if (lastUpdateTime == null || lastUpdateTime.before(date)) {
                 if (lastUpdateTime != null) {
@@ -84,7 +77,7 @@ public class GroupletService extends AbstractService implements IGroupletService
         }
         return false;
     }
-    
+
     public void clearCache() {
         lastCacheTime = 0;
     }
@@ -92,8 +85,7 @@ public class GroupletService extends AbstractService implements IGroupletService
     public boolean isSourceEnabled(TriggerRouter triggerRouter) {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
             return true;
-        }                
-        
+        }
         boolean enabled = true;
         Node node = engine.getNodeService().findIdentity();
         if (node == null) {
@@ -111,7 +103,6 @@ public class GroupletService extends AbstractService implements IGroupletService
                             foundMatch = true;
                         }
                     }
-
                     if ((foundMatch && policy == GroupletLinkPolicy.I)
                             || (!foundMatch && policy == GroupletLinkPolicy.E)) {
                         enabled = true;
@@ -121,11 +112,11 @@ public class GroupletService extends AbstractService implements IGroupletService
         }
         return enabled;
     }
-    
+
     public boolean isTargetEnabled(TriggerRouter triggerRouter, Node node) {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
             return true;
-        }        
+        }
         Set<Node> nodes = new HashSet<Node>(1);
         nodes.add(node);
         return getTargetEnabled(triggerRouter, nodes).size() > 0;
@@ -151,30 +142,24 @@ public class GroupletService extends AbstractService implements IGroupletService
                     }
                 }
             }
-
             Set<Node> toReturn = new HashSet<Node>();
-
             excludedNodes.removeAll(matchedNodes);
-
             if (excludedNodes.size() > 0) {
                 toReturn.addAll(nodes);
                 toReturn.removeAll(excludedNodes);
             } else {
                 toReturn.addAll(matchedNodes);
             }
-
             return toReturn;
         } else {
             return nodes;
         }
-
     }
 
     public List<Grouplet> getGrouplets(boolean refreshCache) {
         if (!engine.getParameterService().is(ParameterConstants.GROUPLET_ENABLE)) {
             return new ArrayList<Grouplet>();
-        }        
-        
+        }
         long maxCacheTime = parameterService
                 .getLong(ParameterConstants.CACHE_TIMEOUT_GROUPLETS_IN_MS);
         List<Grouplet> all = cache;
@@ -196,7 +181,6 @@ public class GroupletService extends AbstractService implements IGroupletService
                     return grouplet;
                 }
             });
-
             sqlTemplate.query(getSql("selectGroupletLinkSql"), new ISqlRowMapper<GroupletLink>() {
                 public GroupletLink mapRow(Row rs) {
                     GroupletLink groupletLink = new GroupletLink();
@@ -206,14 +190,12 @@ public class GroupletService extends AbstractService implements IGroupletService
                     groupletLink.setCreateTime(rs.getDateTime("create_time"));
                     groupletLink.setLastUpdateBy(rs.getString("last_update_by"));
                     groupletLink.setLastUpdateTime(rs.getDateTime("last_update_time"));
-
                     if (grouplet != null) {
                         grouplet.getGroupletLinks().add(groupletLink);
                     }
                     return groupletLink;
                 }
             });
-
             sqlTemplate.query(getSql("selectTriggerRouterGroupletSql"),
                     new ISqlRowMapper<TriggerRouterGrouplet>() {
                         public TriggerRouterGrouplet mapRow(Row rs) {
@@ -227,14 +209,12 @@ public class GroupletService extends AbstractService implements IGroupletService
                             trGrouplet.setCreateTime(rs.getDateTime("create_time"));
                             trGrouplet.setLastUpdateBy(rs.getString("last_update_by"));
                             trGrouplet.setLastUpdateTime(rs.getDateTime("last_update_time"));
-
                             if (grouplet != null) {
                                 grouplet.getTriggerRouterGrouplets().add(trGrouplet);
                             }
                             return trGrouplet;
                         }
                     });
-
             cache = all;
             lastCacheTime = System.currentTimeMillis();
         }
@@ -266,8 +246,8 @@ public class GroupletService extends AbstractService implements IGroupletService
                 new Object[] { grouplet.getGroupletLinkPolicy().name(), grouplet.getDescription(),
                         grouplet.getCreateTime(), grouplet.getLastUpdateBy(),
                         grouplet.getLastUpdateTime(), grouplet.getGroupletId() }, new int[] {
-                        Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
-                        Types.TIMESTAMP, Types.VARCHAR }) <= 0) {
+                                Types.VARCHAR, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR,
+                                Types.TIMESTAMP, Types.VARCHAR }) <= 0) {
             grouplet.setCreateTime(new Date());
             sqlTemplate.update(
                     getSql("insertGroupletSql"),
@@ -275,8 +255,7 @@ public class GroupletService extends AbstractService implements IGroupletService
                             grouplet.getDescription(), grouplet.getCreateTime(),
                             grouplet.getLastUpdateBy(), grouplet.getLastUpdateTime(),
                             grouplet.getGroupletId() }, new int[] { Types.VARCHAR, Types.VARCHAR,
-                            Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
-
+                                    Types.TIMESTAMP, Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR });
         }
     }
 
@@ -285,19 +264,16 @@ public class GroupletService extends AbstractService implements IGroupletService
         for (GroupletLink link : links) {
             deleteGroupletLink(grouplet, link);
         }
-
         List<TriggerRouterGrouplet> triggerRouters = grouplet.getTriggerRouterGrouplets();
         for (TriggerRouterGrouplet triggerRouterGrouplet : triggerRouters) {
             deleteTriggerRouterGrouplet(grouplet, triggerRouterGrouplet);
         }
-
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         sqlTemplate.update(getSql("deleteGroupletSql"), new Object[] { grouplet.getGroupletId() },
                 new int[] { Types.VARCHAR });
-
     }
-    
-    public void deleteAllGrouplets() {        
+
+    public void deleteAllGrouplets() {
         sqlTemplate.update(getSql("deleteAllGroupletLinksSql"));
         sqlTemplate.update(getSql("deleteAllTriggerRouterGroupletsSql"));
         sqlTemplate.update(getSql("deleteAllGroupletsSql"));
@@ -316,8 +292,7 @@ public class GroupletService extends AbstractService implements IGroupletService
             sqlTemplate.update(getSql("insertGroupletLinkSql"), new Object[] {
                     link.getCreateTime(), link.getLastUpdateBy(), link.getLastUpdateTime(),
                     grouplet.getGroupletId(), link.getExternalId() }, new int[] { Types.TIMESTAMP,
-                    Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
-
+                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR });
         }
     }
 
@@ -325,7 +300,7 @@ public class GroupletService extends AbstractService implements IGroupletService
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         sqlTemplate.update(getSql("deleteGroupletLinkSql"), new Object[] {
                 grouplet.getGroupletId(), link.getExternalId() }, new int[] { Types.VARCHAR,
-                Types.VARCHAR });
+                        Types.VARCHAR });
     }
 
     public void saveTriggerRouterGrouplet(Grouplet grouplet,
@@ -348,21 +323,19 @@ public class GroupletService extends AbstractService implements IGroupletService
                             triggerRouterGrouplet.getAppliesWhen().name(),
                             triggerRouterGrouplet.getTriggerId(),
                             triggerRouterGrouplet.getRouterId() }, new int[] { Types.TIMESTAMP,
-                            Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
-                            Types.VARCHAR, Types.VARCHAR });
-
+                                    Types.VARCHAR, Types.TIMESTAMP, Types.VARCHAR, Types.VARCHAR,
+                                    Types.VARCHAR, Types.VARCHAR });
         }
     }
-    
+
     public void deleteTriggerRouterGroupletsFor(TriggerRouter triggerRouter) {
         ISqlTemplate sqlTemplate = platform.getSqlTemplate();
         sqlTemplate
                 .update(getSql("deleteTriggerRouterGroupletForSql"),
-                        new Object[] { 
+                        new Object[] {
                                 triggerRouter.getTrigger().getTriggerId(),
                                 triggerRouter.getRouter().getRouterId() }, new int[] { Types.VARCHAR,
-                                Types.VARCHAR });
-
+                                        Types.VARCHAR });
     }
 
     public void deleteTriggerRouterGrouplet(Grouplet grouplet,
@@ -374,7 +347,6 @@ public class GroupletService extends AbstractService implements IGroupletService
                                 triggerRouterGrouplet.getAppliesWhen().name(),
                                 triggerRouterGrouplet.getTriggerId(),
                                 triggerRouterGrouplet.getRouterId() }, new int[] { Types.VARCHAR,
-                                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
+                                        Types.VARCHAR, Types.VARCHAR, Types.VARCHAR });
     }
-
 }

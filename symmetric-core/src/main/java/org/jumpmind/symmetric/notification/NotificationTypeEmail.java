@@ -47,11 +47,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class NotificationTypeEmail implements INotificationType, ISymmetricEngineAware, IBuiltInExtensionPoint {
-
     private final Logger log = LoggerFactory.getLogger(getClass());
-    
     protected ISymmetricEngine engine;
-    
+
     public void notify(Notification notification, List<MonitorEvent> monitorEvents) {
         String subject = null;
         if (monitorEvents.size() == 1) {
@@ -72,9 +70,8 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                     typesString.append(", ");
                 }
             }
-            subject = "Monitor events for " + typesString + " from " + nodeIds.size() + " nodes"; 
+            subject = "Monitor events for " + typesString + " from " + nodeIds.size() + " nodes";
         }
-
         Map<String, Node> nodes = engine.getNodeService().findAllNodesAsMap();
         StringBuilder text = new StringBuilder();
         for (MonitorEvent event : monitorEvents) {
@@ -86,7 +83,6 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
             text.append(nodeString).append("] [");
             text.append(event.getHostName()).append("] ");
             text.append("Monitor event for ").append(event.getType());
-            
             if (event.isResolved()) {
                 text.append(" is resolved\n");
                 continue;
@@ -94,7 +90,6 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                 text.append(" reached threshold of ").append(event.getThreshold());
                 text.append(" with a value of ").append(event.getValue()).append("\n");
             }
-
             try {
                 StringBuilder stackTrace = new StringBuilder();
                 if (event.getType().equals("log")) {
@@ -111,7 +106,7 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                     stackTrace.append(event.getValue()).append(" data gap(s) recorded.").append("\n");
                 } else if (event.getType().equals("cpu")) {
                     String details = event.getDetails();
-                    if(details == null || details.length() == 0) {
+                    if (details == null || details.length() == 0) {
                         details = "CPU usage is at " + event.getValue() + "%\n";
                     }
                     stackTrace.append(details);
@@ -133,44 +128,42 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                 log.debug("", e);
             }
         }
-            
-        
         String recipients = notification.getExpression();
         if (recipients != null) {
-            log.info("Sending email with subject '" + subject + "' to " + recipients);            
+            log.info("Sending email with subject '" + subject + "' to " + recipients);
             engine.getMailService().sendEmail(subject, text.toString(), recipients);
         } else {
             log.warn("Notification " + notification.getNotificationId() + " has no email recipients configured.");
         }
     }
-    
+
     protected static StringBuilder getOfflineDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         stackTrace.append("\n");
-        for(String node: deserializeOfflineNodes(event)) {
+        for (String node : deserializeOfflineNodes(event)) {
             stackTrace.append("Node ").append(node).append(" is offline.").append("\n");
         }
         return stackTrace;
     }
-    
+
     protected static StringBuilder getBatchDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         BatchErrorWrapper errors = deserializeBatches(event);
-        if(errors != null) {
+        if (errors != null) {
             List<OutgoingBatch> outErrors = errors.getOutgoingErrors();
-            for(OutgoingBatch b: outErrors) {
+            for (OutgoingBatch b : outErrors) {
                 stackTrace.append("The outgoing batch ").append(b.getNodeBatchId());
                 stackTrace.append(" failed: ").append(b.getSqlMessage()).append("\n");
             }
             List<IncomingBatch> inErrors = errors.getIncomingErrors();
-            for(IncomingBatch b: inErrors) {
+            for (IncomingBatch b : inErrors) {
                 stackTrace.append("The incoming batch ").append(b.getNodeBatchId());
                 stackTrace.append(" failed: ").append(b.getSqlMessage()).append("\n");
             }
         }
         return stackTrace;
     }
-    
+
     protected static StringBuilder getLogDetails(MonitorEvent event) throws IOException {
         StringBuilder stackTrace = new StringBuilder();
         int count = 0;
@@ -184,23 +177,24 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
                 count++;
             }
         }
-        if(count > 0) {
+        if (count > 0) {
             stackTrace.append("\n");
         }
         return stackTrace;
     }
-    
+
     protected static List<String> deserializeOfflineNodes(MonitorEvent event) throws IOException {
         List<String> nodes = null;
         if (event.getDetails() != null) {
-            new Gson().fromJson(event.getDetails(), new TypeToken<List<String>>(){}.getType());
+            new Gson().fromJson(event.getDetails(), new TypeToken<List<String>>() {
+            }.getType());
         }
         if (nodes == null) {
             nodes = Collections.emptyList();
         }
         return nodes;
     }
-    
+
     protected static BatchErrorWrapper deserializeBatches(MonitorEvent event) {
         BatchErrorWrapper batches = null;
         if (event.getDetails() != null) {
@@ -208,19 +202,19 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
         }
         return batches;
     }
-    
+
     protected static List<LogSummary> deserializeLogSummary(MonitorEvent event) throws IOException {
         List<LogSummary> summaries = null;
         if (event.getDetails() != null) {
-            summaries = new Gson().fromJson(event.getDetails(), new TypeToken<List<LogSummary>>(){}.getType());
+            summaries = new Gson().fromJson(event.getDetails(), new TypeToken<List<LogSummary>>() {
+            }.getType());
         }
-
         if (summaries == null) {
             summaries = Collections.emptyList();
         }
         return summaries;
     }
-    
+
     @Override
     public String getName() {
         return "email";
@@ -230,5 +224,4 @@ public class NotificationTypeEmail implements INotificationType, ISymmetricEngin
     public void setSymmetricEngine(ISymmetricEngine engine) {
         this.engine = engine;
     }
-
 }

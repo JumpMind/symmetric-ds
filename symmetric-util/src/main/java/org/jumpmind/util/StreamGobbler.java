@@ -28,13 +28,12 @@ import java.nio.charset.Charset;
 import org.apache.commons.io.IOUtils;
 
 public class StreamGobbler extends Thread {
-
     private InputStream is;
-    
+
     public StreamGobbler(InputStream is) {
         this.is = is;
     }
-    
+
     @Override
     public void run() {
         try {

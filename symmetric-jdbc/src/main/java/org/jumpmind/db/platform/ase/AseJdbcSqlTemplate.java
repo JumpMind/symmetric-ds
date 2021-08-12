@@ -29,18 +29,14 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class AseJdbcSqlTemplate extends SybaseJdbcSqlTemplate {
-
     public AseJdbcSqlTemplate(DataSource dataSource, SqlTemplateSettings settings,
-            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo)
-    {
+            SymmetricLobHandler lobHandler, DatabaseInfo databaseInfo) {
         super(dataSource, settings, lobHandler, databaseInfo);
-        deadlockCodes = new int[] {1205};
+        deadlockCodes = new int[] { 1205 };
     }
 
     @Override
     public ISqlTransaction startSqlTransaction() {
         return new AseJdbcSqlTransaction(this);
     }
-
 }
-

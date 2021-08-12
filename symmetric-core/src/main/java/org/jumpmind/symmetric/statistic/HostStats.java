@@ -23,7 +23,6 @@ package org.jumpmind.symmetric.statistic;
 import java.util.Date;
 
 public class HostStats extends AbstractNodeHostStats {
-
     private long restarted;
     private long nodesPulled;
     private long totalNodesPullTime;
@@ -47,11 +46,11 @@ public class HostStats extends AbstractNodeHostStats {
     public HostStats(String nodeId, String hostName, Date startTime, Date endTime) {
         super(nodeId, hostName, startTime, endTime);
     }
-    
+
     public HostStats(HostStats source) {
-       super(source.getNodeId(), source.getHostName(), source.getStartTime(), source.getEndTime());
-       add(source);
-    }    
+        super(source.getNodeId(), source.getHostName(), source.getStartTime(), source.getEndTime());
+        add(source);
+    }
 
     public void add(HostStats stats) {
         restarted += stats.getRestarted();
@@ -79,31 +78,31 @@ public class HostStats extends AbstractNodeHostStats {
     public void incrementRestarted(long value) {
         restarted += value;
     }
-    
+
     public long getTotalNodesPullTime() {
         return totalNodesPullTime;
     }
-    
+
     public void setTotalNodesPullTime(long totalNodesPullTime) {
         this.totalNodesPullTime = totalNodesPullTime;
     }
-    
+
     public void incrementTotalNodesPullTime(long value) {
         totalNodesPullTime += value;
     }
-    
+
     public long getTotalNodesPushTime() {
         return totalNodesPushTime;
     }
-    
+
     public void setTotalNodesPushTime(long totalNodesPushTime) {
         this.totalNodesPushTime = totalNodesPushTime;
     }
-    
+
     public void incrementTotalNodesPushTime(long value) {
         totalNodesPushTime += value;
     }
-    
+
     public long getNodesPulled() {
         return nodesPulled;
     }
@@ -179,26 +178,25 @@ public class HostStats extends AbstractNodeHostStats {
     public long getPurgedBatchIncomingRows() {
         return purgedBatchIncomingRows;
     }
-    
+
     public void incrementPurgedBatchIncomingRows(long value) {
         purgedBatchIncomingRows += value;
     }
 
-
     public long getTriggersCreatedCount() {
         return triggersCreatedCount;
     }
-    
+
     public void incrementTriggersCreatedCount(long count) {
-        triggersCreatedCount+=count;
+        triggersCreatedCount += count;
     }
-    
+
     public void incrementTriggersRebuiltCount(long count) {
-        triggersRebuiltCount+=count;
+        triggersRebuiltCount += count;
     }
-    
+
     public void incrementTriggersRemovedCount(long count) {
-        triggersRemovedCount+=count;
+        triggersRemovedCount += count;
     }
 
     public long getTriggersRebuiltCount() {
@@ -264,5 +262,4 @@ public class HostStats extends AbstractNodeHostStats {
     public void setTriggersRemovedCount(long triggersRemovedCount) {
         this.triggersRemovedCount = triggersRemovedCount;
     }
-
 }

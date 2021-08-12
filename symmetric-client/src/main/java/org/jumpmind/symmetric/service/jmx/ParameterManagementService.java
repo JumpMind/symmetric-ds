@@ -34,14 +34,13 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 @ManagedResource(description = "The management interface for node parameters")
 public class ParameterManagementService implements IBuiltInExtensionPoint, ISymmetricEngineAware {
-
     private IParameterService parameterService;
 
     public ParameterManagementService() {
     }
-    
+
     public void setSymmetricEngine(ISymmetricEngine engine) {
-         this.parameterService = engine.getParameterService();        
+        this.parameterService = engine.getParameterService();
     }
 
     @ManagedOperation(description = "Reload supported parameters from file or database")

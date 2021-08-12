@@ -23,11 +23,9 @@ package org.jumpmind.vaadin.ui.sqlexplorer;
 import java.io.Serializable;
 
 public interface ISettingsProvider extends Serializable {
-
     public void save(Settings settings);
-    
+
     public Settings get();
-    
+
     public Settings load();
-    
 }

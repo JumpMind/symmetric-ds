@@ -50,19 +50,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class IndexColumn implements Cloneable, Serializable {
     /** Unique ID for serialization purposes. */
     private static final long serialVersionUID = 1L;
-
     /** The position within the owning index. */
     private int ordinalPosition;
-
     /** The indexed column. */
     private Column column;
-
     /** The name of the column. */
     protected String name;
-
     /** The size of the column in the index. */
     protected String size;
-    
     protected boolean primaryKey;
 
     /**
@@ -80,7 +75,7 @@ public class IndexColumn implements Cloneable, Serializable {
     public IndexColumn(Column column) {
         this.column = column;
         this.name = column.getName();
-        this.primaryKey = column.isPrimaryKey();        
+        this.primaryKey = column.isPrimaryKey();
     }
 
     /**
@@ -103,8 +98,7 @@ public class IndexColumn implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the position within the owning index. Please note that you should
-     * not change the value once the column has been added to a index.
+     * Sets the position within the owning index. Please note that you should not change the value once the column has been added to a index.
      * 
      * @param position
      *            The position
@@ -171,18 +165,17 @@ public class IndexColumn implements Cloneable, Serializable {
     public void setSize(String size) {
         this.size = size;
     }
-    
+
     public void setPrimaryKey(boolean primaryKey) {
         this.primaryKey = primaryKey;
     }
-    
+
     public boolean isPrimaryKey() {
         return primaryKey;
     }
 
     public Object clone() throws CloneNotSupportedException {
         IndexColumn result = (IndexColumn) super.clone();
-
         result.name = name;
         result.size = size;
         return result;
@@ -191,7 +184,6 @@ public class IndexColumn implements Cloneable, Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof IndexColumn) {
             IndexColumn other = (IndexColumn) obj;
-
             return new EqualsBuilder().append(name, other.name).append(size, other.size)
                     .isEquals();
         } else {
@@ -200,13 +192,11 @@ public class IndexColumn implements Cloneable, Serializable {
     }
 
     /**
-     * Compares this index column to the given one while ignoring the case of
-     * identifiers.
+     * Compares this index column to the given one while ignoring the case of identifiers.
      * 
      * @param other
      *            The other index column
-     * @return <code>true</code> if this index column is equal (ignoring case)
-     *         to the given one
+     * @return <code>true</code> if this index column is equal (ignoring case) to the given one
      */
     public boolean equalsIgnoreCase(IndexColumn other) {
         return new EqualsBuilder().append(name.toUpperCase(), other.name.toUpperCase())
@@ -218,14 +208,12 @@ public class IndexColumn implements Cloneable, Serializable {
     }
 
     public String toString() {
-    	StringBuilder result = new StringBuilder();
-
+        StringBuilder result = new StringBuilder();
         result.append("Index column [name=");
         result.append(getName());
         result.append("; size=");
         result.append(getSize());
         result.append("]");
-
         return result.toString();
     }
 }

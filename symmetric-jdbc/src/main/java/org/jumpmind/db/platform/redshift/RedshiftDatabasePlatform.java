@@ -36,14 +36,13 @@ import org.jumpmind.db.platform.PermissionResult.Status;
 import org.jumpmind.db.sql.SqlTemplateSettings;
 
 public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     private Map<String, String> sqlScriptReplacementTokens;
 
     public RedshiftDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
         super(dataSource, overrideSettings(settings));
         sqlScriptReplacementTokens = super.getSqlScriptReplacementTokens();
         if (sqlScriptReplacementTokens == null) {
-                sqlScriptReplacementTokens = new HashMap<String, String>();
+            sqlScriptReplacementTokens = new HashMap<String, String>();
         }
         sqlScriptReplacementTokens.put("current_timestamp", "sysdate");
     }
@@ -74,7 +73,7 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public String getName() {
         return DatabaseNamesConstants.REDSHIFT;
     }
-    
+
     public String getDefaultCatalog() {
         return null;
     }
@@ -94,40 +93,40 @@ public class RedshiftDatabasePlatform extends AbstractJdbcDatabasePlatform {
     public boolean isClob(int type) {
         return type == Types.CLOB;
     }
-    
+
     @Override
-    public PermissionResult getCreateSymTablePermission(Database database) {     
+    public PermissionResult getCreateSymTablePermission(Database database) {
         PermissionResult result = new PermissionResult(PermissionType.CREATE_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getDropSymTablePermission() {     
+    public PermissionResult getDropSymTablePermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
-    public PermissionResult getAlterSymTablePermission(Database database) {     
+    public PermissionResult getAlterSymTablePermission(Database database) {
         PermissionResult result = new PermissionResult(PermissionType.ALTER_TABLE, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
 
     @Override
-    public PermissionResult getDropSymTriggerPermission() {     
+    public PermissionResult getDropSymTriggerPermission() {
         PermissionResult result = new PermissionResult(PermissionType.DROP_TRIGGER, "UNIMPLEMENTED");
         result.setStatus(Status.UNIMPLEMENTED);
         return result;
     }
-    
+
     @Override
     public boolean supportsLimitOffset() {
         return true;
     }
-    
+
     @Override
     public String massageForLimitOffset(String sql, int limit, int offset) {
         if (sql.endsWith(";")) {

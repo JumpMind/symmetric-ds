@@ -33,7 +33,6 @@ import org.jumpmind.db.sql.SqlTemplateSettings;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
-
     private String name;
 
     public GenericJdbcDatabasePlatform(DataSource dataSource, SqlTemplateSettings settings) {
@@ -76,5 +75,4 @@ public class GenericJdbcDatabasePlatform extends AbstractJdbcDatabasePlatform {
     protected ISqlTemplate createSqlTemplate() {
         return new GenericJdbcSqlTemplate(dataSource, settings, new SymmetricLobHandler(), getDatabaseInfo());
     }
-
 }

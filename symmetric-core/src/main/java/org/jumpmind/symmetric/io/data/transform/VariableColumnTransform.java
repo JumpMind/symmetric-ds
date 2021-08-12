@@ -32,43 +32,24 @@ import org.jumpmind.symmetric.io.data.DataEventType;
 import org.jumpmind.symmetric.model.Data;
 
 public class VariableColumnTransform implements ISingleNewAndOldValueColumnTransform, IBuiltInExtensionPoint {
-
     public static final String NAME = "variable";
-
     final String SOURCE_NODE_KEY = String.format("%d.SourceNode", hashCode());
-
     protected static final String TS_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
-
     protected static final String DATE_PATTERN = "yyyy-MM-dd";
-
     protected static final String OPTION_TIMESTAMP = "system_timestamp";
-
     protected static final String OPTION_TIMESTAMP_UTC = "system_timestamp_utc";
-
     protected static final String OPTION_DATE = "system_date";
-
     protected static final String OPTION_SOURCE_NODE_ID = "source_node_id";
-    
     protected static final String OPTION_TARGET_NODE_ID = "target_node_id";
-    
     protected static final String OPTION_NULL = "null";
-
     protected static final String OPTION_OLD_VALUE = "old_column_value";
-    
     protected static final String OPTION_SOURCE_TABLE_NAME = "source_table_name";
-    
     protected static final String OPTION_SOURCE_CATALOG_NAME = "source_catalog_name";
-    
     protected static final String OPTION_SOURCE_SCHEMA_NAME = "source_schema_name";
-    
     protected static final String OPTION_SOURCE_DML_TYPE = "source_dml_type";
-    
     protected static final String OPTION_BATCH_ID = "batch_id";
-    
     protected static final String OPTION_BATCH_START_TIME = "batch_start_time";
-    
     protected static final String OPTION_DELETE_INDICATOR_FLAG = "delete_indicator_flag";
-
     private static final String[] OPTIONS = new String[] { OPTION_TIMESTAMP, OPTION_TIMESTAMP_UTC, OPTION_DATE,
             OPTION_SOURCE_NODE_ID, OPTION_TARGET_NODE_ID, OPTION_NULL, OPTION_OLD_VALUE, OPTION_SOURCE_CATALOG_NAME,
             OPTION_SOURCE_SCHEMA_NAME, OPTION_SOURCE_TABLE_NAME, OPTION_SOURCE_DML_TYPE, OPTION_BATCH_ID, OPTION_BATCH_START_TIME,
@@ -106,26 +87,26 @@ public class VariableColumnTransform implements ISingleNewAndOldValueColumnTrans
             } else if (varName.equalsIgnoreCase(OPTION_SOURCE_NODE_ID)) {
                 value = context.getBatch().getSourceNodeId();
             } else if (varName.equalsIgnoreCase(OPTION_TARGET_NODE_ID)) {
-                value = context.getBatch().getTargetNodeId();   
+                value = context.getBatch().getTargetNodeId();
             } else if (varName.equalsIgnoreCase(OPTION_OLD_VALUE)) {
-                value = oldValue;   
+                value = oldValue;
             } else if (varName.equals(OPTION_NULL)) {
                 value = null;
             } else if (varName.equals(OPTION_SOURCE_TABLE_NAME)) {
-                Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+                Data csvData = (Data) context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
                 if (csvData != null && csvData.getTriggerHistory() != null) {
                     value = csvData.getTriggerHistory().getSourceTableName();
                 }
             } else if (varName.equals(OPTION_SOURCE_CATALOG_NAME)) {
-                Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+                Data csvData = (Data) context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
                 if (csvData != null && csvData.getTriggerHistory() != null) {
                     value = csvData.getTriggerHistory().getSourceCatalogName();
                 }
             } else if (varName.equals(OPTION_SOURCE_SCHEMA_NAME)) {
-                Data csvData = (Data)context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
+                Data csvData = (Data) context.get(Constants.DATA_CONTEXT_CURRENT_CSV_DATA);
                 if (csvData != null && csvData.getTriggerHistory() != null) {
                     value = csvData.getTriggerHistory().getSourceSchemaName();
-                }                
+                }
             } else if (varName.equals(OPTION_SOURCE_DML_TYPE)) {
                 value = data.getSourceDmlType().toString();
             } else if (varName.equals(OPTION_BATCH_ID)) {
@@ -136,12 +117,10 @@ public class VariableColumnTransform implements ISingleNewAndOldValueColumnTrans
                 value = data.getSourceDmlType().equals(DataEventType.DELETE) ? "Y" : "N";
             }
         }
-        
         if (data.getTargetDmlType().equals(DataEventType.DELETE) && data.getOldSourceValues() != null) {
             return new NewAndOldValue(null, value);
         } else {
             return new NewAndOldValue(value, null);
         }
     }
-
 }

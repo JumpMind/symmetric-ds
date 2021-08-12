@@ -20,17 +20,14 @@
  */
 package org.jumpmind.symmetric.io;
 
-
 public class DbCompareUtil {
-    
     public static String getUnqualifiedTableName(String tableName) {
         tableName = tableName.replace("\"", "");
         tableName = tableName.replace("`", "");
         int lastDot = tableName.lastIndexOf('.');
         if (lastDot > -1) {
-            tableName = tableName.substring(lastDot+1, tableName.length());
+            tableName = tableName.substring(lastDot + 1, tableName.length());
         }
-        
         return tableName;
     }
 }

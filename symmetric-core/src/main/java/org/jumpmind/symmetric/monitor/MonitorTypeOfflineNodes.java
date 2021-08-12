@@ -37,9 +37,7 @@ import com.google.gson.Gson;
 
 public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAware, IBuiltInExtensionPoint {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     protected INodeService nodeService;
-    
     protected IParameterService parameterService;
 
     @Override
@@ -62,22 +60,20 @@ public class MonitorTypeOfflineNodes implements IMonitorType, ISymmetricEngineAw
     public boolean requiresClusterLock() {
         return true;
     }
-    
+
     @Override
     public void setSymmetricEngine(ISymmetricEngine engine) {
         nodeService = engine.getNodeService();
         parameterService = engine.getParameterService();
     }
-    
+
     protected String serializeDetails(List<String> offlineNodes) {
         String result = null;
         try {
             result = new Gson().toJson(offlineNodes);
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.warn("Unable to convert list of offline nodes to JSON", e);
         }
-       
         return result;
     }
-
 }

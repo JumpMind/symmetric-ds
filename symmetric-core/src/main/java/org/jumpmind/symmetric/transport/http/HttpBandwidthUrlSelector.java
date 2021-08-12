@@ -37,33 +37,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This {@link ISyncUrlExtension} is capable of measuring the bandwidth of a
- * list of urls in order to select the one with the most bandwidth for use.
+ * This {@link ISyncUrlExtension} is capable of measuring the bandwidth of a list of urls in order to select the one with the most bandwidth for use.
  * <p/>
- * Use the URI notation of:
- * ext://httpBandwidthUrlSelector?1=http://url.1.com&2=http://url.2.com&param=value
+ * Use the URI notation of: ext://httpBandwidthUrlSelector?1=http://url.1.com&2=http://url.2.com&param=value
  * <p/>
- * Valid parameters are constants on this class that start with PARAM_. Any
- * parameter that is a numeral will be designated a possible URL.
+ * Valid parameters are constants on this class that start with PARAM_. Any parameter that is a numeral will be designated a possible URL.
  */
 public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExtensionPoint {
-    
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
     public static String PARAM_PRELOAD_ONLY = "initialLoadOnly";
     public static String PARAM_SAMPLE_SIZE = "sampleSize";
     public static String PARAM_SAMPLE_TTL = "sampleTTL";
     public static String PARAM_MAX_SAMPLE_DURATION = "maxSampleDuration";
-
     private long defaultSampleSize = 1000;
     private long defaultSampleTTL = 60000;
     private long defaultMaxSampleDuration = 2000;
     protected long lastSampleTs;
     private Map<URI, List<SyncUrl>> cachedUrls = new HashMap<URI, List<SyncUrl>>();
-
     private INodeService nodeService;
     private IBandwidthService bandwidthService;
-    
+
     public HttpBandwidthUrlSelector(INodeService nodeService,
             IBandwidthService bandwidthService) {
         this.nodeService = nodeService;
@@ -80,7 +73,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             } else {
                 urls = cachedUrls.get(uri);
             }
-    
             boolean initialLoadOnly = isInitialLoadOnly(params);
             if ((initialLoadOnly && nodeService != null && !nodeService.isDataLoadCompleted()) || !initialLoadOnly) {
                 long ts = System.currentTimeMillis();
@@ -97,8 +89,8 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
                 Collections.sort(urls, new ListOrderSorter());
                 return urls.get(0).url;
             }
-        }
-        else return uri.toString();
+        } else
+            return uri.toString();
     }
 
     protected long getSampleSize(Map<String, String> params) {
@@ -121,7 +113,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 maxSampleDuration = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("Unable to parse sampleSize of {}",val);
+                log.error("Unable to parse sampleSize of {}", val);
             }
         }
         return maxSampleDuration;
@@ -134,7 +126,7 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             try {
                 sampleTTL = Long.parseLong(val);
             } catch (NumberFormatException e) {
-                log.error("Unable to parse sampleTTL of {}",val);
+                log.error("Unable to parse sampleTTL of {}", val);
             }
         }
         return sampleTTL;
@@ -152,7 +144,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
                 int order = Integer.parseInt(key);
                 urls.add(new SyncUrl(params.get(key), order));
             } catch (NumberFormatException e) {
-
             }
         }
         return urls;
@@ -195,7 +186,6 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             this.url = url;
             this.order = order;
         }
-
     }
 
     static class ListOrderSorter implements Comparator<SyncUrl> {
@@ -213,5 +203,4 @@ public class HttpBandwidthUrlSelector implements ISyncUrlExtension, IBuiltInExte
             return (thisVal > anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
         }
     }
-
 }

@@ -31,12 +31,11 @@ import org.jumpmind.symmetric.model.FileTrigger;
 import org.jumpmind.symmetric.model.FileTriggerRouter;
 
 public class BashFileSyncZipScript extends FileSyncZipScript {
-    
     @Override
     public String getScriptFileName(Batch batch) {
         return "sync.sh";
     }
-    
+
     @Override
     public void buildScriptStart(Batch batch) {
         appendln("#!/bin/bash");
@@ -46,13 +45,11 @@ public class BashFileSyncZipScript extends FileSyncZipScript {
         appendln("outputFileName=$3");
         appendln();
     }
-    
-    @Override    
-    public void buildScriptFileSnapshot(Batch batch, FileSnapshot snapshot, FileTriggerRouter triggerRouter, 
+
+    @Override
+    public void buildScriptFileSnapshot(Batch batch, FileSnapshot snapshot, FileTriggerRouter triggerRouter,
             FileTrigger fileTrigger, File file, String targetBaseDir, String targetFile) {
-        
         LastEventType eventType = snapshot.getLastEventType();
-        
         appendln("processFile=true");
         appendln(String.format("sourceFileName=\"%s\"", snapshot.getFileName()));
         append("targetRelativeDir=\"");
@@ -63,16 +60,13 @@ public class BashFileSyncZipScript extends FileSyncZipScript {
         appendln("targetFileName=$sourceFileName");
         appendln(String.format("sourceFilePath=\"%s\"", StringEscapeUtils.escapeJava(snapshot.getRelativeDir())));
         appendln(String.format("targetBaseDir=\"%s\"", targetBaseDir));
-        
         if (StringUtils.isNotBlank(fileTrigger.getBeforeCopyScript())) {
             appendln(fileTrigger.getBeforeCopyScript());
         }
-                                                        
         appendln("if [ \"$processFile\" = true ] ; then ");
         // This line guards against shell script syntax error caused by empty "if...fi" when the source
         // file was removed before extraction.
-        appendln("  echo \"#Processing " + snapshot.getFileName() + "\" >> \"$outputFileName\""); 
-        
+        appendln("  echo \"#Processing " + snapshot.getFileName() + "\" >> \"$outputFileName\"");
         switch (eventType) {
             case CREATE:
             case MODIFY:
@@ -84,55 +78,48 @@ public class BashFileSyncZipScript extends FileSyncZipScript {
                     }
                     append("$sourceFileName");
                     appendln("\"");
-                    
                     appendln("targetFile=\"$targetBaseDir/$targetRelativeDir/$targetFileName\"");
                     appendln("targetDir=\"$targetBaseDir/$targetRelativeDir\"");
-                    
                     // no need to copy directory if it already exists
                     appendln("  if [ -d \"$targetFile\" ]; then");
                     appendln("    processFile=false");
                     appendln("  fi");
-                    
                     // conflict resolution
-//                    FileConflictStrategy conflictStrategy = triggerRouter.getConflictStrategy();
-//                    if (conflictStrategy == FileConflictStrategy.TARGET_WINS ||
-//                            conflictStrategy == FileConflictStrategy.MANUAL) {
-//                        command.appendln("  if (targetFile.exists() && !targetFile.isDirectory()) {\n");
-//                        command.appendln("    long targetChecksum = org.apache.commons.io.FileUtils.checksumCRC32(targetFile);\n");
-//                        command.appendln("    if (targetChecksum != " + snapshot.getOldCrc32Checksum() + "L) {\n");
-//                        if (conflictStrategy == FileConflictStrategy.MANUAL) {
-//                            command.appendln("      throw new org.jumpmind.symmetric.file.FileConflictException(targetFileName + \" was in conflict \");\n");
-//                        } else {
-//                            command.appendln("      processFile = false;\n");
-//                        }
-//                        command.appendln("    }\n");
-//                        command.appendln("  }\n");
-//                    } 
-                    
+                    // FileConflictStrategy conflictStrategy = triggerRouter.getConflictStrategy();
+                    // if (conflictStrategy == FileConflictStrategy.TARGET_WINS ||
+                    // conflictStrategy == FileConflictStrategy.MANUAL) {
+                    // command.appendln(" if (targetFile.exists() && !targetFile.isDirectory()) {\n");
+                    // command.appendln(" long targetChecksum = org.apache.commons.io.FileUtils.checksumCRC32(targetFile);\n");
+                    // command.appendln(" if (targetChecksum != " + snapshot.getOldCrc32Checksum() + "L) {\n");
+                    // if (conflictStrategy == FileConflictStrategy.MANUAL) {
+                    // command.appendln(" throw new org.jumpmind.symmetric.file.FileConflictException(targetFileName + \" was in conflict \");\n");
+                    // } else {
+                    // command.appendln(" processFile = false;\n");
+                    // }
+                    // command.appendln(" }\n");
+                    // command.appendln(" }\n");
+                    // }
                     appendln("  if [ \"$processFile\" = true ] ; then");
                     appendln("      cp -a \"$sourceFile\" \"$targetDir\"");
-                    appendln("      echo \"$targetBaseDir/$targetRelativeDir/$targetFileName=" + eventType.getCode() + "\" >> $outputFileName"); 
+                    appendln("      echo \"$targetBaseDir/$targetRelativeDir/$targetFileName=" + eventType.getCode() + "\" >> $outputFileName");
                     appendln("  fi ");
-
                 }
                 break;
             case DELETE:
                 appendln("  if [ \"$processFile\" = true ] ; then");
                 appendln("      rm -rf \"$targetBaseDir/$targetRelativeDir/$targetFileName\"");
-                appendln("      echo \"$targetBaseDir/$targetRelativeDir/$targetFileName=D\" >> $outputFileName"); 
+                appendln("      echo \"$targetBaseDir/$targetRelativeDir/$targetFileName=D\" >> $outputFileName");
                 appendln("  fi ");
                 break;
             default:
                 break;
         }
-
         if (StringUtils.isNotBlank(fileTrigger.getAfterCopyScript())) {
             appendln(fileTrigger.getAfterCopyScript());
         }
-        
         appendln("fi\n");
     }
-    
+
     @Override
     public void buildScriptEnd(Batch batch) {
         // no-op

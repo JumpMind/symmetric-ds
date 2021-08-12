@@ -39,52 +39,50 @@ import org.jumpmind.symmetric.service.IParameterService;
 import org.jumpmind.symmetric.service.ITriggerRouterService;
 
 public abstract class SelectFromSource implements IExtractDataReaderSource {
+    protected ISymmetricEngine engine;
+    protected IDatabasePlatform platform;
+    protected ISymmetricDialect symmetricDialect;
+    protected IParameterService parameterService;
+    protected IDataService dataService;
+    protected ITriggerRouterService triggerRouterService;
+    protected IConfigurationService configurationService;
+    protected INodeService nodeService;
+    protected IExtensionService extensionService;
+    protected Batch batch;
+    protected Table sourceTable;
+    protected Table targetTable;
 
-	protected ISymmetricEngine engine;
-	protected IDatabasePlatform platform;
-	protected ISymmetricDialect symmetricDialect;
-	protected IParameterService parameterService;
-	protected IDataService dataService;
-	protected ITriggerRouterService triggerRouterService;
-	protected IConfigurationService configurationService;
-	protected INodeService nodeService;
-	protected IExtensionService extensionService;
-	protected Batch batch;
-	protected Table sourceTable;
-	protected Table targetTable;
+    public SelectFromSource(ISymmetricEngine engine) {
+        this.engine = engine;
+        platform = engine.getDatabasePlatform();
+        symmetricDialect = engine.getSymmetricDialect();
+        parameterService = engine.getParameterService();
+        dataService = engine.getDataService();
+        triggerRouterService = engine.getTriggerRouterService();
+        configurationService = engine.getConfigurationService();
+        nodeService = engine.getNodeService();
+        extensionService = engine.getExtensionService();
+    }
 
-	public SelectFromSource(ISymmetricEngine engine) {
-		this.engine = engine;
-		platform = engine.getDatabasePlatform();
-		symmetricDialect = engine.getSymmetricDialect();
-		parameterService = engine.getParameterService();
-		dataService = engine.getDataService();
-		triggerRouterService = engine.getTriggerRouterService();
-		configurationService = engine.getConfigurationService();
-		nodeService = engine.getNodeService();
-		extensionService = engine.getExtensionService();
-	}
+    @Override
+    public Batch getBatch() {
+        return batch;
+    }
 
-	@Override
-	public Batch getBatch() {
-		return batch;
-	}
+    @Override
+    public Table getSourceTable() {
+        return sourceTable;
+    }
 
-	@Override
-	public Table getSourceTable() {
-		return sourceTable;
-	}
-
-	@Override
-	public Table getTargetTable() {
-		return targetTable;
-	}
+    @Override
+    public Table getTargetTable() {
+        return targetTable;
+    }
 
     protected boolean hasLobsThatNeedExtract(Table table, CsvData data) {
         if (table.containsLobColumns(platform)) {
             String[] colNames = table.getColumnNames();
             Map<String, String> colMap = data.toColumnNameValuePairs(colNames, CsvData.ROW_DATA);
-
             List<Column> lobColumns = table.getLobColumns(platform);
             for (Column c : lobColumns) {
                 String value = colMap.get(c.getName());
@@ -95,5 +93,4 @@ public abstract class SelectFromSource implements IExtractDataReaderSource {
         }
         return false;
     }
-
 }

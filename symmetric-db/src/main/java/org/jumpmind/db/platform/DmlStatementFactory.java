@@ -36,7 +36,6 @@ import org.jumpmind.db.sql.DmlStatement;
 import org.jumpmind.db.sql.DmlStatement.DmlType;
 
 final public class DmlStatementFactory {
-
     private DmlStatementFactory() {
     }
 
@@ -57,7 +56,7 @@ final public class DmlStatementFactory {
         } else {
             ddlBuilder.setDelimitedIdentifierModeOn(useQuotedIdentifiers);
             return createDmlStatement(databaseName, dmlType, catalogName, schemaName, tableName, keys,
-                    columns, nullKeyValues, ddlBuilder, null);            
+                    columns, nullKeyValues, ddlBuilder, null);
         }
     }
 
@@ -101,7 +100,7 @@ final public class DmlStatementFactory {
                     nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else if (DatabaseNamesConstants.HBASE.equals(databaseName)) {
-            return new HbaseDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns, 
+            return new HbaseDmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                     nullKeyValues, ddlBuilder.getDatabaseInfo(),
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         } else {
@@ -110,17 +109,14 @@ final public class DmlStatementFactory {
                     ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression);
         }
     }
-    
-    public static DmlStatement createDmlStatement (String databaseName, DmlType dmlType,
+
+    public static DmlStatement createDmlStatement(String databaseName, DmlType dmlType,
             String catalogName, String schemaName, String tableName, Column[] keys,
             Column[] columns, boolean[] nullKeyValues, IDdlBuilder ddlBuilder, String textColumnExpression,
             boolean namedParameters) {
-        
         return new DmlStatement(dmlType, catalogName, schemaName, tableName, keys, columns,
                 nullKeyValues, ddlBuilder.getDatabaseInfo(),
                 ddlBuilder.isDelimitedIdentifierModeOn(), textColumnExpression,
                 namedParameters);
-        
     }
-
 }

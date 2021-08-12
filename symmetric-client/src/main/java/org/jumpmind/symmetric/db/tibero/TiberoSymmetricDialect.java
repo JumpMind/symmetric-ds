@@ -46,39 +46,34 @@ import org.jumpmind.symmetric.model.Trigger;
 import org.jumpmind.symmetric.model.TriggerHistory;
 import org.jumpmind.symmetric.service.IParameterService;
 
-public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements ISymmetricDialect {
-
+public class TiberoSymmetricDialect extends AbstractSymmetricDialect implements ISymmetricDialect {
     static final String Tibero_OBJECT_TYPE = "FUNCTION";
-
     static final String SQL_SELECT_TRIGGERS = "from ALL_TRIGGERS where owner = sys_context('USERENV', 'CURRENT_SCHEMA') and trigger_name = upper(?) and table_name = upper(?) and table_owner = upper(?)";
-
     static final String SQL_SELECT_TRANSACTIONS = "select min(start_time) from gv$transaction where status = 'ACTIVE'";
-
-    static final String SQL_OBJECT_INSTALLED = "select count(*) from user_source where line = 1 and (((type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))" ;
-    
+    static final String SQL_OBJECT_INSTALLED = "select count(*) from user_source where line = 1 and (((type = 'FUNCTION' or type = 'PACKAGE') and name=upper('$(functionName)')) or (name||'_'||type=upper('$(functionName)')))";
     static final String SQL_DROP_FUNCTION = "DROP FUNCTION $(functionName)";
-    
+
     public TiberoSymmetricDialect(IParameterService parameterService, IDatabasePlatform platform) {
         super(parameterService, platform);
         this.triggerTemplate = new TiberoTriggerTemplate(this);
-		if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
-			try {
-				areDatabaseTransactionsPendingSince(System.currentTimeMillis());
-				supportsTransactionViews = true;
-			} catch (Exception ex) {
-				log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
-			}
-		}
+        if (parameterService.is(ParameterConstants.DBDIALECT_ORACLE_USE_TRANSACTION_VIEW)) {
+            try {
+                areDatabaseTransactionsPendingSince(System.currentTimeMillis());
+                supportsTransactionViews = true;
+            } catch (Exception ex) {
+                log.warn("Was not able to enable the use of transaction views.  You might not have access to select from gv$transaction", ex);
+            }
+        }
     }
-    
+
     @Override
     protected void buildSqlReplacementTokens() {
         super.buildSqlReplacementTokens();
-        if (parameterService.is(ParameterConstants.DBDIALECT_TIBERO_USE_HINTS,  true)) {
+        if (parameterService.is(ParameterConstants.DBDIALECT_TIBERO_USE_HINTS, true)) {
             sqlReplacementTokens.put("selectDataUsingGapsSqlHint", "/*+ index(d " + parameterService.getTablePrefix() + "_IDX_D_CHANNEL_ID) */");
         }
     }
-    
+
     @Override
     protected boolean doesTriggerExistOnPlatform(String catalog, String schema, String tableName,
             String triggerName) {
@@ -86,14 +81,14 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
             schema = platform.getDefaultSchema();
         }
         return platform.getSqlTemplate().queryForInt("select count(*) " + SQL_SELECT_TRIGGERS,
-                new Object[] { triggerName, tableName, schema }) > 0;                
-    }    
-    
+                new Object[] { triggerName, tableName, schema }) > 0;
+    }
+
     @Override
     protected String getDropTriggerSql(StringBuilder sqlBuffer, String catalogName,
             String schemaName, String triggerName, String tableName) {
         return "drop trigger " + triggerName;
-    }    
+    }
 
     @Override
     public void createTrigger(StringBuilder sqlBuffer, DataEventType dml, Trigger trigger,
@@ -105,13 +100,13 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
             if (ex.getErrorCode() == 4095) {
                 try {
                     // a trigger of the same name exists on another table
-                    Map<String, Object> map = platform.getSqlTemplate().queryForMap("select * " + SQL_SELECT_TRIGGERS, 
-                    		new Object[] { history.getTriggerNameForDmlType(dml), history.getSourceTableName(), history.getSourceSchemaName() });
+                    Map<String, Object> map = platform.getSqlTemplate().queryForMap("select * " + SQL_SELECT_TRIGGERS,
+                            new Object[] { history.getTriggerNameForDmlType(dml), history.getSourceTableName(), history.getSourceSchemaName() });
                     if (map != null) {
-                    	log.warn("Trigger named {} already exists on table {}.{} and it cannot be replaced", 
-                    			history.getTriggerNameForDmlType(dml), map.get("TABLE_OWNER"), map.get("TABLE_NAME"));
+                        log.warn("Trigger named {} already exists on table {}.{} and it cannot be replaced",
+                                history.getTriggerNameForDmlType(dml), map.get("TABLE_OWNER"), map.get("TABLE_NAME"));
                     } else {
-                    	log.warn("Trigger named {} already exists on another table and it cannot be replaced", history.getTriggerNameForDmlType(dml));
+                        log.warn("Trigger named {} already exists on another table and it cannot be replaced", history.getTriggerNameForDmlType(dml));
                     }
                 } catch (SqlException e) {
                 }
@@ -119,7 +114,7 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
             throw ex;
         }
     }
-    
+
     @Override
     public void createRequiredDatabaseObjects() {
         String blobToClob = this.parameterService.getTablePrefix() + "_" + "blob2clob";
@@ -148,7 +143,6 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
                     + "   END $(functionName);                                                                                                                                                   ";
             install(sql, blobToClob);
         }
-
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (!installed(SQL_OBJECT_INSTALLED, transactionId)) {
             String sql = "CREATE OR REPLACE function $(functionName)                                                                                                                                                             "
@@ -158,16 +152,15 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
                     + "   end;                                                                                                                                                               ";
             install(sql, transactionId);
         }
-
         String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
         if (!installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
             String sql = "CREATE OR REPLACE function $(functionName) return varchar is                                                                                                                                           "
                     + "   begin                                                                                                                                                                "
-                    + "      return "+getSymmetricPackageName()+".disable_trigger;                                                                                                                                   "
+                    + "      return " + getSymmetricPackageName()
+                    + ".disable_trigger;                                                                                                                                   "
                     + "   end;                                                                                                                                                                 ";
             install(sql, triggerDisabled);
         }
-
         String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
         if (!installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
             String sql = "CREATE OR REPLACE package $(functionName) as                                                                                                                                                                   "
@@ -175,9 +168,9 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
                     + "      disable_node_id varchar(50);                                                                                                                                       "
                     + "      procedure setValue (a IN number);                                                                                                                                  "
                     + "      procedure setNodeValue (node_id IN varchar);                                                                                                                       "
-                    + "  end "+getSymmetricPackageName()+";                                                                                                                                                           ";
+                    + "  end " + getSymmetricPackageName()
+                    + ";                                                                                                                                                           ";
             install(sql, pkgPackage);
-            
             sql = "CREATE OR REPLACE package body $(functionName) as                                                                                                                                                              "
                     + "     procedure setValue(a IN number) is                                                                                                                                 "
                     + "     begin                                                                                                                                                              "
@@ -187,10 +180,10 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
                     + "     begin                                                                                                                                                              "
                     + "         $(functionName).disable_node_id := node_id;                                                                                                                           "
                     + "     end;                                                                                                                                                               "
-                    + " end "+getSymmetricPackageName()+";                                                                                                                                                           ";
+                    + " end " + getSymmetricPackageName()
+                    + ";                                                                                                                                                           ";
             install(sql, pkgPackage);
         }
-
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
         if (!installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
             String sql = "  CREATE OR REPLACE                                                                                                         "
@@ -217,27 +210,22 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
         if (installed(SQL_OBJECT_INSTALLED, blobToClob)) {
             uninstall(SQL_DROP_FUNCTION, blobToClob);
         }
-
         String transactionId = this.parameterService.getTablePrefix() + "_" + "transaction_id";
         if (installed(SQL_OBJECT_INSTALLED, transactionId)) {
             uninstall(SQL_DROP_FUNCTION, transactionId);
         }
-
         String triggerDisabled = this.parameterService.getTablePrefix() + "_" + "trigger_disabled";
         if (installed(SQL_OBJECT_INSTALLED, triggerDisabled)) {
             uninstall(SQL_DROP_FUNCTION, triggerDisabled);
         }
-        
         String wkt2geom = this.parameterService.getTablePrefix() + "_" + "wkt2geom";
         if (installed(SQL_OBJECT_INSTALLED, wkt2geom)) {
             uninstall(SQL_DROP_FUNCTION, wkt2geom);
-        }        
-
+        }
         String pkgPackage = this.parameterService.getTablePrefix() + "_" + "pkg";
         if (installed(SQL_OBJECT_INSTALLED, pkgPackage)) {
             uninstall("DROP PACKAGE $(functionName)", pkgPackage);
         }
-
     }
 
     @Override
@@ -259,12 +247,12 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     @Override
     public String getSequenceName(SequenceIdentifier identifier) {
         switch (identifier) {
-        case REQUEST:
-            return "SEQ_" + parameterService.getTablePrefix() + "_EXTRACT_EST_REQUEST_ID";
-        case DATA:
-            return "SEQ_" + parameterService.getTablePrefix() + "_DATA_DATA_ID";
-        case TRIGGER_HIST:
-            return "SEQ_" + parameterService.getTablePrefix() + "_TRIGGER_RIGGER_HIST_ID";
+            case REQUEST:
+                return "SEQ_" + parameterService.getTablePrefix() + "_EXTRACT_EST_REQUEST_ID";
+            case DATA:
+                return "SEQ_" + parameterService.getTablePrefix() + "_DATA_DATA_ID";
+            case TRIGGER_HIST:
+                return "SEQ_" + parameterService.getTablePrefix() + "_TRIGGER_RIGGER_HIST_ID";
         }
         return null;
     }
@@ -310,7 +298,6 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
         } else {
             return false;
         }
-
     }
 
     @Override
@@ -390,12 +377,13 @@ public class TiberoSymmetricDialect  extends AbstractSymmetricDialect implements
     }
 
     public String getTemplateNumberPrecisionSpec() {
-        return parameterService.getString(ParameterConstants.DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC,"30,10");
+        return parameterService.getString(ParameterConstants.DBDIALECT_TIBERO_TEMPLATE_NUMBER_SPEC, "30,10");
     }
-    
+
     @Override
     public PermissionType[] getSymTablePermissions() {
-        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER, PermissionType.EXECUTE};
+        PermissionType[] permissions = { PermissionType.CREATE_TABLE, PermissionType.DROP_TABLE, PermissionType.CREATE_TRIGGER, PermissionType.DROP_TRIGGER,
+                PermissionType.EXECUTE };
         return permissions;
     }
 }

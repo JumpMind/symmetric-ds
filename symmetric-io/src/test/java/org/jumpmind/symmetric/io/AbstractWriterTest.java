@@ -54,25 +54,16 @@ import org.jumpmind.util.Statistics;
 import org.junit.Assert;
 
 abstract public class AbstractWriterTest {
-
     protected static IDatabasePlatform platform;
-
     protected boolean errorExpected = true;
-
     protected final static String TEST_TABLE = "test_dataloader_table";
-
     protected final static String[] TEST_KEYS = { "id" };
-
     protected final static String[] TEST_COLUMNS = { "id", "string_value", "string_required_value",
             "char_value", "char_required_value", "date_value", "time_value", "boolean_value",
             "integer_value", "decimal_value", "double_value" };
-
     protected static long batchId = 10000;
-
     protected static long sequenceId = 10000;
-    
     protected DatabaseWriterSettings writerSettings = new DatabaseWriterSettings();
-    
     protected IDataWriter lastDataWriterUsed;
 
     protected synchronized long getNextBatchId() {
@@ -98,22 +89,22 @@ abstract public class AbstractWriterTest {
     protected void writeData(CsvData data, String[] expectedValues) {
         writeData(data, expectedValues, getTestColumns());
     }
-    
+
     protected String getTestTable() {
         return TEST_TABLE;
     }
-    
+
     protected String[] getTestKeys() {
         return TEST_KEYS;
     }
-    
+
     protected String[] getTestColumns() {
         return TEST_COLUMNS;
     }
 
     protected void writeData(CsvData... data) {
         Table table = buildSourceTable(getTestTable(), getTestKeys(), getTestColumns());
-        writeData(new TableCsvData(table, data));        
+        writeData(new TableCsvData(table, data));
     }
 
     protected void writeData(CsvData data, String[] expectedValues, String[] columnNames) {
@@ -134,22 +125,20 @@ abstract public class AbstractWriterTest {
     protected long writeData(TableCsvData... datas) {
         return writeData(new DynamicDefaultDatabaseWriter(platform, platform, "sym", writerSettings), datas);
     }
-    
+
     protected long writeData(BinaryEncoding encoding, TableCsvData... datas) {
         return writeData(new DynamicDefaultDatabaseWriter(platform, platform, "sym", writerSettings), encoding, datas);
     }
-    
+
     protected long writeData(IDataWriter writer, TableCsvData... datas) {
         return writeData(writer, BinaryEncoding.BASE64, datas);
     }
 
     protected long writeData(IDataWriter writer, BinaryEncoding encoding, TableCsvData... datas) {
         this.lastDataWriterUsed = writer;
-        
         try {
             for (TableCsvData tableCsvData : datas) {
                 Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", encoding, "00000", "00001", false);
-                
                 DataContext context = new DataContext(batch);
                 writer.open(context);
                 try {
@@ -172,14 +161,11 @@ abstract public class AbstractWriterTest {
                             throw new RuntimeException(ex);
                         }
                     }
-
                 }
-
             }
         } finally {
             writer.close();
         }
-
         long statementCount = 0;
         Collection<Statistics> stats = writer.getStatistics().values();
         for (Statistics statistics : stats) {
@@ -187,15 +173,13 @@ abstract public class AbstractWriterTest {
         }
         return statementCount;
     }
-    
+
     protected long writeData(IDataWriter writer, DataContext context, TableCsvData... datas) {
         return writeData(writer, context, BinaryEncoding.BASE64, datas);
-
     }
-    
+
     protected long writeData(IDataWriter writer, DataContext context, BinaryEncoding encoding, TableCsvData... datas) {
         this.lastDataWriterUsed = writer;
-        
         try {
             for (TableCsvData tableCsvData : datas) {
                 Batch batch = new Batch(BatchType.LOAD, getNextBatchId(), "default", encoding, "00000", "00001", false);
@@ -220,14 +204,11 @@ abstract public class AbstractWriterTest {
                             throw new RuntimeException(ex);
                         }
                     }
-
                 }
-
             }
         } finally {
             writer.close();
         }
-
         long statementCount = 0;
         Collection<Statistics> stats = writer.getStatistics().values();
         for (Statistics statistics : stats) {
@@ -240,7 +221,6 @@ abstract public class AbstractWriterTest {
         String sql = "select " + getSelect(getTestColumns()) + " from " + getTestTable() + " where "
                 + getWhere(getTestKeys());
         Map<String, Object> results = platform.getSqlTemplate().queryForMap(sql, Long.valueOf(testTableId));
-
         if (expectedValues != null) {
             expectedValues[1] = translateExpectedString(expectedValues[1], false);
             expectedValues[2] = translateExpectedString(expectedValues[2], true);
@@ -288,7 +268,7 @@ abstract public class AbstractWriterTest {
         if (value != null
                 && ((StringUtils.isBlank(value) && platform.getDatabaseInfo()
                         .isBlankCharColumnSpacePadded()) || (StringUtils.isNotBlank(value) && platform
-                        .getDatabaseInfo().isNonBlankCharColumnSpacePadded()))) {
+                                .getDatabaseInfo().isNonBlankCharColumnSpacePadded()))) {
             return StringUtils.rightPad(value, size);
         } else if (value != null && platform.getDatabaseInfo().isCharColumnSpaceTrimmed()) {
             return value.replaceFirst(" *$", "");
@@ -328,11 +308,9 @@ abstract public class AbstractWriterTest {
                     if (platform instanceof SqliteDatabasePlatform) {
                         expected[i] = Double.valueOf(expected[i]).toString();
                     }
-                    
                 } else if (resultObj != null) {
                     resultValue = resultObj.toString();
                 }
-
                 Assert.assertEquals(name[i] + ". " + printDatabase(), expected[i], resultValue);
             }
         }
@@ -353,8 +331,8 @@ abstract public class AbstractWriterTest {
     public boolean isErrorExpected() {
         return errorExpected;
     }
-    
-    public Map<String,Object> queryForRow(String id) {
+
+    public Map<String, Object> queryForRow(String id) {
         return platform.getSqlTemplate().queryForMap("select * from " + getTestTable() + " where id=?", Integer.valueOf(id));
     }
 
@@ -374,11 +352,9 @@ abstract public class AbstractWriterTest {
             this.table = table;
             this.data = data;
         }
-
     }
-    
+
     protected long countRows(String tableName) {
         return platform.getSqlTemplate().queryForInt(String.format("select count(*) from %s", tableName));
     }
-
 }

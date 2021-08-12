@@ -53,8 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
-
-	private static final Logger log = LoggerFactory.getLogger(MySqlBulkDatabaseWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(MySqlBulkDatabaseWriter.class);
     protected int maxRowsBeforeFlush;
     protected long maxBytesBeforeFlush;
     protected boolean isLocal;
@@ -63,9 +62,8 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
     protected IStagedResource stagedInputFile;
     protected int loadedRows = 0;
     protected long loadedBytes = 0;
-    protected boolean needsBinaryConversion;    
+    protected boolean needsBinaryConversion;
     protected Table table = null;
-    
 
     public MySqlBulkDatabaseWriter(IDatabasePlatform symmetricPlatform,
             IDatabasePlatform targetPlatform, String tablePrefix,
@@ -78,7 +76,6 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.isReplace = isReplace;
         this.stagingManager = stagingManager;
         this.writerSettings.setCreateTableFailOnError(false);
-        
     }
 
     public boolean start(Table table) {
@@ -86,19 +83,19 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         if (super.start(table) && targetTable != null) {
             needsBinaryConversion = false;
             if (batch.getBinaryEncoding() != BinaryEncoding.NONE) {
-                    for (Column column : targetTable.getColumns()) {
-                        if (column.isOfBinaryType()) {
-                            needsBinaryConversion = true;
-                            break;
-                        }
+                for (Column column : targetTable.getColumns()) {
+                    if (column.isOfBinaryType()) {
+                        needsBinaryConversion = true;
+                        break;
                     }
+                }
             }
-            //TODO: Did this because start is getting called multiple times
-            //      for the same table in a single batch before end is being called
+            // TODO: Did this because start is getting called multiple times
+            // for the same table in a single batch before end is being called
             if (this.stagedInputFile == null) {
-               createStagingFile();
+                createStagingFile();
             }
-        return true;
+            return true;
         } else {
             return false;
         }
@@ -117,7 +114,6 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
 
     protected void bulkWrite(CsvData data) {
         DataEventType dataEventType = data.getDataEventType();
-
         switch (dataEventType) {
             case INSERT:
                 statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
@@ -143,7 +139,8 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                                 if (batch.getBinaryEncoding() == BinaryEncoding.HEX) {
                                     out.write(parsedData[i].getBytes(Charset.defaultCharset()));
                                 } else if (batch.getBinaryEncoding() == BinaryEncoding.BASE64) {
-                                    out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset())))).getBytes(Charset.defaultCharset()));
+                                    out.write(new String(Hex.encodeHex(Base64.decodeBase64(parsedData[i].getBytes(Charset.defaultCharset())))).getBytes(Charset
+                                            .defaultCharset()));
                                 }
                                 out.write('"');
                             } else {
@@ -178,16 +175,15 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 writeDefault(data);
                 break;
         }
-
         if (loadedRows >= maxRowsBeforeFlush || loadedBytes >= maxBytesBeforeFlush) {
             flush();
         }
     }
-    
+
     protected void flush() {
         if (loadedRows > 0) {
-                this.stagedInputFile.close();
-                statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
+            this.stagedInputFile.close();
+            statistics.get(batch).startTimer(DataWriterStatisticConstants.LOADMILLIS);
             try {
                 DatabaseInfo dbInfo = getPlatform().getDatabaseInfo();
                 String quote = dbInfo.getDelimiterToken();
@@ -195,15 +191,14 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 String schemaSeparator = dbInfo.getSchemaSeparator();
                 JdbcSqlTransaction jdbcTransaction = (JdbcSqlTransaction) getTargetTransaction();
                 Connection c = jdbcTransaction.getConnection();
-                String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") + 
-                        "INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " + 
+                String sql = String.format("LOAD DATA " + (isLocal ? "LOCAL " : "") +
+                        "INFILE '" + stagedInputFile.getFile().getAbsolutePath()).replace('\\', '/') + "' " +
                         (isReplace ? "REPLACE " : "IGNORE ") + "INTO TABLE " +
                         this.getTargetTable().getQualifiedTableName(quote, catalogSeparator, schemaSeparator) +
-                                " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY '' " +
-                                getCommaDeliminatedColumns(targetTable.getColumns());
+                        " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY '\\\\' LINES TERMINATED BY '\\n' STARTING BY '' " +
+                        getCommaDeliminatedColumns(targetTable.getColumns());
                 Statement stmt = c.createStatement();
-    
-                //TODO:  clean this up, deal with errors, etc.?
+                // TODO: clean this up, deal with errors, etc.?
                 log.debug(sql);
                 stmt.execute(sql);
                 stmt.close();
@@ -225,16 +220,13 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         String quote = dbInfo.getDelimiterToken();
         StringBuilder columns = new StringBuilder();
         columns.append("(");
-        
         // The target syntax is (where BLOB is involved):
         // ('column1', 'column2', @hexColumn3) SET 'column3'=UNHEX(@hexColumn3);
-        
         Map<String, String> blobColumns = new LinkedHashMap<String, String>();
         Map<String, String> bitColumns = new LinkedHashMap<String, String>();
-        
         if (cols != null && cols.length > 0) {
             for (Column column : cols) {
-                boolean blob = column.isOfBinaryType(); 
+                boolean blob = column.isOfBinaryType();
                 if (blob) {
                     String hexVariable = String.format("@%s_hex", column.getName());
                     blobColumns.put(column.getName(), hexVariable);
@@ -246,25 +238,19 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 } else {
                     columns.append(quote);
                     columns.append(column.getName());
-                    columns.append(quote);                                    
+                    columns.append(quote);
                 }
-                
                 columns.append(",");
             }
             columns.replace(columns.length() - 1, columns.length(), "");
-            
             columns.append(")");
-            
             // Build this (optional) clause:
             // SET 'column3'=UNHEX(@hexColumn3);
-            
             StringBuilder setClause = new StringBuilder();
-            
             for (String columnName : blobColumns.keySet()) {
                 if (setClause.length() == 0) {
                     setClause.append(" SET ");
                 }
-                
                 setClause.append(quote);
                 setClause.append(columnName);
                 setClause.append(quote);
@@ -272,12 +258,10 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 setClause.append(blobColumns.get(columnName));
                 setClause.append("),");
             }
-            
             for (String columnName : bitColumns.keySet()) {
                 if (setClause.length() == 0) {
                     setClause.append(" SET ");
                 }
-                
                 setClause.append(quote);
                 setClause.append(columnName);
                 setClause.append(quote);
@@ -285,12 +269,10 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
                 setClause.append(bitColumns.get(columnName));
                 setClause.append(" AS UNSIGNED),");
             }
-            
             if (setClause.length() > 0) {
-                setClause.setLength(setClause.length()-1);
+                setClause.setLength(setClause.length() - 1);
                 columns.append(setClause);
             }
-            
             return columns.toString();
         } else {
             return " ";
@@ -314,5 +296,4 @@ public class MySqlBulkDatabaseWriter extends AbstractBulkDatabaseWriter {
         this.stagedInputFile = stagingManager.create(Constants.STAGING_CATEGORY_BULK_LOAD,
                 targetTable.getName() + this.getBatch().getBatchId() + ".csv");
     }
-
 }

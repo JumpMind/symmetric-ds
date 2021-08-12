@@ -25,9 +25,7 @@ import java.io.Serializable;
 import org.jumpmind.symmetric.common.ParameterConstants;
 
 public class DatabaseParameter implements Serializable {
-
     private static final long serialVersionUID = 1L;
-
     private String key;
     private String value;
     private String externalId = ParameterConstants.ALL;
@@ -35,7 +33,7 @@ public class DatabaseParameter implements Serializable {
 
     public DatabaseParameter() {
     }
-    
+
     public DatabaseParameter(String key) {
         this.key = key;
     }
@@ -78,5 +76,4 @@ public class DatabaseParameter implements Serializable {
     public void setNodeGroupId(String nodeGroupId) {
         this.nodeGroupId = nodeGroupId;
     }
-
 }

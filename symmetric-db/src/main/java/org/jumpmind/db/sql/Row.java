@@ -44,9 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Row extends LinkedCaseInsensitiveMap<Object> {
-
     private static final long serialVersionUID = 1L;
-
     private static final Logger log = LoggerFactory.getLogger(Row.class);
 
     public Row(int numberOfColumns) {
@@ -112,20 +110,19 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return null;
         }
     }
-    
+
     public Long longValue() {
         Object obj = this.values().iterator().next();
         if (obj != null) {
             if (obj instanceof Long) {
-                return (Long)obj;
+                return (Long) obj;
             } else {
-                return Long.valueOf(obj.toString());    
-            }            
+                return Long.valueOf(obj.toString());
+            }
         } else {
             return null;
-        }        
+        }
     }
-    
 
     public String stringValue() {
         Object obj = this.values().iterator().next();
@@ -135,7 +132,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return null;
         }
     }
-    
+
     public String csvValue() {
         StringBuilder concatenatedRow = new StringBuilder();
         Collection<Object> objs = this.values();
@@ -145,16 +142,16 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
                 concatenatedRow.append(",");
             }
             concatenatedRow.append(obj != null ? obj.toString() : "");
-            index++;            
+            index++;
         }
-        return concatenatedRow.toString(); 
+        return concatenatedRow.toString();
     }
 
     public byte[] getBytes(String columnName) {
         Object obj = get(columnName);
         return toBytes(obj);
     }
-    
+
     public String getString(String columnName) {
         return getString(columnName, true);
     }
@@ -222,7 +219,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         } else if (obj instanceof String) {
             return new BigDecimal(obj.toString());
         } else if (obj instanceof Integer) {
-            return new BigDecimal(((Integer)obj).intValue());
+            return new BigDecimal(((Integer) obj).intValue());
         } else {
             checkForColumn(columnName);
             return null;
@@ -312,7 +309,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
             return FormatUtils.parseDate(value, pattern);
         }
     }
-    
+
     public Object[] toArray(String[] keys) {
         Object[] values = new Object[keys.length];
         for (int i = 0; i < keys.length; i++) {
@@ -320,7 +317,7 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
         }
         return values;
     }
-    
+
     public String[] toStringArray(String[] keys) {
         String[] values = new String[keys.length];
         for (int i = 0; i < keys.length; i++) {
@@ -331,7 +328,6 @@ public class Row extends LinkedCaseInsensitiveMap<Object> {
 
     public long getLength() {
         long length = 0;
-        
         for (Map.Entry<String, Object> entry : this.entrySet()) {
             try {
                 Object obj = entry.getValue();

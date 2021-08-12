@@ -27,7 +27,6 @@ import java.sql.SQLException;
 import org.jumpmind.db.sql.SymmetricLobHandler;
 
 public class PostgresLobHandler extends SymmetricLobHandler {
-
     public PostgresLobHandler() {
         super();
     }
@@ -38,14 +37,13 @@ public class PostgresLobHandler extends SymmetricLobHandler {
 
     public byte[] getBlobAsBytes(ResultSet rs, int columnIndex, int jdbcTypeCode,
             String jdbcTypeName) throws SQLException {
-
         if (PostgreSqlDatabasePlatform.isBlobStoredByReference(jdbcTypeName)) {
             return getLoColumnAsBytes(rs, columnIndex);
         } else {
             return getDefaultHandler().getBlobAsBytes(rs, columnIndex);
         }
     }
-    
+
     public static byte[] getLoColumnAsBytes(ResultSet rs, int columnIndex) throws SQLException {
         Blob blob = rs.getBlob(columnIndex);
         if (blob != null) {
