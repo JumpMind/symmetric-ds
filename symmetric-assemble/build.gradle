@@ -11,7 +11,7 @@ buildscript {
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
         classpath 'io.spring.gradle:docbook-reference-plugin:0.3.1'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0'
-		classpath 'com.diffplug.spotless:spotless-plugin-gradle:5.14.2'
+        classpath 'com.diffplug.spotless:spotless-plugin-gradle:5.14.2'
     }
 }
 
@@ -20,12 +20,18 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 
 allprojects {
-	apply plugin: 'com.diffplug.spotless'
-	spotless {
-	  java {
-		eclipse().configFile(project.rootDir.toString() + '/formatter.eclipse.xml')
-	  }
-	}
+    apply plugin: 'com.diffplug.spotless'
+    spotless {
+    format 'misc', {
+        target '*.gradle', '*.md', '.gitignore', '*.xml'
+        trimTrailingWhitespace()
+        indentWithSpaces()
+        endWithNewline()
+    }
+    java {
+        eclipse().configFile(project.rootDir.toString() + '/formatter.eclipse.xml')
+      }
+    }
     apply plugin: 'license'
     license {
         header rootProject.file("HEADER")
@@ -66,20 +72,20 @@ if (project.properties.containsKey('pro')) {
 task generateJavadoc(type: Javadoc) {
     destinationDir = new File(buildDir, 'doc/javadoc')
     title = "SymmetricDS API $version"
-	group = 'SymmetricDS'
-	description = 'Generate JavaDoc HTML pages for API documentation'
+    group = 'SymmetricDS'
+    description = 'Generate JavaDoc HTML pages for API documentation'
 }
 
 task buildSymmetric {
-	group = 'SymmetricDS'
-	description = 'Build software, documentation, and distribution ZIP files'
+    group = 'SymmetricDS'
+    description = 'Build software, documentation, and distribution ZIP files'
     dependsOn ':symmetric-android:androidDistZip', ':symmetric-server:serverDistZip'
 }
 
 task publishSymmetric {
     dependsOn buildSymmetric
-	group = 'SymmetricDS'
-	description = 'Publish software to SourceForge website'
+    group = 'SymmetricDS'
+    description = 'Publish software to SourceForge website'
     doLast {
         ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
         classpath: configurations.sshAntTask.asPath)
@@ -99,7 +105,7 @@ task publishSymmetric {
             todir: "$sourceforgeUser:$sourceforgePassword@frs.sourceforge.net:/home/frs/project/symmetricds/symmetricds/symmetricds-$majorMinorVersion",
             trust: 'true',
             verbose: 'true') {
-            fileset(dir: "../symmetric-server/build/distributions/") { 
+            fileset(dir: "../symmetric-server/build/distributions/") {
                 include(name: 'symmetric-server-' + version + '.zip')
             }
         }
@@ -109,7 +115,6 @@ task publishSymmetric {
 task releaseSymmetric {
     dependsOn publishSymmetric
     dependsOn tasks.getByPath('symmetric-server:publishDoc')
-	group = 'SymmetricDS'
-	description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
+    group = 'SymmetricDS'
+    description = 'Publish software to SourceForge website and online documentation to SymmetricDS website'
 }
-

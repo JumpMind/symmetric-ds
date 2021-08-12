@@ -26,7 +26,7 @@ allprojects {
     apply plugin: 'idea'
 
     group = 'org.jumpmind.symmetric'
-    
+
     repositories {
         jcenter()
         maven { url "http://maven.jumpmind.com/repo" }
@@ -37,11 +37,11 @@ allprojects {
         maven { url "https://repository.mulesoft.org/nexus/content/repositories/public/" }
         maven { url "https://repo1.maven.org/maven2/" }
     }
-        
+
     ext {
         majorMinorVersion = version.substring(0, version.indexOf(".", version.indexOf(".")+ 1))
     }
-    
+
 }
 
 def ignoreDerivedResources(projectDescription, directories = ["build", "test-output"]) {
@@ -64,7 +64,7 @@ def ignoreDerivedResources(projectDescription, directories = ["build", "test-out
       }
     }
   }
-}  
+}
 
 subprojects { subproject ->
 
@@ -77,7 +77,7 @@ subprojects { subproject ->
 
     // Integration test plugin
     apply from: "$symAssembleDir/gradle/integrationTest.gradle"
-    
+
     configurations { deployerJars }
     configurations { testArtifacts.extendsFrom testRuntime }
 
@@ -86,41 +86,41 @@ subprojects { subproject ->
 
     sourceCompatibility=1.8
     targetCompatibility=1.8
-    
+
     compileJava {
-    	options.compilerArgs += '-Xlint:deprecation'
+        options.compilerArgs += '-Xlint:deprecation'
     }
-    
+
     compileTestJava {
-    	options.compilerArgs += '-Xlint:deprecation'
+        options.compilerArgs += '-Xlint:deprecation'
     }
-    
+
     compileIntegrationTestJava {
         options.compilerArgs += '-Xlint:deprecation'
     }
-    
-    eclipse {   
+
+    eclipse {
         classpath {
             downloadSources = true
             downloadJavadoc = false
-	        
-	        file {
-	        	whenMerged { classpath ->
-			        def list = classpath.getEntries()
-			        list.removeAll { it.kind=='lib' && it.path.contains('javax.validation') && it.path.contains('validation-api') }
-			        classpath.setEntries(list)
-			    }
-	        }
+
+            file {
+                whenMerged { classpath ->
+                    def list = classpath.getEntries()
+                    list.removeAll { it.kind=='lib' && it.path.contains('javax.validation') && it.path.contains('validation-api') }
+                    classpath.setEntries(list)
+                }
+            }
         }
-        
+
         jdt {
             sourceCompatibility = 1.8
             targetCompatibility = 1.8
         }
-        
+
         project.file.whenMerged { project ->
             project.natures.remove('org.springsource.ide.eclipse.gradle.core.nature')
-            project.natures.remove('org.eclipse.buildship.core.gradleprojectnature')            
+            project.natures.remove('org.eclipse.buildship.core.gradleprojectnature')
         }
     }
 
@@ -132,35 +132,35 @@ subprojects { subproject ->
             downloadJavadoc = true
             downloadSources = true
         }
-    }   
-    
+    }
+
     javadoc {
         failOnError = false
     }
-    
+
     afterEvaluate {
         if(plugins.hasPlugin(JavaPlugin)) {
-            
+
             // configuration here
             rootProject.tasks.generateJavadoc {
                 source += files(sourceSets.collect { srcSet -> srcSet.allJava })
                 classpath += files(sourceSets*.compileClasspath)
             }
-    
+
         }
-    }    
-    
+    }
+
     install.enabled = !project.properties.containsKey('pro')
     uploadArchives.enabled = !project.properties.containsKey('pro')
-    
-    
+
+
     task sourcesJar(type: Jar, dependsOn:classes) {
         classifier = 'sources'
         from sourceSets.main.allSource
     }
-    
-    artifacts { archives sourcesJar }    
-    
+
+    artifacts { archives sourcesJar }
+
     uploadArchives {
         repositories.mavenDeployer {
             configuration = configurations.deployerJars
@@ -179,7 +179,7 @@ subprojects { subproject ->
         classifier "test"
         from sourceSets.test.output
     }
-    
+
     test {
         ignoreFailures true
         systemProperty "test.server", System.getProperty("test.server", "h2")
@@ -192,7 +192,7 @@ subprojects { subproject ->
         maxHeapSize = "512m"
         forkEvery=1
     }
-    
+
     integrationTest {
         ignoreFailures true
         systemProperty "test.server", System.getProperty("test.server", "h2")
@@ -205,16 +205,16 @@ subprojects { subproject ->
         maxHeapSize = "512m"
         forkEvery=1
     }
-    
+
     jar {
         manifest {
             attributes("Implementation-Title": project.name,
                        "Implementation-Version": version,
-                       "Project-Artifact": project.name,                       
+                       "Project-Artifact": project.name,
                        "Build-Version": version,
                        "Build-Time": new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date()),
                        "Build-Scm-Version": scmVersion)
-        }    
+        }
     }
 
     artifacts { testArtifacts testJar }
@@ -279,17 +279,17 @@ subprojects { subproject ->
         testCompile "org.mockito:mockito-core:$mockitoVersion"
         testCompile "org.powermock:powermock-api-mockito2:$powerMockVersion"
         testCompile "org.powermock:powermock-module-junit4:$powerMockVersion"
-        
-        deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"        
-    }    
+
+        deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
+    }
 
     task develop {
         dependsOn tasks.cleanEclipse, tasks.eclipse, tasks.cleanIdea, tasks.idea
-        
+
         doLast {
             def wstFacetXml = "$projectDir/.settings/org.eclipse.wst.common.project.facet.core.xml"
             println "Deleting $wstFacetXml"
-            delete wstFacetXml 
+            delete wstFacetXml
         }
     }
 
@@ -303,17 +303,17 @@ subprojects { subproject ->
         ext.mit = license('MIT License', 'https://opensource.org/licenses/MIT')
         ext.cddl = license('Common Development and Distribution License (CDDL)', 'https://opensource.org/licenses/CDDL-1.0')
         ext.w3c = license('W3C Software License', 'http://www.w3.org/Consortium/Legal/copyright-software-19980720')
-    
+
         includeProjectDependencies = true
-    
+
         licenses = [
             (group('org.jumpmind.symmetric')) : license('JumpMind License'),
             (group('com.jumpmind.symmetric')) : license('JumpMind License'),
             'com.byteowls:vaadin-chartjs:1.2.0' : mit,
             'org.vaadin.addons:aceeditor:0.8.15' : bsd,
-            'org.vaadin.addons:fontawesomelabel:1.4.0' : apacheTwo    
+            'org.vaadin.addons:fontawesomelabel:1.4.0' : apacheTwo
         ]
-    
+
         aliases = [
             (gplTwo) : ['The GNU General Public License, Version 2'],
             (gplTwoCE) : ['GPL2 w/ CPE', 'GPL v2 with ClassPath Exception'],
@@ -325,7 +325,7 @@ subprojects { subproject ->
             (cddl) : ['CDDL', 'Common Development and Distribution License (CDDL) v1.0', 'CDDL 1.1', 'Dual license consisting of the CDDL v1.1 and GPL v2', 'CDDL/GPLv2+CE', 'CDDL + GPLv2 with classpath exception'],
             (w3c) : ['The W3C Software License', 'W3C Software Copyright Notice and License']
         ]
-    
+
         dependencyConfiguration = 'compile'
-    }    
+    }
 }

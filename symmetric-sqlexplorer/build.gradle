@@ -1,17 +1,17 @@
 apply from: symAssembleDir + '/common.gradle'
 
 buildscript {
-    repositories { 
+    repositories {
        jcenter()
-       maven { url 'https://repo.spring.io/plugins-release' } 
+       maven { url 'https://repo.spring.io/plugins-release' }
        maven { url 'https://plugins.gradle.org/m2/' }
-       maven { url "http://maven.vaadin.com/vaadin-addons" }         
+       maven { url "http://maven.vaadin.com/vaadin-addons" }
     }
 
-    dependencies { 
+    dependencies {
         classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
-        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:2.0.0.beta1'    
-    }    
+        classpath 'com.devsoap.plugin:gradle-vaadin-plugin:2.0.0.beta1'
+    }
 }
 
 apply plugin: 'com.devsoap.plugin.vaadin'
@@ -30,36 +30,36 @@ vaadinSourcesJar.enabled=false
 vaadinJavadocJar.enabled=false
 vaadin.push = true
 vaadinCompile.gwtSdkFirstInClasspath=false
-    
+
 artifacts {
    archives file("$buildDir/libs/${jar.baseName}-${jar.version}.${jar.extension}")
 }
-    
-configurations.archives.with {    
+
+configurations.archives.with {
     artifacts.remove artifacts.find { it.type == 'war' }
 }
 
 dependencies {
     deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
-    
+
     compile project(":symmetric-jdbc")
     compile project(":symmetric-io")
-    
+
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile ("org.apache.commons:commons-dbcp2:$commonsDbcpVersion") {
         exclude group: 'commons-logging'
     }
     compile "commons-io:commons-io:$commonsIoVersion"
-    
+
     compile "org.springframework:spring-webmvc:$springVersion"
-    
+
     compile "com.vaadin:vaadin-push:$vaadinVersion"
     compile "com.vaadin:vaadin-themes:$vaadinVersion"
     compile "org.vaadin.addons:aceeditor:0.8.15"
     compile "com.vaadin:vaadin-context-menu:3.0.0"
-    
+
     testCompile "com.h2database:h2:$h2Version"
-    testCompile "javax.websocket:javax.websocket-api:$websocketVersion"    
+    testCompile "javax.websocket:javax.websocket-api:$websocketVersion"
     testCompile "org.eclipse.jetty:jetty-webapp:$jettyVersion"
     testCompile "org.eclipse.jetty.websocket:javax-websocket-server-impl:$jettyVersion"
 }

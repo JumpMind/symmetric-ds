@@ -41,7 +41,7 @@ apply from: symAssembleDir + '/common.gradle'
             exclude group: 'com.google.protobuf'
             exclude group: 'com.fasterxml.jackson.core'
         }
-        
+
         compileOnly ("com.microsoft.azure:azure-storage:8.1.0") {
             exclude group: 'com.fasterxml.jackson.core'
             exclude group: 'log4j'

@@ -11,9 +11,9 @@ This library can be found in the JumpMind Maven Repository at http://maven.jumpm
 It can be included via gradle or maven.  The following is an example of how it can be included using gradle.  Including this component will require the vaadin widgetset to be compiled as it includes other addons that require widgetset compilation.
 ```
 repositories {
-  mavenCentral()    
-  jcenter()        
-  maven { url "http://maven.vaadin.com/vaadin-addons" }  
+  mavenCentral()
+  jcenter()
+  maven { url "http://maven.vaadin.com/vaadin-addons" }
   maven { url "http://maven.jumpmind.com/repo" }
 }
 
@@ -29,5 +29,3 @@ dependencies {
 <p align="center">
   <img src='src/test/screenshots/screenshot1.png?raw=true' />
 </p>
-
-

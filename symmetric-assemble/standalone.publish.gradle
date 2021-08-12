@@ -32,5 +32,5 @@ uploadAllJars {
 
 dependencies {
     deployerJars "org.apache.maven.wagon:wagon-ssh:2.2"
-    
+
 }
