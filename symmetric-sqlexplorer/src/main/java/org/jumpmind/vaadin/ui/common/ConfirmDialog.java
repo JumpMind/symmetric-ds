@@ -62,8 +62,10 @@ public class ConfirmDialog extends Dialog {
             textLabel.setValue(text);
             textLabel.setReadOnly(true);
             layout.addAndExpand(textLabel);
+            layout.setHeight("86%");
+        } else {
+            setHeight("160px");
         }
-        layout.setHeight("90%");
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         //buttonLayout.setClassName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);

@@ -93,7 +93,8 @@ public class ReadOnlyTextAreaDialog extends ResizableDialog {
         wrapper.setMargin(false);
         wrapper.setSizeFull();
         textField = new TextArea();
-        textField.setSizeFull();
+        textField.setWidthFull();
+        textField.setHeight("480px");
         //textField.setWordWrap(false);
         wrapper.add(textField);
         add(wrapper, 1);
