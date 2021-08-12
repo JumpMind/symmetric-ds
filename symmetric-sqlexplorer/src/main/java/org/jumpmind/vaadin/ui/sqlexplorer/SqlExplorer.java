@@ -235,7 +235,7 @@ public class SqlExplorer extends CustomSplitLayout {
 
         MenuItem settings = leftMenu.addItem(new Icon(VaadinIcon.COG), event -> {
             SettingsDialog dialog = new SettingsDialog(SqlExplorer.this);
-            dialog.showAtSize(.5);
+            dialog.show();
         });
         settings.getElement().setAttribute("title", "Modify sql explorer settings");
         
