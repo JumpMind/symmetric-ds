@@ -51,8 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;
 
-import bsh.TargetError;
-
 public class TransformWriter extends NestedDataWriter {
 
     protected static final Logger log = LoggerFactory.getLogger(TransformWriter.class);
@@ -451,13 +449,6 @@ public class TransformWriter extends NestedDataWriter {
                 }
                 returnValue = transform.transform(platform, context, transformColumn, data,
                         sourceValues, value, oldValue);
-            } catch (TargetError trg) {
-            	Throwable ex = trg.getTarget();
-            	if (ex instanceof IgnoreColumnException) {
-            		throw (IgnoreColumnException) ex;
-            	} else if (ex instanceof IgnoreRowException) {
-            		throw (IgnoreRowException) ex;
-            	}
             } catch (NestedRuntimeException nestedRuntimeException) {
             	Throwable rootCause = nestedRuntimeException.getRootCause();
             	if (rootCause instanceof IgnoreColumnException) {
